@@ -1,3 +1,7 @@
+/*
+* Temporary disabled due to increasing open connections without releasing them
+* Use TypeORM instead
+
 import { VectorStoreDriver } from './Base'
 import { FLOWISE_CHATID } from '../../../../src'
 import { DistanceStrategy, PGVectorStore, PGVectorStoreArgs } from '@langchain/community/vectorstores/pgvector'
@@ -32,6 +36,11 @@ export class PGVectorDriver extends VectorStoreDriver {
                 user: user,
                 password: password,
                 database: this.getDatabase()
+            }
+
+            // Prevent using default MySQL port, otherwise will throw uncaught error and crashing the app
+            if (this.getHost() === '3006') {
+                throw new Error('Invalid port number')
             }
         }
 
@@ -115,3 +124,4 @@ export class PGVectorDriver extends VectorStoreDriver {
         return instance
     }
 }
+*/

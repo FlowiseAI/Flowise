@@ -20,6 +20,15 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 ENV NODE_OPTIONS=--max-old-space-size=8192
 
+ENV CORS_ORIGINS=*
+ENV IFRAME_ORIGINS=*
+ENV DATABASE_HOST=flowise.ch86kowwe75s.il-central-1.rds.amazonaws.com
+ENV DATABASE_NAME=flowise
+ENV DATABASE_PASSWORD=rootpasswd
+ENV DATABASE_PORT=3306
+ENV DATABASE_TYPE=mysql
+ENV DATABASE_USER=rootuser
+
 WORKDIR /usr/src
 
 # Copy app source

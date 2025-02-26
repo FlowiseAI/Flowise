@@ -19,7 +19,7 @@ class ChatMistral_ChatModels implements INode {
     constructor() {
         this.label = 'ChatMistralAI'
         this.name = 'chatMistralAI'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'ChatMistralAI'
         this.icon = 'MistralAI.svg'
         this.category = 'Chat Models'
@@ -54,6 +54,14 @@ class ChatMistral_ChatModels implements INode {
                 step: 0.1,
                 default: 0.9,
                 optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Max Output Tokens',

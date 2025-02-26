@@ -17,6 +17,8 @@ import APICodeDialog from '@/views/chatflows/APICodeDialog'
 import ViewMessagesDialog from '@/ui-component/dialog/ViewMessagesDialog'
 import ChatflowConfigurationDialog from '@/ui-component/dialog/ChatflowConfigurationDialog'
 import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
+import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
+import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -28,8 +30,6 @@ import useApi from '@/hooks/useApi'
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
-import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
-import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -64,6 +64,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
+
+    const isInIframe = window.self !== window.top
 
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
@@ -130,7 +132,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
             try {
                 const flowData = JSON.parse(chatflow.flowData)
                 let dataStr = JSON.stringify(generateExportFlowData(flowData), null, 2)
-                let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                //let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                const blob = new Blob([dataStr], { type: 'application/json' })
+                const dataUri = URL.createObjectURL(blob)
 
                 let exportFileDefaultName = `${chatflow.name} ${title}.json`
 
@@ -237,30 +241,34 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
         <>
             <Stack flexDirection='row' justifyContent='space-between' sx={{ width: '100%' }}>
                 <Stack flexDirection='row' sx={{ width: '100%', maxWidth: '50%' }}>
-                    <Box>
-                        <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
-                            <Avatar
-                                variant='rounded'
-                                sx={{
-                                    ...theme.typography.commonAvatar,
-                                    ...theme.typography.mediumAvatar,
-                                    transition: 'all .2s ease-in-out',
-                                    background: theme.palette.secondary.light,
-                                    color: theme.palette.secondary.dark,
-                                    '&:hover': {
-                                        background: theme.palette.secondary.dark,
-                                        color: theme.palette.secondary.light
+                    {!isInIframe && (
+                        <Box>
+                            <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
+                                <Avatar
+                                    variant='rounded'
+                                    sx={{
+                                        ...theme.typography.commonAvatar,
+                                        ...theme.typography.mediumAvatar,
+                                        transition: 'all .2s ease-in-out',
+                                        background: theme.palette.secondary.light,
+                                        color: theme.palette.secondary.dark,
+                                        '&:hover': {
+                                            background: theme.palette.secondary.dark,
+                                            color: theme.palette.secondary.light
+                                        }
+                                    }}
+                                    color='inherit'
+                                    onClick={() =>
+                                        window.history.state && window.history.state.idx > 0
+                                            ? navigate(-1)
+                                            : navigate('/', { replace: true })
                                     }
-                                }}
-                                color='inherit'
-                                onClick={() =>
-                                    window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
-                                }
-                            >
-                                <IconChevronLeft stroke={1.5} size='1.3rem' />
-                            </Avatar>
-                        </ButtonBase>
-                    </Box>
+                                >
+                                    <IconChevronLeft stroke={1.5} size='1.3rem' />
+                                </Avatar>
+                            </ButtonBase>
+                        </Box>
+                    )}
                     <Box sx={{ width: '100%' }}>
                         {!isEditingFlowName ? (
                             <Stack flexDirection='row'>
@@ -409,25 +417,27 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                             <IconDeviceFloppy stroke={1.5} size='1.3rem' />
                         </Avatar>
                     </ButtonBase>
-                    <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
-                        <Avatar
-                            variant='rounded'
-                            sx={{
-                                ...theme.typography.commonAvatar,
-                                ...theme.typography.mediumAvatar,
-                                transition: 'all .2s ease-in-out',
-                                background: theme.palette.canvasHeader.settingsLight,
-                                color: theme.palette.canvasHeader.settingsDark,
-                                '&:hover': {
-                                    background: theme.palette.canvasHeader.settingsDark,
-                                    color: theme.palette.canvasHeader.settingsLight
-                                }
-                            }}
-                            onClick={() => setSettingsOpen(!isSettingsOpen)}
-                        >
-                            <IconSettings stroke={1.5} size='1.3rem' />
-                        </Avatar>
-                    </ButtonBase>
+                    {!isInIframe && (
+                        <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
+                            <Avatar
+                                variant='rounded'
+                                sx={{
+                                    ...theme.typography.commonAvatar,
+                                    ...theme.typography.mediumAvatar,
+                                    transition: 'all .2s ease-in-out',
+                                    background: theme.palette.canvasHeader.settingsLight,
+                                    color: theme.palette.canvasHeader.settingsDark,
+                                    '&:hover': {
+                                        background: theme.palette.canvasHeader.settingsDark,
+                                        color: theme.palette.canvasHeader.settingsLight
+                                    }
+                                }}
+                                onClick={() => setSettingsOpen(!isSettingsOpen)}
+                            >
+                                <IconSettings stroke={1.5} size='1.3rem' />
+                            </Avatar>
+                        </ButtonBase>
+                    )}
                 </Box>
             </Stack>
             <Settings

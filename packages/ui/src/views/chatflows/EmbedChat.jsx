@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
+import { baseURL } from '@/store/constant'
 import { Box, Tab, Tabs } from '@mui/material'
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
-
 // Project import
 
 // Const
@@ -35,37 +35,71 @@ function a11yProps(index) {
     }
 }
 
-const embedPopupHtmlCode = (chatflowid) => {
-    const iframeURL = `${import.meta.env.VITE_GAIT_URL}/app-frame/${chatflowid}`
-    return `<div style="height: 100%; width: 100%; position: fixed; z-index: 9999">
-    <iframe 
-        style="width: 100%; height: 100%" 
-        src="${iframeURL}" 
-        frameborder="0px">
-    </iframe>
-</div>`
-}
-
 const EmbedChat = ({ chatflowid }) => {
     const codes = ['Popup Html']
     const [value, setValue] = useState(0)
-    const [embedChatCheckboxVal, setEmbedChatCheckbox] = useState(false)
 
-    const onCheckBoxEmbedChatChanged = (newVal) => {
-        setEmbedChatCheckbox(newVal)
-    }
+    const [content, setContent] = useState('')
+
+    useEffect(() => {
+        const isInIframe = window.self !== window.top
+
+        if (isInIframe) {
+            console.log('hi')
+            // Inside an iframe: request uitype from parent
+            window.parent.postMessage({ type: 'REQUEST_UITYPE' }, '*')
+
+            const messageHandler = (event) => {
+                if (event.data.type === 'RESPONSE_UITYPE') {
+                    const { uitype, hostAppURL } = event.data
+
+                    if (uitype === 'gait') {
+                        // uitype is "gait", return iframe HTML
+                        const iframeURL = `${hostAppURL}/app-frame/${chatflowid}`
+                        const htmlContent = `<div style="height: 100%; width: 100%; position: fixed; z-index: 9999">
+                <iframe 
+                  style="width: 100%; height: 100%" 
+                  src="${iframeURL}" 
+                  frameborder="0">
+                </iframe>
+              </div>
+            `
+                        setContent(htmlContent)
+                    } else {
+                        // uitype is not "gait", return script tag
+                        const htmlContent = `<script type="module">
+                            import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js";
+                            Chatbot.init({
+                                chatflowid: "${chatflowid}",
+                                apiHost: "${baseURL}",
+                            });
+                        </script>
+            `
+                        setContent(htmlContent)
+                    }
+
+                    window.removeEventListener('message', messageHandler)
+                }
+            }
+
+            window.addEventListener('message', messageHandler)
+        } else {
+            // Not inside an iframe, return script tag
+            const htmlContent = `
+        <script type="module">
+          import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js";
+          Chatbot.init({
+            chatflowid: "${chatflowid}",
+            apiHost: "${baseURL}",
+          });
+        </script>
+      `
+            setContent(htmlContent)
+        }
+    }, [chatflowid])
 
     const handleChange = (event, newValue) => {
         setValue(newValue)
-    }
-
-    const getCode = (codeLang) => {
-        switch (codeLang) {
-            case 'Popup Html':
-                return embedPopupHtmlCode(chatflowid)
-            default:
-                return ''
-        }
     }
 
     return (
@@ -90,7 +124,7 @@ const EmbedChat = ({ chatflowid }) => {
                             <div style={{ height: 10 }}></div>
                         </>
                     )}
-                    <CopyBlock theme={atomOneDark} text={getCode(codeLang)} language='javascript' showLineNumbers={false} wrapLines />
+                    <CopyBlock theme={atomOneDark} text={content} language='javascript' showLineNumbers={false} wrapLines />
                 </TabPanel>
             ))}
         </>

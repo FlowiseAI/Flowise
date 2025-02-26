@@ -24,6 +24,7 @@ export class NodesPool {
      * Initialize nodes
      */
     private async initializeNodes() {
+        const disabled_nodes = process.env.DISABLED_NODES ? process.env.DISABLED_NODES.split(',') : []
         const packagePath = getNodeModulesPackagePath('flowise-components')
         const nodesPath = path.join(packagePath, 'dist', 'nodes')
         const nodeFiles = await this.getFiles(nodesPath)
@@ -65,7 +66,9 @@ export class NodesPool {
                             let conditionTwo = true
                             if (!isCommunityNodesAllowed && isAuthorPresent) conditionTwo = false
 
-                            if (conditionOne && conditionTwo) {
+                            const isDisabled = disabled_nodes.includes(newNodeInstance.name)
+
+                            if (conditionOne && conditionTwo && !isDisabled) {
                                 this.componentNodes[newNodeInstance.name] = newNodeInstance
                             }
                         }

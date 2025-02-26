@@ -4,6 +4,11 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+                    "name": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model"
+                },
+                {
                     "label": "anthropic.claude-3-5-haiku-20241022-v1:0",
                     "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
                     "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model"
@@ -231,6 +236,22 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "o3-mini",
+                    "name": "o3-mini"
+                },
+                {
+                    "label": "o1",
+                    "name": "o1"
+                },
+                {
+                    "label": "o1-preview",
+                    "name": "o1-preview"
+                },
+                {
+                    "label": "o1-mini",
+                    "name": "o1-mini"
+                },
+                {
                     "label": "gpt-4o-mini",
                     "name": "gpt-4o-mini"
                 },
@@ -304,6 +325,11 @@
         {
             "name": "chatAnthropic",
             "models": [
+                {
+                    "label": "claude-3-7-sonnet-latest",
+                    "name": "claude-3-7-sonnet-latest",
+                    "description": "Most recent snapshot version of Claude Sonnet 3.7 model - hybrid reasoning model"
+                },
                 {
                     "label": "claude-3-5-haiku-latest",
                     "name": "claude-3-5-haiku-latest",
@@ -390,49 +416,24 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
-                    "label": "gemini-1.5-flash-latest",
-                    "name": "gemini-1.5-flash-latest"
+                    "label": "gemini-2.0-flash-001",
+                    "name": "gemini-2.0-flash-001"
                 },
                 {
-                    "label": "gemini-1.5-flash-001",
-                    "name": "gemini-1.5-flash-001"
+                    "label": "gemini-2.0-flash-lite-001",
+                    "name": "gemini-2.0-flash-lite-001"
                 },
                 {
-                    "label": "gemini-1.5-flash-002",
-                    "name": "gemini-1.5-flash-002"
+                    "label": "gemini-1.5-flash",
+                    "name": "gemini-1.5-flash"
                 },
                 {
                     "label": "gemini-1.5-flash-8b",
                     "name": "gemini-1.5-flash-8b"
                 },
                 {
-                    "label": "gemini-1.5-pro-latest",
-                    "name": "gemini-1.5-pro-latest"
-                },
-                {
-                    "label": "gemini-1.5-pro-001",
-                    "name": "gemini-1.5-pro-001"
-                },
-                {
-                    "label": "gemini-1.5-pro-002",
-                    "name": "gemini-1.5-pro-002"
-                },
-                {
-                    "label": "gemini-pro",
-                    "name": "gemini-pro"
-                },
-                {
-                    "label": "gemini-pro-vision",
-                    "name": "gemini-pro-vision"
-                }
-            ]
-        },
-        {
-            "name": "chatGooglePaLM",
-            "models": [
-                {
-                    "label": "models/chat-bison-001",
-                    "name": "models/chat-bison-001"
+                    "label": "gemini-1.5-pro",
+                    "name": "gemini-1.5-pro"
                 }
             ]
         },
@@ -449,12 +450,20 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
-                    "label": "gemini-1.5-flash",
-                    "name": "gemini-1.5-flash-preview-0514"
+                    "label": "gemini-1.5-flash-002",
+                    "name": "gemini-1.5-flash-002"
                 },
                 {
-                    "label": "gemini-1.5-pro",
-                    "name": "gemini-1.5-pro-preview-0409"
+                    "label": "gemini-1.5-flash-001",
+                    "name": "gemini-1.5-flash-001"
+                },
+                {
+                    "label": "gemini-1.5-pro-002",
+                    "name": "gemini-1.5-pro-002"
+                },
+                {
+                    "label": "gemini-1.5-pro-001",
+                    "name": "gemini-1.5-pro-001"
                 },
                 {
                     "label": "gemini-1.0-pro",
@@ -463,6 +472,11 @@
                 {
                     "label": "gemini-1.0-pro-vision",
                     "name": "gemini-1.0-pro-vision"
+                },
+                {
+                    "label": "claude-3-7-sonnet@20250219",
+                    "name": "claude-3-7-sonnet@20250219",
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model"
                 },
                 {
                     "label": "claude-3-5-haiku@20241022",
@@ -488,28 +502,24 @@
                     "label": "claude-3-haiku@20240307",
                     "name": "claude-3-haiku@20240307",
                     "description": "Fastest and most compact model for near-instant responsiveness"
-                },
-                {
-                    "label": "chat-bison",
-                    "name": "chat-bison"
-                },
-                {
-                    "label": "codechat-bison",
-                    "name": "codechat-bison"
-                },
-                {
-                    "label": "chat-bison-32k",
-                    "name": "chat-bison-32k"
-                },
-                {
-                    "label": "codechat-bison-32k",
-                    "name": "codechat-bison-32k"
                 }
             ]
         },
         {
             "name": "groqChat",
             "models": [
+                {
+                    "label": "deepseek-r1-distill-llama-70b",
+                    "name": "deepseek-r1-distill-llama-70b"
+                },
+                {
+                    "label": "llama-3.3-70b-versatile",
+                    "name": "llama-3.3-70b-versatile"
+                },
+                {
+                    "label": "llama-3.3-70b-specdec",
+                    "name": "llama-3.3-70b-specdec"
+                },
                 {
                     "label": "llama-3.2-1b-preview",
                     "name": "llama-3.2-1b-preview"
@@ -578,6 +588,19 @@
             ]
         },
         {
+            "name": "deepseek",
+            "models": [
+                {
+                    "label": "deepseek-chat",
+                    "name": "deepseek-chat"
+                },
+                {
+                    "label": "deepseek-reasoner",
+                    "name": "deepseek-reasoner"
+                }
+            ]
+        },
+        {
             "name": "chatOpenAI",
             "models": [
                 {
@@ -593,12 +616,24 @@
                     "name": "gpt-4o"
                 },
                 {
+                    "label": "gpt-4o-2024-11-20",
+                    "name": "gpt-4o-2024-11-20"
+                },
+                {
                     "label": "gpt-4o-2024-08-06",
                     "name": "gpt-4o-2024-08-06"
                 },
                 {
                     "label": "gpt-4o-2024-05-13",
                     "name": "gpt-4o-2024-05-13"
+                },
+                {
+                    "label": "o3-mini (latest)",
+                    "name": "o3-mini"
+                },
+                {
+                    "label": "o3-mini-2025-01-31",
+                    "name": "o3-mini-2025-01-31"
                 },
                 {
                     "label": "o1-preview (latest)",
@@ -1101,15 +1136,6 @@
             ]
         },
         {
-            "name": "GooglePaLM",
-            "models": [
-                {
-                    "label": "models/text-bison-001",
-                    "name": "models/text-bison-001"
-                }
-            ]
-        },
-        {
             "name": "googlevertexai",
             "models": [
                 {
@@ -1252,15 +1278,6 @@
                     "label": "voyage-multilingual-2",
                     "name": "voyage-multilingual-2",
                     "description": "Optimized for multilingual retrieval and RAG."
-                }
-            ]
-        },
-        {
-            "name": "googlePaLMEmbeddings",
-            "models": [
-                {
-                    "label": "models/embedding-gecko-001",
-                    "name": "models/embedding-gecko-001"
                 }
             ]
         },
