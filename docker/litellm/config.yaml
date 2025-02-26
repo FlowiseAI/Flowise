@@ -1,4 +1,24 @@
 model_list:
+  - model_name: claude-3.7-sonnet
+    litellm_params:
+      model: bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0
+      aws_access_key_id: os.environ/CUSTOM_AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/CUSTOM_AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/CUSTOM_AWS_REGION_NAME
+    model_info:
+      max_tokens: 8192
+      max_input_tokens: 200000
+      max_output_tokens: 8192
+      input_cost_per_token: 0.000003
+      output_cost_per_token: 0.000015
+      cache_creation_input_token_cost: 0.00000375
+      cache_read_input_token_cost: 0.0000003
+      mode: 'chat'
+      supports_function_calling: true
+      supports_vision: true
+      tool_use_system_prompt_tokens: 159
+      supports_assistant_prefill: true
+      supports_prompt_caching: true
   - model_name: claude-3.5-sonnet
     litellm_params:
       model: bedrock/anthropic.claude-3-5-sonnet-20240620-v1:0
