@@ -378,7 +378,8 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
  */
 function normalizeURL(urlString: string): string {
     const urlObj = new URL(urlString)
-    const hostPath = urlObj.hostname + urlObj.pathname + urlObj.search
+    const port = urlObj.port ? `:${urlObj.port}` : ''
+    const hostPath = urlObj.hostname + port + urlObj.pathname + urlObj.search
     if (hostPath.length > 0 && hostPath.slice(-1) == '/') {
         // handling trailing slash
         return hostPath.slice(0, -1)
@@ -818,6 +819,12 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
                     zodObj[sch.property] = z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
                 } else {
                     zodObj[sch.property] = z.boolean().describe(sch.description).optional()
+                }
+            } else if (sch.type === 'date') {
+                if (sch.required) {
+                    zodObj[sch.property] = z.date({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.date().describe(sch.description).optional()
                 }
             }
         }

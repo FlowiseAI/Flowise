@@ -8,15 +8,29 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    TextField,
     CircularProgress,
     Stepper,
     Step,
-    StepLabel
+    StepLabel,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel
 } from '@mui/material'
 
 const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const portalElement = document.getElementById('portal')
+
+    const modelOptions = {
+        'nv-mistralai/mistral-nemo-12b-instruct:latest': {
+            label: 'Mistral Nemo 12B Instruct',
+            licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nvidia/teams/nv-mistralai/containers/mistral-nemo-12b-instruct'
+        },
+        'meta/llama-3.1-8b-instruct-rtx:latest': {
+            label: 'Llama 3.1 8B Instruct',
+            licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nim/teams/meta/containers/llama-3.1-8b-instruct'
+        }
+    }
 
     const [activeStep, setActiveStep] = useState(0)
     const [loading, setLoading] = useState(false)
@@ -242,14 +256,26 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
 
                 {activeStep === 1 && (
                     <div>
-                        <TextField
-                            label='Image Tag'
-                            value={imageTag}
-                            onChange={(e) => setImageTag(e.target.value)}
-                            fullWidth
-                            sx={{ mt: 2 }}
-                            placeholder='nvcr.io/nim/microsoft/phi-3-mini-4k-instruct:latest'
-                        />
+                        <FormControl fullWidth sx={{ mt: 2 }}>
+                            <InputLabel>Model</InputLabel>
+                            <Select label='Model' value={imageTag} onChange={(e) => setImageTag(e.target.value)}>
+                                {Object.entries(modelOptions).map(([value, { label }]) => (
+                                    <MenuItem key={value} value={value}>
+                                        {label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                        {imageTag && (
+                            <Button
+                                variant='text'
+                                size='small'
+                                sx={{ mt: 1 }}
+                                onClick={() => window.open(modelOptions[imageTag].licenseUrl, '_blank')}
+                            >
+                                View License
+                            </Button>
+                        )}
                         {loading && (
                             <div>
                                 <div style={{ marginBottom: 20 }} />

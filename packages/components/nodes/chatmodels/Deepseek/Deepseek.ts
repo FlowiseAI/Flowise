@@ -1,7 +1,5 @@
 import { BaseCache } from '@langchain/core/caches'
-import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
-import { ChatOpenAI, LegacyOpenAIInput, OpenAIChatInput } from '@langchain/openai'
-import type { ClientOptions } from 'openai'
+import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
@@ -151,7 +149,7 @@ class Deepseek_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<OpenAIChatInput> & BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput } = {
+        const obj: ChatOpenAIFields = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
