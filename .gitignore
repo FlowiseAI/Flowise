@@ -104,3 +104,6 @@
 ## S/MIME message
 *.smime
 *.vsix
+
+# windsurf rules
+.windsurfrules

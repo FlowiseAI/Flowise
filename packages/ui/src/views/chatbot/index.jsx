@@ -6,6 +6,8 @@ import chatflowsApi from '@/api/chatflows'
 import useApi from '@/hooks/useApi'
 import { baseURL } from '@/store/constant'
 
+import.meta.env.VITE_DOCUMENT_STORE_BASE_URL = import.meta.env.VITE_DOCUMENT_STORE_BASE_URL || 'https://s3-explorer.cmcts1.studio.ai.vn'
+
 // Custom theme
 const theme = createTheme({
   palette: {
