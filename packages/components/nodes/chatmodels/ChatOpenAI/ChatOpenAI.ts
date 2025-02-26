@@ -176,7 +176,7 @@ class ChatOpenAI_ChatModels implements INode {
             },
             {
                 label: 'Reasoning Effort',
-                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 models',
+                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.',
                 name: 'reasoningEffort',
                 type: 'options',
                 options: [
@@ -193,7 +193,7 @@ class ChatOpenAI_ChatModels implements INode {
                         name: 'high'
                     }
                 ],
-                default: 'low',
+                default: 'medium',
                 optional: false,
                 additionalParams: true
             }
@@ -241,7 +241,7 @@ class ChatOpenAI_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (modelName === 'o3-mini') {
+        if (modelName.includes('o3')) {
             delete obj.temperature
         }
         if ((modelName.includes('o1') || modelName.includes('o3')) && reasoningEffort) {
