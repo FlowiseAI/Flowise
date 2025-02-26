@@ -613,6 +613,8 @@ const utilBuildAgentResponse = async (
           apiMessage.followUpPrompts = JSON.stringify(generatedFollowUpPrompts.questions)
         }
       }
+      console.log('🚀 ~ apiMessage:', apiMessage)
+
       const chatMessage = await utilAddChatMessage(apiMessage)
 
       await appServer.telemetry.sendTelemetry('agentflow_prediction_sent', {

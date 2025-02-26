@@ -223,8 +223,6 @@ export const buildAgentGraph = async (
           action: incomingInput.action,
           uploadedFilesContent
         })
-
-        console.timeEnd(`perf(${chatId}): compileSeqAgentsGraph`)
       }
 
       if (streamResults) {
@@ -256,10 +254,8 @@ export const buildAgentGraph = async (
                 if (startTime) {
                   const duration = performance.now() - startTime
                   eventDurations[output.event.replace('_end', '')] = duration
-                  console.log(`perf(${chatId}): ${output.event.replace('_end', '')} completed in ${duration.toFixed(2)}ms`)
                 }
               }
-              console.log(`perf(${chatId}): ${output.event}`, offsetPerfTime)
               perf.time = performance.now()
               perf.event = output.event
               perf.total += offsetPerfTime
@@ -311,6 +307,7 @@ export const buildAgentGraph = async (
 
                   totalStreamText += output.data?.chunk?.content || ''
                   clearTimeout(sendLoadingMessageFnId)
+                  console.log('🚀 ~ forawait ~ output.data?.chunk?.content:', output.data?.chunk?.content)
                 } else if (output.event === 'on_chat_model_end' && totalStreamText.trim()) {
                   // sendLoadingMessageFnId = setTimeout(() => {
                   //   sseStreamer.streamTokenEvent(chatId, '<loading/>')
@@ -435,10 +432,6 @@ export const buildAgentGraph = async (
           }
         }
 
-        console.log(`perf${chatId}: total`, perf.total)
-        // Log final event durations summary
-        console.log(`perf${chatId}: event durations:`, JSON.stringify(eventDurations, null, 2))
-
         if (process.env.LOCAL_DEBUG) {
           fs.writeFileSync('stream_outputs.jsonl', allOutputs.join('\r\n'))
         }
@@ -446,8 +439,6 @@ export const buildAgentGraph = async (
         clearTimeout(sendLoadingMessageFnId)
 
         if (isSequential && !streamable) {
-          console.log('no final answer:', JSON.stringify(totalStreamText))
-
           sseStreamer?.streamTokenEvent(chatId, totalStreamText)
 
           //   if (retryTimes < 3) {
@@ -481,13 +472,12 @@ export const buildAgentGraph = async (
           //   }
         }
 
-        // console.log('totalStreamText:', JSON.stringify(totalStreamText))
-
         /*
          * For multi agents mode, sometimes finalResult is empty
          * 1.) Provide lastWorkerResult as final result if available
          * 2.) Provide summary as final result if available
          */
+
         if (!isSequential && !finalResult) {
           if (lastWorkerResult) finalResult = lastWorkerResult
           else if (finalSummarization) finalResult = finalSummarization
@@ -577,9 +567,9 @@ export const buildAgentGraph = async (
           sseStreamer.streamArtifactsEvent(chatId, totalArtifacts)
           sseStreamer.streamEndEvent(chatId)
         }
-
+        console.log('totalStreamText:', { finalResult, totalStreamText })
         return {
-          finalResult,
+          finalResult: finalResult || totalStreamText,
           finalAction,
           sourceDocuments: totalSourceDocuments,
           artifacts: totalArtifacts,
