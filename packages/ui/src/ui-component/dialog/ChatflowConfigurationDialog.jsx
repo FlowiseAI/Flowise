@@ -48,7 +48,8 @@ const CHATFLOW_CONFIGURATION_TABS = [
     },
     {
         label: 'Post Processing',
-        id: 'postProcessing'
+        id: 'postProcessing',
+        hideInAgentFlow: true
     }
 ]
 
@@ -81,9 +82,11 @@ function a11yProps(index) {
     }
 }
 
-const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
+const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const [tabValue, setTabValue] = useState(0)
+
+    const filteredTabs = CHATFLOW_CONFIGURATION_TABS.filter((tab) => !isAgentCanvas || !tab.hideInAgentFlow)
 
     const component = show ? (
         <Dialog
@@ -113,7 +116,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                     variant='scrollable'
                     scrollButtons='auto'
                 >
-                    {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
+                    {filteredTabs.map((item, index) => (
                         <Tab
                             sx={{
                                 minHeight: '40px',
@@ -128,7 +131,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                         ></Tab>
                     ))}
                 </Tabs>
-                {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
+                {filteredTabs.map((item, index) => (
                     <TabPanel key={index} value={tabValue} index={index}>
                         {item.id === 'security' && <Security dialogProps={dialogProps} />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
@@ -150,6 +153,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
 
 ChatflowConfigurationDialog.propTypes = {
     show: PropTypes.bool,
+    isAgentCanvas: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func
 }

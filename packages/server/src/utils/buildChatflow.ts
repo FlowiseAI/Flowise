@@ -579,11 +579,13 @@ export const executeFlow = async ({
         }
         return undefined
     } else {
-        let chatflowConfig: any = undefined
+        let chatflowConfig: ICommonObject = {}
         if (chatflow.chatbotConfig) {
             chatflowConfig = JSON.parse(chatflow.chatbotConfig)
         }
+
         let isStreamValid = false
+
         /* Check for post-processing settings, if available isStreamValid is always false */
         if (chatflowConfig?.postProcessing?.enabled === true) {
             isStreamValid = false
@@ -669,8 +671,8 @@ export const executeFlow = async ({
                         databaseEntities,
                         logger
                     }
-                    const docNodeInstance = new nodeModule.nodeClass()
-                    let moderatedResponse = await docNodeInstance.init(nodeData, question, options)
+                    const customFuncNodeInstance = new nodeModule.nodeClass()
+                    let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
                     result.text = moderatedResponse
                     resultText = result.text
                 } catch (e) {
