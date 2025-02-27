@@ -579,7 +579,19 @@ export const executeFlow = async ({
         }
         return undefined
     } else {
-        const isStreamValid = await checkIfStreamValid(endingNodes, nodes, streaming)
+        let chatflowConfig: ICommonObject = {}
+        if (chatflow.chatbotConfig) {
+            chatflowConfig = JSON.parse(chatflow.chatbotConfig)
+        }
+
+        let isStreamValid = false
+
+        /* Check for post-processing settings, if available isStreamValid is always false */
+        if (chatflowConfig?.postProcessing?.enabled === true) {
+            isStreamValid = false
+        } else {
+            isStreamValid = await checkIfStreamValid(endingNodes, nodes, streaming)
+        }
 
         /*** Find the last node to execute ***/
         const { endingNodeData, endingNodeInstance } = await initEndingNode({
@@ -637,8 +649,37 @@ export const executeFlow = async ({
         await utilAddChatMessage(userMessage, appDataSource)
 
         let resultText = ''
-        if (result.text) resultText = result.text
-        else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
+        if (result.text) {
+            resultText = result.text
+            /* Check for post-processing settings */
+            if (chatflowConfig?.postProcessing?.enabled === true) {
+                try {
+                    const postProcessingFunction = JSON.parse(chatflowConfig?.postProcessing?.customFunction)
+                    const nodeInstanceFilePath = componentNodes['customFunction'].filePath as string
+                    const nodeModule = await import(nodeInstanceFilePath)
+                    const nodeData = {
+                        inputs: { javascriptFunction: postProcessingFunction },
+                        outputs: { output: 'output' }
+                    }
+                    const options: ICommonObject = {
+                        chatflowid: chatflow.id,
+                        sessionId,
+                        chatId,
+                        input: question,
+                        rawOutput: resultText,
+                        appDataSource,
+                        databaseEntities,
+                        logger
+                    }
+                    const customFuncNodeInstance = new nodeModule.nodeClass()
+                    let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
+                    result.text = moderatedResponse
+                    resultText = result.text
+                } catch (e) {
+                    logger.log('[server]: Post Processing Error:', e)
+                }
+            }
+        } else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
         else resultText = JSON.stringify(result, null, 2)
 
         const apiMessage: Omit<IChatMessage, 'createdDate'> = {

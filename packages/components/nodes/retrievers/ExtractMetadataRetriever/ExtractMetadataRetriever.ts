@@ -150,6 +150,7 @@ class ExtractMetadataRetriever_Retrievers implements INode {
             prompt: dynamicMetadataFilterRetrieverPrompt,
             topK: topK ? parseInt(topK, 10) : (vectorStore as any)?.k ?? 4
         })
+        retriever.filter = vectorStore?.lc_kwargs?.filter ?? (vectorStore as any).filter
 
         if (output === 'retriever') return retriever
         else if (output === 'document') return await retriever.getRelevantDocuments(finalInputQuery)
