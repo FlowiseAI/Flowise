@@ -5,6 +5,7 @@ const webpack = require('webpack')
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE === 'true'
 })
+
 /**
  * @type {import('next').NextConfig}
  */
@@ -66,7 +67,8 @@ let nextConfig = withBundleAnalyzer({
         REACT_APP_AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
         REACT_APP_AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
         REACT_APP_AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
-        FLAGSMITH_ENVIRONMENT_ID: process.env.FLAGSMITH_ENVIRONMENT_ID
+        FLAGSMITH_ENVIRONMENT_ID: process.env.FLAGSMITH_ENVIRONMENT_ID,
+        AUTH0_SECRET: process.env.AUTH0_SECRET ?? process.env.WEB_AUTH0_SECRET
     },
     webpack: (config, { isServer }) => {
         config.externals = [...config.externals, 'db', 'puppeteer', 'handlebars']

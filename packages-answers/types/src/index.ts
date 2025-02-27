@@ -6,6 +6,14 @@ export interface Document extends DB.Document {
     metadata: any
 }
 export interface Sidekick extends DB.Sidekick {
+    constraints: {
+        isSpeechToTextEnabled: boolean
+        isImageUploadAllowed: boolean
+        uploadSizeAndTypes: {
+            fileTypes: string[]
+            maxUploadSize: number
+        }[]
+    }
     favoritedBy?: Array<User>
 }
 export type PineconeObject = {
@@ -500,7 +508,14 @@ export interface SidekickListItem extends Pick<DB.Sidekick, 'id' | 'placeholder'
     chatbotConfig: DB.Sidekick['chatflow']['chatbotConfig']
     flowData: DB.Sidekick['chatflow']['flowData']
     answersConfig: DB.Sidekick['chatflow']['answersConfig']
+    constraints: {
+        isSpeechToTextEnabled: boolean
+        isImageUploadAllowed: boolean
+        uploadSizeAndTypes: {
+            fileTypes: string[]
+            maxUploadSize: number
+        }[]
+    }
 }
-
 // Add the Sidekicks type
 export type Sidekicks = SidekickListItem[]
