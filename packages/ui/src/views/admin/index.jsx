@@ -131,7 +131,7 @@ const Admin = () => {
     }, [getCurrentPlan.error, getHistoricPlans.error])
 
     useEffect(() => {
-        if (getCurrentPlan.data && Array.isArray(getCurrentPlan.data)) {
+        if (getCurrentPlan.data) {
             setCurrentPlan(getCurrentPlan.data)
         }
     }, [getCurrentPlan.data])
