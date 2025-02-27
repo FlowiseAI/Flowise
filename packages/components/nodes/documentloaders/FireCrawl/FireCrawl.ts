@@ -516,28 +516,16 @@ class FireCrawl_DocumentLoaders implements INode {
         ]
         this.outputs = [
             {
-                label: 'Scrape',
-                name: 'scrape',
-                description: 'Scraped data',
-                baseClasses: ['json']
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
             },
             {
-                label: 'Crawl',
-                name: 'crawl',
-                description: 'Crawled data',
-                baseClasses: ['json']
-            },
-            {
-                label: 'Extract',
-                name: 'extract',
-                description: 'ID of the extract job',
-                baseClasses: ['json']
-            },
-            {
-                label: 'Extract Status',
-                name: 'extractStatus',
-                description: 'Status of the extract job',
-                baseClasses: ['json']
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
             }
         ]
     }
