@@ -29,6 +29,7 @@
         "db:run:script": "dotenv -- pnpm --filter db run:script",
         "db:studio": "dotenv -- pnpm db studio",
         "db:seed": "dotenv -- pnpm db db seed",
+        "test": "pnpm turbo run test:auth",
         "test:e2e": "pnpm cypress run",
         "test:cmp": "pnpm cypress run --component",
         "logs": "docker-compose logs -f",

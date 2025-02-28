@@ -107,7 +107,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         }
 
         if (!isInternal && !chatflow?.isPublic) {
-            const isOwner = await checkOwnership(chatflow, req.user)
+            const isOwner = await checkOwnership(chatflow, req.user, req)
             const isKeyValidated = await utilValidateKey(req, chatflow)
             if (!isOwner && !isKeyValidated) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
@@ -510,7 +510,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
 }
 
 const utilBuildAgentResponse = async (
-    user: IUser,
+    user: IUser | undefined,
     agentflow: IChatFlow,
     isInternal: boolean,
     chatId: string,
@@ -546,7 +546,7 @@ const utilBuildAgentResponse = async (
                 createdDate: userMessageDateTime,
                 fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
                 leadEmail: incomingInput.leadEmail,
-                userId: user.id
+                userId: user?.id ?? agentflow.userId ?? ''
             }
             await utilAddChatMessage(userMessage)
 
@@ -558,7 +558,7 @@ const utilBuildAgentResponse = async (
                 chatId,
                 memoryType,
                 sessionId,
-                userId: user.id
+                userId: user?.id ?? agentflow.userId ?? ''
             }
             if (sourceDocuments.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
             if (usedTools.length) apiMessage.usedTools = JSON.stringify(usedTools)

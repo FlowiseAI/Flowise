@@ -419,7 +419,7 @@ const checkIfDocLoaderShouldBeIgnored = (
 }
 
 type BuildFlowParams = {
-    user: IUser
+    user: IUser | undefined
     startingNodeIds: string[]
     reactFlowNodes: IReactFlowNode[]
     reactFlowEdges: IReactFlowEdge[]
@@ -702,7 +702,7 @@ export const clearSessionMemory = async (
     }
 }
 
-const getGlobalVariable = async (user: IUser, appDataSource: DataSource, overrideConfig?: ICommonObject) => {
+const getGlobalVariable = async (user: IUser | undefined, appDataSource: DataSource, overrideConfig?: ICommonObject) => {
     const conditions: any = [
         { userId: user?.id, organizationId: user?.organizationId },
         { organizationId: user?.organizationId, visibility: Like('%Organization%') },
@@ -765,7 +765,7 @@ const getGlobalVariable = async (user: IUser, appDataSource: DataSource, overrid
  * @returns {string}
  */
 export const getVariableValue = async (
-    user: IUser,
+    user: IUser | undefined,
     appDataSource: DataSource,
     paramValue: string | object,
     reactFlowNodes: IReactFlowNode[],
@@ -904,7 +904,7 @@ export const getVariableValue = async (
  * @returns {INodeData}
  */
 export const resolveVariables = async (
-    user: IUser,
+    user: IUser | undefined,
     appDataSource: DataSource,
     reactFlowNodeData: INodeData,
     reactFlowNodes: IReactFlowNode[],

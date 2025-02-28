@@ -27,6 +27,10 @@ export interface IUser {
     createdDate: Date
     permissions?: string[]
     roles?: string[]
+    apiKey?: {
+        id: string
+        metadata?: IApiKeyMetadata
+    }
 }
 export interface IOrganization {
     id: string
@@ -293,12 +297,23 @@ export interface IUploadFileSizeAndTypes {
     maxUploadSize: number
 }
 
+export interface IApiKeyMetadata {
+    createdBy?: string
+    allowedScopes?: string[]
+    description?: string
+}
+
 export interface IApiKey {
     id: string
     keyName: string
     apiKey: string
     apiSecret: string
     updatedDate: Date
+    organizationId: string
+    userId: string
+    lastUsedAt?: Date
+    isActive: boolean
+    metadata?: IApiKeyMetadata
 }
 
 export interface ITrialPlan {

@@ -35,7 +35,7 @@ const getMarketplaceTemplate = async (req: Request, res: Response, next: NextFun
         }
 
         // For authenticated users, check ownership
-        if (req.user && !(await checkOwnership(apiResponse, req.user))) {
+        if (req.user && !(await checkOwnership(apiResponse, req.user, req))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
 

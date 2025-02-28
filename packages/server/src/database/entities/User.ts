@@ -24,7 +24,7 @@ export class User implements IUser {
     updatedDate: Date
 
     @Index()
-    @Column({ type: 'uuid', nullable: true, array: true })
+    @Column({ type: 'uuid' })
     organizationId: string
 
     @Column({ type: 'uuid', nullable: true })

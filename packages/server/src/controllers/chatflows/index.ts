@@ -104,7 +104,7 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
         }
 
         // For authenticated users, check ownership
-        if (req.user && !(await checkOwnership(apiResponse, req.user))) {
+        if (req.user && !(await checkOwnership(apiResponse, req.user, req))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
 
@@ -173,7 +173,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         }
 
-        if (!(await checkOwnership(chatflow, req.user))) {
+        if (!(await checkOwnership(chatflow, req.user, req))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
         const body = req.body

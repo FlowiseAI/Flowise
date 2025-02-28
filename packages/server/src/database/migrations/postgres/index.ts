@@ -40,6 +40,7 @@ import { AddPlans1722954481004 } from './1722954481003-AddPlans'
 import { ApiKeysUserAndOrg1727817692110 } from './1727817692110-ApiKeysUserAndOrg'
 import { ToolVisibility1730491825527 } from './1730491825527-ToolVisibility'
 import { AddChat1732145631409 } from './1732145631409-AddChat'
+import { ApiKeyEnhancement1720230151481 } from './1720230151481-ApiKeyEnhancement'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -69,6 +70,7 @@ export const postgresMigrations = [
     AddTypeToChatFlow1716300000000,
     AddVectorStoreConfigToDocStore1715861032479,
     AddApiKey1720230151480,
+    ApiKeyEnhancement1720230151481,
     AddActionToChatMessage1721078251523,
     AddOrganizationId1717629010538,
     AddOrganization1717632419096,

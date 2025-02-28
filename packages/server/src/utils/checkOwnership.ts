@@ -1,8 +1,20 @@
 import { IUser } from '../Interface'
+import { utilValidateKey } from './validateKey'
+import { Request } from 'express'
 
-const checkOwnership = async (entryOrArray: any | Array<any>, user: IUser | undefined) => {
+const checkOwnership = async (entryOrArray: any | Array<any>, user: IUser | undefined, req?: Request) => {
     const { id: userId, organizationId, permissions } = user || {}
-    const checkEntry = (entry?: any) => {
+    const checkEntry = async (entry?: any) => {
+        // Check for API key access if request is provided
+        if (req && entry) {
+            try {
+                const isValidApiKey = await utilValidateKey(req, entry)
+                if (isValidApiKey) return true
+            } catch (error) {
+                // If API key validation fails, continue with regular ownership check
+            }
+        }
+
         if (permissions?.includes('org:manage')) {
             return true
         }
@@ -19,9 +31,9 @@ const checkOwnership = async (entryOrArray: any | Array<any>, user: IUser | unde
     }
     let result = false
     if (Array.isArray(entryOrArray)) {
-        result = entryOrArray.every(checkEntry)
+        result = (await Promise.all(entryOrArray.map(checkEntry))).every(Boolean)
     } else {
-        result = checkEntry(entryOrArray)
+        result = await checkEntry(entryOrArray)
     }
     return result
 }

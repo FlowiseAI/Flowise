@@ -57,7 +57,7 @@ import logger from './logger'
  * @param {Server} socketIO
  */
 export const buildAgentGraph = async (
-    user: IUser,
+    user: IUser | undefined,
     chatflow: IChatFlow,
     chatId: string,
     sessionId: string,
@@ -446,7 +446,7 @@ export const buildAgentGraph = async (
  * @param {boolean} summarization
  */
 const compileMultiAgentsGraph = async (
-    user: IUser,
+    user: IUser | undefined,
     chatflow: IChatFlow,
     mapNameToLabel: Record<string, { label: string; nodeName: string }>,
     reactflowNodes: IReactFlowNode[] = [],
@@ -635,7 +635,7 @@ const compileMultiAgentsGraph = async (
  * @param {IAction} action
  */
 const compileSeqAgentsGraph = async (
-    user: IUser,
+    user: IUser | undefined,
     depthQueue: IDepthQueue,
     chatflow: IChatFlow,
     reactflowNodes: IReactFlowNode[] = [],

@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm'
-import { IApiKey } from '../../Interface'
+import { IApiKey, IApiKeyMetadata } from '../../Interface'
 
 @Entity('apikey')
 export class ApiKey implements IApiKey {
@@ -24,4 +24,13 @@ export class ApiKey implements IApiKey {
 
     @Column({ type: 'uuid' })
     userId: string
+
+    @Column({ nullable: true })
+    lastUsedAt: Date
+
+    @Column({ type: 'boolean', default: true })
+    isActive: boolean
+
+    @Column({ type: 'simple-json', nullable: true })
+    metadata: IApiKeyMetadata
 }

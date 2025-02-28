@@ -235,30 +235,43 @@ const importKeys = async (body: any, user: IUser) => {
     }
 }
 
-const verifyApiKey = async (paramApiKey: string): Promise<string> => {
+const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
     try {
         if (_apikeysStoredInJson()) {
-            const apiKey = await getApiKey_json(paramApiKey)
-            if (!apiKey) {
+            const apiKeyData = await getApiKey_json(paramApiKey)
+            if (!apiKeyData) {
+                console.log(`[ApiKey] Failed verification attempt with key: ${paramApiKey.substring(0, 8)}...`)
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
-            return 'OK'
+            // Convert JSON data to ApiKey entity
+            const apiKey = new ApiKey()
+            Object.assign(apiKey, apiKeyData)
+            console.log(`[ApiKey] Successfully verified key: ${apiKey.keyName} (${apiKey.id})`)
+            return apiKey
         } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
             const apiKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-                apiKey: paramApiKey
+                apiKey: paramApiKey,
+                isActive: true
             })
             if (!apiKey) {
+                console.log(`[ApiKey] Failed verification attempt with key: ${paramApiKey.substring(0, 8)}...`)
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
-            return 'OK'
+            // Update lastUsedAt
+            apiKey.lastUsedAt = new Date()
+            await appServer.AppDataSource.getRepository(ApiKey).save(apiKey)
+            console.log(`[ApiKey] Successfully verified key: ${apiKey.userId}  ${apiKey.keyName} (${apiKey.id})`)
+            return apiKey
         } else {
+            console.error('[ApiKey] Unknown storage type configuration')
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `UNKNOWN APIKEY_STORAGE_TYPE`)
         }
     } catch (error) {
         if (error instanceof InternalFlowiseError && error.statusCode === StatusCodes.UNAUTHORIZED) {
             throw error
         } else {
+            console.error(`[ApiKey] Verification error:`, error)
             throw new InternalFlowiseError(
                 StatusCodes.INTERNAL_SERVER_ERROR,
                 `Error: apikeyService.verifyApiKey - ${getErrorMessage(error)}`
