@@ -230,13 +230,12 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
 
         const analytic = options.analytic ? JSON.parse(options.analytic) : {}
         if (process.env.LANGFUSE_SECRET_KEY) {
-            console.log('Langfuse override enabled')
             analytic.langFuse = {
                 status: true,
                 release: process.env.LANGFUSE_RELEASE ?? process.env.GIT_COMMIT_HASH,
                 secretKey: process.env.LANGFUSE_SECRET_KEY,
                 publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-                baseUrl: process.env.LANGFUSE_HOST ?? 'https://cloud.langfuse.com',
+                baseUrl: process.env.LANGFUSE_BASEURL ?? 'https://cloud.langfuse.com',
                 sdkIntegration: 'Flowise'
             }
         }
@@ -290,11 +289,17 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
                     }
 
-                    // if (release) langFuseOptions.release = release
-                    // if (options.chatId) langFuseOptions.sessionId = options.chatId
-
                     if (nodeData?.inputs?.analytics?.langFuse) {
                         langFuseOptions = { ...langFuseOptions, ...nodeData?.inputs?.analytics?.langFuse }
+                    }
+                    const metadata = {
+                        chatId: options.chatId,
+                        chatflowid: options.chatflowid,
+                        userId: options?.user?.id,
+                        customerId: options.user?.stripeCustomerId,
+                        subscription_tier: options.subscriptionTier,
+                        usage_category: options.usageCategory,
+                        cost_center: options.costCenter
                     }
                     const trace = langfuse.trace({
                         tags: [`Name:${chatflow.name}`],
@@ -302,23 +307,14 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         version: chatflow.updatedDate,
                         userId: options?.user?.id,
                         sessionId: options.sessionId,
-                        metadata: { chatId: options.chatId, chatflowid: options.chatflowid, userId: options?.user?.id }
+                        metadata: metadata
                     })
+
                     const handler = new CallbackHandler({
                         ...langFuseOptions,
                         root: trace
-                        // // @ts-ignore
-                        // traceId: trace.id,
-                        // tags: [`Chatflow:${chatflow.id}`],
-                        // // name: `[${chatflow.name}]:${chatflow.id}`,
-                        // version: chatflow.updatedDate,
-                        // userId: options?.user?.id,
-                        // sessionId: options.sessionId,
-                        // metadata: { chatId: options.chatId, chatflowid: options.chatflowid, userId: options?.user?.id }
-                        // // input: {
-                        //     text: options.input
-                        // }
                     })
+
                     callbacks.push(handler)
                 } else if (provider === 'lunary') {
                     const lunaryAppId = getCredentialParam('lunaryAppId', credentialData, nodeData)
@@ -349,8 +345,10 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                 }
             }
         }
+
         return callbacks
-    } catch (e) {
+    } catch (e: any) {
+        console.error('Error in additionalCallbacks:', e)
         throw new Error(e)
     }
 }
@@ -426,7 +424,8 @@ export class AnalyticHandler {
                     }
                 }
             }
-        } catch (e) {
+        } catch (e: any) {
+            console.error('Error in AnalyticHandler init:', e)
             throw new Error(e)
         }
     }

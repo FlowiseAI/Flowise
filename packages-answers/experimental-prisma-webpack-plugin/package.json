@@ -1,15 +1,15 @@
 {
-  "name": "experimental-prisma-webpack-plugin",
-  "version": "0.0.5",
-  "description": "Ensures that your Prisma files are copied",
-  "main": "index.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "webpack": "^5.88.2"
-  },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  }
+    "name": "experimental-prisma-webpack-plugin",
+    "version": "0.0.5",
+    "description": "Ensures that your Prisma files are copied",
+    "main": "index.js",
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "webpack": "^5.88.2"
+    },
+    "scripts": {
+        "not:test": "echo \"Error: no test specified\" && exit 1"
+    }
 }

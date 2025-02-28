@@ -41,6 +41,8 @@ import { ApiKeysUserAndOrg1727817692110 } from './1727817692110-ApiKeysUserAndOr
 import { ToolVisibility1730491825527 } from './1730491825527-ToolVisibility'
 import { AddChat1732145631409 } from './1732145631409-AddChat'
 import { ApiKeyEnhancement1720230151481 } from './1720230151481-ApiKeyEnhancement'
+import { AddStripeCustomerId1734126321905 } from './1734126321905-AddStripeCustomerId'
+import { BillingSchemaEnhancement1740447708857 } from './1740447708857-BillingSchemaEnhancement'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -85,5 +87,7 @@ export const postgresMigrations = [
     AddPlans1722954481004,
     ApiKeysUserAndOrg1727817692110,
     ToolVisibility1730491825527,
-    AddChat1732145631409
+    AddChat1732145631409,
+    AddStripeCustomerId1734126321905,
+    BillingSchemaEnhancement1740447708857
 ]

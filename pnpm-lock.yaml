@@ -219,8 +219,8 @@ importers:
                 specifier: ^1.1.1
                 version: 1.1.1
             stripe:
-                specifier: ^12.17.0
-                version: 12.18.0
+                specifier: ^17.5.0
+                version: 17.6.0
             typeorm:
                 specifier: ^0.3.17
                 version: 0.3.20(ioredis@5.3.2)(mysql2@3.9.2)(pg@8.11.5)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@18.15.11)(typescript@4.9.5))
@@ -503,8 +503,8 @@ importers:
                 specifier: ^3.0.1
                 version: 3.0.1
             stripe:
-                specifier: ^12.17.0
-                version: 12.18.0
+                specifier: ^17.5.0
+                version: 17.6.0
             swr:
                 specifier: ^2.2.0
                 version: 2.2.0(react@18.2.0)
@@ -690,8 +690,8 @@ importers:
                 specifier: ^4.7.5
                 version: 4.7.5(bufferutil@4.0.8)(utf-8-validate@6.0.4)
             stripe:
-                specifier: ^12.17.0
-                version: 12.18.0
+                specifier: ^17.6.0
+                version: 17.6.0
             swagger2openapi:
                 specifier: ^7.0.8
                 version: 7.0.8(encoding@0.1.13)
@@ -19934,10 +19934,6 @@ packages:
     strip-json-comments@3.1.1:
         resolution: { integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig== }
         engines: { node: '>=8' }
-
-    stripe@12.18.0:
-        resolution: { integrity: sha512-cYjgBM2SY/dTm8Lr6eMyyONaHTZHA/QjHxFUIW5WH8FevSRIGAVtXEmBkUXF1fsqe7QvvRgQSGSJZmjDacegGg== }
-        engines: { node: '>=12.*' }
 
     stripe@17.6.0:
         resolution: { integrity: sha512-+HB6+SManp0gSRB0dlPmXO+io18krlAe0uimXhhIkL/RG/VIRigkfoM3QDJPkqbuSW0XsA6uzsivNCJU1ELEDA== }
@@ -47441,11 +47437,6 @@ snapshots:
     strip-json-comments@2.0.1: {}
 
     strip-json-comments@3.1.1: {}
-
-    stripe@12.18.0:
-        dependencies:
-            '@types/node': 18.15.11
-            qs: 6.12.1
 
     stripe@17.6.0:
         dependencies:

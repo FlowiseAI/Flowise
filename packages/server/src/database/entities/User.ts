@@ -9,6 +9,9 @@ export class User implements IUser {
     @Column()
     auth0Id: string
 
+    @Column({ nullable: true })
+    stripeCustomerId: string
+
     @Column()
     email: string
 

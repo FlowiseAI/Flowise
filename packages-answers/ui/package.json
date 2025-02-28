@@ -6,7 +6,7 @@
     "sideEffects": false,
     "scripts": {
         "lint": "eslint \"src/**/*.ts*\"",
-        "test": "jest"
+        "not:test": "jest"
     },
     "jest": {
         "preset": "jest-presets/jest/node"
@@ -62,7 +62,7 @@
         "react-syntax-highlighter": "^15.5.0",
         "react-window": "^1.8.9",
         "remark-gfm": "^3.0.1",
-        "stripe": "^12.17.0",
+        "stripe": "^17.5.0",
         "swr": "^2.2.0",
         "types": "workspace:*",
         "utils": "workspace:*"

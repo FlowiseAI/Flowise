@@ -5,6 +5,7 @@ import { authenticateApiKey } from '@utils/auth/authenticateApiKey'
 import * as jose from 'jose'
 import { User } from 'types'
 import flagsmith from 'flagsmith/isomorphic'
+import { stripe } from '@aai-utils/billing/stripe/config'
 
 const getCachedSession = cache(
     async (req?: any, res: any = new Response()): Promise<{ user: User; flagsmithState: any; accessToken: string }> => {
@@ -115,7 +116,23 @@ const getCachedSession = cache(
         if (session?.user?.chatflowDomain) {
             session.user.chatflowDomain = session.user.chatflowDomain?.replace('8080', '4000')
         }
-        return session as { user: User; flagsmithState: any; accessToken: string }
+        //Check if user has a subscription make sure no error is thrown
+        let subscription = null
+        try {
+            // console.log('session.user.stripeCustomerId', session.user)
+            subscription = await stripe.subscriptions.list({
+                customer: session.user.stripeCustomerId,
+                status: 'active'
+            })
+        } catch (error) {
+            console.error('Error checking Stripe subscription:', error)
+        }
+        if (subscription?.data?.length && subscription?.data?.length > 0) {
+            const subscriptionData = subscription.data[0]
+            session.user.subscription = subscriptionData
+        }
+
+        return session as { user: User; flagsmithState: any; accessToken: string; subscription: any }
     }
 )
 
