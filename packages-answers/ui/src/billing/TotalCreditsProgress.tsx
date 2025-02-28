@@ -181,7 +181,7 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
             )}
 
             {/* Upcoming Invoice Section */}
-            {hasUpcomingInvoice && (
+            {/* {hasUpcomingInvoice && (
                 <>
                     <Divider sx={{ my: 3, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
@@ -224,7 +224,7 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
                         )}
                     </Box>
                 </>
-            )}
+            )} */}
 
             {!isLoading && isOverLimit && (
                 <Alert

@@ -55,7 +55,7 @@ const BillingDashboard: React.FC = () => {
 
                 <TotalCreditsProgress usageSummary={billingData} isLoading={isLoading} isError={isError} />
 
-                <Card
+                {/* <Card
                     elevation={0}
                     sx={{
                         border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -73,7 +73,7 @@ const BillingDashboard: React.FC = () => {
                         />
                         <UsageStats usageSummary={billingData} />
                     </Stack>
-                </Card>
+                </Card> */}
             </Stack>
         </Box>
     )

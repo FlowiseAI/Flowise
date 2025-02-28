@@ -158,7 +158,7 @@ export class BillingService implements BillingProvider {
                     currency: invoice.currency,
                     dueDate: invoice.dueDate,
                     // Calculate total credits used based on the invoice amount
-                    totalCreditsUsed: Math.round(invoice.amount / (0.001 * 100)) // Assuming $0.001 per spark
+                    totalCreditsUsed: Math.round(invoice.amount / (0.00004 * 100)) // Assuming $0.001 per spark
                 }
             }
         } catch (error) {
