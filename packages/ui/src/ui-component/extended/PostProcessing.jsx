@@ -55,7 +55,8 @@ function HorizontalStepper() {
         </Typography>
     ]
     return (
-        <Stack spacing={2} style={{ alignItems: 'center' }}>
+        <Stack spacing={2} style={{ alignItems: 'center', color: 'black' }}>
+            <Typography variant={'h5'}>When enabled, the order of Execution</Typography>
             <Breadcrumbs separator={<IconArrowRight fontSize='small' />} aria-label='breadcrumb'>
                 {breadcrumbs}
             </Breadcrumbs>
@@ -138,6 +139,7 @@ const PostProcessing = ({ dialogProps }) => {
             let value = {
                 postProcessing: {
                     enabled: postProcessingEnabled,
+                    redactionRules: JSON.stringify(redactionRules),
                     customFunction: JSON.stringify(postProcessingFunction)
                 }
             }
@@ -188,11 +190,14 @@ const PostProcessing = ({ dialogProps }) => {
                 if (chatbotConfig.postProcessing.customFunction) {
                     setPostProcessingFunction(JSON.parse(chatbotConfig.postProcessing.customFunction))
                 }
+                if (chatbotConfig.postProcessing.redactionRules) {
+                    setRedactionRules(JSON.parse(chatbotConfig.postProcessing.redactionRules))
+                }
             }
         }
 
         return () => {
-            setRedactionRules([...redactionRules, newRule])
+            setRedactionRules([])
             setRedactionPhrase('')
             setRedactionType('asterisk')
             setReplacementText('')
@@ -202,25 +207,25 @@ const PostProcessing = ({ dialogProps }) => {
 
     return (
         <>
+            <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <SwitchInput label='Enable Post Processing' onChange={handleChange} value={postProcessingEnabled} />
+            </Box>
             <div
                 style={{
                     display: 'flex',
                     alignItems: 'center',
                     flexDirection: 'column',
                     borderRadius: 10,
-                    background: '#f3bdcc',
+                    background: '#fceaf0',
                     padding: 10,
-                    marginTop: 10
+                    marginTop: 5,
+                    marginBottom: 5
                 }}
             >
                 <span style={{ marginLeft: 10, fontWeight: 500, color: '#000000' }}>
                     <HorizontalStepper />
                 </span>
             </div>
-
-            <Box sx={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <SwitchInput label='Enable Post Processing' onChange={handleChange} value={postProcessingEnabled} />
-            </Box>
             <Tabs
                 value={activeTabValue}
                 onChange={handleTabChange}
