@@ -214,9 +214,6 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
 
   const messages: BaseMessage[] = []
 
-  // console.log('state.messages')
-  // fs.writeFileSync('state.messages.json', JSON.stringify(state.messages, null, 2))
-
   for (const message of state.messages as unknown as BaseMessage[]) {
     // Sometimes Anthropic can return a message with content types of array, ignore that EXECEPT when tool calls are present
     if ((message as any).tool_calls?.length && message.content !== '') {
@@ -228,26 +225,21 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
     }
   }
 
-  const hasOnlyHumanMessages = messages.findIndex((message) => isAI(message)) === -1
-
-  if (hasOnlyHumanMessages) {
-    const tempMessages: BaseMessage[] = []
-    messages.forEach((message) => {
-      if (message.name) {
-        // ignore
-      } else if (message.additional_kwargs?.nodeId || Object.keys(message.response_metadata || {}).length) {
-        tempMessages.push(new AIMessage({ ...message }))
-      } else {
-        tempMessages.push(message)
-      }
-    })
-    messages.length = 0
-    messages.push(...tempMessages)
-  }
+  console.log(
+    'Before',
+    messages.map((msg) => `${msg.constructor.name}: ${msg.content}`)
+  )
 
   const isToolMessage = (message: BaseMessage) => message instanceof ToolMessage || message.constructor.name === 'ToolMessageChunk'
   const isAIMessage = (message: BaseMessage) => message instanceof AIMessage || message.constructor.name === 'AIMessageChunk'
   const isHumanMessage = (message: BaseMessage) => message instanceof HumanMessage || message.constructor.name === 'HumanMessageChunk'
+
+  // Remove consecutive AI messages
+  for (let i = messages.length - 1; i > 0; i--) {
+    if (isAIMessage(messages[i]) && isAIMessage(messages[i - 1])) {
+      messages.splice(i - 1, 1)
+    }
+  }
 
   /*
    * MistralAI does not support:
@@ -291,42 +283,20 @@ export const restructureMessages = (llm: BaseChatModel, state: ISeqAgentsState) 
     }
   }
 
-  // fix tool result message
-  for (let i = 0; i < messages.length; i++) {
-    const isPreviousHuman = isHuman(messages[i - 1])
-    if (isPreviousHuman && isHuman(messages[i])) {
-      messages[i - 1] = new AIMessage({ ...messages[i - 1] })
+  // Remove last message if it's an AI message
+  if (messages.length > 0) {
+    const lastMessage = messages[messages.length - 1]
+    if (isAIMessage(lastMessage)) {
+      messages.pop()
     }
   }
 
-  const mergedMessages: BaseMessage[] = []
+  console.log(
+    'After',
+    messages.map((msg) => `${msg.constructor.name}: ${msg.content}`)
+  )
 
-  for (let i = 0; i < messages.length; i++) {
-    const isPreviousMessageAI = isAI(messages[i - 1])
-    const isCurrentMessageAI = isAI(messages[i])
-
-    if (isPreviousMessageAI && isCurrentMessageAI) {
-      messages[i].content = `${messages[i - 1].content}\n\n${messages[i].content}`
-    } else {
-      mergedMessages.push(messages[i])
-    }
-  }
-
-  // If last message is AI, add a human message to avoid validation error
-  if (mergedMessages.length > 0 && ['AIMessageChunk', 'AIMessage'].includes(mergedMessages[mergedMessages.length - 1].constructor.name)) {
-    // mergedMessages.push(new HumanMessage({ content: 'Please continue.' }))
-    mergedMessages.pop()
-  }
-
-  // Post-processing: Ensure conversation always starts with a user message
-  if (mergedMessages.length > 0 && !isHumanMessage(mergedMessages[0])) {
-    // Remove the first message if it's not from a user
-    mergedMessages.shift()
-  }
-
-  // console.log('mergedMessages:', mergedMessages)
-
-  return mergedMessages
+  return messages
 }
 
 export class ExtractTool extends StructuredTool {
