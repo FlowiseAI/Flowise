@@ -97,7 +97,7 @@ importers:
         dependencies:
             '@auth0/nextjs-auth0':
                 specifier: ^3.5.0
-                version: 3.5.0(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))
+                version: 3.5.0(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))
             '@aws-sdk/client-s3':
                 specifier: ^3.374.0
                 version: 3.529.1(aws-crt@1.21.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))
@@ -133,7 +133,7 @@ importers:
                 version: 0.0.5(@swc/core@1.4.6(@swc/helpers@0.5.5))
             '@sentry/nextjs':
                 specifier: ^7.108.0
-                version: 7.118.0(encoding@0.1.13)(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react@18.2.0)(webpack@5.90.3)
+                version: 7.118.0(encoding@0.1.13)(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react@18.2.0)(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))
             '@sentry/node':
                 specifier: ^7.108.0
                 version: 7.118.0
@@ -202,7 +202,7 @@ importers:
                 version: 14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)
             next-auth:
                 specifier: ^4.22.3
-                version: 4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+                version: 4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
             openai:
                 specifier: 4.51.0
                 version: 4.51.0(encoding@0.1.13)
@@ -263,7 +263,7 @@ importers:
                 version: 9.0.8
             copy-webpack-plugin:
                 specifier: ^11.0.0
-                version: 11.0.0(webpack@5.90.3)
+                version: 11.0.0(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))
             eslint:
                 specifier: 7.32.0
                 version: 7.32.0
@@ -272,13 +272,13 @@ importers:
                 version: link:../../packages-answers/eslint-config-custom
             file-loader:
                 specifier: ^6.2.0
-                version: 6.2.0(webpack@5.90.3)
+                version: 6.2.0(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))
             terser-webpack-plugin:
                 specifier: ^5.3.9
-                version: 5.3.10(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack@5.90.3)
+                version: 5.3.10(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))
             ts-loader:
                 specifier: ^9.4.4
-                version: 9.5.1(typescript@4.9.5)(webpack@5.90.3)
+                version: 9.5.1(typescript@4.9.5)(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))
             tsconfig:
                 specifier: workspace:*
                 version: link:../../packages-answers/tsconfig
@@ -393,7 +393,7 @@ importers:
         dependencies:
             '@auth0/nextjs-auth0':
                 specifier: ^3.5.0
-                version: 3.5.0(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))
+                version: 3.5.0(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))
             '@emotion/cache':
                 specifier: ^11.4.0
                 version: 11.11.0
@@ -477,7 +477,7 @@ importers:
                 version: 14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)
             next-auth:
                 specifier: ^4.22.3
-                version: 4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+                version: 4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
             react:
                 specifier: ^18.2.0
                 version: 18.2.0
@@ -553,7 +553,7 @@ importers:
                 version: 4.24.0
             '@auth0/nextjs-auth0':
                 specifier: ^3.5.0
-                version: 3.5.0(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))
+                version: 3.5.0(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))
             '@aws-sdk/client-s3':
                 specifier: ^3.374.0
                 version: 3.529.1(aws-crt@1.21.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))
@@ -652,7 +652,7 @@ importers:
                 version: 6.12.0(gcp-metadata@5.3.0(encoding@0.1.13))(socks@2.8.1)
             next-auth:
                 specifier: ^4.22.3
-                version: 4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+                version: 4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
             node-fetch:
                 specifier: ^3.3.1
                 version: 3.3.2
@@ -812,10 +812,10 @@ importers:
                 version: 0.2.17(yfqvvifhmjhb4q5hisu4akm3p4)
             '@langchain/core':
                 specifier: 0.2.18
-                version: 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+                version: 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             '@langchain/exa':
                 specifier: ^0.0.5
-                version: 0.0.5(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+                version: 0.0.5(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             '@langchain/google-genai':
                 specifier: ^0.0.22
                 version: 0.0.22(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)
@@ -827,28 +827,28 @@ importers:
                 version: 0.0.8(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
             '@langchain/langgraph':
                 specifier: ^0.0.22
-                version: 0.0.22(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+                version: 0.0.22(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             '@langchain/mistralai':
                 specifier: ^0.0.26
                 version: 0.0.26(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
             '@langchain/mongodb':
                 specifier: ^0.0.1
-                version: 0.0.1(gcp-metadata@5.3.0(encoding@0.1.13))(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(socks@2.8.1)
+                version: 0.0.1(gcp-metadata@5.3.0(encoding@0.1.13))(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))(socks@2.8.1)
             '@langchain/ollama':
                 specifier: ^0.0.2
                 version: 0.0.2(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
             '@langchain/openai':
                 specifier: ^0.0.30
-                version: 0.0.30(encoding@0.1.13)(langchain@0.2.11)
+                version: 0.0.30(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))
             '@langchain/pinecone':
                 specifier: ^0.0.3
-                version: 0.0.3(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+                version: 0.0.3(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             '@langchain/qdrant':
                 specifier: ^0.0.5
-                version: 0.0.5(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(typescript@5.5.2)
+                version: 0.0.5(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))(typescript@5.5.2)
             '@langchain/weaviate':
                 specifier: ^0.0.1
-                version: 0.0.1(encoding@0.1.13)(graphql@16.8.1)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+                version: 0.0.1(encoding@0.1.13)(graphql@16.8.1)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             '@mendable/firecrawl-js':
                 specifier: ^0.0.28
                 version: 0.0.28
@@ -962,13 +962,13 @@ importers:
                 version: 3.3.4
             langfuse-langchain:
                 specifier: ^3.3.4
-                version: 3.3.4(langchain@0.2.11)
+                version: 3.3.4(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))
             langsmith:
                 specifier: 0.1.6
                 version: 0.1.6
             langwatch:
                 specifier: ^0.1.1
-                version: 0.1.1(encoding@0.1.13)(langchain@0.2.11)(react@18.2.0)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.2))
+                version: 0.1.1(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(react@18.2.0)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.2))
             linkifyjs:
                 specifier: ^4.1.1
                 version: 4.1.3
@@ -1414,6 +1414,9 @@ importers:
             langchainhub:
                 specifier: ^0.0.11
                 version: 0.0.11
+            langfuse:
+                specifier: 3.32.0
+                version: 3.32.0
             lodash:
                 specifier: ^4.17.21
                 version: 4.17.21
@@ -1459,9 +1462,15 @@ importers:
             sqlite3:
                 specifier: ^5.1.6
                 version: 5.1.7
+            stripe:
+                specifier: ^17.6.0
+                version: 17.6.0
             typeorm:
                 specifier: ^0.3.6
                 version: 0.3.20(ioredis@5.3.2)(mongodb@6.3.0(gcp-metadata@5.3.0(encoding@0.1.13))(socks@2.8.1))(mysql2@3.9.2)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
+            utils:
+                specifier: workspace:*
+                version: link:../../packages-answers/utils
             uuid:
                 specifier: ^9.0.1
                 version: 9.0.1
@@ -1469,6 +1478,12 @@ importers:
                 specifier: ^3.9.0
                 version: 3.12.0
         devDependencies:
+            '@jest/globals':
+                specifier: ^29.7.0
+                version: 29.7.0
+            '@jest/types':
+                specifier: ^29.6.3
+                version: 29.6.3
             '@types/chai':
                 specifier: ^4.3.0
                 version: 4.3.20
@@ -1487,6 +1502,9 @@ importers:
             '@types/express-session':
                 specifier: ^1.18.1
                 version: 1.18.1
+            '@types/jest':
+                specifier: ^29.5.12
+                version: 29.5.12
             '@types/mocha':
                 specifier: ^10.0.6
                 version: 10.0.10
@@ -1511,6 +1529,9 @@ importers:
             cypress:
                 specifier: ^13.13.0
                 version: 13.13.0
+            jest:
+                specifier: ^29.7.0
+                version: 29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
             mocha:
                 specifier: ^10.3.0
                 version: 10.8.2
@@ -1532,6 +1553,9 @@ importers:
             start-server-and-test:
                 specifier: ^2.0.3
                 version: 2.0.3
+            ts-jest:
+                specifier: ^29.1.2
+                version: 29.2.5(@babel/core@7.24.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.24.0))(jest@29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)))(typescript@5.5.2)
             ts-node:
                 specifier: ^10.7.0
                 version: 10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)
@@ -9017,6 +9041,10 @@ packages:
         engines: { node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7 }
         hasBin: true
 
+    bs-logger@0.2.6:
+        resolution: { integrity: sha512-pd8DCoxmbgc7hyPKOvxtqNcjYoOsABPQdcCUjGp3d42VR2CX1ORhk2A87oqqu5R1kk+76nsxZupkmyd+MVtCog== }
+        engines: { node: '>= 6' }
+
     bser@2.1.1:
         resolution: { integrity: sha512-gQxTNE/GAfIIrmHLUE3oJyp5FO6HRBfhjnw4/wMmA63ZGDJnWBmgY/lyQBpnDUkGmAhbSe39tx2d/iTOAfglwQ== }
 
@@ -14538,6 +14566,10 @@ packages:
         resolution: { integrity: sha512-qGwkP+7Iv0oVJOd+m3/qRzQbHJ87repYvae+8iC9p6fqK/TOMYP1dBiyBDpk5ksOfOZe/6GkW22j8NQfUOSgFQ== }
         engines: { node: '>=18' }
 
+    langfuse-core@3.35.2:
+        resolution: { integrity: sha512-nHcoe/RPxwCAVvb91NDjVqvaXkBuVI6u9KuhCXLOasIOqMZRnXMeDhheAPE1ZtVGpmc3faYdPPGdobqRB+MdCg== }
+        engines: { node: '>=18' }
+
     langfuse-langchain@3.3.4:
         resolution: { integrity: sha512-J936Rj+uKLC8DdaZ8d3D1SbRsyOKh/vnmhhsctHAl2PVnJI2sRKHqK2hyoP4NGb8H8dsah9kU3t5Ng86RaJlKg== }
         engines: { node: '>=18' }
@@ -14546,6 +14578,10 @@ packages:
 
     langfuse@3.3.4:
         resolution: { integrity: sha512-QCUf+z2v+HDI78c02nsN7Fgu9jly67u4OwMRDeEQ/vOCiaUTKT4GLpYyzIL3sfl5DOp+pQsVozC/207CU8X1vw== }
+        engines: { node: '>=18' }
+
+    langfuse@3.32.0:
+        resolution: { integrity: sha512-Qto8+CW8ZulNaZ/gn4JgVe5v/yeKbvMyvQ/s2DXO5bP5o1PmqE6YOCHQ3Uep6W94B8kpXUgOHg7ZS5Wg8Xljsw== }
         engines: { node: '>=18' }
 
     langsmith@0.0.70:
@@ -18101,7 +18137,6 @@ packages:
         engines: { node: '>=0.6.0', teleport: '>=0.2.0' }
         deprecated: |-
             You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
-
             (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
     qs@6.10.4:
@@ -19185,6 +19220,11 @@ packages:
         engines: { node: '>=10' }
         hasBin: true
 
+    semver@7.7.1:
+        resolution: { integrity: sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA== }
+        engines: { node: '>=10' }
+        hasBin: true
+
     send@0.18.0:
         resolution: { integrity: sha512-qqWzuOjSFOuqPjFe4NOsMLafToQQwBSOEpS+FwEt3A2V3vKubTquT3vmLTQpFgMXp8AlFWFuP1qKaJZOtPpVXg== }
         engines: { node: '>= 0.8.0' }
@@ -19899,6 +19939,10 @@ packages:
         resolution: { integrity: sha512-cYjgBM2SY/dTm8Lr6eMyyONaHTZHA/QjHxFUIW5WH8FevSRIGAVtXEmBkUXF1fsqe7QvvRgQSGSJZmjDacegGg== }
         engines: { node: '>=12.*' }
 
+    stripe@17.6.0:
+        resolution: { integrity: sha512-+HB6+SManp0gSRB0dlPmXO+io18krlAe0uimXhhIkL/RG/VIRigkfoM3QDJPkqbuSW0XsA6uzsivNCJU1ELEDA== }
+        engines: { node: '>=12.*' }
+
     strnum@1.0.5:
         resolution: { integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA== }
 
@@ -20394,6 +20438,30 @@ packages:
 
     ts-interface-checker@0.1.13:
         resolution: { integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA== }
+
+    ts-jest@29.2.5:
+        resolution: { integrity: sha512-KD8zB2aAZrcKIdGk4OwpJggeLcH1FgrICqDSROWqlnJXGCXK4Mn6FcdK2B6670Xr73lHMG1kHw8R87A0ecZ+vA== }
+        engines: { node: ^14.15.0 || ^16.10.0 || ^18.0.0 || >=20.0.0 }
+        hasBin: true
+        peerDependencies:
+            '@babel/core': '>=7.0.0-beta.0 <8'
+            '@jest/transform': ^29.0.0
+            '@jest/types': ^29.0.0
+            babel-jest: ^29.0.0
+            esbuild: '*'
+            jest: ^29.0.0
+            typescript: '>=4.3 <6'
+        peerDependenciesMeta:
+            '@babel/core':
+                optional: true
+            '@jest/transform':
+                optional: true
+            '@jest/types':
+                optional: true
+            babel-jest:
+                optional: true
+            esbuild:
+                optional: true
 
     ts-loader@9.5.1:
         resolution: { integrity: sha512-rNH3sK9kGZcH9dYzC7CewQm4NtxJTjSEVRJ2DyBZR7f8/wcta+iV44UPCXc5+nzDzivKtlzV6c9P4e+oFhDLYg== }
@@ -21943,10 +22011,6 @@ packages:
     zwitch@2.0.4:
         resolution: { integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A== }
 
-onlyBuiltDependencies:
-    - faiss-node
-    - sqlite3
-
 snapshots:
     '@aashutoshrathi/word-wrap@1.2.6': {}
 
@@ -22192,7 +22256,7 @@ snapshots:
 
     '@auth0/auth0-spa-js@2.1.3': {}
 
-    '@auth0/nextjs-auth0@3.5.0(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))':
+    '@auth0/nextjs-auth0@3.5.0(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))':
         dependencies:
             '@panva/hkdf': 1.2.1
             cookie: 0.6.0
@@ -26597,7 +26661,7 @@ snapshots:
             url-join: 4.0.1
             zod: 3.23.8
         optionalDependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             langchain: 0.2.11(lcaakvik4gok2sgy65marre3ge)
         transitivePeerDependencies:
             - encoding
@@ -26863,6 +26927,41 @@ snapshots:
             graceful-fs: 4.2.11
             jest-changed-files: 29.7.0
             jest-config: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@18.15.11)(typescript@4.9.5))
+            jest-haste-map: 29.7.0
+            jest-message-util: 29.7.0
+            jest-regex-util: 29.6.3
+            jest-resolve: 29.7.0
+            jest-resolve-dependencies: 29.7.0
+            jest-runner: 29.7.0
+            jest-runtime: 29.7.0
+            jest-snapshot: 29.7.0
+            jest-util: 29.7.0
+            jest-validate: 29.7.0
+            jest-watcher: 29.7.0
+            micromatch: 4.0.5
+            pretty-format: 29.7.0
+            slash: 3.0.0
+            strip-ansi: 6.0.1
+        transitivePeerDependencies:
+            - babel-plugin-macros
+            - supports-color
+            - ts-node
+
+    '@jest/core@29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))':
+        dependencies:
+            '@jest/console': 29.7.0
+            '@jest/reporters': 29.7.0
+            '@jest/test-result': 29.7.0
+            '@jest/transform': 29.7.0
+            '@jest/types': 29.6.3
+            '@types/node': 18.15.11
+            ansi-escapes: 4.3.2
+            chalk: 4.1.2
+            ci-info: 3.9.0
+            exit: 0.1.2
+            graceful-fs: 4.2.11
+            jest-changed-files: 29.7.0
+            jest-config: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
             jest-haste-map: 29.7.0
             jest-message-util: 29.7.0
             jest-regex-util: 29.6.3
@@ -27260,7 +27359,7 @@ snapshots:
     '@langchain/anthropic@0.2.1(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
         dependencies:
             '@anthropic-ai/sdk': 0.21.1(encoding@0.1.13)
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             fast-xml-parser: 4.3.5
             zod: 3.22.4
             zod-to-json-schema: 3.22.5(zod@3.22.4)
@@ -27275,7 +27374,7 @@ snapshots:
             '@aws-sdk/client-bedrock-runtime': 3.624.0(aws-crt@1.21.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))
             '@aws-sdk/client-kendra': 3.624.0(aws-crt@1.21.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))
             '@aws-sdk/credential-provider-node': 3.624.0(@aws-sdk/client-sso-oidc@3.624.0(@aws-sdk/client-sts@3.624.0(aws-crt@1.21.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)))(aws-crt@1.21.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)))(@aws-sdk/client-sts@3.624.0(aws-crt@1.21.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)))(aws-crt@1.21.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             zod: 3.23.8
             zod-to-json-schema: 3.23.1(zod@3.23.8)
         transitivePeerDependencies:
@@ -27287,7 +27386,7 @@ snapshots:
 
     '@langchain/cohere@0.0.7(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             cohere-ai: 7.10.0(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
@@ -27303,7 +27402,7 @@ snapshots:
             flat: 5.0.2
             js-yaml: 4.1.0
             langchain: 0.2.3(nphj44k7dsxncfcpdkfznsprde)
-            langsmith: 0.1.32(@langchain/core@0.2.18)(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             uuid: 9.0.1
             zod: 3.22.4
             zod-to-json-schema: 3.22.5(zod@3.22.4)
@@ -27380,13 +27479,13 @@ snapshots:
             - peggy
             - pyodide
 
-    '@langchain/core@0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
+    '@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))':
         dependencies:
             ansi-styles: 5.2.0
             camelcase: 6.3.0
             decamelize: 1.2.0
             js-tiktoken: 1.0.12
-            langsmith: 0.1.39(@langchain/core@0.2.18)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.39(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             ml-distance: 4.0.1
             mustache: 4.2.0
             p-queue: 6.6.2
@@ -27404,7 +27503,7 @@ snapshots:
             camelcase: 6.3.0
             decamelize: 1.2.0
             js-tiktoken: 1.0.12
-            langsmith: 0.1.39(@langchain/core@0.2.18)(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.39(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             ml-distance: 4.0.1
             mustache: 4.2.0
             p-queue: 6.6.2
@@ -27416,18 +27515,18 @@ snapshots:
             - langchain
             - openai
 
-    '@langchain/exa@0.0.5(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
+    '@langchain/exa@0.0.5(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             exa-js: 1.0.12(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
             - langchain
             - openai
 
-    '@langchain/google-common@0.0.20(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)':
+    '@langchain/google-common@0.0.20(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             uuid: 10.0.0
             zod-to-json-schema: 3.23.1(zod@3.22.4)
         transitivePeerDependencies:
@@ -27435,10 +27534,10 @@ snapshots:
             - openai
             - zod
 
-    '@langchain/google-gauth@0.0.19(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)':
+    '@langchain/google-gauth@0.0.19(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
-            '@langchain/google-common': 0.0.20(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
+            '@langchain/google-common': 0.0.20(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)
             google-auth-library: 8.9.0(encoding@0.1.13)
         transitivePeerDependencies:
             - encoding
@@ -27450,7 +27549,7 @@ snapshots:
     '@langchain/google-genai@0.0.22(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)':
         dependencies:
             '@google/generative-ai': 0.15.0
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             zod-to-json-schema: 3.23.1(zod@3.22.4)
         transitivePeerDependencies:
             - langchain
@@ -27459,8 +27558,8 @@ snapshots:
 
     '@langchain/google-vertexai@0.0.19(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
-            '@langchain/google-gauth': 0.0.19(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
+            '@langchain/google-gauth': 0.0.19(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
             - langchain
@@ -27470,8 +27569,8 @@ snapshots:
 
     '@langchain/groq@0.0.8(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
-            '@langchain/openai': 0.0.30(encoding@0.1.13)(langchain@0.2.11)
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
+            '@langchain/openai': 0.0.30(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))
             groq-sdk: 0.3.2(encoding@0.1.13)
             zod: 3.22.4
             zod-to-json-schema: 3.22.5(zod@3.22.4)
@@ -27480,9 +27579,9 @@ snapshots:
             - langchain
             - openai
 
-    '@langchain/langgraph@0.0.22(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
+    '@langchain/langgraph@0.0.22(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             uuid: 9.0.1
         transitivePeerDependencies:
             - langchain
@@ -27490,7 +27589,7 @@ snapshots:
 
     '@langchain/mistralai@0.0.26(encoding@0.1.13)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             '@mistralai/mistralai': 0.4.0(encoding@0.1.13)
             uuid: 10.0.0
             zod: 3.23.8
@@ -27500,9 +27599,9 @@ snapshots:
             - langchain
             - openai
 
-    '@langchain/mongodb@0.0.1(gcp-metadata@5.3.0(encoding@0.1.13))(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(socks@2.8.1)':
+    '@langchain/mongodb@0.0.1(gcp-metadata@5.3.0(encoding@0.1.13))(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))(socks@2.8.1)':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             mongodb: 6.3.0(gcp-metadata@5.3.0(encoding@0.1.13))(socks@2.8.1)
         transitivePeerDependencies:
             - '@aws-sdk/credential-providers'
@@ -27517,16 +27616,16 @@ snapshots:
 
     '@langchain/ollama@0.0.2(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             ollama: 0.5.6
             uuid: 10.0.0
         transitivePeerDependencies:
             - langchain
             - openai
 
-    '@langchain/openai@0.0.30(encoding@0.1.13)(langchain@0.2.11)':
+    '@langchain/openai@0.0.30(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             js-tiktoken: 1.0.12
             openai: 4.51.0(encoding@0.1.13)
             zod: 3.22.4
@@ -27546,9 +27645,9 @@ snapshots:
             - encoding
             - langchain
 
-    '@langchain/openai@0.1.3(encoding@0.1.13)(langchain@0.2.11)':
+    '@langchain/openai@0.1.3(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             js-tiktoken: 1.0.12
             openai: 4.51.0(encoding@0.1.13)
             zod: 3.23.8
@@ -27568,9 +27667,9 @@ snapshots:
             - encoding
             - langchain
 
-    '@langchain/pinecone@0.0.3(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
+    '@langchain/pinecone@0.0.3(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             '@pinecone-database/pinecone': 2.2.2
             flat: 5.0.2
             uuid: 9.0.1
@@ -27578,9 +27677,9 @@ snapshots:
             - langchain
             - openai
 
-    '@langchain/qdrant@0.0.5(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))(typescript@5.5.2)':
+    '@langchain/qdrant@0.0.5(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))(typescript@5.5.2)':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             '@qdrant/js-client-rest': 1.9.0(typescript@5.5.2)
             uuid: 9.0.1
         transitivePeerDependencies:
@@ -27588,9 +27687,9 @@ snapshots:
             - openai
             - typescript
 
-    '@langchain/textsplitters@0.0.1(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
+    '@langchain/textsplitters@0.0.1(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             js-tiktoken: 1.0.12
         transitivePeerDependencies:
             - langchain
@@ -27604,9 +27703,9 @@ snapshots:
             - langchain
             - openai
 
-    '@langchain/weaviate@0.0.1(encoding@0.1.13)(graphql@16.8.1)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))':
+    '@langchain/weaviate@0.0.1(encoding@0.1.13)(graphql@16.8.1)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))':
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             uuid: 9.0.1
             weaviate-ts-client: 2.1.1(encoding@0.1.13)(graphql@16.8.1)
         transitivePeerDependencies:
@@ -27906,7 +28005,7 @@ snapshots:
     '@next-auth/prisma-adapter@1.0.7(@prisma/client@5.18.0(prisma@5.18.0))(next-auth@4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0))':
         dependencies:
             '@prisma/client': 5.18.0(prisma@5.18.0)
-            next-auth: 4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
+            next-auth: 4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
 
     '@next/bundle-analyzer@13.5.6(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
         dependencies:
@@ -28845,7 +28944,7 @@ snapshots:
             '@sentry/utils': 7.118.0
             localforage: 1.10.0
 
-    '@sentry/nextjs@7.118.0(encoding@0.1.13)(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react@18.2.0)(webpack@5.90.3)':
+    '@sentry/nextjs@7.118.0(encoding@0.1.13)(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react@18.2.0)(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))':
         dependencies:
             '@rollup/plugin-commonjs': 24.0.0(rollup@2.78.0)
             '@sentry/core': 7.118.0
@@ -31075,17 +31174,17 @@ snapshots:
             '@webassemblyjs/ast': 1.11.6
             '@xtuc/long': 4.2.2
 
-    '@webpack-cli/configtest@2.1.1(webpack-cli@5.1.4)(webpack@5.90.3)':
+    '@webpack-cli/configtest@2.1.1(webpack-cli@5.1.4(webpack@5.90.3))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))':
         dependencies:
             webpack: 5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)
             webpack-cli: 5.1.4(webpack@5.90.3)
 
-    '@webpack-cli/info@2.0.2(webpack-cli@5.1.4)(webpack@5.90.3)':
+    '@webpack-cli/info@2.0.2(webpack-cli@5.1.4(webpack@5.90.3))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))':
         dependencies:
             webpack: 5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)
             webpack-cli: 5.1.4(webpack@5.90.3)
 
-    '@webpack-cli/serve@2.0.5(webpack-cli@5.1.4)(webpack@5.90.3)':
+    '@webpack-cli/serve@2.0.5(webpack-cli@5.1.4(webpack@5.90.3))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))':
         dependencies:
             webpack: 5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)
             webpack-cli: 5.1.4(webpack@5.90.3)
@@ -32885,6 +32984,10 @@ snapshots:
             node-releases: 2.0.18
             update-browserslist-db: 1.1.0(browserslist@4.23.3)
 
+    bs-logger@0.2.6:
+        dependencies:
+            fast-json-stable-stringify: 2.1.0
+
     bser@2.1.1:
         dependencies:
             node-int64: 0.4.0
@@ -33457,7 +33560,7 @@ snapshots:
             node-api-headers: 1.1.0
             npmlog: 6.0.2
             rc: 1.2.8
-            semver: 7.6.0
+            semver: 7.7.1
             tar: 6.2.0
             url-join: 4.0.1
             which: 2.0.2
@@ -33820,7 +33923,7 @@ snapshots:
         dependencies:
             toggle-selection: 1.0.6
 
-    copy-webpack-plugin@11.0.0(webpack@5.90.3):
+    copy-webpack-plugin@11.0.0(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)):
         dependencies:
             fast-glob: 3.3.2
             glob-parent: 6.0.2
@@ -33829,6 +33932,16 @@ snapshots:
             schema-utils: 4.2.0
             serialize-javascript: 6.0.2
             webpack: 5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)
+
+    copy-webpack-plugin@11.0.0(webpack@5.90.3):
+        dependencies:
+            fast-glob: 3.3.2
+            glob-parent: 6.0.2
+            globby: 13.2.2
+            normalize-path: 3.0.0
+            schema-utils: 4.2.0
+            serialize-javascript: 6.0.2
+            webpack: 5.90.3
 
     core-js-compat@3.36.0:
         dependencies:
@@ -33923,6 +34036,21 @@ snapshots:
             exit: 0.1.2
             graceful-fs: 4.2.11
             jest-config: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@18.15.11)(typescript@4.9.5))
+            jest-util: 29.7.0
+            prompts: 2.4.2
+        transitivePeerDependencies:
+            - '@types/node'
+            - babel-plugin-macros
+            - supports-color
+            - ts-node
+
+    create-jest@29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)):
+        dependencies:
+            '@jest/types': 29.6.3
+            chalk: 4.1.2
+            exit: 0.1.2
+            graceful-fs: 4.2.11
+            jest-config: 29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
             jest-util: 29.7.0
             prompts: 2.4.2
         transitivePeerDependencies:
@@ -35306,8 +35434,8 @@ snapshots:
             '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@4.9.5)
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0)
-            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0)
+            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0)
+            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0)
             eslint-plugin-jsx-a11y: 6.8.0(eslint@7.32.0)
             eslint-plugin-react: 7.34.0(eslint@7.32.0)
             eslint-plugin-react-hooks: 4.6.0(eslint@7.32.0)
@@ -35369,12 +35497,29 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
+    eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0):
+        dependencies:
+            debug: 4.3.6(supports-color@5.5.0)
+            enhanced-resolve: 5.16.0
+            eslint: 7.32.0
+            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0)
+            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0)
+            fast-glob: 3.3.2
+            get-tsconfig: 4.7.6
+            is-core-module: 2.13.1
+            is-glob: 4.0.3
+        transitivePeerDependencies:
+            - '@typescript-eslint/parser'
+            - eslint-import-resolver-node
+            - eslint-import-resolver-webpack
+            - supports-color
+
     eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.37.0):
         dependencies:
             debug: 4.3.6(supports-color@5.5.0)
             enhanced-resolve: 5.16.0
             eslint: 8.37.0
-            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.37.0)
+            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.37.0))(eslint@8.37.0)
             eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-typescript@3.6.1)(eslint@8.37.0)
             fast-glob: 3.3.2
             get-tsconfig: 4.7.6
@@ -35386,24 +35531,18 @@ snapshots:
             - eslint-import-resolver-webpack
             - supports-color
 
-    eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0):
+    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0))(eslint@7.32.0):
         dependencies:
-            debug: 4.3.6(supports-color@5.5.0)
-            enhanced-resolve: 5.16.0
+            debug: 3.2.7(supports-color@5.5.0)
+        optionalDependencies:
+            '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@4.9.5)
             eslint: 7.32.0
-            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0)
-            eslint-plugin-import: 2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0)
-            fast-glob: 3.3.2
-            get-tsconfig: 4.7.6
-            is-core-module: 2.13.1
-            is-glob: 4.0.3
+            eslint-import-resolver-node: 0.3.9
+            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@7.32.0)(typescript@4.9.5))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@7.32.0)
         transitivePeerDependencies:
-            - '@typescript-eslint/parser'
-            - eslint-import-resolver-node
-            - eslint-import-resolver-webpack
             - supports-color
 
-    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.37.0):
+    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.37.0))(eslint@8.37.0):
         dependencies:
             debug: 3.2.7(supports-color@5.5.0)
         optionalDependencies:
@@ -35414,14 +35553,13 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0):
+    eslint-module-utils@2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint@7.32.0):
         dependencies:
             debug: 3.2.7(supports-color@5.5.0)
         optionalDependencies:
             '@typescript-eslint/parser': 5.62.0(eslint@8.57.0)(typescript@5.5.2)
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-import-resolver-typescript: 3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -35453,7 +35591,7 @@ snapshots:
             doctrine: 2.1.0
             eslint: 8.37.0
             eslint-import-resolver-node: 0.3.9
-            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.37.0)
+            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.0.3))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1)(eslint@8.37.0))(eslint@8.37.0)
             hasown: 2.0.2
             is-core-module: 2.13.1
             is-glob: 4.0.3
@@ -35470,7 +35608,7 @@ snapshots:
             - eslint-import-resolver-webpack
             - supports-color
 
-    eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-typescript@3.6.1)(eslint@7.32.0):
+    eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0):
         dependencies:
             array-includes: 3.1.7
             array.prototype.findlastindex: 1.2.4
@@ -35480,7 +35618,7 @@ snapshots:
             doctrine: 2.1.0
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.29.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0)
+            eslint-module-utils: 2.8.1(@typescript-eslint/parser@5.62.0(eslint@8.57.0)(typescript@5.5.2))(eslint-import-resolver-node@0.3.9)(eslint@7.32.0)
             hasown: 2.0.2
             is-core-module: 2.13.1
             is-glob: 4.0.3
@@ -36460,6 +36598,12 @@ snapshots:
             is-binary-buffer: 1.0.0
             isobject: 3.0.1
 
+    file-loader@6.2.0(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)):
+        dependencies:
+            loader-utils: 2.0.4
+            schema-utils: 3.3.0
+            webpack: 5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)
+
     file-loader@6.2.0(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))):
         dependencies:
             loader-utils: 2.0.4
@@ -36470,7 +36614,7 @@ snapshots:
         dependencies:
             loader-utils: 2.0.4
             schema-utils: 3.3.0
-            webpack: 5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)
+            webpack: 5.90.3
 
     file-name@0.1.0: {}
 
@@ -38845,6 +38989,25 @@ snapshots:
             - supports-color
             - ts-node
 
+    jest-cli@29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)):
+        dependencies:
+            '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
+            '@jest/test-result': 29.7.0
+            '@jest/types': 29.6.3
+            chalk: 4.1.2
+            create-jest: 29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
+            exit: 0.1.2
+            import-local: 3.1.0
+            jest-config: 29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
+            jest-util: 29.7.0
+            jest-validate: 29.7.0
+            yargs: 17.7.2
+        transitivePeerDependencies:
+            - '@types/node'
+            - babel-plugin-macros
+            - supports-color
+            - ts-node
+
     jest-config@27.5.1(bufferutil@4.0.8)(canvas@2.11.2(encoding@0.1.13))(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)):
         dependencies:
             '@babel/core': 7.24.0
@@ -38906,6 +39069,68 @@ snapshots:
         optionalDependencies:
             '@types/node': 18.15.11
             ts-node: 10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@18.15.11)(typescript@4.9.5)
+        transitivePeerDependencies:
+            - babel-plugin-macros
+            - supports-color
+
+    jest-config@29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)):
+        dependencies:
+            '@babel/core': 7.24.0
+            '@jest/test-sequencer': 29.7.0
+            '@jest/types': 29.6.3
+            babel-jest: 29.7.0(@babel/core@7.24.0)
+            chalk: 4.1.2
+            ci-info: 3.9.0
+            deepmerge: 4.3.1
+            glob: 7.2.3
+            graceful-fs: 4.2.11
+            jest-circus: 29.7.0(babel-plugin-macros@3.1.0)
+            jest-environment-node: 29.7.0
+            jest-get-type: 29.6.3
+            jest-regex-util: 29.6.3
+            jest-resolve: 29.7.0
+            jest-runner: 29.7.0
+            jest-util: 29.7.0
+            jest-validate: 29.7.0
+            micromatch: 4.0.5
+            parse-json: 5.2.0
+            pretty-format: 29.7.0
+            slash: 3.0.0
+            strip-json-comments: 3.1.1
+        optionalDependencies:
+            '@types/node': 18.15.11
+            ts-node: 10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)
+        transitivePeerDependencies:
+            - babel-plugin-macros
+            - supports-color
+
+    jest-config@29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)):
+        dependencies:
+            '@babel/core': 7.24.0
+            '@jest/test-sequencer': 29.7.0
+            '@jest/types': 29.6.3
+            babel-jest: 29.7.0(@babel/core@7.24.0)
+            chalk: 4.1.2
+            ci-info: 3.9.0
+            deepmerge: 4.3.1
+            glob: 7.2.3
+            graceful-fs: 4.2.11
+            jest-circus: 29.7.0(babel-plugin-macros@3.1.0)
+            jest-environment-node: 29.7.0
+            jest-get-type: 29.6.3
+            jest-regex-util: 29.6.3
+            jest-resolve: 29.7.0
+            jest-runner: 29.7.0
+            jest-util: 29.7.0
+            jest-validate: 29.7.0
+            micromatch: 4.0.5
+            parse-json: 5.2.0
+            pretty-format: 29.7.0
+            slash: 3.0.0
+            strip-json-comments: 3.1.1
+        optionalDependencies:
+            '@types/node': 20.12.12
+            ts-node: 10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)
         transitivePeerDependencies:
             - babel-plugin-macros
             - supports-color
@@ -39473,6 +39698,18 @@ snapshots:
             - supports-color
             - ts-node
 
+    jest@29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)):
+        dependencies:
+            '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
+            '@jest/types': 29.6.3
+            import-local: 3.1.0
+            jest-cli: 29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
+        transitivePeerDependencies:
+            - '@types/node'
+            - babel-plugin-macros
+            - supports-color
+            - ts-node
+
     jira.js@2.20.1:
         dependencies:
             atlassian-jwt: 2.0.3
@@ -39927,15 +40164,15 @@ snapshots:
 
     langchain@0.2.11(lcaakvik4gok2sgy65marre3ge):
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
-            '@langchain/openai': 0.1.3(encoding@0.1.13)(langchain@0.2.11)
-            '@langchain/textsplitters': 0.0.1(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
+            '@langchain/openai': 0.1.3(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))
+            '@langchain/textsplitters': 0.0.1(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             binary-extensions: 2.2.0
             js-tiktoken: 1.0.12
             js-yaml: 4.1.0
             jsonpointer: 5.0.1
             langchainhub: 0.0.8
-            langsmith: 0.1.32(@langchain/core@0.2.18)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             ml-distance: 4.0.1
             openapi-types: 12.1.3
             p-retry: 4.6.2
@@ -40002,7 +40239,7 @@ snapshots:
             js-yaml: 4.1.0
             jsonpointer: 5.0.1
             langchainhub: 0.0.11
-            langsmith: 0.1.32(@langchain/core@0.2.18)(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
+            langsmith: 0.1.32(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             ml-distance: 4.0.1
             openapi-types: 12.1.3
             p-retry: 4.6.2
@@ -40058,7 +40295,11 @@ snapshots:
         dependencies:
             mustache: 4.2.0
 
-    langfuse-langchain@3.3.4(langchain@0.2.11):
+    langfuse-core@3.35.2:
+        dependencies:
+            mustache: 4.2.0
+
+    langfuse-langchain@3.3.4(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge)):
         dependencies:
             langchain: 0.2.11(lcaakvik4gok2sgy65marre3ge)
             langfuse: 3.3.4
@@ -40068,6 +40309,10 @@ snapshots:
         dependencies:
             langfuse-core: 3.3.4
 
+    langfuse@3.32.0:
+        dependencies:
+            langfuse-core: 3.35.2
+
     langsmith@0.0.70:
         dependencies:
             '@types/uuid': 9.0.8
@@ -40076,7 +40321,7 @@ snapshots:
             p-retry: 4.6.2
             uuid: 9.0.1
 
-    langsmith@0.1.32(@langchain/core@0.2.18)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13)):
+    langsmith@0.1.32(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)):
         dependencies:
             '@types/uuid': 9.0.8
             commander: 10.0.1
@@ -40084,11 +40329,11 @@ snapshots:
             p-retry: 4.6.2
             uuid: 9.0.1
         optionalDependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             langchain: 0.2.11(lcaakvik4gok2sgy65marre3ge)
             openai: 4.51.0(encoding@0.1.13)
 
-    langsmith@0.1.32(@langchain/core@0.2.18)(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
+    langsmith@0.1.32(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
         dependencies:
             '@types/uuid': 9.0.8
             commander: 10.0.1
@@ -40096,11 +40341,11 @@ snapshots:
             p-retry: 4.6.2
             uuid: 9.0.1
         optionalDependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             langchain: 0.2.3(nphj44k7dsxncfcpdkfznsprde)
             openai: 4.51.0(encoding@0.1.13)
 
-    langsmith@0.1.39(@langchain/core@0.2.18)(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13)):
+    langsmith@0.1.39(@langchain/core@0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13)):
         dependencies:
             '@types/uuid': 9.0.8
             commander: 10.0.1
@@ -40108,11 +40353,11 @@ snapshots:
             p-retry: 4.6.2
             uuid: 9.0.1
         optionalDependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             langchain: 0.2.11(lcaakvik4gok2sgy65marre3ge)
             openai: 4.51.0(encoding@0.1.13)
 
-    langsmith@0.1.39(@langchain/core@0.2.18)(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
+    langsmith@0.1.39(@langchain/core@0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)))(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13)):
         dependencies:
             '@types/uuid': 9.0.8
             commander: 10.0.1
@@ -40120,7 +40365,7 @@ snapshots:
             p-retry: 4.6.2
             uuid: 9.0.1
         optionalDependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.3(nphj44k7dsxncfcpdkfznsprde))(openai@4.51.0(encoding@0.1.13))
             langchain: 0.2.3(nphj44k7dsxncfcpdkfznsprde)
             openai: 4.51.0(encoding@0.1.13)
 
@@ -40138,9 +40383,9 @@ snapshots:
         dependencies:
             language-subtag-registry: 0.3.22
 
-    langwatch@0.1.1(encoding@0.1.13)(langchain@0.2.11)(react@18.2.0)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.2)):
+    langwatch@0.1.1(encoding@0.1.13)(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(react@18.2.0)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.2)):
         dependencies:
-            '@langchain/core': 0.2.18(langchain@0.2.11)(openai@4.51.0(encoding@0.1.13))
+            '@langchain/core': 0.2.18(langchain@0.2.11(lcaakvik4gok2sgy65marre3ge))(openai@4.51.0(encoding@0.1.13))
             ai: 3.2.22(openai@4.51.0(encoding@0.1.13))(react@18.2.0)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.2))(zod@3.22.4)
             javascript-stringify: 2.1.0
             llm-cost: 1.0.4
@@ -42398,7 +42643,7 @@ snapshots:
 
     netmask@2.0.2: {}
 
-    next-auth@4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
+    next-auth@4.24.7(next@14.2.5(@babel/core@7.24.0)(@opentelemetry/api@1.9.0)(babel-plugin-macros@3.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1))(react-dom@18.2.0(react@18.2.0))(react@18.2.0):
         dependencies:
             '@babel/runtime': 7.24.0
             '@panva/hkdf': 1.2.1
@@ -46326,6 +46571,8 @@ snapshots:
         dependencies:
             lru-cache: 6.0.0
 
+    semver@7.7.1: {}
+
     send@0.18.0:
         dependencies:
             debug: 2.6.9
@@ -47200,6 +47447,11 @@ snapshots:
             '@types/node': 18.15.11
             qs: 6.12.1
 
+    stripe@17.6.0:
+        dependencies:
+            '@types/node': 18.15.11
+            qs: 6.12.1
+
     strnum@1.0.5: {}
 
     stubs@3.0.0: {}
@@ -47600,6 +47852,17 @@ snapshots:
             ansi-escapes: 4.3.2
             supports-hyperlinks: 2.3.0
 
+    terser-webpack-plugin@5.3.10(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)):
+        dependencies:
+            '@jridgewell/trace-mapping': 0.3.25
+            jest-worker: 27.5.1
+            schema-utils: 3.3.0
+            serialize-javascript: 6.0.2
+            terser: 5.29.1
+            webpack: 5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)
+        optionalDependencies:
+            '@swc/core': 1.4.6(@swc/helpers@0.5.5)
+
     terser-webpack-plugin@5.3.10(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))):
         dependencies:
             '@jridgewell/trace-mapping': 0.3.25
@@ -47608,17 +47871,6 @@ snapshots:
             serialize-javascript: 6.0.2
             terser: 5.29.1
             webpack: 5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))
-        optionalDependencies:
-            '@swc/core': 1.4.6(@swc/helpers@0.5.5)
-
-    terser-webpack-plugin@5.3.10(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack@5.90.3):
-        dependencies:
-            '@jridgewell/trace-mapping': 0.3.25
-            jest-worker: 27.5.1
-            schema-utils: 3.3.0
-            serialize-javascript: 6.0.2
-            terser: 5.29.1
-            webpack: 5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)
         optionalDependencies:
             '@swc/core': 1.4.6(@swc/helpers@0.5.5)
 
@@ -47866,7 +48118,26 @@ snapshots:
 
     ts-interface-checker@0.1.13: {}
 
-    ts-loader@9.5.1(typescript@4.9.5)(webpack@5.90.3):
+    ts-jest@29.2.5(@babel/core@7.24.0)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.24.0))(jest@29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2)))(typescript@5.5.2):
+        dependencies:
+            bs-logger: 0.2.6
+            ejs: 3.1.10
+            fast-json-stable-stringify: 2.1.0
+            jest: 29.7.0(@types/node@20.12.12)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.4.6(@swc/helpers@0.5.5))(@types/node@20.12.12)(typescript@5.5.2))
+            jest-util: 29.7.0
+            json5: 2.2.3
+            lodash.memoize: 4.1.2
+            make-error: 1.3.6
+            semver: 7.7.1
+            typescript: 5.5.2
+            yargs-parser: 21.1.1
+        optionalDependencies:
+            '@babel/core': 7.24.0
+            '@jest/transform': 29.7.0
+            '@jest/types': 29.6.3
+            babel-jest: 29.7.0(@babel/core@7.24.0)
+
+    ts-loader@9.5.1(typescript@4.9.5)(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4)):
         dependencies:
             chalk: 4.1.2
             enhanced-resolve: 5.16.0
@@ -49058,9 +49329,9 @@ snapshots:
     webpack-cli@5.1.4(webpack@5.90.3):
         dependencies:
             '@discoveryjs/json-ext': 0.5.7
-            '@webpack-cli/configtest': 2.1.1(webpack-cli@5.1.4)(webpack@5.90.3)
-            '@webpack-cli/info': 2.0.2(webpack-cli@5.1.4)(webpack@5.90.3)
-            '@webpack-cli/serve': 2.0.5(webpack-cli@5.1.4)(webpack@5.90.3)
+            '@webpack-cli/configtest': 2.1.1(webpack-cli@5.1.4(webpack@5.90.3))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))
+            '@webpack-cli/info': 2.0.2(webpack-cli@5.1.4(webpack@5.90.3))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))
+            '@webpack-cli/serve': 2.0.5(webpack-cli@5.1.4(webpack@5.90.3))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))
             colorette: 2.0.20
             commander: 10.0.1
             cross-spawn: 7.0.3
@@ -49283,7 +49554,7 @@ snapshots:
             neo-async: 2.6.2
             schema-utils: 3.3.0
             tapable: 2.2.1
-            terser-webpack-plugin: 5.3.10(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack@5.90.3)
+            terser-webpack-plugin: 5.3.10(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack@5.90.3(@swc/core@1.4.6(@swc/helpers@0.5.5))(webpack-cli@5.1.4))
             watchpack: 2.4.0
             webpack-sources: 3.2.3
         optionalDependencies:
