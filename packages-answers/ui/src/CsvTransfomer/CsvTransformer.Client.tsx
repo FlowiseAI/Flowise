@@ -21,8 +21,14 @@ function TabPanel(props: any) {
 const CsvTransformer = ({ user }: { user: User }) => {
     const [tabValue, setTabValue] = useState(0)
     const [chatflows, setChatflows] = useState([])
+
     const handleTabChange = (event: any, newValue: any) => {
         setTabValue(newValue)
+    }
+
+    // Add a function to navigate to the history tab
+    const navigateToHistory = () => {
+        setTabValue(1) // History tab is at index 1
     }
 
     useEffect(() => {
@@ -46,7 +52,7 @@ const CsvTransformer = ({ user }: { user: User }) => {
                     </Tabs>
                 </Box>
                 <TabPanel value={tabValue} index={0}>
-                    <ProcessCsv chatflows={chatflows} user={user} />
+                    <ProcessCsv chatflows={chatflows} user={user} onNavigateToHistory={navigateToHistory} />
                 </TabPanel>
                 <TabPanel value={tabValue} index={1}>
                     <ProcessingHistory user={user} />

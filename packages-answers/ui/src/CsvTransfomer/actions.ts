@@ -34,15 +34,15 @@ export async function createCsvParseRun({
 
     // Upload file to S3
     const s3 = new S3Client({
-        region: process.env.AWS_REGION ?? '',
+        region: process.env.S3_STORAGE_REGION ?? '',
         credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? ''
+            accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID ?? '',
+            secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY ?? ''
         }
     })
     await s3.send(
         new PutObjectCommand({
-            Bucket: process.env.AWS_S3_BUCKET ?? '',
+            Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
             Key: key,
             Body: fileBuffer,
             ContentType: 'text/csv'
@@ -55,7 +55,7 @@ export async function createCsvParseRun({
             orgId,
             name,
             configuration,
-            originalCsvUrl: `s3://${process.env.AWS_S3_BUCKET}/${key}`,
+            originalCsvUrl: `s3://${process.env.S3_STORAGE_BUCKET_NAME}/${key}`,
             chatflowChatId,
             rowsRequested,
             includeOriginalColumns
@@ -111,15 +111,15 @@ export async function downloadProcessedCsv({ csvParseRunId }: { csvParseRunId: s
     })
     if (!csvParseRun) return
     const s3 = new S3Client({
-        region: process.env.AWS_REGION ?? '',
+        region: process.env.S3_STORAGE_REGION ?? '',
         credentials: {
-            accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? ''
+            accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID ?? '',
+            secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY ?? ''
         }
     })
     console.log(csvParseRun.processedCsvUrl)
     const command = new GetObjectCommand({
-        Bucket: process.env.AWS_S3_BUCKET ?? '',
+        Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
         Key: csvParseRun.processedCsvUrl
     })
     const response = await s3.send(command)

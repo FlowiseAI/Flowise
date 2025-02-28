@@ -4,10 +4,10 @@ import { AppCsvParseRuns } from '../db/generated/prisma-client'
 import { prisma } from '../db/src/client'
 
 const s3 = new S3({
-    region: process.env.AWS_REGION ?? '',
+    region: process.env.S3_STORAGE_REGION ?? '',
     credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? ''
+        accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID ?? '',
+        secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY ?? ''
     }
 })
 
@@ -16,8 +16,8 @@ const initCsvRun = async (csvParseRun: AppCsvParseRuns) => {
         // download csv from s3
         const originalCsv = await s3.send(
             new GetObjectCommand({
-                Bucket: process.env.AWS_S3_BUCKET ?? '',
-                Key: csvParseRun.originalCsvUrl.replace(`s3://${process.env.AWS_S3_BUCKET ?? ''}/`, '')
+                Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
+                Key: csvParseRun.originalCsvUrl.replace(`s3://${process.env.S3_STORAGE_BUCKET_NAME ?? ''}/`, '')
             })
         )
         // Get the CSV content as string
