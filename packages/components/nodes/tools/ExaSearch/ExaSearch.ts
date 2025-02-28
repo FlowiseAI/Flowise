@@ -192,9 +192,9 @@ class ExaSearch_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const description = nodeData.inputs?.description as string
         const numResults = nodeData.inputs?.numResults as string
-        const type = nodeData.inputs?.type as string
+        const type = nodeData.inputs?.type
         const useAutoprompt = nodeData.inputs?.useAutoprompt as boolean
-        const category = nodeData.inputs?.category as string
+        const category = nodeData.inputs?.category
         const includeDomains = nodeData.inputs?.includeDomains as string
         const excludeDomains = nodeData.inputs?.excludeDomains as string
         const startCrawlDate = nodeData.inputs?.startCrawlDate as string
