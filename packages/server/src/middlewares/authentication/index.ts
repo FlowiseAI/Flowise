@@ -10,14 +10,14 @@ const jwtCheck = auth({
     secret: process.env.AUTH0_SECRET,
     audience: process.env.AUTH0_AUDIENCE,
     issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG
+    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG ?? 'HS256'
 })
 const jwtCheckPublic = auth({
     authRequired: false,
     secret: process.env.AUTH0_SECRET,
     audience: process.env.AUTH0_AUDIENCE,
     issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG
+    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG ?? 'HS256'
 })
 
 export const authenticationHandlerMiddleware =
