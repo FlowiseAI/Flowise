@@ -18,6 +18,7 @@ import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './u
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
+import { initCronJobs } from './utils/cron'
 
 import authenticationHandlerMiddleware from './middlewares/authentication'
 import passport from 'passport'
@@ -223,6 +224,9 @@ export async function start(): Promise<void> {
 
     await serverApp.initDatabase()
     await serverApp.config(io)
+
+    // Initialize cron jobs
+    initCronJobs()
 
     server.listen(port, host, () => {
         logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)
