@@ -157,7 +157,7 @@ Flowise support different environment variables to configure your instance. You 
 | S3_STORAGE_REGION                  | Region for S3 bucket                                                             | String                                           |                                     |
 | S3_ENDPOINT_URL                    | Custom Endpoint for S3                                                           | String                                           |                                     |
 | S3_FORCE_PATH_STYLE                | Set this to true to force the request to use path-style addressing               | Boolean                                          | false                               |
-| GOOGLE_CLOUD_STORAGE_PROJ_ID       | The GCP project id for cloud storage when `STORAGE_TYPE` is `gcs`                | String                                           |                                     |
+| GOOGLE_CLOUD_STORAGE_PROJ_ID       | The GCP project id for cloud storage & logging when `STORAGE_TYPE` is `gcs`      | String                                           |                                     |
 | GOOGLE_CLOUD_STORAGE_CREDENTIAL    | The credential key file path when `STORAGE_TYPE` is `gcs`                        | String                                           |                                     |
 | GOOGLE_CLOUD_STORAGE_BUCKET_NAME   | Bucket name to hold the uploaded files when `STORAGE_TYPE` is `gcs`              | String                                           |                                     |
 | GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS | Enable uniform bucket level access when `STORAGE_TYPE` is `gcs`                  | Boolean                                          | true                                |

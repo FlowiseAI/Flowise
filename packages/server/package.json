@@ -57,6 +57,7 @@
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.699.0",
+        "@google-cloud/logging-winston": "^6.0.0",
         "@oclif/core": "4.0.7",
         "@opentelemetry/api": "^1.3.0",
         "@opentelemetry/auto-instrumentations-node": "^0.52.0",

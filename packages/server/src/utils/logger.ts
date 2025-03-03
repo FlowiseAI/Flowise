@@ -5,6 +5,8 @@ import config from './config' // should be replaced by node-config or similar
 import { createLogger, transports, format } from 'winston'
 import { NextFunction, Request, Response } from 'express'
 import { S3ClientConfig } from '@aws-sdk/client-s3'
+import { LoggingWinston } from '@google-cloud/logging-winston'
+
 
 const { S3StreamLogger } = require('s3-streamlogger')
 
@@ -13,6 +15,11 @@ const { combine, timestamp, printf, errors } = format
 let s3ServerStream: any
 let s3ErrorStream: any
 let s3ServerReqStream: any
+
+let gcsServerStream: any
+let gcsErrorStream: any
+let gcsServerReqStream: any
+
 if (process.env.STORAGE_TYPE === 's3') {
     const accessKeyId = process.env.S3_STORAGE_ACCESS_KEY_ID
     const secretAccessKey = process.env.S3_STORAGE_SECRET_ACCESS_KEY
@@ -53,6 +60,29 @@ if (process.env.STORAGE_TYPE === 's3') {
     })
 }
 
+if (process.env.STORAGE_TYPE === 'gcs') {
+    const config = {
+        projectId: process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID,
+        keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
+        defaultCallback: (err: any) => {
+            if (err) {
+                console.log('Error occured: ' + err);
+            }
+        }
+    }
+    gcsServerStream = new LoggingWinston({
+        ...config,
+        logName: 'server'
+    })
+    gcsErrorStream = new LoggingWinston({
+        ...config,
+        logName: 'error'
+    })
+    gcsServerReqStream = new LoggingWinston({
+        ...config,
+        logName: 'requests'
+    })
+}
 // expect the log dir be relative to the projects root
 const logDir = config.logging.dir
 
@@ -94,6 +124,9 @@ const logger = createLogger({
                       stream: s3ServerStream
                   })
               ]
+            : []),
+        ...(process.env.STORAGE_TYPE === 'gcs'
+            ? [gcsServerStream]
             : [])
     ],
     exceptionHandlers: [
@@ -110,6 +143,9 @@ const logger = createLogger({
                       stream: s3ErrorStream
                   })
               ]
+            : []),
+        ...(process.env.STORAGE_TYPE === 'gcs'
+            ? [gcsErrorStream]
             : [])
     ],
     rejectionHandlers: [
@@ -126,6 +162,9 @@ const logger = createLogger({
                       stream: s3ErrorStream
                   })
               ]
+            : []),
+        ...(process.env.STORAGE_TYPE === 'gcs'
+            ? [gcsErrorStream]
             : [])
     ]
 })
@@ -161,6 +200,9 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
                               stream: s3ServerReqStream
                           })
                       ]
+                    : []),
+                ...(process.env.STORAGE_TYPE === 'gcs'
+                    ? [gcsServerReqStream]
                     : [])
             ]
         })
