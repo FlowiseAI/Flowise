@@ -17,7 +17,7 @@ export interface UsageDashboard {
 export interface CurrentPlan {
     name: 'Free' | 'Pro'
     status: 'active' | 'inactive'
-    sparksIncluded: number
+    creditsIncluded: number
 }
 
 export interface BillingPeriod {
@@ -30,7 +30,7 @@ export interface PricingInfo {
     aiTokensRate: string
     computeRate: string
     storageRate: string
-    sparkRate: string
+    creditRate: string
 }
 
 export interface DailyUsage {

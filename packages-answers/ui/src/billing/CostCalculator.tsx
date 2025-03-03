@@ -8,7 +8,7 @@ import {
     Code as CodeIcon,
     Psychology as PsychologyIcon,
     Info as InfoIcon,
-    Bolt as SparkIcon
+    Bolt as CreditIcon
 } from '@mui/icons-material'
 import { BILLING_CONFIG } from '../config/billing'
 
@@ -64,35 +64,35 @@ const USAGE_TEMPLATES: UsageTemplate[] = [
 const CostCalculator = () => {
     const [selectedTemplate, setSelectedTemplate] = useState<string>('')
     const [aiTokens, setAiTokens] = useState<string>('')
-    const [computeSparks, setComputeSparks] = useState<string>('')
-    const [storageSparks, setStorageSparks] = useState<string>('')
-    const [totalSparks, setTotalSparks] = useState<number>(0)
+    const [computeCredits, setComputeCredits] = useState<string>('')
+    const [storageCredits, setStorageCredits] = useState<string>('')
+    const [totalCredits, setTotalCredits] = useState<number>(0)
 
     const handleTemplateSelect = (templateName: string) => {
         setSelectedTemplate(templateName)
         const template = USAGE_TEMPLATES.find((t) => t.name === templateName)
 
         if (template) {
-            const aiTokenSparks = Math.ceil(
-                (template.aiTokens / BILLING_CONFIG.RATES.AI_TOKENS.UNIT) * BILLING_CONFIG.RATES.AI_TOKENS.SPARKS
+            const aiTokenCredits = Math.ceil(
+                (template.aiTokens / BILLING_CONFIG.RATES.AI_TOKENS.UNIT) * BILLING_CONFIG.RATES.AI_TOKENS.CREDITS
             )
-            const computeSparks = Math.ceil(template.computeTime * BILLING_CONFIG.RATES.COMPUTE.SPARKS)
-            const storageSparks = Math.ceil(template.storage * BILLING_CONFIG.RATES.STORAGE.SPARKS)
+            const computeCredits = Math.ceil(template.computeTime * BILLING_CONFIG.RATES.COMPUTE.CREDITS)
+            const storageCredits = Math.ceil(template.storage * BILLING_CONFIG.RATES.STORAGE.CREDITS)
 
-            setAiTokens(aiTokenSparks.toString())
-            setComputeSparks(computeSparks.toString())
-            setStorageSparks(storageSparks.toString())
+            setAiTokens(aiTokenCredits.toString())
+            setComputeCredits(computeCredits.toString())
+            setStorageCredits(storageCredits.toString())
         }
     }
 
     useEffect(() => {
-        const calculateTotalSparks = () => {
-            const totalSparks = (Number(aiTokens) || 0) + (Number(computeSparks) || 0) + (Number(storageSparks) || 0)
-            setTotalSparks(totalSparks)
+        const calculateTotalCredits = () => {
+            const totalCredits = (Number(aiTokens) || 0) + (Number(computeCredits) || 0) + (Number(storageCredits) || 0)
+            setTotalCredits(totalCredits)
         }
 
-        calculateTotalSparks()
-    }, [aiTokens, computeSparks, storageSparks])
+        calculateTotalCredits()
+    }, [aiTokens, computeCredits, storageCredits])
 
     return (
         <Box sx={{ width: '100%', px: 4, py: 3 }}>
@@ -102,7 +102,7 @@ const CostCalculator = () => {
                         Cost Calculator
                     </Typography>
                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.875rem' }}>
-                        Select a template or customize usage to estimate costs • 1 Spark = ${BILLING_CONFIG.SPARK_TO_USD.toFixed(3)} USD
+                        Select a template or customize usage to estimate costs • 1 Credit = ${BILLING_CONFIG.CREDIT_TO_USD.toFixed(3)} USD
                     </Typography>
                 </Box>
 
@@ -158,7 +158,7 @@ const CostCalculator = () => {
                         >
                             <Stack spacing={2}>
                                 <Stack direction='row' alignItems='center' spacing={1}>
-                                    <SparkIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+                                    <CreditIcon sx={{ fontSize: 20, color: 'primary.main' }} />
                                     <Typography sx={{ color: '#fff', fontSize: '0.875rem', fontWeight: 500, flexGrow: 1 }}>
                                         AI Tokens
                                     </Typography>
@@ -167,8 +167,8 @@ const CostCalculator = () => {
                                     </Tooltip>
                                 </Stack>
                                 <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.75rem' }}>
-                                    {BILLING_CONFIG.RATES.AI_TOKENS.UNIT.toLocaleString()} tokens = {BILLING_CONFIG.RATES.AI_TOKENS.SPARKS}{' '}
-                                    Sparks (${BILLING_CONFIG.RATES.AI_TOKENS.COST})
+                                    {BILLING_CONFIG.RATES.AI_TOKENS.UNIT.toLocaleString()} tokens = {BILLING_CONFIG.RATES.AI_TOKENS.CREDITS}{' '}
+                                    Credits (${BILLING_CONFIG.RATES.AI_TOKENS.COST})
                                 </Typography>
                                 <TextField
                                     value={aiTokens}
@@ -176,7 +176,7 @@ const CostCalculator = () => {
                                     type='number'
                                     size='small'
                                     fullWidth
-                                    placeholder='Enter Sparks'
+                                    placeholder='Enter Credits'
                                     InputProps={{
                                         sx: {
                                             color: 'white',
@@ -195,7 +195,7 @@ const CostCalculator = () => {
                                 />
                                 {aiTokens && (
                                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
-                                        Cost: ${((Number(aiTokens) || 0) * BILLING_CONFIG.SPARK_TO_USD).toFixed(2)}
+                                        Cost: ${((Number(aiTokens) || 0) * BILLING_CONFIG.CREDIT_TO_USD).toFixed(2)}
                                     </Typography>
                                 )}
                             </Stack>
@@ -215,7 +215,7 @@ const CostCalculator = () => {
                         >
                             <Stack spacing={2}>
                                 <Stack direction='row' alignItems='center' spacing={1}>
-                                    <SparkIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+                                    <CreditIcon sx={{ fontSize: 20, color: 'primary.main' }} />
                                     <Typography sx={{ color: '#fff', fontSize: '0.875rem', fontWeight: 500, flexGrow: 1 }}>
                                         Compute Time
                                     </Typography>
@@ -224,16 +224,16 @@ const CostCalculator = () => {
                                     </Tooltip>
                                 </Stack>
                                 <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.75rem' }}>
-                                    {BILLING_CONFIG.RATES.COMPUTE.UNIT} minute = {BILLING_CONFIG.RATES.COMPUTE.SPARKS} Sparks ($
+                                    {BILLING_CONFIG.RATES.COMPUTE.UNIT} minute = {BILLING_CONFIG.RATES.COMPUTE.CREDITS} Credits ($
                                     {BILLING_CONFIG.RATES.COMPUTE.COST})
                                 </Typography>
                                 <TextField
-                                    value={computeSparks}
-                                    onChange={(e) => setComputeSparks(e.target.value)}
+                                    value={computeCredits}
+                                    onChange={(e) => setComputeCredits(e.target.value)}
                                     type='number'
                                     size='small'
                                     fullWidth
-                                    placeholder='Enter Sparks'
+                                    placeholder='Enter Credits'
                                     InputProps={{
                                         sx: {
                                             color: 'white',
@@ -250,9 +250,9 @@ const CostCalculator = () => {
                                         }
                                     }}
                                 />
-                                {computeSparks && (
+                                {computeCredits && (
                                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
-                                        Cost: ${((Number(computeSparks) || 0) * BILLING_CONFIG.SPARK_TO_USD).toFixed(2)}
+                                        Cost: ${((Number(computeCredits) || 0) * BILLING_CONFIG.CREDIT_TO_USD).toFixed(2)}
                                     </Typography>
                                 )}
                             </Stack>
@@ -272,7 +272,7 @@ const CostCalculator = () => {
                         >
                             <Stack spacing={2}>
                                 <Stack direction='row' alignItems='center' spacing={1}>
-                                    <SparkIcon sx={{ fontSize: 20, color: 'primary.main' }} />
+                                    <CreditIcon sx={{ fontSize: 20, color: 'primary.main' }} />
                                     <Typography sx={{ color: '#fff', fontSize: '0.875rem', fontWeight: 500, flexGrow: 1 }}>
                                         Storage
                                     </Typography>
@@ -281,16 +281,16 @@ const CostCalculator = () => {
                                     </Tooltip>
                                 </Stack>
                                 <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.75rem' }}>
-                                    {BILLING_CONFIG.RATES.STORAGE.UNIT} GB/month = {BILLING_CONFIG.RATES.STORAGE.SPARKS} Sparks ($
+                                    {BILLING_CONFIG.RATES.STORAGE.UNIT} GB/month = {BILLING_CONFIG.RATES.STORAGE.CREDITS} Credits ($
                                     {BILLING_CONFIG.RATES.STORAGE.COST})
                                 </Typography>
                                 <TextField
-                                    value={storageSparks}
-                                    onChange={(e) => setStorageSparks(e.target.value)}
+                                    value={storageCredits}
+                                    onChange={(e) => setStorageCredits(e.target.value)}
                                     type='number'
                                     size='small'
                                     fullWidth
-                                    placeholder='Enter Sparks'
+                                    placeholder='Enter Credits'
                                     InputProps={{
                                         sx: {
                                             color: 'white',
@@ -307,9 +307,9 @@ const CostCalculator = () => {
                                         }
                                     }}
                                 />
-                                {storageSparks && (
+                                {storageCredits && (
                                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
-                                        Cost: ${((Number(storageSparks) || 0) * BILLING_CONFIG.SPARK_TO_USD).toFixed(2)}
+                                        Cost: ${((Number(storageCredits) || 0) * BILLING_CONFIG.CREDIT_TO_USD).toFixed(2)}
                                     </Typography>
                                 )}
                             </Stack>
@@ -317,12 +317,12 @@ const CostCalculator = () => {
                     </Grid>
                 </Grid>
 
-                {totalSparks > 0 && (
+                {totalCredits > 0 && (
                     <Box sx={{ mt: 2, p: 2, borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                         <Stack direction='row' justifyContent='space-between' alignItems='center'>
                             <Typography sx={{ color: '#fff', fontSize: '1rem', fontWeight: 500 }}>Total Cost</Typography>
                             <Typography sx={{ color: '#fff', fontSize: '1.25rem', fontWeight: 600 }}>
-                                ${(totalSparks * BILLING_CONFIG.SPARK_TO_USD).toFixed(2)}
+                                ${(totalCredits * BILLING_CONFIG.CREDIT_TO_USD).toFixed(2)}
                             </Typography>
                         </Stack>
                     </Box>

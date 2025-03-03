@@ -1,6 +1,6 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
-import PurchaseSparks from '@ui/billing/PurchaseSparks'
+import PurchaseCredits from '@ui/billing/PurchaseCredits'
 import PurchaseSubscription from '@ui/billing/PurchaseSubscription'
 
 const PricingOverview = dynamic(() => import('@ui/billing/PricingOverview'), { ssr: true })
@@ -13,7 +13,7 @@ const Page = () => {
         <>
             <PricingOverview />
             <PurchaseSubscription />
-            <PurchaseSparks />
+            <PurchaseCredits />
             <CostCalculator />
             {/* <PurchaseCredits /> */}
             <UsageStats />

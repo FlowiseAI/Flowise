@@ -2,29 +2,24 @@ import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 
 import { IUsageEvent } from '../../Interface'
 
 @Entity()
-@Index(['organizationId', 'createdDate']) // For efficient org-level reporting
-@Index(['entityType', 'entityId', 'createdDate']) // For efficient entity-level reporting
 export class UsageEvent implements IUsageEvent {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
     @Index()
-    @Column({ type: 'varchar', length: 50 })
-    entityType: 'user' | 'organization'
+    @Column()
+    stripeCustomerId: string
 
     @Index()
-    @Column({ type: 'uuid' })
-    entityId: string
+    @Column({ type: 'uuid', nullable: true })
+    userId: string
 
     @Index()
     @Column({ type: 'uuid', nullable: true })
     organizationId: string
 
     @Column({ type: 'varchar', length: 50 })
-    resourceType: 'AI_TOKENS' | 'COMPUTE'
-
-    @Column({ type: 'integer' })
-    quantity: number
+    resourceType: 'CREDITS'
 
     @Column({ type: 'integer' })
     creditsConsumed: number

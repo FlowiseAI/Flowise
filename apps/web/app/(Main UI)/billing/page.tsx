@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import { Box, Container } from '@mui/material'
 
 const BillingDashboard = dynamic(() => import('@ui/billing/BillingDashboard'), { ssr: false })
-const PurchaseSparks = dynamic(() => import('@ui/billing/PurchaseSparks'), { ssr: false })
+const PurchaseCredits = dynamic(() => import('@ui/billing/PurchaseCredits'), { ssr: false })
 const CostCalculator = dynamic(() => import('@ui/billing/CostCalculator'), { ssr: false })
 const PurchaseSubscription = dynamic(() => import('@ui/billing/PurchaseSubscription'), { ssr: false })
 
@@ -15,7 +15,7 @@ const Page = () => {
             <Box sx={{ py: 4 }}>
                 <BillingDashboard />
                 {/* <Box sx={{ mt: 4 }}>
-                    <PurchaseSparks />
+                    <PurchaseCredits />
                 </Box> */}
                 <Box sx={{ mt: 4 }}>
                     <CostCalculator />

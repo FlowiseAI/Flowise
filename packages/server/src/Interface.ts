@@ -348,11 +348,10 @@ export interface ISubscription {
 
 export interface IUsageEvent {
     id: string
-    entityType: 'user' | 'organization'
-    entityId: string
-    organizationId?: string
-    resourceType: 'AI_TOKENS' | 'COMPUTE'
-    quantity: number
+    stripeCustomerId: string
+    userId: string
+    organizationId: string
+    resourceType: 'CREDITS'
     creditsConsumed: number
     stripeMeterEventId?: string
     traceId?: string

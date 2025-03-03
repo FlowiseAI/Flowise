@@ -240,7 +240,7 @@ const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
         if (_apikeysStoredInJson()) {
             const apiKeyData = await getApiKey_json(paramApiKey)
             if (!apiKeyData) {
-                console.log(`[ApiKey] Failed verification attempt with key: ${paramApiKey.substring(0, 8)}...`)
+                // console.log(`[ApiKey] Failed verification attempt with key: ${paramApiKey.substring(0, 8)}...`)
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
             // Convert JSON data to ApiKey entity
@@ -255,7 +255,7 @@ const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
                 isActive: true
             })
             if (!apiKey) {
-                console.log(`[ApiKey] Failed verification attempt with key: ${paramApiKey.substring(0, 8)}...`)
+                // console.log(`[ApiKey] Failed verification attempt with key: ${paramApiKey.substring(0, 8)}...`)
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
             // Update lastUsedAt

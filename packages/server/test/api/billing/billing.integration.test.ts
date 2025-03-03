@@ -7,7 +7,7 @@ import {
     simulateBulkUsage,
     waitForUsageSync,
     isWithinLimits,
-    calculateExpectedSparks,
+    calculateExpectedCredits,
     getSubscriptionDetails,
     simulateCreditsUsage,
     makePredictionRequest
@@ -55,8 +55,8 @@ describe('Billing Integration Tests', () => {
 
             // Usage validation
             expect(status.usage).toMatchObject({
-                total_sparks: expect.any(Number),
-                remaining_sparks: expect.any(Number),
+                total_credits: expect.any(Number),
+                remaining_credits: expect.any(Number),
                 usageByMeter: expect.any(Object),
                 lastUpdated: expect.any(String)
             })
@@ -104,8 +104,8 @@ describe('Billing Integration Tests', () => {
                 headers: BILLING_TEST_CONFIG.headers
             })
 
-            expect(updatedResponse.data.usage.total_sparks).toBeGreaterThan(initialResponse.data.usage.total_sparks)
-            expect(updatedResponse.data.usage.remaining_sparks).toBeLessThan(initialResponse.data.usage.remaining_sparks)
+            expect(updatedResponse.data.usage.total_credits).toBeGreaterThan(initialResponse.data.usage.total_credits)
+            expect(updatedResponse.data.usage.remaining_credits).toBeLessThan(initialResponse.data.usage.remaining_credits)
         })
     })
 
@@ -113,7 +113,7 @@ describe('Billing Integration Tests', () => {
     //     it('should track and retrieve usage', async () => {
     //         // Get initial stats
     //         const initialStats = await getCurrentUsageStats()
-    //         const initialTotal = initialStats.total_sparks || 0
+    //         const initialTotal = initialStats.total_credits || 0
 
     //         // Track some usage
     //         const usageAmount = 100
@@ -122,9 +122,9 @@ describe('Billing Integration Tests', () => {
 
     //         // Get updated stats
     //         const updatedStats = await getCurrentUsageStats()
-    //         const expectedSparks = calculateExpectedSparks('ai_tokens', usageAmount)
+    //         const expectedCredits = calculateExpectedCredits('ai_tokens', usageAmount)
 
-    //         expect(updatedStats.total_sparks).toBe(initialTotal + expectedSparks)
+    //         expect(updatedStats.total_credits).toBe(initialTotal + expectedCredits)
     //         expect(updatedStats.usageByMeter).toHaveProperty('ai_tokens')
     //     })
 
@@ -140,7 +140,7 @@ describe('Billing Integration Tests', () => {
 
     //         await waitForUsageSync()
     //         const stats = await getCurrentUsageStats()
-    //         expect(stats.total_sparks).toBeGreaterThan(0)
+    //         expect(stats.total_credits).toBeGreaterThan(0)
     //     })
 
     //     it('should enforce usage limits', async () => {
@@ -173,18 +173,18 @@ describe('Billing Integration Tests', () => {
     //     it('should calculate usage costs correctly', async () => {
     //         // Track some usage
     //         const events = [
-    //             { type: 'ai_tokens' as const, amount: 1000 }, // 100 sparks
-    //             { type: 'compute' as const, amount: 10 }, // 500 sparks
-    //             { type: 'storage' as const, amount: 1 } // 500 sparks
+    //             { type: 'ai_tokens' as const, amount: 1000 }, // 100 credits
+    //             { type: 'compute' as const, amount: 10 }, // 500 credits
+    //             { type: 'storage' as const, amount: 1 } // 500 credits
     //         ]
 
     //         await simulateBulkUsage(events)
     //         await waitForUsageSync()
 
     //         const stats = await getCurrentUsageStats()
-    //         const expectedTotal = events.reduce((total, event) => total + calculateExpectedSparks(event.type, event.amount), 0)
+    //         const expectedTotal = events.reduce((total, event) => total + calculateExpectedCredits(event.type, event.amount), 0)
 
-    //         expect(stats.total_sparks).toBe(expectedTotal)
+    //         expect(stats.total_credits).toBe(expectedTotal)
     //     })
     // })
 
@@ -223,7 +223,7 @@ describe('Billing Integration Tests', () => {
     //                 headers: BILLING_TEST_CONFIG.headers
     //             })
     //             expect(response.status).toBe(200)
-    //             expect(response.data).toHaveProperty('total_sparks')
+    //             expect(response.data).toHaveProperty('total_credits')
     //             expect(response.data).toHaveProperty('usageByMeter')
     //             expect(response.data).toHaveProperty('dailyUsageByMeter')
     //             expect(response.data).toHaveProperty('lastUpdated')
@@ -252,7 +252,7 @@ describe('Billing Integration Tests', () => {
     //             const updatedStats = await axios.get(`${BILLING_TEST_CONFIG.API_URL}/api/v1/billing/usage/stats`, {
     //                 headers: BILLING_TEST_CONFIG.headers
     //             })
-    //             expect(updatedStats.data.total_sparks).toBeGreaterThan(initialStats.data.total_sparks)
+    //             expect(updatedStats.data.total_credits).toBeGreaterThan(initialStats.data.total_credits)
     //         } catch (error: any) {
     //             expect(error).toBeNull()
     //         }
@@ -322,7 +322,7 @@ describe('Billing Integration Tests', () => {
     //             const initialStats = await axios.get(`${BILLING_TEST_CONFIG.API_URL}/api/v1/billing/usage/stats`, {
     //                 headers: BILLING_TEST_CONFIG.headers
     //             })
-    //             expect(initialStats.data.total_sparks).toBeDefined()
+    //             expect(initialStats.data.total_credits).toBeDefined()
 
     //             // Use credits through predictions
     //             await simulateCreditsUsage(5000) // Use about half of free tier
@@ -334,8 +334,8 @@ describe('Billing Integration Tests', () => {
     //             const updatedStats = await axios.get(`${BILLING_TEST_CONFIG.API_URL}/api/v1/billing/usage/stats`, {
     //                 headers: BILLING_TEST_CONFIG.headers
     //             })
-    //             expect(updatedStats.data.total_sparks).toBeGreaterThan(initialStats.data.total_sparks)
-    //             expect(updatedStats.data.total_sparks).toBeLessThanOrEqual(BILLING_TEST_CONFIG.freeTierCredits)
+    //             expect(updatedStats.data.total_credits).toBeGreaterThan(initialStats.data.total_credits)
+    //             expect(updatedStats.data.total_credits).toBeLessThanOrEqual(BILLING_TEST_CONFIG.freeTierCredits)
     //         } catch (error: any) {
     //             expect(error).toBeNull()
     //         }
@@ -522,7 +522,7 @@ describe('Billing Integration Tests', () => {
     //             expect(response.data.breakdown).toHaveProperty('ai_tokens')
     //             expect(response.data.breakdown).toHaveProperty('compute')
     //             expect(response.data.breakdown).toHaveProperty('storage')
-    //             expect(response.data).toHaveProperty('total_sparks')
+    //             expect(response.data).toHaveProperty('total_credits')
     //         } catch (error: any) {
     //             expect(error).toBeNull()
     //         }

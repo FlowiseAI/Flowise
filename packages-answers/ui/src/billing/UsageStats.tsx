@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Box, Typography, Grid, LinearProgress, Tooltip, IconButton, Stack, useTheme, Skeleton } from '@mui/material'
-import { Info as InfoIcon, Bolt as SparkIcon, Memory as CpuIcon, Storage as StorageIcon } from '@mui/icons-material'
+import { Info as InfoIcon, Bolt as CreditIcon, Memory as CpuIcon, Storage as StorageIcon } from '@mui/icons-material'
 import billingApi from '@/api/billing'
 import useSWR from 'swr'
 import { UsageSummary, UsageMetric } from './hooks/useBillingData'
@@ -22,7 +22,7 @@ interface UsageDashboard {
 interface CurrentPlan {
     name: 'Free' | 'Pro'
     status: 'active' | 'inactive'
-    sparksIncluded: number
+    creditsIncluded: number
 }
 
 interface BillingPeriod {
@@ -35,7 +35,7 @@ interface PricingInfo {
     aiTokensRate: string
     computeRate: string
     storageRate: string
-    sparkRate: string
+    creditRate: string
 }
 
 interface DailyUsage {
@@ -291,9 +291,9 @@ const SubscriptionStatusCard: React.FC<{ subscription: Subscription }> = ({ subs
     const plan = subscription.items?.data[0]?.plan
     const price = subscription.items?.data[0]?.price
 
-    // Calculate total sparks used
-    const totalSparks = subscription.usage
-        .filter((item) => item.meter_name === 'sparks')
+    // Calculate total credits used
+    const totalCredits = subscription.usage
+        .filter((item) => item.meter_name === 'credits')
         .reduce((sum, item) => sum + item.aggregated_value, 0)
 
     // Format dates
@@ -341,7 +341,7 @@ const SubscriptionStatusCard: React.FC<{ subscription: Subscription }> = ({ subs
                     </Stack>
                     <Stack alignItems='flex-end'>
                         <Typography sx={{ color: '#fff', fontSize: '1.25rem', fontWeight: 600 }}>
-                            ${((totalSparks || 0) * 0.001).toFixed(2)} USD
+                            ${((totalCredits || 0) * 0.001).toFixed(2)} USD
                         </Typography>
                         <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>Current Period Usage</Typography>
                     </Stack>
@@ -350,12 +350,12 @@ const SubscriptionStatusCard: React.FC<{ subscription: Subscription }> = ({ subs
                 {/* Usage Progress */}
                 <Box sx={{ mt: 3 }}>
                     <Stack direction='row' justifyContent='space-between' sx={{ mb: 1 }}>
-                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>Total Sparks Used</Typography>
-                        <Typography sx={{ color: '#fff', fontSize: '0.875rem' }}>{totalSparks.toLocaleString()} / 500,000</Typography>
+                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>Total Credits Used</Typography>
+                        <Typography sx={{ color: '#fff', fontSize: '0.875rem' }}>{totalCredits.toLocaleString()} / 500,000</Typography>
                     </Stack>
                     <LinearProgress
                         variant='determinate'
-                        value={Math.min((totalSparks / 250_000) * 100, 100)}
+                        value={Math.min((totalCredits / 250_000) * 100, 100)}
                         sx={{
                             height: 8,
                             borderRadius: 4,
@@ -453,7 +453,7 @@ const SubscriptionStatusCard: React.FC<{ subscription: Subscription }> = ({ subs
                                     </Typography>
                                 </Stack>
                                 <Typography sx={{ color: '#fff', fontSize: '0.875rem' }}>
-                                    {usage.aggregated_value.toLocaleString()} sparks
+                                    {usage.aggregated_value.toLocaleString()} credits
                                 </Typography>
                             </Stack>
                         ))}
@@ -512,7 +512,7 @@ const UsageMetricCard: React.FC<{
 
                 <Stack direction='row' justifyContent='space-between' alignItems='center'>
                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
-                        {metrics.used.toLocaleString()} Sparks
+                        {metrics.used.toLocaleString()} Credits
                     </Typography>
                     <Typography
                         sx={{
@@ -726,7 +726,7 @@ const UsageStats: React.FC<UsageStatsProps> = ({ usageSummary, isLoading = false
                 <Grid item xs={12} md={4}>
                     <UsageMetricCard
                         title='AI Tokens'
-                        icon={<SparkIcon sx={{ color: '#3f51b5' }} />}
+                        icon={<CreditIcon sx={{ color: '#3f51b5' }} />}
                         metrics={usageDashboard.aiTokens}
                         tooltipText='AI token usage for language model interactions'
                         rateInfo={pricing.aiTokensRate}
@@ -771,12 +771,12 @@ const UsageStats: React.FC<UsageStatsProps> = ({ usageSummary, isLoading = false
                             justifyContent: 'center'
                         }}
                     >
-                        <Typography sx={{ color: '#fff', fontWeight: 500, mb: 2 }}>Spark Rate</Typography>
+                        <Typography sx={{ color: '#fff', fontWeight: 500, mb: 2 }}>Credit Rate</Typography>
                         <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 2, borderRadius: '8px', mb: 2 }}>
-                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>{pricing.sparkRate}</Typography>
+                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>{pricing.creditRate}</Typography>
                         </Box>
                         <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
-                            All resource usage is converted to Sparks at the rates shown in each resource card.
+                            All resource usage is converted to Credits at the rates shown in each resource card.
                         </Typography>
                     </Box>
                 </Grid>

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Box, Card, Container, Grid, Typography, Stack, Tooltip } from '@mui/material'
-import { Info as InfoIcon, Bolt as SparkIcon } from '@mui/icons-material'
+import { Info as InfoIcon, Bolt as CreditIcon } from '@mui/icons-material'
 import { BILLING_CONFIG } from '../config/billing'
 
 const PricingOverview = () => {
@@ -13,10 +13,10 @@ const PricingOverview = () => {
                     Simple, Usage-Based Pricing
                 </Typography>
                 <Typography variant='body1' sx={{ color: 'rgba(255,255,255,0.7)', mb: 2 }}>
-                    Pay only for what you use with our Sparks-based billing
+                    Pay only for what you use with our Credits-based billing
                 </Typography>
                 <Typography variant='body1' sx={{ color: 'white', mb: 4 }}>
-                    1 Spark = ${BILLING_CONFIG.SPARK_TO_USD} USD
+                    1 Credit = ${BILLING_CONFIG.CREDIT_TO_USD} USD
                 </Typography>
 
                 <Grid container spacing={3} justifyContent='center'>
@@ -31,7 +31,7 @@ const PricingOverview = () => {
                             }}
                         >
                             <Stack direction='row' alignItems='center' spacing={1}>
-                                <SparkIcon sx={{ color: 'primary.main' }} />
+                                <CreditIcon sx={{ color: 'primary.main' }} />
                                 <Typography variant='h6' sx={{ color: 'white' }}>
                                     AI Tokens
                                 </Typography>
@@ -40,7 +40,7 @@ const PricingOverview = () => {
                                 </Tooltip>
                             </Stack>
                             <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.7)', mt: 1 }}>
-                                1,000 tokens = {BILLING_CONFIG.RATES.AI_TOKENS.SPARKS} Sparks (${BILLING_CONFIG.RATES.AI_TOKENS.COST})
+                                1,000 tokens = {BILLING_CONFIG.RATES.AI_TOKENS.CREDITS} Credits (${BILLING_CONFIG.RATES.AI_TOKENS.COST})
                             </Typography>
                         </Card>
                     </Grid>
@@ -55,7 +55,7 @@ const PricingOverview = () => {
                             }}
                         >
                             <Stack direction='row' alignItems='center' spacing={1}>
-                                <SparkIcon sx={{ color: 'primary.main' }} />
+                                <CreditIcon sx={{ color: 'primary.main' }} />
                                 <Typography variant='h6' sx={{ color: 'white' }}>
                                     Compute Time
                                 </Typography>
@@ -64,7 +64,7 @@ const PricingOverview = () => {
                                 </Tooltip>
                             </Stack>
                             <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.7)', mt: 1 }}>
-                                1 minute = {BILLING_CONFIG.RATES.COMPUTE.SPARKS} Sparks (${BILLING_CONFIG.RATES.COMPUTE.COST})
+                                1 minute = {BILLING_CONFIG.RATES.COMPUTE.CREDITS} Credits (${BILLING_CONFIG.RATES.COMPUTE.COST})
                             </Typography>
                         </Card>
                     </Grid>
@@ -79,7 +79,7 @@ const PricingOverview = () => {
                             }}
                         >
                             <Stack direction='row' alignItems='center' spacing={1}>
-                                <SparkIcon sx={{ color: 'primary.main' }} />
+                                <CreditIcon sx={{ color: 'primary.main' }} />
                                 <Typography variant='h6' sx={{ color: 'white' }}>
                                     Storage
                                 </Typography>
@@ -88,7 +88,7 @@ const PricingOverview = () => {
                                 </Tooltip>
                             </Stack>
                             <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.7)', mt: 1 }}>
-                                1 GB/month = {BILLING_CONFIG.RATES.STORAGE.SPARKS} Sparks (${BILLING_CONFIG.RATES.STORAGE.COST})
+                                1 GB/month = {BILLING_CONFIG.RATES.STORAGE.CREDITS} Credits (${BILLING_CONFIG.RATES.STORAGE.COST})
                             </Typography>
                         </Card>
                     </Grid>

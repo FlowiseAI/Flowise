@@ -14,7 +14,7 @@ interface BillingPlan {
     priceId?: string
     description?: string
     features?: string[]
-    sparksIncluded: number
+    creditsIncluded: number
     pricePerMonth?: number
     highlighted?: boolean
     status?: 'active' | 'inactive' | 'past_due'
@@ -196,13 +196,13 @@ const BillingOverview: React.FC<BillingOverviewProps> = ({
                                 )}
                                 <Box>
                                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.875rem', mb: 0.5 }}>
-                                        Sparks Included
+                                        Credits Included
                                     </Typography>
                                     <Typography sx={{ color: '#fff' }}>
-                                        {currentPlan?.sparksIncluded === -1
+                                        {currentPlan?.creditsIncluded === -1
                                             ? 'Unlimited'
-                                            : currentPlan?.sparksIncluded.toLocaleString() || '10,000'}{' '}
-                                        Sparks/month
+                                            : currentPlan?.creditsIncluded.toLocaleString() || '10,000'}{' '}
+                                        Credits/month
                                     </Typography>
                                 </Box>
                             </Stack>

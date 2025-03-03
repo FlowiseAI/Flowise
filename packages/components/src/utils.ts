@@ -277,7 +277,7 @@ export const getAvailableURLs = async (url: string, limit: number) => {
         }
 
         return availableUrls
-    } catch (err) {
+    } catch (err: any) {
         throw new Error(`getAvailableURLs: ${err?.message}`)
     }
 }
@@ -296,7 +296,7 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
         try {
             const urlObj = new URL(linkElement.href, baseURL)
             urls.push(urlObj.href)
-        } catch (err) {
+        } catch (err: any) {
             if (process.env.DEBUG === 'true') console.error(`error with scraped URL: ${err.message}`)
             continue
         }
@@ -362,7 +362,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
         for (const nextURL of nextURLs) {
             pages = await crawl(baseURL, nextURL, pages, limit)
         }
-    } catch (err) {
+    } catch (err: any) {
         if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
     }
     return pages
@@ -414,7 +414,7 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
 
         const xmlBody = await resp.text()
         urls = getURLsFromXML(xmlBody, limit)
-    } catch (err) {
+    } catch (err: any) {
         if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
     }
     return urls
@@ -471,7 +471,7 @@ const getEncryptionKey = async (): Promise<string> => {
     }
     try {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
-    } catch (error) {
+    } catch (error: any) {
         throw new Error(error)
     }
 }
@@ -523,7 +523,7 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
 
         return decryptedCredentialData
-    } catch (e) {
+    } catch (e: any) {
         throw new Error(e)
     }
 }
@@ -654,7 +654,7 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
             }
         }
         return zodObj
-    } catch (e) {
+    } catch (e: any) {
         throw new Error(e)
     }
 }

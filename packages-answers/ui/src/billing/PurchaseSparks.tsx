@@ -2,25 +2,25 @@
 
 import React, { useState } from 'react'
 import { Box, Card, Typography, Grid, Button, Stack } from '@mui/material'
-import { Bolt as SparkIcon, AddBox as CubeIcon } from '@mui/icons-material'
+import { Bolt as CreditIcon, AddBox as CubeIcon } from '@mui/icons-material'
 
-interface SparkPackage {
-    sparks: number
+interface CreditPackage {
+    credits: number
     price: number
     discount?: number
 }
 
-const SPARK_PACKAGES: SparkPackage[] = [
-    { sparks: 1000, price: 10 },
-    { sparks: 5000, price: 45, discount: 10 },
-    { sparks: 10000, price: 80, discount: 20 }
+const CREDIT_PACKAGES: CreditPackage[] = [
+    { credits: 1000, price: 10 },
+    { credits: 5000, price: 45, discount: 10 },
+    { credits: 10000, price: 80, discount: 20 }
 ]
 
-const PurchaseSparks = () => {
+const PurchaseCredits = () => {
     const [loading, setLoading] = useState(false)
     const [customAmount, setCustomAmount] = useState('')
 
-    const handlePurchase = async (sparks: number, amount: number) => {
+    const handlePurchase = async (credits: number, amount: number) => {
         setLoading(true)
         try {
             const response = await fetch('/api/billing/purchase', {
@@ -28,7 +28,7 @@ const PurchaseSparks = () => {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ sparks, amount })
+                body: JSON.stringify({ credits, amount })
             })
             if (!response.ok) throw new Error('Failed to initiate purchase')
             const { url } = await response.json()
@@ -54,7 +54,7 @@ const PurchaseSparks = () => {
                         color: '#fff'
                     }}
                 >
-                    <SparkIcon sx={{ fontSize: 20 }} /> Purchase Sparks
+                    <CreditIcon sx={{ fontSize: 20 }} /> Purchase Credits
                 </Typography>
                 <Typography
                     sx={{
@@ -62,13 +62,13 @@ const PurchaseSparks = () => {
                         fontSize: '0.875rem'
                     }}
                 >
-                    Top up your account with more Sparks
+                    Top up your account with more Credits
                 </Typography>
             </Stack>
 
             <Grid container spacing={2.5}>
-                {SPARK_PACKAGES.map((pkg) => (
-                    <Grid item xs={12} md={4} key={pkg.sparks}>
+                {CREDIT_PACKAGES.map((pkg) => (
+                    <Grid item xs={12} md={4} key={pkg.credits}>
                         <Card
                             elevation={0}
                             sx={{
@@ -112,7 +112,7 @@ const PurchaseSparks = () => {
                                             lineHeight: 1.2
                                         }}
                                     >
-                                        {pkg.sparks.toLocaleString()}
+                                        {pkg.credits.toLocaleString()}
                                     </Typography>
                                     <Typography
                                         sx={{
@@ -121,7 +121,7 @@ const PurchaseSparks = () => {
                                             fontWeight: 500
                                         }}
                                     >
-                                        Sparks
+                                        Credits
                                     </Typography>
                                     <Typography
                                         sx={{
@@ -136,7 +136,7 @@ const PurchaseSparks = () => {
                                 <Button
                                     variant='contained'
                                     fullWidth
-                                    onClick={() => handlePurchase(pkg.sparks, pkg.price)}
+                                    onClick={() => handlePurchase(pkg.credits, pkg.price)}
                                     disabled={loading}
                                     sx={{
                                         bgcolor: '#fff',
@@ -190,7 +190,7 @@ const PurchaseSparks = () => {
                         type='number'
                         value={customAmount}
                         onChange={(e) => setCustomAmount(e.target.value)}
-                        placeholder='Enter Spark amount'
+                        placeholder='Enter Credit amount'
                         style={{
                             flex: 1,
                             background: 'none',
@@ -227,4 +227,4 @@ const PurchaseSparks = () => {
     )
 }
 
-export default PurchaseSparks
+export default PurchaseCredits

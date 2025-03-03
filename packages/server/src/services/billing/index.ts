@@ -282,7 +282,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
 //         // Get usage stats before the event
 //         const beforeStats = await billingService.getUsageSummary(user.stripeCustomerId)
-//         const beforeTotal = beforeStats.total_sparks || 0
+//         const beforeTotal = beforeStats.total_credits || 0
 
 //         // Record the event
 //         await billingService.syncUsageToStripe([
@@ -292,7 +292,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 //                 subscriptionTier: 'free',
 //                 timestamp: new Date().toISOString(),
 //                 timestampEpoch: Math.floor(Date.now() / 1000),
-//                 sparks: {
+//                 credits: {
 //                     ai_tokens: type === 'token' ? amount : 0,
 //                     compute: type === 'compute' ? amount : 0,
 //                     storage: type === 'storage' ? amount : 0,
@@ -323,7 +323,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
 //         // Get usage stats after the event
 //         const afterStats = await billingService.getUsageSummary(user.stripeCustomerId)
-//         const afterTotal = afterStats.total_sparks || 0
+//         const afterTotal = afterStats.total_credits || 0
 
 //         return {
 //             remainingCredits: Math.max(0, beforeTotal - (afterTotal - beforeTotal))

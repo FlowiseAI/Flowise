@@ -19,7 +19,7 @@ const BillingDashboard: React.FC = () => {
             (billingData.usageDashboard?.compute?.used || 0) +
             (billingData.usageDashboard?.storage?.used || 0)
 
-        const totalLimit = billingData.currentPlan?.sparksIncluded || 10000
+        const totalLimit = billingData.currentPlan?.creditsIncluded || 10000
         return Math.min(Math.round((totalUsed / totalLimit) * 100), 100)
     }
 

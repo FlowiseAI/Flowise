@@ -16,7 +16,7 @@ export async function getCurrentUsageStats() {
         headers: BILLING_TEST_CONFIG.headers
     })
     return {
-        total_sparks: response.data.total_sparks || 0,
+        total_credits: response.data.total_credits || 0,
         usageByMeter: response.data.usageByMeter || {},
         dailyUsageByMeter: response.data.dailyUsageByMeter || {},
         lastUpdated: response.data.lastUpdated,
@@ -64,12 +64,12 @@ export function isWithinLimits(usage: number, limit: number) {
     return usage <= limit
 }
 
-// Helper to calculate expected sparks
-export function calculateExpectedSparks(type: 'ai_tokens' | 'compute' | 'storage', amount: number) {
+// Helper to calculate expected credits
+export function calculateExpectedCredits(type: 'ai_tokens' | 'compute' | 'storage', amount: number) {
     const conversionRates = {
-        ai_tokens: 10, // 1000 tokens = 100 sparks
-        compute: 50, // 1 minute = 50 sparks
-        storage: 500 // 1 GB = 500 sparks
+        ai_tokens: 10, // 1000 tokens = 100 credits
+        compute: 50, // 1 minute = 50 credits
+        storage: 500 // 1 GB = 500 credits
     }
     return amount * conversionRates[type]
 }

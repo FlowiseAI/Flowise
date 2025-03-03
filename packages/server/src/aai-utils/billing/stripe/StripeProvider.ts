@@ -13,7 +13,7 @@ import {
     BillingPortalSession,
     Subscription,
     Invoice,
-    SparksData,
+    CreditsData,
     UsageStats,
     UsageSummary
 } from '../core/types'
@@ -25,6 +25,7 @@ import { Subscription as SubscriptionEntity } from '../../../database/entities/S
 import { session } from 'passport'
 // import { UserCredits } from '../../../database/entities/UserCredits'
 import { MeterEventSummary } from './types'
+import { UsageEvent } from '../../../database/entities'
 
 export class StripeProvider {
     constructor(private stripeClient: Stripe) {}
@@ -290,17 +291,17 @@ export class StripeProvider {
         }
     }
 
-    async syncUsageToStripe(sparksData: Array<SparksData & { fullTrace: any }>): Promise<{
+    async syncUsageToStripe(creditsData: Array<CreditsData & { fullTrace: any }>): Promise<{
         meterEvents: Stripe.Billing.MeterEvent[]
         failedEvents: Array<{ traceId: string; error: string }>
         processedTraces: string[]
     }> {
         try {
-            log.info('Syncing usage to Stripe', { count: sparksData.length })
+            log.info('Syncing usage to Stripe', { count: creditsData.length })
 
             // Validate batch size
-            if (sparksData.length > BILLING_CONFIG.VALIDATION.MAX_BATCH_SIZE) {
-                throw new Error(`Batch size ${sparksData.length} exceeds maximum of ${BILLING_CONFIG.VALIDATION.MAX_BATCH_SIZE}`)
+            if (creditsData.length > BILLING_CONFIG.VALIDATION.MAX_BATCH_SIZE) {
+                throw new Error(`Batch size ${creditsData.length} exceeds maximum of ${BILLING_CONFIG.VALIDATION.MAX_BATCH_SIZE}`)
             }
 
             // Parallel fetch meters and prepare events
@@ -313,49 +314,59 @@ export class StripeProvider {
             const failedEvents: Array<{ traceId: string; error: string }> = []
             const processedTraces: string[] = []
 
+            console.log('Syncing usage to Stripe', {
+                count: creditsData.length,
+                batchSize: BATCH_SIZE,
+                delayBetweenBatches: DELAY_BETWEEN_BATCHES,
+                metersMap
+            })
             // Process in optimized batches
-            for (let i = 0; i < sparksData.length; i += BATCH_SIZE) {
-                const batch = sparksData.slice(i, i + BATCH_SIZE)
+            for (let i = 0; i < creditsData.length; i += BATCH_SIZE) {
+                const batch = creditsData.slice(i, i + BATCH_SIZE)
                 const batchStartTime = Date.now()
 
                 const batchResults = await Promise.allSettled(
                     batch.map(async (data) => {
                         const timestamp = data.timestampEpoch || Math.floor(new Date(data.metadata.timestamp).getTime() / 1000)
 
-                        // Ensure all unknown spark types are counted as AI tokens
-                        const aiTokens = data.sparks.ai_tokens + (data.sparks.unknown || 0)
-                        const totalSparks = aiTokens + data.sparks.compute + data.sparks.storage
-                        const totalSparksWithMargin = Math.floor(totalSparks * BILLING_CONFIG.MARGIN_MULTIPLIER)
-                        const meterId = metersMap.get('sparks')
+                        // Ensure all unknown credit types are counted as AI tokens
+                        const aiTokens = data.credits.ai_tokens + (data.credits.unknown || 0)
+                        const totalCredits = aiTokens + data.credits.compute + data.credits.storage
+                        const totalCreditsWithMargin = Math.floor(totalCredits * BILLING_CONFIG.MARGIN_MULTIPLIER)
+                        const meterId = metersMap.get('credits')
 
                         if (!meterId) {
-                            throw new Error('No meter found for type: sparks')
+                            throw new Error('No meter found for type: credits')
                         }
 
                         let retryCount = 0
+                        console.log('Event sync', {
+                            totalCreditsWithMargin,
+                            meterId,
+                            timestamp,
+                            data,
+                            retries: BILLING_CONFIG.VALIDATION.MAX_RETRIES,
+                            retryCount
+                        })
                         while (retryCount < BILLING_CONFIG.VALIDATION.MAX_RETRIES) {
                             try {
-                                const result = await this.stripeClient.billing.meterEvents.create({
-                                    event_name: 'sparks',
-                                    identifier:
-                                        process.env.NODE_ENV === 'production'
-                                            ? `${data.traceId}_sparks`
-                                            : `${data.traceId}_sparks_${Date.now()}`,
+                                const app = getRunningExpressApp()
+
+                                const stripeMeterEvent = {
+                                    event_name: 'credits',
+                                    identifier: `${data.traceId}_credits`,
                                     timestamp,
                                     payload: {
-                                        value: totalSparksWithMargin.toString(),
+                                        value: totalCreditsWithMargin.toString(),
                                         stripe_customer_id: data.stripeCustomerId,
                                         trace_id: data.traceId,
-                                        spark_type: 'ai_tokens', // Default all sparks to AI tokens
-                                        ai_tokens_sparks: (aiTokens * BILLING_CONFIG.MARGIN_MULTIPLIER).toString(),
-                                        compute_sparks: (data.sparks.compute * BILLING_CONFIG.MARGIN_MULTIPLIER).toString(),
-                                        storage_sparks: (data.sparks.storage * BILLING_CONFIG.MARGIN_MULTIPLIER).toString(),
+                                        ai_tokens_credits: (aiTokens * BILLING_CONFIG.MARGIN_MULTIPLIER).toString(),
+                                        compute_credits: (data.credits.compute * BILLING_CONFIG.MARGIN_MULTIPLIER).toString(),
                                         ai_tokens_cost: (
                                             (data.costs.base.ai + (data.costs.base.unknown || 0)) *
                                             BILLING_CONFIG.MARGIN_MULTIPLIER
                                         ).toFixed(6),
                                         compute_cost: (data.costs.base.compute * BILLING_CONFIG.MARGIN_MULTIPLIER).toFixed(6),
-                                        storage_cost: (data.costs.base.storage * BILLING_CONFIG.MARGIN_MULTIPLIER).toFixed(6),
                                         total_cost_with_margin: (
                                             (data.costs.base.ai +
                                                 data.costs.base.compute +
@@ -364,7 +375,28 @@ export class StripeProvider {
                                             BILLING_CONFIG.MARGIN_MULTIPLIER
                                         ).toFixed(6)
                                     }
+                                }
+                                const result = await this.stripeClient.billing.meterEvents.create(stripeMeterEvent).catch((error) => {
+                                    log.error('Failed to create meter event', { error: error.message, stripeMeterEvent })
+                                    throw error
                                 })
+                                console.log('RESULT', result)
+                                // const usageEvent = await app.AppDataSource.getRepository(UsageEvent).save({
+                                //     traceId: data.traceId,
+                                //     userId: data.userId,
+                                //     organizationId: data.organizationId,
+                                //     aiCredentialsOwnership: data.aiCredentialsOwnership,
+                                //     resourceType: 'CREDITS',
+                                //     creditsConsumed: totalCreditsWithMargin,
+                                //     stripeCustomerId: data.stripeCustomerId,
+                                //     // messageId: data.messageId,
+                                //     timestamp,
+                                //     metadata: {
+                                //         stripeCustomerId: data.stripeCustomerId,
+                                //         stripeMeterEvent: result,
+                                //         langfuseTrace: data.fullTrace
+                                //     }
+                                // })
 
                                 // Update trace metadata with billing info
                                 await this.updateTraceMetadata(data, result, batchStartTime, BATCH_SIZE, i, meterId)
@@ -387,7 +419,7 @@ export class StripeProvider {
                     })
                 )
 
-                if (i + BATCH_SIZE < sparksData.length) {
+                if (i + BATCH_SIZE < creditsData.length) {
                     await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_BATCHES))
                 }
             }
@@ -403,7 +435,7 @@ export class StripeProvider {
         }
     }
 
-    private validateUsageEvent(data: SparksData & { fullTrace: any }): string | null {
+    private validateUsageEvent(data: CreditsData & { fullTrace: any }): string | null {
         try {
             // Check required metadata fields
             for (const field of BILLING_CONFIG.METADATA_FIELDS.REQUIRED) {
@@ -414,15 +446,15 @@ export class StripeProvider {
 
             // Validate resource amounts
             if (
-                data.sparks.ai_tokens > 0 &&
-                (data.sparks.ai_tokens < BILLING_CONFIG.AI_TOKENS.MIN_TOKENS ||
-                    data.sparks.ai_tokens > BILLING_CONFIG.AI_TOKENS.MAX_TOKENS_PER_REQUEST)
+                data.credits.ai_tokens > 0 &&
+                (data.credits.ai_tokens < BILLING_CONFIG.AI_TOKENS.MIN_TOKENS ||
+                    data.credits.ai_tokens > BILLING_CONFIG.AI_TOKENS.MAX_TOKENS_PER_REQUEST)
             ) {
-                return `Invalid AI tokens amount: ${data.sparks.ai_tokens}`
+                return `Invalid AI tokens amount: ${data.credits.ai_tokens}`
             }
 
             if (
-                data.sparks.compute > 0 &&
+                data.credits.compute > 0 &&
                 (data.usage.computeMinutes < BILLING_CONFIG.COMPUTE.MIN_MINUTES ||
                     data.usage.computeMinutes > BILLING_CONFIG.COMPUTE.MAX_MINUTES_PER_REQUEST)
             ) {
@@ -430,7 +462,7 @@ export class StripeProvider {
             }
 
             if (
-                data.sparks.storage > 0 &&
+                data.credits.storage > 0 &&
                 (data.usage.storageGB < BILLING_CONFIG.STORAGE.MIN_GB || data.usage.storageGB > BILLING_CONFIG.STORAGE.MAX_GB_PER_REQUEST)
             ) {
                 return `Invalid storage GB: ${data.usage.storageGB}`
@@ -443,14 +475,14 @@ export class StripeProvider {
     }
 
     private async updateTraceMetadata(
-        data: SparksData & { fullTrace: any },
+        data: CreditsData & { fullTrace: any },
         result: Stripe.Billing.MeterEvent,
         batchStartTime: number,
         batchSize: number,
         batchIndex: number,
         meterId: string
     ): Promise<void> {
-        const totalSparks = Object.values(data.sparks).reduce((sum, val) => sum + val, 0)
+        const totalCredits = Object.values(data.credits).reduce((sum, val) => sum + val, 0)
         await langfuse.trace({
             id: data.traceId,
             timestamp: data.fullTrace?.timestamp,
@@ -459,11 +491,11 @@ export class StripeProvider {
                 billing_status: 'processed',
                 meter_event_id: result.identifier,
                 billing_details: {
-                    total_sparks: Math.floor(totalSparks * BILLING_CONFIG.MARGIN_MULTIPLIER),
+                    total_credits: Math.floor(totalCredits * BILLING_CONFIG.MARGIN_MULTIPLIER),
                     breakdown: {
-                        ai_tokens: this.calculateResourceBreakdown(data.sparks.ai_tokens, data.costs.base.ai, totalSparks),
-                        compute: this.calculateResourceBreakdown(data.sparks.compute, data.costs.base.compute, totalSparks),
-                        storage: this.calculateResourceBreakdown(data.sparks.storage, data.costs.base.storage, totalSparks)
+                        ai_tokens: this.calculateResourceBreakdown(data.credits.ai_tokens, data.costs.base.ai, totalCredits),
+                        compute: this.calculateResourceBreakdown(data.credits.compute, data.costs.base.compute, totalCredits),
+                        storage: this.calculateResourceBreakdown(data.credits.storage, data.costs.base.storage, totalCredits)
                     },
                     costs: {
                         total_base_cost: data.costs.base.ai + data.costs.base.compute + data.costs.base.storage,
@@ -480,7 +512,7 @@ export class StripeProvider {
                     event: {
                         customer_id: data.stripeCustomerId,
                         timestamp: result.timestamp,
-                        event_name: 'sparks',
+                        event_name: 'credits',
                         meter_identifier: result.identifier,
                         identifier_production: process.env.NODE_ENV === 'production' ? result.identifier : undefined
                     },
@@ -496,20 +528,20 @@ export class StripeProvider {
         })
     }
 
-    private calculateResourceBreakdown(sparks: number, cost: number, totalSparks: number) {
+    private calculateResourceBreakdown(credits: number, cost: number, totalCredits: number) {
         return {
-            base_sparks: sparks,
-            sparks_with_margin: sparks * BILLING_CONFIG.MARGIN_MULTIPLIER,
+            base_credits: credits,
+            credits_with_margin: credits * BILLING_CONFIG.MARGIN_MULTIPLIER,
             base_cost: cost,
             cost_with_margin: cost * BILLING_CONFIG.MARGIN_MULTIPLIER,
-            rate: sparks > 0 ? cost / sparks : 0,
-            percentage: (sparks / totalSparks) * 100
+            rate: credits > 0 ? cost / credits : 0,
+            percentage: (credits / totalCredits) * 100
         }
     }
 
     private processBatchResults(
         batchResults: PromiseSettledResult<any>[],
-        batch: Array<SparksData & { fullTrace: any }>,
+        batch: Array<CreditsData & { fullTrace: any }>,
         meterEvents: Stripe.Billing.MeterEvent[],
         failedEvents: Array<{ traceId: string; error: string }>,
         processedTraces: string[]
@@ -577,8 +609,8 @@ export class StripeProvider {
                 .map((summary) => {
                     // Map meter IDs to their names based on config
                     let meterName = 'Unknown'
-                    if (summary.meter === BILLING_CONFIG.SPARKS_METER_ID) {
-                        meterName = BILLING_CONFIG.SPARKS_METER_NAME
+                    if (summary.meter === BILLING_CONFIG.CREDITS_METER_ID) {
+                        meterName = BILLING_CONFIG.CREDITS_METER_NAME
                     }
 
                     return {
@@ -748,17 +780,17 @@ export class StripeProvider {
                     const value = Number(event.aggregated_value || 0)
                     const date = new Date(event.start_time * 1000).toISOString().split('T')[0]
 
-                    // Get spark type from metadata or payload
-                    let sparkType = 'ai_tokens' // Default to AI tokens
+                    // Get credit type from metadata or payload
+                    let creditType = 'ai_tokens' // Default to AI tokens
                     try {
                         if (event.metadata) {
                             const metadata = JSON.parse(event.metadata)
-                            if (metadata.spark_type) {
-                                sparkType = metadata.spark_type
+                            if (metadata.credit_type) {
+                                creditType = metadata.credit_type
                             }
                         }
-                        if (event.payload?.spark_type) {
-                            sparkType = event.payload.spark_type
+                        if (event.payload?.credit_type) {
+                            creditType = event.payload.credit_type
                         }
                     } catch (e) {
                         log.warn('Failed to parse event metadata', { error: e, event })
@@ -775,8 +807,8 @@ export class StripeProvider {
                         }
                     }
 
-                    // Update totals and daily usage based on spark type
-                    switch (sparkType) {
+                    // Update totals and daily usage based on credit type
+                    switch (creditType) {
                         case 'compute':
                             totalCompute += value
                             dailyUsage[date].compute += value
@@ -813,7 +845,7 @@ export class StripeProvider {
                 currentPlan: {
                     name: subscription ? 'Pro' : 'Free',
                     status: subscription?.status === 'active' ? 'active' : 'inactive',
-                    sparksIncluded: planLimits
+                    creditsIncluded: planLimits
                 },
                 usageDashboard: {
                     aiTokens: {
@@ -841,10 +873,10 @@ export class StripeProvider {
                     current: now
                 },
                 pricing: {
-                    aiTokensRate: '1,000 tokens = 100 Sparks ($0.1)',
-                    computeRate: '1 minute = 50 sparks ($0.05)',
-                    storageRate: '1 GB/month = 500 sparks ($0.5)',
-                    sparkRate: '1 Spark = $0.001 USD'
+                    aiTokensRate: '1,000 tokens = 100 Credits ($0.1)',
+                    computeRate: '1 minute = 50 credits ($0.05)',
+                    storageRate: '1 GB/month = 500 credits ($0.5)',
+                    creditRate: '1 Credit = $0.001 USD'
                 },
                 dailyUsage: dailyUsageArray,
                 isOverLimit,
@@ -895,8 +927,8 @@ export class StripeProvider {
             }))
 
             // Calculate total credits used from line items
-            // This is an approximation based on the invoice amount and the spark rate
-            const totalCreditsUsed = Math.round(invoice.total / (BILLING_CONFIG.SPARK_TO_USD * 100))
+            // This is an approximation based on the invoice amount and the credit rate
+            const totalCreditsUsed = Math.round(invoice.total / (BILLING_CONFIG.CREDIT_TO_USD * 100))
 
             return {
                 amount: invoice.total,

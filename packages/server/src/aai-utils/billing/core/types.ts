@@ -31,13 +31,13 @@ export interface SubscriptionWithUsage extends Subscription {
 export interface UsageMetric {
     used: number
     total: number
-    sparks: number
+    credits: number
     cost: number
     rate: number
 }
 
 export interface UsageStats {
-    total_sparks: number
+    total_credits: number
     usageByMeter: Record<string, number>
     dailyUsageByMeter: Record<string, Array<{ date: Date; value: number }>>
     billingPeriod?: {
@@ -118,13 +118,16 @@ export interface GetUpcomingInvoiceParams {
     priceId?: string
 }
 
-export interface SparksData {
+export interface CreditsData {
     traceId: string
     stripeCustomerId: string
     subscriptionTier: string
+    userId: string
+    organizationId: string
+    aiCredentialsOwnership: string
     timestamp: string
     timestampEpoch: number
-    sparks: {
+    credits: {
         ai_tokens: number
         compute: number
         storage: number
@@ -182,21 +185,24 @@ export interface LangfuseTrace {
 export interface TraceMetadata {
     stripeCustomerId: string
     subscriptionTier?: string
+    userId: string
+    organizationId: string
+    aiCredentialsOwnership: string
     [key: string]: any
 }
 
-export const SPARK_RATES = {
+export const CREDIT_RATES = {
     AI_TOKENS: {
-        TOKENS_PER_SPARK: 10,
-        COST_PER_SPARK: 0.001
+        TOKENS_PER_CREDIT: 10,
+        COST_PER_CREDIT: 0.001
     },
     COMPUTE: {
-        MINUTES_PER_SPARK: 1 / 50,
-        COST_PER_SPARK: 0.001
+        MINUTES_PER_CREDIT: 1 / 50,
+        COST_PER_CREDIT: 0.001
     },
     STORAGE: {
-        GB_PER_SPARK: 1 / 500,
-        COST_PER_SPARK: 0.001
+        GB_PER_CREDIT: 1 / 500,
+        COST_PER_CREDIT: 0.001
     }
 }
 
@@ -210,10 +216,10 @@ export interface MeterEvent extends Stripe.Billing.MeterEvent {
         base_cost: string
         total_cost: string
         margin: string
-        // Spark breakdown
-        ai_sparks: string
-        compute_sparks: string
-        storage_sparks: string
+        // Credit breakdown
+        ai_credits: string
+        compute_credits: string
+        storage_credits: string
         dateTimestamp?: string
     }
 }
@@ -224,14 +230,14 @@ export interface SyncUsageResponse {
     skippedTraces: Array<{ traceId: string; reason: string }>
     meterEvents?: Stripe.Billing.MeterEvent[]
     traces?: any[]
-    sparksData?: SparksData[]
+    creditsData?: CreditsData[]
 }
 
 export interface UsageSummary {
     currentPlan: {
         name: 'Free' | 'Pro'
         status: 'active' | 'inactive'
-        sparksIncluded: number
+        creditsIncluded: number
     }
     usageDashboard: {
         aiTokens: {
@@ -259,10 +265,10 @@ export interface UsageSummary {
         current: Date
     }
     pricing: {
-        aiTokensRate: string // "1,000 tokens = 100 Sparks ($0.1)"
-        computeRate: string // "1 minute = 50 sparks ($0.05)"
-        storageRate: string // "1 GB/month = 500 sparks ($0.5)"
-        sparkRate: string // "1 Spark = $0.001 USD"
+        aiTokensRate: string // "1,000 tokens = 100 Credits ($0.1)"
+        computeRate: string // "1 minute = 50 credits ($0.05)"
+        storageRate: string // "1 GB/month = 500 credits ($0.5)"
+        creditRate: string // "1 Credit = $0.001 USD"
     }
     dailyUsage: Array<{
         date: string
@@ -299,7 +305,7 @@ export interface CustomerStatus {
         billingPeriod: 'month' | 'year'
         features: string[]
         limits: {
-            sparksPerMonth: number
+            creditsPerMonth: number
             apiAccess: boolean
             communitySupport: boolean
             usageAnalytics: boolean

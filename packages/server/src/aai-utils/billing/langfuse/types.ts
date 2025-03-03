@@ -56,14 +56,14 @@ export interface TraceMetadata {
     stripeProcessing?: boolean
     stripeProcessingStartedAt?: string
     stripeBilledAt?: string
-    sparksBilled?: Record<string, number>
+    creditsBilled?: Record<string, number>
     stripeError?: string
     stripeBilledTypes?: string[]
     stripePartialBilled?: boolean
     [key: string]: any // Allow additional metadata fields
 }
 
-export interface SparksData {
+export interface CreditsData {
     traceId: string
     customerId: string
     subscriptionTier: string
@@ -79,7 +79,7 @@ export interface SparksData {
             totalTokens: number
         }>
     }
-    sparks: {
+    credits: {
         total: number
         ai_tokens: number
         compute: number

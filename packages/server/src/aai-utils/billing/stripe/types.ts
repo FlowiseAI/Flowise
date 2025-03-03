@@ -37,7 +37,7 @@ export interface CustomerParams {
 export interface UsageMetric {
     used: number
     total: number
-    sparks: number
+    credits: number
     cost: number
     rate: number
 }
@@ -46,7 +46,7 @@ export interface UsageStats {
     ai_tokens: UsageMetric
     compute: UsageMetric
     storage: UsageMetric
-    total_sparks: number
+    total_credits: number
     total_cost: number
     billing_period: {
         start: string
@@ -75,7 +75,7 @@ export interface SubscriptionPlan {
 export interface MeterEventSummary extends Stripe.Billing.MeterEventSummary {
     metadata?: string
     payload?: {
-        spark_type?: string
+        credit_type?: string
         value?: string
         [key: string]: any
     }

@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react'
 import { Box, Card, Typography, Grid, Button, Stack, ToggleButton, ToggleButtonGroup, useTheme } from '@mui/material'
-import { Check as CheckIcon, Bolt as SparkIcon } from '@mui/icons-material'
+import { Check as CheckIcon, Bolt as CreditIcon } from '@mui/icons-material'
 import billingApi from '@/api/billing'
 
 interface SubscriptionTier {
     name: string
-    sparksPerMonth: number
+    creditsPerMonth: number
     price: number
     features: string[]
     priceId: string
@@ -17,11 +17,11 @@ interface SubscriptionTier {
 const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
     {
         name: 'Free',
-        sparksPerMonth: 10000,
+        creditsPerMonth: 10000,
         price: 0,
         priceId: 'price_free',
         features: [
-            '10,000 Sparks',
+            '10,000 Credits',
             'Access to GPT-4o, Claude 3.7 Sonnet, Gemini 1.5 Pro',
             'Access to Community Sidekicks',
             'Standard voice chats',
@@ -31,12 +31,12 @@ const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
     },
     {
         name: 'Plus',
-        sparksPerMonth: 500_000,
+        creditsPerMonth: 500_000,
         price: 20,
         priceId: 'price_1QdEegFeRAHyP6by6yTOvbwj',
         highlighted: true,
         features: [
-            '500,000 Sparks per month',
+            '500,000 Credits per month',
             'Full API access',
             'Extended compute and storage limits',
             'Access to advanced voice chats',
@@ -178,9 +178,9 @@ const PurchaseSubscription = () => {
                                         </Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-                                        <SparkIcon sx={{ fontSize: 16, color: theme.palette.warning.main }} />
+                                        <CreditIcon sx={{ fontSize: 16, color: theme.palette.warning.main }} />
                                         <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
-                                            {tier.sparksPerMonth.toLocaleString()} Sparks included
+                                            {tier.creditsPerMonth.toLocaleString()} Credits included
                                         </Typography>
                                     </Box>
                                 </Box>

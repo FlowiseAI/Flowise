@@ -45,7 +45,7 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
         (usageSummary?.usageDashboard?.aiTokens?.used || 0) +
         (usageSummary?.usageDashboard?.compute?.used || 0) +
         (usageSummary?.usageDashboard?.storage?.used || 0)
-    const totalLimit = usageSummary?.currentPlan?.sparksIncluded || 10000
+    const totalLimit = usageSummary?.currentPlan?.creditsIncluded || 10000
     const percentageUsed = Math.min((totalUsed / totalLimit) * 100, 100)
     const isOverLimit = usageSummary?.isOverLimit || false
 
@@ -107,7 +107,7 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
                     <Skeleton variant='text' width={120} height={24} />
                 ) : (
                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem' }}>
-                        {formattedUsed} / {formattedLimit} Sparks
+                        {formattedUsed} / {formattedLimit} Credits
                     </Typography>
                 )}
             </Stack>
@@ -218,7 +218,7 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
                             <Stack direction='row' justifyContent='space-between' sx={{ mt: 1 }}>
                                 <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.875rem' }}>Credits Used:</Typography>
                                 <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
-                                    {usageSummary.upcomingInvoice.totalCreditsUsed.toLocaleString()} Sparks
+                                    {usageSummary.upcomingInvoice.totalCreditsUsed.toLocaleString()} Credits
                                 </Typography>
                             </Stack>
                         )}

@@ -5,15 +5,15 @@ import { Box, Button, Card, Container, Grid, Typography, Slider, TextField } fro
 import { BILLING_CONFIG } from '../config/billing'
 
 const PurchaseCredits = () => {
-    const [sparksToBuy, setSparksToBuy] = useState(10000)
+    const [creditsToBuy, setCreditsToBuy] = useState(10000)
     const [loading, setLoading] = useState(false)
 
-    const handleSparkChange = (event: Event, newValue: number | number[]) => {
-        setSparksToBuy(newValue as number)
+    const handleCreditChange = (event: Event, newValue: number | number[]) => {
+        setCreditsToBuy(newValue as number)
     }
 
-    const calculateSparkPrice = (sparks: number) => {
-        return sparks * BILLING_CONFIG.SPARK_TO_USD
+    const calculateCreditPrice = (credits: number) => {
+        return credits * BILLING_CONFIG.CREDIT_TO_USD
     }
 
     const handlePurchase = useCallback(async () => {
@@ -25,8 +25,8 @@ const PurchaseCredits = () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    sparks: sparksToBuy,
-                    amount: calculateSparkPrice(sparksToBuy)
+                    credits: creditsToBuy,
+                    amount: calculateCreditPrice(creditsToBuy)
                 })
             })
             if (!response.ok) throw new Error('Failed to initiate purchase')
@@ -37,7 +37,7 @@ const PurchaseCredits = () => {
         } finally {
             setLoading(false)
         }
-    }, [sparksToBuy])
+    }, [creditsToBuy])
 
     return (
         <Container maxWidth='lg'>
@@ -52,21 +52,21 @@ const PurchaseCredits = () => {
                 }}
             >
                 <Typography variant='h5' sx={{ color: 'white', mb: 3 }}>
-                    Purchase Sparks
+                    Purchase Credits
                 </Typography>
                 <Grid container spacing={4}>
                     <Grid item xs={12} md={8}>
                         <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.7)', mb: 2 }}>
-                            Select amount of Sparks to purchase
+                            Select amount of Credits to purchase
                         </Typography>
                         <Slider
-                            value={sparksToBuy}
-                            onChange={handleSparkChange}
+                            value={creditsToBuy}
+                            onChange={handleCreditChange}
                             min={1000}
                             max={1000000}
                             step={1000}
                             valueLabelDisplay='auto'
-                            valueLabelFormat={(value) => `${value.toLocaleString()} Sparks`}
+                            valueLabelFormat={(value) => `${value.toLocaleString()} Credits`}
                             sx={{
                                 color: 'primary.main',
                                 '& .MuiSlider-thumb': {
@@ -82,13 +82,13 @@ const PurchaseCredits = () => {
                         />
                         <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                             <TextField
-                                value={sparksToBuy}
-                                onChange={(e) => setSparksToBuy(Number(e.target.value))}
+                                value={creditsToBuy}
+                                onChange={(e) => setCreditsToBuy(Number(e.target.value))}
                                 type='number'
                                 variant='outlined'
                                 size='small'
                                 InputProps={{
-                                    endAdornment: <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>Sparks</Typography>
+                                    endAdornment: <Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>Credits</Typography>
                                 }}
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
@@ -104,7 +104,7 @@ const PurchaseCredits = () => {
                                 }}
                             />
                             <Typography variant='h6' sx={{ color: 'white', flexGrow: 1, textAlign: 'right' }}>
-                                Total: ${calculateSparkPrice(sparksToBuy).toFixed(2)}
+                                Total: ${calculateCreditPrice(creditsToBuy).toFixed(2)}
                             </Typography>
                         </Box>
                     </Grid>
@@ -123,7 +123,7 @@ const PurchaseCredits = () => {
                                 }
                             }}
                         >
-                            {loading ? 'Processing...' : 'Purchase Sparks'}
+                            {loading ? 'Processing...' : 'Purchase Credits'}
                         </Button>
                     </Grid>
                 </Grid>

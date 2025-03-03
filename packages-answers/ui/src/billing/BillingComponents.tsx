@@ -1,6 +1,6 @@
 import React from 'react'
 import { Box, Container, Typography, Card, Stack } from '@mui/material'
-// import { Info as InfoIcon, Bolt as SparkIcon } from '@mui/icons-material'
+// import { Info as InfoIcon, Bolt as CreditIcon } from '@mui/icons-material'
 // import UsageStats from '@ui/billing/UsageStats'
 
 export const UsageStats = () => (
@@ -9,10 +9,10 @@ export const UsageStats = () => (
             Simple, Usage-Based Pricing
         </Typography>
         <Typography variant='body1' sx={{ color: 'rgba(255,255,255,0.7)', mb: 2 }}>
-            Pay only for what you use with our Sparks-based billing
+            Pay only for what you use with our Credits-based billing
         </Typography>
         <Typography variant='body1' sx={{ color: 'white', mb: 4 }}>
-            1 Spark = $0.001 USD
+            1 Credit = $0.001 USD
         </Typography>
 
         <Stack direction='row' spacing={3} justifyContent='center'>
@@ -28,14 +28,14 @@ export const UsageStats = () => (
                 }}
             >
                 <Stack direction='row' alignItems='center' spacing={1}>
-                    {/* <SparkIcon /> */}
+                    {/* <CreditIcon /> */}
                     <Typography variant='h6' sx={{ color: 'white' }}>
                         AI Tokens
                     </Typography>
                     {/* <InfoIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.5)' }} /> */}
                 </Stack>
                 <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.7)', mt: 1 }}>
-                    1,000 tokens = 100 Sparks ($0.1)
+                    1,000 tokens = 100 Credits ($0.1)
                 </Typography>
             </Card>
 
@@ -51,14 +51,14 @@ export const UsageStats = () => (
                 }}
             >
                 <Stack direction='row' alignItems='center' spacing={1}>
-                    {/* <SparkIcon sx={{ color: 'primary.main' }} /> */}
+                    {/* <CreditIcon sx={{ color: 'primary.main' }} /> */}
                     <Typography variant='h6' sx={{ color: 'white' }}>
                         Compute Time
                     </Typography>
                     {/* <InfoIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.5)' }} /> */}
                 </Stack>
                 <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.7)', mt: 1 }}>
-                    1 minute = 50 Sparks ($0.05)
+                    1 minute = 50 Credits ($0.05)
                 </Typography>
             </Card>
 
@@ -74,14 +74,14 @@ export const UsageStats = () => (
                 }}
             >
                 <Stack direction='row' alignItems='center' spacing={1}>
-                    {/* <SparkIcon sx={{ color: 'primary.main' }} /> */}
+                    {/* <CreditIcon sx={{ color: 'primary.main' }} /> */}
                     <Typography variant='h6' sx={{ color: 'white' }}>
                         Storage
                     </Typography>
                     {/* <InfoIcon sx={{ fontSize: 16, color: 'rgba(255,255,255,0.5)' }} /> */}
                 </Stack>
                 <Typography variant='body2' sx={{ color: 'rgba(255,255,255,0.7)', mt: 1 }}>
-                    1 GB/month = 500 Sparks ($0.5)
+                    1 GB/month = 500 Credits ($0.5)
                 </Typography>
             </Card>
         </Stack>

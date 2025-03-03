@@ -50,11 +50,11 @@
         "STRIPE_SECRET_KEY",
         "STRIPE_WEBHOOK_SECRET",
         "STRIPE_METER_PREFIX",
-        "SPARK_RATE",
+        "CREDIT_RATE",
         "_API_KEY",
         "LANGFUSE_SECRET_KEY",
         "LANGFUSE_PUBLIC_KEY",
-        "LANGFUSE_BASEURL"
+        "LANGFUSE_HOST"
     ],
     "pipeline": {
         "//#dev-docker": {

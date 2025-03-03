@@ -345,7 +345,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                         </Box>
                     ))}
 
-                    <ListItem disablePadding>
+                    {/* <ListItem disablePadding>
                         <ListItemButton
                             onClick={handleSubscriptionOpen}
                             sx={{ bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' }, borderRadius: 1, mb: 1 }}
@@ -368,7 +368,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                                 Buy Credits
                             </Typography>
                         </ListItemButton>
-                    </ListItem>
+                    </ListItem> */}
 
                     <ListItem disablePadding sx={{ display: 'block' }}>
                         <Box

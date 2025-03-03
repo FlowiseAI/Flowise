@@ -97,7 +97,7 @@ export class BillingService implements BillingProvider {
             compute: [],
             storage: []
         }
-        let total_sparks = 0
+        let total_credits = 0
 
         summaries.forEach((summary) => {
             summary.data.forEach((rawEvent) => {
@@ -105,35 +105,35 @@ export class BillingService implements BillingProvider {
                 const value = Number(event.aggregated_value || 0)
                 const date = new Date(event.start_time * 1000)
 
-                // Get spark type from metadata or payload
-                let sparkType = 'ai_tokens' // Default to AI tokens
+                // Get credit type from metadata or payload
+                let creditType = 'ai_tokens' // Default to AI tokens
                 try {
                     if (event.metadata) {
                         const metadata = JSON.parse(event.metadata as string)
-                        if (metadata.spark_type) {
-                            sparkType = metadata.spark_type
+                        if (metadata.credit_type) {
+                            creditType = metadata.credit_type
                         }
                     }
-                    if (event.payload?.spark_type) {
-                        sparkType = event.payload.spark_type
+                    if (event.payload?.credit_type) {
+                        creditType = event.payload.credit_type
                     }
                 } catch (e) {
                     log.warn('Failed to parse event metadata', { error: e, event })
                 }
 
                 // Add to the appropriate meter
-                if (sparkType === 'compute' || sparkType === 'storage') {
-                    usageByMeter[sparkType] += value
+                if (creditType === 'compute' || creditType === 'storage') {
+                    usageByMeter[creditType] += value
                 } else {
                     // All other types count as AI tokens
                     usageByMeter.ai_tokens += value
                 }
 
-                total_sparks += value
+                total_credits += value
 
                 // Add to daily usage
-                if (sparkType === 'compute' || sparkType === 'storage') {
-                    dailyUsageByMeter[sparkType].push({ date, value })
+                if (creditType === 'compute' || creditType === 'storage') {
+                    dailyUsageByMeter[creditType].push({ date, value })
                 } else {
                     dailyUsageByMeter.ai_tokens.push({ date, value })
                 }
@@ -158,7 +158,7 @@ export class BillingService implements BillingProvider {
                     currency: invoice.currency,
                     dueDate: invoice.dueDate,
                     // Calculate total credits used based on the invoice amount
-                    totalCreditsUsed: Math.round(invoice.amount / (0.00004 * 100)) // Assuming $0.001 per spark
+                    totalCreditsUsed: Math.round(invoice.amount / (0.00004 * 100)) // Assuming $0.001 per credit
                 }
             }
         } catch (error) {
@@ -167,7 +167,7 @@ export class BillingService implements BillingProvider {
         }
 
         return {
-            total_sparks,
+            total_credits,
             usageByMeter,
             dailyUsageByMeter,
             billingPeriod: subscription
@@ -229,7 +229,7 @@ export class BillingService implements BillingProvider {
             // Map summaries to include meter_name
             const usage = allSummaries.map((summary) => ({
                 ...summary,
-                meter_name: summary.meter === process.env.STRIPE_SPARKS_METER_ID ? 'sparks' : 'unknown'
+                meter_name: summary.meter === process.env.STRIPE_CREDITS_METER_ID ? 'credits' : 'unknown'
             }))
 
             return {
@@ -285,9 +285,9 @@ export class BillingService implements BillingProvider {
             log.info('Langfuse sync completed', { durationMs: langfuseTime, traceId })
 
             // Sync to Stripe if needed
-            if (result.sparksData && result.sparksData.length > 0) {
+            if (result.creditsData && result.creditsData.length > 0) {
                 const stripeStartTime = Date.now()
-                const stripeResult = await this.paymentProvider.syncUsageToStripe(result.sparksData)
+                const stripeResult = await this.paymentProvider.syncUsageToStripe(result.creditsData)
                 const stripeTime = Date.now() - stripeStartTime
                 log.info('Stripe sync completed', { durationMs: stripeTime, traceId })
 

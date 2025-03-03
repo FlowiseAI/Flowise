@@ -21,7 +21,7 @@ import {
 import {
     Bolt as ZapIcon,
     Timer as TimerIcon,
-    AutoAwesome as SparklesIcon,
+    AutoAwesome as CreditlesIcon,
     Calculate as CalculatorIcon,
     TrendingUp as ActivityIcon,
     Group as UsersIcon,

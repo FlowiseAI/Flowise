@@ -63,7 +63,8 @@
         "rimraf": "^3.0.2",
         "run-script-os": "^1.1.6",
         "turbo": "1.10.16",
-        "typescript": "^5.4.5"
+        "typescript": "^5.4.5",
+        "cursor-tools": "latest"
     },
     "dependencies": {
         "@types/node-cron": "^3.0.11",

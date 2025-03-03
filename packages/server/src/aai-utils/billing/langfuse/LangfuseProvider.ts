@@ -1,4 +1,4 @@
-import { SparksData, TraceMetadata, SyncUsageResponse } from '../core/types'
+import { CreditsData, TraceMetadata, SyncUsageResponse } from '../core/types'
 import { langfuse, log, DEFAULT_CUSTOMER_ID, BILLING_CONFIG } from '../config'
 import type { GetLangfuseTraceResponse, GetLangfuseTracesResponse } from 'langfuse-core'
 import { StripeProvider } from '../stripe/StripeProvider'
@@ -12,11 +12,11 @@ export class LangfuseProvider {
     // async getUsageSummary(customerId: string): Promise<UsageStats> {
     //     try {
     //         const traces = await this.fetchUsageData()
-    //         const sparksData = await this.convertUsageToSparks(traces)
+    //         const creditsData = await this.convertUsageToCredits(traces)
 
     //         // Calculate totals
-    //         const totalSparks = sparksData.reduce((acc, data) => acc + data.sparks.total, 0)
-    //         const totalCost = sparksData.reduce((acc, data) => acc + data.usage.totalCost, 0)
+    //         const totalCredits = creditsData.reduce((acc, data) => acc + data.credits.total, 0)
+    //         const totalCost = creditsData.reduce((acc, data) => acc + data.usage.totalCost, 0)
 
     //         // Get billing period
     //         const now = new Date()
@@ -25,27 +25,27 @@ export class LangfuseProvider {
 
     //         return {
     //             // ai_tokens: {
-    //             //     used: Math.round(totalSparks * BILLING_CONFIG.AI_TOKENS.TOKENS_PER_SPARK),
+    //             //     used: Math.round(totalCredits * BILLING_CONFIG.AI_TOKENS.TOKENS_PER_CREDIT),
     //             //     total: 1000000, // Default limit
-    //             //     sparks: totalSparks,
-    //             //     cost: totalSparks * BILLING_CONFIG.SPARK_TO_USD,
-    //             //     rate: BILLING_CONFIG.AI_TOKENS.TOKENS_PER_SPARK
+    //             //     credits: totalCredits,
+    //             //     cost: totalCredits * BILLING_CONFIG.CREDIT_TO_USD,
+    //             //     rate: BILLING_CONFIG.AI_TOKENS.TOKENS_PER_CREDIT
     //             // },
     //             // compute: {
     //             //     used: 0,
     //             //     total: 10000,
-    //             //     sparks: 0,
+    //             //     credits: 0,
     //             //     cost: 0,
-    //             //     rate: BILLING_CONFIG.COMPUTE.MINUTES_PER_SPARK
+    //             //     rate: BILLING_CONFIG.COMPUTE.MINUTES_PER_CREDIT
     //             // },
     //             // storage: {
     //             //     used: 0,
     //             //     total: 100,
-    //             //     sparks: 0,
+    //             //     credits: 0,
     //             //     cost: 0,
-    //             //     rate: BILLING_CONFIG.STORAGE.GB_PER_SPARK
+    //             //     rate: BILLING_CONFIG.STORAGE.GB_PER_CREDIT
     //             // },
-    //             total_sparks: totalSparks,
+    //             total_credits: totalCredits,
     //             dailyUsageByMeter: {},
     //             usageByMeter: {},
     //             lastUpdated: new Date(),
@@ -63,7 +63,7 @@ export class LangfuseProvider {
 
     async syncUsageToStripe(traceId?: string): Promise<SyncUsageResponse> {
         let traces: Trace[] = []
-        let sparksDataWithTraces: Array<{ sparksData: SparksData; fullTrace: any }> = []
+        let creditsDataWithTraces: Array<{ creditsData: CreditsData; fullTrace: any }> = []
         let failedTraces: Array<{ traceId: string; error: string }> = []
         let processedTraces: string[] = []
         let skippedTraces: Array<{ traceId: string; reason: string }> = []
@@ -85,13 +85,13 @@ export class LangfuseProvider {
                 return false
             })
 
-            sparksDataWithTraces = await this.convertUsageToSparks(traces)
+            creditsDataWithTraces = await this.convertUsageToCredits(traces)
 
             // Create meter events in Stripe
             const stripeProvider = new StripeProvider(stripeClient)
             const stripeResponse = await stripeProvider.syncUsageToStripe(
-                sparksDataWithTraces.map((item) => ({
-                    ...item.sparksData,
+                creditsDataWithTraces.map((item) => ({
+                    ...item.creditsData,
                     fullTrace: item.fullTrace
                 }))
             )
@@ -108,7 +108,7 @@ export class LangfuseProvider {
             failedTraces,
             skippedTraces,
             traces,
-            sparksData: sparksDataWithTraces.map((item) => item.sparksData),
+            creditsData: creditsDataWithTraces.map((item) => item.creditsData),
             meterEvents
         }
     }
@@ -191,10 +191,10 @@ export class LangfuseProvider {
             metadata.billing_status !== 'processed'
         )
     }
-    private async convertUsageToSparks(usageData: Trace[]): Promise<Array<{ sparksData: SparksData; fullTrace: any }>> {
+    private async convertUsageToCredits(usageData: Trace[]): Promise<Array<{ creditsData: CreditsData; fullTrace: any }>> {
         const validTraces = await Promise.all(usageData.map((trace) => this.validateUsageData(trace)))
         const filteredData = usageData.filter((_, index) => validTraces[index])
-        const processedData: Array<{ sparksData: SparksData; fullTrace: any }> = []
+        const processedData: Array<{ creditsData: CreditsData; fullTrace: any }> = []
 
         // Use UTC timestamp for consistency
         const nowUtc = new Date()
@@ -215,7 +215,7 @@ export class LangfuseProvider {
             const batchResults = await Promise.all(batch.map((trace) => this.processTrace(trace, nowUtcSeconds)))
 
             // Filter out failed traces (undefined results)
-            const validResults = batchResults.filter((result): result is { sparksData: SparksData; fullTrace: any } => !!result)
+            const validResults = batchResults.filter((result): result is { creditsData: CreditsData; fullTrace: any } => !!result)
             processedData.push(...validResults)
 
             // Apply rate limiting between batches
@@ -227,7 +227,7 @@ export class LangfuseProvider {
         return processedData
     }
 
-    private async processTrace(trace: Trace, nowUtcSeconds: number): Promise<{ sparksData: SparksData; fullTrace: any } | undefined> {
+    private async processTrace(trace: Trace, nowUtcSeconds: number): Promise<{ creditsData: CreditsData; fullTrace: any } | undefined> {
         try {
             const traceDate = new Date(trace.timestamp)
             const traceTimestampSeconds = Math.floor(traceDate.getTime() / 1000)
@@ -245,11 +245,11 @@ export class LangfuseProvider {
             const metadata = (trace.metadata || {}) as TraceMetadata
             const { data: fullTrace } = await langfuse.fetchTrace(trace.id)
             const costs = await this.calculateCosts(fullTrace)
-            const sparks = this.convertCostsToSparks(costs)
+            const credits = this.convertCostsToCredits(costs)
             const modelUsage = await this.getModelUsage(fullTrace as any)
 
-            const sparksData = this.buildSparksData(fullTrace, metadata, costs, sparks, modelUsage, traceTimestampSeconds)
-            return { sparksData, fullTrace: fullTrace }
+            const creditsData = this.buildCreditsData(fullTrace, metadata, costs, credits, modelUsage, traceTimestampSeconds)
+            return { creditsData, fullTrace: fullTrace }
         } catch (error: any) {
             log.error('Error processing trace', { traceId: trace.id, error: error.message })
             return undefined
@@ -264,7 +264,7 @@ export class LangfuseProvider {
         withMargin: number
     }> {
         const computeMinutes = trace.latency / (1000 * 60)
-        const aiCost = trace.totalCost
+        const aiCost = trace.metadata.aiCredentialsOwnership === 'platform' ? trace.totalCost : 0
         const computeCost = computeMinutes * 0.05
         const storageCost = 0
         const totalBase = aiCost + computeCost + storageCost
@@ -279,11 +279,11 @@ export class LangfuseProvider {
         }
     }
 
-    private convertCostsToSparks(costs: { ai: number; compute: number; storage: number; withMargin: number }) {
+    private convertCostsToCredits(costs: { ai: number; compute: number; storage: number; withMargin: number }) {
         return {
-            ai_tokens: Math.ceil((costs.ai * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.SPARK_TO_USD),
-            compute: Math.ceil((costs.compute * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.SPARK_TO_USD),
-            storage: Math.ceil((costs.storage * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.SPARK_TO_USD)
+            ai_tokens: Math.ceil((costs.ai * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.CREDIT_TO_USD),
+            compute: Math.ceil((costs.compute * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.CREDIT_TO_USD),
+            storage: Math.ceil((costs.storage * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.CREDIT_TO_USD)
         }
     }
 
@@ -299,26 +299,29 @@ export class LangfuseProvider {
             }))
     }
 
-    private buildSparksData(
+    private buildCreditsData(
         trace: FullTrace,
         metadata: TraceMetadata,
         costs: { ai: number; compute: number; storage: number; total: number; withMargin: number },
-        sparks: { ai_tokens: number; compute: number; storage: number },
+        credits: { ai_tokens: number; compute: number; storage: number },
         modelUsage: Array<any>,
         timestampSeconds: number
-    ): SparksData {
-        const totalSparks = sparks.ai_tokens + sparks.compute + sparks.storage
+    ): CreditsData {
+        const totalCredits = credits.ai_tokens + credits.compute + credits.storage
         const computeMinutes = trace.latency / (1000 * 60)
 
         return {
             traceId: trace.id,
+            userId: metadata.userId,
+            organizationId: metadata.organizationId,
+            aiCredentialsOwnership: metadata.aiCredentialsOwnership,
             stripeCustomerId: metadata.customerId || DEFAULT_CUSTOMER_ID!,
             subscriptionTier: metadata.subscriptionTier || 'free',
             timestamp: trace.timestamp.toString(),
             timestampEpoch: timestampSeconds,
-            sparks: {
-                ...sparks,
-                total: totalSparks
+            credits: {
+                ...credits,
+                total: totalCredits
             },
             metadata: {
                 ...metadata,

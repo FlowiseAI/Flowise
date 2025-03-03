@@ -12,10 +12,10 @@ export const log = console as unknown as Logger
 export const DEFAULT_CUSTOMER_ID = process.env.DEFAULT_STRIPE_CUSTOMER_ID ?? 'cus_Re7UrYXnBJisB8'
 
 // Load environment variables with defaults
-const SPARK_PRICE_USD = parseFloat(process.env.SPARK_PRICE_USD || '0.00004') // $20 for 500k sparks
+const CREDIT_PRICE_USD = parseFloat(process.env.CREDIT_PRICE_USD || '0.00004') // $20 for 500k credits
 const MARGIN_MULTIPLIER = parseFloat(process.env.BILLING_MARGIN_MULTIPLIER || '1.2') // 20% margin
-const PRO_PLAN_SPARKS = parseInt(process.env.PRO_PLAN_SPARKS || '500000') // 500k sparks for Pro plan
-const FREE_PLAN_SPARKS = parseInt(process.env.FREE_PLAN_SPARKS || '10000') // 10k sparks for Free plan
+const PRO_PLAN_CREDITS = parseInt(process.env.PRO_PLAN_CREDITS || '500000') // 500k credits for Pro plan
+const FREE_PLAN_CREDITS = parseInt(process.env.FREE_PLAN_CREDITS || '10000') // 10k credits for Free plan
 
 // Billing configuration
 export const BILLING_CONFIG = {
@@ -23,16 +23,16 @@ export const BILLING_CONFIG = {
         FREE_MONTHLY: process.env.STRIPE_FREE_PRICE_ID || 'price_1QhDqdFeRAHyP6byOK161faI',
         PAID_MONTHLY: process.env.STRIPE_PAID_PRICE_ID || 'price_1QhDqdFeRAHyP6byOK161faI'
     },
-    // Base rate: $20 for 500,000 sparks = $0.00004 per spark
-    SPARK_TO_USD: SPARK_PRICE_USD,
+    // Base rate: $20 for 500,000 credits = $0.00004 per credit
+    CREDIT_TO_USD: CREDIT_PRICE_USD,
     MARGIN_MULTIPLIER: MARGIN_MULTIPLIER,
-    SPARKS_METER_ID: process.env.STRIPE_SPARKS_METER_ID || 'mtr_test_61Rgpu5M2KRrOLhJW41FeRAHyP6by5dI',
-    SPARKS_METER_NAME: 'sparks',
+    CREDITS_METER_ID: process.env.STRIPE_CREDITS_METER_ID || 'mtr_test_61S7tgODE3yzFip9Q41FeRAHyP6byJRI',
+    CREDITS_METER_NAME: 'credits',
 
     // Plan limits
     PLAN_LIMITS: {
-        PRO: PRO_PLAN_SPARKS,
-        FREE: FREE_PLAN_SPARKS
+        PRO: PRO_PLAN_CREDITS,
+        FREE: FREE_PLAN_CREDITS
     },
 
     // Validation rules
@@ -46,20 +46,20 @@ export const BILLING_CONFIG = {
 
     // Resource configuration
     AI_TOKENS: {
-        TOKENS_PER_SPARK: 10, // 1,000 tokens = 100 Sparks
-        METER_NAME: 'sparks',
+        TOKENS_PER_CREDIT: 10, // 1,000 tokens = 100 Credits
+        METER_NAME: 'credits',
         MIN_TOKENS: 1,
         MAX_TOKENS_PER_REQUEST: 1000000
     },
     COMPUTE: {
-        MINUTES_PER_SPARK: 1 / 50, // 1 minute = 50 Sparks
-        METER_NAME: 'sparks',
+        MINUTES_PER_CREDIT: 1 / 50, // 1 minute = 50 Credits
+        METER_NAME: 'credits',
         MIN_MINUTES: 0.1,
         MAX_MINUTES_PER_REQUEST: 1440 // 24 hours
     },
     STORAGE: {
-        GB_PER_SPARK: 1 / 500, // 1 GB = 500 Sparks
-        METER_NAME: 'sparks',
+        GB_PER_CREDIT: 1 / 500, // 1 GB = 500 Credits
+        METER_NAME: 'credits',
         MIN_GB: 0.1,
         MAX_GB_PER_REQUEST: 1000
     },
@@ -71,9 +71,9 @@ export const BILLING_CONFIG = {
     },
 
     RATE_DESCRIPTIONS: {
-        AI_TOKENS: 'Usage from AI model token consumption (1,000 tokens = 100 Sparks)',
-        COMPUTE: 'Usage from processing time and compute resources (1 minute = 50 Sparks)',
-        STORAGE: 'Usage from data storage and persistence (1 GB/month = 500 Sparks)'
+        AI_TOKENS: 'Usage from AI model token consumption (1,000 tokens = 100 Credits)',
+        COMPUTE: 'Usage from processing time and compute resources (1 minute = 50 Credits)',
+        STORAGE: 'Usage from data storage and persistence (1 GB/month = 500 Credits)'
     }
 }
 
@@ -81,5 +81,5 @@ export const BILLING_CONFIG = {
 export const langfuse = new Langfuse({
     publicKey: process.env.LANGFUSE_PUBLIC_KEY || '',
     secretKey: process.env.LANGFUSE_SECRET_KEY || '',
-    baseUrl: process.env.LANGFUSE_BASEURL || 'https://cloud.langfuse.com'
+    baseUrl: process.env.LANGFUSE_HOST || 'https://cloud.langfuse.com'
 })

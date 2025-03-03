@@ -63,15 +63,15 @@ export interface TraceMetadata {
     stripeProcessing?: boolean
     stripeProcessingStartedAt?: string
     stripeBilledAt?: string
-    sparksBilled?: Record<string, number>
+    creditsBilled?: Record<string, number>
     stripeError?: string
     stripeBilledTypes?: string[]
     stripePartialBilled?: boolean
     [key: string]: any // Allow additional metadata fields
 }
 
-// Update the sparks data interface
-export interface SparksData {
+// Update the credits data interface
+export interface CreditsData {
     traceId: string
     customerId: string
     subscriptionTier: string
@@ -87,7 +87,7 @@ export interface SparksData {
             totalTokens: number
         }>
     }
-    sparks: {
+    credits: {
         total: number
         ai_tokens: number
         compute: number
@@ -169,7 +169,7 @@ export interface LangfuseTrace {
 export interface UsageMetric {
     used: number
     total: number
-    sparks: number
+    credits: number
     cost: number
     rate: number
 }
@@ -178,7 +178,7 @@ export interface UsageStats {
     ai_tokens: UsageMetric
     compute: UsageMetric
     storage: UsageMetric
-    total_sparks: number
+    total_credits: number
     total_cost: number
     billing_period: {
         start: string

@@ -286,26 +286,26 @@ const getUsageSummary = async (req: Request, res: Response, next: NextFunction) 
             currentPlan: {
                 name: isPro ? 'Pro' : 'Free',
                 status: subscription?.status === 'active' ? 'active' : 'inactive',
-                sparksIncluded: planLimits
+                creditsIncluded: planLimits
             },
             usageDashboard: {
                 aiTokens: {
                     used: usage?.usageByMeter?.ai_tokens || 0,
                     total: planLimits * 0.5, // 50% allocation for AI tokens
-                    rate: BILLING_CONFIG.SPARK_TO_USD * 100, // Cost per 100 sparks
-                    cost: (usage?.usageByMeter?.ai_tokens || 0) * BILLING_CONFIG.SPARK_TO_USD
+                    rate: BILLING_CONFIG.CREDIT_TO_USD * 100, // Cost per 100 credits
+                    cost: (usage?.usageByMeter?.ai_tokens || 0) * BILLING_CONFIG.CREDIT_TO_USD
                 },
                 compute: {
                     used: usage?.usageByMeter?.compute || 0,
                     total: planLimits * 0.3, // 30% allocation for compute
-                    rate: BILLING_CONFIG.SPARK_TO_USD * 50, // Cost per 50 sparks
-                    cost: (usage?.usageByMeter?.compute || 0) * BILLING_CONFIG.SPARK_TO_USD
+                    rate: BILLING_CONFIG.CREDIT_TO_USD * 50, // Cost per 50 credits
+                    cost: (usage?.usageByMeter?.compute || 0) * BILLING_CONFIG.CREDIT_TO_USD
                 },
                 storage: {
                     used: usage?.usageByMeter?.storage || 0,
                     total: planLimits * 0.2, // 20% allocation for storage
-                    rate: BILLING_CONFIG.SPARK_TO_USD * 500, // Cost per 500 sparks
-                    cost: (usage?.usageByMeter?.storage || 0) * BILLING_CONFIG.SPARK_TO_USD
+                    rate: BILLING_CONFIG.CREDIT_TO_USD * 500, // Cost per 500 credits
+                    cost: (usage?.usageByMeter?.storage || 0) * BILLING_CONFIG.CREDIT_TO_USD
                 }
             },
             billingPeriod: {
@@ -314,10 +314,10 @@ const getUsageSummary = async (req: Request, res: Response, next: NextFunction) 
                 current: new Date()
             },
             pricing: {
-                aiTokensRate: `1,000 tokens = 100 Sparks ($${(BILLING_CONFIG.SPARK_TO_USD * 100).toFixed(3)})`,
-                computeRate: `1 minute = 50 sparks ($${(BILLING_CONFIG.SPARK_TO_USD * 50).toFixed(3)})`,
-                storageRate: `1 GB/month = 500 sparks ($${(BILLING_CONFIG.SPARK_TO_USD * 500).toFixed(3)})`,
-                sparkRate: `1 Spark = $${BILLING_CONFIG.SPARK_TO_USD.toFixed(6)} USD`
+                aiTokensRate: `1,000 tokens = 100 Credits ($${(BILLING_CONFIG.CREDIT_TO_USD * 100).toFixed(3)})`,
+                computeRate: `1 minute = 50 credits ($${(BILLING_CONFIG.CREDIT_TO_USD * 50).toFixed(3)})`,
+                storageRate: `1 GB/month = 500 credits ($${(BILLING_CONFIG.CREDIT_TO_USD * 500).toFixed(3)})`,
+                creditRate: `1 Credit = $${BILLING_CONFIG.CREDIT_TO_USD.toFixed(6)} USD`
             },
             dailyUsage: (() => {
                 // Process daily usage data from the dailyUsageByMeter
@@ -579,16 +579,16 @@ export const getCustomerStatus = async (req: Request, res: Response, next: NextF
                 billingPeriod: 'month',
                 features: ['Full API access', 'Community support', 'All features included', 'Usage analytics'],
                 limits: {
-                    sparksPerMonth: planLimits,
+                    creditsPerMonth: planLimits,
                     apiAccess: true,
                     communitySupport: true,
                     usageAnalytics: true
                 }
             },
             usage: {
-                current: usage.total_sparks || 0,
+                current: usage.total_credits || 0,
                 limit: planLimits,
-                percentageUsed: ((usage.total_sparks || 0) / planLimits) * 100,
+                percentageUsed: ((usage.total_credits || 0) / planLimits) * 100,
                 breakdown: {
                     aiTokens: usage.usageByMeter?.ai_tokens || 0,
                     compute: usage.usageByMeter?.compute || 0,
