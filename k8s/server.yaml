@@ -83,11 +83,11 @@ spec:
             readOnly: false
           resources:
             limits:
-              cpu: 1000m
-              memory: 512Mi
+              cpu: 2000m
+              memory: 4012Mi
             requests:
-              cpu: 256m
-              memory: 256Mi
+              cpu: 1000m
+              memory: 4012Mi
           readinessProbe:
             httpGet:
               path: /api/v1/ping
