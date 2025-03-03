@@ -127,21 +127,47 @@ export async function downloadProcessedCsv({ csvParseRunId }: { csvParseRunId: s
     return csv
 }
 
-export async function rerunCsvParseRun({ csvParseRunId }: { csvParseRunId: string }) {
+export async function fetchCsvParseRun({ csvParseRunId }: { csvParseRunId: string }) {
+    const csvParseRun = await prisma.appCsvParseRuns.findUnique({
+        where: { id: csvParseRunId }
+    })
+    if (!csvParseRun) return
+    return csvParseRun
+}
+
+export async function cloneCsvParseRun({
+    csvParseRunId,
+    userId,
+    orgId,
+    name,
+    configuration,
+    chatflowChatId,
+    rowsRequested,
+    includeOriginalColumns
+}: {
+    csvParseRunId: string
+    userId: string
+    orgId: string
+    name: string
+    configuration: any
+    chatflowChatId: string
+    rowsRequested: number
+    includeOriginalColumns: boolean
+}) {
     const csvParseRun = await prisma.appCsvParseRuns.findUnique({
         where: { id: csvParseRunId }
     })
     if (!csvParseRun) return
     await prisma.appCsvParseRuns.create({
         data: {
-            userId: csvParseRun.userId,
-            orgId: csvParseRun.orgId,
-            name: csvParseRun.name,
-            configuration: csvParseRun.configuration,
+            userId,
+            orgId,
+            name,
+            configuration,
             originalCsvUrl: csvParseRun.originalCsvUrl,
-            chatflowChatId: csvParseRun.chatflowChatId,
-            rowsRequested: csvParseRun.rowsRequested,
-            includeOriginalColumns: csvParseRun.includeOriginalColumns
+            chatflowChatId,
+            rowsRequested,
+            includeOriginalColumns
         }
     })
 }

@@ -1,5 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { useSearchParams, useRouter } from 'next/navigation'
 // @ts-ignore
 import chatflowsApi from '@/api/chatflows'
 import { User } from 'types'
@@ -10,25 +12,29 @@ import ProcessCsv from './ProcessCsv'
 import ProcessingHistory from './ProcessingHistory'
 
 function TabPanel(props: any) {
-    const { children, value, index, ...other } = props
+    const { children, currentValue, value, ...other } = props
     return (
-        <div role='tabpanel' hidden={value !== index} id={`admin-tabpanel-${index}`} aria-labelledby={`admin-tab-${index}`} {...other}>
-            {value === index && <Box sx={{ p: 0 }}>{children}</Box>}
+        <div
+            role='tabpanel'
+            hidden={currentValue !== value}
+            id={`admin-tabpanel-${value}`}
+            aria-labelledby={`admin-tab-${value}`}
+            {...other}
+        >
+            {currentValue === value && <Box sx={{ p: 0 }}>{children}</Box>}
         </div>
     )
 }
 
 const CsvTransformer = ({ user }: { user: User }) => {
-    const [tabValue, setTabValue] = useState(0)
     const [chatflows, setChatflows] = useState([])
-
-    const handleTabChange = (event: any, newValue: any) => {
-        setTabValue(newValue)
-    }
+    const searchParams = useSearchParams()
+    const router = useRouter()
+    const tab = searchParams.get('tab') ?? 'process'
 
     // Add a function to navigate to the history tab
     const navigateToHistory = () => {
-        setTabValue(1) // History tab is at index 1
+        router.push('/sidekick-studio/csv-transformer?tab=history')
     }
 
     useEffect(() => {
@@ -46,15 +52,20 @@ const CsvTransformer = ({ user }: { user: User }) => {
                     AI CSV Transformer
                 </Typography>
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                    <Tabs value={tabValue} onChange={handleTabChange} aria-label='admin tabs'>
-                        <Tab label='Process CSV' />
-                        <Tab label='Processing History' />
+                    <Tabs value={tab} aria-label='admin tabs'>
+                        <Tab label='Process CSV' value='process' component={Link} href='/sidekick-studio/csv-transformer?tab=process' />
+                        <Tab
+                            label='Processing History'
+                            value='history'
+                            component={Link}
+                            href='/sidekick-studio/csv-transformer?tab=history'
+                        />
                     </Tabs>
                 </Box>
-                <TabPanel value={tabValue} index={0}>
+                <TabPanel currentValue={tab} value='process'>
                     <ProcessCsv chatflows={chatflows} user={user} onNavigateToHistory={navigateToHistory} />
                 </TabPanel>
-                <TabPanel value={tabValue} index={1}>
+                <TabPanel currentValue={tab} value='history'>
                     <ProcessingHistory user={user} />
                 </TabPanel>
             </Stack>

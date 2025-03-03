@@ -88,8 +88,7 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
 
         const count = await prisma.appCsvParseRows.count({
             where: {
-                csvParseRunId: csvParseRun.id,
-                status: 'pending'
+                csvParseRunId: csvParseRun.id
             }
         })
 
@@ -140,7 +139,7 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
             return
         }
 
-        console.log(`Found ${count} pending rows for run ${csvParseRun.id}`)
+        console.log(`Found ${rowsRemaining} pending rows for run ${csvParseRun.id}`)
 
         // Process rows
         const promises = rows.map((row) => processRow(row, csvParseRun.chatflowChatId))

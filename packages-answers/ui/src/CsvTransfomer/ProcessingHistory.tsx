@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
 import { User } from 'types'
 import { Stack, Button, Chip, CircularProgress } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import { fetchCsvParseRuns, downloadProcessedCsv, rerunCsvParseRun } from './actions'
+import { fetchCsvParseRuns, downloadProcessedCsv } from './actions'
 
 const ProcessingHistory = ({ user }: { user: User }) => {
     const [csvParseRuns, setCsvParseRuns] = useState<any[]>([])
@@ -41,11 +42,6 @@ const ProcessingHistory = ({ user }: { user: User }) => {
         link.click()
         link.remove()
         window.URL.revokeObjectURL(url)
-    }
-
-    const handleRerunCsvParseRun = async (csvParseRunId: string) => {
-        await rerunCsvParseRun({ csvParseRunId })
-        getData()
     }
 
     const columns = [
@@ -168,10 +164,11 @@ const ProcessingHistory = ({ user }: { user: User }) => {
                         variant='outlined'
                         color='secondary'
                         disabled={params.row.status !== 'ready'}
-                        onClick={() => handleRerunCsvParseRun(params.row.id)}
                         sx={{ fontSize: '0.825rem', py: 0.5, px: 1 }}
+                        component={Link}
+                        href={`/sidekick-studio/csv-transformer?tab=process&cloneFrom=${params.row.id}`}
                     >
-                        Re-run
+                        Clone
                     </Button>
                 </Stack>
             )

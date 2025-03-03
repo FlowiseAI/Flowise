@@ -1,5 +1,5 @@
-'use client'
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { Controller, useForm } from 'react-hook-form'
 import { InputLabel, Select, MenuItem } from '@mui/material'
@@ -31,7 +31,7 @@ import DownloadOutlined from '@mui/icons-material/DownloadOutlined'
 import CloseOutlined from '@mui/icons-material/CloseOutlined'
 import FilePresentOutlined from '@mui/icons-material/FilePresentOutlined'
 
-import { createCsvParseRun } from './actions'
+import { createCsvParseRun, fetchCsvParseRun, cloneCsvParseRun } from './actions'
 
 const baseStyle = {
     flex: 1,
@@ -64,6 +64,9 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
     const [snackbarOpen, setSnackbarOpen] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
     const [activeStep, setActiveStep] = useState(0)
+    const [isCloning, setIsCloning] = useState(false)
+    const searchParams = useSearchParams()
+    const cloneFrom = searchParams.get('cloneFrom')
 
     const {
         control,
@@ -165,19 +168,39 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                 }
             })
 
-            await createCsvParseRun({
-                userId: user.id,
-                orgId: user.org_id,
-                name: data.name,
-                configuration: {
-                    context: data.context,
-                    sourceColumns: Object.fromEntries(indexToCol.entries())
-                },
-                chatflowChatId: data.processorId,
-                rowsRequested: Number(data.rowsRequested),
-                file: file,
-                includeOriginalColumns: data.includeOriginalColumns
-            })
+            if (isCloning) {
+                await cloneCsvParseRun({
+                    csvParseRunId: cloneFrom as string,
+                    userId: user.id,
+                    orgId: user.org_id,
+                    name: data.name,
+                    configuration: {
+                        context: data.context,
+                        sourceColumns: Object.fromEntries(indexToCol.entries()),
+                        headers,
+                        rowsCount: rows.length
+                    },
+                    chatflowChatId: data.processorId,
+                    rowsRequested: Number(data.rowsRequested),
+                    includeOriginalColumns: data.includeOriginalColumns
+                })
+            } else {
+                await createCsvParseRun({
+                    userId: user.id,
+                    orgId: user.org_id,
+                    name: data.name,
+                    configuration: {
+                        context: data.context,
+                        sourceColumns: Object.fromEntries(indexToCol.entries()),
+                        headers,
+                        rowsCount: rows.length
+                    },
+                    chatflowChatId: data.processorId,
+                    rowsRequested: Number(data.rowsRequested),
+                    file: file,
+                    includeOriginalColumns: data.includeOriginalColumns
+                })
+            }
 
             setSnackbarMessage('Your CSV is being processed.')
             setSnackbarOpen(true)
@@ -627,6 +650,51 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
         )
     }
 
+    const handleCancel = () => {
+        setIsCloning(false)
+        reset()
+        setFile(null)
+        setLoading(false)
+        setFileName(null)
+        setHeaders([])
+        setRows([])
+        setActiveStep(0)
+    }
+
+    useEffect(() => {
+        const getData = async () => {
+            setLoading(true)
+            const csvParseRun = await fetchCsvParseRun({ csvParseRunId: cloneFrom as string })
+            if (csvParseRun) {
+                const chatflowChatId = csvParseRun.chatflowChatId
+                const headers = csvParseRun.configuration.headers
+                const sourceColumns = csvParseRun.configuration.sourceColumns
+                const context = csvParseRun.configuration.context
+                const rowsCount = csvParseRun.configuration.rowsCount
+                const includeOriginalColumns = csvParseRun.includeOriginalColumns
+                const name = csvParseRun.name
+                const rowsRequested = csvParseRun.rowsRequested
+                setHeaders(headers)
+                setRows(Array.from({ length: rowsCount }, (_, i) => [`row${i + 1}`]))
+                setActiveStep(1)
+                setFileName(name)
+                setIsCloning(true)
+                reset({
+                    processorId: chatflowChatId,
+                    name,
+                    rowsRequested,
+                    context,
+                    sourceColumns: Object.values(sourceColumns),
+                    includeOriginalColumns
+                })
+            }
+            setLoading(false)
+        }
+        if (cloneFrom) {
+            getData()
+        }
+    }, [cloneFrom])
+
     return (
         <Stack flexDirection='column' sx={{ gap: 4 }} component='form' onSubmit={handleSubmit(handleProcessCsv)}>
             {loading && (
@@ -716,8 +784,17 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
 
             {/* Navigation Buttons */}
             <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                <Button variant='outlined' color='primary' disabled={activeStep === 0} onClick={handleBack} sx={{ mr: 1 }}>
+                <Button
+                    variant='outlined'
+                    color='primary'
+                    disabled={activeStep === 0 || (isCloning && activeStep === 1)}
+                    onClick={handleBack}
+                    sx={{ mr: 1 }}
+                >
                     Back
+                </Button>
+                <Button variant='outlined' color='error' onClick={handleCancel}>
+                    Cancel
                 </Button>
                 <Box sx={{ flex: '1 1 auto' }} />
                 {activeStep === 3 ? (
