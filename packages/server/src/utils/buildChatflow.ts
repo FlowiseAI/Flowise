@@ -48,8 +48,11 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { IAction } from 'flowise-components'
 import checkOwnership from './checkOwnership'
 import PlansService from '../services/plans'
+import { billingService } from '../services/billing'
+import { BILLING_CONFIG } from '../aai-utils/billing/config'
 import { Chat } from '../database/entities/Chat'
 import { validateNodeConnections } from './validateNodeConnections'
+import { User } from '../database/entities/User'
 
 /**
  * Build Chatflow
@@ -60,6 +63,7 @@ import { validateNodeConnections } from './validateNodeConnections'
 export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInternal: boolean = false): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
+        console.log('BuildChatflow--------------------------')
         const chatflowid = req.params.id
 
         const httpProtocol = req.get('x-forwarded-proto') || req.protocol
@@ -114,20 +118,54 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
             }
         }
 
-        if (!chatflow.userId || !chatflow.organizationId) {
+        const billedUserId = req.user?.id || chatflow.userId
+        if (!billedUserId || !chatflow.organizationId) {
             throw new InternalFlowiseError(
                 StatusCodes.INTERNAL_SERVER_ERROR,
                 `Chatflow ${chatflowid} does not have a user or organization associated with it`
             )
         }
 
-        const canContinue = await PlansService.hasAvailableExecutions(chatflow.userId, chatflow.organizationId)
+        // Get the user's Stripe customer ID
+        const user = await appServer.AppDataSource.getRepository(User).findOne({
+            where: { id: billedUserId }
+        })
 
-        if (!canContinue) {
-            throw new InternalFlowiseError(
-                StatusCodes.PAYMENT_REQUIRED,
-                'Insufficient executions. Please purchase more to continue using this service.'
-            )
+        if (!user || !user.stripeCustomerId) {
+            // Fall back to the old plan service if no Stripe customer ID exists
+            const canContinue = await PlansService.hasAvailableExecutions(billedUserId, chatflow.organizationId)
+
+            if (!canContinue) {
+                throw new InternalFlowiseError(
+                    StatusCodes.PAYMENT_REQUIRED,
+                    'Insufficient executions. Please purchase more to continue using this service.'
+                )
+            }
+        } else {
+            // Use the new BillingService to check usage limits
+            // Get usage summary for the customer
+            const usage = await billingService.getUsageSummary(user.stripeCustomerId)
+            const subscription = await billingService.getActiveSubscription(user.stripeCustomerId)
+
+            // Determine plan type and limits
+            const isPro =
+                subscription?.status === 'active' && subscription.items.data[0]?.price.id === BILLING_CONFIG.PRICE_IDS.PAID_MONTHLY
+            const planLimits = isPro ? BILLING_CONFIG.PLAN_LIMITS.PRO : BILLING_CONFIG.PLAN_LIMITS.FREE
+
+            // Calculate total usage
+            const totalUsage =
+                (usage.usageByMeter?.ai_tokens || 0) + (usage.usageByMeter?.compute || 0) + (usage.usageByMeter?.storage || 0)
+
+            // Check if over limit
+            const isOverLimit = totalUsage >= planLimits
+
+            console.log('[BuildChatflow] Usage summary:', { totalUsage, planLimits, isOverLimit })
+            if (isOverLimit) {
+                throw new InternalFlowiseError(
+                    StatusCodes.PAYMENT_REQUIRED,
+                    'Usage limit reached. Please upgrade your plan to continue using this service.'
+                )
+            }
         }
 
         let fileUploads: IFileUpload[] = []
@@ -496,7 +534,7 @@ export const utilBuildChatflow = async (req: Request, socketIO?: Server, isInter
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
 
-        PlansService.incrementUsedExecutionCount(chatflow.userId, chatflow.organizationId)
+        PlansService.incrementUsedExecutionCount(billedUserId, chatflow.organizationId)
 
         return result
     } catch (e) {

@@ -1,5 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { auth } from 'express-oauth2-jwt-bearer'
+import Stripe from 'stripe'
+
 import { DataSource } from 'typeorm'
 import { User } from '../../database/entities/User'
 import { Organization } from '../../database/entities/Organization'
@@ -103,26 +105,24 @@ export const authenticationHandlerMiddleware =
                 }
             }
 
+            // Get user from auth payload
             const authUser = req.auth.payload
-            const userOrgName = authUser.org_name
             const auth0Id = authUser.sub
             const email = authUser.email as string
             const name = authUser.name as string
             const roles = (authUser?.['https://theanswer.ai/roles'] || []) as string[]
-
             if (!auth0Id || !email) {
                 console.log('[AuthMiddleware] Missing required auth fields (auth0Id or email)')
                 return next()
             }
 
+            // Get organization from auth payload
             const orgRepo = AppDataSource.getRepository(Organization)
-            let organization = await orgRepo.findOneBy({ name: userOrgName })
+            let organization = await orgRepo.findOneBy({ name: authUser.org_name })
             if (!organization) {
-                console.log(`[AuthMiddleware] Creating new organization: ${userOrgName}`)
-                organization = orgRepo.create({ auth0Id: userOrgId, name: userOrgName })
+                organization = orgRepo.create({ auth0Id: userOrgId, name: authUser.org_name })
             } else {
-                console.log(`[AuthMiddleware] Updating existing organization: ${userOrgName}`)
-                organization.name = userOrgName
+                organization.name = authUser.org_name
                 organization.auth0Id = userOrgId
             }
             await orgRepo.save(organization)
@@ -138,11 +138,39 @@ export const authenticationHandlerMiddleware =
                 user.name = name
                 user.organizationId = organization.id
             }
+            // Upsert customer on Stripe if no customerId is attached
+            //  TODO: For organization specific users, we should NOT create a customer and instead link it to the org customer
+            let stripeCustomerId = user.stripeCustomerId
+            if (!stripeCustomerId) {
+                if (organization.stripeCustomerId && organization.billingPoolEnabled == true) {
+                    stripeCustomerId = organization.stripeCustomerId
+                } else {
+                    try {
+                        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
+
+                        const customer = await stripe.customers.create({
+                            email,
+                            name,
+                            metadata: {
+                                userId: user.id,
+                                auth0Id,
+                                orgId: organization.id
+                            }
+                        })
+                        stripeCustomerId = customer.id
+                        // Optionally, update the user profile in your database with the new customerId
+                    } catch (error) {
+                        console.error('Error creating/updating Stripe customers:', error)
+                        return res.status(500).send('Internal Server Error')
+                    }
+                    user.stripeCustomerId = stripeCustomerId
+                }
+            }
+
+            req.user = { ...authUser, ...user, roles }
 
             await userRepo.save(user)
 
-            req.user = { ...authUser, ...user, roles }
-            console.log(`[AuthMiddleware] Successfully authenticated user: ${email} with roles: ${roles.join(', ')}`)
             return next()
         })
     }

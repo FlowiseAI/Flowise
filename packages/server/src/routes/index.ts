@@ -42,6 +42,7 @@ import versionRouter from './versions'
 import planRouter from './plan'
 import chatsRouter from './chats'
 import googleAuthRouter from './google-auth'
+import billingRouter from './billing'
 
 const router = express.Router()
 
@@ -88,5 +89,5 @@ router.use('/verify', verifyRouter)
 router.use('/version', versionRouter)
 router.use('/upsert-history', upsertHistoryRouter)
 router.use('/chats', chatsRouter)
-
+router.use('/billing', billingRouter)
 export default router

@@ -29,6 +29,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // API
 import plansApi from '@/api/plans'
+import billingApi from '@/api/billing'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -100,6 +101,7 @@ const Admin = () => {
 
     const [currentPlan, setCurrentPlan] = useState(null)
     const [planHistory, setPlanHistory] = useState([])
+    const [meterEventSummaries, setMeterEventSummaries] = useState([])
 
     const customization = useSelector((state) => state.customization)
 
@@ -110,16 +112,17 @@ const Admin = () => {
 
     const getCurrentPlan = useApi(plansApi.getCurrentPlan)
     const getHistoricPlans = useApi(plansApi.getHistoricPlans)
+    const getMeterEventSummaries = useApi(billingApi.getMeterEventSummaries)
 
     useEffect(() => {
         getCurrentPlan.request()
         getHistoricPlans.request()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        getMeterEventSummaries.request()
     }, [])
 
     useEffect(() => {
-        setLoading(getCurrentPlan.loading || getHistoricPlans.loading)
-    }, [getCurrentPlan.loading, getHistoricPlans.loading])
+        setLoading(getCurrentPlan.loading || getHistoricPlans.loading || getMeterEventSummaries.loading)
+    }, [getCurrentPlan.loading, getHistoricPlans.loading, getMeterEventSummaries.loading])
 
     useEffect(() => {
         if (getCurrentPlan.error) {
@@ -142,6 +145,12 @@ const Admin = () => {
         }
     }, [getHistoricPlans.data])
 
+    useEffect(() => {
+        if (getMeterEventSummaries.data) {
+            setMeterEventSummaries(getMeterEventSummaries.data.data || [])
+        }
+    }, [getMeterEventSummaries.data])
+
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue)
     }
@@ -160,6 +169,7 @@ const Admin = () => {
                             <Tabs value={tabValue} onChange={handleTabChange} aria-label='admin tabs'>
                                 <Tab label='Current Plan' />
                                 <Tab label='Plan History' />
+                                <Tab label='Usage Details' />
                             </Tabs>
                         </Box>
                         <TabPanel value={tabValue} index={0}>
@@ -224,6 +234,41 @@ const Admin = () => {
                                                 <StyledTableCell>{new Date(plan.createdDate).toLocaleDateString()}</StyledTableCell>
                                                 <StyledTableCell>{formatAmount(plan.availableExecutions)}</StyledTableCell>
                                                 <StyledTableCell>{formatAmount(plan.usedExecutions)}</StyledTableCell>
+                                            </StyledTableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        </TabPanel>
+                        <TabPanel value={tabValue} index={2}>
+                            <TableContainer
+                                sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+                                component={Paper}
+                            >
+                                <Table sx={{ minWidth: 650 }} aria-label='meter event summaries'>
+                                    <TableHead
+                                        sx={{
+                                            backgroundColor: customization.isDarkMode
+                                                ? theme.palette.common.black
+                                                : theme.palette.grey[100],
+                                            height: 56
+                                        }}
+                                    >
+                                        <TableRow>
+                                            <StyledTableCell>Meter</StyledTableCell>
+                                            <StyledTableCell>Total Usage</StyledTableCell>
+                                            <StyledTableCell>Last Updated</StyledTableCell>
+                                        </TableRow>
+                                    </TableHead>
+
+                                    <TableBody>
+                                        {meterEventSummaries.map((summary, index) => (
+                                            <StyledTableRow key={index}>
+                                                <StyledTableCell>{summary.meter.display_name || summary.meter.id}</StyledTableCell>
+                                                <StyledTableCell>{formatAmount(summary.total_usage)}</StyledTableCell>
+                                                <StyledTableCell>
+                                                    {new Date(summary.last_update_time * 1000).toLocaleDateString()}
+                                                </StyledTableCell>
                                             </StyledTableRow>
                                         ))}
                                     </TableBody>

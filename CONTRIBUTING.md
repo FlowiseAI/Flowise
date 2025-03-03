@@ -158,6 +158,9 @@ Flowise support different environment variables to configure your instance. You 
 | S3_STORAGE_REGION            | Region for S3 bucket                                                                            | String                                           |                                     |
 | S3_ENDPOINT_URL              | Custom Endpoint for S3                                                                          | String                                           |                                     |
 | SHOW_COMMUNITY_NODES         | Show nodes created by community                                                                 | Boolean                                          |                                     |
+| ENABLE_BILLING_SYNC_CRON     | Enable/disable the automatic billing usage sync cron job                                        | Boolean                                          | `true`                              |
+| BILLING_SYNC_CRON_SCHEDULE   | Cron schedule for the billing usage sync job                                                    | String                                           | `*/15 * * * *`                      |
+| API_BASE_URL                 | Base URL for internal API requests from cron jobs                                               | String                                           | `http://localhost:{PORT}`           |
 
 You can also specify the env variables when using `npx`. For example:
 

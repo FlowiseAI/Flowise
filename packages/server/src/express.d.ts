@@ -16,6 +16,7 @@ declare global {
                     name: string
                     'https://theanswer.ai/roles'?: string[]
                     permissions?: string[]
+                    stripeCustomerId?: string
                 }
                 token: string
             }

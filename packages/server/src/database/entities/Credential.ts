@@ -4,7 +4,8 @@ import { ICredential } from '../../Interface'
 
 export enum CredentialVisibility {
     PRIVATE = 'Private',
-    ORGANIZATION = 'Organization'
+    ORGANIZATION = 'Organization',
+    PLATFORM = 'Platform'
 }
 
 @Entity()

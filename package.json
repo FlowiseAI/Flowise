@@ -39,13 +39,13 @@
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
     },
     "devDependencies": {
-        "@cypress/react18": "^2.0.0",
-        "cypress": "^12.17.1",
-        "dotenv-cli": "latest",
         "@babel/preset-env": "^7.19.4",
         "@babel/preset-typescript": "7.18.6",
+        "@cypress/react18": "^2.0.0",
         "@types/express": "^4.17.13",
         "@typescript-eslint/typescript-estree": "^7.13.1",
+        "cypress": "^12.17.1",
+        "dotenv-cli": "latest",
         "eslint": "^8.24.0",
         "eslint-config-prettier": "^8.3.0",
         "eslint-config-react-app": "^7.0.1",
@@ -63,9 +63,12 @@
         "rimraf": "^3.0.2",
         "run-script-os": "^1.1.6",
         "turbo": "1.10.16",
-        "typescript": "^5.4.5"
+        "typescript": "^5.4.5",
+        "cursor-tools": "latest"
     },
     "dependencies": {
+        "@types/node-cron": "^3.0.11",
+        "node-cron": "^3.0.3",
         "wait-on": "^7.0.1"
     },
     "pnpm": {

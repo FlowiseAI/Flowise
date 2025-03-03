@@ -6,7 +6,7 @@
     "sideEffects": false,
     "scripts": {
         "lint": "eslint \"src/**/*.ts*\"",
-        "test": "jest"
+        "not:test": "jest"
     },
     "jest": {
         "preset": "jest-presets/jest/node"
@@ -25,7 +25,7 @@
         "typescript": "^4.8.4"
     },
     "dependencies": {
-        "@auth0/nextjs-auth0": "^3.5.0",
+        "@auth0/nextjs-auth0": "3.5.0",
         "@emotion/cache": "^11.4.0",
         "@emotion/react": "^11.10.6",
         "@emotion/styled": "^11.10.6",
@@ -62,7 +62,7 @@
         "react-syntax-highlighter": "^15.5.0",
         "react-window": "^1.8.9",
         "remark-gfm": "^3.0.1",
-        "stripe": "^12.17.0",
+        "stripe": "^17.5.0",
         "swr": "^2.2.0",
         "types": "workspace:*",
         "utils": "workspace:*"

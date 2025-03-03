@@ -60,7 +60,6 @@
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {
-        "utils": "workspace:*",
         "@contentful/rich-text-from-markdown": "^15.16.15",
         "@oclif/core": "^3.26.4",
         "@types/lodash": "^4.14.202",
@@ -73,6 +72,7 @@
         "cors": "^2.8.5",
         "crypto-js": "^4.1.1",
         "langfuse": "3.32.0",
+        "langfuse-core": "3.32.0",
         "dotenv": "^16.0.0",
         "express": "^4.17.3",
         "express-basic-auth": "^1.2.1",
@@ -80,7 +80,6 @@
         "express-rate-limit": "^6.9.0",
         "express-session": "^1.18.1",
         "flowise-components": "workspace:^",
-        "flowise-ui": "workspace:^",
         "google-auth-library": "^9.4.0",
         "googleapis": "^144.0.0",
         "http-errors": "^2.0.0",

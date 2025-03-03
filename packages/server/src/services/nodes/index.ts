@@ -89,7 +89,7 @@ const getSingleNodeIcon = async (nodeName: string) => {
 const getSingleNodeAsyncOptions = async (
     nodeName: string,
     requestBody: any,
-    user?: { id: string; organizationId: string; roles?: string[] }
+    user: { id: string; organizationId?: string; roles?: string[] } | undefined
 ): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()

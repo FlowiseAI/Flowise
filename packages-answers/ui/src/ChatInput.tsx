@@ -51,9 +51,9 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         [scrollRef]
     )
 
-    useEffect(() => {
-        if (messages?.length && isLoading) throttledScroll()
-    }, [chat, journey, messages, scrollRef])
+    // useEffect(() => {
+    //     // if (messages?.length && isLoading) throttledScroll()
+    // }, [chat, journey, messages, scrollRef])
 
     useEffect(() => {
         if (isRecording) {
