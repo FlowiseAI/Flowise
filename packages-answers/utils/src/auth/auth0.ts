@@ -20,7 +20,7 @@ export default initAuth0({
     baseURL: getBaseUrl(),
     clientID: process.env.AUTH0_CLIENT_ID,
     clientSecret: process.env.AUTH0_CLIENT_SECRET,
-    idTokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG,
+    idTokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG ?? 'HS256',
     routes: {
         callback: '/api/auth/callback',
         postLogoutRedirect: '/'

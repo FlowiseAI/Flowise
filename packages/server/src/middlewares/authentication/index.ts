@@ -10,7 +10,7 @@ const jwtCheck = auth({
     secret: process.env.AUTH0_SECRET,
     audience: process.env.AUTH0_AUDIENCE,
     issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG
+    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG ?? 'HS256'
 })
 
 const jwtCheckPublic = auth({
@@ -18,7 +18,7 @@ const jwtCheckPublic = auth({
     secret: process.env.AUTH0_SECRET,
     audience: process.env.AUTH0_AUDIENCE,
     issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG
+    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG ?? 'HS256'
 })
 
 const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<User | null> => {
