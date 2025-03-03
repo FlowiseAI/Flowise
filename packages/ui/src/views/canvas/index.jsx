@@ -251,7 +251,8 @@ const Canvas = () => {
           deployed: false,
           isPublic: false,
           flowData,
-          type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW'
+          type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW',
+          chatbotConfig: JSON.stringify({ fullFileUpload: { status: true } })
         }
         await createNewChatflowApi.request(newChatflowBody)
       } else {
@@ -494,8 +495,12 @@ const Canvas = () => {
   }, [updateChatflowApi.data, updateChatflowApi.error])
 
   useEffect(() => {
-    setChatflow(canvasDataStore.chatflow)
+    const pathUrlString = document.location.pathname.toString()
+    if (pathUrlString === '/c-agent/canvas' || pathUrlString === '/c-agent/agentcanvas') {
+      return setChatflow([])
+    }
     if (canvasDataStore.chatflow) {
+      setChatflow(canvasDataStore.chatflow)
       const flowData = canvasDataStore.chatflow.flowData ? JSON.parse(canvasDataStore.chatflow.flowData) : []
       checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || [])
       checkIfSyncNodesAvailable(flowData.nodes || [])
