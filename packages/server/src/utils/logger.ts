@@ -32,7 +32,7 @@ if (process.env.STORAGE_TYPE === 's3') {
             secretAccessKey
         }
     }
-    
+
     const s3Config: S3ClientConfig = {
         region: region,
         endpoint: customURL,
