@@ -86,10 +86,6 @@ const Chatflows = () => {
     }
   }, [isLogin, user])
 
-  // useEffect(() => {
-  //   setLoading(getAllPublicChatflows.loading)
-  // }, [getAllPublicChatflows.loading])
-
   useEffect(() => {
     if (getAllChatflowsApi.data) {
       try {
@@ -121,7 +117,7 @@ const Chatflows = () => {
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
                   {isLogin && <Tab label={isMasterAdmin ? 'Master Admin' : user.groupname} {...a11yProps(0)} />}
-                  <Tab label='Đã public' {...a11yProps(1)} />
+                  <Tab label='Công bố' {...a11yProps(1)} />
                   <Tab label='Cá nhân' {...a11yProps(2)} />
                 </Tabs>
               </Box>

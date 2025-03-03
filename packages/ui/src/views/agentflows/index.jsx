@@ -89,10 +89,6 @@ const Agentflows = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLogin, user])
 
-  // useEffect(() => {
-  //   setLoading(getAllPublicAgentflows.loading)
-  // }, [getAllPublicAgentflows.loading])
-
   useEffect(() => {
     if (getAllAgentflows.data) {
       try {
@@ -131,7 +127,7 @@ const Agentflows = () => {
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                 <Tabs value={value} onChange={handleChangeTab} aria-label='basic tabs example'>
                   {isLogin && <Tab label={isMasterAdmin ? 'Master Admin' : user.groupname} {...a11yProps(0)} />}
-                  <Tab label='Đã public' {...a11yProps(1)} />
+                  <Tab label='Công bố' {...a11yProps(1)} />
                   <Tab label='Cá nhân' {...a11yProps(2)} />
                 </Tabs>
               </Box>
