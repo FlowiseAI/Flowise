@@ -1,4 +1,25 @@
 model_list:
+  - model_name: claude-3.7-sonnet-thinking
+    litellm_params:
+      model: bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0
+      aws_access_key_id: os.environ/CUSTOM_AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/CUSTOM_AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/CUSTOM_AWS_REGION_NAME
+      thinking: { 'type': 'enabled', 'budget_tokens': 1024 }
+    model_info:
+      max_tokens: 8192
+      max_input_tokens: 200000
+      max_output_tokens: 8192
+      input_cost_per_token: 0.000003
+      output_cost_per_token: 0.000015
+      cache_creation_input_token_cost: 0.00000375
+      cache_read_input_token_cost: 0.0000003
+      mode: 'chat'
+      supports_function_calling: true
+      supports_vision: true
+      tool_use_system_prompt_tokens: 159
+      supports_assistant_prefill: true
+      supports_prompt_caching: true
   - model_name: claude-3.7-sonnet
     litellm_params:
       model: bedrock/us.anthropic.claude-3-7-sonnet-20250219-v1:0
@@ -134,27 +155,7 @@ model_list:
       rpm: 2000
       source: 'https://ai.google.dev/pricing'
 litellm_settings:
-  #  logging
-  #  success_callback: ['langfuse']
-  #  langfuse_public_key: 'pk-lf-57e0f66e-3813-4444-962e-79ea717f9e5d'
-  #  langfuse_secret: 'sk-lf-0c3c2fa9-4be4-4153-98c8-fb56a5d49c2f'
-  #  langfuse_host: 'https://us.cloud.langfuse.com'
-  #
   request_timeout: 600
   set_verbose: false
   drop_params: true
   modify_params: true
-#  json_logs: true
-#  cache: true
-#  cache_params:
-#    type: redis
-#    host: '203.145.47.214'
-#    port: 6380
-#    ttl: 600
-#general_settings:
-#  master_key: sk-CMCTS
-#  disable_reset_budget: true
-#  database_url: postgresql://postgres:postgrespassword@203.145.47.214:5436/litellm
-#  proxy_batch_write_at: 60
-#  database_connection_pool_limit: 10
-#  disable_spend_logs: true
