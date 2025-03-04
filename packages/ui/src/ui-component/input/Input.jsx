@@ -26,7 +26,7 @@ export const Input = ({ inputParam, value, nodes, edges, nodeId, onChange, disab
     return inputParam.name === 'knowledgeBaseFiles'
   }, [inputParam])
 
-  if (nodeId?.startsWith('awsBedrockKBRetriever') && value?.startsWith('[{')) {
+  if (value?.startsWith && nodeId?.startsWith('awsBedrockKBRetriever') && value?.startsWith('[{')) {
     const file = JSON.parse(value)
     selectedFilesSet.add(file[0].key)
   }

@@ -375,7 +375,7 @@ const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
     if (dbResponse && dbResponse.isPublish) {
       return dbResponse
     } else if (dbResponse && !dbResponse.isPublish) {
-      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Flow ${dbResponse?.name} chưa được publish`)
+      throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Flow ${dbResponse?.name} chưa được phát hành`)
     }
     throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
   } catch (error) {

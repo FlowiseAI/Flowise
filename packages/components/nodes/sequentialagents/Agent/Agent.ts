@@ -796,7 +796,7 @@ async function agentNode(
     } else {
       return {
         messages: [
-          new HumanMessage({
+          new AIMessage({
             content: outputContent,
             name,
             additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined

@@ -737,14 +737,14 @@ importers:
         specifier: ^1.1.1
         version: 1.2.1
       cmcts-c-agent-embedding:
-        specifier: 1.0.11
-        version: 1.0.11(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.12
+        version: 1.0.12(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       cmcts-c-agent-embedding-react:
-        specifier: 1.0.11
-        version: 1.0.11(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.11(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+        specifier: 1.0.12
+        version: 1.0.12(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.12(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       dccxx-s3-explorer:
-        specifier: ^1.0.33
-        version: 1.0.33(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
+        specifier: ^1.0.34
+        version: 1.0.34(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2)))
       dotenv:
         specifier: ^16.0.0
         version: 16.4.5
@@ -8378,14 +8378,14 @@ packages:
     engines: {node: '>= 14.15.0'}
     hasBin: true
 
-  cmcts-c-agent-embedding-react@1.0.11:
-    resolution: {integrity: sha512-f7vjVB9tzszjUlSN28sfVyV7fjREBnsi5RbViYzm13ReJmx1qOty62B+1jo61sqK/L/nMAAsruISSOcPtt4mZw==}
+  cmcts-c-agent-embedding-react@1.0.12:
+    resolution: {integrity: sha512-XPdp1aRqbOksdutNiWWI2LcS54utdpj2BYNWhA12zQbWN0yNUqPmTHY7VTUt/H16IJTx3RMHH31+L0wllWAtPg==}
     peerDependencies:
       cmcts-c-agent-embedding: '*'
       react: 18.x
 
-  cmcts-c-agent-embedding@1.0.11:
-    resolution: {integrity: sha512-rctmmtYC7EWlV+0QjfOGVu/QY0CuaH9nJgashl/LanB9Lh5dm5LGVvhH9BF9Tjcu8NDpgtsVaTCYyMTMN0QjEQ==}
+  cmcts-c-agent-embedding@1.0.12:
+    resolution: {integrity: sha512-J53VSLqi1qcznij8U5uKedIIufbN2Yu0FJbp5lX1wXxgGDupAJmM6x/JLW3MHnl9idBorMPpsgmV5T00pSJ1mg==}
 
   cmd-shim@5.0.0:
     resolution: {integrity: sha512-qkCtZ59BidfEwHltnJwkyVZn+XQojdAySM1D1gSeh11Z4pW1Kpolkyo53L5noc0nrxmIvyFwTmJRo4xs7FFLPw==}
@@ -8978,8 +8978,8 @@ packages:
   dayjs@1.11.13:
     resolution: {integrity: sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==}
 
-  dccxx-s3-explorer@1.0.33:
-    resolution: {integrity: sha512-s603xb64kO6Ge9aABGtlYaz/CZFmZK0mZ1WXAov8z7JHQwkO3YLEE76S0Maoik1BsUJMb+mRarfBCgoYQYsnPA==}
+  dccxx-s3-explorer@1.0.34:
+    resolution: {integrity: sha512-Xhwj767k+aRJ4AxHkU6/HsGiF818DBZVNnD/ekj2ndZHEWGjzGfj2G5p20rXgfLSY8CDLD+xusxycm4RydrO9g==}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -21353,7 +21353,7 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hookform/resolvers@3.9.1(react-hook-form@7.54.1(react@18.2.0))':
+  '@hookform/resolvers@3.9.1(react-hook-form@7.54.1(react@18.3.1))':
     dependencies:
       react-hook-form: 7.54.1(react@18.3.1)
 
@@ -27869,10 +27869,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  cmcts-c-agent-embedding-react@1.0.11(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.11(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding-react@1.0.12(@types/node@20.12.12)(cmcts-c-agent-embedding@1.0.12(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@ladle/react': 2.5.1(@types/node@20.12.12)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-      cmcts-c-agent-embedding: 1.0.11(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+      cmcts-c-agent-embedding: 1.0.12(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     transitivePeerDependencies:
@@ -27886,7 +27886,7 @@ snapshots:
       - terser
       - typescript
 
-  cmcts-c-agent-embedding@1.0.11(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+  cmcts-c-agent-embedding@1.0.12(@types/node@20.12.12)(encoding@0.1.13)(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
     dependencies:
       '@babel/core': 7.24.0
       '@microsoft/fetch-event-source': 2.0.1
@@ -28584,9 +28584,9 @@ snapshots:
 
   dayjs@1.11.13: {}
 
-  dccxx-s3-explorer@1.0.33(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))):
+  dccxx-s3-explorer@1.0.34(@types/react-dom@18.2.21)(@types/react@18.2.65)(encoding@0.1.13)(immer@9.0.21)(tailwindcss@3.4.16(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@20.12.12)(typescript@5.5.2))):
     dependencies:
-      '@hookform/resolvers': 3.9.1(react-hook-form@7.54.1(react@18.2.0))
+      '@hookform/resolvers': 3.9.1(react-hook-form@7.54.1(react@18.3.1))
       '@nivo/bar': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@nivo/core': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@nivo/line': 0.87.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

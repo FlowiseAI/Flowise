@@ -133,7 +133,7 @@ const AdminAccount = () => {
             setSelectedGroup(userGroups.filter((group) => group.id !== groupToDelete.id)[0])
           }
         } else {
-          throw new Error('Không thể xóa group.')
+          throw new Error('Không thể xóa nhóm.')
         }
       }
 
@@ -153,7 +153,7 @@ const AdminAccount = () => {
               : prevGroup
           )
         } else {
-          throw new Error('Không thể xóa user.')
+          throw new Error('Không thể xóa người dùng.')
         }
       }
 
@@ -219,13 +219,13 @@ const AdminAccount = () => {
     <ThemeProvider theme={theme}>
       <Container>
         <Typography variant='h4' gutterBottom>
-          Admin Account Management
+          Quản lý Tài khoản Admin
         </Typography>
         <Grid container spacing={3}>
           {isMasterAdmin && (
             <Grid item xs={12} md={4}>
               <Typography variant='h6' gutterBottom>
-                Groups
+                Nhóm
               </Typography>
               {isLoading ? (
                 <Grid container justifyContent='center' alignItems='center' style={{ height: '100px' }}>
@@ -260,7 +260,7 @@ const AdminAccount = () => {
                     </List>
                   </Paper>
                   <Button variant='contained' color='primary' startIcon={<Add />} onClick={handleAddGroup}>
-                    Add Group
+                    Thêm nhóm
                   </Button>
                 </>
               )}
@@ -268,7 +268,7 @@ const AdminAccount = () => {
           )}
           <Grid item xs={12} md={isMasterAdmin ? 8 : 12}>
             <Typography variant='h6' gutterBottom>
-              Members of {selectedGroup?.groupname}:
+              Thành viên của {selectedGroup?.groupname}:
             </Typography>
             {isLoading ? (
               <Grid container justifyContent='center' alignItems='center' style={{ height: '100px' }}>
@@ -280,7 +280,7 @@ const AdminAccount = () => {
                   <List>
                     {selectedGroup?.users.map((member) => (
                       <ListItem key={member.id}>
-                        <ListItemText primary={`${member.username}`} secondary={`Role: ${member.role}, Email: ${member.email}`} />
+                        <ListItemText primary={`${member.username}`} secondary={`Vai trò: ${member.role}, Email: ${member.email}`} />
                         <div className='flex items-center gap-1 w-[55px] justify-end'>
                           {(isMasterAdmin || isGroupAdmin) && member.role !== 'MASTER_ADMIN' && (
                             <IconButton
@@ -312,7 +312,7 @@ const AdminAccount = () => {
                 </Paper>
                 {(isMasterAdmin || isGroupAdmin) && (
                   <Button variant='contained' color='primary' startIcon={<Add />} onClick={handleAddUser}>
-                    Add Member
+                    Thêm thành viên
                   </Button>
                 )}
               </>
@@ -346,15 +346,15 @@ const AdminAccount = () => {
           aria-labelledby='confirm-dialog-title'
           aria-describedby='confirm-dialog-description'
         >
-          <DialogTitle id='confirm-dialog-title'>Confirm Deletion</DialogTitle>
+          <DialogTitle id='confirm-dialog-title'>Xác nhận Xóa</DialogTitle>
           <DialogContent>
             <DialogContentText id='confirm-dialog-description'>
-              Bạn có chắc chắn muốn xóa {groupToDelete ? 'group' : 'user'} này?
+              Bạn có chắc chắn muốn xóa {groupToDelete ? 'nhóm' : 'người dùng'} này?
             </DialogContentText>
           </DialogContent>
           <DialogActions>
             <Button onClick={handleConfirmDialogClose} color='primary'>
-              Cancel
+              Hủy
             </Button>
             <Button
               onClick={handleRemove}
@@ -362,7 +362,7 @@ const AdminAccount = () => {
               className='bg-red-500 text-white hover:bg-red-300'
               disabled={isLoadingDeleting}
             >
-              Ok
+              Đồng ý
             </Button>
           </DialogActions>
         </Dialog>
