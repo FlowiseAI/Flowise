@@ -210,7 +210,12 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
     returnBaseMessages = false,
     prependMessages?: IMessage[]
   ): Promise<IMessage[] | BaseMessage[]> {
-    if (!overrideSessionId) return []
+    const startTime = performance.now()
+
+    if (!overrideSessionId) {
+      console.log('PostgresSaver get chat messages:', performance.now() - startTime)
+      return []
+    }
 
     const chatMessage = await this.config.appDataSource.getRepository(this.config.databaseEntities['ChatMessage']).find({
       where: {
@@ -237,6 +242,9 @@ CREATE TABLE IF NOT EXISTS ${this.tableName} (
         type: m.role
       })
     }
+
+    console.log('PostgresSaver get chat messages:', performance.now() - startTime)
+
     return returnIMessages
   }
 
