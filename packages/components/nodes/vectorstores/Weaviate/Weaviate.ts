@@ -290,7 +290,7 @@ class Weaviate_VectorStores implements INode {
                     const [key, value] = entries[0]
                     weaviateFilter = {
                         where: {
-                            operator: "Equal",
+                            operator: 'Equal',
                             path: [key],
                             valueText: String(value)
                         }
