@@ -26,12 +26,13 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
             accessType: 'offline'
         })(req, res, next)
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.log('Error: authController.authenticate', error)
         next(error)
     }
 }
 
-const googleAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
+const googleAuthCallback = async (req: Request, res: Response) => {
     try {
         if (!req.user) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: authController.googleAuthCallback - Authentication failed')
@@ -62,7 +63,7 @@ const googleAuthCallback = async (req: Request, res: Response, next: NextFunctio
             <html>
               <body>
                 <script>
-                  window.opener.postMessage({ 
+                  window.opener.postMessage({
                     type: 'AUTH_ERROR',
                     error: ${JSON.stringify(error)}
                   }, '${allowedOrigin}');
