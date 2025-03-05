@@ -28,6 +28,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     selectedSidekick,
     setPreviewCode
 }) => {
+    const openLinksInNewTab = chatbotConfig?.chatLinksInNewTab?.status ?? false
     return (
         <Box
             sx={{
@@ -49,6 +50,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                             key={`message_${index}`}
                             setSelectedDocuments={setSelectedDocuments}
                             setPreviewCode={setPreviewCode}
+                            openLinksInNewTab={openLinksInNewTab}
                         />
                     ))}
 

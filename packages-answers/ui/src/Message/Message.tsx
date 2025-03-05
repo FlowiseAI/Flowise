@@ -37,6 +37,7 @@ import { CodePreview } from './CodePreview'
 import { PreviewDialog } from './PreviewDialog'
 import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
 import { CodeCard } from './CodeCard'
+import remarkGfm from 'remark-gfm'
 import nextAgentGIF from './../../../../packages/ui/src/assets/images/next-agent.gif'
 import multiagent_supervisorPNG from './../../../../packages/ui/src/assets/images/multiagent_supervisor.png'
 import multiagent_workerPNG from './../../../../packages/ui/src/assets/images/multiagent_worker.png'
@@ -66,7 +67,7 @@ interface MessageExtra {
 }
 interface MessageCardProps extends Partial<Message>, MessageExtra {
     error?: AxiosError<MessageExtra>
-
+    openLinksInNewTab?: boolean
     role: string
     setPreviewCode?: (
         preview: {
@@ -144,6 +145,7 @@ export const MessageCard = ({
     isLoading,
     fileUploads,
     setPreviewCode,
+    openLinksInNewTab,
     ...other
 }: MessageCardProps) => {
     other = { ...other, role, user } as any
@@ -466,6 +468,7 @@ export const MessageCard = ({
                             }}
                         >
                             <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
                                 components={{
                                     p: (paragraph: any) => {
                                         const { node } = paragraph
@@ -513,6 +516,12 @@ export const MessageCard = ({
                                         }
                                         return <p>{paragraph.children}</p>
                                     },
+
+                                    a: ({ node, ...props }) => (
+                                        <a {...props} target={openLinksInNewTab ? '_blank' : '_self'} rel='noopener noreferrer'>
+                                            {props.children}
+                                        </a>
+                                    ),
 
                                     code({ node, inline, className, children, ...props }) {
                                         const codeExample = String(children).replace(/\n$/, '')

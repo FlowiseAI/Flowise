@@ -282,6 +282,15 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
             // we need a 2-step process, as we need to save the chatflow first and then update the file paths
             // this is because we need the chatflow id to create the file paths
 
+            // Ensure parentChatflowId is not a marketplace template ID
+            if (
+                newChatFlow.parentChatflowId &&
+                typeof newChatFlow.parentChatflowId === 'string' &&
+                newChatFlow.parentChatflowId.startsWith('cf_')
+            ) {
+                newChatFlow.parentChatflowId = undefined
+            }
+
             // step 1 - save with empty flowData
             const incomingFlowData = newChatFlow.flowData
             newChatFlow.flowData = JSON.stringify({})
@@ -293,6 +302,15 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
             await _checkAndUpdateDocumentStoreUsage(step1Results)
             dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
         } else {
+            // Ensure parentChatflowId is not a marketplace template ID
+            if (
+                newChatFlow.parentChatflowId &&
+                typeof newChatFlow.parentChatflowId === 'string' &&
+                newChatFlow.parentChatflowId.startsWith('cf_')
+            ) {
+                newChatFlow.parentChatflowId = undefined
+            }
+
             const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
             dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
         }

@@ -11,6 +11,7 @@ import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 import Leads from '@/ui-component/extended/Leads'
 import VisibilitySettings from '@/ui-component/extended/VisibilitySettings'
 import GeneralSettings from '@/ui-component/extended/GeneralSettings'
+import ChatLinksSettings from '@/ui-component/extended/ChatLinksSettings'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
@@ -20,6 +21,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Visibility',
         id: 'visibilitySettings'
+    },
+    {
+        label: 'Chat links',
+        id: 'chatLinks'
     },
     {
         label: 'Rate Limiting',
@@ -131,6 +136,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                         {/* {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null} */}
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
                         {item.id === 'visibilitySettings' ? <VisibilitySettings dialogProps={dialogProps} /> : null}
+                        {item.id === 'chatLinks' ? <ChatLinksSettings dialogProps={dialogProps} /> : null}
                         {item.id === 'generalSettings' ? <GeneralSettings dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
