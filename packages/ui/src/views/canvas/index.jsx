@@ -294,7 +294,10 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                         name: chatflowName,
                         flowData,
                         deployed: false,
-                        isPublic: false
+                        isPublic: false,
+                        chatbotConfig: JSON.stringify({
+                            chatLinksInNewTab: { status: true }
+                        })
                     }
                     localStorage.removeItem('duplicatedFlowData')
                 } else {
@@ -308,7 +311,9 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                         description: chatflow.description || '',
                         visibility: chatflow.visibility || [],
                         category: chatflow.category || '',
-                        chatbotConfig: chatflow.chatbotConfig || ''
+                        chatbotConfig: chatflow.chatbotConfig ? JSON.stringify(chatflow.chatbotConfig) : JSON.stringify({
+                            chatLinksInNewTab: { status: true }
+                        })
                     }
                 }
                 createNewChatflowApi.request(newChatflowBody)
