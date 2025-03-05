@@ -1,0 +1,12 @@
+env:
+  -   variable: FLOWISE_USERNAME
+    value: hjrubio@gmail.com
+    availability:
+      -   BUILD
+      -   RUNTIME
+
+  -   variable: FLOWISE_PASSWORD
+    value: G1r4$0l3$
+    availability:
+      -   BUILD
+      -   RUNTIME
