@@ -281,9 +281,9 @@ export class LangfuseProvider {
 
     private convertCostsToCredits(costs: { ai: number; compute: number; storage: number; withMargin: number }) {
         return {
-            ai_tokens: Math.ceil((costs.ai * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.CREDIT_TO_USD),
-            compute: Math.ceil((costs.compute * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.CREDIT_TO_USD),
-            storage: Math.ceil((costs.storage * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.CREDIT_TO_USD)
+            ai_tokens: Math.ceil(costs.ai * BILLING_CONFIG.MARGIN_MULTIPLIER * BILLING_CONFIG.CREDIT_TO_USD),
+            compute: Math.ceil(costs.compute * BILLING_CONFIG.MARGIN_MULTIPLIER * BILLING_CONFIG.CREDIT_TO_USD),
+            storage: Math.ceil(costs.storage * BILLING_CONFIG.MARGIN_MULTIPLIER * BILLING_CONFIG.CREDIT_TO_USD)
         }
     }
 

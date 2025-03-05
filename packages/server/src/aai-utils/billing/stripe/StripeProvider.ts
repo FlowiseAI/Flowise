@@ -14,18 +14,15 @@ import {
     Subscription,
     Invoice,
     CreditsData,
-    UsageStats,
     UsageSummary
 } from '../core/types'
-import { log, DEFAULT_CUSTOMER_ID, BILLING_CONFIG } from '../config'
+import { log, BILLING_CONFIG } from '../config'
 import { langfuse } from '../config'
 import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
 import { StripeEvent } from '../../../database/entities/StripeEvent'
 import { Subscription as SubscriptionEntity } from '../../../database/entities/Subscription'
-import { session } from 'passport'
 // import { UserCredits } from '../../../database/entities/UserCredits'
 import { MeterEventSummary } from './types'
-import { UsageEvent } from '../../../database/entities'
 
 export class StripeProvider {
     constructor(private stripeClient: Stripe) {}
@@ -482,7 +479,8 @@ export class StripeProvider {
         batchIndex: number,
         meterId: string
     ): Promise<void> {
-        const totalCredits = Object.values(data.credits).reduce((sum, val) => sum + val, 0)
+        const totalCredits = data.credits.ai_tokens + data.credits.compute + data.credits.storage
+
         await langfuse.trace({
             id: data.traceId,
             timestamp: data.fullTrace?.timestamp,
@@ -491,7 +489,7 @@ export class StripeProvider {
                 billing_status: 'processed',
                 meter_event_id: result.identifier,
                 billing_details: {
-                    total_credits: Math.floor(totalCredits * BILLING_CONFIG.MARGIN_MULTIPLIER),
+                    total_credits: totalCredits,
                     breakdown: {
                         ai_tokens: this.calculateResourceBreakdown(data.credits.ai_tokens, data.costs.base.ai, totalCredits),
                         compute: this.calculateResourceBreakdown(data.credits.compute, data.costs.base.compute, totalCredits),
