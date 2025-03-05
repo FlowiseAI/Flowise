@@ -820,6 +820,12 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
                 } else {
                     zodObj[sch.property] = z.boolean().describe(sch.description).optional()
                 }
+            } else if (sch.type === 'date') {
+                if (sch.required) {
+                    zodObj[sch.property] = z.date({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.date().describe(sch.description).optional()
+                }
             }
         }
         return zodObj

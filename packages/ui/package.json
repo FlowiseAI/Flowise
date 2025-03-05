@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "2.2.5",
+    "version": "2.2.6",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -24,7 +24,7 @@
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
-        "axios": "1.6.2",
+        "axios": "1.7.9",
         "clsx": "^1.1.1",
         "dotenv": "^16.0.0",
         "flowise-embed": "latest",

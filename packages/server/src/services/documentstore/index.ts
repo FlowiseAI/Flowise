@@ -843,7 +843,7 @@ const _saveChunksToStorage = async (
                         filesWithMetadata.push(fileMetadata)
                     }
                 }
-                data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
+                if (fileNames.length) data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
             } else if (re.test(input)) {
                 const fileNames: string[] = []
                 const fileMetadata = await _saveFileToStorage(input, entity)

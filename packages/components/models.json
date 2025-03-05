@@ -4,6 +4,11 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+                    "name": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model"
+                },
+                {
                     "label": "anthropic.claude-3-5-haiku-20241022-v1:0",
                     "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
                     "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model"
@@ -273,6 +278,10 @@
                 {
                     "label": "gpt-4-vision-preview",
                     "name": "gpt-4-vision-preview"
+                },
+                {
+                    "label": "gpt-4.5-preview",
+                    "name": "gpt-4.5-preview"
                 }
             ]
         },
@@ -320,6 +329,11 @@
         {
             "name": "chatAnthropic",
             "models": [
+                {
+                    "label": "claude-3-7-sonnet-latest",
+                    "name": "claude-3-7-sonnet-latest",
+                    "description": "Most recent snapshot version of Claude Sonnet 3.7 model - hybrid reasoning model"
+                },
                 {
                     "label": "claude-3-5-haiku-latest",
                     "name": "claude-3-5-haiku-latest",
@@ -410,8 +424,8 @@
                     "name": "gemini-2.0-flash-001"
                 },
                 {
-                    "label": "gemini-2.0-flash-lite-preview-02-05",
-                    "name": "gemini-2.0-flash-lite-preview-02-05"
+                    "label": "gemini-2.0-flash-lite-001",
+                    "name": "gemini-2.0-flash-lite-001"
                 },
                 {
                     "label": "gemini-1.5-flash",
@@ -462,6 +476,11 @@
                 {
                     "label": "gemini-1.0-pro-vision",
                     "name": "gemini-1.0-pro-vision"
+                },
+                {
+                    "label": "claude-3-7-sonnet@20250219",
+                    "name": "claude-3-7-sonnet@20250219",
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model"
                 },
                 {
                     "label": "claude-3-5-haiku@20241022",
@@ -588,6 +607,10 @@
         {
             "name": "chatOpenAI",
             "models": [
+                {
+                    "label": "gpt-4.5-preview",
+                    "name": "gpt-4.5-preview"
+                },
                 {
                     "label": "gpt-4o-mini (latest)",
                     "name": "gpt-4o-mini"

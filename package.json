@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.2.5",
+    "version": "2.2.6-hotfix.1",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -62,7 +62,20 @@
             "sqlite3"
         ],
         "overrides": {
-            "set-value": "^3.0.3"
+            "axios": "1.7.9",
+            "body-parser": "2.0.2",
+            "braces": "3.0.3",
+            "cross-spawn": "7.0.6",
+            "glob-parent": "6.0.2",
+            "http-proxy-middleware": "3.0.3",
+            "json5": "2.2.3",
+            "nth-check": "2.1.1",
+            "path-to-regexp": "0.1.12",
+            "prismjs": "1.29.0",
+            "semver": "7.7.1",
+            "set-value": "4.1.0",
+            "unset-value": "2.0.1",
+            "webpack-dev-middleware": "7.4.2"
         }
     },
     "engines": {
@@ -70,7 +83,8 @@
         "pnpm": ">=9"
     },
     "resolutions": {
-        "@google/generative-ai": "^0.15.0",
+        "@google/generative-ai": "^0.22.0",
+        "@grpc/grpc-js": "^1.10.10",
         "@langchain/core": "0.3.37",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
         "openai": "4.82.0",

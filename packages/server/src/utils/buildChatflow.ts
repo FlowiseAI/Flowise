@@ -237,11 +237,18 @@ export const executeFlow = async ({
     files,
     signal
 }: IExecuteFlowParams) => {
-    const question = incomingInput.question
+    // Ensure incomingInput has all required properties with default values
+    incomingInput = {
+        history: [],
+        streaming: false,
+        ...incomingInput
+    }
+
+    const question = incomingInput.question || '' // Ensure question is never undefined
     let overrideConfig = incomingInput.overrideConfig ?? {}
     const uploads = incomingInput.uploads
     const prependMessages = incomingInput.history ?? []
-    const streaming = incomingInput.streaming
+    const streaming = incomingInput.streaming ?? false
     const userMessageDateTime = new Date()
     const chatflowid = chatflow.id
 
@@ -579,7 +586,19 @@ export const executeFlow = async ({
         }
         return undefined
     } else {
-        const isStreamValid = await checkIfStreamValid(endingNodes, nodes, streaming)
+        let chatflowConfig: ICommonObject = {}
+        if (chatflow.chatbotConfig) {
+            chatflowConfig = JSON.parse(chatflow.chatbotConfig)
+        }
+
+        let isStreamValid = false
+
+        /* Check for post-processing settings, if available isStreamValid is always false */
+        if (chatflowConfig?.postProcessing?.enabled === true) {
+            isStreamValid = false
+        } else {
+            isStreamValid = await checkIfStreamValid(endingNodes, nodes, streaming)
+        }
 
         /*** Find the last node to execute ***/
         const { endingNodeData, endingNodeInstance } = await initEndingNode({
@@ -637,8 +656,37 @@ export const executeFlow = async ({
         await utilAddChatMessage(userMessage, appDataSource)
 
         let resultText = ''
-        if (result.text) resultText = result.text
-        else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
+        if (result.text) {
+            resultText = result.text
+            /* Check for post-processing settings */
+            if (chatflowConfig?.postProcessing?.enabled === true) {
+                try {
+                    const postProcessingFunction = JSON.parse(chatflowConfig?.postProcessing?.customFunction)
+                    const nodeInstanceFilePath = componentNodes['customFunction'].filePath as string
+                    const nodeModule = await import(nodeInstanceFilePath)
+                    const nodeData = {
+                        inputs: { javascriptFunction: postProcessingFunction },
+                        outputs: { output: 'output' }
+                    }
+                    const options: ICommonObject = {
+                        chatflowid: chatflow.id,
+                        sessionId,
+                        chatId,
+                        input: question,
+                        rawOutput: resultText,
+                        appDataSource,
+                        databaseEntities,
+                        logger
+                    }
+                    const customFuncNodeInstance = new nodeModule.nodeClass()
+                    let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
+                    result.text = moderatedResponse
+                    resultText = result.text
+                } catch (e) {
+                    logger.log('[server]: Post Processing Error:', e)
+                }
+            }
+        } else if (result.json) resultText = '```json\n' + JSON.stringify(result.json, null, 2)
         else resultText = JSON.stringify(result, null, 2)
 
         const apiMessage: Omit<IChatMessage, 'createdDate'> = {
@@ -707,13 +755,18 @@ const checkIfStreamValid = async (
     nodes: IReactFlowNode[],
     streaming: boolean | string | undefined
 ): Promise<boolean> => {
+    // If streaming is undefined, set to false by default
+    if (streaming === undefined) {
+        streaming = false
+    }
+
     // Once custom function ending node exists, flow is always unavailable to stream
     const isCustomFunctionEndingNode = endingNodes.some((node) => node.data?.outputs?.output === 'EndingNode')
     if (isCustomFunctionEndingNode) return false
 
     let isStreamValid = false
     for (const endingNode of endingNodes) {
-        const endingNodeData = endingNode.data
+        const endingNodeData = endingNode.data || {} // Ensure endingNodeData is never undefined
 
         const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
 
@@ -759,7 +812,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const isAgentFlow = chatflow.type === 'MULTIAGENT'
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
-    const incomingInput: IncomingInput = req.body
+    const incomingInput: IncomingInput = req.body || {} // Ensure incomingInput is never undefined
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const files = (req.files as Express.Multer.File[]) || []
     const abortControllerId = `${chatflow.id}_${chatId}`
@@ -774,7 +827,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         }
 
         const executeData: IExecuteFlowParams = {
-            incomingInput: req.body,
+            incomingInput, // Use the defensively created incomingInput variable
             chatflow,
             chatId,
             baseURL,
