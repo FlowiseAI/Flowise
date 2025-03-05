@@ -300,7 +300,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                 } else {
                     newChatflowBody = {
                         name: chatflowName,
-                        parentChatflowId,
+                        parentChatflowId: parentChatflowId && parentChatflowId.startsWith('cf_') ? null : parentChatflowId,
                         deployed: false,
                         isPublic: false,
                         flowData,
@@ -410,7 +410,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
         const cloneNodes = cloneDeep(nodes)
         const cloneEdges = cloneDeep(edges)
-        let toBeRemovedEdges = []
+        const toBeRemovedEdges = []
 
         for (let i = 0; i < cloneNodes.length; i++) {
             const node = cloneNodes[i]
@@ -510,7 +510,9 @@ const Canvas = ({ chatflowid: chatflowId }) => {
             const chatflow = createNewChatflowApi.data
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
-            navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`, { replace: true })
+            navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`, {
+                replace: true
+            })
         } else if (createNewChatflowApi?.error?.response?.data?.message) {
             errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         } else if (createNewChatflowApi?.error) {

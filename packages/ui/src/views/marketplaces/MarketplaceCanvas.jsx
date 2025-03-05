@@ -50,7 +50,7 @@ const MarketplaceCanvas = ({ template }) => {
                 templateFlowData: typeof template.flowData === 'string' ? template.flowData : JSON.stringify(template.flowData),
                 templateData: JSON.stringify(template),
                 templateName: template.name,
-                parentChatflowId: template.id
+                parentChatflowId: template.id && template.id.startsWith('cf_') ? undefined : template.id
             }
         })
     }
