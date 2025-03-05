@@ -226,6 +226,7 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
         // If not found in the database, look for it in the file system
         const marketplaceDirs = [
             path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows'),
+            path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools'),
             path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows'),
             path.join(__dirname, '..', '..', '..', 'marketplaces', 'answerai')
         ]
@@ -238,6 +239,8 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
                         ? TEMPLATE_TYPE_PREFIXES.AGENTFLOW
                         : path.basename(dir) === 'answerai'
                         ? TEMPLATE_TYPE_PREFIXES.ANSWERAI
+                        : path.basename(dir) === 'tools'
+                        ? TEMPLATE_TYPE_PREFIXES.TOOL
                         : TEMPLATE_TYPE_PREFIXES.CHATFLOW
 
                 if (`${prefix}${idx}` === templateIdOrName || path.parse(file).name === templateIdOrName) {
@@ -256,7 +259,13 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
                         framework: fileDataObj.framework,
                         category: fileDataObj.category || '',
                         type:
-                            path.basename(dir) === 'agentflows' ? 'Agentflow' : path.basename(dir) === 'answerai' ? 'AnswerAI' : 'Chatflow',
+                            path.basename(dir) === 'agentflows'
+                                ? 'Agentflow'
+                                : path.basename(dir) === 'answerai'
+                                ? 'AnswerAI'
+                                : path.basename(dir) === 'tools'
+                                ? 'Tool'
+                                : 'Chatflow',
                         iconSrc: fileDataObj.iconSrc || '',
                         requiresClone: true,
                         // Add a flag to indicate this is a template
