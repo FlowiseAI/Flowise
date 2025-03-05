@@ -28,6 +28,11 @@ import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import { WHITELIST_URLS } from './utils/constants'
 import 'global-agent/bootstrap'
+import { setGlobalDispatcher, ProxyAgent } from 'undici'
+
+if (process.env['GLOBAL_AGENT_HTTPS_PROXY']) {
+    setGlobalDispatcher(new ProxyAgent(process.env['GLOBAL_AGENT_HTTPS_PROXY']))
+}
 
 declare global {
     namespace Express {
