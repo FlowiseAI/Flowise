@@ -237,11 +237,18 @@ export const executeFlow = async ({
     files,
     signal
 }: IExecuteFlowParams) => {
-    const question = incomingInput.question
+    // Ensure incomingInput has all required properties with default values
+    incomingInput = {
+        history: [],
+        streaming: false,
+        ...incomingInput
+    }
+
+    const question = incomingInput.question || '' // Ensure question is never undefined
     let overrideConfig = incomingInput.overrideConfig ?? {}
     const uploads = incomingInput.uploads
     const prependMessages = incomingInput.history ?? []
-    const streaming = incomingInput.streaming
+    const streaming = incomingInput.streaming ?? false
     const userMessageDateTime = new Date()
     const chatflowid = chatflow.id
 
@@ -748,13 +755,18 @@ const checkIfStreamValid = async (
     nodes: IReactFlowNode[],
     streaming: boolean | string | undefined
 ): Promise<boolean> => {
+    // If streaming is undefined, set to false by default
+    if (streaming === undefined) {
+        streaming = false
+    }
+
     // Once custom function ending node exists, flow is always unavailable to stream
     const isCustomFunctionEndingNode = endingNodes.some((node) => node.data?.outputs?.output === 'EndingNode')
     if (isCustomFunctionEndingNode) return false
 
     let isStreamValid = false
     for (const endingNode of endingNodes) {
-        const endingNodeData = endingNode.data
+        const endingNodeData = endingNode.data || {} // Ensure endingNodeData is never undefined
 
         const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
 
@@ -800,7 +812,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const isAgentFlow = chatflow.type === 'MULTIAGENT'
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
-    const incomingInput: IncomingInput = req.body
+    const incomingInput: IncomingInput = req.body || {} // Ensure incomingInput is never undefined
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const files = (req.files as Express.Multer.File[]) || []
     const abortControllerId = `${chatflow.id}_${chatId}`
@@ -815,7 +827,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         }
 
         const executeData: IExecuteFlowParams = {
-            incomingInput: req.body,
+            incomingInput, // Use the defensively created incomingInput variable
             chatflow,
             chatId,
             baseURL,
