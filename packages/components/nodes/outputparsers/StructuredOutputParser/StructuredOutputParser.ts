@@ -79,7 +79,7 @@ class StructuredOutputParser implements INode {
 
             // Fix broken JSON from LLM
             structuredOutputParser.parse = (text) => {
-                const jsonString = text.includes('```') ? text.trim().split(/```(?:json)?/)[1] : text.trim()
+                const jsonString = text.replace(/(?:^[^{[]*)|(?:[^}\]]*$)/g, '')
                 return baseParse.call(structuredOutputParser, jsonrepair(jsonString))
             }
 
