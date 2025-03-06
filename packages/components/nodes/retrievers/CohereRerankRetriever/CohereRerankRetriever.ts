@@ -46,15 +46,19 @@ class CohereRerankRetriever_Retrievers implements INode {
                 type: 'options',
                 options: [
                     {
-                        label: 'rerank-english-v2.0',
-                        name: 'rerank-english-v2.0'
+                        label: 'rerank-v3.5',
+                        name: 'rerank-v3.5'
                     },
                     {
-                        label: 'rerank-multilingual-v2.0',
-                        name: 'rerank-multilingual-v2.0'
+                        label: 'rerank-english-v3.0',
+                        name: 'rerank-english-v3.0'
+                    },
+                    {
+                        label: 'rerank-multilingual-v3.0',
+                        name: 'rerank-multilingual-v3.0'
                     }
                 ],
-                default: 'rerank-english-v2.0',
+                default: 'rerank-v3.5',
                 optional: true
             },
             {

@@ -1,12 +1,11 @@
 import { Request } from 'express'
-import { Server } from 'socket.io'
 import { StatusCodes } from 'http-status-codes'
 import { utilBuildChatflow } from '../../utils/buildChatflow'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import chatflowsService from '../chatflows'
 
-const buildChatflow = async (fullRequest: Request, ioServer: Server) => {
+const buildChatflow = async (fullRequest: Request) => {
     try {
         const { chatId, question: prompt, overrideConfig } = fullRequest.body
         const chatflowId = fullRequest.params.id
@@ -33,7 +32,7 @@ const buildChatflow = async (fullRequest: Request, ioServer: Server) => {
         }
 
         // First build and get response from chatflow
-        const response = await utilBuildChatflow(fullRequest, ioServer)
+        const response = await utilBuildChatflow(fullRequest)
 
         // After successful response, upsert the chat
         if (response.chatId) {

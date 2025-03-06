@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getUserHome } from '../../../src/utils'
 import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchain/community/indexes/base'
-import { DataSource, QueryRunner } from 'typeorm'
+import { DataSource } from 'typeorm'
 import path from 'path'
 
 class SQLiteRecordManager_RecordManager implements INode {
@@ -19,19 +19,19 @@ class SQLiteRecordManager_RecordManager implements INode {
     constructor() {
         this.label = 'SQLite Record Manager'
         this.name = 'SQLiteRecordManager'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'SQLite RecordManager'
         this.icon = 'sqlite.png'
         this.category = 'Record Manager'
         this.description = 'Use SQLite to keep track of document writes into the vector databases'
         this.baseClasses = [this.type, 'RecordManager', ...getBaseClasses(SQLiteRecordManager)]
         this.inputs = [
-            {
+            /*{
                 label: 'Database File Path',
                 name: 'databaseFilePath',
                 type: 'string',
                 placeholder: 'C:\\Users\\User\\.flowise\\database.sqlite'
-            },
+            },*/
             {
                 label: 'Additional Connection Configuration',
                 name: 'additionalConfig',
@@ -106,7 +106,6 @@ class SQLiteRecordManager_RecordManager implements INode {
         const cleanup = nodeData.inputs?.cleanup as string
         const _sourceIdKey = nodeData.inputs?.sourceIdKey as string
         const sourceIdKey = _sourceIdKey ? _sourceIdKey : 'source'
-        const databaseFilePath = nodeData.inputs?.databaseFilePath as string
 
         let additionalConfiguration = {}
         if (additionalConfig) {
@@ -117,10 +116,12 @@ class SQLiteRecordManager_RecordManager implements INode {
             }
         }
 
+        const database = path.join(process.env.DATABASE_PATH ?? path.join(getUserHome(), '.flowise'), 'database.sqlite')
+
         const sqliteOptions = {
+            database,
             ...additionalConfiguration,
-            type: 'sqlite',
-            database: path.resolve(databaseFilePath)
+            type: 'sqlite'
         }
 
         const args = {
@@ -144,30 +145,47 @@ type SQLiteRecordManagerOptions = {
 
 class SQLiteRecordManager implements RecordManagerInterface {
     lc_namespace = ['langchain', 'recordmanagers', 'sqlite']
-
-    datasource: DataSource
-
-    queryRunner: QueryRunner
-
     tableName: string
-
     namespace: string
+    config: SQLiteRecordManagerOptions
 
     constructor(namespace: string, config: SQLiteRecordManagerOptions) {
-        const { sqliteOptions, tableName } = config
+        const { tableName } = config
         this.namespace = namespace
         this.tableName = tableName || 'upsertion_records'
-        this.datasource = new DataSource(sqliteOptions)
+        this.config = config
+    }
+
+    sanitizeTableName(tableName: string): string {
+        // Trim and normalize case, turn whitespace into underscores
+        tableName = tableName.trim().toLowerCase().replace(/\s+/g, '_')
+
+        // Validate using a regex (alphanumeric and underscores only)
+        if (!/^[a-zA-Z0-9_]+$/.test(tableName)) {
+            throw new Error('Invalid table name')
+        }
+
+        return tableName
+    }
+
+    private async getDataSource(): Promise<DataSource> {
+        const { sqliteOptions } = this.config
+        if (!sqliteOptions) {
+            throw new Error('No datasource options provided')
+        }
+        const dataSource = new DataSource(sqliteOptions)
+        await dataSource.initialize()
+        return dataSource
     }
 
     async createSchema(): Promise<void> {
         try {
-            const appDataSource = await this.datasource.initialize()
+            const dataSource = await this.getDataSource()
+            const queryRunner = dataSource.createQueryRunner()
+            const tableName = this.sanitizeTableName(this.tableName)
 
-            this.queryRunner = appDataSource.createQueryRunner()
-
-            await this.queryRunner.manager.query(`
-CREATE TABLE IF NOT EXISTS "${this.tableName}" (
+            await queryRunner.manager.query(`
+CREATE TABLE IF NOT EXISTS "${tableName}" (
   uuid TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
   key TEXT NOT NULL,
   namespace TEXT NOT NULL,
@@ -175,10 +193,12 @@ CREATE TABLE IF NOT EXISTS "${this.tableName}" (
   group_id TEXT,
   UNIQUE (key, namespace)
 );
-CREATE INDEX IF NOT EXISTS updated_at_index ON "${this.tableName}" (updated_at);
-CREATE INDEX IF NOT EXISTS key_index ON "${this.tableName}" (key);
-CREATE INDEX IF NOT EXISTS namespace_index ON "${this.tableName}" (namespace);
-CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
+CREATE INDEX IF NOT EXISTS updated_at_index ON "${tableName}" (updated_at);
+CREATE INDEX IF NOT EXISTS key_index ON "${tableName}" (key);
+CREATE INDEX IF NOT EXISTS namespace_index ON "${tableName}" (namespace);
+CREATE INDEX IF NOT EXISTS group_id_index ON "${tableName}" (group_id);`)
+
+            await queryRunner.release()
         } catch (e: any) {
             // This error indicates that the table already exists
             // Due to asynchronous nature of the code, it is possible that
@@ -192,12 +212,17 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
     }
 
     async getTime(): Promise<number> {
+        const dataSource = await this.getDataSource()
         try {
-            const res = await this.queryRunner.manager.query(`SELECT strftime('%s', 'now') AS epoch`)
+            const queryRunner = dataSource.createQueryRunner()
+            const res = await queryRunner.manager.query(`SELECT strftime('%s', 'now') AS epoch`)
+            await queryRunner.release()
             return Number.parseFloat(res[0].epoch)
         } catch (error) {
             console.error('Error getting time in SQLiteRecordManager:')
             throw error
+        } finally {
+            await dataSource.destroy()
         }
     }
 
@@ -205,6 +230,9 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
         if (keys.length === 0) {
             return
         }
+        const dataSource = await this.getDataSource()
+        const queryRunner = dataSource.createQueryRunner()
+        const tableName = this.sanitizeTableName(this.tableName)
 
         const updatedAt = await this.getTime()
         const { timeAtLeast, groupIds: _groupIds } = updateOptions ?? {}
@@ -227,14 +255,22 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
         ])
 
         const query = `
-        INSERT INTO "${this.tableName}" (key, namespace, updated_at, group_id)
+        INSERT INTO "${tableName}" (key, namespace, updated_at, group_id)
         VALUES (?, ?, ?, ?)
         ON CONFLICT (key, namespace) DO UPDATE SET updated_at = excluded.updated_at`
 
-        // To handle multiple files upsert
-        for (const record of recordsToUpsert) {
-            // Consider using a transaction for batch operations
-            await this.queryRunner.manager.query(query, record.flat())
+        try {
+            // To handle multiple files upsert
+            for (const record of recordsToUpsert) {
+                // Consider using a transaction for batch operations
+                await queryRunner.manager.query(query, record.flat())
+            }
+            await queryRunner.release()
+        } catch (error) {
+            console.error('Error updating in SQLiteRecordManager:')
+            throw error
+        } finally {
+            await dataSource.destroy()
         }
     }
 
@@ -242,36 +278,45 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
         if (keys.length === 0) {
             return []
         }
+        const tableName = this.sanitizeTableName(this.tableName)
 
         // Prepare the placeholders and the query
         const placeholders = keys.map(() => `?`).join(', ')
         const sql = `
     SELECT key
-    FROM "${this.tableName}"
+    FROM "${tableName}"
     WHERE namespace = ? AND key IN (${placeholders})`
 
         // Initialize an array to fill with the existence checks
         const existsArray = new Array(keys.length).fill(false)
 
+        const dataSource = await this.getDataSource()
+        const queryRunner = dataSource.createQueryRunner()
+
         try {
             // Execute the query
-            const rows = await this.queryRunner.manager.query(sql, [this.namespace, ...keys.flat()])
+            const rows = await queryRunner.manager.query(sql, [this.namespace, ...keys.flat()])
             // Create a set of existing keys for faster lookup
             const existingKeysSet = new Set(rows.map((row: { key: string }) => row.key))
             // Map the input keys to booleans indicating if they exist
             keys.forEach((key, index) => {
                 existsArray[index] = existingKeysSet.has(key)
             })
+            await queryRunner.release()
             return existsArray
         } catch (error) {
             console.error('Error checking existence of keys')
             throw error // Allow the caller to handle the error
+        } finally {
+            await dataSource.destroy()
         }
     }
 
     async listKeys(options?: ListKeyOptions): Promise<string[]> {
         const { before, after, limit, groupIds } = options ?? {}
-        let query = `SELECT key FROM "${this.tableName}" WHERE namespace = ?`
+        const tableName = this.sanitizeTableName(this.tableName)
+
+        let query = `SELECT key FROM "${tableName}" WHERE namespace = ?`
         const values: (string | number | string[])[] = [this.namespace]
 
         if (before) {
@@ -299,13 +344,19 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
 
         query += ';'
 
+        const dataSource = await this.getDataSource()
+        const queryRunner = dataSource.createQueryRunner()
+
         // Directly using try/catch with async/await for cleaner flow
         try {
-            const result = await this.queryRunner.manager.query(query, values)
+            const result = await queryRunner.manager.query(query, values)
+            await queryRunner.release()
             return result.map((row: { key: string }) => row.key)
         } catch (error) {
             console.error('Error listing keys.')
             throw error // Re-throw the error to be handled by the caller
+        } finally {
+            await dataSource.destroy()
         }
     }
 
@@ -314,16 +365,23 @@ CREATE INDEX IF NOT EXISTS group_id_index ON "${this.tableName}" (group_id);`)
             return
         }
 
+        const dataSource = await this.getDataSource()
+        const queryRunner = dataSource.createQueryRunner()
+        const tableName = this.sanitizeTableName(this.tableName)
+
         const placeholders = keys.map(() => '?').join(', ')
-        const query = `DELETE FROM "${this.tableName}" WHERE namespace = ? AND key IN (${placeholders});`
+        const query = `DELETE FROM "${tableName}" WHERE namespace = ? AND key IN (${placeholders});`
         const values = [this.namespace, ...keys].map((v) => (typeof v !== 'string' ? `${v}` : v))
 
         // Directly using try/catch with async/await for cleaner flow
         try {
-            await this.queryRunner.manager.query(query, values)
+            await queryRunner.manager.query(query, values)
+            await queryRunner.release()
         } catch (error) {
             console.error('Error deleting keys')
             throw error // Re-throw the error to be handled by the caller
+        } finally {
+            await dataSource.destroy()
         }
     }
 }

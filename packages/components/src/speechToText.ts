@@ -3,11 +3,15 @@ import { getCredentialData } from './utils'
 import { type ClientOptions, OpenAIClient, toFile } from '@langchain/openai'
 import { AssemblyAI } from 'assemblyai'
 import { getFileFromStorage } from './storageUtils'
+import axios from 'axios'
+import Groq from 'groq-sdk'
 
 const SpeechToTextType = {
     OPENAI_WHISPER: 'openAIWhisper',
     ASSEMBLYAI_TRANSCRIBE: 'assemblyAiTranscribe',
-    LOCALAI_STT: 'localAISTT'
+    LOCALAI_STT: 'localAISTT',
+    AZURE_COGNITIVE: 'azureCognitive',
+    GROQ_WHISPER: 'groqWhisper'
 }
 
 export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfig: ICommonObject, options: ICommonObject) => {
@@ -67,6 +71,57 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
                 })
                 if (localAITranscription?.text) {
                     return localAITranscription.text
+                }
+                break
+            }
+            case SpeechToTextType.AZURE_COGNITIVE: {
+                try {
+                    const baseUrl = `https://${credentialData.serviceRegion}.cognitiveservices.azure.com/speechtotext/transcriptions:transcribe`
+                    const apiVersion = credentialData.apiVersion || '2024-05-15-preview'
+
+                    const formData = new FormData()
+                    const audioBlob = new Blob([audio_file], { type: upload.type })
+                    formData.append('audio', audioBlob, upload.name)
+
+                    const channelsStr = speechToTextConfig.channels || '0,1'
+                    const channels = channelsStr.split(',').map(Number)
+
+                    const definition = {
+                        locales: [speechToTextConfig.language || 'en-US'],
+                        profanityFilterMode: speechToTextConfig.profanityFilterMode || 'Masked',
+                        channels
+                    }
+                    formData.append('definition', JSON.stringify(definition))
+
+                    const response = await axios.post(`${baseUrl}?api-version=${apiVersion}`, formData, {
+                        headers: {
+                            'Ocp-Apim-Subscription-Key': credentialData.azureSubscriptionKey,
+                            Accept: 'application/json'
+                        }
+                    })
+
+                    if (response.data && response.data.combinedPhrases.length > 0) {
+                        return response.data.combinedPhrases[0]?.text || ''
+                    }
+                    return ''
+                } catch (error) {
+                    throw error.response?.data || error
+                }
+            }
+            case SpeechToTextType.GROQ_WHISPER: {
+                const groqClient = new Groq({
+                    apiKey: credentialData.groqApiKey
+                })
+                const file = await toFile(audio_file, upload.name)
+                const groqTranscription = await groqClient.audio.transcriptions.create({
+                    file,
+                    model: speechToTextConfig?.model || 'whisper-large-v3',
+                    language: speechToTextConfig?.language,
+                    temperature: speechToTextConfig?.temperature ? parseFloat(speechToTextConfig.temperature) : undefined,
+                    response_format: 'verbose_json'
+                })
+                if (groqTranscription?.text) {
+                    return groqTranscription.text
                 }
                 break
             }

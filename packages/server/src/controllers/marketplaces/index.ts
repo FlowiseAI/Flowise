@@ -45,7 +45,49 @@ const getMarketplaceTemplate = async (req: Request, res: Response, next: NextFun
     }
 }
 
+const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params === 'undefined' || !req.params.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: marketplacesService.deleteCustomTemplate - id not provided!`
+            )
+        }
+        const apiResponse = await marketplacesService.deleteCustomTemplate(req.params.id)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getAllCustomTemplates = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await marketplacesService.getAllCustomTemplates()
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const saveCustomTemplate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if ((!req.body && !(req.body.chatflowId || req.body.tool)) || !req.body.name) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: marketplacesService.saveCustomTemplate - body not provided!`
+            )
+        }
+        const apiResponse = await marketplacesService.saveCustomTemplate(req.body)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
-    getAllTemplates,
-    getMarketplaceTemplate
+        getAllTemplates,
+        getAllCustomTemplates,
+        saveCustomTemplate,
+        deleteCustomTemplate,
+        getMarketplaceTemplate,
 }

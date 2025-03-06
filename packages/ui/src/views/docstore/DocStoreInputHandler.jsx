@@ -80,6 +80,14 @@ const DocStoreInputHandler = ({
         data.inputs[inputParamName] = newValue
     }
 
+    const getCredential = () => {
+        const credential = data.inputs.credential || data.inputs[FLOWISE_CREDENTIAL_ID]
+        if (credential) {
+            return { credential }
+        }
+        return {}
+    }
+
     return (
         <div>
             {inputParam && (
@@ -130,7 +138,7 @@ const DocStoreInputHandler = ({
                             <CredentialInputHandler
                                 key={JSON.stringify(inputParam)}
                                 disabled={disabled}
-                                data={data.inputs.credential ? { credential: data.inputs.credential } : {}}
+                                data={getCredential()}
                                 inputParam={inputParam}
                                 onSelect={(newValue) => {
                                     data.credential = newValue

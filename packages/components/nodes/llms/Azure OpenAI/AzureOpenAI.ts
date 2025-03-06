@@ -1,9 +1,15 @@
-import { AzureOpenAIInput, OpenAI, OpenAIInput } from '@langchain/openai'
+import { AzureOpenAIInput, AzureOpenAI, OpenAIInput } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+
+const serverCredentialsExists =
+    !!process.env.AZURE_OPENAI_API_KEY &&
+    !!process.env.AZURE_OPENAI_API_INSTANCE_NAME &&
+    !!process.env.AZURE_OPENAI_API_DEPLOYMENT_NAME &&
+    !!process.env.AZURE_OPENAI_API_VERSION
 
 class AzureOpenAI_LLMs implements INode {
     label: string
@@ -25,12 +31,13 @@ class AzureOpenAI_LLMs implements INode {
         this.icon = 'Azure.svg'
         this.category = 'LLMs'
         this.description = 'Wrapper around Azure OpenAI large language models'
-        this.baseClasses = [this.type, ...getBaseClasses(OpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(AzureOpenAI)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['azureOpenAIApi']
+            credentialNames: ['azureOpenAIApi'],
+            optional: serverCredentialsExists
         }
         this.inputs = [
             {
@@ -158,7 +165,7 @@ class AzureOpenAI_LLMs implements INode {
         if (cache) obj.cache = cache
         if (basePath) obj.azureOpenAIBasePath = basePath
 
-        const model = new OpenAI(obj)
+        const model = new AzureOpenAI(obj)
         return model
     }
 }

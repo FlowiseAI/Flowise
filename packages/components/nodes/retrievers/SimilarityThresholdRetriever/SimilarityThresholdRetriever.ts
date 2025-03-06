@@ -100,6 +100,7 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
             maxK: maxK ? parseInt(maxK, 10) : 100,
             kIncrement: kIncrement ? parseInt(kIncrement, 10) : 2
         })
+        retriever.filter = vectorStore?.lc_kwargs?.filter ?? (vectorStore as any).filter
 
         if (output === 'retriever') return retriever
         else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)

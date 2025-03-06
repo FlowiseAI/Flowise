@@ -1,11 +1,10 @@
-import type { ClientOptions } from 'openai'
-import { ChatOpenAI as LangchainChatOpenAI, OpenAIChatInput, AzureOpenAIInput, LegacyOpenAIInput } from '@langchain/openai'
+import { ChatOpenAI as LangchainChatOpenAI, ChatOpenAIFields, OpenAIClient } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
-import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from './FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+import { HttpsProxyAgent } from 'https-proxy-agent'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -22,7 +21,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 6.0
+        this.version = 8.1
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -46,7 +45,7 @@ class ChatOpenAI_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'gpt-3.5-turbo'
+                default: 'gpt-4o-mini'
             },
             {
                 label: 'Temperature',
@@ -55,6 +54,14 @@ class ChatOpenAI_ChatModels implements INode {
                 step: 0.1,
                 default: 0.9,
                 optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Max Tokens',
@@ -97,8 +104,33 @@ class ChatOpenAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Strict Tool Calling',
+                name: 'strictToolCalling',
+                type: 'boolean',
+                description:
+                    'Whether the model supports the `strict` argument when passing in tools. If not specified, the `strict` argument will not be passed to OpenAI.',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Stop Sequence',
+                name: 'stopSequence',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                description: 'List of stop words to use when generating. Use comma to separate multiple stop words.',
+                additionalParams: true
+            },
+            {
                 label: 'BasePath',
                 name: 'basepath',
+                type: 'string',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Proxy Url',
+                name: 'proxyUrl',
                 type: 'string',
                 optional: true,
                 additionalParams: true
@@ -115,7 +147,7 @@ class ChatOpenAI_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             },
@@ -141,6 +173,29 @@ class ChatOpenAI_ChatModels implements INode {
                 default: 'low',
                 optional: false,
                 additionalParams: true
+            },
+            {
+                label: 'Reasoning Effort',
+                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.',
+                name: 'reasoningEffort',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Low',
+                        name: 'low'
+                    },
+                    {
+                        label: 'Medium',
+                        name: 'medium'
+                    },
+                    {
+                        label: 'High',
+                        name: 'high'
+                    }
+                ],
+                default: 'medium',
+                optional: false,
+                additionalParams: true
             }
         ]
     }
@@ -160,9 +215,13 @@ class ChatOpenAI_ChatModels implements INode {
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
         const timeout = nodeData.inputs?.timeout as string
+        const stopSequence = nodeData.inputs?.stopSequence as string
         const streaming = nodeData.inputs?.streaming as boolean
+        const strictToolCalling = nodeData.inputs?.strictToolCalling as boolean
         const basePath = nodeData.inputs?.basepath as string
+        const proxyUrl = nodeData.inputs?.proxyUrl as string
         const baseOptions = nodeData.inputs?.baseOptions
+        const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.Chat.ChatCompletionReasoningEffort
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const imageResolution = nodeData.inputs?.imageResolution as string
@@ -175,21 +234,30 @@ class ChatOpenAI_ChatModels implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<OpenAIChatInput> &
-            Partial<AzureOpenAIInput> &
-            BaseChatModelParams & { configuration?: ClientOptions & LegacyOpenAIInput } = {
+        const obj: ChatOpenAIFields = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
             streaming: streaming ?? true
         }
 
+        if (modelName.includes('o3')) {
+            delete obj.temperature
+        }
+        if ((modelName.includes('o1') || modelName.includes('o3')) && reasoningEffort) {
+            obj.reasoningEffort = reasoningEffort
+        }
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
+        if (stopSequence) {
+            const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
+            obj.stop = stopSequenceArray
+        }
+        if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
 
         let parsedBaseOptions: any | undefined = undefined
 
@@ -204,7 +272,14 @@ class ChatOpenAI_ChatModels implements INode {
         if (basePath || parsedBaseOptions) {
             obj.configuration = {
                 baseURL: basePath,
-                baseOptions: parsedBaseOptions
+                defaultHeaders: parsedBaseOptions
+            }
+        }
+
+        if (proxyUrl) {
+            obj.configuration = {
+                ...obj?.configuration,
+                httpAgent: new HttpsProxyAgent(proxyUrl)
             }
         }
 
