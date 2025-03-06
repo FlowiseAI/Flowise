@@ -2,7 +2,7 @@
 
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
 
-# Flowise - Build LLM Apps Easily
+# Flowise - 輕鬆構建 LLM 應用
 
 [![Release Notes](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/FlowiseAI/Flowise/releases)
 [![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
@@ -10,161 +10,161 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-English | [繁體中文](./i18n/README-TW.md) | [簡體中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
+[English](../README.md) | 繁體中文 | [簡體中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
 
-<h3>Drag & drop UI to build your customized LLM flow</h3>
+<h3>拖放 UI 以構建自定義的 LLM 流程</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
-## ⚡Quick Start
+## ⚡快速開始
 
-Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
+下載並安裝 [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
-1. Install Flowise
+1. 安裝 Flowise
     ```bash
     npm install -g flowise
     ```
-2. Start Flowise
+2. 啟動 Flowise
 
     ```bash
     npx flowise start
     ```
 
-    With username & password
+    使用用戶名和密碼
 
     ```bash
     npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
     ```
 
-3. Open [http://localhost:3000](http://localhost:3000)
+3. 打開 [http://localhost:3000](http://localhost:3000)
 
 ## 🐳 Docker
 
 ### Docker Compose
 
-1. Clone the Flowise project
-2. Go to `docker` folder at the root of the project
-3. Copy `.env.example` file, paste it into the same location, and rename to `.env` file
+1. 克隆 Flowise 項目
+2. 進入項目根目錄的 `docker` 文件夾
+3. 複製 `.env.example` 文件，粘貼到相同位置，並重命名為 `.env` 文件
 4. `docker compose up -d`
-5. Open [http://localhost:3000](http://localhost:3000)
-6. You can bring the containers down by `docker compose stop`
+5. 打開 [http://localhost:3000](http://localhost:3000)
+6. 您可以通過 `docker compose stop` 停止容器
 
-### Docker Image
+### Docker 映像
 
-1. Build the image locally:
+1. 本地構建映像：
     ```bash
     docker build --no-cache -t flowise .
     ```
-2. Run image:
+2. 運行映像：
 
     ```bash
     docker run -d --name flowise -p 3000:3000 flowise
     ```
 
-3. Stop image:
+3. 停止映像：
     ```bash
     docker stop flowise
     ```
 
-## 👨‍💻 Developers
+## 👨‍💻 開發者
 
-Flowise has 3 different modules in a single mono repository.
+Flowise 在單個 mono 存儲庫中有 3 個不同的模塊。
 
--   `server`: Node backend to serve API logics
--   `ui`: React frontend
--   `components`: Third-party nodes integrations
--   `api-documentation`: Auto-generated swagger-ui API docs from express
+-   `server`: 提供 API 邏輯的 Node 後端
+-   `ui`: React 前端
+-   `components`: 第三方節點集成
+-   `api-documentation`: 從 express 自動生成的 swagger-ui API 文檔
 
-### Prerequisite
+### 先決條件
 
--   Install [PNPM](https://pnpm.io/installation)
+-   安裝 [PNPM](https://pnpm.io/installation)
     ```bash
     npm i -g pnpm
     ```
 
-### Setup
+### 設置
 
-1.  Clone the repository
+1.  克隆存儲庫
 
     ```bash
     git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
-2.  Go into repository folder
+2.  進入存儲庫文件夾
 
     ```bash
     cd Flowise
     ```
 
-3.  Install all dependencies of all modules:
+3.  安裝所有模塊的所有依賴項：
 
     ```bash
     pnpm install
     ```
 
-4.  Build all the code:
+4.  構建所有代碼：
 
     ```bash
     pnpm build
     ```
 
     <details>
-    <summary>Exit code 134 (JavaScript heap out of memory)</summary>  
-      If you get this error when running the above `build` script, try increasing the Node.js heap size and run the script again:
+    <summary>退出代碼 134（JavaScript 堆內存不足）</summary>  
+      如果在運行上述 `build` 腳本時遇到此錯誤，請嘗試增加 Node.js 堆大小並重新運行腳本：
 
         export NODE_OPTIONS="--max-old-space-size=4096"
         pnpm build
 
     </details>
 
-5.  Start the app:
+5.  啟動應用：
 
     ```bash
     pnpm start
     ```
 
-    You can now access the app on [http://localhost:3000](http://localhost:3000)
+    您現在可以訪問 [http://localhost:3000](http://localhost:3000)
 
-6.  For development build:
+6.  對於開發構建：
 
-    -   Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
-    -   Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
-    -   Run
+    -   在 `packages/ui` 中創建 `.env` 文件並指定 `VITE_PORT`（參考 `.env.example`）
+    -   在 `packages/server` 中創建 `.env` 文件並指定 `PORT`（參考 `.env.example`）
+    -   運行
 
         ```bash
         pnpm dev
         ```
 
-    Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)
+    任何代碼更改都會自動重新加載應用程序 [http://localhost:8080](http://localhost:8080)
 
-## 🔒 Authentication
+## 🔒 認證
 
-To enable app level authentication, add `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `.env` file in `packages/server`:
+要啟用應用級別的身份驗證，請在 `packages/server` 中的 `.env` 文件中添加 `FLOWISE_USERNAME` 和 `FLOWISE_PASSWORD`：
 
 ```
 FLOWISE_USERNAME=user
 FLOWISE_PASSWORD=1234
 ```
 
-## 🌱 Env Variables
+## 🌱 環境變量
 
-Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
+Flowise 支持不同的環境變量來配置您的實例。您可以在 `packages/server` 文件夾中的 `.env` 文件中指定以下變量。閱讀 [更多](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
 
-## 📖 Documentation
+## 📖 文檔
 
-[Flowise Docs](https://docs.flowiseai.com/)
+[Flowise 文檔](https://docs.flowiseai.com/)
 
-## 🌐 Self Host
+## 🌐 自我托管
 
-Deploy Flowise self-hosted in your existing infrastructure, we support various [deployments](https://docs.flowiseai.com/configuration/deployment)
+在您現有的基礎設施中部署 Flowise 自我托管，我們支持各種 [部署](https://docs.flowiseai.com/configuration/deployment)
 
 -   [AWS](https://docs.flowiseai.com/configuration/deployment/aws)
 -   [Azure](https://docs.flowiseai.com/configuration/deployment/azure)
 -   [Digital Ocean](https://docs.flowiseai.com/configuration/deployment/digital-ocean)
 -   [GCP](https://docs.flowiseai.com/configuration/deployment/gcp)
--   [Alibaba Cloud](https://computenest.console.aliyun.com/service/instance/create/default?type=user&ServiceName=Flowise社区版)
+-   [阿里雲](https://computenest.console.aliyun.com/service/instance/create/default?type=user&ServiceName=Flowise社区版)
 -   <details>
-      <summary>Others</summary>
+      <summary>其他</summary>
 
     -   [Railway](https://docs.flowiseai.com/configuration/deployment/railway)
 
@@ -192,25 +192,25 @@ Deploy Flowise self-hosted in your existing infrastructure, we support various [
 
       </details>
 
-## ☁️ Flowise Cloud
+## ☁️ Flowise 雲
 
-[Get Started with Flowise Cloud](https://flowiseai.com/)
+[開始使用 Flowise 雲](https://flowiseai.com/)
 
-## 🙋 Support
+## 🙋 支持
 
-Feel free to ask any questions, raise problems, and request new features in [discussion](https://github.com/FlowiseAI/Flowise/discussions)
+隨時在 [討論](https://github.com/FlowiseAI/Flowise/discussions) 中提出任何問題、提出問題和請求新功能
 
-## 🙌 Contributing
+## 🙌 貢獻
 
-Thanks go to these awesome contributors
+感謝這些出色的貢獻者
 
 <a href="https://github.com/FlowiseAI/Flowise/graphs/contributors">
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-See [contributing guide](CONTRIBUTING.md). Reach out to us at [Discord](https://discord.gg/jbaHfsRVBW) if you have any questions or issues.
+請參閱 [貢獻指南](CONTRIBUTING.md)。如果您有任何問題或問題，請通過 [Discord](https://discord.gg/jbaHfsRVBW) 與我們聯繫。
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
-## 📄 License
+## 📄 許可證
 
-Source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).
+此存儲庫中的源代碼根據 [Apache 許可證版本 2.0](LICENSE.md) 提供。
