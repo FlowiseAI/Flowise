@@ -15,14 +15,14 @@ export class MCPToolkit extends BaseToolkit {
         if (transport === 'stdio') {
             this.transport = new StdioClientTransport(serverParams as StdioServerParameters)
         } else {
-            //this.transport = new SSEClientTransport(serverParams.url);
+            // TODO: this.transport = new SSEClientTransport(serverParams.url);
         }
     }
     async initialize() {
         if (this._tools === null) {
             this.client = new Client(
                 {
-                    name: 'langchain-js-client',
+                    name: 'flowise-client',
                     version: '1.0.0'
                 },
                 {
