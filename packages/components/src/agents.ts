@@ -24,6 +24,7 @@ import {
 } from 'langchain/agents'
 import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
 import { IUsedTool } from './Interface'
+import { getErrorMessage } from './error'
 
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
@@ -463,7 +464,21 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                 throw e
                             }
                             observation = await new ExceptionTool().call(observation, runManager?.getChild())
+                            usedTools.push({
+                                tool: tool.name,
+                                toolInput: action.toolInput as any,
+                                toolOutput: '',
+                                error: getErrorMessage(e)
+                            })
                             return { action, observation: observation ?? '' }
+                        } else {
+                            usedTools.push({
+                                tool: tool.name,
+                                toolInput: action.toolInput as any,
+                                toolOutput: '',
+                                error: getErrorMessage(e)
+                            })
+                            return { action, observation: getErrorMessage(e) }
                         }
                     }
                     if (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)) {

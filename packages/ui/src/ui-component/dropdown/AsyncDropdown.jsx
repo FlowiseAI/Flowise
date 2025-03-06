@@ -59,15 +59,27 @@ export const AsyncDropdown = ({
     credentialNames = [],
     disabled = false,
     freeSolo = false,
-    disableClearable = false
+    disableClearable = false,
+    multiple = false
 }) => {
     const customization = useSelector((state) => state.customization)
 
     const [open, setOpen] = useState(false)
     const [options, setOptions] = useState([])
     const [loading, setLoading] = useState(false)
-    const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
-    const getDefaultOptionValue = () => ''
+    const findMatchingOptions = (options = [], value) => {
+        if (multiple) {
+            let values = []
+            if ('choose an option' !== value && value && typeof value === 'string') {
+                values = JSON.parse(value)
+            } else {
+                values = value
+            }
+            return options.filter((option) => values.includes(option.name))
+        }
+        return options.find((option) => option.name === value)
+    }
+    const getDefaultOptionValue = () => (multiple ? [] : '')
     const addNewOption = [{ label: '- Create New -', name: '-create-' }]
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
 
@@ -118,6 +130,8 @@ export const AsyncDropdown = ({
                 freeSolo={freeSolo}
                 disabled={disabled}
                 disableClearable={disableClearable}
+                multiple={multiple}
+                filterSelectedOptions={multiple}
                 size='small'
                 sx={{ mt: 1, width: '100%' }}
                 open={open}
@@ -130,12 +144,22 @@ export const AsyncDropdown = ({
                 options={options}
                 value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
                 onChange={(e, selection) => {
-                    const value = selection ? selection.name : ''
-                    if (isCreateNewOption && value === '-create-') {
-                        onCreateNew()
-                    } else {
+                    if (multiple) {
+                        let value = ''
+                        if (selection.length) {
+                            const selectionNames = selection.map((item) => item.name)
+                            value = JSON.stringify(selectionNames)
+                        }
                         setInternalValue(value)
                         onSelect(value)
+                    } else {
+                        const value = selection ? selection.name : ''
+                        if (isCreateNewOption && value === '-create-') {
+                            onCreateNew()
+                        } else {
+                            setInternalValue(value)
+                            onSelect(value)
+                        }
                     }
                 }}
                 PopperComponent={StyledPopper}
@@ -181,5 +205,6 @@ AsyncDropdown.propTypes = {
     freeSolo: PropTypes.bool,
     credentialNames: PropTypes.array,
     disableClearable: PropTypes.bool,
-    isCreateNewOption: PropTypes.bool
+    isCreateNewOption: PropTypes.bool,
+    multiple: PropTypes.bool
 }

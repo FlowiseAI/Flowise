@@ -35,6 +35,7 @@ export const initNode = (nodeData, newNodeId) => {
 
     const whitelistTypes = [
         'asyncOptions',
+        'asyncMultiOptions',
         'options',
         'multiOptions',
         'datagrid',

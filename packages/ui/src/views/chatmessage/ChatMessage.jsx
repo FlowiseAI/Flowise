@@ -1677,10 +1677,24 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                                     key={index}
                                                                                     label={tool.tool}
                                                                                     component='a'
-                                                                                    sx={{ mr: 1, mt: 1 }}
+                                                                                    sx={{
+                                                                                        mr: 1,
+                                                                                        mt: 1,
+                                                                                        borderColor: tool.error ? 'error.main' : undefined,
+                                                                                        color: tool.error ? 'error.main' : undefined
+                                                                                    }}
                                                                                     variant='outlined'
                                                                                     clickable
-                                                                                    icon={<IconTool size={15} />}
+                                                                                    icon={
+                                                                                        <IconTool
+                                                                                            size={15}
+                                                                                            color={
+                                                                                                tool.error
+                                                                                                    ? theme.palette.error.main
+                                                                                                    : undefined
+                                                                                            }
+                                                                                        />
+                                                                                    }
                                                                                     onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                                                 />
                                                                             ) : null
@@ -1808,10 +1822,20 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                             key={index}
                                                             label={tool.tool}
                                                             component='a'
-                                                            sx={{ mr: 1, mt: 1 }}
+                                                            sx={{
+                                                                mr: 1,
+                                                                mt: 1,
+                                                                borderColor: tool.error ? 'error.main' : undefined,
+                                                                color: tool.error ? 'error.main' : undefined
+                                                            }}
                                                             variant='outlined'
                                                             clickable
-                                                            icon={<IconTool size={15} />}
+                                                            icon={
+                                                                <IconTool
+                                                                    size={15}
+                                                                    color={tool.error ? theme.palette.error.main : undefined}
+                                                                />
+                                                            }
                                                             onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                         />
                                                     ) : null

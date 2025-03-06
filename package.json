@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.2.6-hotfix.1",
+    "version": "2.2.7",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
