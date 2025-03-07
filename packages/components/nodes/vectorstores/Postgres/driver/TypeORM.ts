@@ -29,6 +29,7 @@ export class TypeORMDriver extends VectorStoreDriver {
                 type: 'postgres',
                 host: this.getHost(),
                 port: this.getPort(),
+                ssl: this.getSSL(),
                 username: user, // Required by TypeORMVectorStore
                 user: user, // Required by Pool in similaritySearchVectorWithScore
                 password: password,

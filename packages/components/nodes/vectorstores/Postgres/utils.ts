@@ -12,6 +12,10 @@ export function getPort(nodeData?: INodeData) {
     return defaultChain(nodeData?.inputs?.port, process.env.POSTGRES_VECTORSTORE_PORT, '5432')
 }
 
+export function getSSL(nodeData?: INodeData) {
+    return defaultChain(nodeData?.inputs?.ssl, process.env.POSTGRES_VECTORSTORE_SSL, false)
+}
+
 export function getTableName(nodeData?: INodeData) {
     return defaultChain(nodeData?.inputs?.tableName, process.env.POSTGRES_VECTORSTORE_TABLE_NAME, 'documents')
 }

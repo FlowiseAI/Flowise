@@ -4,15 +4,16 @@ Postgres Vector Store integration for Flowise
 
 ## 🌱 Env Variables
 
-| Variable                                 | Description                                           | Type   | Default     |
-| ---------------------------------------- | ----------------------------------------------------- | ------ | ----------- |
-| POSTGRES_VECTORSTORE_HOST                | Default `host` for Postgres Vector Store              | String |             |
-| POSTGRES_VECTORSTORE_PORT                | Default `port` for Postgres Vector Store              | Number | 5432        |
-| POSTGRES_VECTORSTORE_USER                | Default `user` for Postgres Vector Store              | String |             |
-| POSTGRES_VECTORSTORE_PASSWORD            | Default `password` for Postgres Vector Store          | String |             |
-| POSTGRES_VECTORSTORE_DATABASE            | Default `database` for Postgres Vector Store          | String |             |
-| POSTGRES_VECTORSTORE_TABLE_NAME          | Default `tableName` for Postgres Vector Store         | String | documents   |
-| POSTGRES_VECTORSTORE_CONTENT_COLUMN_NAME | Default `contentColumnName` for Postgres Vector Store | String | pageContent |
+| Variable                                 | Description                                           | Type    | Default     |
+| ---------------------------------------- | ----------------------------------------------------- | ------- | ----------- |
+| POSTGRES_VECTORSTORE_HOST                | Default `host` for Postgres Vector Store              | String  |             |
+| POSTGRES_VECTORSTORE_PORT                | Default `port` for Postgres Vector Store              | Number  | 5432        |
+| POSTGRES_VECTORSTORE_USER                | Default `user` for Postgres Vector Store              | String  |             |
+| POSTGRES_VECTORSTORE_PASSWORD            | Default `password` for Postgres Vector Store          | String  |             |
+| POSTGRES_VECTORSTORE_DATABASE            | Default `database` for Postgres Vector Store          | String  |             |
+| POSTGRES_VECTORSTORE_TABLE_NAME          | Default `tableName` for Postgres Vector Store         | String  | documents   |
+| POSTGRES_VECTORSTORE_CONTENT_COLUMN_NAME | Default `contentColumnName` for Postgres Vector Store | String  | pageContent |
+| POSTGRES_VECTORSTORE_SSL                 | Default `ssl` for Postgres Vector Store               | Boolean | false       |
 
 ## License
 
