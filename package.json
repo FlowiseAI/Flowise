@@ -14,11 +14,11 @@
         "apps/desktop"
     ],
     "scripts": {
-        "build": "turbo run build ",
+        "build": "dotenv -- turbo run build ",
         "build-force": "pnpm clean && turbo run build --force",
         "dev": "dotenv -- turbo run dev dev-docker",
         "dev-docker": "docker-compose  -f \"./docker-compose.dev.yml\" up -d",
-        "start": "run-script-os",
+        "start": "dotenv --run-script-os",
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
         "start-worker": "run-script-os",
