@@ -155,6 +155,14 @@ export const getFileFromStorage = async (file: string, ...paths: string[]): Prom
 /**
  * Prepare storage path
  */
+export const getFilePathFromStorage = (file: string, ...paths: string[]): string => {
+  const fileInStorage = path.join(getStoragePath(), ...paths, file)
+  return fileInStorage
+}
+
+/**
+ * Prepare storage path
+ */
 export const getStoragePath = (): string => {
   return process.env.BLOB_STORAGE_PATH ? path.join(process.env.BLOB_STORAGE_PATH) : path.join(getUserHome(), '.flowise', 'storage')
 }

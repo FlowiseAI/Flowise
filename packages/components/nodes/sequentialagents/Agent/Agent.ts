@@ -710,7 +710,7 @@ async function agentNode(
     input,
     options
   }: {
-    state: ISeqAgentsState
+    state: any
     llm: BaseChatModel
     interrupt: boolean
     agent: AgentExecutor | RunnableSequence
@@ -729,6 +729,73 @@ async function agentNode(
 
     // @ts-ignore
     state.messages = restructureMessages(llm, state)
+
+    const fileFromStorage: Buffer = nodeData.inputs?.fileFromStorage
+    const pathFileFromStorage = nodeData.inputs?.pathFileFromStorage
+
+    if (fileFromStorage && pathFileFromStorage) {
+      let imageUrl = options.image
+
+      // Check if it's a base64 image and ensure it has the proper prefix
+      if (typeof options.image === 'string' && options.image.startsWith('data:') && options.image.includes('base64')) {
+        // Base64 is already in the correct format
+        imageUrl = options.image
+      }
+      // Handle blob URL from localStorage
+      else if (typeof options.image === 'string' && options.image.startsWith('blob:')) {
+        imageUrl = options.image
+      }
+      // Handle buffer (convert to base64)
+      else if (options.image instanceof Buffer) {
+        const base64Image = options.image.toString('base64')
+        // Determine mime type or default to png
+        const mimeType = options.imageMimeType || 'image/png'
+        imageUrl = `data:${mimeType};base64,${base64Image}`
+      }
+      // Handle blob object
+      else if (options.image instanceof Blob) {
+        // Create URL from Blob
+        imageUrl = URL.createObjectURL(options.image)
+      }
+
+      // Create a message with text and image
+      const imageContent = [
+        {
+          type: 'text',
+          text: input || ''
+        },
+        {
+          type: 'image_url',
+          image_url: {
+            url: imageUrl
+          }
+        }
+      ]
+
+      const imageMessage = new HumanMessage({
+        content: imageContent
+      })
+
+      // Add the image message to state
+      const messages = state.messages as unknown as BaseMessage[]
+
+      // Try to find and replace the last human message
+      let imageAdded = false
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i]._getType() === 'human') {
+          messages[i] = imageMessage
+          imageAdded = true
+          break
+        }
+      }
+
+      // If no human message was found, add the new one
+      if (!imageAdded) {
+        messages.push(imageMessage)
+      }
+
+      state.messages = messages
+    }
 
     let result = await agent.invoke({ ...state, signal: abortControllerSignal.signal }, config)
 

@@ -1,7 +1,14 @@
 import { Request } from 'express'
 import * as path from 'path'
 import * as fs from 'fs'
-import { addArrayFilesToStorage, IDocument, mapExtToInputField, mapMimeTypeToInputField } from 'flowise-components'
+import {
+  addArrayFilesToStorage,
+  getFileFromStorage,
+  getFilePathFromStorage,
+  IDocument,
+  mapExtToInputField,
+  mapMimeTypeToInputField
+} from 'flowise-components'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { getErrorMessage } from '../errors/utils'
 
@@ -64,9 +71,14 @@ export const createFileAttachment = async (req: Request) => {
       fs.unlinkSync(file.path)
 
       try {
+        const pathFileFromStorage = getFilePathFromStorage(file.originalname, chatflowid, chatId)
+        const fileFromStorage = getFileFromStorage(file.originalname, chatflowid, chatId)
+
         const nodeData = {
           inputs: {
-            [fileInputField]: storagePath
+            [fileInputField]: storagePath,
+            pathFileFromStorage: pathFileFromStorage,
+            fileFromStorage: fileFromStorage
           },
           outputs: { output: 'document' }
         }
@@ -84,7 +96,8 @@ export const createFileAttachment = async (req: Request) => {
           name: file.originalname,
           mimeType: file.mimetype,
           size: file.size,
-          content
+          content,
+          path: fileFromStorage
         })
       } catch (error) {
         throw new Error(`Failed operation: createFileAttachment - ${getErrorMessage(error)}`)
