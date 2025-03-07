@@ -143,7 +143,8 @@ export async function cloneCsvParseRun({
     configuration,
     chatflowChatId,
     rowsRequested,
-    includeOriginalColumns
+    includeOriginalColumns,
+    file
 }: {
     csvParseRunId: string
     userId: string
@@ -153,18 +154,50 @@ export async function cloneCsvParseRun({
     chatflowChatId: string
     rowsRequested: number
     includeOriginalColumns: boolean
+    file: string | null
 }) {
-    const csvParseRun = await prisma.appCsvParseRuns.findUnique({
-        where: { id: csvParseRunId }
-    })
-    if (!csvParseRun) return
+    let originalCsvUrl
+
+    if (file) {
+        const uniqueDocumentPath = getUniqueDocumentPath({ organizationId: orgId, title: name })
+        const key = `csv-parse-runs/${uniqueDocumentPath}.csv`
+        // Convert data URL to Buffer
+        const base64Data = file.replace(/^data:text\/csv;base64,/, '')
+        const fileBuffer = Buffer.from(base64Data, 'base64')
+
+        // Upload file to S3
+        const s3 = new S3Client({
+            region: process.env.S3_STORAGE_REGION ?? '',
+            credentials: {
+                accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID ?? '',
+                secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY ?? ''
+            }
+        })
+        await s3.send(
+            new PutObjectCommand({
+                Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
+                Key: key,
+                Body: fileBuffer,
+                ContentType: 'text/csv'
+            })
+        )
+        originalCsvUrl = `s3://${process.env.S3_STORAGE_BUCKET_NAME}/${key}`
+    } else {
+        const csvParseRun = await prisma.appCsvParseRuns.findUnique({
+            where: { id: csvParseRunId }
+        })
+        originalCsvUrl = csvParseRun?.originalCsvUrl
+    }
+
+    if (!originalCsvUrl) return
+
     await prisma.appCsvParseRuns.create({
         data: {
             userId,
             orgId,
             name,
             configuration,
-            originalCsvUrl: csvParseRun.originalCsvUrl,
+            originalCsvUrl,
             chatflowChatId,
             rowsRequested,
             includeOriginalColumns

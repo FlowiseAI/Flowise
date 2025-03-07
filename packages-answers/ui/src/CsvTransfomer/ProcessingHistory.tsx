@@ -134,11 +134,17 @@ const ProcessingHistory = ({ user }: { user: User }) => {
         {
             field: 'rowsProcessed',
             headerName: 'Rows',
-            width: 75,
+            width: 150,
             type: 'number',
             headerAlign: 'center' as const,
             align: 'center' as const,
-            headerClassName: 'super-app-theme--header'
+            headerClassName: 'super-app-theme--header',
+            valueGetter: (params: any) => {
+                const rowsRequested = params.row.rowsRequested
+                const rowsProcessed = params.row.rowsProcessed
+                const totalRows = params.row.configuration?.rowsCount
+                return `${rowsProcessed ?? 0}/${rowsRequested ?? 0} of ${totalRows ?? 0}`
+            }
         },
         {
             field: 'actions',

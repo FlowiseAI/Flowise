@@ -1,7 +1,9 @@
 import fetch from 'node-fetch'
 import { AppCsvParseRuns, AppCsvParseRows } from '../db/generated/prisma-client'
 import { prisma } from '../db/src/client'
+import _ from 'lodash'
 
+const CHUNK_SIZE = 5
 const BATCH_SIZE = 10
 
 const runChatFlow = async (row: AppCsvParseRows, chatflowChatId: string) => {
@@ -101,7 +103,7 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
 
         rowsProcessed += inProgressRows
 
-        let rowsRemaining = count - (rowsProcessed ?? 0)
+        let rowsRemaining = rowsRequested - (rowsProcessed ?? 0)
 
         let limit = BATCH_SIZE
         if (rowsRequested > 0) {
@@ -141,19 +143,24 @@ const parseCsvRun = async (csvParseRun: AppCsvParseRuns): Promise<any> => {
 
         console.log(`Found ${rowsRemaining} pending rows for run ${csvParseRun.id}`)
 
-        // Process rows
-        const promises = rows.map((row) => processRow(row, csvParseRun.chatflowChatId))
-        const results = await Promise.allSettled(promises)
+        // Create chunks of rows to process using lodash
+        const chunks = _.chunk(rows, CHUNK_SIZE)
+        console.log(`Created ${chunks.length} chunks with a max of ${CHUNK_SIZE} rows each`)
+        // Process chunks
+        for (const chunk of chunks) {
+            const promises = chunk.map((row) => processRow(row, csvParseRun.chatflowChatId))
+            const results = await Promise.allSettled(promises)
 
-        results.forEach((result, index) => {
-            if (result.status === 'fulfilled') {
-                console.log(`Row ${rows[index].id} completed`)
-            } else {
-                console.error(`Row ${rows[index].id} failed`)
-            }
-        })
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    console.log(`Row ${rows[index].id} completed`)
+                } else {
+                    console.error(`Row ${rows[index].id} failed`)
+                }
+            })
+        }
 
-        if (count === rows.length || (csvParseRun.rowsProcessed ?? 0) + rows.length >= rowsRequested) {
+        if (count === rows.length || rowsRemaining === limit) {
             // if no more rows, mark run as complete
             await prisma.appCsvParseRuns.update({
                 where: { id: csvParseRun.id },

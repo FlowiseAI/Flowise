@@ -182,6 +182,7 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                     },
                     chatflowChatId: data.processorId,
                     rowsRequested: Number(data.rowsRequested),
+                    file: file,
                     includeOriginalColumns: data.includeOriginalColumns
                 })
             } else {
@@ -676,7 +677,7 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                 const rowsRequested = csvParseRun.rowsRequested
                 setHeaders(headers)
                 setRows(Array.from({ length: rowsCount }, (_, i) => [`row${i + 1}`]))
-                setActiveStep(1)
+                setActiveStep(0)
                 setFileName(name)
                 setIsCloning(true)
                 reset({
@@ -784,13 +785,7 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
 
             {/* Navigation Buttons */}
             <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
-                <Button
-                    variant='outlined'
-                    color='primary'
-                    disabled={activeStep === 0 || (isCloning && activeStep === 1)}
-                    onClick={handleBack}
-                    sx={{ mr: 1 }}
-                >
+                <Button variant='outlined' color='primary' disabled={activeStep === 0} onClick={handleBack} sx={{ mr: 1 }}>
                     Back
                 </Button>
                 <Button variant='outlined' color='error' onClick={handleCancel}>
