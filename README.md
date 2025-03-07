@@ -22,7 +22,7 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
 1. Install Flowise
     ```bash
-    npm install -g flowise
+    npm install -g flowise langchainhub
     ```
 2. Start Flowise
 
