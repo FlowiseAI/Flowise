@@ -10,11 +10,16 @@ export const resolveVectorStoreOrRetriever = (
     const searchType = nodeData.outputs?.searchType as string
     const topK = nodeData.inputs?.topK as string
     const k = topK ? parseFloat(topK) : 4
+    const alpha = nodeData.inputs?.alpha
 
     // If it is already pre-defined in lc_kwargs, then don't pass it again
     const filter = vectorStore?.lc_kwargs?.filter ? undefined : metadataFilter
 
     if (output === 'retriever') {
+        const searchKwargs: Record<string, any> = {}
+        if (alpha !== undefined) {
+            searchKwargs.alpha = parseFloat(alpha)
+        }
         if ('mmr' === searchType) {
             const fetchK = nodeData.inputs?.fetchK as string
             const lambda = nodeData.inputs?.lambda as string
@@ -25,13 +30,18 @@ export const resolveVectorStoreOrRetriever = (
                 k: k,
                 filter,
                 searchKwargs: {
+                    //...searchKwargs,
                     fetchK: f,
                     lambda: l
                 }
             })
         } else {
             // "searchType" is "similarity"
-            return vectorStore.asRetriever(k, filter)
+            return vectorStore.asRetriever({
+                k: k,
+                filter: filter,
+                searchKwargs: Object.keys(searchKwargs).length > 0 ? searchKwargs : undefined
+            })
         }
     } else if (output === 'vectorStore') {
         ;(vectorStore as any).k = k
