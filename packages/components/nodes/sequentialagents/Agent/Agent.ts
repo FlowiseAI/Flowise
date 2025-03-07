@@ -730,40 +730,38 @@ async function agentNode(
     // @ts-ignore
     state.messages = restructureMessages(llm, state)
 
-    const fileFromStorage: Buffer = nodeData.inputs?.fileFromStorage
+    const fileFromStorage = nodeData.inputs?.fileFromStorage
     const pathFileFromStorage = nodeData.inputs?.pathFileFromStorage
+    console.log('🚀 ~ fileFromStorage:', { fileFromStorage, pathFileFromStorage })
 
     if (fileFromStorage && pathFileFromStorage) {
-      let imageUrl = options.image
+      let imageUrl: any = fileFromStorage
 
       // Check if it's a base64 image and ensure it has the proper prefix
-      if (typeof options.image === 'string' && options.image.startsWith('data:') && options.image.includes('base64')) {
+      if (typeof fileFromStorage === 'string' && fileFromStorage.startsWith('data:') && fileFromStorage.includes('base64')) {
         // Base64 is already in the correct format
-        imageUrl = options.image
+        imageUrl = fileFromStorage
       }
       // Handle blob URL from localStorage
-      else if (typeof options.image === 'string' && options.image.startsWith('blob:')) {
-        imageUrl = options.image
+      else if (typeof fileFromStorage === 'string' && fileFromStorage.startsWith('blob:')) {
+        imageUrl = fileFromStorage
       }
       // Handle buffer (convert to base64)
-      else if (options.image instanceof Buffer) {
-        const base64Image = options.image.toString('base64')
-        // Determine mime type or default to png
-        const mimeType = options.imageMimeType || 'image/png'
+      else if (fileFromStorage instanceof Buffer) {
+        const base64Image = fileFromStorage.toString('base64')
+        const extension = pathFileFromStorage.split('.').pop() || ''
+        const mimeType = extension === 'jpg' ? 'image/jpeg' : `image/${extension}`
         imageUrl = `data:${mimeType};base64,${base64Image}`
       }
       // Handle blob object
-      else if (options.image instanceof Blob) {
+      else if (fileFromStorage instanceof Blob) {
         // Create URL from Blob
-        imageUrl = URL.createObjectURL(options.image)
+        imageUrl = URL.createObjectURL(fileFromStorage)
       }
+      console.log('🚀 ~ imageUrl:', imageUrl)
 
       // Create a message with text and image
       const imageContent = [
-        {
-          type: 'text',
-          text: input || ''
-        },
         {
           type: 'image_url',
           image_url: {
