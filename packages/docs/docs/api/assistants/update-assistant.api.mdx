@@ -1,0 +1,167 @@
+---
+id: update-assistant
+title: 'Update assistant details'
+description: 'Update the details of an existing assistant'
+sidebar_label: 'Update assistant details'
+hide_title: true
+hide_table_of_contents: true
+api: eJztWG1v2zYQ/ivEfdoAKZYc502f5q0d5g4YgibZ1gVGQIsnm61EciSV1jX034cTHUVWXTcF8mVbv+nlXsjn7p7jcQMCXW6l8VIryODGCO6R+RUygZ7L0jFdMK4YfpDOS7Vk3DnpPFceItAGLSfNmYAM6lZ32vvv+dJBdgudjoN5BA7z2kq/hux2AwvkFu209ivIbufNPALDLa/Qo3WtgKRlGe5XEIHiFUIGUkAEFv+upUUBmbc1RuDyFVYcsg34tSEp561US2iiwRa7BbLZCyCHZAmd/1GLNannWnlUnh65MaXM2x2O3jrS3nzqRy/eYk67NZbw8BId/d3C92XBsKnhsiPAD7wyJX16hHy4mUNaU7bC0hR1yaYztmOi0gLLw8pL4+MJyUrlvK1zcucOq7zRNeMWGe/8dk4jJjRb69qyBTrPvGZcufdoWQu81IpxJejFrsmnx6pNrNr2gVF1tUDbd5mSrDZ35glSeicU3Fq+hgikx2rPtpqe+i0UtWr3DxHkWuCdVB6tsZSiEEEhS7xzyG2+gvnW1Z1Fp2ub497wcyEk2ePl5U4i7Mo1TdNEkFsUqLzkX4jXmVhcHOfJOD4XJzyepOlZzM+LND4WxeL0bJwujo8v2nDmWl3Z/LCxkaz4Et2oi9+RIVCaftHddgm+s8h5BF76kH8P2jNl6nY/w6JtPzijlQsAjJMkVM7+cg38Ipir8xydK+qyXLcxeZZ6leIwKGJ8kRQpYnyan0ziySJJ44sET2NxlqRnk/MiOT9JQ30+se6/5JA75+8+Ln7DN7P6z9nN1a+///L21bvitT6V5T15+kYc34jjX0Ec7WqodF9wvzdjC20r7qnIuMfYywp3zI6T8SROzuPx5DqdZOlJNh7/RVa3hPCsVgck1x41nsx0W+wn+3jseoXMGcxlIVGw2QsmHZPqnpdSMG3ZQos1faqkc2H5z8RraK22h8P2kkRYhc7xJRKwznNf91OLMncZsvYBVKn88bhvZpIkQ/SC7x5SracOpckhtlfas0LXSvwPoDjZlzAzYgvFSxZU/+soUHtBv9I0SdB5IQqH/gwe2cSNNlI0QBOEvX+YD2pbQgYr743LRiNu5JFfYegSR1yO7lMYDgCXVovQmFgwBE00tOM8X0q1jJ9i7yrIdsZ6I84VxSTA3h90OhjJHWxnF3oPQhBtH35+wPbVH9ctNVGsXz+OKy8foN4ZN7ZTUn9QGxTZ/gbf9fdtEx/28Odq1IM+nXa9OO367Vf1zj2tc9gBn9bmel3u861MqkK3ERySv2PTy9mnWF/OWEHFxFXIkj7k1FIokYNoepQcJds657nvhXLaYjmdsavaGG0pVLvp2k9RKsGKS/rtgvgPO78JG6Odr7jqudgO/t3S2GPTGxwcOxr6ysuCbcp7/OBHpuRStS3ctueTUOo7FwURZFJQcFfaefq32Sy4wxtbNg19DrmU3c4juOdW8kV75tqAkI6eBWQFLx0eWP53r7fM9D3buRP4zFIfToCKMvielzW9QQTvcB3uJBo6xa2QC7TtSsKPn4K/+JrUHxU/YXDioKAxzXM0/qDsvEeWlzfXRBjb2wsqYcjA8vd0R8LfhzVq053D228bKLla1sTuGQSTlBZ8l50GbNRuai8Km02QuNbvUDVNB4qnd8Klaf4Bv5dKzQ==
+sidebar_class_name: 'put api-method'
+info_path: docs/api/assistants/assistants-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Update assistant details'}></Heading>
+
+<MethodEndpoint method={'put'} path={'/assistants/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Update the details of an existing assistant
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Assistant ID' }]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        details: {
+                            type: 'object',
+                            properties: {
+                                name: { type: 'string', example: 'assistant' },
+                                description: { type: 'string', example: 'A helpful AI assistant' },
+                                model: { type: 'string', example: 'gpt-4' },
+                                instructions: {
+                                    type: 'string',
+                                    example: 'You are a helpful assistant, do your best to answer question and query'
+                                },
+                                temperature: { type: 'number', example: 1 },
+                                top_p: { type: 'number', example: 1 },
+                                tools: {
+                                    type: 'array',
+                                    items: { type: 'string' },
+                                    example: ['function', 'code_interpreter', 'file_search']
+                                },
+                                tool_resources: { type: 'object', additionalProperties: { type: 'object' } }
+                            }
+                        },
+                        credential: { type: 'string', example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339' },
+                        iconSrc: { type: 'string', example: '/images/assistant.png' }
+                    },
+                    required: ['details', 'credential'],
+                    title: 'AssistantInput'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Assistant updated successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', example: 'd290f1ee-6c54-4b01-90e6-d701748f0851' },
+                            details: {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string', example: 'asst_zbNeYIuXIUSKVHjJkfRo6ilv' },
+                                    name: { type: 'string', example: 'assistant' },
+                                    description: { type: 'string', example: 'A helpful AI assistant' },
+                                    model: { type: 'string', example: 'gpt-4' },
+                                    instructions: {
+                                        type: 'string',
+                                        example: 'You are a helpful assistant, do your best to answer question and query'
+                                    },
+                                    temperature: { type: 'number', example: 1 },
+                                    top_p: { type: 'number', example: 1 },
+                                    tools: {
+                                        type: 'array',
+                                        items: { type: 'string' },
+                                        example: ['function', 'code_interpreter', 'file_search']
+                                    },
+                                    tool_resources: { type: 'object', additionalProperties: { type: 'object' } }
+                                }
+                            },
+                            credential: { type: 'string', example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339' },
+                            iconSrc: { type: 'string', example: '/images/assistant.png' },
+                            createdDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' },
+                            updatedDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' }
+                        },
+                        required: ['id', 'details', 'credential'],
+                        title: 'Assistant'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'The specified ID is invalid or body is missing',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            error: { type: 'string', example: 'Error message' },
+                            status: { type: 'integer', format: 'int32', example: 400 }
+                        },
+                        required: ['error'],
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Assistant not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            error: { type: 'string', example: 'Error message' },
+                            status: { type: 'integer', format: 'int32', example: 400 }
+                        },
+                        required: ['error'],
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            error: { type: 'string', example: 'Error message' },
+                            status: { type: 'integer', format: 'int32', example: 400 }
+                        },
+                        required: ['error'],
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

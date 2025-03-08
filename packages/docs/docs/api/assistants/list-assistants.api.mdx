@@ -1,0 +1,96 @@
+---
+id: list-assistants
+title: 'List all assistants'
+description: 'Retrieve a list of all assistants'
+sidebar_label: 'List all assistants'
+hide_title: true
+hide_table_of_contents: true
+api: eJytVm1v20YM/isCP0ux5Dhv+jQD6zZ3wxDU6bYuMAxaouxLpLvrHeXVM/TfB0qOK7lpGgz9ZPmO95D38CF5e8jJZ05ZVkZDCu+InaItBRiUynNgigDLMkDvlWfU7CEEY8mh2M9ySEHMpv1txrWH9B56ZxYheMpqp3gH6f0eVoSO3LTmDaT3i2YRgiNvjfbkId3DOI7lZxjZvM4y8r6oy+AYAISQGc2kWezR2lJl7cbowcuhPfhsQxXKF+8sQQroHO4gBMVU+d66WT1QxhCCdQLPqgtF5T0bz07pNYRAn7CypSzl45u4SIiiy+xiEk1WcRLdxHQZ5VdxcjW5LuLriwSaEHJiVOV3cIje8/Lf1e/0YVb/NXs///WPXx7ePhbvzKUqt+JJY0XfhOgS0wXWI/mlU9NgQ6UV+qezYABRmZzKlw+vLUcTsVXas6szcedfPvLB1AE6EeKT36PTMMhNsDO1C1bkOWAToPb/kAs+1uQFOkCdyx+3E59MVSuY2vWJ0XW1Itd3mYitsUv7CiszyOXXRHW4VtM7fg9FrbOjeHNaKs3krCNu/RSqpKUndNkGFgdXS0fe1C6jZ/WDea4ED8vbgZKGdk3TNCFkjnLSrPAb+brKVzfnWTyOrvMLjCZJchXhdZFE53mxurwaJ6vz85s2nZnRc5e9DDZSFa7Jj475O7MdKZkjZMp/RH5WsYVxFbIUGTJFrCoawI7j8SSKr6Px5C6ZpMlFOh7/Lai1zb87aiMd6mOtHOWSQpXD55IesLoIgRV3BfO5RjryL55razPJvsYyIOeM+x8N7St9pIN7MS9vxCSoyHtckzDnGbnua0ekue5k+cSa0nw+7sNM4viUns53j4rW0xMNFfHGyORYUxs2yhSA0WDEeHJbcr4dFrUrIYUNs/XpaIRWnfGGuoI/QzXaJnDSxeDWmbzrMUEHBE14iuMZ10qvo9fgzTvbI1hvnM0lHR3j/aF2ZFDcyX1aM0gPRhAePn56ovXtn3etypQuTHv8VEQ+mN7OvohsejsLCkki6i7Efm8WIoXFzjQ5i8/ig74wa/XVjQqYtnefzoJ5ba1xkpQhV31+JPUVKtn2nfkPg225hDWeK9Q9F7/JW+KLh8TJ7Dkq/1WvkAPBTJ94ZEtUuq191za2TlOnT5CN8Syr+/0KPb13ZdPIcjcn0vtFCFt0Cldtm5beuyHMybUifKSdMJVlZIWfLZZ12/hPK1S0cRT4z2/upD8PFXGigBb9aYzoXQ97v+8s7swj6aaB8BAEy39oFk3T/AewalAj
+sidebar_class_name: 'get api-method'
+info_path: docs/api/assistants/assistants-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'List all assistants'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/assistants'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a list of all assistants
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string', example: 'd290f1ee-6c54-4b01-90e6-d701748f0851' },
+                                details: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string', example: 'asst_zbNeYIuXIUSKVHjJkfRo6ilv' },
+                                        name: { type: 'string', example: 'assistant' },
+                                        description: { type: 'string', example: 'A helpful AI assistant' },
+                                        model: { type: 'string', example: 'gpt-4' },
+                                        instructions: {
+                                            type: 'string',
+                                            example: 'You are a helpful assistant, do your best to answer question and query'
+                                        },
+                                        temperature: { type: 'number', example: 1 },
+                                        top_p: { type: 'number', example: 1 },
+                                        tools: {
+                                            type: 'array',
+                                            items: { type: 'string' },
+                                            example: ['function', 'code_interpreter', 'file_search']
+                                        },
+                                        tool_resources: { type: 'object', additionalProperties: { type: 'object' } }
+                                    }
+                                },
+                                credential: { type: 'string', example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339' },
+                                iconSrc: { type: 'string', example: '/images/assistant.png' },
+                                createdDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' },
+                                updatedDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' }
+                            },
+                            required: ['id', 'details', 'credential'],
+                            title: 'Assistant'
+                        }
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            error: { type: 'string', example: 'Error message' },
+                            status: { type: 'integer', format: 'int32', example: 400 }
+                        },
+                        required: ['error'],
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

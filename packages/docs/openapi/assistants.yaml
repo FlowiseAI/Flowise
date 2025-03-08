@@ -1,0 +1,330 @@
+openapi: 3.0.0
+info:
+    title: Assistants API
+    description: API for managing AI assistants
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+tags:
+    - name: assistants
+      description: Operations for managing assistants
+paths:
+    /assistants:
+        post:
+            summary: Create a new assistant
+            description: Create a new assistant with the provided details
+            operationId: createAssistant
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssistantInput'
+                required: true
+            responses:
+                '200':
+                    description: Assistant created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Assistant'
+                '400':
+                    description: Invalid input provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '422':
+                    description: Validation exception
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        get:
+            summary: List all assistants
+            description: Retrieve a list of all assistants
+            operationId: listAssistants
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Assistant'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /assistants/{id}:
+        get:
+            summary: Get assistant by ID
+            description: Retrieve a specific assistant by ID
+            operationId: getAssistantById
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Assistant ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Assistant'
+                '400':
+                    description: The specified ID is invalid
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Assistant not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        put:
+            summary: Update assistant details
+            description: Update the details of an existing assistant
+            operationId: updateAssistant
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Assistant ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AssistantInput'
+                required: true
+            responses:
+                '200':
+                    description: Assistant updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Assistant'
+                '400':
+                    description: The specified ID is invalid or body is missing
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Assistant not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        delete:
+            summary: Delete an assistant
+            description: Delete an assistant by ID
+            operationId: deleteAssistant
+            tags:
+                - assistants
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Assistant ID
+                - in: query
+                  name: isDeleteBoth
+                  required: false
+                  schema:
+                      type: boolean
+                  description: Whether to delete both the assistant and its associated resources
+            responses:
+                '200':
+                    description: Assistant deleted successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                '400':
+                    description: The specified ID is invalid
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Assistant not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+    schemas:
+        AssistantInput:
+            type: object
+            properties:
+                details:
+                    type: object
+                    properties:
+                        name:
+                            type: string
+                            example: 'assistant'
+                        description:
+                            type: string
+                            example: 'A helpful AI assistant'
+                        model:
+                            type: string
+                            example: 'gpt-4'
+                        instructions:
+                            type: string
+                            example: 'You are a helpful assistant, do your best to answer question and query'
+                        temperature:
+                            type: number
+                            example: 1
+                        top_p:
+                            type: number
+                            example: 1
+                        tools:
+                            type: array
+                            items:
+                                type: string
+                            example: ['function', 'code_interpreter', 'file_search']
+                        tool_resources:
+                            type: object
+                            additionalProperties:
+                                type: object
+                credential:
+                    type: string
+                    example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339'
+                iconSrc:
+                    type: string
+                    example: '/images/assistant.png'
+            required:
+                - details
+                - credential
+        Assistant:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
+                details:
+                    type: object
+                    properties:
+                        id:
+                            type: string
+                            example: 'asst_zbNeYIuXIUSKVHjJkfRo6ilv'
+                        name:
+                            type: string
+                            example: 'assistant'
+                        description:
+                            type: string
+                            example: 'A helpful AI assistant'
+                        model:
+                            type: string
+                            example: 'gpt-4'
+                        instructions:
+                            type: string
+                            example: 'You are a helpful assistant, do your best to answer question and query'
+                        temperature:
+                            type: number
+                            example: 1
+                        top_p:
+                            type: number
+                            example: 1
+                        tools:
+                            type: array
+                            items:
+                                type: string
+                            example: ['function', 'code_interpreter', 'file_search']
+                        tool_resources:
+                            type: object
+                            additionalProperties:
+                                type: object
+                credential:
+                    type: string
+                    example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339'
+                iconSrc:
+                    type: string
+                    example: '/images/assistant.png'
+                createdDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+                updatedDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+            required:
+                - id
+                - details
+                - credential
+        Error:
+            type: object
+            properties:
+                error:
+                    type: string
+                    example: 'Error message'
+                status:
+                    type: integer
+                    format: int32
+                    example: 400
+            required:
+                - error

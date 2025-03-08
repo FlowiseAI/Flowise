@@ -75,6 +75,14 @@ const config: Config = {
                             groupPathsBy: 'tag',
                             categoryLinkSource: 'tag'
                         }
+                    } satisfies OpenApiPlugin.Options,
+                    assistants: {
+                        specPath: 'openapi/assistants.yaml',
+                        outputDir: 'docs/api/assistants',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
                     } satisfies OpenApiPlugin.Options
                 }
             }

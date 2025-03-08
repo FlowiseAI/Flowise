@@ -170,3 +170,6 @@ daisy/preview
 
 # Used for anything personal dev scripts
 .local-scripts
+
+**/swagger/yml
+**/swagger/md
