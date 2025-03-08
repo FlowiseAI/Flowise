@@ -1,0 +1,151 @@
+openapi: 3.0.0
+info:
+    title: Vector Upsert API
+    description: API for upserting vector embeddings of documents in a chatflow
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+tags:
+    - name: vector
+      description: Operations for managing vector embeddings
+paths:
+    /vector/upsert/{id}:
+        post:
+            tags:
+                - vector
+            security:
+                - bearerAuth: []
+            operationId: vectorUpsert
+            summary: Upsert vector embeddings
+            description: Upsert vector embeddings of documents in a chatflow
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                stopNodeId:
+                                    type: string
+                                    description: In cases when you have multiple vector store nodes, you can specify the node ID to store the vectors
+                                    example: 'node_1'
+                                overrideConfig:
+                                    type: object
+                                    description: The configuration to override the default vector upsert settings (optional)
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                files:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: binary
+                                    description: Files to be uploaded
+                                modelName:
+                                    type: string
+                                    nullable: true
+                                    example: ''
+                                    description: Other override configurations
+                            required:
+                                - files
+                required: true
+            responses:
+                '200':
+                    description: Vector embeddings upserted successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/VectorUpsertResponse'
+                '400':
+                    description: Invalid input provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Chatflow not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '422':
+                    description: Validation error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+components:
+    schemas:
+        VectorUpsertResponse:
+            type: object
+            properties:
+                numAdded:
+                    type: number
+                    description: Number of vectors added
+                    example: 1
+                numDeleted:
+                    type: number
+                    description: Number of vectors deleted
+                    example: 1
+                numUpdated:
+                    type: number
+                    description: Number of vectors updated
+                    example: 1
+                numSkipped:
+                    type: number
+                    description: Number of vectors skipped (not added, deleted, or updated)
+                    example: 1
+                addedDocs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Document'
+        Document:
+            type: object
+            properties:
+                pageContent:
+                    type: string
+                    example: 'This is the content of the page.'
+                metadata:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    example:
+                        author: 'John Doe'
+                        date: '2024-08-24'
+        Error:
+            type: object
+            properties:
+                message:
+                    type: string
+                    description: Error message
+                    example: 'Invalid input provided'
+                code:
+                    type: string
+                    description: Error code
+                    example: 'INVALID_INPUT'
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

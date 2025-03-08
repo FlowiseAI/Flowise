@@ -148,6 +148,14 @@ const config: Config = {
                             categoryLinkSource: 'tag'
                         }
                     } satisfies OpenApiPlugin.Options,
+                    ping: {
+                        specPath: 'openapi/ping.yaml',
+                        outputDir: 'docs/api/ping',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
+                    } satisfies OpenApiPlugin.Options,
                     upsertHistory: {
                         specPath: 'openapi/upsert-history.yaml',
                         outputDir: 'docs/api/upsert-history',
@@ -159,6 +167,14 @@ const config: Config = {
                     variables: {
                         specPath: 'openapi/variables.yaml',
                         outputDir: 'docs/api/variables',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
+                    } satisfies OpenApiPlugin.Options,
+                    vectorUpsert: {
+                        specPath: 'openapi/vector-upsert.yaml',
+                        outputDir: 'docs/api/vector-upsert',
                         sidebarOptions: {
                             groupPathsBy: 'tag',
                             categoryLinkSource: 'tag'

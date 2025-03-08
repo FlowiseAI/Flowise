@@ -1,0 +1,39 @@
+---
+id: ping-server
+title: 'Ping the server'
+description: 'Ping the server to check if it is running'
+sidebar_label: 'Ping the server'
+hide_title: true
+hide_table_of_contents: true
+api: eJyVUz2P2zAM/SsCZzXJFeiiqRnaIp0OSIsOQQbG4dnC2ZJK0ekFhv97Qdm9fLTDdbJFkXx8j08DHClX7JP4GMDBow+1kYZMJj4RG4mmaqh6Nv7JeDE+G+5D8KEGCzERo9ZtjuAg+VBvSxFYEKwzuF0Jwt4CU04xZMrgBni/WunnFngqvQWoYhAKoslCL7JMLfqgp1w11GGJnxOBgyw8ldALdqnVUIqhhnEcRwsf/gW4CUIcsP3DlJgjg6Z3JE1USjUJWEgoDThYpglhSld2A/TcgoNGJGW3XGLyC2kIQ/5FvEC/PD2AvdeX47Gv9DDjwmjv+2TB2of63Vv6bafc12Z7HbDq2ct5qyJNih8ImXjdK5FXzRRO+ZQ0cHMS2Pnnc+QOBRx8/fGtyOLDUyzlXorAxSrrx83fM3ldgV6Zp8iTfy4zmiwofQYLKuNU8bBYLVbzwrEqCw9YhloX8uuN2fYpRdZ93Ip1LZDuv0Ov13lK/3hzrSxSzNJhuIK4s/w9neFiw/96HbPKV8Yd59mH2VKX59HELHoehgNm+s7tOGr4Z098BrfbWzghezyo7rv9aKEhPBIXDz7TWXWqKkqqzgnb/h53f+XpL590m78BM9tb1w==
+sidebar_class_name: 'get api-method'
+info_path: docs/api/ping/ping-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Ping the server'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/ping'} context={'endpoint'}></MethodEndpoint>
+
+Ping the server to check if it is running
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': { description: 'Server is running', content: { 'text/plain': { schema: { type: 'string', example: 'pong' } } } },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>
