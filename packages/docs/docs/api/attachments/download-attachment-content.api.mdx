@@ -1,0 +1,76 @@
+---
+id: download-attachment-content
+title: 'Download attachment content'
+description: 'Download the content of a specific attachment'
+sidebar_label: 'Download attachment content'
+hide_title: true
+hide_table_of_contents: true
+api: eJyVVU1v2zgQ/SvEnFqAid2iJ53W6BfcU9BksYfAWIypkcVWIlVylK4h8L8vRpTljyRterIpzcd7w/dGA5QUTbAdW++ggA/+p2s8loprUsY7JsfKVwpV7MjYyhqFzGjqlhyDBt9RQMldl1BAOWWv5pD3uQRoYNxFKO7hmB5hoyGS6YPlPRT3A2wJA4VVzzUU95u00dBhwJaYQhwDHLYExUmNf20JGqxA75Br0Bd87mpS6w/CQAgd8xR7dUALGgL96G2gEgoOPWmIpqYWoRiA9510jBys20ESTIFi512kKO/fLpfyc971yH+e4aEZlSr2xlCMVd80e9AwRUgV7LrGmnGeC2+Y+CpyIGzl3XOQNFQ+tMhQwNY6DHtIKSUN75bvfgnMeVaV7135PIRvUZKeaO2338jIpXZBBMA2z4JC8OH3YS3FiDt6isoFWlX3LbqrQFjitiE1NlCH/KSn/N/VERFIhMggY0yTsl6WO4tQcY2sDPaRskMyoFe2UtPctg29lurGly8i2KKpraNLimN6vsejNO+nAW80sOVG6n7MbHJkS1x7seGOxqGLHwpYnBhuMZw5Jy3MbM9I4eHgsj40UEDN3MViscDOXnNN6OJPCtdoFw9vHhG5Cb7sjRxULgRJX9aJjDvrdlcvqXebY+diJ4viVsSYhXS6LuZRSzuYHCznHAR6+vPpYJYv/9yBTM26yo/p00iPFolqdbN+fGc3a1WJCtFljJVtTjdLBA0yyRz95np5vZwchmZ02LTDViP/1Vrd9l3ng9zB+bxOZwQaqEUrr2MO/+vstRDpfOQW3UmLeZnjo310SWs47oA//gZMg2f6jxddg9aJAUYuwyTC862vobhc4IfmGw21jywZw7DFSH+HJiV5/KOnIB+JjYYHDFa8Mmq1tFH+l1BU2ET6Ba1XXycnvVYv/Co8SWx6iE529wM2vZxAw3faP/oypU3SUBOWFEawOWZlDHV8kv3s2hfdz67+/PEONOC52i/UPXZ5EuEw5Ig7/51cSjNglrMATel/wlXPAA==
+sidebar_class_name: 'get api-method'
+info_path: docs/api/attachments/attachments-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Download attachment content'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/attachments/{attachment_id}/content'} context={'endpoint'}></MethodEndpoint>
+
+Download the content of a specific attachment
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[
+        {
+            name: 'attachment_id',
+            in: 'path',
+            description: 'The ID of the attachment to download',
+            required: true,
+            schema: { type: 'string' }
+        }
+    ]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Attachment content downloaded successfully',
+            content: { 'application/octet-stream': { schema: { type: 'string', format: 'binary' } } }
+        },
+        '404': {
+            description: 'Attachment not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            error: {
+                                type: 'object',
+                                properties: {
+                                    message: { type: 'string', description: 'A human-readable error message' },
+                                    type: { type: 'string', description: 'The type of error' },
+                                    param: { type: 'string', description: 'The parameter that caused the error (if applicable)' },
+                                    code: { type: 'string', description: 'A machine-readable error code' }
+                                }
+                            }
+                        },
+                        required: ['error'],
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

@@ -1,0 +1,127 @@
+---
+id: create-attachment
+title: 'Create a new attachment'
+description: 'Upload a file to create a new attachment'
+sidebar_label: 'Create a new attachment'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV12P2kYU/Suj+5RI3mW37ZOfSqpEolLUlZZVHwiKLvYFT2LPzM4HhCL/9+rOGLCBBiL1qSovmPH9POfMzGUHJbnCSuOlVpDDi6k1lgLFUtYkvBaFJfQkUCjaCPQei6oh5SEDbcgiu01KyCHZjfsGHlcO8hkcvRzMM3BUBCv9FvLZDhaEluw4+Ary2bydZ2DpNZDz73S5hXwHhVaew+U7aELtpUHrR0ttm7sSPfKyKypq4pPfGoIc9OILFVyAsVyjl+T4LXfUs3LeSrWCDDgYeshhIRXaLWQnkEwrOqARIjzQZmCCNdpdDHjuLrmHkkrReQm9FL4LCxmQCk0EyjnpPDJOGTTkHK7IwbzlTwJGWioh9zZQXHBGK5e6++nhgb+GuY90dDyWwoWiIOeWoa651R68aEwti8jo6Itj/9uxleV1IF6UfA0kZEnKy6UkK5baRhh6smqzfYoL8Q44He3nl+BOEQS7Z2JTyaIS0gmsN7h14lPP/RNwwg6az9hPypStyF7q4pvwsiHnsTHijVTCUaFV6d7GfjYVqZOmxAbdHn/Ox6wrbG7UDlsO9PJ98V3R0g+rs81gsfWJ5SvQcCwn/xr4C6lE8m8zcB59cN+r2ljN6kyLlrBkjZK12l4uPUUcJOyFaA/6/pwS3oL3x8nH91E6QxgGG3DGgs+Om6GnoB69R572GB4gmGfgpefzqLdHIe3zXy7t5IlaYy1LIZUJnntcy5LKf28DJ4yvmnVCuo7kWFShQXXHHOKiJhETiL1/m8HtjOzJSDWy/NFic5tvNCVPfNCgFwUGR2WkNRX0Ri5Fh9uiprdJMuVNDTZYVFLRaYvR/fTEnh1FvOf9feomUf748znlH9Kdo0WNdkX/U/1foLrls9hXmicmo11EHXn2gVF/SuIhya7JujgjBVtDDpX3xuWjERp57ytC5TZk71GO1o9nFT9ZXYaCf4gUCNrsNI7zuJJqdXdLvOdkewjWm+KeWXVJMf1Z7oApp+N+ohkPWdGIT8T48GE/fP3+5zQeslItdXQ/Ox6dGD9Nzsl5msR7t0GVaoyXwBBMRjJZP94/3D90WwnTkJFuYhjH/scT8RyM0ZaZGeLVx4gvpQYlv3bJ/NfBa26E6W1Q9VL89o+j9KCl3sz7I+N4h7enb35kapSKBR5b2HUaO5vEK1ZgPoPdboGOXmzdtrz8GsjydD7PYI1WsuDjcJ5BRViSjaL8SltuKVV6N+XkbF4HLuLSpM4KTE7joiDje+ZnpxkL7LBPnv54nrJeuj8ETdyzcWqPcbPjYyoShwI8EVwsvnuFaturYrdLFlP9lVTbQtaV6/k3tDyG/w0sK5XV
+sidebar_class_name: 'post api-method'
+info_path: docs/api/attachments/attachments-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new attachment'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/attachments'} context={'endpoint'}></MethodEndpoint>
+
+Upload a file to create a new attachment
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'multipart/form-data': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        file: { type: 'string', format: 'binary', description: 'The file to upload' },
+                        purpose: { type: 'string', description: 'The intended purpose of the file', enum: ['assistants', 'messages'] }
+                    }
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Attachment created successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', description: 'Unique identifier for the attachment' },
+                            object: { type: 'string', enum: ['attachment'], description: 'The object type, which is always "attachment"' },
+                            created_at: { type: 'integer', description: 'Unix timestamp (in seconds) for when the attachment was created' },
+                            filename: { type: 'string', description: 'The name of the file' },
+                            purpose: { type: 'string', enum: ['assistants', 'messages'], description: 'The intended purpose of the file' },
+                            bytes: { type: 'integer', description: 'The size of the file in bytes' },
+                            status: {
+                                type: 'string',
+                                enum: ['processing', 'ready', 'error'],
+                                description: 'The status of the file processing'
+                            },
+                            content_type: { type: 'string', description: 'The MIME type of the file' }
+                        },
+                        required: ['id', 'object', 'created_at', 'filename', 'purpose', 'bytes', 'status'],
+                        title: 'Attachment'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid input provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            error: {
+                                type: 'object',
+                                properties: {
+                                    message: { type: 'string', description: 'A human-readable error message' },
+                                    type: { type: 'string', description: 'The type of error' },
+                                    param: { type: 'string', description: 'The parameter that caused the error (if applicable)' },
+                                    code: { type: 'string', description: 'A machine-readable error code' }
+                                }
+                            }
+                        },
+                        required: ['error'],
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '413': {
+            description: 'File too large',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            error: {
+                                type: 'object',
+                                properties: {
+                                    message: { type: 'string', description: 'A human-readable error message' },
+                                    type: { type: 'string', description: 'The type of error' },
+                                    param: { type: 'string', description: 'The parameter that caused the error (if applicable)' },
+                                    code: { type: 'string', description: 'A machine-readable error code' }
+                                }
+                            }
+                        },
+                        required: ['error'],
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

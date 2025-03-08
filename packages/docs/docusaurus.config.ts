@@ -83,6 +83,14 @@ const config: Config = {
                             groupPathsBy: 'tag',
                             categoryLinkSource: 'tag'
                         }
+                    } satisfies OpenApiPlugin.Options,
+                    attachments: {
+                        specPath: 'openapi/attachments.yaml',
+                        outputDir: 'docs/api/attachments',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
                     } satisfies OpenApiPlugin.Options
                 }
             }

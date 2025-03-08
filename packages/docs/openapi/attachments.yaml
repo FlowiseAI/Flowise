@@ -1,0 +1,231 @@
+openapi: 3.0.0
+info:
+    title: Attachments API
+    description: API for managing file attachments
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+tags:
+    - name: attachments
+      description: Operations for managing file attachments
+paths:
+    /attachments:
+        post:
+            summary: Create a new attachment
+            description: Upload a file to create a new attachment
+            operationId: createAttachment
+            tags:
+                - attachments
+            security:
+                - bearerAuth: []
+            requestBody:
+                content:
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                file:
+                                    type: string
+                                    format: binary
+                                    description: The file to upload
+                                purpose:
+                                    type: string
+                                    description: The intended purpose of the file
+                                    enum: [assistants, messages]
+                required: true
+            responses:
+                '200':
+                    description: Attachment created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Attachment'
+                '400':
+                    description: Invalid input provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '413':
+                    description: File too large
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /attachments/{attachment_id}:
+        get:
+            summary: Retrieve an attachment
+            description: Get information about a specific attachment
+            operationId: getAttachment
+            tags:
+                - attachments
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: attachment_id
+                  in: path
+                  description: The ID of the attachment to retrieve
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Attachment retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Attachment'
+                '404':
+                    description: Attachment not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        delete:
+            summary: Delete an attachment
+            description: Delete a specific attachment
+            operationId: deleteAttachment
+            tags:
+                - attachments
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: attachment_id
+                  in: path
+                  description: The ID of the attachment to delete
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Attachment deleted successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeletedAttachment'
+                '404':
+                    description: Attachment not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /attachments/{attachment_id}/content:
+        get:
+            summary: Download attachment content
+            description: Download the content of a specific attachment
+            operationId: downloadAttachmentContent
+            tags:
+                - attachments
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: attachment_id
+                  in: path
+                  description: The ID of the attachment to download
+                  required: true
+                  schema:
+                      type: string
+            responses:
+                '200':
+                    description: Attachment content downloaded successfully
+                    content:
+                        application/octet-stream:
+                            schema:
+                                type: string
+                                format: binary
+                '404':
+                    description: Attachment not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    schemas:
+        Attachment:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Unique identifier for the attachment
+                object:
+                    type: string
+                    enum: [attachment]
+                    description: The object type, which is always "attachment"
+                created_at:
+                    type: integer
+                    description: Unix timestamp (in seconds) for when the attachment was created
+                filename:
+                    type: string
+                    description: The name of the file
+                purpose:
+                    type: string
+                    enum: [assistants, messages]
+                    description: The intended purpose of the file
+                bytes:
+                    type: integer
+                    description: The size of the file in bytes
+                status:
+                    type: string
+                    enum: [processing, ready, error]
+                    description: The status of the file processing
+                content_type:
+                    type: string
+                    description: The MIME type of the file
+            required:
+                - id
+                - object
+                - created_at
+                - filename
+                - purpose
+                - bytes
+                - status
+        DeletedAttachment:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: The ID of the deleted attachment
+                object:
+                    type: string
+                    enum: [attachment.deleted]
+                    description: The object type, which is always "attachment.deleted"
+                deleted:
+                    type: boolean
+                    enum: [true]
+                    description: Whether the attachment was deleted
+            required:
+                - id
+                - object
+                - deleted
+        Error:
+            type: object
+            properties:
+                error:
+                    type: object
+                    properties:
+                        message:
+                            type: string
+                            description: A human-readable error message
+                        type:
+                            type: string
+                            description: The type of error
+                        param:
+                            type: string
+                            description: The parameter that caused the error (if applicable)
+                        code:
+                            type: string
+                            description: A machine-readable error code
+            required:
+                - error
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
