@@ -1,0 +1,139 @@
+---
+id: get-all-upsert-history
+title: 'Get all upsert history records'
+description: 'Retrieve all upsert history records with optional filters'
+sidebar_label: 'Get all upsert history records'
+hide_title: true
+hide_table_of_contents: true
+api: eJztl91v2zYQwP8V4p5aQIo/6jSJnmYkaedi6LI42YDFxkCLJ4utTKokldQQ9L8PR8mOFDtf29Cn5cWRSN797pOnEgTa2MjcSa0ggkt0RuItMp5lrMgtGsdSaZ02a2Yw1kZYdiddyrQ/wTOWyMyhsRCAztFwejsREMES3TjLrr2In2sJEIDjSwvRDdSiw0Y0zAOwGBdGujVENyUskBs048KlEN3Mq3kAOTd8hV4TbZAEm3OXQgCKrxAikAICMPitkAYFRM4UGICNU1xxiEpw65x2WWekWkIVPDD8NOUuyfQdm5wxpxurtiYv1lAFjdZvBXpTGrXaCDQdzQnP7BOqA0BVrMgJ4+kpBHB2Pj0lBwhMeJE5iPz7HcCpNo55ZUwnzKXIDNoic5a94TZGJaRaMm0Ynaqf3j7KbB037ow7fB13os2KE6DgDkMnV7iL+aHruMToFXOptMzrZHSSvZEqzgorb/FxRFTihwAWysmsJkQl9vDNicDmWlm0pHPY79PPg+AUcYzWJkXGtlUAAcRaOVSO9vM8z2TsF3pfLB0qdw3hxnDygXS4sq33evEFYwcB5IbEO1mjSPGkE4rCl0SX9FrJbwUyKVA5mUg0LNHGp9Peaqds/c5XeUYq4kQcvhtgPzweJnE4GOBJuIhHw/Bw+J4nR0fvR8n7ETk8bmppP1+XZ3K2SefNKcat1bHkDkXdanbhOlRH8QiPF0c8PFqc8HC0GInwJHmH4VAMj5MBLpD3h0RVl8vzRJd+34aqUbyNasCIAAXjlnH2afrrZ3Zf11umckY15go7g2gGts6OGQQzykw+g6icwVdc+9VbnhU4g6oiSHLAGXd7s/tBHpOrSNpT/no9ttICifpmHswAxbJ58HBUHC8su4e0VMuMK8Fold2lqPZisjtuWY6GJGI3+Yb94SjsH4fD0dVgFA0Oo+HwT6iqAJx0fkPnqrlsShYq+gtgtK9qJ+qWZ1Kw1t3y+pp9pDZjLfb6qktwbow2zO9t2zr5/Pv4l8nZX5fnv12fT6/I9yu0li9fLHKzvSO1MZcaKlrXNtt3ScdltrfrdBWMhZDN3Y9e1+ZkAHy7dNFyBt3E7UB5Qqjjcrg/Lg4NybdobtHUav4PzQ8NjbfLpboZ5ciJNG1F0OuObr1SigpofKNQ1cNZYTKIIHUut1Gvx3N54FLkyt6hOeCydzvYAb8wWhSx7wC1ID8XdOVYx5dSLcOXyJvWe7fCWvPllLKkToT2lLl1LamDZsig53oTBM0/Hza97tMfV779SJVof7zThljTh9j4YrIbpouJv3VXXNWY+wdtCIBcWp8ZHPQP+k0N8NjXQDMpjb0jxhM2LfJcGwpV13FtZ1HWrbikZVtv/6mzTBbl2roVVy0VH9E98UHw0L7yvlD/1fdEExCH310vz7hUVAvetLJJxp3viAAiKWiYTrV1tF6WC27x2mRVRa/rIZNyVEjLF1lrqnzUhH8yeD8C/xXXrS8Gf/FDBD7XX87z2gn7SZb2l8B/w/PcQP0kzv3Ufw8zpwcjieaVkXtz2Xw6vGXPft49grUZzNW6zbTBlQKqeRVAipxCSnT1wjiOMXetIzv3FZm1bbAfz6+oRXcb0YPG46XvxSnLeseV/oqqqrZ0jp4JsKr+BhGNfYY=
+sidebar_class_name: 'get api-method'
+info_path: docs/api/upsert-history/upsert-history-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get all upsert history records'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/upsert-history/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve all upsert history records with optional filters
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chatflow ID to filter records by' },
+        {
+            in: 'query',
+            name: 'order',
+            required: false,
+            schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
+            description: 'Sort order of the results (ascending or descending)'
+        },
+        {
+            in: 'query',
+            name: 'startDate',
+            required: false,
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Filter records from this start date (inclusive)'
+        },
+        {
+            in: 'query',
+            name: 'endDate',
+            required: false,
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Filter records until this end date (inclusive)'
+        }
+    ]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    format: 'uuid',
+                                    description: 'Unique identifier for the upsert history record',
+                                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                                },
+                                chatflowid: {
+                                    type: 'string',
+                                    description: 'ID of the chatflow associated with the upsert history',
+                                    example: '7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02'
+                                },
+                                result: {
+                                    type: 'string',
+                                    description: 'Result of the upsert operation, stored as a JSON string',
+                                    example: '{"status":"success","data":{"key":"value"}}'
+                                },
+                                flowData: {
+                                    type: 'string',
+                                    description: 'Flow data associated with the upsert operation, stored as a JSON string',
+                                    example: '{"nodes":[],"edges":[]}'
+                                },
+                                date: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Date and time when the upsert operation was performed',
+                                    example: '2024-08-24T14:15:22Z'
+                                }
+                            },
+                            title: 'UpsertHistoryResponse'
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid parameters',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'INVALID_REQUEST' },
+                            message: { type: 'string', description: 'Error message', example: 'Invalid request parameters' },
+                            details: { type: 'object', description: 'Additional error details', additionalProperties: true }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'INVALID_REQUEST' },
+                            message: { type: 'string', description: 'Error message', example: 'Invalid request parameters' },
+                            details: { type: 'object', description: 'Additional error details', additionalProperties: true }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

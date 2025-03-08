@@ -1,0 +1,245 @@
+openapi: 3.0.0
+info:
+    title: Variables API
+    description: API for managing environment variables
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+tags:
+    - name: variables
+      description: Operations for managing environment variables
+paths:
+    /variables:
+        post:
+            summary: Create a new variable
+            description: Create a new environment variable
+            operationId: createVariable
+            tags:
+                - variables
+            security:
+                - bearerAuth: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/VariableInput'
+                required: true
+            responses:
+                '200':
+                    description: Variable created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Variable'
+                '400':
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '422':
+                    description: Validation error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        get:
+            summary: List all variables
+            description: Retrieve a list of all environment variables
+            operationId: getAllVariables
+            tags:
+                - variables
+            security:
+                - bearerAuth: []
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Variable'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /variables/{id}:
+        put:
+            summary: Update a variable by ID
+            description: Update a specific environment variable by ID
+            operationId: updateVariable
+            tags:
+                - variables
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Variable ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/VariableInput'
+                required: true
+            responses:
+                '200':
+                    description: Variable updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Variable'
+                '400':
+                    description: Invalid ID or request body provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Variable not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        delete:
+            summary: Delete a variable by ID
+            description: Delete a specific environment variable by ID
+            operationId: deleteVariable
+            tags:
+                - variables
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Variable ID
+            responses:
+                '200':
+                    description: Variable deleted successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                '400':
+                    description: Invalid ID provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Variable not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+    schemas:
+        VariableInput:
+            type: object
+            required:
+                - name
+                - type
+            properties:
+                name:
+                    type: string
+                    description: Name of the variable
+                    example: 'API_KEY'
+                value:
+                    type: string
+                    description: Value of the variable
+                    nullable: true
+                    example: 'my-secret-key'
+                type:
+                    type: string
+                    description: Type of the variable (e.g., string, number)
+                    example: 'string'
+        Variable:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the variable
+                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                name:
+                    type: string
+                    description: Name of the variable
+                    example: 'API_KEY'
+                value:
+                    type: string
+                    description: Value of the variable
+                    nullable: true
+                    example: 'my-secret-key'
+                type:
+                    type: string
+                    description: Type of the variable (e.g., string, number)
+                    example: 'string'
+                createdDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the variable was created
+                    example: '2024-08-24T14:15:22Z'
+                updatedDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the variable was last updated
+                    example: '2024-08-24T14:15:22Z'
+        Error:
+            type: object
+            properties:
+                message:
+                    type: string
+                    description: Error message
+                    example: 'An error occurred'
+                error:
+                    type: string
+                    description: Error type
+                    example: 'Bad Request'
+                statusCode:
+                    type: integer
+                    description: HTTP status code
+                    example: 400

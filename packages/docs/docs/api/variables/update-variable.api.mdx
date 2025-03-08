@@ -1,0 +1,142 @@
+---
+id: update-variable
+title: 'Update a variable by ID'
+description: 'Update a specific environment variable by ID'
+sidebar_label: 'Update a variable by ID'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV91v2zYQ/1eIe2oB+nNO2ulpbpNh3oDBSJwOW2AMtHSy2UqkQlJ2DUP/+3Ck7Eq2k2ZD9pYny+R9/O6TdztI0MZGFk5qBRHcFYlwyASzBcYylTFDtZZGqxyVY2thpFhkyBZbNrkCDrpAI4h1kkAEpWf+VBMBByeWFqJ72PNZmHOwGJdGui1E9ztYoDBoxqVbQXQ/r+YcCmFEjg6N9QSSUBXCrYCDEjlCBDIBDgYfSmkwgciZEjnYeIW5gGgHblsQlXVGqiVU/MjCPTwygPSRILTug062xB1r5VA5+hRFkcnYm9f7bIl5d6pGLz5j7FqA7gNQHkjIJEN+chItMQYrjnEew/xd5Mh0ytwKD24HDvhV5EVGfOPp5O/frv8kA9ciK58h8hORnZGpyizzn7Urv+nItx2LsUHX+YJb0hQUfE/RbFuc6GFvsLvschZYOFNlvkDztmXSPmSkSDp/tI/WRBWlg4qu2pH3B7bQygbvDvt9+nkk5iFDE2bLOEZr0zLLtsD/e9DbkZXJOd+k2uTCUXmUPnOPCk7JhxKZTFA5mUo0LNXm8ajHaXLxwwD7nffDNO4MBvhjZxGPhp2L4aVI3727HKWXIwrUa5J9L8k4xAYpGa6EO6vuEDdKmY6TvqTbGK58r1QJo1u2WaFqw9kIy2otLQzD/nDU6b/vDEezwSgaXETD4V+EqE7P/xlRJqzbV8IzYJ2pRirEisPoXK1N1FpkMmGTK6YNq7srW+hkywqj1zLxSl+o4nK0ViyfkS3XxmjD9uStFFcM/aWO49JQX6k4+JPnSvU0TZEfRMJuguEkzDrhSvtRJ02cUjlcojkR+ctsNmWBg8XE0hA86veb0fDaD6EYPdH2lHYs1aV69fzLe/7ifBE4NEpkzKJZowl2vjr/hZ1fccjRrTTNnjQe8DAoRtA7DJy9nUwqoKGT4hBGytJkEMHKucJGvZ4oZNetUCi7QdMVsrcenKCbGp2UMf2pAwoVP5ZjnVhKtew8R95toD0Ia0zFt5QCIcrN2fjgQFIH9bhL/wMR8Prj5/0T8esfM9+6KbVuvo2413un7ufQwxN/eOGPHmR+OlBLlWoP6ehZsGw8nZwYO55O/EyTCxWsPrdRWNKPxgaWQbff7dflImLXROvdOp6w27IotKGYt8PQdD0lUS4kXdtA/lPrmvxTaOtyoRoqDivQybbTsquxKvzbral2qMOvrldkQir/9pMZuzqDmysTh0gmtEastHV0tdsthMU7k1UVHT+UaGiZmvMDk0/zRFr6TiBKRWbxCfhvbuqR+i1rbkePAK0Phdo2cgY4ULL45ayaVxxWKBI0Hki4+BjUdWahbewZT9ogVVbgGMcxFu5J2nmjA0zvZlQG9R6X+74DRmxoNxObgFF76311+bMdZEItS99LIYikpBDtmjuqMW/UWS/sdoFipr+gqqqDUxz9J79U1T9RikW2
+sidebar_class_name: 'put api-method'
+info_path: docs/api/variables/variables-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Update a variable by ID'}></Heading>
+
+<MethodEndpoint method={'put'} path={'/variables/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Update a specific environment variable by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Variable ID' }]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    required: ['name', 'type'],
+                    properties: {
+                        name: { type: 'string', description: 'Name of the variable', example: 'API_KEY' },
+                        value: { type: 'string', description: 'Value of the variable', nullable: true, example: 'my-secret-key' },
+                        type: { type: 'string', description: 'Type of the variable (e.g., string, number)', example: 'string' }
+                    },
+                    title: 'VariableInput'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Variable updated successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid',
+                                description: 'Unique identifier for the variable',
+                                example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                            },
+                            name: { type: 'string', description: 'Name of the variable', example: 'API_KEY' },
+                            value: { type: 'string', description: 'Value of the variable', nullable: true, example: 'my-secret-key' },
+                            type: { type: 'string', description: 'Type of the variable (e.g., string, number)', example: 'string' },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the variable was created',
+                                example: '2024-08-24T14:15:22Z'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the variable was last updated',
+                                example: '2024-08-24T14:15:22Z'
+                            }
+                        },
+                        title: 'Variable'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid ID or request body provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', description: 'Error message', example: 'An error occurred' },
+                            error: { type: 'string', description: 'Error type', example: 'Bad Request' },
+                            statusCode: { type: 'integer', description: 'HTTP status code', example: 400 }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Variable not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', description: 'Error message', example: 'An error occurred' },
+                            error: { type: 'string', description: 'Error type', example: 'Bad Request' },
+                            statusCode: { type: 'integer', description: 'HTTP status code', example: 400 }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', description: 'Error message', example: 'An error occurred' },
+                            error: { type: 'string', description: 'Error type', example: 'Bad Request' },
+                            statusCode: { type: 'integer', description: 'HTTP status code', example: 400 }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

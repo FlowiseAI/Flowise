@@ -1,0 +1,90 @@
+---
+id: get-all-variables
+title: 'List all variables'
+description: 'Retrieve a list of all environment variables'
+sidebar_label: 'List all variables'
+hide_title: true
+hide_table_of_contents: true
+api: eJy9Vd+P2zYM/lcEPq2A83O5a+enZdttyzYMQS9tsR2CgZHpRK0t+yQ618Dw/z7QdlI7ucOyPSwvkSXy+z6RFFlCRF47k7PJLITwltgZ2pNClRjPKosVJokiuzcusylZVnt0BjcJeQggy8mhuC4iCGFLPE+S951zxq2H8AG++KwD8KQLZ/gA4UMJG0JHbl7wDsKHdbUOwJHPM+vJQ1jCdDyWv77I+0Jr8j4uEnUSAAHozDJZFnvM88To+mD00YtTCV7vKEVZ8SEnCAGdwwMEYJhS39nPNh9JMwSQO4Fn00gxUcfGszN2CwHEmUuRIYSiMBEEZ0rfWfNYkDIRWTaxIafizCne0SmKEAB9xjRPBFXH0c3XExoP3kxjPZhM6JvBRs+mg5vpLcavX9/O4tsZVAFYTOk5MX3y3zElSeCLdPPl4q9f7/4QxD0mxRWQ78XsGUxbJEm9DNkV1OVIDwNP2hEPPtFBmBqCfyJaHfILHvUVDbfDQDUugbJFuiH3qnelFq4KQDtCpugH5GfpTnmLkGnAJqULDeKq0EZKTtXTjmxfzhN61bL0NEzH09lg/GYwna0ms3ByE06nf4qiIo/+B0UJelYt1RWyJCOGa4Pjw4VKfgHcPPf2FpbJWUyUJ7cnp8i5zP2Hx/fCI0vJe9xeUSB3wquO5r2qto0olWldOEeRxL6ReSVqbdOF/A4j9ZYeC/IsYJ6RC/99FnV1Gsu0JXcB+fNqtVSNh9Li0gGejcfdBNTsx+inxLus7aoSJpQOCaNu921S4Os+WrgEQtgx5z4cjTA3Q94RWv9EbohmtJ9cCFu6LCq0fLS5hCo4x/GMW2O3g2vw7hvbE1in099L9psEd/v9KXZCJ/epzSBsjSBoFz8eX8YvH1Z1xRobZ7X7WeV6NV8uLoTNl4u67aZoG4UvTTMJZuMyGY6H47aqUddV3fRcmNchmC/UfZHnmZPU9EPWDZPkOkUjx74x/7Z3LHfJM88p2g7FbzJ4Zep2tfWuVH55bv92YrcRZ/rMozxBY+vOJDco2xo7m9a7zLNsluUGPb1zSVXJ9mNBTib4OjiZ1wM8gB1hRK4uSmn5Icy1plwC1Q6ZywYhtXKq95/uVhAA9ivkrCJq9OMYt4cOdlk2FqvsE9mqgqAVwfIN1bqqqr8BGpkONw==
+sidebar_class_name: 'get api-method'
+info_path: docs/api/variables/variables-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'List all variables'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/variables'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a list of all environment variables
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    format: 'uuid',
+                                    description: 'Unique identifier for the variable',
+                                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                                },
+                                name: { type: 'string', description: 'Name of the variable', example: 'API_KEY' },
+                                value: { type: 'string', description: 'Value of the variable', nullable: true, example: 'my-secret-key' },
+                                type: { type: 'string', description: 'Type of the variable (e.g., string, number)', example: 'string' },
+                                createdDate: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Date and time when the variable was created',
+                                    example: '2024-08-24T14:15:22Z'
+                                },
+                                updatedDate: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Date and time when the variable was last updated',
+                                    example: '2024-08-24T14:15:22Z'
+                                }
+                            },
+                            title: 'Variable'
+                        }
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', description: 'Error message', example: 'An error occurred' },
+                            error: { type: 'string', description: 'Error type', example: 'Bad Request' },
+                            statusCode: { type: 'integer', description: 'HTTP status code', example: 400 }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

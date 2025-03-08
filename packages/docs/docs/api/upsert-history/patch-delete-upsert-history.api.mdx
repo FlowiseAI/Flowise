@@ -1,0 +1,96 @@
+---
+id: patch-delete-upsert-history
+title: 'Delete upsert history records'
+description: 'Soft delete upsert history records by IDs'
+sidebar_label: 'Delete upsert history records'
+hide_title: true
+hide_table_of_contents: true
+api: eJztVkuP2zYQ/ivCnFqAXu/TaXWqu7tFXASFu/YmB8MoxuLIYiKJCkl5Ywj678WQsiM/ukiBoKf6YkmcxzfzzYMNSLKJUZVTuoQYZjp1kaScHEV1Zcm4KFPWabONDCXaSButttHkwYIAXZFB1ptIiKFCl2QPXvPZK74NeiDA4dpCvIBgcNAZhKUAS0ltlNtCvGhgRWjIjGuXQbxYtksBFRosyJGxXkCVwU8GAkosCGJQEgQY+lwrQxJiZ2oSYJOMCoS4AbetWMo6o8o1tOIo2vsMXZrrl2jyAOyPDZF1v2q5Ze1El45Kx49YVblKfLTDj5aVm1M3evWREgcCKsO5cYosnyppe0JoDHJSlKPCnmIUkGpToIMY6lrJU8zvlHWRTs+zw8xETncMQsu/4/z4D7bSpQ3wri8v+e+oDuokIWvTOs+3nTW5qwAQ3yszNnjpCa60zglLEEBfsKhy6jB3kdyewzopN5grhufZi1ZM33fDmGhJ52g6xPBojDaRl+1Bh8kf78fvJg9/PT3++fw4mzObBVmL6282uRM/sHoUcK9NfLk4VLk9F9mhg7GUih8xj8j72mkKwP3RtJeMwIQAp5zH4RFCYObuPDOODNu3ZDZkgpv/qflPqfFxuUzvZzSnkWdoDMPDgTxslGyBhzKTFUZubXKIIXOusvFwiJW6cBlhaV/IXKAabq5OoE+NlnXCLx3r0IpjO9bhWpXrwbfYmwXZvbHe1phxnYRS6O+OfXLZHXTrwA8XLwSie/htN2h//zAHzhPX39PXFfC4Y7Ub4Qu4SfGnu3R0O7h7c/VmcHs3uh6sbtJkcJ38PLpJRyNMcQTLVoAqU+2BdHSEjRh1KzEaTyenlE8nUcpVhWUI+Pz6BQFMTtC5uri8uOz6CRPfT91eHPuUjifRrK4qbbjCDinop50ruEDFxzaI/3JwzLmptHUFlj0XD6/dEo7D6y3Tf3XH6Jh09MUNqxxVyW3kI2m6Kj65VgiIleTLRaat4/OmWaGlZ5O3LX/+XJPhC8dSwAaNwhUztGhAKsvPEuIUc0uvBPDDU7dQf4z6N4h/QLvb+yVD22Be8xsI+ETbcIFpuWIyQknGAwkH98HdYM7qXxVP5iV3V9AYJwlV7lXZZW8YTMfz+7fcDN1tp/DTFAy+8JUKXwJK7eP3Pea/NZBjua79mIRglMsDDzvvqNN8WGfz0DRBYq4/Udm2+7Q4fufMtO3fGlOvjA==
+sidebar_class_name: 'patch api-method'
+info_path: docs/api/upsert-history/upsert-history-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete upsert history records'}></Heading>
+
+<MethodEndpoint method={'patch'} path={'/upsert-history/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Soft delete upsert history records by IDs
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chatflow ID' }]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        ids: {
+                            type: 'array',
+                            items: { type: 'string', format: 'uuid' },
+                            description: 'List of upsert history record IDs to delete'
+                        }
+                    }
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully deleted records',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } } } }
+        },
+        '400': {
+            description: 'Invalid request body',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'INVALID_REQUEST' },
+                            message: { type: 'string', description: 'Error message', example: 'Invalid request parameters' },
+                            details: { type: 'object', description: 'Additional error details', additionalProperties: true }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'INVALID_REQUEST' },
+                            message: { type: 'string', description: 'Error message', example: 'Invalid request parameters' },
+                            details: { type: 'object', description: 'Additional error details', additionalProperties: true }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

@@ -139,6 +139,30 @@ const config: Config = {
                             groupPathsBy: 'tag',
                             categoryLinkSource: 'tag'
                         }
+                    } satisfies OpenApiPlugin.Options,
+                    tools: {
+                        specPath: 'openapi/tools.yaml',
+                        outputDir: 'docs/api/tools',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
+                    } satisfies OpenApiPlugin.Options,
+                    upsertHistory: {
+                        specPath: 'openapi/upsert-history.yaml',
+                        outputDir: 'docs/api/upsert-history',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
+                    } satisfies OpenApiPlugin.Options,
+                    variables: {
+                        specPath: 'openapi/variables.yaml',
+                        outputDir: 'docs/api/variables',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
                     } satisfies OpenApiPlugin.Options
                 }
             }
