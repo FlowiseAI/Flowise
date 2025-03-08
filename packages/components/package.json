@@ -63,6 +63,7 @@
         "@modelcontextprotocol/server-brave-search": "^0.6.2",
         "@modelcontextprotocol/server-github": "^2025.1.23",
         "@modelcontextprotocol/server-postgres": "^0.6.2",
+        "@modelcontextprotocol/server-sequential-thinking": "^0.6.2",
         "@modelcontextprotocol/server-slack": "^2025.1.17",
         "@notionhq/client": "^2.2.8",
         "@opensearch-project/opensearch": "^1.2.0",
