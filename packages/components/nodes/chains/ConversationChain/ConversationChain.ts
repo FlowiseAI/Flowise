@@ -1,4 +1,4 @@
-import { ConversationChain } from 'langchain/chains'
+import { ConversationChain, LLMChain } from 'langchain/chains'
 import {
     ChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -8,12 +8,12 @@ import {
     PromptTemplate
 } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
-import { StringOutputParser } from '@langchain/core/output_parsers'
+import { BaseLLMOutputParser, BaseOutputParser, StringOutputParser } from '@langchain/core/output_parsers'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { HumanMessage } from '@langchain/core/messages'
 import { ConsoleCallbackHandler as LCConsoleCallbackHandler } from '@langchain/core/tracers/console'
 import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
-import { formatResponse } from '../../outputparsers/OutputParserHelpers'
+import { formatResponse, injectOutputParser } from '../../outputparsers/OutputParserHelpers'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import {
@@ -28,6 +28,7 @@ import {
 } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters, transformBracesWithColon } from '../../../src/utils'
+import { BaseLanguageModel, BaseLanguageModelCallOptions } from '@langchain/core/language_models/base'
 
 let systemMessage = `The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.`
 const inputKey = 'input'
@@ -82,6 +83,12 @@ class ConversationChain_Chains implements INode {
                 list: true
             },*/
             {
+                label: 'Output Parser',
+                name: 'outputParser',
+                type: 'BaseLLMOutputParser',
+                optional: true
+            },
+            {
                 label: 'Input Moderation',
                 description: 'Detect text that could generate harmful output and prevent it from being sent to the language model',
                 name: 'inputModeration',
@@ -121,7 +128,6 @@ class ConversationChain_Chains implements INode {
 
         if (moderations && moderations.length > 0) {
             try {
-                // Use the output of the moderation chain as input for the LLM chain
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
@@ -145,9 +151,9 @@ class ConversationChain_Chains implements INode {
         if (shouldStreamResponse) {
             const handler = new CustomChainHandler(sseStreamer, chatId)
             callbacks.push(handler)
-            res = await chain.invoke({ input }, { callbacks })
+            res = await chain.invoke({ input }, { callbacks }) as string;
         } else {
-            res = await chain.invoke({ input }, { callbacks })
+            res = await chain.invoke({ input }, { callbacks }) as string;
         }
 
         await memory.addChatMessages(
@@ -180,7 +186,6 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageConte
         const humanPrompt = chatPromptTemplate.promptMessages[chatPromptTemplate.promptMessages.length - 1]
         const messages = [sysPrompt, new MessagesPlaceholder(memory.memoryKey ?? 'chat_history'), humanPrompt]
 
-        // OpenAI works better when separate images into standalone human messages
         if (model instanceof ChatOpenAI && humanImageMessages.length) {
             messages.push(new HumanMessage({ content: [...humanImageMessages] }))
         } else if (humanImageMessages.length) {
@@ -211,7 +216,6 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageConte
         HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`)
     ]
 
-    // OpenAI works better when separate images into standalone human messages
     if (model instanceof ChatOpenAI && humanImageMessages.length) {
         messages.push(new HumanMessage({ content: [...humanImageMessages] }))
     } else if (humanImageMessages.length) {
@@ -225,53 +229,65 @@ const prepareChatPrompt = (nodeData: INodeData, humanImageMessages: MessageConte
 }
 
 const prepareChain = async (nodeData: INodeData, options: ICommonObject, sessionId?: string) => {
-    let model = nodeData.inputs?.model as BaseChatModel
-    const memory = nodeData.inputs?.memory as FlowiseMemory
-    const memoryKey = memory.memoryKey ?? 'chat_history'
-    const prependMessages = options?.prependMessages
+    let model = nodeData.inputs?.model as BaseChatModel;
+    const memory = nodeData.inputs?.memory as FlowiseMemory;
+    const memoryKey = memory.memoryKey ?? 'chat_history';
+    const prependMessages = options?.prependMessages;
 
-    let messageContent: MessageContentImageUrl[] = []
+    let messageContent: MessageContentImageUrl[] = [];
     if (llmSupportsVision(model)) {
-        messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption)
-        const visionChatModel = model as IVisionChatModal
+        messageContent = await addImagesToMessages(nodeData, options, model.multiModalOption);
+        const visionChatModel = model as IVisionChatModal;
         if (messageContent?.length) {
-            visionChatModel.setVisionModel()
+            visionChatModel.setVisionModel();
         } else {
-            // revert to previous values if image upload is empty
-            visionChatModel.revertToOriginalModel()
+            visionChatModel.revertToOriginalModel();
         }
     }
 
-    const chatPrompt = prepareChatPrompt(nodeData, messageContent)
-    let promptVariables = {}
-    const promptValuesRaw = (chatPrompt as any).promptValues
+    let chatPrompt = prepareChatPrompt(nodeData, messageContent);
+    let promptVariables = {};
+    const promptValuesRaw = (chatPrompt as any).promptValues;
     if (promptValuesRaw) {
-        const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+        const promptValues = handleEscapeCharacters(promptValuesRaw, true);
         for (const val in promptValues) {
             promptVariables = {
                 ...promptVariables,
-                [val]: () => {
-                    return promptValues[val]
-                }
-            }
+                [val]: () => promptValues[val]
+            };
         }
+    }
+
+    const providedOutputParser = nodeData.inputs?.outputParser as BaseLLMOutputParser;
+    const finalOutputParser = providedOutputParser ? providedOutputParser : new StringOutputParser();
+    if (providedOutputParser) {
+        const dummyChain = { prompt: chatPrompt } as unknown as LLMChain<string | object | BaseLanguageModel<any, BaseLanguageModelCallOptions>>;
+        let promptValues = (chatPrompt as any).promptValues || {};
+        promptValues = injectOutputParser(
+            providedOutputParser as unknown as BaseOutputParser<unknown>,
+            dummyChain,
+            promptValues
+        );
+        (chatPrompt as any).promptValues = promptValues;
+        (chatPrompt as any).promptValues = promptValues;
     }
 
     const conversationChain = RunnableSequence.from([
         {
             [inputKey]: (input: { input: string }) => input.input,
             [memoryKey]: async () => {
-                const history = await memory.getChatMessages(sessionId, true, prependMessages)
-                return history
+                const history = await memory.getChatMessages(sessionId, true, prependMessages);
+                return history;
             },
             ...promptVariables
         },
-        prepareChatPrompt(nodeData, messageContent),
+        chatPrompt,
         model,
-        new StringOutputParser()
-    ])
+        finalOutputParser
+    ]);
 
-    return conversationChain
-}
+    return conversationChain;
+};
+
 
 module.exports = { nodeClass: ConversationChain_Chains }
