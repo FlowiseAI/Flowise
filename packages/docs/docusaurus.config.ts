@@ -131,6 +131,14 @@ const config: Config = {
                             groupPathsBy: 'tag',
                             categoryLinkSource: 'tag'
                         }
+                    } satisfies OpenApiPlugin.Options,
+                    prediction: {
+                        specPath: 'openapi/prediction.yaml',
+                        outputDir: 'docs/api/prediction',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
                     } satisfies OpenApiPlugin.Options
                 }
             }
