@@ -1,0 +1,90 @@
+---
+id: delete-chatflow
+title: 'Delete a chatflow'
+description: 'Delete a chatflow by ID'
+sidebar_label: 'Delete a chatflow'
+hide_title: true
+hide_table_of_contents: true
+api: eJzlVcFu2zAM/RWBpw3QmrbrLj4tWDsgww7F2mGHIAfGZmK1jqRKdLrA0L8PtJ3ETdJi955sSY/i4yNFNlBQzIPxbJyFDK6pIiaFKi+RF5V7VvONmlyDBucpoKAmBWRQtLhvPQg0MC4jZFPY2kWYaYiU18HwBrJpA3PCQGFccwnZdJZmGjwGXBFTiC3ACAGPXIIGiyuCDEwBGgI91SZQARmHmjTEvKQVQtYAb7ygIgdjl5D0QTBbehKA+AsUvbORothenp/L5xWLLr5CxTrPKcZFXVUbcXB1yuq+JBU95WZhqFCTa2WiMnaNVUs/d5bJspih95XJWxVHD1Fsm+No3PyBcgYNPojmbDq+uStogDKWaUkBNCxcWCF3W58v4VCEmxBcUK110rCiGHFJx+KdNtvCUxqmYdqR2d8208CGK9raQUqpFevqDYmtY7VwtX3fGn05VVATyxQsVopa5PvVp/XGpdu3HIlJWkQGo12rGTWmSCDtJqy3zaQOFWRQMvuYjUbozRmXhDY+UzhDM1pfHLG9Da6oc1mo7iJI+vCeyLg0dvnpf+6767C7ywb98E7y1aVk2BV3eoo76BudrDsQ6P7n+zZbP/7ct7Iau3CteS/g9o1FNb6dHBEb307UQhKDtmO479kaRMAOdnF2fnbe1x7mbe31XXnchj2eqLvaexekzl7KNJQGNNAKjRzHDv71xbHw9y7yCu3AxdEcOoyi2b+JN4ZWryfTXx75Co2V+m25Nn0ZDSeWhswUUoiliyxHTTPHSL9DlZJsP9UUZJbNNKwxGJyL2NMGChPlv4BsgVWkN5h++NU/gI9qOJxeIdpvot1IYrCqZQUaHmnTzcY0SxpKwoJCS6Q7GOc5eR6YHLUMqcXdu7q++XlzfwMa8GURHhRd6+Ako6bpEPfukWxKO4Isa+GY0j8Fy99g
+sidebar_class_name: 'delete api-method'
+info_path: docs/api/chatflows/chatflows-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete a chatflow'}></Heading>
+
+<MethodEndpoint method={'delete'} path={'/chatflows/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Delete a chatflow by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chatflow ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': { description: 'Chatflow deleted successfully' },
+        '400': {
+            description: 'The specified ID is invalid',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'integer', format: 'int32', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Chatflow not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'integer', format: 'int32', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'integer', format: 'int32', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

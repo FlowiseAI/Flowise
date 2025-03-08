@@ -1,0 +1,352 @@
+openapi: 3.0.0
+info:
+    title: Chatflows API
+    description: API for managing chatflows
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+tags:
+    - name: chatflows
+      description: Operations for managing chatflows
+paths:
+    /chatflows:
+        post:
+            summary: Create a new chatflow
+            description: Create a new chatflow with the provided details
+            operationId: createChatflow
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatflowInput'
+                required: true
+            responses:
+                '200':
+                    description: Chatflow created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Chatflow'
+                '400':
+                    description: Invalid input provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '422':
+                    description: Validation exception
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        get:
+            summary: List all chatflows
+            description: Retrieve a list of all chatflows
+            operationId: listChatflows
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Chatflow'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /chatflows/{id}:
+        get:
+            summary: Get chatflow by ID
+            description: Retrieve a specific chatflow by ID
+            operationId: getChatflowById
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Chatflow'
+                '400':
+                    description: The specified ID is invalid
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Chatflow not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        put:
+            summary: Update chatflow details
+            description: Update the details of an existing chatflow
+            operationId: updateChatflow
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatflowInput'
+            responses:
+                '200':
+                    description: Chatflow updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Chatflow'
+                '400':
+                    description: The specified ID is invalid or body is missing
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Chatflow not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        delete:
+            summary: Delete a chatflow
+            description: Delete a chatflow by ID
+            operationId: deleteChatflow
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            responses:
+                '200':
+                    description: Chatflow deleted successfully
+                '400':
+                    description: The specified ID is invalid
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Chatflow not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /chatflows/apikey/{apikey}:
+        get:
+            summary: Get chatflow by API key
+            description: Retrieve a chatflow using an API key
+            operationId: getChatflowByApiKey
+            tags:
+                - chatflows
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: apikey
+                  required: true
+                  schema:
+                      type: string
+                  description: API key associated with the chatflow
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Chatflow'
+                '400':
+                    description: The specified API key is invalid
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Chatflow not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    schemas:
+        ChatflowInput:
+            type: object
+            properties:
+                name:
+                    type: string
+                    example: 'MyChatFlow'
+                    description: Name of the chatflow
+                flowData:
+                    type: string
+                    example: '{}'
+                    description: JSON string containing the flow data
+                deployed:
+                    type: boolean
+                    description: Whether the chatflow is deployed
+                isPublic:
+                    type: boolean
+                    description: Whether the chatflow is public
+                chatbotConfig:
+                    type: string
+                    example: '{}'
+                    description: JSON string containing chatbot configuration
+                apiConfig:
+                    type: string
+                    example: '{}'
+                    description: JSON string containing API configuration
+                category:
+                    type: string
+                    example: 'category1;category2'
+                    description: Categories for the chatflow (semicolon-separated)
+                type:
+                    type: string
+                    enum: [CHATFLOW, MULTIAGENT]
+                    description: Type of the chatflow
+            required:
+                - name
+                - flowData
+        Chatflow:
+            type: object
+            properties:
+                id:
+                    type: string
+                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
+                    description: Unique identifier for the chatflow
+                name:
+                    type: string
+                    example: 'MyChatFlow'
+                    description: Name of the chatflow
+                flowData:
+                    type: string
+                    example: '{}'
+                    description: JSON string containing the flow data
+                deployed:
+                    type: boolean
+                    description: Whether the chatflow is deployed
+                isPublic:
+                    type: boolean
+                    description: Whether the chatflow is public
+                apikeyid:
+                    type: string
+                    description: ID of the associated API key
+                chatbotConfig:
+                    type: string
+                    example: '{}'
+                    description: JSON string containing chatbot configuration
+                apiConfig:
+                    type: string
+                    example: '{}'
+                    description: JSON string containing API configuration
+                analytic:
+                    type: string
+                    example: '{}'
+                    description: JSON string containing analytics data
+                speechToText:
+                    type: string
+                    example: '{}'
+                    description: JSON string containing speech-to-text configuration
+                category:
+                    type: string
+                    example: 'category1;category2'
+                    description: Categories for the chatflow (semicolon-separated)
+                type:
+                    type: string
+                    enum: [CHATFLOW, MULTIAGENT]
+                    description: Type of the chatflow
+                createdDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+                    description: Date and time when the chatflow was created
+                updatedDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+                    description: Date and time when the chatflow was last updated
+        Error:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                    description: Error code
+                message:
+                    type: string
+                    description: Error message
+            required:
+                - code
+                - message
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

@@ -1,0 +1,138 @@
+---
+id: get-chatflow-by-id
+title: 'Get chatflow by ID'
+description: 'Retrieve a specific chatflow by ID'
+sidebar_label: 'Get chatflow by ID'
+hide_title: true
+hide_table_of_contents: true
+api: eJzlV0tv20gM/isDnlpAjh/rtKn2st681kWbBo2DAGv4MJYoaxppRp2hkgiC/ntBSXZsyxsUaA4L9CRphvxIfqSGnBJCdIFVGSmjwYevSFbhAwopXIaBilQgglhSlJhHsSzE9Aw8MBlayQrTEHxYIZ22En8X0xA8ILly4M9hrehg4YHDILeKCvDnJSxRWrSTnGLw54tq4UEmrUyR0LpaQLEzmaQYPNAyRfBBMbTF77myGIJPNkcPXBBjKsEvgYqMpRxZpVdQeXuBrV3kCNieRZcZ7dCx7mgw4Meuxk0eBOhclCdiEzB4EBhNqInlZZYlKqg3+t8cK5Vdh8zyGwYEHmSWYUg1JlXYddoDfJJplvBSOPowiIaIvXfB8bg3Xg6GvQ8DfNcL3w+G78cn0eDkeAj7Qd5q9T1HoULUpCKFVkTGCopxk0MmpuHzJeOfC6brguX3TVzJFIWJOqD8PJN0IBXbwGXVAfx48+VKNKKCuZVK8yvj1/kKGbROZ5aYArdpWxqToNQdyLsYKcbdwIVyYgNReaDcdb5MVPALcFkDUHkgM3WPxeGU7mJNz9bkSedMoCRhKCbXU3GPBSMx/tLQqdGRWr0Wly0oL0Vqlbel3Pj9upY4kq4VLZOCdqj+JSNrPLepDZchBvHMzPCJXstKg9kj0yN8OsBdIAlXxhYv21tLDf9cv406Dpw2Owpd53cVbxymKjCJ0T2HfEYShm/ZfGPygGmdp3z2nv4zmV18+nIHHny+/TSbTi7Pr2Z8Du/anhXZwd85sMimziQdtBIZm0riY0oS9kiluBP1aDAa9wYnvdF4Nhz7w2N/NPq3EzZjC6lDweriMUa9G/qjdKJ1gz3Ks/D/4FEiHYnWF6g4EYpqC6cb9ipeHh9qKbMY120VQzE941NE6QeZ1L3tlTpLYMJthpQmXKHdpkhp+qNbhufWGitq7cqDFJ2Tq4NUH1Jbi3Pozz163jjzjLZ45qvW25A17pK16djakIhMrn9vjo4PFdRUE1otE4G15O/LT22NYtMOpBwQD48+9DdDaL9UIZ/+Du3DeszMbQI+xESZ8/t9makjilFq94j2SKr+Q3fEurYmzAP+EA0QVN4+jiO5UnrV+xm8m0Z2A7Y1Kd9wspp8bM/LGzLZHLQjcD2/1ELgtS8X61R9vJvVnCodmVp978Ry3LY7jnEr53aUSt14+DzNe8AENmLDo8HRoC08GdSF187rkzrsyVTc5FlmLOdkl6ZtaviwTqXibdeI/7Wzzf5nxlEq9ZaJS6Tu7WQnjPL5j/i5u03LLff8fpZIVff62u+yLante40Hvgq5ImPjiLfKcikd3tqkqnj5e448IcwXHjxIq+SSiZ+XECrH7yH4kUwcvuD0m6/tn/BWbF9h/sPRdlHqgpMkk5y/wAOeLusbVLWoPIhRhmhrR5qNSRBgRlsqnbOD63Lzg12ez8ADuVuNe9VXox90pywbiZm5R11VG++Iv9nBqvoBQdb9FA==
+sidebar_class_name: 'get api-method'
+info_path: docs/api/chatflows/chatflows-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get chatflow by ID'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/chatflows/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a specific chatflow by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chatflow ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                example: 'd290f1ee-6c54-4b01-90e6-d701748f0851',
+                                description: 'Unique identifier for the chatflow'
+                            },
+                            name: { type: 'string', example: 'MyChatFlow', description: 'Name of the chatflow' },
+                            flowData: { type: 'string', example: '{}', description: 'JSON string containing the flow data' },
+                            deployed: { type: 'boolean', description: 'Whether the chatflow is deployed' },
+                            isPublic: { type: 'boolean', description: 'Whether the chatflow is public' },
+                            apikeyid: { type: 'string', description: 'ID of the associated API key' },
+                            chatbotConfig: { type: 'string', example: '{}', description: 'JSON string containing chatbot configuration' },
+                            apiConfig: { type: 'string', example: '{}', description: 'JSON string containing API configuration' },
+                            analytic: { type: 'string', example: '{}', description: 'JSON string containing analytics data' },
+                            speechToText: {
+                                type: 'string',
+                                example: '{}',
+                                description: 'JSON string containing speech-to-text configuration'
+                            },
+                            category: {
+                                type: 'string',
+                                example: 'category1;category2',
+                                description: 'Categories for the chatflow (semicolon-separated)'
+                            },
+                            type: { type: 'string', enum: ['CHATFLOW', 'MULTIAGENT'], description: 'Type of the chatflow' },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                example: '2024-08-24T14:15:22Z',
+                                description: 'Date and time when the chatflow was created'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                example: '2024-08-24T14:15:22Z',
+                                description: 'Date and time when the chatflow was last updated'
+                            }
+                        },
+                        title: 'Chatflow'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'The specified ID is invalid',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'integer', format: 'int32', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Chatflow not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'integer', format: 'int32', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'integer', format: 'int32', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>
