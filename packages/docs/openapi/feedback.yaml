@@ -1,0 +1,165 @@
+openapi: 3.0.0
+info:
+    title: Feedback API
+    description: API for managing user feedback
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+tags:
+    - name: feedback
+      description: Operations for managing user feedback
+paths:
+    /feedback:
+        post:
+            summary: Submit feedback
+            description: Submit user feedback about a conversation or response
+            operationId: submitFeedback
+            tags:
+                - feedback
+            security:
+                - bearerAuth: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/FeedbackInput'
+                required: true
+            responses:
+                '200':
+                    description: Feedback submitted successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Feedback'
+                '400':
+                    description: Invalid input provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '401':
+                    description: Unauthorized
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '422':
+                    description: Validation exception
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /feedback/{feedbackId}:
+        get:
+            summary: Get feedback by ID
+            description: Retrieve a specific feedback entry by its ID
+            operationId: getFeedback
+            tags:
+                - feedback
+            security:
+                - bearerAuth: []
+            parameters:
+                - name: feedbackId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  description: The ID of the feedback to retrieve
+            responses:
+                '200':
+                    description: Feedback retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Feedback'
+                '404':
+                    description: Feedback not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '401':
+                    description: Unauthorized
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    schemas:
+        FeedbackInput:
+            type: object
+            required:
+                - conversationId
+                - rating
+            properties:
+                conversationId:
+                    type: string
+                    description: ID of the conversation the feedback is for
+                messageId:
+                    type: string
+                    description: Optional ID of the specific message the feedback is for
+                rating:
+                    type: integer
+                    minimum: 1
+                    maximum: 5
+                    description: User rating (1-5 stars)
+                comment:
+                    type: string
+                    description: Optional user comment
+                tags:
+                    type: array
+                    items:
+                        type: string
+                    description: Optional tags to categorize the feedback
+        Feedback:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Unique identifier for the feedback
+                conversationId:
+                    type: string
+                    description: ID of the conversation the feedback is for
+                messageId:
+                    type: string
+                    description: ID of the specific message the feedback is for (if applicable)
+                rating:
+                    type: integer
+                    description: User rating (1-5 stars)
+                comment:
+                    type: string
+                    description: User comment
+                tags:
+                    type: array
+                    items:
+                        type: string
+                    description: Tags categorizing the feedback
+                createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the feedback was created
+                updatedAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the feedback was last updated
+        Error:
+            type: object
+            properties:
+                code:
+                    type: string
+                message:
+                    type: string
+                details:
+                    type: object
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

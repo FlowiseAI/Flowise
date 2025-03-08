@@ -1,0 +1,170 @@
+---
+id: create-lead
+title: 'Create a new lead'
+description: 'Create a new lead with the provided details'
+sidebar_label: 'Create a new lead'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV1tvIjcU/iuj89oBBpLsZZ6WZrMSq+0mSuhWaoQiMz4wznrsiS8kCM1/r45NYCBR2G0rVZXyAsaci32+71y8Ao62MKJ2QivI4dQgc5iwROF9IpHx5F64MnElJrXRC8GRJxwdE9JCCrpGw0hzxCGHIuh+QcYhBcfmFvJrIBsWJilYLLwRbgn59QqmyAyaoXcl5NeTZpKCwTuP1v2q+RLyFRRaOVSOlqyupSiCm96tpVOuwBYlVoxWblkj5KCnt1g4iHaEQU6+Z8JY95VVCClItllixYSkI9WGLuAEWrK0ld6atc4INSedB1bVkrY+61JB0zL4ovRHjSQcXT4jOdOmYg7ytURb9VaXqss1flhvdQtdka261OqA11/6g6Pjkzdv373PSKPQVc3U8mWdYVFhMlJFlzRu9XQsnDzg5nR8TsJWe1McEL3HqRUuxMI65rx9Vlz5inBTeA9poAArHBKb7jyTYibCutBqgSbuF1Jb5IQlxxnzkiIZtbeu6TcFwVunq08CJbfPEYdxLohjTF60aOGMx5axFQjFvXVmCTmMsSiVlnq+hBSmns+R3PezLMs6J/QJTdOk4GIggRJjpGrv4vaWqOQjbNhaKxvJOMj69LWbnGQhiVnGE+uLAq2deSmX62j9rYRhUp7PQlK+ptJrKv3vUil96n6Xi4K/HE5qUDcbkMP1YoYN3Yss48xhx4mYBhtrg2xw1Mn6naw/7g/yLMuz7E+y6Wv+r9tk1oq5Qj7WL9/QWzQ379+9fXNyfDToUyQnu6GkrSaF4yx7WnNGasGk4ImgcG9mgH9ScHbhKTQ/wPdvwy+jj8Px6Pzrzdnl5fklXb1Ca9n8gOLu0TlzjFQfp5etKjOGEe+Ew+pZPu8XN5QHOBUr0I+e8zdvXTKloSueN2gnjHOD1gZsWtQ/M0abR8AGg6eAfSMbAYsEHwqM269w/edwBfOu1DQp19qGgzKaf6EXZ2Qakc0CjQ3N2BsJOZTO1Tbv9Vgtuq5Epuw9mi4TvUUf0j3gL4zmvgjAR0OhOO7asY7NhZp3fsTeVZTdGGvN8FfElhje9iS/iRq5o/sEMcjXQlTaw+LTY737/McYKDDEwsvtA+Bs2yNak0QcF9rTQhgJNhPB811+0+R3Onmrkbe6dbtZh468bcibrrttuo+9da8Z/mRXS0GoWSzgrYpsk+HF6Akiw4tRMtMmqZiK0ATiJEzx+FSbo1q/xyAFYlJU63ezbradAsiXivEbBvyHo+TK17U2xMldvrQ50oq0jeIfdv6muxCxK6ZaLp48KPdv1Xrr/eTrc002hw+uV0smwiwZzr9ap1br+VlSyuXXsFpNmcXfjWwa2r7zSFBdT1JYMCPYlCC4njQplMg4mpCL35HQPI3H7IzJLYlLH8rRfjWlrIsaw4Lq74uyk1ZVuDi/GhNR1k/gKpRaMIxYRp85hCc3aQemhb0VSKbmPlQtiDYJCLabkHsJ2B73KQm2J1ytosRYf0fVNJCur+LoNzSTpmn+AtPJcj4=
+sidebar_class_name: 'post api-method'
+info_path: docs/api/leads/leads-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new lead'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/leads'} context={'endpoint'}></MethodEndpoint>
+
+Create a new lead with the provided details
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    required: ['firstName', 'lastName', 'email'],
+                    properties: {
+                        firstName: { type: 'string', example: 'John' },
+                        lastName: { type: 'string', example: 'Doe' },
+                        email: { type: 'string', format: 'email', example: 'john.doe@example.com' },
+                        phone: { type: 'string', example: '+1234567890' },
+                        company: { type: 'string', example: 'Acme Inc.' },
+                        jobTitle: { type: 'string', example: 'CTO' },
+                        source: { type: 'string', example: 'website' },
+                        status: {
+                            type: 'string',
+                            enum: ['new', 'contacted', 'qualified', 'converted', 'closed'],
+                            default: 'new',
+                            example: 'new'
+                        },
+                        customFields: {
+                            type: 'object',
+                            additionalProperties: true,
+                            example: { industry: 'Technology', budget: '10000-50000' }
+                        }
+                    },
+                    title: 'LeadInput'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '201': {
+            description: 'Lead created successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        allOf: [
+                            {
+                                type: 'object',
+                                required: ['firstName', 'lastName', 'email'],
+                                properties: {
+                                    firstName: { type: 'string', example: 'John' },
+                                    lastName: { type: 'string', example: 'Doe' },
+                                    email: { type: 'string', format: 'email', example: 'john.doe@example.com' },
+                                    phone: { type: 'string', example: '+1234567890' },
+                                    company: { type: 'string', example: 'Acme Inc.' },
+                                    jobTitle: { type: 'string', example: 'CTO' },
+                                    source: { type: 'string', example: 'website' },
+                                    status: {
+                                        type: 'string',
+                                        enum: ['new', 'contacted', 'qualified', 'converted', 'closed'],
+                                        default: 'new',
+                                        example: 'new'
+                                    },
+                                    customFields: {
+                                        type: 'object',
+                                        additionalProperties: true,
+                                        example: { industry: 'Technology', budget: '10000-50000' }
+                                    }
+                                },
+                                title: 'LeadInput'
+                            },
+                            {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string', example: 'lead_123456789' },
+                                    createdAt: { type: 'string', format: 'date-time', example: '2023-01-01T12:00:00Z' },
+                                    updatedAt: { type: 'string', format: 'date-time', example: '2023-01-01T12:00:00Z' },
+                                    assignedTo: { type: 'string', example: 'user_987654321' }
+                                }
+                            }
+                        ],
+                        title: 'Lead'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid input provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'VALIDATION_ERROR' },
+                            message: { type: 'string', example: 'Invalid input data' },
+                            details: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        field: { type: 'string', example: 'email' },
+                                        message: { type: 'string', example: 'Must be a valid email address' }
+                                    }
+                                }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '422': {
+            description: 'Validation exception',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'VALIDATION_ERROR' },
+                            message: { type: 'string', example: 'Invalid input data' },
+                            details: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        field: { type: 'string', example: 'email' },
+                                        message: { type: 'string', example: 'Must be a valid email address' }
+                                    }
+                                }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

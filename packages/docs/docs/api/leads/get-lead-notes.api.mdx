@@ -1,0 +1,133 @@
+---
+id: get-lead-notes
+title: 'Get lead notes'
+description: 'Retrieve all notes for a specific lead'
+sidebar_label: 'Get lead notes'
+hide_title: true
+hide_table_of_contents: true
+api: eJztVt9v20YM/lcOfNoAJZadpD/0NG/NCg9dEyRpBywwAkZH29eeTuod5dUQ9L8PPNmulKRJtpe97Ek6Hnn8+JF3ZAOaQu5NxaZ0kMEFsTe0JoXWKlcyBbUovUIVKsrNwuTKEmpIoKzIoxjNNGSwJH5HqN+LASTAuAyQXYPoBpgnECivveENZNcN3BJ68tOaV5Bdz9t5AhV6LIjJh6hgBEmFvIIEHBYEGRjx6elLbTxpyNjXlEDIV1QgZA3wphKtwN64JbTJnagEm5q9AfHlKVSlCxTEbpKm8hlqX9Z5TiEsaqv2UUICeemYHIs+VpU1edwYfQpi1NwHg97jBhIwTEXoycvbT5QzJIDWni1iwHd3vgV6vXcrNHnBw6bD3sMzDD8B+opFZUX0C1pLWvGKYuIS+dso9KSMY/IUmLQyTpW1VySSyptAqrLoDoXH7uQHPLi6iOjQWlkWaORbEHGnUPKKvIDWtMDasoQXRX100boVN4ajQApo5qqaoU3u0zKM3+jHQ5fqvRlPjo5PXrx89VqCEQZmT1iJztAq94RM+ufN44Z1IH/z+tXLFyfHR5Nxz3D6YIoWpS9QWNHIdMCmoMFpk3RydJCOD9Lx1XiSpWmWpn9C20oB97kSkfB3nB7fr+NY9a5ktShrp/9FBX+H+LzUD9fEHv3H6bvZm+nV7Oz9zenFxdmFsFFQCLh8wnDm1miNVGRVs9LI2F1mRmPDP7lbQ8QLQ/aJvHcV/Fycv9eB1S0pVB3eaK1Qa08h7JKyS9Sp96WHTnby0IMzk4vn0CqKmv8n6j9PVDyeV+W2twlOaUcZjGJLGzVGtyO37XaB/HrXumpvIYMVcxWy0Qgrc8grQhf+In+IZrQew93edO5LXeeyUN1B8ekbnhMYl8YtD55z3mWnuz+s130vpW46ovs9eM+fuINtW5V1pwTJ9ufX3ZP12x9X8dU2blFG8y1/8uAENT2f3QM1PZ/FOaJA16GLNCp0Ov6pJblvjVbI7MzGh+lhur0PmMf7sJ0HppGC6Uxd1lVVesnQkLI+TfsGlUHo1H8abEssVRm4QNdz8Za4A7fL8yCkXv99/tC05ZnpK48qi8ZJHUfczbbAdjNTAlkceTrf8wRWZWDZbppbDPTB27YV8ZeavExV8wTW6A3eSiKuG9AmyL+GbIE20CPgf7jYDhs/qt2Y9B2guyvt5EKv0dayggQ+06ab0Np5m8CKUJOPILqNaZ5TxT2Te0+a1Oj+ur09vZLZaFiZdyqxPzQN4TRNp3FVfibXtnt0LGsB2LZ/A/1Zs6M=
+sidebar_class_name: 'get api-method'
+info_path: docs/api/leads/leads-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get lead notes'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/leads/{id}/notes'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve all notes for a specific lead
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Lead ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            allOf: [
+                                {
+                                    type: 'object',
+                                    required: ['content'],
+                                    properties: {
+                                        content: {
+                                            type: 'string',
+                                            example: 'Called the lead, they are interested in our enterprise plan.'
+                                        },
+                                        type: {
+                                            type: 'string',
+                                            enum: ['call', 'email', 'meeting', 'other'],
+                                            default: 'other',
+                                            example: 'call'
+                                        }
+                                    },
+                                    title: 'NoteInput'
+                                },
+                                {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string', example: 'note_123456789' },
+                                        leadId: { type: 'string', example: 'lead_123456789' },
+                                        createdBy: { type: 'string', example: 'user_987654321' },
+                                        createdAt: { type: 'string', format: 'date-time', example: '2023-01-01T12:00:00Z' }
+                                    }
+                                }
+                            ],
+                            title: 'Note'
+                        }
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Lead not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'VALIDATION_ERROR' },
+                            message: { type: 'string', example: 'Invalid input data' },
+                            details: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        field: { type: 'string', example: 'email' },
+                                        message: { type: 'string', example: 'Must be a valid email address' }
+                                    }
+                                }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'VALIDATION_ERROR' },
+                            message: { type: 'string', example: 'Invalid input data' },
+                            details: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        field: { type: 'string', example: 'email' },
+                                        message: { type: 'string', example: 'Must be a valid email address' }
+                                    }
+                                }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

@@ -1,0 +1,117 @@
+---
+id: submit-feedback
+title: 'Submit feedback'
+description: 'Submit user feedback about a conversation or response'
+sidebar_label: 'Submit feedback'
+hide_title: true
+hide_table_of_contents: true
+api: eJzVV0uP2zYQ/ivEnBJAu7YXzUWnum0CuJcsars9LHwYS2OLWYnUkiN7XUH/vRhKtuXHtttgAyQn0+Twm9c3w1ENKfnE6ZK1NRDDtFoWmlXlyakVUbrE5FHh0lasUCXWbMh5FFllnXLkS2s8QQS2JBf2JynE4APKp+4+RMC49hA/wB4SFhF4SiqneQfxQw1LQkduXHEG8cOiWUTg6Kkiz7/YdAdxDYk1TIZliWWZ6yRoG3zxYnYNPsmoQFnxriSIwS6/UMLQ4mhHqajvOzBJ5RBZm7VYUzpxgTX5Tltf8Ajr2cmF6Cxsk9+UXSnO6DRGsnGIovZqZR00ERTkPa7pNcCfwwJzddTgS0r0Sieqg3lJS+fbUYU2TGtyEEGhjS6qAuJRBAU+t+sP57rnQoIWRb0b3XxQntH594Kd2KLosvFK+wOj9teaPSMO19E53EEEmqnwl7DNi7iCo9iqBJnW1um/T+MBjejSnAvYnpATU1YMjRwd2cGuorDRcjoYcTccys+p6j2KalnOlCpfJQl5v6ryXJz4aq6eklC/gh9zo58qUjolw3qlpWqtO4tA9P3Q+f+xWL3TK9VFcJnT+/9g9duzd/62pJ0JVw9EFcMuEuUImdLxVdtW1hXIEEOKTDesC7oweKYL8oxFqbYZnSVsi151+KKqKtNvqipHz6pTcrUKpQCbCH66VmMTs8Fcp0pLparS2Y1OKX270kpsSlcT1rHxhWQy6txfove9++icVEXn2ujStbnBirPQqX48h+7uLh36UzLVNgh6Tqjd/qEcC2icWRldSuuDESiTCAxWxxnGk5NWGMaVyuUQQ8Zc+ngwwFLfckZo/JbcLerBZnRRLvfOplUSotQCQROd43jGtTbrm9fgTVvZA1hvoJpKaNvo9ceqQyxEnfgTxCDuhCDqFp/2tf/7X7MQMEnZH8dp7OMzFmVO18akYwPpvQnHzX3vHvZa8PF0PyN2G4smAm1WNhh+1jrU+H5yEZHx/SQ8GgWaNjQnQyxEIKa2oqPb4e2w4ygmgaMGQyzGIebjiZpWZWmdUOE0R/28QARUoM7DxBvEfz45luAJnwo0PRXdiN0z7MSP3qj71dN4l2imZx6UOWoTGr74UXfMPh3FMyF9/AB1vURPc5c3jWw/VeRkPF9EsEGn5Q0O03kEGWFKLpTCI+0ghl9bm29molnE8yq8kOeVL6Rvb4wT6RX/Krvo1eX95+lMKNp9DhShLYDDbeDVFmIIXyFyOzA/7NWQo1lXoU1Aiyk5wdN6OON/8Gr/wptdz8K6biVm9pFM00DUucLyH5pF0zT/ALSun+k=
+sidebar_class_name: 'post api-method'
+info_path: docs/api/feedback/feedback-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Submit feedback'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/feedback'} context={'endpoint'}></MethodEndpoint>
+
+Submit user feedback about a conversation or response
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    required: ['conversationId', 'rating'],
+                    properties: {
+                        conversationId: { type: 'string', description: 'ID of the conversation the feedback is for' },
+                        messageId: { type: 'string', description: 'Optional ID of the specific message the feedback is for' },
+                        rating: { type: 'integer', minimum: 1, maximum: 5, description: 'User rating (1-5 stars)' },
+                        comment: { type: 'string', description: 'Optional user comment' },
+                        tags: { type: 'array', items: { type: 'string' }, description: 'Optional tags to categorize the feedback' }
+                    },
+                    title: 'FeedbackInput'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Feedback submitted successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', description: 'Unique identifier for the feedback' },
+                            conversationId: { type: 'string', description: 'ID of the conversation the feedback is for' },
+                            messageId: { type: 'string', description: 'ID of the specific message the feedback is for (if applicable)' },
+                            rating: { type: 'integer', description: 'User rating (1-5 stars)' },
+                            comment: { type: 'string', description: 'User comment' },
+                            tags: { type: 'array', items: { type: 'string' }, description: 'Tags categorizing the feedback' },
+                            createdAt: { type: 'string', format: 'date-time', description: 'Timestamp when the feedback was created' },
+                            updatedAt: { type: 'string', format: 'date-time', description: 'Timestamp when the feedback was last updated' }
+                        },
+                        title: 'Feedback'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid input provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: { code: { type: 'string' }, message: { type: 'string' }, details: { type: 'object' } },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '401': {
+            description: 'Unauthorized',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: { code: { type: 'string' }, message: { type: 'string' }, details: { type: 'object' } },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '422': {
+            description: 'Validation exception',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: { code: { type: 'string' }, message: { type: 'string' }, details: { type: 'object' } },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

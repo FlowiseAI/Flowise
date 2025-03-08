@@ -1,0 +1,138 @@
+---
+id: get-lead-by-id
+title: 'Get lead by ID'
+description: 'Retrieve a specific lead by ID'
+sidebar_label: 'Get lead by ID'
+hide_title: true
+hide_table_of_contents: true
+api: eJztVttu20YQ/RVinlqUlijZzoVPUWsnYJDGhq22QAXBGHFH4jrLXWYvcgSC/14MKetiu1KAFuhLXyRyOdezZ2dPDYJcbmXlpdGQwg15K2lJEUauolzOZR4pQhHNVlF2ATGYiiyycSYghQX5T4Ti51UmIAaPCwfpBNjBwTQGR3mw0q8gndQwI7RkR8EXkE6mzTSGCi2W5Mm61kByARX6AmLQWBKkIDmspa9BWhKQehsoBpcXVCKkNfhVxVbOW6kX0MRPmuHSuGrOZclVRjty7DdMEv7bt74NeU7OzYOKNk1CDLnRnrRne6wqJfP2Q//esVP9vBgzu6fcQwyo1NW8bezpl21DE5hL6/xn7jYGhZtHKlEqhrCyXIyXXeFb62fdx0DfsKwUL300hWY4NgEPWl8YYuMu5QuWc2NL9JCuLXZd702he8LQu/VSLzclx6oKo49k/WkwPD07f/X6zduEPXJTVqhXh31GeUlRpvMee9yb2Vh6dSTNL+MrNnYm2PyI6QPNnPQtFs6jD+5Fcx1K3jdND2tyYO6Jafo1oJJz2T7nRi/Jduu5Mo4E76WgOQbFSHbe29T8ziAE5035XpIS7kVKCSGZfaiud2jRnYpNMD5IIjhvV5DCmPJCG2UWK4hhFsSCOP0gSZLk5Jx/oWmaGHwHZHtiMl0FD038PP0+F6U4DCdPgbvNJrftWUJPYuQPskygpxMvu2OwiTZMhqcnyeAkGYwHwzRJ0iT5k2OGSvzrMdE5udAkxuZwh8GRvXv75vWr87PT4YCRnO5DyUtNDGfJ2fNx0w4nbXw0N0GLfzJo9rclN+IIz38ffcouRuPs6vPd5c3N1Q23XJJzuDjimOklKikiyQyJBHrsZq5HqXb5itYi8016Kl/k8dOhRuoIl7rJ8711/hqcj2Z8h3X1tt4RCmHJuXZPdih/aa2x6406f+leyLQnq1FF1Fr+v1H/+Ua14X1h1gqE62TVkEK/VR79WooGWH3Y5aO2CFZBCoX3lUv7faxkzxeE2j2Q7aHsLwfwVDxcWyNCzi9RF6gdiftxnMeF1IuT74l329lugu3Io1tmTAfxrkjaIMfpYK17+L0z4oHePrx/nHIf/xgDgyP1vJtcO6PIRaPr7FlRo+ssmhsblai76loAI9SiU30L0lslxGB2boNe0ku21x/nWgu2UQvBKItuQ1UZy3uzD9kuTBudk4LrzN/tfeZeKuN8iXonxQfy+5J0r6V6ezyPi9k1vp6++X6lULaiqa23XlPqUczGkMr2Di+M87xc1zN09JtVTcPLXwPxfTuZxrBEK3HGwE9qENLxs4B0jsrRgWJ/uFmrwh+jR936NwU+Hl7NR3eJKvAbxPCFVp1kbqZNDAWhINsW0X0Y5TlVfsfl2fBiTm4O1ofLMSuOfSY+Yd6uut0vp647i7H5QrppNtV5fucCm+YvWLEwNw==
+sidebar_class_name: 'get api-method'
+info_path: docs/api/leads/leads-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get lead by ID'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/leads/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a specific lead by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Lead ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        allOf: [
+                            {
+                                type: 'object',
+                                required: ['firstName', 'lastName', 'email'],
+                                properties: {
+                                    firstName: { type: 'string', example: 'John' },
+                                    lastName: { type: 'string', example: 'Doe' },
+                                    email: { type: 'string', format: 'email', example: 'john.doe@example.com' },
+                                    phone: { type: 'string', example: '+1234567890' },
+                                    company: { type: 'string', example: 'Acme Inc.' },
+                                    jobTitle: { type: 'string', example: 'CTO' },
+                                    source: { type: 'string', example: 'website' },
+                                    status: {
+                                        type: 'string',
+                                        enum: ['new', 'contacted', 'qualified', 'converted', 'closed'],
+                                        default: 'new',
+                                        example: 'new'
+                                    },
+                                    customFields: {
+                                        type: 'object',
+                                        additionalProperties: true,
+                                        example: { industry: 'Technology', budget: '10000-50000' }
+                                    }
+                                },
+                                title: 'LeadInput'
+                            },
+                            {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string', example: 'lead_123456789' },
+                                    createdAt: { type: 'string', format: 'date-time', example: '2023-01-01T12:00:00Z' },
+                                    updatedAt: { type: 'string', format: 'date-time', example: '2023-01-01T12:00:00Z' },
+                                    assignedTo: { type: 'string', example: 'user_987654321' }
+                                }
+                            }
+                        ],
+                        title: 'Lead'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Lead not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'VALIDATION_ERROR' },
+                            message: { type: 'string', example: 'Invalid input data' },
+                            details: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        field: { type: 'string', example: 'email' },
+                                        message: { type: 'string', example: 'Must be a valid email address' }
+                                    }
+                                }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'VALIDATION_ERROR' },
+                            message: { type: 'string', example: 'Invalid input data' },
+                            details: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        field: { type: 'string', example: 'email' },
+                                        message: { type: 'string', example: 'Must be a valid email address' }
+                                    }
+                                }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

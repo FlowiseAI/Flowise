@@ -115,6 +115,22 @@ const config: Config = {
                             groupPathsBy: 'tag',
                             categoryLinkSource: 'tag'
                         }
+                    } satisfies OpenApiPlugin.Options,
+                    feedback: {
+                        specPath: 'openapi/feedback.yaml',
+                        outputDir: 'docs/api/feedback',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
+                    } satisfies OpenApiPlugin.Options,
+                    leads: {
+                        specPath: 'openapi/leads.yaml',
+                        outputDir: 'docs/api/leads',
+                        sidebarOptions: {
+                            groupPathsBy: 'tag',
+                            categoryLinkSource: 'tag'
+                        }
                     } satisfies OpenApiPlugin.Options
                 }
             }
