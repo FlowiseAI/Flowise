@@ -68,14 +68,6 @@ const config: Config = {
                 id: 'api', // plugin id
                 docsPluginId: 'classic', // configured for preset-classic
                 config: {
-                    helloWorld: {
-                        specPath: 'openapi/hello-world/hello-world.yaml',
-                        outputDir: 'docs/api/hello-world',
-                        sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
-                        }
-                    } satisfies OpenApiPlugin.Options,
                     assistants: {
                         specPath: 'openapi/assistants.yaml',
                         outputDir: 'docs/api/assistants',
