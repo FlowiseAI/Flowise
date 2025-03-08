@@ -19,6 +19,8 @@
         "aai-embed": "workspace:*",
         "aai-embed-react": "workspace:*",
         "clsx": "^2.0.0",
+        "docusaurus-plugin-openapi-docs": "^4.3.6",
+        "docusaurus-theme-openapi-docs": "^4.3.6",
         "prism-react-renderer": "^2.3.0",
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
@@ -46,7 +48,10 @@
         "swizzle": "docusaurus swizzle",
         "typecheck": "tsc",
         "write-heading-ids": "docusaurus write-heading-ids",
-        "write-translations": "docusaurus write-translations"
+        "write-translations": "docusaurus write-translations",
+        "gen-api-docs": "docusaurus gen-api-docs all",
+        "clean-api-docs": "docusaurus clean-api-docs all",
+        "api-docs": "node generate-api-docs.js"
     },
     "version": "0.0.0"
 }

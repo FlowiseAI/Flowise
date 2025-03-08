@@ -1,0 +1,61 @@
+---
+id: get-hello
+title: 'Get a greeting'
+description: 'Returns a friendly greeting message'
+sidebar_label: 'Get a greeting'
+hide_title: true
+hide_table_of_contents: true
+api: eJytVMFu2zAM/RWNZyVx0p18WgoMXS5bsXYYsCIH1mZsdbakSnTWwPC/D7SdpGm6oof5IlgkHx/JJ7aQU8yC8WychRS+EzfBRoVqEwzZvNqpIhCxsYWqKUYsCDQ4TwElYpVDCgXxF6oqBxoYiwjpHexjYK3BY8CamIJYWrBYE6TDocFI0seGwg70CypfsSblNopLUp5CdFaxG9iAhkCPjQmUQ7rBKpKGmJVUI6Qt8M5LhshBGHTdWryjdzZSFPsiSeQ4zXbTZBnFuGkqdagONGTOMlkWf/S+MllvmD1ECWrPk7r7B8qEnw8Cw2ZIuW/dGTsN9IS1r+Sqb6JWP12o8g/QaWBTU2Ss/WtxGxdqZEghR6aJuJ6ALZLFxSS5mCTz2/kiTZI0SX5B138aPr7WgUvMlXSVIv+/wikEF94ue2W3WJlj7m7PsiYu3SgwAUYuIYVZOWotUtjuRdWEClIomX1MZzP0ZjriTzNXz7bzM3FdB5c3mfyoAQc6/RImMhbGFpN3wN0MrgestSh74/rCDR+nOwxXLa9XZxBLFY2kEKMInSlyr/1vnqzc5S5rarKMI2tuPGiQFgwA82kyTcbJYdZPbnxrSxv/UFiu1E3jvQvSzNNKuSTsfaZoZDY1GjHHwf3TiVkm413kGu2zFFfECg+r4mVx7VFO79wwo1yYnnjmKzRW3kNPuh2FcAeDENYaShdZLtr2HiP9CFXXyfWwVkQeuYl4Xz1bFv9k9/bSeZXVb9od99kWq0ZceglsMRjJC+ndutNQEuYUekJDzDLLyPOzqLOXJiiHZ3D1+Ra67i/SzvOD
+sidebar_class_name: 'get api-method'
+info_path: docs/api/hello-world/hello-world-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get a greeting'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/hello'} context={'endpoint'}></MethodEndpoint>
+
+Returns a friendly greeting message
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ name: 'name', in: 'query', description: 'Name of the person to greet', required: false, schema: { type: 'string' } }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', example: 'Hello, World!' },
+                            timestamp: { type: 'string', format: 'date-time', example: '2023-03-01T12:00:00Z' }
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Bad request',
+            content: {
+                'application/json': { schema: { type: 'object', properties: { error: { type: 'string', example: 'Invalid request' } } } }
+            }
+        }
+    }}
+></StatusCodes>
