@@ -1,0 +1,105 @@
+---
+id: delete-document
+title: 'Delete a document'
+description: 'Delete a document by ID'
+sidebar_label: 'Delete a document'
+hide_title: true
+hide_table_of_contents: true
+api: eJztVk2P2zgM/SsCT1tAO5kW3YtPGyBTIEUPg84s9jAIFozFxGptSZXotIHh/76g7Hg8yXTQQw89NJdYFj8eH0mTHRhKZbSBrXdQwIpqYlKojC/bhhyr7VGtV6DBB4ooUmsDBZgstxqFQAPjPkHxACe9BBsNico2Wj5C8dDBljBSXLZcQfGw6TcaAkZsiCmmLGAFQECuQIPDhqAAa0BDpC+tjWSg4NiShlRW1CAUHfAxiFTiaN0een0ezCmG9QrEX6QUvEuURPfN9bX8fUdjiM+o1JYlpbRr6/oIGkrvWOItOsAQaltmRhafkmh3l8j89hOVQk+Iwh/bwfdodSa49b4mdKCBvmETahqC7fNPw9vnwN5XpFKg0u4sGbVeKZuUdQesM2s/CWrpDV1Sfc70TYw+qiw7iwBGNP9JBimxZKihlHD/wyZP4nOrEvdoUX3Fx5hz/hltnZ4L66n1pTFWHrFWlB2dNGeOOthZqqXa2XItGGxKbUYgZ6F7Ks2cpUFshA6nzL19ocycZ7XzrfudsF8mYX8912prxxQn37+T9WskKwfMlX8cSEKwDJACFtMgWnTW9CDDKB5Oo6aNNRRQMYdULBYY7BVXhC59pXiFdnF4fRHSbfSmLeWgBkPQ63M7iXFv3f7PH7F3N8hOxmbT8k6KZ6iP+cycSBd3MI7BPDuyEOjx4Z2PDTIU8P7fexCOrNv5rD4SOH197thHUsvb9WUCb9dqJwWCboA5samsU1yRWubgluvHRSGJNdAgJA9WXl9dX12PzYJlbpZxrk/ad20IPkoFPaVyTp9UTYNWrtMg/veTa4kx+MQNupmLi03mPMjusYlfWHtGzpm+8SLUaJ00QsbajaU233k0FNbI5lP5xHLVdVtM9E+s+15ef2kpyja00XDAaHErCXnowNgkzwaKHdaJXkD6x8exKV6p+XrzHaDjS3SyvBywzv0FGj7Tcdiu+k2voSI0FDOQ4WJZlhR4pnLxjZN6nXpvdfPh5v4GNODTQj0rzOzgWURdN0jc+8/k+n4CyHIWjH3/P5l2r2g=
+sidebar_class_name: 'delete api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete a document'}></Heading>
+
+<MethodEndpoint method={'delete'} path={'/documents/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Delete a document by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Document ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Document deleted successfully',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } } } }
+        },
+        '400': {
+            description: 'The specified ID is invalid',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Document not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

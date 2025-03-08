@@ -1,0 +1,135 @@
+---
+id: query-vector-store
+title: 'Query vector store'
+description: 'Query the vector store for similar documents'
+sidebar_label: 'Query vector store'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV0tv20YQ/iuLOVMPO5Yd8NKqdQIoBVI3cpqDIBgjciRuQu7S+7AjEPzvxSxJmbQc2y166KG+eE3Ozuv7Zvi5Aoc7C/EKUp34gpQbWacNwToCS4k30u0hXlWwITRk5t5lEK/W9TqClGxiZOmkVhDDH57MXriMxB0lThsR3Igtn2QhczSii2AhAl2SQb66SCGGW778Z7i3DNEjMHTrybpfdLqHuIJEK0fK8RHLMpdJuDz5ajl4BTbJqEA+uX1JEIPefKXEtX6koZRLDCktUoiagFxjaTgTJ8kGN63Bgx/rjFQ7eFztZVtKW+XiEiKg71iUOV86n77Bi83sZIR0kYzONlMcvX17PhvR2eyM0tPt+cX5OdRdFi8Ga1tL390gypcMnZA29DzBUjrMhd6K9wZVQj+xf6fL33rupXK0I3Pk/6MvNmT4riHrc2eF08KQ80b1A85q/ul31BlP4YEttbJNC0+nU/41jLD0SULWbn2e7wVXLSkd8ASif47wEMK2hJ4hGoN7iEA6KuzLDuST8G+1KdBBDN7L9KiDn5W89SRkSsrJrSQTeM/AdJwfIJfq5Obk9M3ZjEEqcUe/PtT+PBVaQ8bqh96vM2kPb4T2LpeKGpq00IUhDClqb4Sie1EanfrEjcdjTqkghym6J7s9zGeeppKPmIvu0rOlV2C1Nwl7bEPe9HMal+kWmpZAfBIBepdpAzF80JkSl5ogMNBJFyrtphDq54bp9RPTEvzsKQov1B3mMhXtXhIbXkz/GmsTndLL6L8zRhsRbPtlySa1mza1BkFrQxNf57IzH9KIDsXeoxVtFPaekkOZPzlLP6QHhUDdzQEltpJy/gooLDgFaa1nnx+xIEbrsG8G2IfEoQFs9jRgjgxHtmTuyDQJ/I/YfwGxZsVkml2U2obmIgsLmAxVyKT5RjTnZsBZljCeNqgSb3KIIXOutPFkgqUcu4xQ2XsyY5STu5OjAq+atSO1aokBdfTYj3W4k2o3eo2/ZWN7cNbTTUumUsOWvno6QMDhuJ5gBnFrBFF7eN99cj58uQ4bjin66UEWvest1U63vE56HJblSxuxkxCzOgKptjok/2j5iqDYxPxqcUymq0X4GhSomialA9lkI5HoPKeAho0EqvRBIwqpxDw0fs6OGfHG6cl4Op62c4xJmONAwxg6c7H0ZakN02qIax9LJnSBkl/bxvznwWtuOHOzQNUL0UixR8plUHRPqv5dTdzSgoXepMxRKp7cUEHVzseRSufGHCakr2szHqt4BVW1QUufTV7X/LjFfbWO4A6NxA1DuVrXEWSEKZkwVN9o/yA1RtecFZvnYcaPdiaPT3NjniRUumdt173Jv/p9ec1kbxV+ERYqGLxn1Y73EEP4PyGQIyg7flZBjmrnw6aExicjhcPJejRJoapODap9L8Oqaiyu9TdSdQ1RW4rjv6Fe13X9FxXZjJw=
+sidebar_class_name: 'post api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Query vector store'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/document-store/vectorstore/query'} context={'endpoint'}></MethodEndpoint>
+
+Query the vector store for similar documents
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    required: ['storeId', 'query'],
+                    properties: {
+                        storeId: { type: 'string', description: 'Document store ID', example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766' },
+                        query: { type: 'string', description: 'Query text', example: 'What is the capital of France?' },
+                        topK: { type: 'integer', description: 'Number of results to return', example: 5 }
+                    }
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully queried vector store',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            results: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        id: {
+                                            type: 'string',
+                                            format: 'uuid',
+                                            description: 'Unique identifier for the document',
+                                            example: 'doc_12345'
+                                        },
+                                        pageContent: {
+                                            type: 'string',
+                                            description: 'Content of the document',
+                                            example: 'This document outlines the requirements for our new product...'
+                                        },
+                                        metadata: {
+                                            type: 'object',
+                                            description: 'Additional metadata for the document',
+                                            example: { source: 'product_requirements.pdf', page: 1, author: 'John Doe' }
+                                        }
+                                    },
+                                    title: 'Document'
+                                }
+                            },
+                            query: { type: 'string', example: 'What is the capital of France?' }
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid request body',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

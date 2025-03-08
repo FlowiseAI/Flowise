@@ -1,0 +1,129 @@
+---
+id: get-all-document-stores
+title: 'List all document stores'
+description: 'Retrieves a list of all document stores'
+sidebar_label: 'List all document stores'
+hide_title: true
+hide_table_of_contents: true
+api: eJy9V9tu2zgQ/RVinqVYdhyn0dMajVukaLNB7aDoxsZiLI5ttpKokpTTwNC/L4aSXN8WSbbA+kWUNTxz5srhBhwuLcQPIHVSZpS70DptCGYBWEpKo9wTxA8bmBMaMsPSrSB+mFWzACTZxKjCKZ1DDJ/JGUVrsgJFqqwTeiEwTUULKzyshQB0QQZ5142EGJbkhml63UiNWyFDttC5JQvxBnpRxI99hcOtmmMVic4d5Y43YVGkKvH6Ot8s79yATVaUIa/cU0EQAxqDTxCAcpTZnf/1/BslDgIoDLN2quaj5I6MdUblSwhgoU2GDmIoSyXh0D/3ufpRklCScqcWioxYaCPcig7oQwD0E7MiZexBdI6X84tuiHSZhP15hOGbN4OLkPoXfZK9xeByMIAqgBwzOkVpn8ItZsT+ekbpndGyTJxoY+J9x1r20J5Tdv3r7QU6fdy9RzhnioaB3GUgMJfCFpSoRRNPy6RSjZKMfZ7Qx1pQoLU6UehIikflVieYBfVDCrTiw/jPW7FF/EV4M201T7k8pqDkFOIpJP3eJV0MrsL5my6G/cEVhvNuPwkXeHku5cUcqX81hWDqQ+Z33F2/EzW3KVSzim16XJGhe0sn02zfqrsUE7LC7zhhilBWlJbkC01KVugWqX70Rk2Bl13Plle9KdT0rENXnvQ45WXGvWT06W7yFQIYf7192zxubt/zajL8OIIAbkdfIID7u/Ho86T+Uq9H13DUWcZe3UuSiLVVAawpcdr4lHqr84VaPu/GWq6s+9K2MmugVyUFq/FhLVROic7Juy/x8FOIOVFyST+9iNSJnULlfUrZnKRU+fL3GG9hXktXF5SjOiKbaUmpF3D004Vb+BAlhlHUa+kbSrSRnzDHJZnfM6GGElmN9Vo7DEllj8woTfrra9zppDrBdKWtiwfnl1etEYkhbgvX6E42021/l+godCqj46aHjnyf4q9clPmpmnxEKxpde3b0ot55GHXDqDvp9uIoiqPoL+ZVFvJ/45WidaJReJpcb9Ltx+cNOR/6H6Uy3Kse6nNoFoBTzm/aO9ah4l8AF6dO85vckckxFZbMmowgY7T5Dyf5v5zYiZYvOCBHrFR42V3TVb7GVMm/2VKyjkOSkbW4fDFkK76LOvG57hG95xst9UHrUKUnB5GDGUhKxUtMa4eJdueOog0sFKU8avnoBKCsLakdB5QV2wD66LSh88TbkGXkVrqZ1ti3yFMgdPZHxk7bkesQWj82liaFGFbOFVx3WKgztyLM7SOZM1Sddff4RKsPf24JNRBUwSGOdbj0XegFeONadgu2M9iOOXvqBNkdb7deZ3VsjxeDuBGCoFm8awvvw5eJLwWVL7TffpD+oh5vhnc3xxG8u/Gdz7c7pnkwzAYi0WlK3h828DXcSnDKiKE3fcjA7PMatHsWnUVN8WDii6eeEKEVF+OyKLThYO57dtebnEUZKv5sa/E/9j6zyYW2LsN8R8VHnspPT/4HA+S2tl9xeWgiw6dRp0hR+cHUm7Bp0vLoJsMDS3Oj4ZbPEpvNHC3dm7Sq+O8fJRm+5cwCWKNROOfoPcyqAFbEg5nP5O/0xA5MEirYbWtMfRUddSVOsG29vB9NIADcT6uDNPLo7UUkf9rB3mxqiYn+TnlVQdCQcPzOw2JV/QNL17Zf
+sidebar_class_name: 'get api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'List all document stores'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/document-store/store'} context={'endpoint'}></MethodEndpoint>
+
+Retrieves a list of all document stores
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'A list of document stores',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    format: 'uuid',
+                                    description: 'Unique identifier for the document store',
+                                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                                },
+                                name: { type: 'string', description: 'Name of the document store', example: 'Product Documentation' },
+                                description: {
+                                    type: 'string',
+                                    description: 'Description of the document store',
+                                    example: 'Store for all product documentation and specifications'
+                                },
+                                loaders: {
+                                    type: 'string',
+                                    description: 'Loaders associated with the document store, stored as JSON string',
+                                    example: '{"loaders":[{"id":"c427e569-b81a-469a-b14c-fa73dd5bae49","name":"PDF Loader"}]}'
+                                },
+                                whereUsed: {
+                                    type: 'string',
+                                    description: 'Places where the document store is used, stored as JSON string',
+                                    example: '{"chatflows":["flow1","flow2"]}'
+                                },
+                                status: {
+                                    type: 'string',
+                                    enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                                    description: 'Status of the document store',
+                                    example: 'SYNC'
+                                },
+                                vectorStoreConfig: {
+                                    type: 'string',
+                                    description: 'Configuration for the vector store, stored as JSON string',
+                                    example: '{"type":"pinecone","config":{"index":"docs"}}'
+                                },
+                                embeddingConfig: {
+                                    type: 'string',
+                                    description: 'Configuration for the embedding, stored as JSON string',
+                                    example: '{"type":"openai","config":{"model":"text-embedding-ada-002"}}'
+                                },
+                                recordManagerConfig: {
+                                    type: 'string',
+                                    description: 'Configuration for the record manager, stored as JSON string',
+                                    example: '{"type":"redis","config":{"url":"redis://localhost:6379"}}'
+                                },
+                                createdDate: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Date and time when the document store was created',
+                                    example: '2023-01-01T12:00:00Z'
+                                },
+                                updatedDate: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Date and time when the document store was last updated',
+                                    example: '2023-01-02T14:30:00Z'
+                                }
+                            },
+                            required: ['name'],
+                            title: 'DocumentStore'
+                        }
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

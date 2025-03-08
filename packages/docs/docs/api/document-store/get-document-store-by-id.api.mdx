@@ -1,0 +1,150 @@
+---
+id: get-document-store-by-id
+title: 'Get a specific document store'
+description: 'Retrieves details of a specific document store by its ID'
+sidebar_label: 'Get a specific document store'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV21v2zYQ/ivEfdoAqZEdx2n0aVmdFi66LKgdFF0cDGfxbLOVRJWkkgaG/vtwpOz4rUuKDsM+7ItFWcfnnnvh8W4JDucW0huQOqsLKl1snTYEtxFYymqj3AOkN0uYEhoy57VbQHpz29xGIMlmRlVO6RJSeE/OKLojKyQ5VLkVeiZQ2IoyNVOZWMELDy+mD0I5K4YDiEBXZJBhhhJSmJMbtLIjFv31YSghggoNFuTIWE9Hsc4K3QIiKLEgSEGxmKEvtTIkIXWmpghstqACIV2Ce6hYyjqjyjlEMNOmQAcp1LWS0OzaM9jmOxwA22zIVrq0ZBmxmyT82N43qrOMrJ3Vef4gTOsUuWM+RJDp0lHpGACrKleZ98DRJ8soy33eevqJMseOMOwvpwIHJZ+2bde061J9qUkoSaVTM0VGzLQRbkH7LOkrFlXO2P3kGE+nJ50Y6TSLe9ME45cv+ycx9U56JLuz/mm/z14MwdintE3hEgviBHlC6ZXRss6cWAXD+2gvVk8pGzy+PUOnTzrvEcxzUbUM5CYDgaVcZ7b/xzKpXKP0+fkUoXdBUKC1OlPoSIp75RYHmEXhIQVa8Xb0+6VYIz4SXk5Wmid8NCag5ATSCWS97imd9M/i6csOxr3+GcbTTi+LZ3h6LOXJFKl3NoFo4kPmd1wNXovAbQLNbcM23S/I0LWlg2m2bdVVjhlZ4XccMEUoK2pL8pkmZQt0s1zfe6MmwMuOZ8ur7gQCPevQ1Qc9TmVdcFm7+O1q/BEiGH28fNU+hpdveDU+f3cBEVxefIAIrq9GF+/H4UtYXwxgr8iNvLrnJBFrayK4o8xp41PqlS5nav60G4NcHSri+mQGoO9KClbjw1qpkjJdkndf5uEnkHKilJK+ehGpMzuBxvuUiilJqcr5jzFew3wvXV1RiWqPbKEl5V7A0VcXr+FjlBgnSXdF31CmjfwNS5yT+TETApQoAtb32mFIKrtnRm3yx6/p0VGuM8wX2rq0f3x6tjIiM8RlYYDuYDFd13eJjmKnCtoveujI1yn+yoeyPHQm79GKVteWHd2kexwnnTjpjDvdNEnSJPmDedWV/Nd45WidaBUeJtcdd3rpcUuu2bz8b8I9dBuBU85v2uopoGlYvpf09i/wnYu/1E7MdF3Kf+7OzrR8xhV5YYw2wstuGq/KO8yV/JNtJes4KAVZi/NnQ67EN1HHPts9ovd9qyVctb6dO2TWNvq5lIqXmAvyilY7NxQtYaYo5zbPxycCZW1Nq4ZAWbEOoQ/QKnieeBu0k0Nd17B0ZFizJXNHJhD4P2L/hYh5c91Ct729b+V5iICj7YnjKPwulWyAZw+OY+j1a5NDCgvnKi6YWKkXbkFY2nsyL1Ad3XX2W5HQtXEtD0DQRLs41uHcXx/PwBsF2TXYxnA04hQKWbI5Iq1dz+qgnUP4PQhB1C5eryrm2w9jX8NUOdN++07dEqEvPb8a7ofxauivLH9PMc3tYmojkek8J+8PG/niu5LgvBHn3vRzBmafB9DOi+RF0p4gzPwJaueslbgY1VWlDUd027Ob3uRUKlDxZxvEf9n6zCZX2roCyw0Vb8h9e3bctX/5eMp/ZApt48XNxVGVo/Jzhjds2Wbs3ozM/Wd4pkryZcP3OMstl1O0dG3ypuG/v9RkeIq+jeAOjcIpR/ZmCVJZXktIZ5hb+hu7fnrfnrKfxf5g+g3u7Z9YPnBgMfenFiL4TA9hWm5umwgWxP2+pxM+nGcZVW5jy17h5PRfH+k3F2OIALeTfifJPfpBOstlkBjrz1Q2zZqd43cm2DR/AdxEtNg=
+sidebar_class_name: 'get api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get a specific document store'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/document-store/store/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Retrieves details of a specific document store by its ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document store ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully retrieved document store',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid',
+                                description: 'Unique identifier for the document store',
+                                example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                            },
+                            name: { type: 'string', description: 'Name of the document store', example: 'Product Documentation' },
+                            description: {
+                                type: 'string',
+                                description: 'Description of the document store',
+                                example: 'Store for all product documentation and specifications'
+                            },
+                            loaders: {
+                                type: 'string',
+                                description: 'Loaders associated with the document store, stored as JSON string',
+                                example: '{"loaders":[{"id":"c427e569-b81a-469a-b14c-fa73dd5bae49","name":"PDF Loader"}]}'
+                            },
+                            whereUsed: {
+                                type: 'string',
+                                description: 'Places where the document store is used, stored as JSON string',
+                                example: '{"chatflows":["flow1","flow2"]}'
+                            },
+                            status: {
+                                type: 'string',
+                                enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                                description: 'Status of the document store',
+                                example: 'SYNC'
+                            },
+                            vectorStoreConfig: {
+                                type: 'string',
+                                description: 'Configuration for the vector store, stored as JSON string',
+                                example: '{"type":"pinecone","config":{"index":"docs"}}'
+                            },
+                            embeddingConfig: {
+                                type: 'string',
+                                description: 'Configuration for the embedding, stored as JSON string',
+                                example: '{"type":"openai","config":{"model":"text-embedding-ada-002"}}'
+                            },
+                            recordManagerConfig: {
+                                type: 'string',
+                                description: 'Configuration for the record manager, stored as JSON string',
+                                example: '{"type":"redis","config":{"url":"redis://localhost:6379"}}'
+                            },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the document store was created',
+                                example: '2023-01-01T12:00:00Z'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the document store was last updated',
+                                example: '2023-01-02T14:30:00Z'
+                            }
+                        },
+                        required: ['name'],
+                        title: 'DocumentStore'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Document store not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

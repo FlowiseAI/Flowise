@@ -1,0 +1,89 @@
+---
+id: delete-file-chunk
+title: 'Delete a file chunk'
+description: 'Delete a specific file chunk in a document store'
+sidebar_label: 'Delete a file chunk'
+hide_title: true
+hide_table_of_contents: true
+api: eJztVk2P2zYQ/SvEnFqAWTlFetGpRncDuAiKRb1FDwujGEtji1mKVEhqE0PQfy+GlLVS5QaJ00MP9cWyNTNvZt58dRDw6CF/hNIWbU0mvPLBOoKdBE9F61Q4Qf7YwZ7QkVu3oYL8cdfvJJTkC6eaoKyBHG5JUyCBwjdUqIMqxEFpEkXVmiehjEBxBhAJQIJtyCGrb0rIoYwG3ipNP7MOSGjQYU2BnI8eKIZpMFQgwWBNkEO0tClBgqMPrXJUQh5cSxJ8UVGNkHcQTk0SdcocQcLBuhoD5NC2qoR+EcfMS7G5hV5exNYWS3JfBb4AexdtfAYkpu/bMGI2I8SOrfjGGk+eFX9YrfhrLr5ti4K8P7Ran0TipJxQCRIKawKZwKrYNFoVkcPsvWf9bumY3b+nIjCfjhkPKqH7BDQR3FurCQ1IoE9YN5pSrH38SHizerN0d06XFIkVKawbSs/YIA62NeW/53lhS7pUWXPP7pxjJ1h2EhAo84xalX8yn+QD81WT93j8YpNn8anVh4rEYFF8RC8GlFQNAZX2l8KaW1+XpeJH1IIi0FlzAtTBQZHmdo0FKkF537LNX7EmobwYyzRSFlSI7kXHIdH446Wq25hAjpE9uWdyyYH/GfsvMBbDDZV9mdFxNPMegGy+NLLYcj7rhrncZ915SvZZN8yyHnizMMtprLdOQw5VCI3PswwbdRMqQuM/krtBlT2/XoR972zZFvxjKJc4Ped2fMCjMsdXX2Jvm2RHY5PVt+UCSzU0XYAjMQwHwzCOIywKgRwe3p53zS9/PABnUpmDjepDmsfxtY3bZn2/WZJ8vxEHLiI0yc35HvVSFFZrivnwUqApRwmuKrGOoa/ZMOc8GX19s7pZDf2FReyvYeOcxcW2bRrruOjmmZ1mkwutRsWvfRL/afaaQ26sDzWaCcR4KszWyizq7qXzr7ksBnYCfQpZo1EZbqsYRjeU7uLekWnXcu/kL2dFPtny+XkZ7yRU1gc20nV79PS7033Pf39oyfG5tJPwjE7hnkl+7KBUnp9LyA+oPX0m2O9+G9rxe7G8RP4hsOFPNCfmGHVsb5DwRKfJjcQ9cpUfL0fKVfhjBq92YLxgrsI/s9bvegkVsTORk/R2XRTUhIneYs3wOBgH4O3du7uHO5CA8znwt76PABfd6rok8WCfyPT96GXg3+xj3/8FZj78tg==
+sidebar_class_name: 'delete api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete a file chunk'}></Heading>
+
+<MethodEndpoint method={'delete'} path={'/document-store/chunks/{storeId}/{loaderId}/{chunkId}'} context={'endpoint'}></MethodEndpoint>
+
+Delete a specific file chunk in a document store
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[
+        { in: 'path', name: 'storeId', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document store ID' },
+        { in: 'path', name: 'loaderId', required: true, schema: { type: 'string' }, description: 'Loader ID' },
+        { in: 'path', name: 'chunkId', required: true, schema: { type: 'string' }, description: 'Chunk ID' }
+    ]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully deleted file chunk',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } } } }
+        },
+        '404': {
+            description: 'Document store, loader, or chunk not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

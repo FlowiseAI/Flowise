@@ -1,0 +1,100 @@
+---
+id: process-chunking
+title: 'Process loading & chunking operation'
+description: 'Process loading & chunking operation of document from loader'
+sidebar_label: 'Process loading & chunking operation'
+hide_title: true
+hide_table_of_contents: true
+api: eJztVktv4zYQ/ivEHHqSYjtrO4lO6+5uAffQGrWLHgyjGEljmxuJ1JJUsoag/74YUnZkJ+gabQ89NJfQ4vCbxzevBhzuLCRryHVWl6RcbJ02BJsILGW1ke4AybqBlNCQmdVuD8l6024iyMlmRlZOagUJLIzOyFpRaMyl2okfRLav1SMfdUUGWUzorTiqEVujSy9NBiI4ycxzSKAKYB86BIjA0JearPtR5wdIGsi0cqQcH7GqCpn5t4PPlm1pwGZ7KpFP7lARJKDTz5S5Dkcaytlj7+g8hwhkzv5Whq1wkqzH6G5fQKwzwZhzzz8ePfIvxPwjREBfsawKfjQdvsO7dDKKke6yeJwOMb6/n05iGk/GlN9up3fTKbTehOs1hbBdqsrGt3c0mT7E6f0I4/H0AeN0NM7iLd69y/NJijR+gJb/+nFwpib/wVZa2eD77XDI/861L+uMSdnWRXEQHUNvkAzR32fngoGgsCeYal0Qqr7X3vzOqfFbZs/VExYyF10GiZRT6F+zMdM5fZ+4T8ZoI7xsnzAZTPuzM43ToCRrcXc15FG8j7ra08nZZ7Si08LoOTmUhX3LrXP0WZ5LPmIhyCs6vuwpamArqeByVViyCdLamjF/wZKEtOKUY54cJ503zxsOgbDJ24Q5MqzZknkiEwz4n7H/AmPeXbfXvkdr64OLPBFgcD4+BqFDDbo2ATxMmEzrZ0ltCkhg71xlk8EAK3nj9oTKPpO5QTl4Gr3ybmF0Xmd+hgQgaKNLHOtwJ9UuvgZvGWRPYL1pt+Q8CqnSn3mn+LM69seLcU/yQhB1h5+0KdFBAj//sQIOGOfnby/T69MLGacJc92QCDPiyi4fgVRb7c3uWDwNj6UfU7PF/HUOLeZiyzmKKoQnPxttNhKZLgryPNhIoMpPEpy0YuZDPmNg5jqAjm6GN8OufDHz5euzL4GjuFjWVaUNZ9M5o30WOY9LlHxtg/j7s2sONadkiaqn4pqt5DIMve3in241Xco4+uoGVYFSMTHex6YrnFd7VwSn18fi2USw52JL1tA0KVr63RRty5+/1GR4PdtE8IRGYspMrzdtBHvyIFxtj3SABD4En+IVm8Tiha/8V52U6yq8mGUZVe4vZTe9frD4dbniKug2tNK3WTD4zFsXPkMCfs3zucMC/lsDBapd7fsnBEwmEs9L7qLEvFfdFapDz8KmCRIr/UiqbSHqXHH8G9pN27bfAHTZwu8=
+sidebar_class_name: 'post api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Process loading & chunking operation'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/document-store/loader/process'} context={'endpoint'}></MethodEndpoint>
+
+Process loading & chunking operation of document from loader
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    required: ['storeId', 'id'],
+                    properties: {
+                        storeId: { type: 'string', description: 'Document store ID', example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766' },
+                        id: { type: 'string', description: 'Document loader ID', example: 'c427e569-b81a-469a-b14c-fa73dd5bae49' }
+                    }
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully process chunking operation',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } } } }
+        },
+        '400': {
+            description: 'Invalid request body',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

@@ -1,0 +1,98 @@
+---
+id: list-collections
+title: 'List all collections'
+description: 'Retrieve a list of all document collections'
+sidebar_label: 'List all collections'
+hide_title: true
+hide_table_of_contents: true
+api: eJy1Vt9v20YM/lcOfL7EspO+6GlGmw0uhiGYXQyYYRS0RFvXSnfKHeXUMPS/D5RkR7KdJhswv1gn8cdH8iN5B0gpJN6UbJyFGP4k9oZ2pFDlJrByG4V5rlKXVAVZVonLc0pEOIAGV5JHOcxSiEEUPg6+M24DxEvoa600BEoqb3gP8fIAa0JPflpxBvFyVa80eAqls4ECxAeYRJH8DVHOqyShEDZVrk4QQEPiLJNlkceyzE3SfBh9C6J0gJBkVKA88b4kiAG9xz1oMExF6L1362+UMGgovZhn00IxaU8msDd2C/oM2RdrnipSJiXLZmPIq43zijPqZQ400A8sylzsJC7/Op7c3X+AWoPFgt728QcWJIX5idUHuzWWSNTVp652QTwMLL3l6NPL6Q1/L2UXQep5PzInKLSpCiUlZtMVpgFUEGOKjNfSP0QzTVMjj5iro9IbyRXalOi5aEjRT4pw99mShxg+oyU1LwxnUEuCOrwfXdUyqQNlLNOW/GUxqmJNXqJ+idRYxZkJr6C6n9QaEk/IlE75WhU2zhcoiFNkumFT0IXbhSkoMBales7InuVAPWNQnYdBmSbR5O4mGt9E48V4EkdRHEV/SxGqMv2f0eQYWHVurkOaLMb38V0HqdbAhs+oBbX8NHy4NhJmlskLN8h75//DMHil6ROXvqMlH8SpamT7wRm7w9ykXz09VRS45XsIuH23yaN43+oiI9VZbHLbeWnbm9HkV2fZq83UJEwdNQftszGUy2Rva6HBhFA1COSsTGhgGE8p1P2SNdCP1SqIMydGttRkF2XQw2i4SAL5HfnQLITK5xBDxlyGeDTC0txyRmjDM/lbNKPd+CKYR+/SquVaawhqfW4nMG6N3d68x968lT0Z662sudCmZUZ/cZ3SLe4knkYM4k4IdPfw67GXPv+1aFhu7MY16l3qjsNazdl5UtPH2WXpHmfN3CvQtjDPBg+paRPcdPaytoNYAw2S5NbK+Da6jbo2waRpk3b7wEl7XpWl81K0YSr76RO+FGjkc2jFfxl8lhhLF7hA23Pxu1wt5F4xZMHZcjp18L+8lXSlYPrBozJHY5sRJyEcOvpd3EgyF1heHw5rDPTF53Utr58q8nJLWWnYoTe4lhotV7WGjDCV9bE8wHfaS9aShErJ1Q7zpkcuho7Q6NQMvz0sQAMOyXNGlsb68api9z3bh0MrsXDfydY16A4EyxnqVV3X/wAQcGo9
+sidebar_class_name: 'get api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'List all collections'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/collections'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a list of all document collections
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string', description: 'Unique identifier for the collection', example: 'col_12345' },
+                                name: { type: 'string', description: 'Name of the collection', example: 'Engineering Documents' },
+                                description: {
+                                    type: 'string',
+                                    description: 'Description of the collection',
+                                    example: 'Collection of engineering documents and specifications'
+                                },
+                                metadata: {
+                                    type: 'object',
+                                    description: 'Additional metadata for the collection',
+                                    example: { department: 'Engineering', owner: 'Jane Smith' }
+                                },
+                                documentCount: { type: 'integer', description: 'Number of documents in this collection', example: 42 },
+                                createdAt: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Timestamp when the collection was created',
+                                    example: '2023-01-01T12:00:00Z'
+                                },
+                                updatedAt: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Timestamp when the collection was last updated',
+                                    example: '2023-01-02T14:30:00Z'
+                                }
+                            },
+                            title: 'Collection'
+                        }
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

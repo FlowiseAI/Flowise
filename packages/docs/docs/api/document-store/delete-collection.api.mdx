@@ -1,0 +1,105 @@
+---
+id: delete-collection
+title: 'Delete a collection'
+description: 'Delete a collection by ID'
+sidebar_label: 'Delete a collection'
+hide_title: true
+hide_table_of_contents: true
+api: eJztVkuP2zgM/isCT7uAdjJdtBefNmimQIo9DDqz2MMgKBibidUqkirRaQPD/31B2eM4jw562EMPzSW2xMfHj6TJFipKZTSBjXdQwIIsMSlUpbeWSjlV64NaLkCDDxRRTpYVFFBlybejGGhg3CYonuCom2ClIVHZRMMHKJ5aWBNGivOGayieVt1KQ8CIO2KKKQsYgRGQa9DgcEdQgKlAQ6QvjYlUQcGxIQ2prGmHULTAhyBSiaNxW+j0WUhHiBKGeIyUgneJkmj/eXsrf9/V6eOsVGrKklLaNNYeQEPpHZNjUcUQrCkzM7NPSfTbS3R+/YlKBg0hCo9seu+D1Yng2ntLKHTSN9wFS33AXf5peH0N7mNNKgUqzcZQpZYLZZIybo82M/c/QS19RZd0n7N9F6OPKstOIoABzUfJIiWWLO0oJdz+sMln8alViXuwqL7iMeZcA4zGpmthnVqfV5WRR7SKsqNnzYmjFjaGrFQ9G7aCwaTUZATyLnSP5Zmz1IsN0OE5c69fLDTnWW18436l7KdJ2ZtrzbZ0THH0/StZP0eycsBc++NoEoJljBQwmwykWWuqDmQoxf3zyGmihQJq5pCK2QyDueGa0KWvFG/QzPavLoK6j75q+rbtDUGnz+0kxq1x2z9+xN5DLzsam0zNBymfvkKms3OkXdzBMA7z/MhCoIeHdz7ukKGA9/8+grBk3MZn9YHChS+bHTlWD+wjqfn98jKF90u1kRJB18OsBh2pCMU1qXkObr4cb1QSa6BBSO6tvLq5vbkd2gXL3C7DfB+1H5oQfJQaOqVySp/UzQ6NXKde/K+Ta4kx+MQ7dBMXV/aa8zDbYyO/uAYNvDN941mwaJy0Q8bbDgV3ugFpKEwle1DtE8tl264x0T/Rdp0cf2koym600rDHaHAtaXlqoTJJnisoNmgTvYD2tw9Dc/yuTped74AdDtHJIrNHmzsNNHymQ79tdatOQ01YUcxQ+ot5WVLgicrF107qduzCxd3fd493oAFPC/asQLODq4jatpd49J/Jdd0IkOVdMHbdf6C2uDc=
+sidebar_class_name: 'delete api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete a collection'}></Heading>
+
+<MethodEndpoint method={'delete'} path={'/collections/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Delete a collection by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Collection ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Collection deleted successfully',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } } } }
+        },
+        '400': {
+            description: 'The specified ID is invalid',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Collection not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

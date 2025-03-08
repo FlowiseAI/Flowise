@@ -1,0 +1,85 @@
+---
+id: delete-vector-store-data
+title: 'Delete vector store data'
+description: 'Delete vector store data for a specific document store'
+sidebar_label: 'Delete vector store data'
+hide_title: true
+hide_table_of_contents: true
+api: eJztVsGO2zYQ/RViTi3ArJ0iuehUA7sBXBTFIt6kh4VRjMWxxUQiFXLkxBD078WQsmOtNkVQ9JBDfTElDd+8mXmcYQ+MhwjFIxhfdg05fhHZB4KthkhlFyyfoHjsYUcYKKw6rqB43A5bDYZiGWzL1jso4JZqYlJHKtkHlTCUQUa190Ghii2Vdm9LdXaTTUCDbymggKwNFGASzPuEshGLW2QEDS0GbIgpxMTGissWuQINDhuCAqwBDYE+dTaQgYJDRxpiWVGDUPTAp1asIgfrDqBh70ODDAV0nTUwzMKZ0FTrW5CQA8XWu0hREH9ZLuVvum/TlSXFuO/q+qRyMGaeFNBQesfkWBCwbWtbphwsPkSB6efE/e4DlSyZCJIxtplEzP6uDHfe14QONNAXbNqaci6G9NPwavlqzvpJtM6z2vvOmf+OZ+kNPVeGKY+7EHxQyfaKPlh3xNqav6S6FFmq1VCMePhuyLP5NepDRWpEVJ8xqtFL1gKjreNzYU3RV8ZYWWKtKDk677xy1MPeUi3iTkrVYGPsBPMPbEjZqC6iTQViy4leIg65aK+fk9raMQXxHCkcKWQC/1fsR6hYCpcr/7WjpRYmvRMW00a7yM0hr3trBpDGKwXNna4LNRRQMbexWCywtTdcEbr4mcIN2sXx5SzC++BNV8rDqAwY9FOcyHiw7vDie/A22fYCdjUZNqKlLJfr+XCpgbiDsQun3pSMQI+LN+ce/NufDyBJs27v0/Yxo5e+lEaBWt2v5/W8X6cR06DLNKcDJmpV+rqmlI+oFTpzsRABqVUKfSXAkvMM+vJmebMcjxKW6SiNU+ZsrjZd2/og+ppm9jqboqkGrXyO2fzXyWcJufWRG3RXLr41SZ+G3n896f9++o6FYvrCi7ZG6+QwpYj6UbCzm4Ek6iJZ0FBYI7eFykcW677fYaR3oR4Gef2poyA3iK2GIwaLOynsYw/GRlkbKPZYR/qH2H56O562n9V8Kn8jgvElupPQxTqdXtDwkU75qjBsBw0VoaGQ6OQPq7Kklq+2zBqoqP9ytG/vfr97uAMNOJX9E5knB88y6vts8eA/khuGC0GWZ+E4DH8D5DFY5Q==
+sidebar_class_name: 'delete api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete vector store data'}></Heading>
+
+<MethodEndpoint method={'delete'} path={'/document-store/vectorstore/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Delete vector store data for a specific document store
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document store ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully deleted vector store data',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } } } }
+        },
+        '404': {
+            description: 'Document store not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

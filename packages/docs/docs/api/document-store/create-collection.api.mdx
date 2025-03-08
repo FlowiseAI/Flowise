@@ -1,0 +1,144 @@
+---
+id: create-collection
+title: 'Create a new collection'
+description: 'Create a new document collection'
+sidebar_label: 'Create a new collection'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV1Fv2zYQ/ivEPcux7GQvepqXpoD7sAWzuwE1jIIRzxZbiWRIKo4h6L8PR8qxZKdNOrTYHvpiyNLx7rv7vjuSDQh0uZXGS60gg2uL3CPjTOGOCZ3XFSrPcl2WmAeTBLRBy+l5LiCDPCy47ht4vnWQreC4ysE6AYd5baXfQ7Zq4A65RTurfQHZat2uE7B4X6Pzv2mxh6yBXCuPytMjN6aUeQg5/uQIZgMuL7Di9OT3BiEDffcJcw8JGEsAvURHXxWvsGflvJVqC8lJ1r/zCpneMF/gMFd85JUpaeWN2kqFSMvZm64uDtoTTy8FenP890K8Y0XJEHvRD6w4xpVgzmAuN115AqAKPRfcP1ucIZqZEJIeeckOi9hG26/AakCg4dZXgZp+UUgYO4UWMnjHFbJFJX0BbdtGZqVFQZoIfKwT8NKfpDlXpvanC7ytMbxwRisXKZ2maQQy0O2xXFGRgrk6z9G5TV2We0i+l6CkeJnl90re18ikQOXlRqJ9oarUKR8n08urX4i/n5L9jyWbwAHvta6jYjpQUnncoj0no67u0FLWx0ylYr6Q7guorqZt0s1OMfPPsbDRtuKEWHCPIy8rPAu7lBU6zyvDdgWqkxqwHXeHXhjQNE2nl6N0Mkony8k0S9MsTT8QCbURPxhNyZ1nXZjnIU2Xk6vssoPUPjcmaEK0CVw9NwTm6oGXUjBJo4QZqx+kCJG+U+/nWryiM2+s1ZYF236OMoL72O1zUfbO8e2rXR7M+16XBbLOYyhxFyV2ueeydN/UUxgCHVYOumgjsaQNP1KSgHSuDgjoP5OOPU3tts9cgH4gbTo9J+0vwhv4YPiYo+k65Sdl/wPK4mguNDkx2oXycjqywbh/uKOznX1A68LRrrYlZFB4b1w2HnMjL3yBXLkd2gsuxw+Ts2xurRZ1HBPREbTJqR/n+Vaq7eg1/hbR9slZ7/C5IN1EafSPoE/1pnCUTzCDrDOCpHt4exiD7/5ehgFFevzzeHK9ORY/buNf2IRPEf/LrXO4c377PifVRofkO+YPANnCa4tsdjs/V97tPGy4FVexyCc7HrJZoGY2P14fHHmDBEgi0cvkIr1Iuy7nue/V62n1ojZGW5LcUAh98knuFZf02UXzXwefKUfSbcVVL8TgjjPYnk8ORk8z6DXXok5AHh/92JRcqrCnEvSma5qzG1FBLZWtoGnuuMP3tmxben1fo6Vb0jqBB24lvyNuVus2gQK5IB5XDXzGfdBNQDhaUnAyL0ODn01M6qe4YpbTjP2q7brX9bd/LJak/u5WVoVxCpbvIAm/GYQbYUwpa+K7BkqutnWYkxB9EhN82GonrRWy6j5xte8hbJposdSfUbUtJF0qnv5Du27b9h+Xsifk
+sidebar_class_name: 'post api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new collection'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/collections'} context={'endpoint'}></MethodEndpoint>
+
+Create a new document collection
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        name: { type: 'string', description: 'Name of the collection', example: 'Engineering Documents' },
+                        description: {
+                            type: 'string',
+                            description: 'Description of the collection',
+                            example: 'Collection of engineering documents and specifications'
+                        },
+                        metadata: {
+                            type: 'object',
+                            description: 'Additional metadata for the collection',
+                            example: { department: 'Engineering', owner: 'Jane Smith' }
+                        }
+                    },
+                    required: ['name'],
+                    title: 'CollectionInput'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Collection created successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', description: 'Unique identifier for the collection', example: 'col_12345' },
+                            name: { type: 'string', description: 'Name of the collection', example: 'Engineering Documents' },
+                            description: {
+                                type: 'string',
+                                description: 'Description of the collection',
+                                example: 'Collection of engineering documents and specifications'
+                            },
+                            metadata: {
+                                type: 'object',
+                                description: 'Additional metadata for the collection',
+                                example: { department: 'Engineering', owner: 'Jane Smith' }
+                            },
+                            documentCount: { type: 'integer', description: 'Number of documents in this collection', example: 42 },
+                            createdAt: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the collection was created',
+                                example: '2023-01-01T12:00:00Z'
+                            },
+                            updatedAt: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the collection was last updated',
+                                example: '2023-01-02T14:30:00Z'
+                            }
+                        },
+                        title: 'Collection'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid input provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '422': {
+            description: 'Validation exception',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

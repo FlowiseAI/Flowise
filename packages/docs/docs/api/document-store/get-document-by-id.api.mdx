@@ -1,0 +1,149 @@
+---
+id: get-document-by-id
+title: 'Get document by ID'
+description: 'Retrieve a specific document by ID'
+sidebar_label: 'Get document by ID'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV0tv3DYQ/ivEnFpA3pedi07d1m6wOQXxBgVqGAFXHK2YSKRMjmwvBP33YqjHah+xXaAFcsjF1krz+OabGc6wBoU+cbokbQ3E8AnJaXxEIYUvMdGpToSySVWgIbHZidU1RGBLdJIVVgpi2CJddxK/71YKIiC59RDfQa/o4T4Cj0nlNO0gvqthg9KhW1aUQXx339xHUEonCyR0PghoBlNKyiACIwuEGDSbdvhQaYcKYnIVRuCTDAsJcQ20K1nKk9NmC010FFgPkSNgfw59aY1Hz7qL2Yz/HWrcVkmC3qdVLoaAIYLEGkJDLC/LMtdJ+DD96lmpPgVkN18xIYigdGyGdOtSq1PQx5g/G/1QodAKDelUoxOpdYIyHFICEeCzLMqcrSibfJkvLq/ecfSkiV++5mLNYsKm37f60VlVJSQ+tcyHfIqeTfY0IuRlX3+0gi96W2fa7wvOVpRrgz7IuzEAJsJWThh8EmWLcDKZMJwCSSpJZ1NwiGeplOZHmYte6UWCa5AVZdZBDB9sZsS1xWCzlI6CbAw3ZqsNYhf+IzrfuppPZtAErvIck751XiNsdd1ztdcTdMDQBnNrtl6QPaAxsfm+FFKd4zo4erUaduVJMQhWZ+OmKrip6TkUs0pZ2ybt32eIoFDc5nsMLMIhO5SEanm2QFLrCsnEKUl4QbrAMxVaoCdZlOIpQ3MI7Ul60dk/CH8xW1xezOYXs/l6vohns3g2+5uxVKX6X7Hk0pPonJwHtFjPr+LLDtC+TWHfUA2/vjp3IK0z7A9lVGJ1LbQX2jzKPJyM/9G5lFj1hkK5cc46EWTHYXZovnCroqe2Hb2X2zeb7MUPz4S2+dG3LPcxhzOepM79v+p1DI56zYP+TjXmPNLarESgva9wOCW1F8P4acbJC9CHzF2dZm4YPsaSSG1lfibsh0nYu3OttjKEbvD9M1k/RrLa6Z7ZbutkdnlDjGE6bJrTWqsGeNt0j/0uWbkcYsiISh9Pp7LUE8pQGv+EbiL19HF+Ek+38/C4bQ1BEx3b8SS32mwv3mLvtpUdjI3W4VuunLY4xkvxwDi7g27P5d+tEETdw5/90Prw1zoMFG1SG9SPBou4JetQLD+uTrP3cRX2nkKaFubAptDtkFuG4Jar/bTzbO14xZnMuk6RSeiUbnEftG+rsrSO83ZI5Zg+LplCav7sW/HfDj5zjKX1VEgzcvEe6fSachBlvW/ht11yOv4Jn2la5lKbsEAw7roru/EFJ4JYh/0ns574U11vpMfPLm8afv1QoeOrz30Ej9JpueHk3NWgtOdnBXEqc48vgP6lW8DVr2J8l/kO0O6lNDtOksxDo0EE33DXXqWa+yaCDKVCF4C0H5ZJgiWNVE4OO67doQnf36whClvxqGKPKjRYPwunrluJtf2GpmkGdMS/GWDT/APFZgd7
+sidebar_class_name: 'get api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get document by ID'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/documents/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a specific document by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Document ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', description: 'Unique identifier for the document', example: 'doc_12345' },
+                            title: { type: 'string', description: 'Title of the document', example: 'Product Requirements Document' },
+                            content: {
+                                type: 'string',
+                                description: 'Content of the document',
+                                example: 'This document outlines the requirements for our new product...'
+                            },
+                            metadata: {
+                                type: 'object',
+                                description: 'Additional metadata for the document',
+                                example: { author: 'John Doe', department: 'Engineering', version: '1.0' }
+                            },
+                            collectionId: {
+                                type: 'string',
+                                description: 'ID of the collection this document belongs to',
+                                example: 'col_12345'
+                            },
+                            fileType: {
+                                type: 'string',
+                                description: 'Type of the document file',
+                                enum: ['txt', 'pdf', 'doc', 'docx', 'md'],
+                                example: 'pdf'
+                            },
+                            createdAt: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the document was created',
+                                example: '2023-01-01T12:00:00Z'
+                            },
+                            updatedAt: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the document was last updated',
+                                example: '2023-01-02T14:30:00Z'
+                            }
+                        },
+                        title: 'Document'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'The specified ID is invalid',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Document not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

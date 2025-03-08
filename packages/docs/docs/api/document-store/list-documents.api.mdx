@@ -1,0 +1,146 @@
+---
+id: list-documents
+title: 'List all documents'
+description: 'Retrieve a list of all documents'
+sidebar_label: 'List all documents'
+hide_title: true
+hide_table_of_contents: true
+api: eJy1V01v2zgQ/SvEnBV/pb3otMYmXbjo7gaNiwU2CApaGtlsKFIhR04MQ/+9GEq2JNuJjWI3B8eWhm8ehzNPT1tI0SdOFaSsgRi+IjmFaxRSaOVJ2ExIrUVqkzJHQx4isAU6yeGzFGLgqJvOXZJLD/EDtCseI/CYlE7RBuKHLSxQOnTTklYQPzxWjxEU0skcCZ0PAYqJPJfoNhCBkTlCDInVGpMmawQOn0vlMIU4k9pjBD5ZYS4h3gJtCl7gySmzhCo62OAnpQlduyGx2IgWXMxuoIpOU9AqV3RRbmUIl+iAc2ey1ATxZHTE5E/5qvIyF6bMF+i40i0pssIhlc68ycZmmcdfpnPM5q/TLPyTKoDPyKEvrPHoGXgyGvG/PsJ9mSTofVZqsW8RiCCxhtAQx8ui0CoJN4Y/PC/aHrO1ix+Y8MYKxzCk6pRtP7Wh0jnJJVGEuT8PodLj/jgswzejnksUKkVDKlPoRGadoBXuywIR4KvMC80oqU2+jyfXHz5yo5EivnguxZzDuNBvot45m5YJia/10daHsRsyztSp6fu5fq8D3802Xym/vyNsSVoZ9CHedQlwIWzphMEXUdQMB4MB08mRZCrp5Cn2+UzTVPFXqcVu0bsF3oIsaWUdxPDZroy4sRgwC+koxMZwa5bKIDbbX6PzdarxYARVqFVHOc4WbHazq1VHFKhXoQVqa5Y8Hb0yJla3rZApjfOQ6Gw3bIqjZhC8nMFNmbOW0mto5jTj1TapP18hgjxldW05cAhv2aEkTKcnGySzLpdcuFQSXpHK8USH5uhJ5oV4WaHpU3uRXjT4ve1PRpPrq9H4ajSejyfxaBSPRv8yl7JI/1cuWnoSTZLThCbz8Yf4uiHUjim0A8UXLUn9hmb26HDcKcnmvdZPiPMgXzhOlB7T0PyFXCpTy2UV7YT9PMrfIfA0TPiL4OMpnZ4ZQscTiM5Z998pdGLTC/r9lpOKENs9LWXWUqv0OysOeqpVxXu5vBhyF96XtlrD0NfN0mSpXQFJpU8+Nd6UrFAwsVvZk6lMoWY7VDdXBMr7Evdir7zYP6arbg8G6tCcVo60sgyyDA/2QrJDgmHXe3l0651NKp2GGFZEhY+HQ1moAa1QGv+CbiDVcD0+2krzXGFJq4GCu+jjeOI2Wl5dgndfx+7BOk7vnpum7ouu39sXm9NB41X4dx0EUfPl004YPv8zD/OpTGbD8oPhFfdkHYrp3ez44O5mYS5yaWqarbFRtZBMw+ams1ZRPKMdPkYGo2ZIZBKGpHFg+9X3ZVFYx0fWL2W3fNwtuVR829fhv/Vu8x4L6ymXppPiC1vwQ//d2+W2nd5LvHtTfcJXGhZaqqA4gfW26bcD576ynvjidruQHr85XVV8uTaj3IWp8nKhO/bzTXrnnfcb/J5wc/wGsJY6DFho4ctJXGa63yWyew/4RQbvGe138+4df5v4kX84xZnDu1QEK5QpunAy9appkmDRXXUk8Yyyl54/bucQBdPVGdaD4QzoOwtuNh3s7baOmNsnNFUFO+rEv6F6rKrqJ9tb+9Y=
+sidebar_class_name: 'get api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'List all documents'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/documents'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a list of all documents
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[
+        {
+            in: 'query',
+            name: 'collectionId',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Filter documents by collection ID'
+        },
+        {
+            in: 'query',
+            name: 'limit',
+            required: false,
+            schema: { type: 'integer', default: 20 },
+            description: 'Maximum number of documents to return'
+        },
+        {
+            in: 'query',
+            name: 'offset',
+            required: false,
+            schema: { type: 'integer', default: 0 },
+            description: 'Number of documents to skip'
+        }
+    ]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            documents: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string', description: 'Unique identifier for the document', example: 'doc_12345' },
+                                        title: {
+                                            type: 'string',
+                                            description: 'Title of the document',
+                                            example: 'Product Requirements Document'
+                                        },
+                                        content: {
+                                            type: 'string',
+                                            description: 'Content of the document',
+                                            example: 'This document outlines the requirements for our new product...'
+                                        },
+                                        metadata: {
+                                            type: 'object',
+                                            description: 'Additional metadata for the document',
+                                            example: { author: 'John Doe', department: 'Engineering', version: '1.0' }
+                                        },
+                                        collectionId: {
+                                            type: 'string',
+                                            description: 'ID of the collection this document belongs to',
+                                            example: 'col_12345'
+                                        },
+                                        fileType: {
+                                            type: 'string',
+                                            description: 'Type of the document file',
+                                            enum: ['txt', 'pdf', 'doc', 'docx', 'md'],
+                                            example: 'pdf'
+                                        },
+                                        createdAt: {
+                                            type: 'string',
+                                            format: 'date-time',
+                                            description: 'Timestamp when the document was created',
+                                            example: '2023-01-01T12:00:00Z'
+                                        },
+                                        updatedAt: {
+                                            type: 'string',
+                                            format: 'date-time',
+                                            description: 'Timestamp when the document was last updated',
+                                            example: '2023-01-02T14:30:00Z'
+                                        }
+                                    },
+                                    title: 'Document'
+                                }
+                            },
+                            total: { type: 'integer', description: 'Total number of documents' },
+                            limit: { type: 'integer', description: 'Limit used for pagination' },
+                            offset: { type: 'integer', description: 'Offset used for pagination' }
+                        }
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

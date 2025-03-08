@@ -1,0 +1,187 @@
+---
+id: update-document
+title: 'Update document details'
+description: 'Update the details of an existing document'
+sidebar_label: 'Update document details'
+hide_title: true
+hide_table_of_contents: true
+api: eJztWE1v2zgQ/SvEnHYBxV9JLzqtd5MF3FPQOFhgA6OgxbHFViJVkkpiCPrviyElWbIdN0W7QA65JDI5M3zzODMcsgKBNjGycFIriOG+ENwhcykygY7LzDK9YVwxfJbWSbVlQidljspBBLpAw0lxISCG0qte76cd31qIH6DVsLCKwGJSGul2ED9UsEZu0MxLl0L8sKpXERTc8BwdGusFJGEquEshAsVzhBikgAgMfiulQQGxMyVGYJMUcw5xBW5XkJR1Rqot1NGBfy08trgGWo8MoXV/arEj7UQrR+DjCnhRZDLx7o2/WFKujpfR6y+YkK+FITKcROtnpcvwGM0hmCWJEb+e7j1x+MzzggzArdGiTBz7FPz1LLKO4jrqAz6/1l9B8Oxqy1Tabobp0mVSofXypg9gow3TpWEKn1gREI5GI4KTo+OCu5MUDfHMhZD0yTPWKnm7L4GrgJcu1QZi+KhTxa41epsFN87LxnCjtlIhNu4/orFhqeloArXnKsswaeP1e4Qtrluu9nrMDRhaY6bV1jKnBzQmOvs8nV1efSBGNjLDpV/ou9GwK46CgZE6GVdlTqnknn2wiQ1p6yT8fYYIckHJtcdAIuTzPlEemqjcx8wqagO1S4uFKkoH9VCTUswP2EIrGyJ8NpnQvxeSK5QCwWyZJGjtpsyyHUS/KrvkK3bvXslvJTIpUDm5kWjOBhexuN+y9+x9z943kL0RJAYpjeYnA2SjTc6JOEq1CydzPBGhOVrH84I9paiG0J64ZY39gfuzyezyYjK9mEyX01k8mcSTyb+EpUnp/w1Lxm1XN04Dmi2nV/FlA6g+rl1UtuoIrk5VpmWKzBaYUCkQbHHNpGVSPfJMCqYNW2uxo6FcWhs8+kWlKtHiFbFzY4w2zMv2PW8Afm56lJCh1vLtq0224sMyEeoB2kB8s0polXzH90Ppj36hVnOQ8huJGTWG7bkjrS2xK5zSsu6Iqfv76aF3m3l15phR2rGNLpV437C3smEfTmXfQjk03drvm/U2Nisc+KkmI9T1ReGiFcO4u7CNKylqoEubeWyvZKXJIIbUucLG4zEv5MilyJV9QjPicvw4PfKnaYPoBA6GoI4O7VjHt1JtL15j7y7IdsZ6t8o7ipwQHP27Zcc4LQfNdZF+ByGImo+/23Ps4z9Lf8ZQRH7aXxFv9vS3fJ7v8Xqh/rP92bA9+7l26rCb6jU9/Z6n7UOk2ui+z10BvnPaIJvfLo5j+HbhHcm5CpvVxRST4fSf+y2eL/aUWLJ2CHY0aUjkia8XzStAp31XFoU2xPQwoPpBRImTc0nTNoj/MZimnS60dTlXvSWap5AO3j4LB672Hg1+7PWkCUmHz25cZFwq32aRE1WTif2nkwhi6bvEVFtHU1W15hbvTVbXNPytREOPKqsIHrmRfE079VCBkJa+BcQbnlk8A/63JoTF76z/SvIC0GaQK7rYPfLM1x6I4CvuwiNNvaojSJELNB5ImGguMhc+wPaKR6cAVYigMU8SLNxZ2VWvkt3eLymdm/ec3J8QYPgTPRrxp4BRe+99lfBjFWRcbUtf+iGYpJDgw9pxUCu8UydZqKogsdRfUdV1R4qj38RLXf8Hivi38Q==
+sidebar_class_name: 'put api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Update document details'}></Heading>
+
+<MethodEndpoint method={'put'} path={'/documents/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Update the details of an existing document
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Document ID' }]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        title: { type: 'string', description: 'Title of the document', example: 'Product Requirements Document' },
+                        content: {
+                            type: 'string',
+                            description: 'Content of the document',
+                            example: 'This document outlines the requirements for our new product...'
+                        },
+                        metadata: {
+                            type: 'object',
+                            description: 'Additional metadata for the document',
+                            example: { author: 'John Doe', department: 'Engineering', version: '1.0' }
+                        },
+                        collectionId: {
+                            type: 'string',
+                            description: 'ID of the collection this document belongs to',
+                            example: 'col_12345'
+                        },
+                        fileType: {
+                            type: 'string',
+                            description: 'Type of the document file',
+                            enum: ['txt', 'pdf', 'doc', 'docx', 'md'],
+                            example: 'pdf'
+                        }
+                    },
+                    required: ['title', 'content'],
+                    title: 'DocumentInput'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Document updated successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', description: 'Unique identifier for the document', example: 'doc_12345' },
+                            title: { type: 'string', description: 'Title of the document', example: 'Product Requirements Document' },
+                            content: {
+                                type: 'string',
+                                description: 'Content of the document',
+                                example: 'This document outlines the requirements for our new product...'
+                            },
+                            metadata: {
+                                type: 'object',
+                                description: 'Additional metadata for the document',
+                                example: { author: 'John Doe', department: 'Engineering', version: '1.0' }
+                            },
+                            collectionId: {
+                                type: 'string',
+                                description: 'ID of the collection this document belongs to',
+                                example: 'col_12345'
+                            },
+                            fileType: {
+                                type: 'string',
+                                description: 'Type of the document file',
+                                enum: ['txt', 'pdf', 'doc', 'docx', 'md'],
+                                example: 'pdf'
+                            },
+                            createdAt: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the document was created',
+                                example: '2023-01-01T12:00:00Z'
+                            },
+                            updatedAt: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the document was last updated',
+                                example: '2023-01-02T14:30:00Z'
+                            }
+                        },
+                        title: 'Document'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'The specified ID is invalid or body is missing',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Document not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'title', issue: 'Title is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>
