@@ -17,6 +17,7 @@
         "AWS_S3_BUCKET",
         "AWS_S3_REGION",
         "AWS_SECRET_ACCESS_KEY",
+        "CHATFLOW_DOMAIN_OVERRIDE",
         "DATABASE_PORT",
         "DATABASE_URL",
         "DATABASE_URL",

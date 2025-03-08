@@ -112,9 +112,18 @@ const getCachedSession = cache(
             // console.log('FlagsmithState', flagsmithState);
             session.flagsmithState = flagsmithState
         }
-        if (session?.user?.chatflowDomain) {
+        
+        // Check for CHATFLOW_DOMAIN_OVERRIDE to override the chatflowDomain
+        if (process.env.CHATFLOW_DOMAIN_OVERRIDE) {
+            // Override chatflowDomain with the environment variable
+            if (session?.user) {
+                session.user.chatflowDomain = process.env.CHATFLOW_DOMAIN_OVERRIDE;
+            }
+        } else if (session?.user?.chatflowDomain) {
+            // Apply existing transformation if no override
             session.user.chatflowDomain = session.user.chatflowDomain?.replace('8080', '4000')
         }
+        
         return session as { user: User; flagsmithState: any; accessToken: string }
     }
 )

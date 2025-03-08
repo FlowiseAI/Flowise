@@ -16,7 +16,9 @@ export const useAuth0Setup = (apiHost, accessToken) => {
 
     useEffect(() => {
         const setBaseUrlEffect = () => {
-            if (user && user.chatflowDomain) {
+            if (process.env.CHATFLOW_DOMAIN_OVERRIDE) {
+                setBaseURL(process.env.CHATFLOW_DOMAIN_OVERRIDE)
+            } else if (user && user.chatflowDomain) {
                 setBaseURL(user.chatflowDomain)
             } else if (apiHost) {
                 setBaseURL(apiHost)
