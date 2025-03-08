@@ -1,0 +1,176 @@
+---
+id: create-chat-message
+title: 'Create a new chat message'
+description: 'Create a new chat message in a conversation'
+sidebar_label: 'Create a new chat message'
+hide_title: true
+hide_table_of_contents: true
+api: eJztWG1v20YM/isHfj4njpPuRV+2rO0wDxsWNOkGLDACRqKta6U75Y6KYxj67wNPsi3LWZptHTAM+eSzxOM7H5JaQ0Yh9aZi4ywk8NoTMilUlpYqzZFVSSHggpSxClXq7D35gJFag6vIx/M0gwTSePd1jvxzewc0MC4CJNcgrEYdqwAzDYHS2hteQXK9hltCT/685hyS61kz0+DprqbA37lsBckaUmeZLMsRq6owaZR6/CGI0msIaU4lyolXFUEC7vYDpQwaKi86sqHQsdmqf2Oy3oXA3tgF6IE7pm+UmyvOac9yxbkJW8fcUuHsIih2oIEesKwK4SgXbk4mp2evvvjyq6+h0X0jnpZ61coT4o34cuvRnYQfqCicVrlbqhStmqqcikqtXK3YZbj6RmR6J6TPESiUA2kqkM3Ii1BblxLGOsS/GIIJjFY8HFaBqZSQ7jSLZI0GZMY0L8ly6CmB3uPqQIefTIjW9u4oDMGlBpkytTScDzxhmMrwaePOtwzV9I1otdXzWhTsxWjWaCiJMUN+NJkGfLPMyBELtbmk5s4PlMQt1UUvFdnX1FNkDcHVPhVhS7oFDWlhyPINm5ICY1lBApPx5HR0Mh5NXl2dnCWn42Q8/h2apmlrxXjKYp0NMnyXdV0uzDSw4RilXqVObVXzkJsoGR+EytnQVtBkPJafAWj0caJFgUyFOk0phHldFCvQn6uCn1O07625q0mZjCybuSG/DUsf0PZKqQyLg1p9QYoXpPg/IYXuGnR2g49m1tz5Ut5AhkwjYXgY/Y0UtczJ7iXAEsOm9PdS73FlNNRV9q/qUmBg1Ql5hkIDGN0g59NYuufRPZMeR1kB2EbD2WMYOrX3WJhMGUFiVXl3bzLKPh9wpi57tLx3jjGtBjfd6HVD3rtYm5sUffJ2BIb2ZvR/bTFNqWK8LUgrN2eyKqtJsVOlCcHYhUK1cbmq0GNJTP5IBMZ/T4sbxqbRHfHfsPCghWYS2o3VvVC+7ehjECeTwyD+Kuxb4KcHsb4dk19C+B8MYYvguZPNpXIhuhtlAYHj/rIifYu8KBo3ldoXkEDOXIXk+Bgrc8Q5oQ1L8kdoju9PDnDqwrusTmNOtIyg0UM+gXFh7GL0HH6XLe2WWW+XupREanOlv1Ft/SnixJ5IBklHBLo7fL8B3R9/u4oulQR9t1vE3u6a0MF4NBxiekn/6eljM3xsh4b+MHDQevc77z9oh8bOXfROD6lVB9Xq/GJ62McvprFvl2jbGPTnyQAaxCct6cnR+GjceQHTWPoWo9PPY3DPp+qyrirnY+PYS4Z+Akjul2jkdWjJv917LWZI8pZoeyL+dIkfWtRbrP/i5t9lFNMDH1cFGht7utix7spof+eXsOVSZck1rNe3GOi9L5pGHt/V5OUzwEzDPXojaBO/AmjICWWolLr7SCvRsdV2dCXShbyo45g4BFWpsPbGeUSwJ2lnPSC4+OXySuqh++xQRsQFj0vJUVxCAvGrh9yOZRafraFAu6gjvkLLU+KC+8U3KLZo1WbMtauehut1S3HlPpJtGtCdKSz/oZk1TfMH3CkVyQ==
+sidebar_class_name: 'post api-method'
+info_path: docs/api/chat-message/chat-message-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new chat message'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/chat-message'} context={'endpoint'}></MethodEndpoint>
+
+Create a new chat message in a conversation
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        conversation_id: {
+                            type: 'string',
+                            description: 'ID of the conversation this message belongs to',
+                            example: 'conv_123456789'
+                        },
+                        content: { type: 'string', description: 'The content of the message', example: 'Hello, how can I help you today?' },
+                        role: {
+                            type: 'string',
+                            description: 'The role of the message sender',
+                            enum: ['user', 'assistant', 'system'],
+                            example: 'user'
+                        },
+                        attachments: {
+                            type: 'array',
+                            description: 'List of attachments associated with the message',
+                            items: { type: 'string', description: 'Attachment ID' },
+                            example: ['att_123456789']
+                        },
+                        metadata: {
+                            type: 'object',
+                            description: 'Additional metadata for the message',
+                            additionalProperties: true,
+                            example: { source: 'web', client_timestamp: '2023-10-25T14:30:00Z' }
+                        }
+                    },
+                    required: ['conversation_id', 'content', 'role'],
+                    title: 'ChatMessageInput'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Chat message created successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', description: 'Unique identifier for the chat message', example: 'msg_123456789' },
+                            conversation_id: {
+                                type: 'string',
+                                description: 'ID of the conversation this message belongs to',
+                                example: 'conv_123456789'
+                            },
+                            content: {
+                                type: 'string',
+                                description: 'The content of the message',
+                                example: 'Hello, how can I help you today?'
+                            },
+                            role: {
+                                type: 'string',
+                                description: 'The role of the message sender',
+                                enum: ['user', 'assistant', 'system'],
+                                example: 'user'
+                            },
+                            attachments: {
+                                type: 'array',
+                                description: 'List of attachments associated with the message',
+                                items: { type: 'string', description: 'Attachment ID' },
+                                example: ['att_123456789']
+                            },
+                            metadata: {
+                                type: 'object',
+                                description: 'Additional metadata for the message',
+                                additionalProperties: true,
+                                example: { source: 'web', client_timestamp: '2023-10-25T14:30:00Z' }
+                            },
+                            created_at: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the message was created',
+                                example: '2023-10-25T14:30:00Z'
+                            },
+                            updated_at: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the message was last updated',
+                                example: '2023-10-25T14:30:00Z'
+                            }
+                        },
+                        required: ['id', 'conversation_id', 'content', 'role', 'created_at', 'updated_at'],
+                        title: 'ChatMessage'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid input provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'invalid_request_error' },
+                            message: {
+                                type: 'string',
+                                example: 'The request was unacceptable, often due to missing a required parameter.'
+                            },
+                            param: { type: 'string', example: 'conversation_id' },
+                            type: { type: 'string', example: 'invalid_request_error' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '422': {
+            description: 'Validation exception',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'invalid_request_error' },
+                            message: {
+                                type: 'string',
+                                example: 'The request was unacceptable, often due to missing a required parameter.'
+                            },
+                            param: { type: 'string', example: 'conversation_id' },
+                            type: { type: 'string', example: 'invalid_request_error' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

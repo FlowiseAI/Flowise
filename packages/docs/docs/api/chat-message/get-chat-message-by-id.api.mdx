@@ -1,0 +1,138 @@
+---
+id: get-chat-message-by-id
+title: 'Get chat message by ID'
+description: 'Retrieve a specific chat message by ID'
+sidebar_label: 'Get chat message by ID'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV9tu40YM/ZUBn1pAiZ3L9qKX1t1sty5aINhkUaBBENASbc2uNKMdUvYahv69oCTbku2mQYsCfehTNBmS5/A69AZS4iTYUqx3EMM7kmBpSQYNl5TYuU1MkqGYgphxQWa2NtMbiMCXFFCVpinEsCB5naH82gr9sJ6mEIHggiF+ANU/6/QZHiNgSqpgZQ3xwwZmhIHCpJIM4ofH+jGCEgMWJBS4EbDKq0TJIAKHBUEMVs0H+lTZQCnEEiqKgJOMCoR4A7IuVYolWLeAOjrwUZmajqo6o5iBuPSOiVX/cjzWP0OtuypJiHle5WbnO0SQeCfkROWxLHObNBejD6xKm2NSfvaBEoEIyqBmxLaQNj0mfsj7vbOfKjI2JSd2bimYuQ9GMhpkCCKgz1iUuVoqePF0cXl1/eqrr7/5ViOReLekwA3Jp5eATm+Mn7cgPVUjmeV9TVDu3YKN+AG4Khyhb4P1POp9i6fCW/hT7v1Eee4jk/mVSdCZqckoL83aV0Z8iuvvFDN4FX0JoEoeoBkml1JQUFcVWswVN0dktizoNJO8ZqFCC3vPrBGrI0ARTLKCnHCPBIaA6yMOv1huvO3pGGT2iUWh1KysZAeRsEIF/7Vzk53Bptx7PB+UYC9Hj3UEBQmmKCeL9sBumlr9xNxslXYluSeJO6nbXsm3PbsjsgH2VUgUbEUz7avckpMnsQWxYFFCDJfjy6uzi/HZ5av7i+v4ahyPx79DrWUVSCP0hCcra+5DoTeQotCZGjzO/hbFrDJygwJYIZvO/qD0TpOJoCrTf5VLjiymA3kBobo/Jx/awXk4A/Z92XXLIKIDlx4jECsNXm/eQ10r0PWpsamN1b0klJrpjbFsrFtiPgD+h9Mz8enJHt9Hp4N80mAQyxOF4JsG3dbps9rNdGg1myRUDpOESsFZTpHxcyFn0oqMeFNYZusWBs027mb3np0rYHN6Hu4wQXXUCf8NDw8KoInU3utePt908m0mr48z+bq/BjgvZu4r938S/6NJbAd55rvtTKOtK1QMo/46NtrYtNYnjMJyu29VIYcYMpGS49EIS3suGaHjFYVztKPlxdHIug0+rZJmL2gNQR0d2mHBhXWLs5fYu2tld8Z6K+OdFlNbL/3FcRdThYNuF9RzKwRR9/Hjdv7+/Nt9E1br5r5R70213W44uZ0ev3m30+aNK9C1JPu7F0MEGsdW9OJ8fD7u+gOTpj+6/XXSeD+ZmruqLH1ohuwgWv0IaYEUaPWaW/HvB9fqRulZCnQ9iLckpxf3gTubffO+fPXvQi30WUZljtY1757y33RFNtz5IYLYplqmmWfR281mhkzvQ17X+u9PFQX9MfAYwRKD1YZsKjG1rN8pxHPMmZ7h/sW7rj2+NIfb/Z/w3W5iTvewJeaVniCCj7Ruf2DUugtlhLr+KZn2YtKMjJ7K0cTTat113ts397oBDWv0oCYb6yfpbDatxL3/SK6ud+xEz0qwrv8Augi3Rg==
+sidebar_class_name: 'get api-method'
+info_path: docs/api/chat-message/chat-message-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get chat message by ID'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/chat-message/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a specific chat message by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chat Message ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', description: 'Unique identifier for the chat message', example: 'msg_123456789' },
+                            conversation_id: {
+                                type: 'string',
+                                description: 'ID of the conversation this message belongs to',
+                                example: 'conv_123456789'
+                            },
+                            content: {
+                                type: 'string',
+                                description: 'The content of the message',
+                                example: 'Hello, how can I help you today?'
+                            },
+                            role: {
+                                type: 'string',
+                                description: 'The role of the message sender',
+                                enum: ['user', 'assistant', 'system'],
+                                example: 'user'
+                            },
+                            attachments: {
+                                type: 'array',
+                                description: 'List of attachments associated with the message',
+                                items: { type: 'string', description: 'Attachment ID' },
+                                example: ['att_123456789']
+                            },
+                            metadata: {
+                                type: 'object',
+                                description: 'Additional metadata for the message',
+                                additionalProperties: true,
+                                example: { source: 'web', client_timestamp: '2023-10-25T14:30:00Z' }
+                            },
+                            created_at: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the message was created',
+                                example: '2023-10-25T14:30:00Z'
+                            },
+                            updated_at: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Timestamp when the message was last updated',
+                                example: '2023-10-25T14:30:00Z'
+                            }
+                        },
+                        required: ['id', 'conversation_id', 'content', 'role', 'created_at', 'updated_at'],
+                        title: 'ChatMessage'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'The specified ID is invalid',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'invalid_request_error' },
+                            message: {
+                                type: 'string',
+                                example: 'The request was unacceptable, often due to missing a required parameter.'
+                            },
+                            param: { type: 'string', example: 'conversation_id' },
+                            type: { type: 'string', example: 'invalid_request_error' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Chat message not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', example: 'invalid_request_error' },
+                            message: {
+                                type: 'string',
+                                example: 'The request was unacceptable, often due to missing a required parameter.'
+                            },
+                            param: { type: 'string', example: 'conversation_id' },
+                            type: { type: 'string', example: 'invalid_request_error' }
+                        },
+                        required: ['code', 'message'],
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

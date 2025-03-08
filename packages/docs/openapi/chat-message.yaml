@@ -1,0 +1,311 @@
+openapi: 3.0.0
+info:
+    title: Chat Message API
+    description: API for managing chat messages
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+tags:
+    - name: chat-messages
+      description: Operations for managing chat messages
+paths:
+    /chat-message:
+        post:
+            summary: Create a new chat message
+            description: Create a new chat message in a conversation
+            operationId: createChatMessage
+            tags:
+                - chat-messages
+            security:
+                - bearerAuth: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatMessageInput'
+                required: true
+            responses:
+                '200':
+                    description: Chat message created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatMessage'
+                '400':
+                    description: Invalid input provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '422':
+                    description: Validation exception
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        get:
+            summary: List chat messages
+            description: Retrieve a list of chat messages for a conversation
+            operationId: listChatMessages
+            tags:
+                - chat-messages
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: query
+                  name: conversation_id
+                  required: true
+                  schema:
+                      type: string
+                  description: Conversation ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/ChatMessage'
+                '400':
+                    description: Invalid input provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /chat-message/{id}:
+        get:
+            summary: Get chat message by ID
+            description: Retrieve a specific chat message by ID
+            operationId: getChatMessageById
+            tags:
+                - chat-messages
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chat Message ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatMessage'
+                '400':
+                    description: The specified ID is invalid
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Chat message not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        put:
+            summary: Update a chat message
+            description: Update an existing chat message
+            operationId: updateChatMessage
+            tags:
+                - chat-messages
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chat Message ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatMessageUpdate'
+                required: true
+            responses:
+                '200':
+                    description: Chat message updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatMessage'
+                '400':
+                    description: Invalid input provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Chat message not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        delete:
+            summary: Delete a chat message
+            description: Delete an existing chat message
+            operationId: deleteChatMessage
+            tags:
+                - chat-messages
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chat Message ID
+            responses:
+                '204':
+                    description: Chat message deleted successfully
+                '400':
+                    description: The specified ID is invalid
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Chat message not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+    schemas:
+        ChatMessageInput:
+            type: object
+            properties:
+                conversation_id:
+                    type: string
+                    description: ID of the conversation this message belongs to
+                    example: 'conv_123456789'
+                content:
+                    type: string
+                    description: The content of the message
+                    example: 'Hello, how can I help you today?'
+                role:
+                    type: string
+                    description: The role of the message sender
+                    enum: [user, assistant, system]
+                    example: 'user'
+                attachments:
+                    type: array
+                    description: List of attachments associated with the message
+                    items:
+                        type: string
+                        description: Attachment ID
+                    example: ['att_123456789']
+                metadata:
+                    type: object
+                    description: Additional metadata for the message
+                    additionalProperties: true
+                    example: { 'source': 'web', 'client_timestamp': '2023-10-25T14:30:00Z' }
+            required:
+                - conversation_id
+                - content
+                - role
+        ChatMessageUpdate:
+            type: object
+            properties:
+                content:
+                    type: string
+                    description: The updated content of the message
+                    example: 'Hello, how can I assist you today?'
+                metadata:
+                    type: object
+                    description: Updated metadata for the message
+                    additionalProperties: true
+                    example: { 'edited': true, 'edit_timestamp': '2023-10-25T15:30:00Z' }
+        ChatMessage:
+            type: object
+            properties:
+                id:
+                    type: string
+                    description: Unique identifier for the chat message
+                    example: 'msg_123456789'
+                conversation_id:
+                    type: string
+                    description: ID of the conversation this message belongs to
+                    example: 'conv_123456789'
+                content:
+                    type: string
+                    description: The content of the message
+                    example: 'Hello, how can I help you today?'
+                role:
+                    type: string
+                    description: The role of the message sender
+                    enum: [user, assistant, system]
+                    example: 'user'
+                attachments:
+                    type: array
+                    description: List of attachments associated with the message
+                    items:
+                        type: string
+                        description: Attachment ID
+                    example: ['att_123456789']
+                metadata:
+                    type: object
+                    description: Additional metadata for the message
+                    additionalProperties: true
+                    example: { 'source': 'web', 'client_timestamp': '2023-10-25T14:30:00Z' }
+                created_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the message was created
+                    example: '2023-10-25T14:30:00Z'
+                updated_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the message was last updated
+                    example: '2023-10-25T14:30:00Z'
+            required:
+                - id
+                - conversation_id
+                - content
+                - role
+                - created_at
+                - updated_at
+        Error:
+            type: object
+            properties:
+                code:
+                    type: string
+                    example: 'invalid_request_error'
+                message:
+                    type: string
+                    example: 'The request was unacceptable, often due to missing a required parameter.'
+                param:
+                    type: string
+                    example: 'conversation_id'
+                type:
+                    type: string
+                    example: 'invalid_request_error'
+            required:
+                - code
+                - message
