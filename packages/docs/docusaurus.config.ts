@@ -75,7 +75,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -86,7 +108,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -97,7 +141,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -108,7 +174,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -119,7 +207,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -130,7 +240,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -141,7 +273,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -152,7 +306,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -163,7 +339,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -174,7 +372,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -185,7 +405,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -196,7 +438,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
@@ -207,7 +471,29 @@ const config: Config = {
                             groupPathsBy: 'tag'
                         },
                         markdownGenerators: {
-                            createInfoPageMD: () => '',
+                            createInfoPageMD: (pageData) => {
+                                // Extract API name from the ID
+                                const apiName = pageData.id.split('/').pop()?.replace('-api', '') || ''
+                                const title = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                                // Generate a simple introduction
+                                let markdown = `# ${title} API\n\n`
+                                markdown += `This section contains the API endpoints for the ${apiName} service.\n\n`
+
+                                markdown += `## Overview\n\n`
+                                markdown += `The ${title} API provides endpoints for managing ${apiName} resources.\n\n`
+
+                                markdown += `## Authentication\n\n`
+                                markdown += `All API requests require authentication using an API key or OAuth token.\n\n`
+
+                                markdown += `## Rate Limiting\n\n`
+                                markdown += `API calls are subject to rate limiting to ensure fair usage and system stability.\n\n`
+
+                                markdown += `## Endpoints\n\n`
+                                markdown += `Explore the available endpoints in the sidebar to learn more about specific operations.\n\n`
+
+                                return markdown
+                            },
                             createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options
