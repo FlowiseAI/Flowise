@@ -33,6 +33,7 @@ export const authenticationHandlerMiddleware =
         // First, run the JWT middleware
         jwtMiddleware(req, res, async (jwtError?: any) => {
             if (jwtError) {
+                console.log('JWT Error', jwtError)
                 return next(jwtError) // Handle JWT error
             }
             // Proceed with user synchronization if user is authenticated
