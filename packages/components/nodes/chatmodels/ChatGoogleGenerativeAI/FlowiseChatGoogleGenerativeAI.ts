@@ -209,6 +209,12 @@ class LangchainChatGoogleGenerativeAI
         }
     }
 
+    async getNumTokens(prompt: BaseMessage[]) {
+        const contents = convertBaseMessagesToContent(prompt, this._isMultimodalModel)
+        const { totalTokens } = await this.client.countTokens({ contents })
+        return totalTokens
+    }
+
     async _generateNonStreaming(
         prompt: Content[],
         options: this['ParsedCallOptions'],
