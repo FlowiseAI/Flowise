@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'leads',
-            link: {
-                type: 'doc',
-                id: 'api/leads/leads'
-            },
             items: [
                 {
                     type: 'doc',

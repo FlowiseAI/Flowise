@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'prediction',
-            link: {
-                type: 'doc',
-                id: 'api/prediction/prediction'
-            },
             items: [
                 {
                     type: 'doc',

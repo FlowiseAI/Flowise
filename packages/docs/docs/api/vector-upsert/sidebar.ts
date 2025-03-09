@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'vector',
-            link: {
-                type: 'doc',
-                id: 'api/vector-upsert/vector'
-            },
             items: [
                 {
                     type: 'doc',

@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'assistants',
-            link: {
-                type: 'doc',
-                id: 'api/assistants/assistants'
-            },
             items: [
                 {
                     type: 'doc',

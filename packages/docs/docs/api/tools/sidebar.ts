@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'tools',
-            link: {
-                type: 'doc',
-                id: 'api/tools/tools'
-            },
             items: [
                 {
                     type: 'doc',

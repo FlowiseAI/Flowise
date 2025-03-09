@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'chatmessage',
-            link: {
-                type: 'doc',
-                id: 'api/chat-message/chatmessage'
-            },
             items: [
                 {
                     type: 'doc',

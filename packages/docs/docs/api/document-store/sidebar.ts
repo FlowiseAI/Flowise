@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'document-store',
-            link: {
-                type: 'doc',
-                id: 'api/document-store/document-store'
-            },
             items: [
                 {
                     type: 'doc',

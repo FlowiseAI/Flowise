@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'attachments',
-            link: {
-                type: 'doc',
-                id: 'api/attachments/attachments'
-            },
             items: [
                 {
                     type: 'doc',

@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'variables',
-            link: {
-                type: 'doc',
-                id: 'api/variables/variables'
-            },
             items: [
                 {
                     type: 'doc',

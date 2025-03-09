@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'feedback',
-            link: {
-                type: 'doc',
-                id: 'api/feedback/feedback'
-            },
             items: [
                 {
                     type: 'doc',

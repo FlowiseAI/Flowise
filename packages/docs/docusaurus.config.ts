@@ -72,104 +72,143 @@ const config: Config = {
                         specPath: 'openapi/assistants.yaml',
                         outputDir: 'docs/api/assistants',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     attachments: {
                         specPath: 'openapi/attachments.yaml',
                         outputDir: 'docs/api/attachments',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     chatMessage: {
                         specPath: 'openapi/chat-message.yaml',
                         outputDir: 'docs/api/chat-message',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     chatflows: {
                         specPath: 'openapi/chatflows.yaml',
                         outputDir: 'docs/api/chatflows',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     documentStore: {
                         specPath: 'openapi/document-store.yaml',
                         outputDir: 'docs/api/document-store',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     feedback: {
                         specPath: 'openapi/feedback.yaml',
                         outputDir: 'docs/api/feedback',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     leads: {
                         specPath: 'openapi/leads.yaml',
                         outputDir: 'docs/api/leads',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     prediction: {
                         specPath: 'openapi/prediction.yaml',
                         outputDir: 'docs/api/prediction',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     tools: {
                         specPath: 'openapi/tools.yaml',
                         outputDir: 'docs/api/tools',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     ping: {
                         specPath: 'openapi/ping.yaml',
                         outputDir: 'docs/api/ping',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     upsertHistory: {
                         specPath: 'openapi/upsert-history.yaml',
                         outputDir: 'docs/api/upsert-history',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     variables: {
                         specPath: 'openapi/variables.yaml',
                         outputDir: 'docs/api/variables',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options,
                     vectorUpsert: {
                         specPath: 'openapi/vector-upsert.yaml',
                         outputDir: 'docs/api/vector-upsert',
                         sidebarOptions: {
-                            groupPathsBy: 'tag',
-                            categoryLinkSource: 'tag'
+                            groupPathsBy: 'tag'
+                        },
+                        markdownGenerators: {
+                            createInfoPageMD: () => '',
+                            createTagPageMD: () => ''
                         }
                     } satisfies OpenApiPlugin.Options
                 }

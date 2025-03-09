@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'upsert-history',
-            link: {
-                type: 'doc',
-                id: 'api/upsert-history/upsert-history'
-            },
             items: [
                 {
                     type: 'doc',

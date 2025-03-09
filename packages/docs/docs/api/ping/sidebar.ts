@@ -9,10 +9,6 @@ const sidebar: SidebarsConfig = {
         {
             type: 'category',
             label: 'ping',
-            link: {
-                type: 'doc',
-                id: 'api/ping/ping'
-            },
             items: [
                 {
                     type: 'doc',
