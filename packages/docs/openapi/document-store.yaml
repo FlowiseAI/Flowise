@@ -12,6 +12,8 @@ servers:
       description: Production server
     - url: https://staging-api.theanswer.ai/v1
       description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: document-store
       description: Operations for managing document stores, collections, and documents
@@ -256,11 +258,11 @@ paths:
                                 storeId:
                                     type: string
                                     description: Document store ID
-                                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                                    example: 603a7b51-ae7c-4b0a-8865-e454ed2f6766
                                 id:
                                     type: string
                                     description: Document loader ID
-                                    example: 'c427e569-b81a-469a-b14c-fa73dd5bae49'
+                                    example: c427e569-b81a-469a-b14c-fa73dd5bae49
                 required: true
             responses:
                 '200':
@@ -459,11 +461,11 @@ paths:
                                 storeId:
                                     type: string
                                     description: Document store ID
-                                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                                    example: 603a7b51-ae7c-4b0a-8865-e454ed2f6766
                                 query:
                                     type: string
                                     description: Query text
-                                    example: 'What is the capital of France?'
+                                    example: What is the capital of France?
                                 topK:
                                     type: integer
                                     description: Number of results to return
@@ -483,7 +485,7 @@ paths:
                                             $ref: '#/components/schemas/Document'
                                     query:
                                         type: string
-                                        example: 'What is the capital of France?'
+                                        example: What is the capital of France?
                 '400':
                     description: Invalid request body
                     content:
@@ -571,7 +573,7 @@ paths:
                                 docId:
                                     type: string
                                     nullable: true
-                                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                                    example: 603a7b51-ae7c-4b0a-8865-e454ed2f6766
                                     description: Document ID to use existing configuration
                                 loader:
                                     type: string
@@ -602,7 +604,8 @@ paths:
                                     type: object
                                     nullable: true
                                     description: Metadata associated with the document
-                                    example: { 'foo': 'bar' }
+                                    example:
+                                        foo: bar
                                 replaceExisting:
                                     type: boolean
                                     nullable: true
@@ -646,7 +649,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
-
     /document-store/refresh/{id}:
         post:
             tags:
@@ -750,6 +752,7 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
     schemas:
         DocumentStore:
             type: object
@@ -758,15 +761,15 @@ components:
                     type: string
                     format: uuid
                     description: Unique identifier for the document store
-                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                    example: 603a7b51-ae7c-4b0a-8865-e454ed2f6766
                 name:
                     type: string
                     description: Name of the document store
-                    example: 'Product Documentation'
+                    example: Product Documentation
                 description:
                     type: string
                     description: Description of the document store
-                    example: 'Store for all product documentation and specifications'
+                    example: Store for all product documentation and specifications
                 loaders:
                     type: string
                     description: Loaders associated with the document store, stored as JSON string
@@ -777,9 +780,16 @@ components:
                     example: '{"chatflows":["flow1","flow2"]}'
                 status:
                     type: string
-                    enum: [EMPTY, SYNC, SYNCING, STALE, NEW, UPSERTING, UPSERTED]
+                    enum:
+                        - EMPTY
+                        - SYNC
+                        - SYNCING
+                        - STALE
+                        - NEW
+                        - UPSERTING
+                        - UPSERTED
                     description: Status of the document store
-                    example: 'SYNC'
+                    example: SYNC
                 vectorStoreConfig:
                     type: string
                     description: Configuration for the vector store, stored as JSON string
@@ -811,18 +821,18 @@ components:
                     type: string
                     format: uuid
                     description: Unique identifier for the document
-                    example: 'doc_12345'
+                    example: doc_12345
                 pageContent:
                     type: string
                     description: Content of the document
-                    example: 'This document outlines the requirements for our new product...'
+                    example: This document outlines the requirements for our new product...
                 metadata:
                     type: object
                     description: Additional metadata for the document
                     example:
-                        source: 'product_requirements.pdf'
+                        source: product_requirements.pdf
                         page: 1
-                        author: 'John Doe'
+                        author: John Doe
         DocumentStoreFileChunk:
             type: object
             properties:
@@ -830,17 +840,17 @@ components:
                     type: string
                     format: uuid
                     description: Unique identifier for the file chunk
-                    example: 'chunk_12345'
+                    example: chunk_12345
                 docId:
                     type: string
                     format: uuid
                     description: Document ID within the store
-                    example: 'doc_12345'
+                    example: doc_12345
                 storeId:
                     type: string
                     format: uuid
                     description: Document store ID
-                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                    example: 603a7b51-ae7c-4b0a-8865-e454ed2f6766
                 chunkNo:
                     type: integer
                     description: Chunk number within the document
@@ -848,7 +858,7 @@ components:
                 pageContent:
                     type: string
                     description: Content of the chunk
-                    example: 'This document outlines the requirements for our new product...'
+                    example: This document outlines the requirements for our new product...
                 metadata:
                     type: string
                     description: Metadata associated with the chunk
@@ -860,28 +870,28 @@ components:
                     type: string
                     format: uuid
                     description: Unique identifier for the document store loader
-                    example: 'loader_12345'
+                    example: loader_12345
                 loaderId:
                     type: string
                     description: ID of the loader
-                    example: 'pdf'
+                    example: pdf
                 loaderName:
                     type: string
                     description: Name of the loader
-                    example: 'PDF Loader'
+                    example: PDF Loader
                 loaderConfig:
                     type: object
                     description: Configuration for the loader
                     example:
-                        source: 'https://example.com/document.pdf'
+                        source: https://example.com/document.pdf
                 splitterId:
                     type: string
                     description: ID of the text splitter
-                    example: 'recursive'
+                    example: recursive
                 splitterName:
                     type: string
                     description: Name of the text splitter
-                    example: 'Recursive Character Text Splitter'
+                    example: Recursive Character Text Splitter
                 splitterConfig:
                     type: object
                     description: Configuration for the text splitter
@@ -904,19 +914,19 @@ components:
                     type: string
                     format: uuid
                     description: Unique identifier for the file
-                    example: 'file_12345'
+                    example: file_12345
                 name:
                     type: string
                     description: Name of the file
-                    example: 'product_requirements.pdf'
+                    example: product_requirements.pdf
                 type:
                     type: string
                     description: Type of the file
-                    example: 'pdf'
+                    example: pdf
                 path:
                     type: string
                     description: Path to the file
-                    example: '/uploads/product_requirements.pdf'
+                    example: /uploads/product_requirements.pdf
                 size:
                     type: integer
                     description: Size of the file in bytes
@@ -924,7 +934,7 @@ components:
                 content:
                     type: string
                     description: Content of the file (base64 encoded)
-                    example: 'base64encodedcontent'
+                    example: base64encodedcontent
             required:
                 - name
                 - type
@@ -961,17 +971,17 @@ components:
                 code:
                     type: string
                     description: Error code
-                    example: 'invalid_request'
+                    example: invalid_request
                 message:
                     type: string
                     description: Error message
-                    example: 'The request was invalid'
+                    example: The request was invalid
                 details:
                     type: object
                     description: Additional error details
                     example:
-                        field: 'name'
-                        issue: 'Name is required'
+                        field: name
+                        issue: Name is required
         DocumentStoreLoaderForUpsert:
             type: object
             properties:
@@ -979,28 +989,28 @@ components:
                     type: string
                     format: uuid
                     description: Unique identifier for the document store loader
-                    example: 'loader_12345'
+                    example: loader_12345
                 loaderId:
                     type: string
                     description: ID of the loader
-                    example: 'pdf'
+                    example: pdf
                 loaderName:
                     type: string
                     description: Name of the loader
-                    example: 'PDF Loader'
+                    example: PDF Loader
                 loaderConfig:
                     type: object
                     description: Configuration for the loader
                     example:
-                        source: 'https://example.com/document.pdf'
+                        source: https://example.com/document.pdf
                 splitterId:
                     type: string
                     description: ID of the text splitter
-                    example: 'recursive'
+                    example: recursive
                 splitterName:
                     type: string
                     description: Name of the text splitter
-                    example: 'Recursive Character Text Splitter'
+                    example: Recursive Character Text Splitter
                 splitterConfig:
                     type: object
                     description: Configuration for the text splitter
@@ -1026,7 +1036,7 @@ components:
                 message:
                     type: string
                     description: Message describing the result of the operation
-                    example: 'Document upserted successfully'
+                    example: Document upserted successfully
         DocumentStoreLoaderForRefresh:
             type: object
             properties:
@@ -1034,28 +1044,28 @@ components:
                     type: string
                     format: uuid
                     description: Unique identifier for the document store loader
-                    example: 'loader_12345'
+                    example: loader_12345
                 loaderId:
                     type: string
                     description: ID of the loader
-                    example: 'pdf'
+                    example: pdf
                 loaderName:
                     type: string
                     description: Name of the loader
-                    example: 'PDF Loader'
+                    example: PDF Loader
                 loaderConfig:
                     type: object
                     description: Configuration for the loader
                     example:
-                        source: 'https://example.com/document.pdf'
+                        source: https://example.com/document.pdf
                 splitterId:
                     type: string
                     description: ID of the text splitter
-                    example: 'recursive'
+                    example: recursive
                 splitterName:
                     type: string
                     description: Name of the text splitter
-                    example: 'Recursive Character Text Splitter'
+                    example: Recursive Character Text Splitter
                 splitterConfig:
                     type: object
                     description: Configuration for the text splitter

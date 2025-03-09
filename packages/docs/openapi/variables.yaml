@@ -12,6 +12,8 @@ servers:
       description: Production server
     - url: https://staging-api.theanswer.ai/v1
       description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: variables
       description: Operations for managing environment variables
@@ -79,7 +81,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
-
     /variables/{id}:
         put:
             summary: Update a variable by ID
@@ -177,6 +178,7 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
     schemas:
         VariableInput:
             type: object
@@ -187,16 +189,16 @@ components:
                 name:
                     type: string
                     description: Name of the variable
-                    example: 'API_KEY'
+                    example: API_KEY
                 value:
                     type: string
                     description: Value of the variable
                     nullable: true
-                    example: 'my-secret-key'
+                    example: my-secret-key
                 type:
                     type: string
                     description: Type of the variable (e.g., string, number)
-                    example: 'string'
+                    example: string
         Variable:
             type: object
             properties:
@@ -204,20 +206,20 @@ components:
                     type: string
                     format: uuid
                     description: Unique identifier for the variable
-                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                    example: cfd531e0-82fc-11e9-bc42-526af7764f64
                 name:
                     type: string
                     description: Name of the variable
-                    example: 'API_KEY'
+                    example: API_KEY
                 value:
                     type: string
                     description: Value of the variable
                     nullable: true
-                    example: 'my-secret-key'
+                    example: my-secret-key
                 type:
                     type: string
                     description: Type of the variable (e.g., string, number)
-                    example: 'string'
+                    example: string
                 createdDate:
                     type: string
                     format: date-time
@@ -234,11 +236,11 @@ components:
                 message:
                     type: string
                     description: Error message
-                    example: 'An error occurred'
+                    example: An error occurred
                 error:
                     type: string
                     description: Error type
-                    example: 'Bad Request'
+                    example: Bad Request
                 statusCode:
                     type: integer
                     description: HTTP status code

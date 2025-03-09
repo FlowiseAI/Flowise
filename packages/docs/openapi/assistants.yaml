@@ -12,6 +12,8 @@ servers:
       description: Production server
     - url: https://staging-api.theanswer.ai/v1
       description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: assistants
       description: Operations for managing assistants
@@ -216,6 +218,7 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
     schemas:
         AssistantInput:
             type: object
@@ -225,16 +228,16 @@ components:
                     properties:
                         name:
                             type: string
-                            example: 'assistant'
+                            example: assistant
                         description:
                             type: string
-                            example: 'A helpful AI assistant'
+                            example: A helpful AI assistant
                         model:
                             type: string
-                            example: 'gpt-4'
+                            example: gpt-4
                         instructions:
                             type: string
-                            example: 'You are a helpful assistant, do your best to answer question and query'
+                            example: You are a helpful assistant, do your best to answer question and query
                         temperature:
                             type: number
                             example: 1
@@ -245,17 +248,20 @@ components:
                             type: array
                             items:
                                 type: string
-                            example: ['function', 'code_interpreter', 'file_search']
+                            example:
+                                - function
+                                - code_interpreter
+                                - file_search
                         tool_resources:
                             type: object
                             additionalProperties:
                                 type: object
                 credential:
                     type: string
-                    example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339'
+                    example: 7db93c02-8d5a-4117-a8f1-3dfb6721b339
                 iconSrc:
                     type: string
-                    example: '/images/assistant.png'
+                    example: /images/assistant.png
             required:
                 - details
                 - credential
@@ -264,25 +270,25 @@ components:
             properties:
                 id:
                     type: string
-                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
+                    example: d290f1ee-6c54-4b01-90e6-d701748f0851
                 details:
                     type: object
                     properties:
                         id:
                             type: string
-                            example: 'asst_zbNeYIuXIUSKVHjJkfRo6ilv'
+                            example: asst_zbNeYIuXIUSKVHjJkfRo6ilv
                         name:
                             type: string
-                            example: 'assistant'
+                            example: assistant
                         description:
                             type: string
-                            example: 'A helpful AI assistant'
+                            example: A helpful AI assistant
                         model:
                             type: string
-                            example: 'gpt-4'
+                            example: gpt-4
                         instructions:
                             type: string
-                            example: 'You are a helpful assistant, do your best to answer question and query'
+                            example: You are a helpful assistant, do your best to answer question and query
                         temperature:
                             type: number
                             example: 1
@@ -293,17 +299,20 @@ components:
                             type: array
                             items:
                                 type: string
-                            example: ['function', 'code_interpreter', 'file_search']
+                            example:
+                                - function
+                                - code_interpreter
+                                - file_search
                         tool_resources:
                             type: object
                             additionalProperties:
                                 type: object
                 credential:
                     type: string
-                    example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339'
+                    example: 7db93c02-8d5a-4117-a8f1-3dfb6721b339
                 iconSrc:
                     type: string
-                    example: '/images/assistant.png'
+                    example: /images/assistant.png
                 createdDate:
                     type: string
                     format: date-time
@@ -321,7 +330,7 @@ components:
             properties:
                 error:
                     type: string
-                    example: 'Error message'
+                    example: Error message
                 status:
                     type: integer
                     format: int32

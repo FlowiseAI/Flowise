@@ -12,6 +12,8 @@ servers:
       description: Production server
     - url: https://staging-api.theanswer.ai/v1
       description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: vector
       description: Operations for managing vector embeddings
@@ -41,7 +43,7 @@ paths:
                                 stopNodeId:
                                     type: string
                                     description: In cases when you have multiple vector store nodes, you can specify the node ID to store the vectors
-                                    example: 'node_1'
+                                    example: node_1
                                 overrideConfig:
                                     type: object
                                     description: The configuration to override the default vector upsert settings (optional)
@@ -94,7 +96,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
-
 components:
     schemas:
         VectorUpsertResponse:
@@ -125,13 +126,13 @@ components:
             properties:
                 pageContent:
                     type: string
-                    example: 'This is the content of the page.'
+                    example: This is the content of the page.
                 metadata:
                     type: object
                     additionalProperties:
                         type: string
                     example:
-                        author: 'John Doe'
+                        author: John Doe
                         date: '2024-08-24'
         Error:
             type: object
@@ -139,13 +140,14 @@ components:
                 message:
                     type: string
                     description: Error message
-                    example: 'Invalid input provided'
+                    example: Invalid input provided
                 code:
                     type: string
                     description: Error code
-                    example: 'INVALID_INPUT'
+                    example: INVALID_INPUT
     securitySchemes:
         bearerAuth:
             type: http
             scheme: bearer
             bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY

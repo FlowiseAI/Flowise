@@ -12,6 +12,8 @@ servers:
       description: Production server
     - url: https://staging-api.theanswer.ai/v1
       description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: ping
       description: Operations for checking server status
@@ -39,4 +41,5 @@ components:
         bearerAuth:
             type: http
             scheme: bearer
-            bearerFormat: JWT # optional, for documentation purposes only
+            bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY

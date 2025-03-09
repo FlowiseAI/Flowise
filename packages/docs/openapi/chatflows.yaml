@@ -12,6 +12,8 @@ servers:
       description: Production server
     - url: https://staging-api.theanswer.ai/v1
       description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: chatflows
       description: Operations for managing chatflows
@@ -243,7 +245,7 @@ components:
             properties:
                 name:
                     type: string
-                    example: 'MyChatFlow'
+                    example: MyChatFlow
                     description: Name of the chatflow
                 flowData:
                     type: string
@@ -265,11 +267,13 @@ components:
                     description: JSON string containing API configuration
                 category:
                     type: string
-                    example: 'category1;category2'
+                    example: category1;category2
                     description: Categories for the chatflow (semicolon-separated)
                 type:
                     type: string
-                    enum: [CHATFLOW, MULTIAGENT]
+                    enum:
+                        - CHATFLOW
+                        - MULTIAGENT
                     description: Type of the chatflow
             required:
                 - name
@@ -279,11 +283,11 @@ components:
             properties:
                 id:
                     type: string
-                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
+                    example: d290f1ee-6c54-4b01-90e6-d701748f0851
                     description: Unique identifier for the chatflow
                 name:
                     type: string
-                    example: 'MyChatFlow'
+                    example: MyChatFlow
                     description: Name of the chatflow
                 flowData:
                     type: string
@@ -316,11 +320,13 @@ components:
                     description: JSON string containing speech-to-text configuration
                 category:
                     type: string
-                    example: 'category1;category2'
+                    example: category1;category2
                     description: Categories for the chatflow (semicolon-separated)
                 type:
                     type: string
-                    enum: [CHATFLOW, MULTIAGENT]
+                    enum:
+                        - CHATFLOW
+                        - MULTIAGENT
                     description: Type of the chatflow
                 createdDate:
                     type: string
@@ -350,3 +356,4 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY

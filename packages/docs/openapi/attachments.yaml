@@ -12,6 +12,8 @@ servers:
       description: Production server
     - url: https://staging-api.theanswer.ai/v1
       description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: attachments
       description: Operations for managing file attachments
@@ -38,7 +40,9 @@ paths:
                                 purpose:
                                     type: string
                                     description: The intended purpose of the file
-                                    enum: [assistants, messages]
+                                    enum:
+                                        - assistants
+                                        - messages
                 required: true
             responses:
                 '200':
@@ -156,7 +160,8 @@ components:
                     description: Unique identifier for the attachment
                 object:
                     type: string
-                    enum: [attachment]
+                    enum:
+                        - attachment
                     description: The object type, which is always "attachment"
                 created_at:
                     type: integer
@@ -166,14 +171,19 @@ components:
                     description: The name of the file
                 purpose:
                     type: string
-                    enum: [assistants, messages]
+                    enum:
+                        - assistants
+                        - messages
                     description: The intended purpose of the file
                 bytes:
                     type: integer
                     description: The size of the file in bytes
                 status:
                     type: string
-                    enum: [processing, ready, error]
+                    enum:
+                        - processing
+                        - ready
+                        - error
                     description: The status of the file processing
                 content_type:
                     type: string
@@ -194,11 +204,13 @@ components:
                     description: The ID of the deleted attachment
                 object:
                     type: string
-                    enum: [attachment.deleted]
+                    enum:
+                        - attachment.deleted
                     description: The object type, which is always "attachment.deleted"
                 deleted:
                     type: boolean
-                    enum: [true]
+                    enum:
+                        - true
                     description: Whether the attachment was deleted
             required:
                 - id
@@ -229,3 +241,4 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY

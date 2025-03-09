@@ -7,17 +7,16 @@ info:
         name: TheAnswer Support
         url: https://theanswer.ai/support
         email: support@theanswer.ai
-
 servers:
     - url: https://api.theanswer.ai
       description: Production server
     - url: https://api.staging.theanswer.ai
       description: Staging server
-
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: prediction
       description: Endpoints for creating and managing predictions
-
 paths:
     /prediction/{id}:
         post:
@@ -76,7 +75,6 @@ paths:
                     description: Validation error
                 '500':
                     description: Internal server error
-
 components:
     schemas:
         Prediction:
@@ -96,13 +94,15 @@ components:
                         properties:
                             role:
                                 type: string
-                                enum: [apiMessage, userMessage]
+                                enum:
+                                    - apiMessage
+                                    - userMessage
                                 description: The role of the message
                                 example: apiMessage
                             content:
                                 type: string
                                 description: The content of the message
-                                example: 'Hello, how can I help you?'
+                                example: Hello, how can I help you?
                 uploads:
                     type: array
                     items:
@@ -115,18 +115,17 @@ components:
                             name:
                                 type: string
                                 description: The name of the file or resource
-                                example: 'image.png'
+                                example: image.png
                             data:
                                 type: string
                                 description: The base64-encoded data or URL for the resource
-                                example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG'
+                                example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG
                             mime:
                                 type: string
                                 description: The MIME type of the file or resource
-                                example: 'image/png'
+                                example: image/png
             required:
                 - question
-
         PredictionResponse:
             type: object
             properties:
@@ -163,48 +162,45 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/FileAnnotation'
-
         Document:
             type: object
             properties:
                 pageContent:
                     type: string
-                    example: 'This is the content of the page.'
+                    example: This is the content of the page.
                 metadata:
                     type: object
                     additionalProperties:
                         type: string
                     example:
-                        author: 'John Doe'
+                        author: John Doe
                         date: '2024-08-24'
-
         UsedTool:
             type: object
             properties:
                 tool:
                     type: string
-                    example: 'Name of the tool'
+                    example: Name of the tool
                 toolInput:
                     type: object
                     additionalProperties:
                         type: string
                     example:
-                        input: 'search query'
+                        input: search query
                 toolOutput:
                     type: string
-
         FileAnnotation:
             type: object
             properties:
                 filePath:
                     type: string
-                    example: 'path/to/file'
+                    example: path/to/file
                 fileName:
                     type: string
-                    example: 'file.txt'
-
+                    example: file.txt
     securitySchemes:
         bearerAuth:
             type: http
             scheme: bearer
             bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY

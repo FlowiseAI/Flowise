@@ -12,6 +12,8 @@ servers:
       description: Production server
     - url: https://staging-api.theanswer.ai/v1
       description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: chatmessage
       description: Operations for managing chat messages
@@ -36,13 +38,17 @@ paths:
                   name: chatType
                   schema:
                       type: string
-                      enum: [INTERNAL, EXTERNAL]
+                      enum:
+                          - INTERNAL
+                          - EXTERNAL
                   description: Filter by chat type
                 - in: query
                   name: order
                   schema:
                       type: string
-                      enum: [ASC, DESC]
+                      enum:
+                          - ASC
+                          - DESC
                   description: Sort order
                 - in: query
                   name: chatId
@@ -81,7 +87,9 @@ paths:
                   name: feedbackType
                   schema:
                       type: string
-                      enum: [THUMBS_UP, THUMBS_DOWN]
+                      enum:
+                          - THUMBS_UP
+                          - THUMBS_DOWN
                   description: Filter by feedback type
             responses:
                 '200':
@@ -133,7 +141,9 @@ paths:
                   name: chatType
                   schema:
                       type: string
-                      enum: [INTERNAL, EXTERNAL]
+                      enum:
+                          - INTERNAL
+                          - EXTERNAL
                   description: Filter by chat type
             responses:
                 '200':
@@ -170,6 +180,7 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
     schemas:
         ChatMessage:
             type: object
@@ -177,18 +188,20 @@ components:
                 id:
                     type: string
                     format: uuid
-                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0851'
+                    example: d290f1ee-6c54-4b01-90e6-d701748f0851
                 role:
                     type: string
-                    enum: [apiMessage, userMessage]
-                    example: 'apiMessage'
+                    enum:
+                        - apiMessage
+                        - userMessage
+                    example: apiMessage
                 chatflowid:
                     type: string
                     format: uuid
-                    example: 'd290f1ee-6c54-4b01-90e6-d701748f0852'
+                    example: d290f1ee-6c54-4b01-90e6-d701748f0852
                 content:
                     type: string
-                    example: 'Hello, how can I help you today?'
+                    example: Hello, how can I help you today?
                 sourceDocuments:
                     type: array
                     nullable: true
@@ -221,11 +234,13 @@ components:
                         $ref: '#/components/schemas/Action'
                 chatType:
                     type: string
-                    enum: [INTERNAL, EXTERNAL]
-                    example: 'INTERNAL'
+                    enum:
+                        - INTERNAL
+                        - EXTERNAL
+                    example: INTERNAL
                 chatId:
                     type: string
-                    example: 'chat12345'
+                    example: chat12345
                 memoryType:
                     type: string
                     nullable: true
@@ -239,32 +254,32 @@ components:
                 leadEmail:
                     type: string
                     nullable: true
-                    example: 'user@example.com'
+                    example: user@example.com
         Document:
             type: object
             properties:
                 pageContent:
                     type: string
-                    example: 'This is the content of the page.'
+                    example: This is the content of the page.
                 metadata:
                     type: object
                     additionalProperties:
                         type: string
                     example:
-                        author: 'John Doe'
+                        author: John Doe
                         date: '2024-08-24'
         UsedTool:
             type: object
             properties:
                 tool:
                     type: string
-                    example: 'Name of the tool'
+                    example: Name of the tool
                 toolInput:
                     type: object
                     additionalProperties:
                         type: string
                     example:
-                        input: 'search query'
+                        input: search query
                 toolOutput:
                     type: string
         FileAnnotation:
@@ -272,32 +287,32 @@ components:
             properties:
                 filePath:
                     type: string
-                    example: 'path/to/file'
+                    example: path/to/file
                 fileName:
                     type: string
-                    example: 'file.txt'
+                    example: file.txt
         FileUpload:
             type: object
             properties:
                 data:
                     type: string
-                    example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG'
+                    example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG
                 type:
                     type: string
-                    example: 'image'
+                    example: image
                 name:
                     type: string
-                    example: 'image.png'
+                    example: image.png
                 mime:
                     type: string
-                    example: 'image/png'
+                    example: image/png
         Action:
             type: object
             properties:
                 id:
                     type: string
                     format: uuid
-                    example: '61beeb58-6ebe-4d51-aa0b-41d4c546ff08'
+                    example: 61beeb58-6ebe-4d51-aa0b-41d4c546ff08
                 mapping:
                     type: object
                     properties:
@@ -317,18 +332,19 @@ components:
             properties:
                 agentName:
                     type: string
-                    example: 'agent'
+                    example: agent
                 messages:
                     type: array
                     items:
                         type: string
-                    example: ['hello']
+                    example:
+                        - hello
                 nodeName:
                     type: string
-                    example: 'seqAgent'
+                    example: seqAgent
                 nodeId:
                     type: string
-                    example: 'seqAgent_0'
+                    example: seqAgent_0
                 usedTools:
                     type: array
                     items:
@@ -346,16 +362,16 @@ components:
             properties:
                 code:
                     type: string
-                    example: 'invalid_request_error'
+                    example: invalid_request_error
                 message:
                     type: string
-                    example: 'The request was unacceptable, often due to missing a required parameter.'
+                    example: The request was unacceptable, often due to missing a required parameter.
                 param:
                     type: string
-                    example: 'id'
+                    example: id
                 type:
                     type: string
-                    example: 'invalid_request_error'
+                    example: invalid_request_error
             required:
                 - code
                 - message

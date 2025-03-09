@@ -12,6 +12,8 @@ servers:
       description: Production server
     - url: https://staging-api.theanswer.ai/v1
       description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
 tags:
     - name: leads
       description: Operations for managing leads in chatflows
@@ -105,6 +107,7 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
     schemas:
         Lead:
             type: object
@@ -113,15 +116,15 @@ components:
                     type: string
                     format: uuid
                     description: Unique identifier for the lead
-                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                    example: cfd531e0-82fc-11e9-bc42-526af7764f64
                 name:
                     type: string
                     description: Name of the lead
-                    example: 'John Doe'
+                    example: John Doe
                 email:
                     type: string
                     description: Email address of the lead
-                    example: 'john.doe@example.com'
+                    example: john.doe@example.com
                 phone:
                     type: string
                     description: Phone number of the lead
@@ -129,11 +132,11 @@ components:
                 chatflowid:
                     type: string
                     description: ID of the chatflow the lead is associated with
-                    example: '7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02'
+                    example: 7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02
                 chatId:
                     type: string
                     description: ID of the chat session the lead is associated with
-                    example: 'd7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b'
+                    example: d7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b
                 createdDate:
                     type: string
                     format: date-time
@@ -144,10 +147,10 @@ components:
             properties:
                 code:
                     type: string
-                    example: 'VALIDATION_ERROR'
+                    example: VALIDATION_ERROR
                 message:
                     type: string
-                    example: 'Invalid input data'
+                    example: Invalid input data
                 details:
                     type: array
                     items:
@@ -155,7 +158,7 @@ components:
                         properties:
                             field:
                                 type: string
-                                example: 'email'
+                                example: email
                             message:
                                 type: string
-                                example: 'Must be a valid email address'
+                                example: Must be a valid email address
