@@ -261,16 +261,16 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         try {
             const res = await fetch(url)
             if (res.status === 401) {
-                // window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
-                window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
+                // window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
+                window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
             } else {
                 return res.json()
             }
         } catch (error) {
             console.log('error', error)
             if (error instanceof Response && error.status === 401) {
-                window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
-                // window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
+                window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
+                // window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
             }
             return { sidekicks: [], categories: { top: [], more: [] } }
         }
@@ -408,7 +408,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             }
             if (!user) {
                 const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-                const loginUrl = `/api/auth/login?returnTo=${redirectUrl}`
+                const loginUrl = `/api/auth/login?redirect_uri=${redirectUrl}`
                 setNavigationState(state)
                 window.location.href = loginUrl
             } else {

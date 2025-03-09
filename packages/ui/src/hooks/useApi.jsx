@@ -12,7 +12,7 @@ export default (apiFunc) => {
             setData(result.data)
         } catch (err) {
             if (err.response && err.response.status === 401) {
-                window.location.href = '/api/auth/login?returnTo=' + window.location.href
+                window.location.href = '/api/auth/login?redirect_uri=' + window.location.href
             } else {
                 setError(err || 'Unexpected Error!')
             }
