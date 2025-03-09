@@ -50,6 +50,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
+    /document-store/stores:
         get:
             tags:
                 - document-store
