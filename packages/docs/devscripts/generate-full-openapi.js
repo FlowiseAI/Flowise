@@ -159,7 +159,7 @@ for (const path in combinedSpec.paths) {
                 required: true,
                 schema: {
                     type: 'string',
-                    example: 'Bearer YOUR_TOKEN_HERE'
+                    example: 'Bearer {apiToken}'
                 }
             })
         }
