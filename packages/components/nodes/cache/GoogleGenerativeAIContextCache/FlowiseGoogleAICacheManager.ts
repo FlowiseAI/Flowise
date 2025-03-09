@@ -32,7 +32,7 @@ export class GoogleAICacheManager extends GoogleAICacheManagerBase {
             return cachedContent
         }
         const res = await this.create({
-            ...options as CachedContentBase,
+            ...(options as CachedContentBase),
             displayName: hashKey,
             ttlSeconds: this.ttlSeconds
         })
