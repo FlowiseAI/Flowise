@@ -262,14 +262,14 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             const res = await fetch(url)
             if (res.status === 401) {
                 // window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
-                window.location.href = '/api/auth/login'
+                window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
             } else {
                 return res.json()
             }
         } catch (error) {
             console.log('error', error)
             if (error instanceof Response && error.status === 401) {
-                window.location.href = '/api/auth/login'
+                window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
                 // window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
             }
             return { sidekicks: [], categories: { top: [], more: [] } }
