@@ -4,7 +4,7 @@
  * Script to generate OpenAPI documentation
  */
 
-const { execSync } = require('child_process')
+const { execSync } = require('node:child_process')
 
 console.log('Generating OpenAPI documentation...')
 
@@ -16,6 +16,10 @@ try {
     // Generate API docs
     console.log('Generating new API docs...')
     execSync('npx docusaurus gen-api-docs all', { stdio: 'inherit' })
+
+    // Generate full OpenAPI spec
+    console.log('Generating full OpenAPI spec...')
+    execSync('node devscripts/generate-full-openapi.js', { stdio: 'inherit' })
 
     console.log('API documentation generated successfully!')
 } catch (error) {

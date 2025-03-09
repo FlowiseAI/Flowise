@@ -24,6 +24,15 @@ AnswerAI offers a comprehensive suite of APIs to help you integrate our AI capab
 -   Variables API - Manage dynamic variables in your conversations
 -   Vector Upsert API - Update your vector database
 
+## Full API Specification
+
+For developers who need the complete API reference in a standardized format, we provide the entire API specification in OpenAPI 3.0 format:
+
+-   [Download Full API Specification (YAML)](/api/full-api-spec.yaml)
+-   [Download Full API Specification (JSON)](/api/full-api-spec.json)
+
+These files can be imported into API tools like Postman, Insomnia, or Swagger UI for easier integration and testing. See the [Full API Specification](/docs/api/full-api-spec) page for more details.
+
 ## Getting Your API Key
 
 To use the AnswerAI APIs, you'll need an API key. Follow these steps to generate one:

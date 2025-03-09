@@ -40,6 +40,11 @@ const sidebars: SidebarsConfig = {
                     },
                     items: [
                         {
+                            type: 'doc',
+                            id: 'api/full-api-spec',
+                            label: 'Full API Specification'
+                        },
+                        {
                             type: 'category',
                             label: 'Assistants API',
                             link: {

@@ -253,16 +253,44 @@ paths:
                             type: object
                             required:
                                 - storeId
-                                - id
+                                - loaderId
+                                - splitterId
                             properties:
                                 storeId:
                                     type: string
                                     description: Document store ID
                                     example: 603a7b51-ae7c-4b0a-8865-e454ed2f6766
-                                id:
+                                loaderId:
                                     type: string
-                                    description: Document loader ID
-                                    example: c427e569-b81a-469a-b14c-fa73dd5bae49
+                                    description: ID of the loader (e.g., plainText, pdf, etc.)
+                                    example: plainText
+                                loaderName:
+                                    type: string
+                                    description: Display name of the loader
+                                    example: Plain Text
+                                loaderConfig:
+                                    type: object
+                                    description: Configuration for the loader
+                                    example:
+                                        text: "Text to be split\n\nThis is another chunk"
+                                        textSplitter: ''
+                                        metadata: '{"source":null}'
+                                        omitMetadataKeys: ''
+                                splitterId:
+                                    type: string
+                                    description: ID of the text splitter
+                                    example: recursiveCharacterTextSplitter
+                                splitterName:
+                                    type: string
+                                    description: Display name of the text splitter
+                                    example: Recursive Character Text Splitter
+                                splitterConfig:
+                                    type: object
+                                    description: Configuration for the text splitter
+                                    example:
+                                        chunkSize: '30'
+                                        chunkOverlap: '0'
+                                        separators: "[\"\\n\"]"
                 required: true
             responses:
                 '200':
