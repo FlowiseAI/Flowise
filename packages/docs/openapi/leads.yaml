@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
     title: Leads API
-    description: API for managing leads and lead generation
+    description: API for managing leads in chatflows
     version: 1.0.0
     contact:
         name: AnswerAI Support
@@ -14,275 +14,64 @@ servers:
       description: Staging server
 tags:
     - name: leads
-      description: Operations for managing leads
+      description: Operations for managing leads in chatflows
 paths:
     /leads:
         post:
-            summary: Create a new lead
-            description: Create a new lead with the provided details
-            operationId: createLead
             tags:
                 - leads
             security:
                 - bearerAuth: []
+            operationId: createLead
+            summary: Create a new lead in a chatflow
+            description: Create a new lead associated with a specific chatflow
             requestBody:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/LeadInput'
+                            $ref: '#/components/schemas/Lead'
                 required: true
             responses:
-                '201':
+                '200':
                     description: Lead created successfully
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Lead'
                 '400':
-                    description: Invalid input provided
+                    description: Invalid request body
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
                 '422':
-                    description: Validation exception
+                    description: Validation error
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
-        get:
-            summary: List all leads
-            description: Retrieve a list of all leads with optional filtering
-            operationId: listLeads
-            tags:
-                - leads
-            security:
-                - bearerAuth: []
-            parameters:
-                - in: query
-                  name: status
-                  schema:
-                      type: string
-                      enum: [new, contacted, qualified, converted, closed]
-                  description: Filter leads by status
-                - in: query
-                  name: source
-                  schema:
-                      type: string
-                  description: Filter leads by source
-                - in: query
-                  name: page
-                  schema:
-                      type: integer
-                      minimum: 1
-                      default: 1
-                  description: Page number for pagination
-                - in: query
-                  name: limit
-                  schema:
-                      type: integer
-                      minimum: 1
-                      maximum: 100
-                      default: 20
-                  description: Number of items per page
-            responses:
-                '200':
-                    description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    data:
-                                        type: array
-                                        items:
-                                            $ref: '#/components/schemas/Lead'
-                                    pagination:
-                                        type: object
-                                        properties:
-                                            total:
-                                                type: integer
-                                            page:
-                                                type: integer
-                                            limit:
-                                                type: integer
-                                            pages:
-                                                type: integer
                 '500':
-                    description: Internal error
+                    description: Internal server error
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
     /leads/{id}:
         get:
-            summary: Get lead by ID
-            description: Retrieve a specific lead by ID
-            operationId: getLeadById
             tags:
                 - leads
             security:
                 - bearerAuth: []
+            summary: Get all leads for a specific chatflow
+            description: Retrieve all leads associated with a specific chatflow
+            operationId: getAllLeadsForChatflow
             parameters:
                 - in: path
                   name: id
                   required: true
                   schema:
                       type: string
-                  description: Lead ID
-            responses:
-                '200':
-                    description: Successful operation
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Lead'
-                '404':
-                    description: Lead not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-                '500':
-                    description: Internal error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-        put:
-            summary: Update lead details
-            description: Update the details of an existing lead
-            operationId: updateLead
-            tags:
-                - leads
-            security:
-                - bearerAuth: []
-            parameters:
-                - in: path
-                  name: id
-                  required: true
-                  schema:
-                      type: string
-                  description: Lead ID
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/LeadInput'
-                required: true
-            responses:
-                '200':
-                    description: Lead updated successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Lead'
-                '404':
-                    description: Lead not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-                '500':
-                    description: Internal error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-        delete:
-            summary: Delete a lead
-            description: Delete a lead by ID
-            operationId: deleteLead
-            tags:
-                - leads
-            security:
-                - bearerAuth: []
-            parameters:
-                - in: path
-                  name: id
-                  required: true
-                  schema:
-                      type: string
-                  description: Lead ID
-            responses:
-                '200':
-                    description: Lead deleted successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        example: true
-                '404':
-                    description: Lead not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-                '500':
-                    description: Internal error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-    /leads/{id}/notes:
-        post:
-            summary: Add a note to a lead
-            description: Add a new note to an existing lead
-            operationId: addLeadNote
-            tags:
-                - leads
-            security:
-                - bearerAuth: []
-            parameters:
-                - in: path
-                  name: id
-                  required: true
-                  schema:
-                      type: string
-                  description: Lead ID
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/NoteInput'
-                required: true
-            responses:
-                '201':
-                    description: Note added successfully
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Note'
-                '404':
-                    description: Lead not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-                '500':
-                    description: Internal error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
-        get:
-            summary: Get lead notes
-            description: Retrieve all notes for a specific lead
-            operationId: getLeadNotes
-            tags:
-                - leads
-            security:
-                - bearerAuth: []
-            parameters:
-                - in: path
-                  name: id
-                  required: true
-                  schema:
-                      type: string
-                  description: Lead ID
+                  description: Chatflow ID
             responses:
                 '200':
                     description: Successful operation
@@ -291,15 +80,21 @@ paths:
                             schema:
                                 type: array
                                 items:
-                                    $ref: '#/components/schemas/Note'
+                                    $ref: '#/components/schemas/Lead'
+                '400':
+                    description: Invalid ID provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
                 '404':
-                    description: Lead not found
+                    description: Leads not found
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
                 '500':
-                    description: Internal error
+                    description: Internal server error
                     content:
                         application/json:
                             schema:
@@ -311,98 +106,39 @@ components:
             scheme: bearer
             bearerFormat: JWT
     schemas:
-        LeadInput:
+        Lead:
             type: object
-            required:
-                - firstName
-                - lastName
-                - email
             properties:
-                firstName:
+                id:
                     type: string
-                    example: 'John'
-                lastName:
+                    format: uuid
+                    description: Unique identifier for the lead
+                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                name:
                     type: string
-                    example: 'Doe'
+                    description: Name of the lead
+                    example: 'John Doe'
                 email:
                     type: string
-                    format: email
+                    description: Email address of the lead
                     example: 'john.doe@example.com'
                 phone:
                     type: string
+                    description: Phone number of the lead
                     example: '+1234567890'
-                company:
+                chatflowid:
                     type: string
-                    example: 'Acme Inc.'
-                jobTitle:
+                    description: ID of the chatflow the lead is associated with
+                    example: '7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02'
+                chatId:
                     type: string
-                    example: 'CTO'
-                source:
+                    description: ID of the chat session the lead is associated with
+                    example: 'd7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b'
+                createdDate:
                     type: string
-                    example: 'website'
-                status:
-                    type: string
-                    enum: [new, contacted, qualified, converted, closed]
-                    default: 'new'
-                    example: 'new'
-                customFields:
-                    type: object
-                    additionalProperties: true
-                    example:
-                        industry: 'Technology'
-                        budget: '10000-50000'
-        Lead:
-            type: object
-            allOf:
-                - $ref: '#/components/schemas/LeadInput'
-                - type: object
-                  properties:
-                      id:
-                          type: string
-                          example: 'lead_123456789'
-                      createdAt:
-                          type: string
-                          format: date-time
-                          example: '2023-01-01T12:00:00Z'
-                      updatedAt:
-                          type: string
-                          format: date-time
-                          example: '2023-01-01T12:00:00Z'
-                      assignedTo:
-                          type: string
-                          example: 'user_987654321'
-        NoteInput:
-            type: object
-            required:
-                - content
-            properties:
-                content:
-                    type: string
-                    example: 'Called the lead, they are interested in our enterprise plan.'
-                type:
-                    type: string
-                    enum: [call, email, meeting, other]
-                    default: 'other'
-                    example: 'call'
-        Note:
-            type: object
-            allOf:
-                - $ref: '#/components/schemas/NoteInput'
-                - type: object
-                  properties:
-                      id:
-                          type: string
-                          example: 'note_123456789'
-                      leadId:
-                          type: string
-                          example: 'lead_123456789'
-                      createdBy:
-                          type: string
-                          example: 'user_987654321'
-                      createdAt:
-                          type: string
-                          format: date-time
-                          example: '2023-01-01T12:00:00Z'
+                    format: date-time
+                    description: Date and time when the lead was created
+                    example: '2024-08-24T14:15:22Z'
         Error:
             type: object
             properties:
