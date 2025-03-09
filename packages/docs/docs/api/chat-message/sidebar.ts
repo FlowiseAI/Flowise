@@ -8,40 +8,22 @@ const sidebar: SidebarsConfig = {
         },
         {
             type: 'category',
-            label: 'chat-messages',
+            label: 'chatmessage',
             link: {
                 type: 'doc',
-                id: 'api/chat-message/chat-messages'
+                id: 'api/chat-message/chatmessage'
             },
             items: [
                 {
                     type: 'doc',
-                    id: 'api/chat-message/create-chat-message',
-                    label: 'Create a new chat message',
-                    className: 'api-method post'
-                },
-                {
-                    type: 'doc',
-                    id: 'api/chat-message/list-chat-messages',
-                    label: 'List chat messages',
+                    id: 'api/chat-message/get-all-chat-messages',
+                    label: 'List all chat messages',
                     className: 'api-method get'
                 },
                 {
                     type: 'doc',
-                    id: 'api/chat-message/get-chat-message-by-id',
-                    label: 'Get chat message by ID',
-                    className: 'api-method get'
-                },
-                {
-                    type: 'doc',
-                    id: 'api/chat-message/update-chat-message',
-                    label: 'Update a chat message',
-                    className: 'api-method put'
-                },
-                {
-                    type: 'doc',
-                    id: 'api/chat-message/delete-chat-message',
-                    label: 'Delete a chat message',
+                    id: 'api/chat-message/remove-all-chat-messages',
+                    label: 'Delete all chat messages',
                     className: 'api-method delete'
                 }
             ]

@@ -535,6 +535,214 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
+    /document-store/upsert/{id}:
+        post:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Upsert document to document store
+            description: Upsert document to document store
+            operationId: upsertDocument
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document Store ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DocumentStoreLoaderForUpsert'
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                files:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: binary
+                                    description: Files to be uploaded
+                                docId:
+                                    type: string
+                                    nullable: true
+                                    example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766'
+                                    description: Document ID to use existing configuration
+                                loader:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"plainText","config":{"text":"why the sky is blue"}}'
+                                    description: Loader configurations
+                                splitter:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"recursiveCharacterTextSplitter","config":{"chunkSize":2000}}'
+                                    description: Splitter configurations
+                                embedding:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"openAIEmbeddings","config":{"modelName":"text-embedding-ada-002"}}'
+                                    description: Embedding configurations
+                                vectorStore:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"faiss"}'
+                                    description: Vector Store configurations
+                                recordManager:
+                                    type: string
+                                    nullable: true
+                                    example: '{"name":"postgresRecordManager"}'
+                                    description: Record Manager configurations
+                                metadata:
+                                    type: object
+                                    nullable: true
+                                    description: Metadata associated with the document
+                                    example: { 'foo': 'bar' }
+                                replaceExisting:
+                                    type: boolean
+                                    nullable: true
+                                    description: Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store
+                                createNewDocStore:
+                                    type: boolean
+                                    nullable: true
+                                    description: Whether to create a new document store
+                                docStore:
+                                    type: object
+                                    nullable: true
+                                    description: Only when createNewDocStore is true, pass in the new document store configuration
+                                    properties:
+                                        name:
+                                            type: string
+                                            example: plainText
+                                            description: Name of the new document store to be created
+                                        description:
+                                            type: string
+                                            example: plainText
+                                            description: Description of the new document store to be created
+                            required:
+                                - files
+                required: true
+            responses:
+                '200':
+                    description: Successfully execute upsert operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/VectorUpsertResponse'
+                '400':
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /document-store/refresh/{id}:
+        post:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Re-process and upsert all documents in document store
+            description: Re-process and upsert all existing documents in document store
+            operationId: refreshDocument
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document Store ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/DocumentStoreLoaderForRefresh'
+                required: true
+            responses:
+                '200':
+                    description: Successfully execute refresh operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/VectorUpsertResponse'
+                '400':
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /document-store/loader/{storeId}/{loaderId}:
+        delete:
+            tags:
+                - document-store
+            security:
+                - bearerAuth: []
+            summary: Delete specific document loader and associated chunks from document store
+            description: Delete specific document loader and associated chunks from document store. This does not delete data from vector store.
+            operationId: deleteLoaderFromDocumentStore
+            parameters:
+                - in: path
+                  name: storeId
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document Store ID
+                - in: path
+                  name: loaderId
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+                  description: Document Loader ID
+            responses:
+                '200':
+                    description: Successfully deleted loader from document store
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                '400':
+                    description: Invalid ID provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Document Store not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
 components:
     securitySchemes:
         bearerAuth:
@@ -763,3 +971,102 @@ components:
                     example:
                         field: 'name'
                         issue: 'Name is required'
+        DocumentStoreLoaderForUpsert:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the document store loader
+                    example: 'loader_12345'
+                loaderId:
+                    type: string
+                    description: ID of the loader
+                    example: 'pdf'
+                loaderName:
+                    type: string
+                    description: Name of the loader
+                    example: 'PDF Loader'
+                loaderConfig:
+                    type: object
+                    description: Configuration for the loader
+                    example:
+                        source: 'https://example.com/document.pdf'
+                splitterId:
+                    type: string
+                    description: ID of the text splitter
+                    example: 'recursive'
+                splitterName:
+                    type: string
+                    description: Name of the text splitter
+                    example: 'Recursive Character Text Splitter'
+                splitterConfig:
+                    type: object
+                    description: Configuration for the text splitter
+                    example:
+                        chunkSize: 1000
+                        chunkOverlap: 200
+                files:
+                    type: array
+                    description: Files to be loaded
+                    items:
+                        $ref: '#/components/schemas/DocumentStoreLoaderFile'
+            required:
+                - loaderId
+                - splitterId
+                - files
+        VectorUpsertResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+                    description: Success status of the operation
+                    example: true
+                message:
+                    type: string
+                    description: Message describing the result of the operation
+                    example: 'Document upserted successfully'
+        DocumentStoreLoaderForRefresh:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the document store loader
+                    example: 'loader_12345'
+                loaderId:
+                    type: string
+                    description: ID of the loader
+                    example: 'pdf'
+                loaderName:
+                    type: string
+                    description: Name of the loader
+                    example: 'PDF Loader'
+                loaderConfig:
+                    type: object
+                    description: Configuration for the loader
+                    example:
+                        source: 'https://example.com/document.pdf'
+                splitterId:
+                    type: string
+                    description: ID of the text splitter
+                    example: 'recursive'
+                splitterName:
+                    type: string
+                    description: Name of the text splitter
+                    example: 'Recursive Character Text Splitter'
+                splitterConfig:
+                    type: object
+                    description: Configuration for the text splitter
+                    example:
+                        chunkSize: 1000
+                        chunkOverlap: 200
+                files:
+                    type: array
+                    description: Files to be loaded
+                    items:
+                        $ref: '#/components/schemas/DocumentStoreLoaderFile'
+            required:
+                - loaderId
+                - splitterId
+                - files

@@ -85,6 +85,24 @@ const sidebar: SidebarsConfig = {
                     id: 'api/document-store/delete-vector-store-data',
                     label: 'Delete vector store data',
                     className: 'api-method delete'
+                },
+                {
+                    type: 'doc',
+                    id: 'api/document-store/upsert-document',
+                    label: 'Upsert document to document store',
+                    className: 'api-method post'
+                },
+                {
+                    type: 'doc',
+                    id: 'api/document-store/refresh-document',
+                    label: 'Re-process and upsert all documents in document store',
+                    className: 'api-method post'
+                },
+                {
+                    type: 'doc',
+                    id: 'api/document-store/delete-loader-from-document-store',
+                    label: 'Delete specific document loader and associated chunks from document store',
+                    className: 'api-method delete'
                 }
             ]
         }

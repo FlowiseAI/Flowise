@@ -1,0 +1,169 @@
+---
+id: refresh-document
+title: 'Re-process and upsert all documents in document store'
+description: 'Re-process and upsert all existing documents in document store'
+sidebar_label: 'Re-process and upsert all documents in document store'
+hide_title: true
+hide_table_of_contents: true
+api: eJztWN1v2zYQ/1eIe2oBxXaydA96Wta0gIdtDeJkezCMgpbOFluZVEnKiSvofx+OpBTJnzEKDHvYUxzp9Lvjff6OFVi+NBBPIVVJuUJpL4xVGmEWgcGk1MJuIJ5WMEeuUd+UNoN4OqtnEaRoEi0KK5SEGO7xotAqQWMYlykrC4PaMp7nDJ+FsUIuWaPBMCHbf5hXF4EqUHMCG6cQg8aFRpPdBimIoOCar9CiNs4eQUoLbjOIQPIVQgwihQg0fiuFxhRiq0uMwCQZrjjEFdhNQVLGaiGXEMFC6RW3EENZihTq7QM1qtmEDGTjW6BDEzwa+6tKN4SZKGnJvLgCXhS5SNwJhl8MQVS7ytX8CybuNJrOawUaeivS0wZu2/coxbcSmUhRWrEQqNlCaWYz3HItyxVPUUME+MxXRU4q/KPPl1c/Xb+jk/v/x3ut6Gsd3zK1cFr2wBbp4gXtTxeUU3gkdQTx7vYj+90/boHfK7kQy31O7UN7udInVeucXSUVGFXqhJAyawsTD4fh3SBRq2HjzYE7XR2BKXJh7bnusvhsWfNp74yaysyINUIH/HzvHVZw3yhg7zOueWJRsweSnjTSHcU/5t2DRlSQZKX8OhHfEeLL0WgU+Qef1qhzXkB8NRqRcxci9yURtHOt+WZH+UeSYlaxeQgolYewuDL/dq2RvT1n04OXwpJnh3EHsNAqLRP7OTQ210AHodI87Cn4h01xBN4juU56EumO24zcvhdpWBYUCzM8ZrFxCdDqEdLi0mVKXxHlSddkmhjzjUXT1Xg5urquo24PPm79ey/Yw30z5wZ/vmYoE5Vi+rZ3Iv8uvGrUUJa+DJmpD3EIxSwCK6z7thkfbnr4FkZZC/X2923v7XWWphJOICp97wflNi4NP/fAFEoan/lXoxH92fJ0mdDQXpR5vmH4jElpkYXpy9qZDNHZo66p3FeWpfF2dATnSuXI5W5ueElmLLelaaLZNbWNYPDCCo3hy1dUyh9ekPmncyIthK3RlLk9qumFLnjmgykzHc+6rGkC+RcmVulHJ3cfAkTxI5nrfTEayzXPRcoC+WBzYh/nR+SA5ym7T7vmg9ZKMyfbPbbwpn0OpsE53vaQjXgX9cE53R/2iRNfdFo8SbNc5HsTqo9+k6aCfvKcoVPUfNmbSguBOfHNUMXCmBKbjiwMawuq7gbQGQ4+YO/2B8yiJs0G9Rq1N+D/iP0XIuaOazNFEIUyfrOg2QfD/gY0DE1wWIm0pubsQumXj1LnHbbICzGwGXJpnlAPuBiuL3cnp5+JxJU8ENTRNo6xfCnk8uI1eBMv24J11rUJZZFPlO7S1nqf1EFYjFyfdUIQhR8fGyb0298Prm1Rdt6/rD0fXkJBVKq/S3RXCUct+ttAl8/v0vkzaHifhXco9DaDfgX53cd9X0FWW646DY7oML92JT1IhRruFpzUpOBJCtUwKOI+nX5ygKrM6giEXCgX/S0aEfbam7vxbiHejR3BXXHps6y/UZqIJSrP0aWzidy+39vtb1zm3hAwlYwHvRyMBqPQA3niemBwUiPOJmVRKE0l2S+MbjFQM1hxQa+NF/+l95oylup6xWVHxeHbieOXEj2/dNb9H7/uCOGnhWlY5FxISmp37Cpkw86VTNTcikAEsUiJG2bUweIpVBUlwKPO65oefytR07XNLII114LPKfLTClJh6HcK8YLnBo+c78196KNv2e5FyAHrG+IniZysee76MkTwFTf+dsblY4au/Mkc/yLQ8gtaUzof7gxIapj+i5skwcIelZ112vzdp8kDtbdwZ7Ny0xM0fyKP8idvpHJOcF3TPasg53JZurEIHpNSi/d76VbvdKfa64aq8hIP6ivKum69Yul/ckxd/wOri8sF
+sidebar_class_name: 'post api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Re-process and upsert all documents in document store'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/document-store/refresh/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Re-process and upsert all existing documents in document store
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document Store ID' }]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            format: 'uuid',
+                            description: 'Unique identifier for the document store loader',
+                            example: 'loader_12345'
+                        },
+                        loaderId: { type: 'string', description: 'ID of the loader', example: 'pdf' },
+                        loaderName: { type: 'string', description: 'Name of the loader', example: 'PDF Loader' },
+                        loaderConfig: {
+                            type: 'object',
+                            description: 'Configuration for the loader',
+                            example: { source: 'https://example.com/document.pdf' }
+                        },
+                        splitterId: { type: 'string', description: 'ID of the text splitter', example: 'recursive' },
+                        splitterName: {
+                            type: 'string',
+                            description: 'Name of the text splitter',
+                            example: 'Recursive Character Text Splitter'
+                        },
+                        splitterConfig: {
+                            type: 'object',
+                            description: 'Configuration for the text splitter',
+                            example: { chunkSize: 1000, chunkOverlap: 200 }
+                        },
+                        files: {
+                            type: 'array',
+                            description: 'Files to be loaded',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    id: {
+                                        type: 'string',
+                                        format: 'uuid',
+                                        description: 'Unique identifier for the file',
+                                        example: 'file_12345'
+                                    },
+                                    name: { type: 'string', description: 'Name of the file', example: 'product_requirements.pdf' },
+                                    type: { type: 'string', description: 'Type of the file', example: 'pdf' },
+                                    path: { type: 'string', description: 'Path to the file', example: '/uploads/product_requirements.pdf' },
+                                    size: { type: 'integer', description: 'Size of the file in bytes', example: 1024 },
+                                    content: {
+                                        type: 'string',
+                                        description: 'Content of the file (base64 encoded)',
+                                        example: 'base64encodedcontent'
+                                    }
+                                },
+                                required: ['name', 'type'],
+                                title: 'DocumentStoreLoaderFile'
+                            }
+                        }
+                    },
+                    required: ['loaderId', 'splitterId', 'files'],
+                    title: 'DocumentStoreLoaderForRefresh'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully execute refresh operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                success: { type: 'boolean', description: 'Success status of the operation', example: true },
+                                message: {
+                                    type: 'string',
+                                    description: 'Message describing the result of the operation',
+                                    example: 'Document upserted successfully'
+                                }
+                            },
+                            title: 'VectorUpsertResponse'
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid request body',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

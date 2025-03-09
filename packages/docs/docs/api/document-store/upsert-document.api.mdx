@@ -1,0 +1,237 @@
+---
+id: upsert-document
+title: 'Upsert document to document store'
+description: 'Upsert document to document store'
+sidebar_label: 'Upsert document to document store'
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: 'post api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Upsert document to document store'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/document-store/upsert/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Upsert document to document store
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document Store ID' }]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            format: 'uuid',
+                            description: 'Unique identifier for the document store loader',
+                            example: 'loader_12345'
+                        },
+                        loaderId: { type: 'string', description: 'ID of the loader', example: 'pdf' },
+                        loaderName: { type: 'string', description: 'Name of the loader', example: 'PDF Loader' },
+                        loaderConfig: {
+                            type: 'object',
+                            description: 'Configuration for the loader',
+                            example: { source: 'https://example.com/document.pdf' }
+                        },
+                        splitterId: { type: 'string', description: 'ID of the text splitter', example: 'recursive' },
+                        splitterName: {
+                            type: 'string',
+                            description: 'Name of the text splitter',
+                            example: 'Recursive Character Text Splitter'
+                        },
+                        splitterConfig: {
+                            type: 'object',
+                            description: 'Configuration for the text splitter',
+                            example: { chunkSize: 1000, chunkOverlap: 200 }
+                        },
+                        files: {
+                            type: 'array',
+                            description: 'Files to be loaded',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    id: {
+                                        type: 'string',
+                                        format: 'uuid',
+                                        description: 'Unique identifier for the file',
+                                        example: 'file_12345'
+                                    },
+                                    name: { type: 'string', description: 'Name of the file', example: 'product_requirements.pdf' },
+                                    type: { type: 'string', description: 'Type of the file', example: 'pdf' },
+                                    path: { type: 'string', description: 'Path to the file', example: '/uploads/product_requirements.pdf' },
+                                    size: { type: 'integer', description: 'Size of the file in bytes', example: 1024 },
+                                    content: {
+                                        type: 'string',
+                                        description: 'Content of the file (base64 encoded)',
+                                        example: 'base64encodedcontent'
+                                    }
+                                },
+                                required: ['name', 'type'],
+                                title: 'DocumentStoreLoaderFile'
+                            }
+                        }
+                    },
+                    required: ['loaderId', 'splitterId', 'files'],
+                    title: 'DocumentStoreLoaderForUpsert'
+                }
+            },
+            'multipart/form-data': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        files: { type: 'array', items: { type: 'string', format: 'binary' }, description: 'Files to be uploaded' },
+                        docId: {
+                            type: 'string',
+                            nullable: true,
+                            example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766',
+                            description: 'Document ID to use existing configuration'
+                        },
+                        loader: {
+                            type: 'string',
+                            nullable: true,
+                            example: '{"name":"plainText","config":{"text":"why the sky is blue"}}',
+                            description: 'Loader configurations'
+                        },
+                        splitter: {
+                            type: 'string',
+                            nullable: true,
+                            example: '{"name":"recursiveCharacterTextSplitter","config":{"chunkSize":2000}}',
+                            description: 'Splitter configurations'
+                        },
+                        embedding: {
+                            type: 'string',
+                            nullable: true,
+                            example: '{"name":"openAIEmbeddings","config":{"modelName":"text-embedding-ada-002"}}',
+                            description: 'Embedding configurations'
+                        },
+                        vectorStore: {
+                            type: 'string',
+                            nullable: true,
+                            example: '{"name":"faiss"}',
+                            description: 'Vector Store configurations'
+                        },
+                        recordManager: {
+                            type: 'string',
+                            nullable: true,
+                            example: '{"name":"postgresRecordManager"}',
+                            description: 'Record Manager configurations'
+                        },
+                        metadata: {
+                            type: 'object',
+                            nullable: true,
+                            description: 'Metadata associated with the document',
+                            example: { foo: 'bar' }
+                        },
+                        replaceExisting: {
+                            type: 'boolean',
+                            nullable: true,
+                            description:
+                                'Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store'
+                        },
+                        createNewDocStore: { type: 'boolean', nullable: true, description: 'Whether to create a new document store' },
+                        docStore: {
+                            type: 'object',
+                            nullable: true,
+                            description: 'Only when createNewDocStore is true, pass in the new document store configuration',
+                            properties: {
+                                name: { type: 'string', example: 'plainText', description: 'Name of the new document store to be created' },
+                                description: {
+                                    type: 'string',
+                                    example: 'plainText',
+                                    description: 'Description of the new document store to be created'
+                                }
+                            }
+                        }
+                    },
+                    required: ['files']
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully execute upsert operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            success: { type: 'boolean', description: 'Success status of the operation', example: true },
+                            message: {
+                                type: 'string',
+                                description: 'Message describing the result of the operation',
+                                example: 'Document upserted successfully'
+                            }
+                        },
+                        title: 'VectorUpsertResponse'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid request body',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

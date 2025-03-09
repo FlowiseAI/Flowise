@@ -1,0 +1,112 @@
+---
+id: delete-loader-from-document-store
+title: 'Delete specific document loader and associated chunks from document store'
+description: 'Delete specific document loader and associated chunks from document store. This does not delete data from vector store.'
+sidebar_label: 'Delete specific document loader and associated chunks from document store'
+hide_title: true
+hide_table_of_contents: true
+api: eJztVlGP2zYM/isCnzZAvVyH7sVPC5ArkKEYDkuGPRyCgZGYWD1bciU5bWD4vw+U7MS5ZEOxdVgfmpc4MfXxIz9SZAcR9wGKJ9BOtTXZ+CpE5wk2EgKp1pt4hOKpgy2hJz9vYwnF06bfSNAUlDdNNM5CAQuqKJIIDSmzM0qMcKJyqMkLtFpgCE4ZjKSFKlv7HMTOu/psmjzfiXVpgtCOgrAuCp2BNUbM5gdS0fnBGCS4hjwyi6WGArL5u+T0rXf1YgBfpagkNOixpkg+pLAMc28wliDBYk1QQAJeapDg6UNrPGkoom9JQlAl1QhFB/HYZFNv7B4k7JyvMUIBbWs09FfJGSNMLMRyAb286Tsn6z9ynpOSvG8YPzTOBgoM+cP9PX9dHly1SlEIu7aqjoMMepTzhnAgQTkbyUaGwqapjEq6zN4HxuuuQ3Db96Qiq+JZxWgym5AdTwy3zlWEFiTQJ6ybinJW+vSR8OYW/aU9YGW0WC5E493BaNJfjqJymm5pcUnhwXvnRbKdMAeTmf3BElOILFlNIeD+syFH8ynquiQxIIqPGMTgJRdERFOFW2Fdos+1NvyIlaDkaDw5cdTBzlDFvZaKVoIJoWXMX7AmYYI4VW7SJpqY6CXiMOr15lqvF03Cvb9zrf0m2lci2o+3myySZ8+B/IF8JvBNsa9BsRRuLN15KqbxxwMcZpfTfpZv9Vk3zL5+1o2TqAdeBFjbPDBbX0EBZYxNKGYzbMxdLAlt+Ej+Ds3s8Poq2EfvdKv4x1Akafhd4oSIe2P3rz4Hb5VtT2CTTWXFZZUrZ7qvnORgdzCM0jRWkhHI4eHtOEh//n0NnD9jdy4dH5L74oqaPy6vpX1cih2XDtpM83JIBimUqypK+QgyrUWjBdeSmKfQ5wzMOc+gr+/u7+6HrkKVumpYGEZzsWqbxnkutcvMTrPJ5VWj4dchm/908ZpDblyINdqJiy+22b3MVXe+Jf7H9XEojUif4qyp0Fju5JTDbuiWq91YDnsaSCjO22JxWt42EkoXIp/sui0G+s1Xfc9/f2jJ8z69kXBAb3DLZfXUgTaBnzUUO6wC/U2ivvt1aPvvxfVW+RfRDH+iPXJVYZWuEZDwTMfJvstd+e94nBfMf0TklL9+00soKaWYs5Nfz5WiJk4OXg0WvgpOV97i4d3D+gEk4OUd8KLnk4ObvLouW6zdM9m+P9GM/Js59v2fLdSb2w==
+sidebar_class_name: 'delete api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading
+    as={'h1'}
+    className={'openapi__heading'}
+    children={'Delete specific document loader and associated chunks from document store'}
+></Heading>
+
+<MethodEndpoint method={'delete'} path={'/document-store/loader/{storeId}/{loaderId}'} context={'endpoint'}></MethodEndpoint>
+
+Delete specific document loader and associated chunks from document store. This does not delete data from vector store.
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[
+        { in: 'path', name: 'storeId', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document Store ID' },
+        { in: 'path', name: 'loaderId', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document Loader ID' }
+    ]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully deleted loader from document store',
+            content: { 'application/json': { schema: { type: 'object', properties: { success: { type: 'boolean', example: true } } } } }
+        },
+        '400': {
+            description: 'Invalid ID provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Document Store not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>
