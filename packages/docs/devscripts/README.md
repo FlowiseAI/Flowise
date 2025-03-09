@@ -97,12 +97,48 @@ node generate-api-docs.js
     - Updates all security references to use the selected authentication method
     - Writes the updated YAML back to the file
 
+### add-localhost-server.js
+
+This script adds or updates the localhost server in all OpenAPI YAML files without changing the authentication method.
+
+#### Features
+
+1. **Add localhost server**: Adds a localhost server if not already present
+2. **Update existing server**: Updates an existing localhost server if found
+3. **Configurable port**: Allows specifying a custom port (default: 4000)
+
+#### Usage
+
+Run the script from the `packages/docs` directory, optionally specifying a port:
+
+```bash
+# Use default port (4000)
+node devscripts/add-localhost-server.js
+
+# Specify a custom port
+node devscripts/add-localhost-server.js 3000
+```
+
+After running the script, you need to regenerate the API documentation:
+
+```bash
+node generate-api-docs.js
+```
+
+#### How It Works
+
+1. The script reads all YAML files in the `openapi` directory
+2. For each file, it:
+    - Checks if a localhost server already exists
+    - Adds a new localhost server or updates the existing one
+    - Writes the updated YAML back to the file
+
 ## Customization
 
 To modify the scripts for different requirements:
 
-1. **Change the localhost URL**: Update the `url` property in the `localhostServer` object
-2. **Change the authentication method**: Modify the `securitySchemes` object
+1. **Change the localhost URL**: Update the `url` property in the `localhostServer` object or use the port parameter
+2. **Change the authentication method**: Modify the `securitySchemes` object or use the switch-auth-method.js script
 3. **Change the API key value**: Update the `API_KEY_VALUE` constant in the script
 
 ## Troubleshooting
@@ -116,10 +152,19 @@ If you encounter issues:
 ## Complete Workflow for Updating API Documentation
 
 1. **Update OpenAPI files**: Make your changes to the YAML files in the `openapi` directory
-2. **Run the configuration script**: `node devscripts/update-openapi-config.js`
-3. **Choose authentication method (optional)**: `node devscripts/switch-auth-method.js [bearer|apikey]`
+2. **Add localhost server**: `node devscripts/add-localhost-server.js [port]`
+3. **Choose authentication method**: `node devscripts/switch-auth-method.js [bearer|apikey]`
 4. **Regenerate API docs**: `node generate-api-docs.js`
 5. **Build the site**: `npm run build` or `pnpm run build`
 6. **Test locally**: `npm run serve` or `pnpm run serve`
+
+Alternatively, you can use the all-in-one script:
+
+```bash
+node devscripts/update-openapi-config.js
+node generate-api-docs.js
+npm run build
+npm run serve
+```
 
 This workflow ensures that all OpenAPI files have consistent server and authentication configurations while preserving your specific API endpoint changes.
