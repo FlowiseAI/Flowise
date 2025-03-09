@@ -529,6 +529,11 @@ const config: Config = {
                     position: 'left'
                 },
                 {
+                    to: '/docs/api',
+                    label: 'API Reference',
+                    position: 'left'
+                },
+                {
                     to: '/docs/community',
                     label: 'Community',
                     position: 'left'

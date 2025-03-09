@@ -35,9 +35,8 @@ const sidebars: SidebarsConfig = {
                     type: 'category',
                     label: 'API Reference',
                     link: {
-                        type: 'generated-index',
-                        title: 'API Reference',
-                        description: 'Explore our API documentation'
+                        type: 'doc',
+                        id: 'api/index'
                     },
                     items: [
                         {

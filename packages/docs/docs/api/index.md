@@ -10,9 +10,31 @@ Welcome to the AnswerAI API documentation. This section provides detailed inform
 
 ## Available APIs
 
-Currently, we have the following APIs available:
+AnswerAI offers a comprehensive suite of APIs to help you integrate our AI capabilities into your applications:
 
--   [Hello World API](/docs/api/hello-world/hello) - A simple API to demonstrate the OpenAPI documentation setup
+-   Assistants API - Create and manage AI assistants
+-   Attachments API - Handle file attachments for conversations
+-   Chat Message API - Manage conversation messages
+-   Leads API - Track and manage potential customer interactions
+-   Prediction API - Get AI-powered predictions and responses
+-   Chatflows API - Create and manage conversation flows
+-   Document Store API - Manage your knowledge base documents
+-   Feedback API - Collect and process user feedback
+-   Tools API - Extend functionality with custom tools
+-   Variables API - Manage dynamic variables in your conversations
+-   Vector Upsert API - Update your vector database
+
+## Getting Your API Key
+
+To use the AnswerAI APIs, you'll need an API key. Follow these steps to generate one:
+
+1. Go to the Sidekick Studio at [https://studio.theanswer.ai/sidekick-studio/apikey](https://studio.theanswer.ai/sidekick-studio/apikey)
+2. Log in to your account if you haven't already
+3. Click on "Generate API Key"
+4. Copy your API key and store it securely
+5. Use this key in your API requests as shown in the Authentication section below
+
+**Important**: Treat your API keys like passwords. Do not share them in publicly accessible areas such as GitHub, client-side code, or in your application's source code.
 
 ## Authentication
 
