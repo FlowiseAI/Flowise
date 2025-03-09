@@ -179,7 +179,7 @@ const WhiteIconButton = styled(IconButton)(({ theme }) => ({
 }))
 
 const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
-    const { setSidekick, sidekick: selectedSidekick, setSidekick: setSelectedSidekick } = useAnswers()
+    const { chat, setSidekick, sidekick: selectedSidekick, setSidekick: setSelectedSidekick } = useAnswers()
     const router = useRouter()
     const { user } = useUser()
     const searchbarRef = useRef<HTMLInputElement>(null)
@@ -469,7 +469,12 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     }, [combinedSidekicks, searchTerm, tabValue, favorites, fuse])
 
     const handleCardClick = (sidekick: Sidekick) => {
-        handleSidekickSelect(sidekick)
+        // Only push to chat if we're not already on a chat page with an id
+        if (!chat?.id) {
+            router.push(`/chat/${sidekick.id}`)
+        } else {
+            handleSidekickSelect(sidekick)
+        }
     }
 
     const handlePreviewClick = (sidekick: Sidekick, e: React.MouseEvent) => {

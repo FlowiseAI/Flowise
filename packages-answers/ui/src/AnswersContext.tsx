@@ -170,7 +170,7 @@ export function AnswersProvider({
     // false to disable for now
 
     const [sidekick, setSidekick] = useState<SidekickListItem | undefined>(
-        sidekicks?.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid)
+        sidekicks?.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid || s.id === chat?.chatflowId)
     )
     const chatbotConfig = React.useMemo(() => sidekick?.chatbotConfig, [sidekick])
     const flowData = React.useMemo(() => sidekick?.flowData, [sidekick])
