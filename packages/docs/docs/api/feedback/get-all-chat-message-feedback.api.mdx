@@ -1,0 +1,105 @@
+---
+id: get-all-chat-message-feedback
+title: 'List all chat message feedbacks for a chatflow'
+description: 'Retrieve all feedbacks for a chatflow'
+sidebar_label: 'List all chat message feedbacks for a chatflow'
+hide_title: true
+hide_table_of_contents: true
+api: eJy1Vk1v20YQ/SuLOSUAYzkFeuGpahy3KprGiGzkYAjFiByKG5O79O7QrkDwvxezJCXqw4JstLqI5O68efvmY6cBxpWH+B4yonSJyQMsIvCU1E7zGuL7BpaEjty05hzi+0W7iCAlnzhdsbYGYvhG7DQ9kcKiUAOKV5l1ClWSI2eFfYYIbEUOxWaWQgwr4mlRfMqRv5D3uKLrwX8EFTosicn5QECLlwo5hwgMlgQx6BQicPRYa0cpxOxqisAnOZUIcQO8rmSXZ6fNCtp9xp96Ump2BW3UO3isya23HoT4TLy8ClXNrhRblemCyY3EeGfDLizev+jQW8dfXUruhM8IyNSlRAt9Ah0BCAHJsC4Y4vD9gNncOlZWsJXNXsmK0fEVMp1klVlXorhPkekD65IOSVzvaxKgtVmpzNlSca69EvNzWJFJ/x9OdSXhO85lIRnnK2s8eXH40+Wl/O1JXScJeZ/VhdrkO0SQWMNkWPZjVRU6CQuTH16MmsNToHMo59VMpR99t8sflLCUiBN41h0VnZ5UoK5DvewyvTP6sSalUzKsMy0yWKc4p40cotdQv2/xMDuEFjgV+kGPPTuKexaOQJRd7ziO8mp2PZoAS+TM6lQF3v5+9+XX+d93NxANz1dfv/8Fh/0Ruyw/dDLKitMKDL1RDRZi7AiZujo4L/33UcVUoUmVrKrnnMxO+NUzetV7gbaNgDUX1De6/abdyi+Cn4/VxMwwOYOF8uSeyClyzro3FMULyZ/Y9KgCuyQ+i1MV9m7z5lyzUcxSYtTF0ZrctZymqe56R3dgNViOpQzwg3glcW77uzHcgnLjwmSIx6TRaSstL6jYXY21KyCGnLny8WSClb7gnND4Z3IXqCdPHw9o3Tib1om89OEITXYXxzOutFl9OAdv3u3dgI2mh7kEsIvReIbYCCfuhhYu790miPqH6yGD//h+G0TTJrPBvBdvUxXTm9mh/DezUHIlmo5gaD19ILctLgLRsjP5eHF5cdnnJSYhL/v7ZhoUmM7UvK4q6yQ6u4qNVZIeUaKWZd9t/2VnWY5SWc8lmpGLP7XnMEEd5XlknNo5brMtprPnsT4KTP/wpCpQG0nvcKymz73RUBhBrFPpbbn1LCtNs0RPd65oW/ncXdCSkqn2uCxkKsuw8HSC6JkD0wtMH2g9HtOesKhlU0jn8zmcMRqd9D+e2t5I4S2D0WlOo5ntv+J0YjA6yWU7qW2ZLOTFaaHyyox5960f+d+r8Qz/AoNhljLrsfuBmU6hXbQR5IQSPiHSLUyThCoemRxcTnKCTbP+7fMtRIC7rW2vlQX0o3Sapttxax/ItO2GHcu7EGzbfwEa5K4g
+sidebar_class_name: 'get api-method'
+info_path: docs/api/feedback/feedback-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'List all chat message feedbacks for a chatflow'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/feedback/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve all feedbacks for a chatflow
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chatflow ID' },
+        { in: 'query', name: 'chatId', schema: { type: 'string' }, description: 'Chat ID to filter feedbacks (optional)' },
+        {
+            in: 'query',
+            name: 'sortOrder',
+            schema: { type: 'string', enum: ['asc', 'desc'], default: 'asc' },
+            description: 'Sort order of feedbacks (optional)'
+        },
+        {
+            in: 'query',
+            name: 'startDate',
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Filter feedbacks starting from this date (optional)'
+        },
+        {
+            in: 'query',
+            name: 'endDate',
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Filter feedbacks up to this date (optional)'
+        }
+    ]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string', format: 'uuid', description: 'Unique identifier for the feedback' },
+                                chatflowid: { type: 'string', format: 'uuid', description: 'Identifier for the chat flow' },
+                                chatId: { type: 'string', description: 'Identifier for the chat' },
+                                messageId: { type: 'string', format: 'uuid', description: 'Identifier for the message' },
+                                rating: { type: 'string', enum: ['THUMBS_UP', 'THUMBS_DOWN'], description: 'Rating for the message' },
+                                content: { type: 'string', description: 'Feedback content' },
+                                createdDate: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Date and time when the feedback was created'
+                                }
+                            },
+                            title: 'ChatMessageFeedback'
+                        }
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' },
+                            details: { type: 'object', description: 'Additional error details' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

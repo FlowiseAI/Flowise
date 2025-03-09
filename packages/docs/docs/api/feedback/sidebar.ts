@@ -16,15 +16,21 @@ const sidebar: SidebarsConfig = {
             items: [
                 {
                     type: 'doc',
-                    id: 'api/feedback/submit-feedback',
-                    label: 'Submit feedback',
+                    id: 'api/feedback/create-chat-message-feedback-for-chatflow',
+                    label: 'Create new chat message feedback',
                     className: 'api-method post'
                 },
                 {
                     type: 'doc',
-                    id: 'api/feedback/get-feedback',
-                    label: 'Get feedback by ID',
+                    id: 'api/feedback/get-all-chat-message-feedback',
+                    label: 'List all chat message feedbacks for a chatflow',
                     className: 'api-method get'
+                },
+                {
+                    type: 'doc',
+                    id: 'api/feedback/update-chat-message-feedback-for-chatflow',
+                    label: 'Update chat message feedback',
+                    className: 'api-method put'
                 }
             ]
         }

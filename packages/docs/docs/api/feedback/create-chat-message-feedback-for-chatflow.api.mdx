@@ -1,0 +1,113 @@
+---
+id: create-chat-message-feedback-for-chatflow
+title: 'Create new chat message feedback'
+description: 'Create new feedback for a specific chat flow.'
+sidebar_label: 'Create new chat message feedback'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV21v2kgQ/ivWfDavCaT1p9KX6DipV1SIKh1C1bAe423M2tldQ5Hl/36atSF2oVFyuk+nfGLxzjzz9sx4XIDFjYFgCRFRuEZxDysfDIlcS3uAYFnAmlCTnuQ2hmC5Klc+pBlptDJV0xACEJrQ0ocY7WcyBjd0WyPdppqfRkm6Bx9CMkLLjNUggA9OyVO0946GvSjVHnomIyEjKTwRo/VYuQs+aHrIydj3aXiAoACRKkvK8hGzLJHCudP7YRi8ACNi2iKf7CEjCCBd/yBhwYdMs/NWkuFbGTZkjNVSbcCHKNVbtBBAnsvwzPM7JR9y8mRIyspIknZ+25hOgUDpg6gD/zcWpufQp1wcsacXcZ+FwxDbqlKXUV7sXY3GwMwLtbmESirfMs8Wf9x9fj//fjcD/3j++OXbX0y7tqGvDuqSkUb1n87AkYneUYOVHfPCj2jpyeBDtNSxcktnqKzqoQo9vvX2MalW+b09Gq+2AmXpg5U2YRsXWgRKFmByS00hBFbn5B6YLFWmIumw3+ef30RmciHImChPksPJqv/aIK8N8r9pkNKH60s9MFU7TGToSZXl1st0upPhf0l+kYYXM9D24pPWqfac7CNvnqvWqFlIFmViLrnV1pyEoeQjJh45kKNmM5UOvk7e6HLyLGnGMKR3pCuo19y1c+ecsnHKa06WGhcm8h4EvdMs422JM2jcspTrBAKIrc1M0OthJrs2JlRmT7qLsrcbnLk002mYC/5TlwJK/1ccY3Ej1abzHLx5JXsCa6xzcy5eVZ/mUndKGpvjeJwYBLUQ+PXh9tj5f35buIQxKb4+LmaffuI2S+j43oCrCN+MovF1Z3QzuOlcj8bDzvoqEp2heDu+isZjjHAM7TfBS3Tc8nliSGNgPxfkOIpbE/fE/0fo1kCEYX943enfdIZvF4NRMBoEwzfd/s3gb+ahVFHq8lkz6TReJ7PpORdnUze7t6iqirl3WB2H1+AXk6tSGXT73X7tJArXpApdqSaOEpOpN8+zLNXM1DaFmrThl80WJV+bSvxd65pry3TfomqYaKzsv/O0FWBjS3/xul8T0tJP28sSlIqz6wIq6g5sf7DE3JzBEopijYbudFKW/PghJ80fMSsfdqglrrkqy1XpQ0wYknYte08H9rDytbNgyyye5OzB2Qzk5qw0JkJQZp+UXTXmx+zLfMGtVH/BbN2ABI17x8Q9BAD8ZcXarkPdswISVJvcTUWoMLk42O7bX/rURVVfoTo0PCyKSmKR3pMqS/DrUCz/h3JVluU/A17N1w==
+sidebar_class_name: 'post api-method'
+info_path: docs/api/feedback/feedback-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Create new chat message feedback'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/feedback'} context={'endpoint'}></MethodEndpoint>
+
+Create new feedback for a specific chat flow.
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', format: 'uuid', description: 'Unique identifier for the feedback' },
+                        chatflowid: { type: 'string', format: 'uuid', description: 'Identifier for the chat flow' },
+                        chatId: { type: 'string', description: 'Identifier for the chat' },
+                        messageId: { type: 'string', format: 'uuid', description: 'Identifier for the message' },
+                        rating: { type: 'string', enum: ['THUMBS_UP', 'THUMBS_DOWN'], description: 'Rating for the message' },
+                        content: { type: 'string', description: 'Feedback content' },
+                        createdDate: { type: 'string', format: 'date-time', description: 'Date and time when the feedback was created' }
+                    },
+                    title: 'ChatMessageFeedback'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Feedback successfully created',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', format: 'uuid', description: 'Unique identifier for the feedback' },
+                            chatflowid: { type: 'string', format: 'uuid', description: 'Identifier for the chat flow' },
+                            chatId: { type: 'string', description: 'Identifier for the chat' },
+                            messageId: { type: 'string', format: 'uuid', description: 'Identifier for the message' },
+                            rating: { type: 'string', enum: ['THUMBS_UP', 'THUMBS_DOWN'], description: 'Rating for the message' },
+                            content: { type: 'string', description: 'Feedback content' },
+                            createdDate: { type: 'string', format: 'date-time', description: 'Date and time when the feedback was created' }
+                        },
+                        title: 'ChatMessageFeedback'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid input provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' },
+                            details: { type: 'object', description: 'Additional error details' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' },
+                            details: { type: 'object', description: 'Additional error details' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

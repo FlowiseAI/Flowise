@@ -1,0 +1,130 @@
+---
+id: update-chat-message-feedback-for-chatflow
+title: 'Update chat message feedback'
+description: 'Update a specific feedback'
+sidebar_label: 'Update chat message feedback'
+hide_title: true
+hide_table_of_contents: true
+api: eJztV9tu2zgQ/RVinraAHF8SO62e6jYN1gt0GyQOCmxgLGhxZLGRSIWk4hqC/n0xlOxIsWOki31a5EkXDg9nzlw4U4LjKwvhHcSIYsmje1gEYDEqjHQbCO9KWCI3aKaFSyC8W1SLAATayMjcSa0ghNtccIeMM5tjJGMZsR1UADpHw0lwJiCEwot+Trj7itbyFV42kpfa0N841WsIIOeGZ+jQWK+ApFNy7hIIQPEMIQQpIACDD4U0KCB0psAAbJRgxiEswW1ykrLOSLWC6rnGdBRrNGBbFdjsAsg4QkXrPmmxIahIK4fK0SvP81RG3pr+D0tI5f6ZevkDI0dGGLLdSbS0KsW+XgHE2mTcETGFt+gZsUo+FMikQOVkLNGwWBvmEnwiuAoganj7NyfM9qEJjnk/NNizg7ivwiGIrKb5MMova9egETCFlVodQkVVZBTR899vv366+fv2CoLt+8W373/CXgRfe6hDh7S8f5yBXRRtd9Bmg9yhuOAOjxpPOdFzMsM91AufWEowWmXrBFXH/WzNLWtOgaoKwEmXYhPgzzIMqookDNpcK1sH5WgwoMcLltgiitDauEjTDaszl3z0lhBvCfE/SoizQzkwU488lYJJlReO5UY/SvFfBn+kxUEGulp8MUYb5mWf4ua121o+E+i4TO0htbo7p0JIeuUpQw+y3dmm0sPvyDs7UkDW0iXePU1jgILNLryLlHYs1oV6o3SP0vHheHRoCMOieURTQ71x1+XOK+USTY1mXngrqWcMob8tD/1SigqovSUW6+ayMCmEkDiX27Df57k8cQlyZddoTrjsPw731LoyWhQRfTTugCp4jmMdX0m16r0G76aW3YG1+u8bcmDto3YXviOOjoOm8aXvWgiC5uVyW1D/+D73pFFgXD/1t19+8ixPcXsdw2nM34/jyVlvfD48752NJ6Pe8jSOeqPow+Q0nkx4zCfQvWB/ZY8fAXZR0roHXwuyveE6F9kuB56gO/cMjAajs97gvDf6MB+Ow/EwHL0/GZwP/6JYlCrWns8mmna1a3o124/Hq5m/EjOuao/51qCxoz30UHDVW4Yng5NBoySPfKI2E8zUh8R0xm6KPNeGwrUbQu2woTs845KWbS3+sbNMvs21dRlXrSOawewlLTvGtQad4wNdE3kOf7p+nnKpiEavednkW2uUDCCUgtqLRFtHK2W55BZvTVpV9PuhQEND5iKAR24kX5IT7koQ0tK7gDDmqcUjuv523QyB79iLU90LSjc/udqQy3ha0BcEcI+besKsFlUACXKBxmtVL3yuz+7NafvTxr36S0Wh3jGNIszdUdlFq3Zd3c4pg5v5M/O1GQxf+wRY1zpqT4UvDP5fCSlXq8IXZKghKSZ4t1w8Kw/eqIMslGUtMdf3qKpqR4qjb+Klqv4BuPGJ5w==
+sidebar_class_name: 'put api-method'
+info_path: docs/api/feedback/feedback-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Update chat message feedback'}></Heading>
+
+<MethodEndpoint method={'put'} path={'/feedback/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Update a specific feedback
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chat Message Feedback ID' }]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', format: 'uuid', description: 'Unique identifier for the feedback' },
+                        chatflowid: { type: 'string', format: 'uuid', description: 'Identifier for the chat flow' },
+                        chatId: { type: 'string', description: 'Identifier for the chat' },
+                        messageId: { type: 'string', format: 'uuid', description: 'Identifier for the message' },
+                        rating: { type: 'string', enum: ['THUMBS_UP', 'THUMBS_DOWN'], description: 'Rating for the message' },
+                        content: { type: 'string', description: 'Feedback content' },
+                        createdDate: { type: 'string', format: 'date-time', description: 'Date and time when the feedback was created' }
+                    },
+                    title: 'ChatMessageFeedback'
+                }
+            }
+        }
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Feedback successfully updated',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', format: 'uuid', description: 'Unique identifier for the feedback' },
+                            chatflowid: { type: 'string', format: 'uuid', description: 'Identifier for the chat flow' },
+                            chatId: { type: 'string', description: 'Identifier for the chat' },
+                            messageId: { type: 'string', format: 'uuid', description: 'Identifier for the message' },
+                            rating: { type: 'string', enum: ['THUMBS_UP', 'THUMBS_DOWN'], description: 'Rating for the message' },
+                            content: { type: 'string', description: 'Feedback content' },
+                            createdDate: { type: 'string', format: 'date-time', description: 'Date and time when the feedback was created' }
+                        },
+                        title: 'ChatMessageFeedback'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid input provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' },
+                            details: { type: 'object', description: 'Additional error details' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Feedback with the specified ID was not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' },
+                            details: { type: 'object', description: 'Additional error details' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code' },
+                            message: { type: 'string', description: 'Error message' },
+                            details: { type: 'object', description: 'Additional error details' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>
