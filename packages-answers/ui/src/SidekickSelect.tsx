@@ -358,13 +358,17 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     }, [combinedSidekicks, favorites, allCategories])
 
     const handleSidekickSelect = (sidekick: Sidekick) => {
-        setSelectedSidekick(sidekick)
-        setSidekick(sidekick)
-        setOpen(false)
-        setIsMarketplaceDialogOpen(false)
-        const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
-        sidekickHistory.lastUsed = sidekick
-        localStorage.setItem('sidekickHistory', JSON.stringify(sidekickHistory))
+        if (!chat?.id) {
+            router.push(`/chat/${sidekick.id}`)
+        } else {
+            setSelectedSidekick(sidekick)
+            setSidekick(sidekick)
+            setOpen(false)
+            setIsMarketplaceDialogOpen(false)
+            const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
+            sidekickHistory.lastUsed = sidekick
+            localStorage.setItem('sidekickHistory', JSON.stringify(sidekickHistory))
+        }
     }
 
     const handleMoreClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -469,12 +473,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     }, [combinedSidekicks, searchTerm, tabValue, favorites, fuse])
 
     const handleCardClick = (sidekick: Sidekick) => {
-        // Only push to chat if we're not already on a chat page with an id
-        if (!chat?.id) {
-            router.push(`/chat/${sidekick.id}`)
-        } else {
-            handleSidekickSelect(sidekick)
-        }
+        handleSidekickSelect(sidekick)
     }
 
     const handlePreviewClick = (sidekick: Sidekick, e: React.MouseEvent) => {
