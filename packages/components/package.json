@@ -4,6 +4,9 @@
     "description": "Flowiseai Components",
     "main": "dist/src/index",
     "types": "dist/src/index.d.ts",
+    "files": [
+        "dist"
+    ],
     "scripts": {
         "build": "tsc && gulp",
         "dev:gulp": "gulp",

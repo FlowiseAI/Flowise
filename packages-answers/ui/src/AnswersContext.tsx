@@ -364,10 +364,10 @@ export function AnswersProvider({
                     question: content,
                     chatId,
                     journeyId,
-                    history: messages?.map(({ content, role }) => ({
-                        message: content,
-                        type: role === 'assistant' ? 'apiMessage' : 'userMessage'
-                    })),
+                    // history: messages?.map(({ content, role }) => ({
+                    //     message: content,
+                    //     type: role === 'assistant' ? 'apiMessage' : 'userMessage'
+                    // })),
                     uploads: files,
                     audio,
                     chatType: 'ANSWERAI'

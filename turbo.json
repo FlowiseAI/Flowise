@@ -49,6 +49,7 @@
         "NEXT_PUBLIC_GOOGLE_DEVELOPER_KEY",
         "NEXT_PUBLIC_GOOGLE_CLIENT_ID"
     ],
+    
     "pipeline": {
         "//#dev-docker": {
             "cache": false
