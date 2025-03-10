@@ -5,7 +5,6 @@
     "scripts": {
         "build": "tsc",
         "start": "node dist/index.js",
-        "dev": "concurrently \"tsc-watch --noClear -p ./tsconfig.json\" \"nodemon\"",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
     },
     "license": "SEE LICENSE IN LICENSE.md",

@@ -28,7 +28,7 @@
         "start:default": "cd bin && ./run start",
         "start-worker:windows": "cd bin && run worker",
         "start-worker:default": "cd bin && ./run worker",
-        "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"pnpm start\"",
+        "dev": "nodemon",
         "oclif-dev": "run-script-os",
         "oclif-dev:windows": "cd bin && dev start",
         "oclif-dev:default": "cd bin && ./dev start",
