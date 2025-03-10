@@ -859,6 +859,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         const input = params.question
         const username = localStorage.getItem('username')
         const password = localStorage.getItem('password')
+        const token = sessionStorage.getItem('access_token')
         params.streaming = true
         await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
             openWhenHidden: true,
@@ -866,7 +867,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             body: JSON.stringify(params),
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: username && password ? `Basic ${btoa(`${username}:${password}`)}` : undefined,
+                Authorization: token ? `Bearer ${token}` : username && password ? `Basic ${btoa(`${username}:${password}`)}` : undefined,
                 'x-request-from': 'internal'
             },
             async onopen(response) {

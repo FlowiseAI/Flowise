@@ -531,6 +531,7 @@ const upsertChat = async ({
         const chatRepository = appServer.AppDataSource.getRepository(Chat)
 
         const chatProperties = {
+            id: chatflowChatId,
             title: prompt,
             chatflowChatId,
             filters,
@@ -539,20 +540,21 @@ const upsertChat = async ({
             chatflow: { id: chatflowId }
         }
 
-        let chat: Chat
-        if (!id) {
+        let chat: Chat | undefined
+        if (chatflowChatId) {
+            const existingChat = await chatRepository.findOneBy({ chatflowChatId })
+            if (existingChat) chat = chatRepository.merge(existingChat, chatProperties)
+        }
+        if (!chat) {
             // Create new chat
             chat = chatRepository.create(chatProperties)
-        } else {
-            // Update existing chat
-            const existingChat = await chatRepository.findOneBy({ id })
-            if (!existingChat) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chat ${id} not found`)
-            }
-            chat = chatRepository.merge(existingChat, chatProperties)
         }
-
-        return await chatRepository.save(chat)
+        if (chat) {
+            const updatedChat = await chatRepository.save(chat)
+            return updatedChat
+        } else {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chat ${id} not found`)
+        }
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: chatflowsService.upsertChat - ${getErrorMessage(error)}`)
     }

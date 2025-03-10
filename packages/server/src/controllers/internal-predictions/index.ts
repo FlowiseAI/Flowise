@@ -3,7 +3,7 @@ import { utilBuildChatflow } from '../../utils/buildChatflow'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { getErrorMessage } from '../../errors/utils'
 import { MODE } from '../../Interface'
-
+import chatflowsService from '../../services/chatflows'
 // Send input message and get prediction result (Internal)
 const createInternalPrediction = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -12,6 +12,16 @@ const createInternalPrediction = async (req: Request, res: Response, next: NextF
             return
         } else {
             const apiResponse = await utilBuildChatflow(req, true)
+            const { chatId, question: prompt } = req.body
+            if (chatId) {
+                await chatflowsService.upsertChat({
+                    id: chatId,
+                    user: req.user,
+                    prompt,
+                    chatflowId: req.params.id,
+                    chatflowChatId: apiResponse.chatId
+                })
+            }
             if (apiResponse) return res.json(apiResponse)
         }
     } catch (error) {
@@ -37,6 +47,16 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
         }
 
         const apiResponse = await utilBuildChatflow(req, true)
+        const { question: prompt } = req.body
+        if (chatId) {
+            await chatflowsService.upsertChat({
+                id: chatId,
+                user: req.user,
+                prompt,
+                chatflowId: req.params.id,
+                chatflowChatId: apiResponse.chatId
+            })
+        }
         sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
     } catch (error) {
         if (chatId) {
