@@ -951,7 +951,7 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
 
 const convertCustomMessagesToBaseMessages = (messages: string[], name: string, additional_kwargs: ICommonObject) => {
   return messages.map((message) => {
-    return new HumanMessage({
+    return new AIMessage({
       content: message,
       name,
       additional_kwargs: Object.keys(additional_kwargs).length ? additional_kwargs : undefined
