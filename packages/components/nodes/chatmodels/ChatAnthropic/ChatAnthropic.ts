@@ -113,6 +113,23 @@ class ChatAnthropic_ChatModels implements INode {
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
+            },
+            {
+                label: 'Image Resolution',
+                name: 'imageResolution',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Allow PDF Uploads',
+                name: 'allowPdfUploads',
+                type: 'boolean',
+                description:
+                    'Allow PDF input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#pdf" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
             }
         ]
     }
@@ -134,11 +151,12 @@ class ChatAnthropic_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const extendedThinking = nodeData.inputs?.extendedThinking as boolean
         const budgetTokens = nodeData.inputs?.budgetTokens as string
+        const imageResolution = nodeData.inputs?.imageResolution as string
+        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const allowPdfUploads = nodeData.inputs?.allowPdfUploads as boolean
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const anthropicApiKey = getCredentialParam('anthropicApiKey', credentialData, nodeData)
-
-        const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
         const obj: Partial<AnthropicInput> & BaseLLMParams & { anthropicApiKey?: string } = {
             temperature: parseFloat(temperature),
@@ -161,7 +179,11 @@ class ChatAnthropic_ChatModels implements INode {
 
         const multiModalOption: IMultiModalOption = {
             image: {
-                allowImageUploads: allowImageUploads ?? false
+                allowImageUploads: allowImageUploads ?? false,
+                imageResolution: imageResolution
+            },
+            pdf: {
+                allowPdfUploads: allowPdfUploads ?? false
             }
         }
 
