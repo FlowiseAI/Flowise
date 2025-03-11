@@ -75,8 +75,10 @@ export const utilGetChatMessage = async (
         if (sessionId) {
             query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
         }
-        if (userId && !user.roles?.includes('Admin')) {
-            query.andWhere('chat_message.userId = :userId', { userId })
+
+        // Non-admin users can only see their own messages
+        if (!user.roles?.includes('Admin')) {
+            query.andWhere('chat_message.userId = :userId', { userId: userId ?? user.id })
         }
 
         // set date range
@@ -114,7 +116,8 @@ export const utilGetChatMessage = async (
             chatId,
             memoryType: memoryType ?? undefined,
             sessionId: sessionId ?? undefined,
-            userId: user.roles?.includes('Admin') ? undefined : userId,
+            // Non-admin users can only see their own messages
+            userId: !user.roles?.includes('Admin') ? userId ?? user.id : undefined,
             ...(fromDate && { createdDate: MoreThanOrEqual(fromDate) }),
             ...(toDate && { createdDate: LessThanOrEqual(toDate) }),
             id: messageId ?? undefined
