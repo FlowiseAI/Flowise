@@ -8,3 +8,4 @@ packages:
     - 'packages/embed'
     - 'packages/embed-react'
     - 'packages/docs'
+    - 'packages/api-documentation'

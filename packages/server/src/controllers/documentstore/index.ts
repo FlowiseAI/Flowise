@@ -4,6 +4,8 @@ import documentStoreService from '../../services/documentstore'
 import { DocumentStore } from '../../database/entities/DocumentStore'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { DocumentStoreDTO } from '../../Interface'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 
 const createDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -88,12 +90,15 @@ const getDocumentStoreFileChunks = async (req: Request, res: Response, next: Nex
                 `Error: documentStoreController.getDocumentStoreFileChunks - fileId not provided!`
             )
         }
+        const appDataSource = getRunningExpressApp().AppDataSource
         const page = req.params.pageNo ? parseInt(req.params.pageNo) : 1
         const apiResponse = await documentStoreService.getDocumentStoreFileChunks(
+            appDataSource,
             req.params.storeId,
             req.params.fileId,
             page,
-            req.user?.id!
+            req.user?.id!,
+            req.user?.organizationId!
         )
         return res.json(apiResponse)
     } catch (error) {
@@ -108,13 +113,15 @@ const syncAndRefreshChunks = async (req: Request, res: Response, next: NextFunct
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'Store ID and File ID are required')
         }
 
-        const apiResponse = await documentStoreService.syncAndRefreshChunks(storeId, fileId, req.user?.id!, req.user?.organizationId!)
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'User is required')
+        }
+        const apiResponse = await documentStoreService.syncAndRefreshChunks(storeId, fileId, req.user.id!, req.user.organizationId!)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
     }
 }
-
 const deleteDocumentStoreFileChunk = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params.storeId === 'undefined' || req.params.storeId === '') {
@@ -190,16 +197,44 @@ const editDocumentStoreFileChunk = async (req: Request, res: Response, next: Nex
     }
 }
 
-const processFileChunks = async (req: Request, res: Response, next: NextFunction) => {
+const saveProcessingLoader = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const appServer = getRunningExpressApp()
         if (typeof req.body === 'undefined') {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
-                `Error: documentStoreController.processFileChunks - body not provided!`
+                `Error: documentStoreController.saveProcessingLoader - body not provided!`
             )
         }
         const body = req.body
-        const apiResponse = await documentStoreService.processAndSaveChunks(body, req.user?.id!, req.user?.organizationId!)
+        const apiResponse = await documentStoreService.saveProcessingLoader(appServer.AppDataSource, {
+            ...body,
+            userId: req.user?.id!,
+            organizationId: req.user?.organizationId!
+        })
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const processLoader = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.loaderId === 'undefined' || req.params.loaderId === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.processLoader - loaderId not provided!`
+            )
+        }
+        if (typeof req.body === 'undefined') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.processLoader - body not provided!`
+            )
+        }
+        const docLoaderId = req.params.loaderId
+        const body = req.body
+        const apiResponse = await documentStoreService.processLoaderMiddleware(body, docLoaderId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -262,7 +297,7 @@ const previewFileChunks = async (req: Request, res: Response, next: NextFunction
         }
         const body = req.body
         body.preview = true
-        const apiResponse = await documentStoreService.previewChunks(body)
+        const apiResponse = await documentStoreService.previewChunksMiddleware(body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -284,9 +319,15 @@ const insertIntoVectorStore = async (req: Request, res: Response, next: NextFunc
             throw new Error('Error: documentStoreController.insertIntoVectorStore - body not provided!')
         }
         const body = req.body
-        const apiResponse = await documentStoreService.insertIntoVectorStore(body)
+        const apiResponse = await documentStoreService.insertIntoVectorStoreMiddleware(body)
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.SUCCESS
+        })
         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.FAILURE
+        })
         next(error)
     }
 }
@@ -325,7 +366,9 @@ const saveVectorStoreConfig = async (req: Request, res: Response, next: NextFunc
             throw new Error('Error: documentStoreController.saveVectorStoreConfig - body not provided!')
         }
         const body = req.body
-        const apiResponse = await documentStoreService.saveVectorStoreConfig(body)
+        const appDataSource = getRunningExpressApp().AppDataSource
+        const componentNodes = getRunningExpressApp().nodesPool.componentNodes
+        const apiResponse = await documentStoreService.saveVectorStoreConfig(appDataSource, componentNodes, body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -372,6 +415,93 @@ const getRecordManagerProviders = async (req: Request, res: Response, next: Next
     }
 }
 
+const upsertDocStoreMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.upsertDocStoreMiddleware - storeId not provided!`
+            )
+        }
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.upsertDocStoreMiddleware - body not provided!')
+        }
+        const body = req.body
+        const files = (req.files as Express.Multer.File[]) || []
+        const apiResponse = await documentStoreService.upsertDocStoreMiddleware(req.params.id, body, files)
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.SUCCESS
+        })
+        return res.json(apiResponse)
+    } catch (error) {
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.FAILURE
+        })
+        next(error)
+    }
+}
+
+const refreshDocStoreMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.refreshDocStoreMiddleware - storeId not provided!`
+            )
+        }
+        const body = req.body
+        const apiResponse = await documentStoreService.refreshDocStoreMiddleware(req.params.id, body)
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.SUCCESS
+        })
+        return res.json(apiResponse)
+    } catch (error) {
+        getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
+            status: FLOWISE_COUNTER_STATUS.FAILURE
+        })
+        next(error)
+    }
+}
+
+const generateDocStoreToolDesc = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.generateDocStoreToolDesc - storeId not provided!`
+            )
+        }
+        if (typeof req.body === 'undefined') {
+            throw new Error('Error: documentStoreController.generateDocStoreToolDesc - body not provided!')
+        }
+        const apiResponse = await documentStoreService.generateDocStoreToolDesc(req.params.id, req.body.selectedChatModel)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getDocStoreConfigs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params.id === 'undefined' || req.params.id === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.getDocStoreConfigs - storeId not provided!`
+            )
+        }
+        if (typeof req.params.loaderId === 'undefined' || req.params.loaderId === '') {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: documentStoreController.getDocStoreConfigs - doc loader Id not provided!`
+            )
+        }
+        const apiResponse = await documentStoreService.findDocStoreAvailableConfigs(req.params.id, req.params.loaderId)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     deleteDocumentStore,
     createDocumentStore,
@@ -381,7 +511,7 @@ export default {
     getDocumentStoreFileChunks,
     syncAndRefreshChunks,
     updateDocumentStore,
-    processFileChunks,
+    processLoader,
     previewFileChunks,
     getDocumentLoaders,
     deleteDocumentStoreFileChunk,
@@ -393,5 +523,10 @@ export default {
     saveVectorStoreConfig,
     queryVectorStore,
     deleteVectorStoreFromStore,
-    updateVectorStoreConfigOnly
+    updateVectorStoreConfigOnly,
+    upsertDocStoreMiddleware,
+    refreshDocStoreMiddleware,
+    saveProcessingLoader,
+    generateDocStoreToolDesc,
+    getDocStoreConfigs
 }

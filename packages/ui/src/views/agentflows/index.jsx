@@ -59,8 +59,20 @@ const Agentflows = () => {
     const getAllAgentflowsApi = useApi(chatflowsApi.getAllAgentflows)
     const getMarketplaceAgentflowsApi = useApi(marketplacesApi.getAllTemplatesFromMarketplaces)
 
+    const handleChange = (event, nextView) => {
+        if (nextView === null) return
+        localStorage.setItem('flowDisplayStyle', nextView)
+        setView(nextView)
+    }
+
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue)
+    }
+
+    const onLoginClick = (username, password) => {
+        localStorage.setItem('username', username)
+        localStorage.setItem('password', password)
+        navigate(0)
     }
 
     const addNew = () => {

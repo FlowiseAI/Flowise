@@ -17,6 +17,7 @@
         "AWS_S3_BUCKET",
         "AWS_S3_REGION",
         "AWS_SECRET_ACCESS_KEY",
+        "CHATFLOW_DOMAIN_OVERRIDE",
         "DATABASE_PORT",
         "DATABASE_URL",
         "DATABASE_URL",
@@ -48,6 +49,7 @@
         "NEXT_PUBLIC_GOOGLE_DEVELOPER_KEY",
         "NEXT_PUBLIC_GOOGLE_CLIENT_ID"
     ],
+    
     "pipeline": {
         "//#dev-docker": {
             "cache": false
@@ -63,6 +65,11 @@
         },
         "//#db:studio": {
             "cache": false
+        },
+        "flowise-components:build": {
+            "cache": false,
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**", "build/**", ".next/**"]
         },
         "build": {
             "dependsOn": ["^build"],
@@ -86,7 +93,6 @@
             "outputs": ["dist/**"]
         },
         "db#build": {
-            "dependsOn": [],
             "outputs": ["dist/**", "generated/**"],
 
             "outputMode": "new-only"

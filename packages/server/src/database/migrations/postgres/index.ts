@@ -40,6 +40,10 @@ import { AddPlans1722954481004 } from './1722954481003-AddPlans'
 import { ApiKeysUserAndOrg1727817692110 } from './1727817692110-ApiKeysUserAndOrg'
 import { ToolVisibility1730491825527 } from './1730491825527-ToolVisibility'
 import { AddChat1732145631409 } from './1732145631409-AddChat'
+import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
+import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
+import { AddFollowUpPrompts1726666309552 } from './1726666309552-AddFollowUpPrompts'
+import { AddTypeToAssistant1733011290987 } from './1733011290987-AddTypeToAssistant'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -83,5 +87,9 @@ export const postgresMigrations = [
     AddPlans1722954481004,
     ApiKeysUserAndOrg1727817692110,
     ToolVisibility1730491825527,
-    AddChat1732145631409
+    AddChat1732145631409,
+    AddCustomTemplate1725629836652,
+    AddArtifactsToChatMessage1726156258465,
+    AddFollowUpPrompts1726666309552,
+    AddTypeToAssistant1733011290987
 ]

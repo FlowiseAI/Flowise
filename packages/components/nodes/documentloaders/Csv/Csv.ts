@@ -1,8 +1,7 @@
-import { omit } from 'lodash'
-import { ICommonObject, IDocument, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
-import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
-import { getFileFromStorage, handleEscapeCharacters } from '../../../src'
+import { CSVLoader } from './CsvLoader'
+import { getFileFromStorage, handleDocumentLoaderDocuments, handleDocumentLoaderMetadata, handleDocumentLoaderOutput } from '../../../src'
+import { ICommonObject, IDocument, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class Csv_DocumentLoaders implements INode {
     label: string
@@ -19,7 +18,7 @@ class Csv_DocumentLoaders implements INode {
     constructor() {
         this.label = 'Csv File'
         this.name = 'csvFile'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'Document'
         this.icon = 'csv.svg'
         this.category = 'Document Loaders'
@@ -82,21 +81,11 @@ class Csv_DocumentLoaders implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+    getFiles(nodeData: INodeData) {
         const csvFileBase64 = nodeData.inputs?.csvFile as string
-        const columnName = nodeData.inputs?.columnName as string
-        const metadata = nodeData.inputs?.metadata
-        const output = nodeData.outputs?.output as string
-        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
 
-        let omitMetadataKeys: string[] = []
-        if (_omitMetadataKeys) {
-            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
-        }
-
-        let docs: IDocument[] = []
         let files: string[] = []
+        let fromStorage: boolean = true
 
         if (csvFileBase64.startsWith('FILE-STORAGE::')) {
             const fileName = csvFileBase64.replace('FILE-STORAGE::', '')
@@ -105,20 +94,6 @@ class Csv_DocumentLoaders implements INode {
             } else {
                 files = [fileName]
             }
-            const chatflowid = options.chatflowid
-
-            for (const file of files) {
-                const fileData = await getFileFromStorage(file, chatflowid)
-                const blob = new Blob([fileData])
-                const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
-
-                if (textSplitter) {
-                    docs = await loader.load()
-                    docs = await textSplitter.splitDocuments(docs)
-                } else {
-                    docs.push(...(await loader.load()))
-                }
-            }
         } else {
             if (csvFileBase64.startsWith('[') && csvFileBase64.endsWith(']')) {
                 files = JSON.parse(csvFileBase64)
@@ -126,63 +101,49 @@ class Csv_DocumentLoaders implements INode {
                 files = [csvFileBase64]
             }
 
-            for (const file of files) {
-                const splitDataURI = file.split(',')
-                splitDataURI.pop()
-                const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
-                const blob = new Blob([bf])
-                const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
-
-                if (textSplitter) {
-                    docs = await loader.load()
-                    docs = await textSplitter.splitDocuments(docs)
-                } else {
-                    docs.push(...(await loader.load()))
-                }
-            }
+            fromStorage = false
         }
 
-        if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            docs = docs.map((doc) => ({
-                ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? {
-                              ...parsedMetadata
-                          }
-                        : omit(
-                              {
-                                  ...doc.metadata,
-                                  ...parsedMetadata
-                              },
-                              omitMetadataKeys
-                          )
-            }))
+        return { files, fromStorage }
+    }
+
+    async getFileData(file: string, { chatflowid }: { chatflowid: string }, fromStorage?: boolean) {
+        if (fromStorage) {
+            return getFileFromStorage(file, chatflowid)
         } else {
-            docs = docs.map((doc) => ({
-                ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? {}
-                        : omit(
-                              {
-                                  ...doc.metadata
-                              },
-                              omitMetadataKeys
-                          )
-            }))
+            const splitDataURI = file.split(',')
+            splitDataURI.pop()
+            return Buffer.from(splitDataURI.pop() || '', 'base64')
+        }
+    }
+
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
+        const columnName = nodeData.inputs?.columnName as string
+        const metadata = nodeData.inputs?.metadata
+        const output = nodeData.outputs?.output as string
+        const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+
+        let docs: IDocument[] = []
+
+        const chatflowid = options.chatflowid
+
+        const { files, fromStorage } = this.getFiles(nodeData)
+
+        for (const file of files) {
+            if (!file) continue
+
+            const fileData = await this.getFileData(file, { chatflowid }, fromStorage)
+            const blob = new Blob([fileData])
+            const loader = new CSVLoader(blob, columnName.trim().length === 0 ? undefined : columnName.trim())
+
+            // use spread instead of push, because it raises RangeError: Maximum call stack size exceeded when too many docs
+            docs = [...docs, ...(await handleDocumentLoaderDocuments(loader, textSplitter))]
         }
 
-        if (output === 'document') {
-            return docs
-        } else {
-            let finaltext = ''
-            for (const doc of docs) {
-                finaltext += `${doc.pageContent}\n`
-            }
-            return handleEscapeCharacters(finaltext, false)
-        }
+        docs = handleDocumentLoaderMetadata(docs, _omitMetadataKeys, metadata)
+
+        return handleDocumentLoaderOutput(docs, output)
     }
 }
 

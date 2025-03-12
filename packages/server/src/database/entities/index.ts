@@ -15,6 +15,8 @@ import { Organization } from './Organization'
 import { PaidPlan } from './PaidPlan'
 import { TrialPlan } from './TrialPlan'
 import { Chat } from './Chat'
+import { CustomTemplate } from './CustomTemplate'
+
 export const entities = {
     ChatFlow,
     ChatMessage,
@@ -32,5 +34,6 @@ export const entities = {
     Organization,
     PaidPlan,
     TrialPlan,
-    Chat
+    Chat,
+    CustomTemplate
 }

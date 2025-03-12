@@ -15,7 +15,7 @@ import HelpChatDrawer from '../HelpChatDrawer'
 import { HelpChatProvider } from '../HelpChatContext'
 import { UserProvider } from '@auth0/nextjs-auth0/client'
 
-import { Auth0Setup } from '@/AppProvider'
+import { Auth0Setup } from '@/hooks/useAuth0Setup'
 import React from 'react'
 
 export default function AppLayout({

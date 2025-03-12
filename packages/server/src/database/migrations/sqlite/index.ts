@@ -34,6 +34,10 @@ import { UpdateVisibilityType1719248473069 } from './1719248473069-UpdateVisibil
 import { CredentialsVisibility1721247848452 } from './1721247848452-CredentialsVisibility'
 import { AddDescriptionToChatFlow1722099922876 } from './1722101786123-AddDescriptionToChatflow'
 import { AddPlans1722954819677 } from './1722954819676-AddPlans'
+import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
+import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
+import { AddFollowUpPrompts1726666294213 } from './1726666294213-AddFollowUpPrompts'
+import { AddTypeToAssistant1733011290987 } from './1733011290987-AddTypeToAssistant'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -71,5 +75,9 @@ export const sqliteMigrations = [
     UpdateVisibilityType1719248473069,
     CredentialsVisibility1721247848452,
     AddDescriptionToChatFlow1722099922876,
-    AddPlans1722954819677
+    AddPlans1722954819677,
+    AddArtifactsToChatMessage1726156258465,
+    AddCustomTemplate1725629836652,
+    AddFollowUpPrompts1726666294213,
+    AddTypeToAssistant1733011290987
 ]

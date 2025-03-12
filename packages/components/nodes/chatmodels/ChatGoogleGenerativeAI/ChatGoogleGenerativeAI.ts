@@ -21,7 +21,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleGenerativeAI'
         this.name = 'chatGoogleGenerativeAI'
-        this.version = 2.0
+        this.version = 3.0
         this.type = 'ChatGoogleGenerativeAI'
         this.icon = 'GoogleGemini.svg'
         this.category = 'Chat Models'
@@ -47,7 +47,15 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'gemini-pro'
+                default: 'gemini-1.5-flash-latest'
+            },
+            {
+                label: 'Custom Model Name',
+                name: 'customModelName',
+                type: 'string',
+                placeholder: 'gemini-1.5-pro-exp-0801',
+                description: 'Custom model name to use. If provided, it will override the model selected',
+                additionalParams: true
             },
             {
                 label: 'Temperature',
@@ -56,6 +64,14 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 step: 0.1,
                 default: 0.9,
                 optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Max Output Tokens',
@@ -145,7 +161,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 name: 'allowImageUploads',
                 type: 'boolean',
                 description:
-                    'Automatically uses vision model when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent',
+                    'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
             }
@@ -165,6 +181,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
 
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
+        const customModelName = nodeData.inputs?.customModelName as string
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
@@ -177,7 +194,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
 
         const obj: Partial<GoogleGenerativeAIChatInput> = {
             apiKey: apiKey,
-            modelName: modelName,
+            modelName: customModelName || modelName,
             streaming: streaming ?? true
         }
 

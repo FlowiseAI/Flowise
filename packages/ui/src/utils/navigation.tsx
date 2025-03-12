@@ -1,3 +1,5 @@
+'use client'
+
 import { useRouter as useNextRouter, usePathname as useNextPathname } from 'next/navigation'
 import NextLink, { LinkProps as NextLinkProps } from 'next/link'
 import React from 'react'
