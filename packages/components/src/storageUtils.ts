@@ -384,20 +384,21 @@ export const getS3Config = () => {
         throw new Error('S3 storage configuration is missing')
     }
 
-    let credentials: S3ClientConfig['credentials'] | undefined
+    const s3Config: S3ClientConfig = {
+        region: region,
+        endpoint: customURL,
+        forcePathStyle: forcePathStyle
+    }
+
     if (accessKeyId && secretAccessKey) {
-        credentials = {
-            accessKeyId,
-            secretAccessKey
+        s3Config.credentials = {
+            accessKeyId: accessKeyId,
+            secretAccessKey: secretAccessKey
         }
     }
 
-    const s3Client = new S3Client({
-        credentials,
-        region,
-        endpoint: customURL,
-        forcePathStyle: forcePathStyle
-    })
+    const s3Client = new S3Client(s3Config)
+
     return { s3Client, Bucket }
 }
 

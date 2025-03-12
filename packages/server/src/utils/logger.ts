@@ -25,19 +25,17 @@ if (process.env.STORAGE_TYPE === 's3') {
         throw new Error('S3 storage configuration is missing')
     }
 
-    let credentials: S3ClientConfig['credentials'] | undefined
-    if (accessKeyId && secretAccessKey) {
-        credentials = {
-            accessKeyId,
-            secretAccessKey
-        }
-    }
-
     const s3Config: S3ClientConfig = {
         region: region,
         endpoint: customURL,
-        forcePathStyle: forcePathStyle,
-        credentials: credentials
+        forcePathStyle: forcePathStyle
+    }
+
+    if (accessKeyId && secretAccessKey) {
+        s3Config.credentials = {
+            accessKeyId: accessKeyId,
+            secretAccessKey: secretAccessKey
+        }
     }
 
     s3ServerStream = new S3StreamLogger({
