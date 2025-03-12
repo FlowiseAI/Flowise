@@ -48,17 +48,16 @@ const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<U
             return null
         }
 
-        console.log(`[AuthMiddleware] Successfully authenticated API key for user: ${user.email}`)
         return user
     } catch (error) {
-        console.error('[AuthMiddleware] Error verifying API key:', error)
-        return null
+        throw new Error('Invalid API key')
     }
 }
 
 export const authenticationHandlerMiddleware =
     ({ whitelistURLs, AppDataSource }: { whitelistURLs: string[]; AppDataSource: DataSource }) =>
     async (req: Request, res: Response, next: NextFunction) => {
+        const startTime = new Date().getTime()
         const requireAuth = /\/api\/v1\//i.test(req.url) && !whitelistURLs.some((url) => req.url.includes(url))
         const jwtMiddleware = requireAuth ? jwtCheck : jwtCheckPublic
 
@@ -70,107 +69,124 @@ export const authenticationHandlerMiddleware =
         }
 
         // Try API key authentication first
-        const apiKeyUser = await tryApiKeyAuth(req, AppDataSource)
+        let apiKeyUser: User | null = null
+        let apiKeyError: any
+        try {
+            apiKeyUser = await tryApiKeyAuth(req, AppDataSource)
+        } catch (error) {
+            apiKeyError = error
+        }
+
         if (apiKeyUser) {
-            console.log(`[AuthMiddleware] Authenticated via API key for user: ${apiKeyUser.email}`)
             req.user = apiKeyUser
-            return next()
+            // return next()
         }
 
         // Fall back to JWT authentication
         jwtMiddleware(req, res, async (jwtError?: any) => {
-            if (jwtError) {
-                console.log('[AuthMiddleware] JWT error:', jwtError)
-                return next(jwtError)
-            }
-
-            // Proceed with user synchronization if user is authenticated
-            if (!req.auth?.payload) {
-                console.log('[AuthMiddleware] No auth payload present, proceeding without authentication')
-                return next()
-            }
-
-            // Update the cookies with the authorization token for future requests with low expiry time
-            res.cookie('Authorization', req.headers.authorization, { maxAge: 900000, httpOnly: true, secure: true })
-            console.log('[AuthMiddleware] Updated auth cookie')
-
-            // Check for organization match if required
-            const userOrgId = req?.auth?.payload?.org_id
-            if (requireAuth) {
-                const validOrgs = process.env.AUTH0_ORGANIZATION_ID?.split(',') || []
-                const isInvalidOrg = validOrgs?.length > 0 && !validOrgs.includes(userOrgId)
-                if (isInvalidOrg) {
-                    console.log(`[AuthMiddleware] Organization validation failed for org ID: ${userOrgId}`)
-                    return res.status(401).send("Unauthorized: Organization doesn't match")
+            if (!req.user) {
+                if (jwtError) {
+                    console.log('[AuthMiddleware] JWT error:', jwtError)
+                    return next(jwtError)
                 }
-            }
 
-            // Get user from auth payload
-            const authUser = req.auth.payload
-            const auth0Id = authUser.sub
-            const email = authUser.email as string
-            const name = authUser.name as string
-            const roles = (authUser?.['https://theanswer.ai/roles'] || []) as string[]
-            if (!auth0Id || !email) {
-                console.log('[AuthMiddleware] Missing required auth fields (auth0Id or email)')
-                return next()
-            }
-
-            // Get organization from auth payload
-            const orgRepo = AppDataSource.getRepository(Organization)
-            let organization = await orgRepo.findOneBy({ name: authUser.org_name })
-            if (!organization) {
-                organization = orgRepo.create({ auth0Id: userOrgId, name: authUser.org_name })
-            } else {
-                organization.name = authUser.org_name
-                organization.auth0Id = userOrgId
-            }
-            await orgRepo.save(organization)
-
-            const userRepo = AppDataSource.getRepository(User)
-            let user = await userRepo.findOneBy({ auth0Id })
-            if (!user) {
-                console.log(`[AuthMiddleware] Creating new user: ${email}`)
-                user = userRepo.create({ auth0Id, email, name, organizationId: organization.id })
-            } else {
-                console.log(`[AuthMiddleware] Updating existing user: ${email}`)
-                user.email = email
-                user.name = name
-                user.organizationId = organization.id
-            }
-            // Upsert customer on Stripe if no customerId is attached
-            //  TODO: For organization specific users, we should NOT create a customer and instead link it to the org customer
-            let stripeCustomerId = user.stripeCustomerId
-            if (!stripeCustomerId) {
-                if (organization.stripeCustomerId && organization.billingPoolEnabled == true) {
-                    stripeCustomerId = organization.stripeCustomerId
-                } else {
-                    try {
-                        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
-
-                        const customer = await stripe.customers.create({
-                            email,
-                            name,
-                            metadata: {
-                                userId: user.id,
-                                auth0Id,
-                                orgId: organization.id
-                            }
-                        })
-                        stripeCustomerId = customer.id
-                        // Optionally, update the user profile in your database with the new customerId
-                    } catch (error) {
-                        console.error('Error creating/updating Stripe customers:', error)
-                        return res.status(500).send('Internal Server Error')
+                // Proceed with user synchronization if user is authenticated
+                if (!req.auth?.payload) {
+                    console.log('[AuthMiddleware] No auth payload present, proceeding without authentication')
+                    if (apiKeyError) {
+                        console.error('[AuthMiddleware] Error verifying API key:', apiKeyError)
                     }
-                    user.stripeCustomerId = stripeCustomerId
+                    return next()
                 }
+
+                // Update the cookies with the authorization token for future requests with low expiry time
+                res.cookie('Authorization', req.headers.authorization, { maxAge: 900000, httpOnly: true, secure: true })
+
+                // Check for organization match if required
+                const userOrgId = req?.auth?.payload?.org_id
+                if (requireAuth) {
+                    const validOrgs = process.env.AUTH0_ORGANIZATION_ID?.split(',') || []
+                    const isInvalidOrg = validOrgs?.length > 0 && !validOrgs.includes(userOrgId)
+                    if (isInvalidOrg) {
+                        console.log(`[AuthMiddleware] Organization validation failed for org ID: ${userOrgId}`)
+                        return res.status(401).send("Unauthorized: Organization doesn't match")
+                    }
+                }
+
+                // Get user from auth payload
+                const authUser = req.auth.payload
+                const auth0Id = authUser.sub
+                const email = authUser.email as string
+                const name = authUser.name as string
+                const roles = (authUser?.['https://theanswer.ai/roles'] || []) as string[]
+                if (!auth0Id || !email) {
+                    console.log('[AuthMiddleware] Missing required auth fields (auth0Id or email)')
+                    return next()
+                }
+
+                // Get organization from auth payload
+                const orgRepo = AppDataSource.getRepository(Organization)
+                let organization = await orgRepo.findOneBy({ name: authUser.org_name })
+                if (!organization) {
+                    organization = orgRepo.create({ auth0Id: userOrgId, name: authUser.org_name })
+                }
+
+                if (organization.auth0Id !== userOrgId || organization.name !== authUser.org_name) {
+                    organization.name = authUser.org_name
+                    organization.auth0Id = userOrgId
+                    await orgRepo.save(organization)
+                }
+                const userRepo = AppDataSource.getRepository(User)
+                let user = await userRepo.findOneBy({ auth0Id })
+
+                if (!user) {
+                    // console.log(`[AuthMiddleware] Creating new user: ${auth0Id}`)
+                    user = userRepo.create({ auth0Id, email, name, organizationId: organization.id })
+                }
+
+                if (user.email !== email || user.name !== name || user.organizationId !== organization.id) {
+                    // console.log(`[AuthMiddleware] Updating existing user: ${user.id}`)
+                    user.email = email
+                    user.name = name
+                    user.organizationId = organization.id
+                    await userRepo.save(user)
+                }
+                // Upsert customer on Stripe if no customerId is attached
+                //  TODO: For organization specific users, we should NOT create a customer and instead link it to the org customer
+                let stripeCustomerId = user.stripeCustomerId
+                if (!stripeCustomerId) {
+                    if (organization.stripeCustomerId && organization.billingPoolEnabled == true) {
+                        stripeCustomerId = organization.stripeCustomerId
+                    } else {
+                        try {
+                            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
+
+                            const customer = await stripe.customers.create({
+                                email,
+                                name,
+                                metadata: {
+                                    userId: user.id,
+                                    auth0Id,
+                                    orgId: organization.id
+                                }
+                            })
+                            stripeCustomerId = customer.id
+                            // Optionally, update the user profile in your database with the new customerId
+                        } catch (error) {
+                            console.error('Error creating/updating Stripe customers:', error)
+                            return res.status(500).send('Internal Server Error')
+                        }
+                        user.stripeCustomerId = stripeCustomerId
+                        await userRepo.save(user)
+                    }
+                }
+                req.user = { ...authUser, ...user, roles }
             }
-
-            req.user = { ...authUser, ...user, roles }
-
-            await userRepo.save(user)
-
+            console.log(
+                `[AuthMiddleware] Auth successful for user: ${req.user?.id} with ${apiKeyUser ? 'APIKEY' : 'JWT'} in ${
+                    new Date().getTime() - startTime
+                }ms`
+            )
             return next()
         })
     }

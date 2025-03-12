@@ -249,7 +249,6 @@ const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
             // Convert JSON data to ApiKey entity
             const apiKey = new ApiKey()
             Object.assign(apiKey, apiKeyData)
-            console.log(`[ApiKey] Successfully verified key: ${apiKey.keyName} (${apiKey.id})`)
             return apiKey
         } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
@@ -264,7 +263,6 @@ const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
             // Update lastUsedAt
             apiKey.lastUsedAt = new Date()
             await appServer.AppDataSource.getRepository(ApiKey).save(apiKey)
-            console.log(`[ApiKey] Successfully verified key: ${apiKey.userId}  ${apiKey.keyName} (${apiKey.id})`)
             return apiKey
         } else {
             console.error('[ApiKey] Unknown storage type configuration')
