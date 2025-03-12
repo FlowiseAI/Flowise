@@ -1,5 +1,4 @@
-import { omit } from 'lodash'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { S3Loader } from '@langchain/community/document_loaders/web/s3'
 import {
     UnstructuredLoader,
@@ -8,7 +7,13 @@ import {
     SkipInferTableTypes,
     HiResModelName
 } from '@langchain/community/document_loaders/fs/unstructured'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import {
+    getCredentialData,
+    getCredentialParam,
+    handleDocumentLoaderDocuments,
+    handleDocumentLoaderMetadata,
+    handleDocumentLoaderOutput
+} from '../../../src/utils'
 import { S3Client, GetObjectCommand, S3ClientConfig } from '@aws-sdk/client-s3'
 import { getRegions, MODEL_TYPE } from '../../../src/modelLoader'
 import { Readable } from 'node:stream'
@@ -27,11 +32,12 @@ class S3_DocumentLoaders implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs?: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'S3'
         this.name = 'S3'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Document'
         this.icon = 's3.svg'
         this.category = 'Document Loaders'
@@ -70,7 +76,8 @@ class S3_DocumentLoaders implements INode {
                 description:
                     'Your Unstructured.io URL. Read <a target="_blank" href="https://unstructured-io.github.io/unstructured/introduction.html#getting-started">more</a> on how to get started',
                 type: 'string',
-                default: 'http://localhost:8000/general/v0/general'
+                placeholder: process.env.UNSTRUCTURED_API_URL || 'http://localhost:8000/general/v0/general',
+                optional: !!process.env.UNSTRUCTURED_API_URL
             },
             {
                 label: 'Unstructured API KEY',
@@ -433,6 +440,20 @@ class S3_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     loadMethods = {
@@ -465,11 +486,7 @@ class S3_DocumentLoaders implements INode {
         const newAfterNChars = nodeData.inputs?.newAfterNChars as number
         const maxCharacters = nodeData.inputs?.maxCharacters as number
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
-
-        let omitMetadataKeys: string[] = []
-        if (_omitMetadataKeys) {
-            omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
-        }
+        const output = nodeData.outputs?.output as string
 
         let credentials: S3ClientConfig['credentials'] | undefined
 
@@ -555,48 +572,15 @@ class S3_DocumentLoaders implements INode {
 
                 const unstructuredLoader = new UnstructuredLoader(filePath, obj)
 
-                let docs = await unstructuredLoader.load()
+                let docs = await handleDocumentLoaderDocuments(unstructuredLoader)
 
-                if (metadata) {
-                    const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-                    docs = docs.map((doc) => ({
-                        ...doc,
-                        metadata:
-                            _omitMetadataKeys === '*'
-                                ? {
-                                      ...parsedMetadata
-                                  }
-                                : omit(
-                                      {
-                                          ...doc.metadata,
-                                          ...parsedMetadata,
-                                          [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                                      },
-                                      omitMetadataKeys
-                                  )
-                    }))
-                } else {
-                    docs = docs.map((doc) => ({
-                        ...doc,
-                        metadata:
-                            _omitMetadataKeys === '*'
-                                ? {}
-                                : omit(
-                                      {
-                                          ...doc.metadata,
-                                          [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey
-                                      },
-                                      omitMetadataKeys
-                                  )
-                    }))
-                }
+                docs = handleDocumentLoaderMetadata(docs, _omitMetadataKeys, metadata, sourceIdKey)
 
-                fsDefault.rmSync(path.dirname(filePath), { recursive: true })
-
-                return docs
+                return handleDocumentLoaderOutput(docs, output)
             } catch {
-                fsDefault.rmSync(path.dirname(filePath), { recursive: true })
                 throw new Error(`Failed to load file ${filePath} using unstructured loader.`)
+            } finally {
+                fsDefault.rmSync(path.dirname(filePath), { recursive: true })
             }
         }
 

@@ -26,6 +26,9 @@ import { isStructuredTool } from '@langchain/core/utils/function_calling'
 import { zodToJsonSchema } from 'zod-to-json-schema'
 import { BaseLanguageModelCallOptions } from '@langchain/core/language_models/base'
 
+const DEFAULT_IMAGE_MAX_TOKEN = 8192
+const DEFAULT_IMAGE_MODEL = 'gemini-1.5-flash-latest'
+
 interface TokenUsage {
     completionTokens?: number
     promptTokens?: number
@@ -362,9 +365,9 @@ export class ChatGoogleGenerativeAI extends LangchainChatGoogleGenerativeAI impl
     }
 
     setVisionModel(): void {
-        if (this.modelName !== 'gemini-pro-vision' && this.modelName !== 'gemini-1.5-pro-latest') {
-            this.modelName = 'gemini-1.5-pro-latest'
-            this.maxOutputTokens = this.configuredMaxToken ? this.configuredMaxToken : 8192
+        if (this.modelName === 'gemini-1.0-pro-latest') {
+            this.modelName = DEFAULT_IMAGE_MODEL
+            this.maxOutputTokens = this.configuredMaxToken ? this.configuredMaxToken : DEFAULT_IMAGE_MAX_TOKEN
         }
     }
 }
@@ -607,13 +610,13 @@ function convertResponseContentToChatGenerationChunk(
         index: number
     }
 ): ChatGenerationChunk | null {
-    if (!response.candidates || response.candidates.length === 0) {
+    if (!response || !response.candidates || response.candidates.length === 0) {
         return null
     }
     const functionCalls = response.functionCalls()
     const [candidate] = response.candidates
     const { content, ...generationInfo } = candidate
-    const text = content?.parts[0]?.text ?? ''
+    const text = content?.parts?.[0]?.text ?? ''
 
     const toolCallChunks: ToolCallChunk[] = []
     if (functionCalls) {

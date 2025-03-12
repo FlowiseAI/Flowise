@@ -9,7 +9,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/the-answerai/theanswer?style=social)](https://star-history.com/#the-answerai/theanswer)
 [![GitHub fork](https://img.shields.io/github/forks/the-answerai/theanswer?style=social)](https://github.com/the-answerai/theanswer/fork)
 
-<!-- English | [中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md) -->
+English | [繁體中文](./i18n/README-TW.md) | [簡體中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
 
 <h3>Drag & drop UI to build your customized LLM Flowise with The AnswerAI</h3>
 <a href="https://github.com/the-answerai/theanswer">
@@ -137,11 +137,12 @@ Note: The TheAnswer package is currently under development and not yet published
 
 ### Docker Compose
 
-1. Go to `docker` folder at the root of the project
-2. Copy `.env.example` file, paste it into the same location, and rename to `.env`
-3. `docker compose up -d`
-4. Open [http://localhost:3000](http://localhost:3000)
-5. You can bring the containers down by `docker compose stop`
+1. Clone the Flowise project
+2. Go to `docker` folder at the root of the project
+3. Copy `.env.example` file, paste it into the same location, and rename to `.env` file
+4. `docker compose up -d`
+5. Open [http://localhost:3000](http://localhost:3000)
+6. You can bring the containers down by `docker compose stop`
 
 ### Docker Image
 
@@ -174,6 +175,7 @@ All packages inside `packages/*` are from the original Flowise project:
 -   `embed`: Embedding functionality
 -   `embed-react`: React components for embedding
 -   `flowise-configs`: Configuration files for Flowise
+-   `api-documentation`: Auto-generated swagger-ui API docs from express
 
 ### Packages-Answers (TheAnswer-specific)
 
@@ -272,21 +274,21 @@ TheAnswer supports different environment variables to configure your instance. Y
 
 Deploy TheAnswer self-hosted in your existing infrastructure. We support various [deployments](https://docs.theanswer.ai/configuration/deployment)
 
--   [Copilot](./DEPLOYMENT_COPILOT.md)
--   [AWS](https://docs.theanswer.ai/deployment/aws)
--   [Azure](https://docs.theanswer.ai/deployment/azure)
--   [Digital Ocean](https://docs.theanswer.ai/deployment/digital-ocean)
--   [GCP](https://docs.theanswer.ai/deployment/gcp)
+-   [AWS](https://docs.theanswer.ai/configuration/deployment/aws)
+-   [Azure](https://docs.theanswer.ai/configuration/deployment/azure)
+-   [Digital Ocean](https://docs.theanswer.ai/configuration/deployment/digital-ocean)
+-   [GCP](https://docs.theanswer.ai/configuration/deployment/gcp)
+-   [Alibaba Cloud](https://computenest.console.aliyun.com/service/instance/create/default?type=user&ServiceName=Flowise社区版)
 -   <details>
       <summary>Others</summary>
 
-    -   [Railway](https://docs.theanswer.ai/deployment/railway)
+    -   [Railway](https://docs.theanswer.ai/configuration/deployment/railway)
 
         [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
 
-    -   [Render](https://docs.theanswer.ai/deployment/render)
+    -   [Render](https://docs.theanswer.ai/configuration/deployment/render)
 
-        [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.theanswer.ai/deployment/render)
+        [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.theanswer.ai/configuration/deployment/render)
 
     -   [HuggingFace Spaces](https://docs.theanswer.ai/deployment/hugging-face)
 
@@ -294,7 +296,7 @@ Deploy TheAnswer self-hosted in your existing infrastructure. We support various
 
     -   [Elestio](https://elest.io/open-source/theanswer)
 
-        [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/theanswer)
+        [![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/theanswer)
 
     -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3Dtheanswer)
 
@@ -306,9 +308,9 @@ Deploy TheAnswer self-hosted in your existing infrastructure. We support various
 
       </details>
 
-## 💻 Cloud Hosted
+## ☁️ Flowise Cloud
 
-Visit [https://theanswer.ai/](https://theanswer.ai/) to learn more about our cloud-hosted solution.
+[Get Started with Flowise Cloud](https://theanswer.ai/)
 
 ## 🙋 Support
 
@@ -338,7 +340,7 @@ For detailed contribution guidelines, please refer to our [CONTRIBUTING.md](CONT
 
 ### Contribution to Flowise Core
 
-If your contribution is related to Flowise core functionality, consider submitting it to the [Flowise repository](https://github.com/FlowiseAI/Flowise) first. Once accepted, we can integrate it into TheAnswer.
+If your contribution is related to Flowise core functionality, consider submitting it to the [Flowise repository](https://github.com/theanswer/Flowise) first. Once accepted, we can integrate it into TheAnswer.
 
 Thanks go to these awesome contributors of both TheAnswer and the original Flowise project:
 

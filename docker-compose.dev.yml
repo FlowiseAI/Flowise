@@ -1,68 +1,68 @@
 version: '3'
 
 services:
-  # dev-inngest:
-  #   image: node:18
-  #   working_dir: /app/packages/db
-  #   volumes:
-  #     - .:/app
-  #   ports:
-  #     - '8288:8288'
-  #   command: npx inngest-cli@latest dev -u http://127.0.0.1:3000/api/inngest
-  # studio:
-  #   image: node:18
-  #   working_dir: /app/packages/db
-  #   volumes:
-  #     - .:/app
-  #   ports:
-  #     - '5555:5555'
-  #   command: npx prisma studio
-  #   environment:
-  #     - DATABASE_URL=postgresql://example_user:example_password@postgres:5432/example_db?schema=public
-  #   depends_on:
-  #     - postgres
-  redis:
-    image: redis:latest
-    ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
-  postgres:
-    image: postgres:latest
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    environment:
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: example_user
-      POSTGRES_PASSWORD: example_password
-      POSTGRES_DB: example_db
-  # langchain-frontend:
-  #   image: notlangchain/langchainplus-frontend:latest
-  #   ports:
-  #     - 4173:4173
-  #   environment:
-  #     - BACKEND_URL=http://langchain-backend:8000
-  #     - PUBLIC_BASE_URL=http://localhost:8000
-  #     - PUBLIC_DEV_MODE=true
-  #   depends_on:
-  #     - langchain-backend
-  # langchain-backend:
-  #   image: notlangchain/langchainplus:latest
-  #   environment:
-  #     - PORT=8000
-  #     - LANGCHAIN_ENV=local
-  #   ports:
-  #     - 8000:8000
-  #   depends_on:
-  #     - langchain-db
-  # langchain-db:
-  #   image: postgres:14.1
-  #   environment:
-  #     - POSTGRES_PASSWORD=postgres
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_DB=postgres
+    # dev-inngest:
+    #   image: node:18
+    #   working_dir: /app/packages/db
+    #   volumes:
+    #     - .:/app
+    #   ports:
+    #     - '8288:8288'
+    #   command: npx inngest-cli@latest dev -u http://127.0.0.1:3000/api/inngest
+    # studio:
+    #   image: node:18
+    #   working_dir: /app/packages/db
+    #   volumes:
+    #     - .:/app
+    #   ports:
+    #     - '5555:5555'
+    #   command: npx prisma studio
+    #   environment:
+    #     - DATABASE_URL=postgresql://example_user:example_password@postgres:5432/example_db?schema=public
+    #   depends_on:
+    #     - postgres
+    redis:
+        image: redis:latest
+        ports:
+            - '6379:6379'
+        volumes:
+            - redis_data:/data
+    postgres:
+        image: postgres:16
+        ports:
+            - '5432:5432'
+        volumes:
+            - postgres_data:/var/lib/postgresql/data/
+        environment:
+            POSTGRES_PORT: 5432
+            POSTGRES_USER: example_user
+            POSTGRES_PASSWORD: example_password
+            POSTGRES_DB: example_db
+    # langchain-frontend:
+    #   image: notlangchain/langchainplus-frontend:latest
+    #   ports:
+    #     - 4173:4173
+    #   environment:
+    #     - BACKEND_URL=http://langchain-backend:8000
+    #     - PUBLIC_BASE_URL=http://localhost:8000
+    #     - PUBLIC_DEV_MODE=true
+    #   depends_on:
+    #     - langchain-backend
+    # langchain-backend:
+    #   image: notlangchain/langchainplus:latest
+    #   environment:
+    #     - PORT=8000
+    #     - LANGCHAIN_ENV=local
+    #   ports:
+    #     - 8000:8000
+    #   depends_on:
+    #     - langchain-db
+    # langchain-db:
+    #   image: postgres:14.1
+    #   environment:
+    #     - POSTGRES_PASSWORD=postgres
+    #     - POSTGRES_USER=postgres
+    #     - POSTGRES_DB=postgres
 volumes:
-  postgres_data:
-  redis_data:
+    postgres_data:
+    redis_data:

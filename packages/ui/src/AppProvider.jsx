@@ -21,13 +21,7 @@ import { ReactFlowContext } from '@/store/context/ReactFlowContext'
 export const Auth0Context = React.createContext({ isAuth0Ready: false })
 
 // New component to wrap Auth0 setup
-import { useAuth0Setup } from './hooks/useAuth0Setup'
-
-export const Auth0Setup = ({ children, apiHost, accessToken }) => {
-    const { isAuth0Ready, user } = useAuth0Setup(apiHost, accessToken)
-
-    return <Auth0Context.Provider value={{ isAuth0Ready, user }}>{children}</Auth0Context.Provider>
-}
+import { Auth0Setup } from './hooks/useAuth0Setup'
 
 const AppProvider = ({ children, apiHost, accessToken }) => {
     return (

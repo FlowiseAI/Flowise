@@ -19,6 +19,7 @@ import { Subscription } from './Subscription'
 import { UsageEvent } from './UsageEvent'
 import { BlockingStatus } from './BlockingStatus'
 import { StripeEvent } from './StripeEvent'
+import { CustomTemplate } from './CustomTemplate'
 
 export const entities = {
     ChatFlow,
@@ -41,7 +42,8 @@ export const entities = {
     Subscription,
     UsageEvent,
     BlockingStatus,
-    StripeEvent
+    StripeEvent,
+    CustomTemplate
 }
 
 export * from './Subscription'

@@ -1,19 +1,16 @@
 import express from 'express'
-import multer from 'multer'
-import path from 'path'
 import vectorsController from '../../controllers/vectors'
+import { getMulterStorage } from '../../utils'
 
 const router = express.Router()
-
-const upload = multer({ dest: `${path.join(__dirname, '..', '..', '..', 'uploads')}/` })
 
 // CREATE
 router.post(
     ['/upsert/', '/upsert/:id'],
-    upload.array('files'),
+    getMulterStorage().array('files'),
     vectorsController.getRateLimiterMiddleware,
     vectorsController.upsertVectorMiddleware
 )
-router.post(['/internal-upsert/', '/internal-upsert/:id'], vectorsController.createInternalUpsert)
+router.post(['/internal-upsert/', '/internal-upsert/:id'], getMulterStorage().array('files'), vectorsController.createInternalUpsert)
 
 export default router

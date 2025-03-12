@@ -2,7 +2,7 @@ import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
-import { Dialog, DialogContent, DialogTitle } from '@mui/material'
+import { Box, Dialog, DialogContent, DialogTitle, Typography } from '@mui/material'
 import ReactJson from 'flowise-react-json-view'
 
 const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
@@ -32,6 +32,25 @@ const SourceDocDialog = ({ show, dialogProps, onCancel }) => {
                 {dialogProps.title ?? 'Source Documents'}
             </DialogTitle>
             <DialogContent>
+                {data.error && (
+                    <Box
+                        sx={{
+                            p: 2,
+                            borderRadius: 1,
+                            bgcolor: 'error.light',
+                            color: 'error.dark',
+                            overflowX: 'auto',
+                            wordBreak: 'break-word'
+                        }}
+                    >
+                        <Typography variant='body2' fontWeight='medium'>
+                            Error:
+                        </Typography>
+                        <Typography variant='body2' sx={{ whiteSpace: 'pre-wrap' }}>
+                            {data.error}
+                        </Typography>
+                    </Box>
+                )}
                 <ReactJson
                     theme={customization.isDarkMode ? 'ocean' : 'rjv-default'}
                     style={{ padding: 10, borderRadius: 10 }}

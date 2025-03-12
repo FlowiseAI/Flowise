@@ -7,12 +7,21 @@ import { AgentStep } from '@langchain/core/agents'
 import { renderTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { RunnableSequence } from '@langchain/core/runnables'
 import { ChatConversationalAgent } from 'langchain/agents'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, transformBracesWithColon } from '../../../src/utils'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
-import { IVisionChatModal, FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool } from '../../../src/Interface'
+import {
+    IVisionChatModal,
+    FlowiseMemory,
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeParams,
+    IUsedTool,
+    IServerSideEventStreamer
+} from '../../../src/Interface'
 import { AgentExecutor } from '../../../src/agents'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
-import { checkInputs, Moderation } from '../../moderation/Moderation'
+import { checkInputs, Moderation, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
 const DEFAULT_PREFIX = `Assistant is a large language model trained by OpenAI.
@@ -106,13 +115,18 @@ class ConversationalAgent_Agents implements INode {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
         if (moderations && moderations.length > 0) {
             try {
                 // Use the output of the moderation chain as input for the BabyAGI agent
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                //streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (options.shouldStreamResponse) {
+                    streamResponse(sseStreamer, chatId, e.message)
+                }
                 return formatResponse(e.message)
             }
         }
@@ -125,16 +139,32 @@ class ConversationalAgent_Agents implements INode {
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
 
-        if (options.socketIO && options.socketIOClientId) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+        if (options.shouldStreamResponse) {
+            const handler = new CustomChainHandler(shouldStreamResponse ? sseStreamer : undefined, chatId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
-                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
+                if (options.sseStreamer) {
+                    sseStreamer.streamSourceDocumentsEvent(options.chatId, flatten(res.sourceDocuments))
+                }
                 sourceDocuments = res.sourceDocuments
             }
             if (res.usedTools) {
-                options.socketIO.to(options.socketIOClientId).emit('usedTools', res.usedTools)
+                sseStreamer.streamUsedToolsEvent(options.chatId, res.usedTools)
                 usedTools = res.usedTools
+            }
+            // If the tool is set to returnDirect, stream the output to the client
+            if (res.usedTools && res.usedTools.length) {
+                let inputTools = nodeData.inputs?.tools
+                inputTools = flatten(inputTools)
+                for (const tool of res.usedTools) {
+                    const inputTool = inputTools.find((inputTool: Tool) => inputTool.name === tool.tool)
+                    if (inputTool && inputTool.returnDirect && options.sseStreamer) {
+                        sseStreamer.streamTokenEvent(options.chatId, tool.toolOutput)
+                    }
+                }
+            }
+            if (sseStreamer) {
+                sseStreamer.streamEndEvent(options.chatId)
             }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
@@ -187,7 +217,7 @@ const prepareAgent = async (
     let tools = nodeData.inputs?.tools as Tool[]
     tools = flatten(tools)
     const memory = nodeData.inputs?.memory as FlowiseMemory
-    const systemMessage = nodeData.inputs?.systemMessage as string
+    let systemMessage = nodeData.inputs?.systemMessage as string
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
     const prependMessages = options?.prependMessages
@@ -196,6 +226,8 @@ const prepareAgent = async (
         llm: model,
         toolNames: tools.map((tool) => tool.name)
     })
+
+    systemMessage = transformBracesWithColon(systemMessage)
 
     const prompt = ChatConversationalAgent.createPrompt(tools, {
         systemMessage: systemMessage ? systemMessage : DEFAULT_PREFIX,

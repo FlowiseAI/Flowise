@@ -6,6 +6,7 @@ import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchai
 import { BaseMessage } from '@langchain/core/messages'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import {
+    ConversationHistorySelection,
     ICommonObject,
     IDatabaseEntity,
     INode,
@@ -15,7 +16,7 @@ import {
     ISeqAgentNode,
     ISeqAgentsState
 } from '../../../src/Interface'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, transformBracesWithColon } from '../../../src/utils'
 import {
     ExtractTool,
     checkCondition,
@@ -23,6 +24,7 @@ import {
     customGet,
     getVM,
     transformObjectPropertyToFunction,
+    filterConversationHistory,
     restructureMessages
 } from '../commonUtils'
 import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
@@ -149,7 +151,7 @@ class ConditionAgent_SeqAgents implements INode {
     constructor() {
         this.label = 'Condition Agent'
         this.name = 'seqConditionAgent'
-        this.version = 2.0
+        this.version = 3.1
         this.type = 'ConditionAgent'
         this.icon = 'condition.svg'
         this.category = 'Sequential Agents'
@@ -164,9 +166,11 @@ class ConditionAgent_SeqAgents implements INode {
                 placeholder: 'Condition Agent'
             },
             {
-                label: 'Start | Agent | LLM | Tool Node',
+                label: 'Sequential Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | LLMNode | ToolNode',
+                type: 'Start | Agent | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
+                description:
+                    'Can be connected to one of the following nodes: Start, Agent, LLM Node, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {
@@ -184,6 +188,42 @@ class ConditionAgent_SeqAgents implements INode {
                 default: examplePrompt,
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'Conversation History',
+                name: 'conversationHistorySelection',
+                type: 'options',
+                options: [
+                    {
+                        label: 'User Question',
+                        name: 'user_question',
+                        description: 'Use the user question from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Last Conversation Message',
+                        name: 'last_message',
+                        description: 'Use the last conversation message from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'All Conversation Messages',
+                        name: 'all_messages',
+                        description: 'Use all conversation messages from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Empty',
+                        name: 'empty',
+                        description:
+                            'Do not use any messages from the conversation history. ' +
+                            'Ensure to use either System Prompt, Human Prompt, or Messages History.'
+                    }
+                ],
+                default: 'all_messages',
+                optional: true,
+                description:
+                    'Select which messages from the conversation history to include in the prompt. ' +
+                    'The selected messages will be inserted between the System Prompt (if defined) and ' +
+                    'Human Prompt.',
+                additionalParams: true
             },
             {
                 label: 'Human Prompt',
@@ -350,7 +390,9 @@ class ConditionAgent_SeqAgents implements INode {
         const output = nodeData.outputs?.output as string
         const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
         let agentPrompt = nodeData.inputs?.systemMessagePrompt as string
+        agentPrompt = transformBracesWithColon(agentPrompt)
         let humanPrompt = nodeData.inputs?.humanMessagePrompt as string
+        humanPrompt = transformBracesWithColon(humanPrompt)
         const promptValuesStr = nodeData.inputs?.promptValues
         const conditionAgentStructuredOutput = nodeData.inputs?.conditionAgentStructuredOutput
         const model = nodeData.inputs?.model as BaseChatModel
@@ -481,6 +523,9 @@ const runCondition = async (
         })
     }
 
+    const historySelection = (nodeData.inputs?.conversationHistorySelection || 'all_messages') as ConversationHistorySelection
+    // @ts-ignore
+    state.messages = filterConversationHistory(historySelection, input, state)
     // @ts-ignore
     state.messages = restructureMessages(model, state)
 

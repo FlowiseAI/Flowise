@@ -51,7 +51,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window, isInIframe }) => {
         </>
     )
 
-    const container = window !== undefined ? () => window.document.body : undefined
+    const container = typeof window !== 'undefined' ? () => window.document.body : undefined
 
     return (
         <Box
@@ -83,7 +83,8 @@ const Sidebar = ({ drawerOpen, drawerToggle, window, isInIframe }) => {
                               }
                             : null),
                         borderRight: drawerOpen ? '1px solid' : 'none',
-                        borderColor: drawerOpen ? theme.palette.primary[200] + 75 : 'transparent'
+                        borderColor: drawerOpen ? theme.palette.primary[200] + 75 : 'transparent',
+                        zIndex: 1000
                     }
                 }}
                 ModalProps={{ keepMounted: true }}

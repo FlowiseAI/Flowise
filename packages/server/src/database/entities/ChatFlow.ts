@@ -56,6 +56,9 @@ export class ChatFlow implements IChatFlow {
     speechToText?: string
 
     @Column({ nullable: true, type: 'text' })
+    followUpPrompts?: string
+
+    @Column({ nullable: true, type: 'text' })
     category?: string
 
     @Column({ nullable: true, type: 'text' })
@@ -67,11 +70,11 @@ export class ChatFlow implements IChatFlow {
 
     @Index()
     @Column({ type: 'uuid', nullable: true })
-    userId?: string
+    userId: string
 
     @Index()
     @Column({ type: 'uuid', nullable: true })
-    organizationId?: string
+    organizationId: string
 
     @Column({ type: 'timestamp' })
     @CreateDateColumn()

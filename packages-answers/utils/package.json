@@ -12,7 +12,7 @@
         "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist",
         "not-dev": "tsc -w",
         "lint": "TIMING=1 eslint \"src/**/*.ts*\"",
-        "not:test": "jest",
+        "test": "jest",
         "airtable": "node -r dotenv/config airtable.js",
         "jira": "node -r dotenv/config src/jira.js",
         "slack": "node -r dotenv/config src/slack.js",

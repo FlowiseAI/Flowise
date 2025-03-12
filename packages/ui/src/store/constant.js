@@ -16,7 +16,14 @@ if (typeof sessionStorage !== 'undefined') {
     baseURL = sessionStorage.getItem('baseURL') || baseURL
 }
 export const setBaseURL = (url) => {
-    baseURL = url?.replace('8080', '4000')
+    // Check for CHATFLOW_DOMAIN_OVERRIDE
+    if (typeof process !== 'undefined' && process.env && process.env.CHATFLOW_DOMAIN_OVERRIDE) {
+        baseURL = process.env.CHATFLOW_DOMAIN_OVERRIDE
+    } else if (typeof window !== 'undefined' && window.CHATFLOW_DOMAIN_OVERRIDE) {
+        baseURL = window.CHATFLOW_DOMAIN_OVERRIDE
+    } else {
+        baseURL = url?.replace('8080', '4000')
+    }
     sessionStorage.setItem('baseURL', baseURL)
 }
 export const uiBaseURL = typeof window !== 'undefined' ? `${window?.location?.origin}/sidekick-studio` : undefined
