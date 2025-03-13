@@ -6,6 +6,7 @@ import { DataSource } from 'typeorm'
 import { User } from '../../database/entities/User'
 import { Organization } from '../../database/entities/Organization'
 import apikeyService from '../../services/apikey'
+import { QueryFailedError } from 'typeorm'
 
 const jwtCheck = auth({
     authRequired: true,
@@ -51,6 +52,140 @@ const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<U
         return user
     } catch (error) {
         throw new Error('Invalid API key')
+    }
+}
+
+/**
+ * Safely creates or updates a user with proper transaction handling to prevent race conditions
+ */
+const findOrCreateUser = async (
+    AppDataSource: DataSource,
+    auth0Id: string,
+    email: string,
+    name: string,
+    organizationId: string
+): Promise<User> => {
+    const userRepo = AppDataSource.getRepository(User)
+
+    // First, try to find the user
+    let user = await userRepo.findOneBy({ auth0Id })
+    if (user) {
+        // Update user if needed and return
+        if (user.email !== email || user.name !== name || user.organizationId !== organizationId) {
+            user.email = email
+            user.name = name
+            user.organizationId = organizationId
+            await userRepo.save(user)
+        }
+        return user
+    }
+
+    // User not found, try to create with transaction and retry logic
+    let retryCount = 0
+    const maxRetries = 3
+
+    while (retryCount < maxRetries) {
+        const queryRunner = AppDataSource.createQueryRunner()
+        await queryRunner.connect()
+        await queryRunner.startTransaction()
+
+        try {
+            // Check again inside transaction to prevent race condition
+            const existingUser = await queryRunner.manager.findOneBy(User, { auth0Id })
+            if (existingUser) {
+                await queryRunner.release()
+                return existingUser
+            }
+
+            // Create new user
+            const newUser = userRepo.create({ auth0Id, email, name, organizationId })
+            const savedUser = await queryRunner.manager.save(newUser)
+
+            await queryRunner.commitTransaction()
+            await queryRunner.release()
+
+            console.log(`[AuthMiddleware] Successfully created new user: ${savedUser.id}`)
+            return savedUser
+        } catch (error) {
+            await queryRunner.rollbackTransaction()
+            await queryRunner.release()
+
+            // If duplicate key error, retry after a short delay
+            if (error instanceof QueryFailedError && error.message.includes('duplicate key')) {
+                retryCount++
+                console.log(`[AuthMiddleware] Duplicate key error, retrying (${retryCount}/${maxRetries})`)
+                await new Promise((resolve) => setTimeout(resolve, 100 * retryCount)) // Exponential backoff
+
+                // Try to get the user that was created in parallel
+                user = await userRepo.findOneBy({ auth0Id })
+                if (user) {
+                    return user
+                }
+            } else {
+                throw error
+            }
+        }
+    }
+
+    // Last attempt to find user after retries
+    user = await userRepo.findOneBy({ auth0Id })
+    if (user) {
+        return user
+    }
+
+    throw new Error(`Failed to create or find user with auth0Id: ${auth0Id} after ${maxRetries} retries`)
+}
+
+/**
+ * Safely creates or updates an organization with proper transaction handling
+ */
+const findOrCreateOrganization = async (AppDataSource: DataSource, auth0OrgId: string, orgName: string): Promise<Organization> => {
+    const orgRepo = AppDataSource.getRepository(Organization)
+
+    let organization = await orgRepo.findOneBy({ auth0Id: auth0OrgId })
+
+    if (organization) {
+        if (organization.name !== orgName) {
+            organization.name = orgName
+            await orgRepo.save(organization)
+        }
+        return organization
+    }
+
+    // Organization not found, create with transaction
+    const queryRunner = AppDataSource.createQueryRunner()
+    await queryRunner.connect()
+    await queryRunner.startTransaction()
+
+    try {
+        // Check again inside transaction
+        organization = await queryRunner.manager.findOneBy(Organization, { auth0Id: auth0OrgId })
+        if (organization) {
+            await queryRunner.release()
+            return organization
+        }
+
+        // Create new organization
+        const newOrg = orgRepo.create({ auth0Id: auth0OrgId, name: orgName })
+        organization = await queryRunner.manager.save(newOrg)
+
+        await queryRunner.commitTransaction()
+        await queryRunner.release()
+
+        return organization
+    } catch (error) {
+        await queryRunner.rollbackTransaction()
+        await queryRunner.release()
+
+        if (error instanceof QueryFailedError && error.message.includes('duplicate key')) {
+            // If duplicate key, try to fetch the existing organization
+            organization = await orgRepo.findOneBy({ auth0Id: auth0OrgId })
+            if (organization) {
+                return organization
+            }
+        }
+
+        throw error
     }
 }
 
@@ -124,64 +259,48 @@ export const authenticationHandlerMiddleware =
                     return next()
                 }
 
-                // Get organization from auth payload
-                const orgRepo = AppDataSource.getRepository(Organization)
-                let organization = await orgRepo.findOneBy({ name: authUser.org_name })
-                if (!organization) {
-                    organization = orgRepo.create({ auth0Id: userOrgId, name: authUser.org_name })
-                }
+                try {
+                    // Get or create organization using transaction-safe method
+                    const organization = await findOrCreateOrganization(AppDataSource, userOrgId, authUser.org_name)
 
-                if (organization.auth0Id !== userOrgId || organization.name !== authUser.org_name) {
-                    organization.name = authUser.org_name
-                    organization.auth0Id = userOrgId
-                    await orgRepo.save(organization)
-                }
-                const userRepo = AppDataSource.getRepository(User)
-                let user = await userRepo.findOneBy({ auth0Id })
+                    // Get or create user using transaction-safe method
+                    const user = await findOrCreateUser(AppDataSource, auth0Id, email, name, organization.id)
 
-                if (!user) {
-                    // console.log(`[AuthMiddleware] Creating new user: ${auth0Id}`)
-                    user = userRepo.create({ auth0Id, email, name, organizationId: organization.id })
-                }
+                    // Upsert customer on Stripe if no customerId is attached
+                    let stripeCustomerId = user.stripeCustomerId
+                    if (!stripeCustomerId) {
+                        if (organization.stripeCustomerId && organization.billingPoolEnabled == true) {
+                            stripeCustomerId = organization.stripeCustomerId
+                        } else {
+                            try {
+                                const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
 
-                if (user.email !== email || user.name !== name || user.organizationId !== organization.id) {
-                    // console.log(`[AuthMiddleware] Updating existing user: ${user.id}`)
-                    user.email = email
-                    user.name = name
-                    user.organizationId = organization.id
-                    await userRepo.save(user)
-                }
-                // Upsert customer on Stripe if no customerId is attached
-                //  TODO: For organization specific users, we should NOT create a customer and instead link it to the org customer
-                let stripeCustomerId = user.stripeCustomerId
-                if (!stripeCustomerId) {
-                    if (organization.stripeCustomerId && organization.billingPoolEnabled == true) {
-                        stripeCustomerId = organization.stripeCustomerId
-                    } else {
-                        try {
-                            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
-
-                            const customer = await stripe.customers.create({
-                                email,
-                                name,
-                                metadata: {
-                                    userId: user.id,
-                                    auth0Id,
-                                    orgId: organization.id
-                                }
-                            })
-                            stripeCustomerId = customer.id
-                            // Optionally, update the user profile in your database with the new customerId
-                        } catch (error) {
-                            console.error('Error creating/updating Stripe customers:', error)
-                            return res.status(500).send('Internal Server Error')
+                                const customer = await stripe.customers.create({
+                                    email,
+                                    name,
+                                    metadata: {
+                                        userId: user.id,
+                                        auth0Id,
+                                        orgId: organization.id
+                                    }
+                                })
+                                stripeCustomerId = customer.id
+                                // Optionally, update the user profile in your database with the new customerId
+                            } catch (error) {
+                                console.error('Error creating/updating Stripe customers:', error)
+                                return res.status(500).send('Internal Server Error')
+                            }
+                            user.stripeCustomerId = stripeCustomerId
+                            await AppDataSource.getRepository(User).save(user)
                         }
-                        user.stripeCustomerId = stripeCustomerId
-                        await userRepo.save(user)
                     }
+                    req.user = { ...authUser, ...user, roles }
+                } catch (error) {
+                    console.error('[AuthMiddleware] Error during user authentication:', error)
+                    return res.status(500).send('Internal Server Error during authentication')
                 }
-                req.user = { ...authUser, ...user, roles }
             }
+
             console.log(
                 `[AuthMiddleware] Auth successful for user: ${req.user?.id} with ${apiKeyUser ? 'APIKEY' : 'JWT'} in ${
                     new Date().getTime() - startTime
