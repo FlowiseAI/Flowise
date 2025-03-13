@@ -29,7 +29,7 @@ import {
     DialogActions,
     TextField
 } from '@mui/material'
-import { useTheme } from '@mui/material/styles'
+import { darken, useTheme } from '@mui/material/styles'
 import {
     IconCircleDot,
     IconDownload,
@@ -1713,7 +1713,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     alignItems: 'center',
                     justifyContent: 'center',
                     p: 2,
-                    backgroundColor: theme.palette.grey[100]
+                    backgroundColor: theme.palette.background.paper
                 }}
             >
                 <Box
@@ -1733,8 +1733,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                             maxWidth: '600px',
                             maxHeight: '90%', // Limit height to 90% of parent
                             p: 3,
-                            backgroundColor: theme.palette.background.paper,
-                            boxShadow: theme.shadows[3],
+                            backgroundColor: customization.isDarkMode
+                                ? darken(theme.palette.background.paper, 0.2)
+                                : theme.palette.background.paper,
+                            boxShadow: customization.isDarkMode ? '0px 0px 15px 0px rgba(255, 255, 255, 0.1)' : theme.shadows[3],
                             borderRadius: 2,
                             overflowY: 'auto' // Enable vertical scrolling if content overflows
                         }}
