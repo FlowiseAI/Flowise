@@ -289,7 +289,24 @@ class Weaviate_VectorStores implements INode {
         if (weaviateTextKey) obj.textKey = weaviateTextKey
         if (weaviateMetadataKeys) obj.metadataKeys = JSON.parse(weaviateMetadataKeys.replace(/\s/g, ''))
         if (weaviateFilter) {
-            weaviateFilter = typeof weaviateFilter === 'object' ? weaviateFilter : JSON.parse(weaviateFilter)
+            // Parse the filter if it's a string
+            const parsedFilter = typeof weaviateFilter === 'object' ? weaviateFilter : JSON.parse(weaviateFilter)
+            
+            // Convert simple {key:value} format to Weaviate's expected filter structure
+            if (parsedFilter && typeof parsedFilter === 'object') {
+                // Handle the first key-value pair in the filter object
+                const entries = Object.entries(parsedFilter)
+                if (entries.length > 0) {
+                    const [key, value] = entries[0]
+                    weaviateFilter = {
+                        where: {
+                            operator: 'Equal',
+                            path: [key],
+                            valueText: String(value)
+                        }
+                    }
+                }
+            }
         }
 
         const vectorStore = (await WeaviateStore.fromExistingIndex(embeddings, obj)) as unknown as VectorStore
