@@ -54,7 +54,6 @@ async function getChat(chatId: string, user: User) {
 
     // Return chatflow chat if local chat doesn't exist
     if (chatflowChat) {
-        console.log('Chatflow Chat', chatflowChat)
         return {
             ...chatflowChat,
             chatflowChatId: chatflowChat.id
@@ -74,7 +73,7 @@ async function getChat(chatId: string, user: User) {
                   return null
               })
         : Promise.resolve(null))
-    console.log('Chatflow', chatflow)
+
     if (chatflow) {
         return {
             chatflowId: chatflow.id,
