@@ -37,7 +37,8 @@ export const WHITELIST_URLS = [
     '/api/v1/get-upload-file',
     '/api/v1/ip',
     '/api/v1/ping',
-    '/api/v1/marketplaces/templates'
+    '/api/v1/marketplaces/templates',
+    '/api/v1/billing/usage/sync'
 ]
 
 export const OMIT_QUEUE_JOB_DATA = ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool']
