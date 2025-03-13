@@ -119,6 +119,21 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
         }
     }
 
+    streamCalledToolsEvent(chatId: string, data: any) {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    eventType: 'calledTools',
+                    data
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming calledTools event:', error)
+        }
+    }
+
     streamFileAnnotationsEvent(chatId: string, data: any) {
         try {
             this.redisPublisher.publish(
@@ -164,6 +179,36 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
         }
     }
 
+    streamAgentFlowEvent(chatId: string, data: any): void {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    eventType: 'agentFlowEvent',
+                    data
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming agentFlow event:', error)
+        }
+    }
+
+    streamAgentFlowExecutedDataEvent(chatId: string, data: any): void {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    eventType: 'agentFlowExecutedData',
+                    data
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming agentFlowExecutedData event:', error)
+        }
+    }
+
     streamNextAgentEvent(chatId: string, data: any): void {
         try {
             this.redisPublisher.publish(
@@ -176,6 +221,21 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
             )
         } catch (error) {
             console.error('Error streaming nextAgent event:', error)
+        }
+    }
+
+    streamNextAgentFlowEvent(chatId: string, data: any): void {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    eventType: 'nextAgentFlow',
+                    data
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming nextAgentFlow event:', error)
         }
     }
 
@@ -251,6 +311,21 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
             }
         } catch (error) {
             console.error('Error streaming metadata event:', error)
+        }
+    }
+
+    streamUsageMetadataEvent(chatId: string, data: any): void {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    eventType: 'usageMetadata',
+                    data
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming usage metadata event:', error)
         }
     }
 

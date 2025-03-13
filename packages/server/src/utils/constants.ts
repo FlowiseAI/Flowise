@@ -28,6 +28,7 @@ export const INPUT_PARAMS_TYPE = [
     'asyncMultiOptions',
     'options',
     'multiOptions',
+    'array',
     'datagrid',
     'string',
     'number',

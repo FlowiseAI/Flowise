@@ -766,17 +766,23 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
  * @param {IMessage[]} chatHistory
  * @returns {string}
  */
-export const convertChatHistoryToText = (chatHistory: IMessage[] = []): string => {
+export const convertChatHistoryToText = (chatHistory: IMessage[] | { content: string; role: string }[] = []): string => {
     return chatHistory
         .map((chatMessage) => {
-            if (chatMessage.type === 'apiMessage') {
-                return `Assistant: ${chatMessage.message}`
-            } else if (chatMessage.type === 'userMessage') {
-                return `Human: ${chatMessage.message}`
+            if (!chatMessage) return ''
+            const messageContent = 'message' in chatMessage ? chatMessage.message : chatMessage.content
+            if (!messageContent || messageContent.trim() === '') return ''
+
+            const messageType = 'type' in chatMessage ? chatMessage.type : chatMessage.role
+            if (messageType === 'apiMessage' || messageType === 'assistant') {
+                return `Assistant: ${messageContent}`
+            } else if (messageType === 'userMessage' || messageType === 'user') {
+                return `Human: ${messageContent}`
             } else {
-                return `${chatMessage.message}`
+                return `${messageContent}`
             }
         })
+        .filter((message) => message !== '') // Remove empty messages
         .join('\n')
 }
 

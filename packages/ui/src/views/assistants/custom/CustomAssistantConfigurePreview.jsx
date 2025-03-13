@@ -1000,7 +1000,7 @@ const CustomAssistantConfigurePreview = () => {
                                                         sx={{ borderRadius: 20 }}
                                                         size='small'
                                                         variant='text'
-                                                        onClick={() => generateInstruction(customAssistantInstruction)}
+                                                        onClick={() => generateInstruction()}
                                                         startIcon={<IconWand size={20} />}
                                                     >
                                                         Generate

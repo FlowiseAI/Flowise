@@ -14,7 +14,8 @@ import {
     mapMimeTypeToInputField,
     mapExtToInputField,
     getFileFromUpload,
-    removeSpecificFileFromUpload
+    removeSpecificFileFromUpload,
+    handleEscapeCharacters
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -62,6 +63,7 @@ import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
+import { executeAgentFlow } from './buildAgentflow'
 
 /*
  * Initialize the ending node to be executed
@@ -259,8 +261,8 @@ export const executeFlow = async ({
      */
     let fileUploads: IFileUpload[] = []
     let uploadedFilesContent = ''
-    if (incomingInput.uploads) {
-        fileUploads = incomingInput.uploads
+    if (uploads) {
+        fileUploads = uploads
         for (let i = 0; i < fileUploads.length; i += 1) {
             const upload = fileUploads[i]
 
@@ -369,6 +371,25 @@ export const executeFlow = async ({
             overrideConfig,
             chatId
         }
+    }
+
+    const isAgentFlowV2 = chatflow.type === 'AGENTFLOW'
+    if (isAgentFlowV2) {
+        return executeAgentFlow({
+            componentNodes,
+            incomingInput,
+            chatflow,
+            chatId,
+            appDataSource,
+            telemetry,
+            cachePool,
+            sseStreamer,
+            baseURL,
+            isInternal,
+            uploadedFilesContent,
+            fileUploads,
+            signal
+        })
     }
 
     /*** Get chatflows and prepare data  ***/
@@ -496,7 +517,7 @@ export const executeFlow = async ({
                 memoryType,
                 sessionId,
                 createdDate: userMessageDateTime,
-                fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
+                fileUploads: uploads ? JSON.stringify(fileUploads) : undefined,
                 leadEmail: incomingInput.leadEmail
             }
             await utilAddChatMessage(userMessage, appDataSource)
@@ -680,6 +701,7 @@ export const executeFlow = async ({
                     }
                     const customFuncNodeInstance = new nodeModule.nodeClass()
                     let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
+                    moderatedResponse = handleEscapeCharacters(moderatedResponse, true)
                     result.text = moderatedResponse
                     resultText = result.text
                 } catch (e) {
@@ -810,6 +832,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     }
 
     const isAgentFlow = chatflow.type === 'MULTIAGENT'
+
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
     const incomingInput: IncomingInput = req.body || {} // Ensure incomingInput is never undefined
@@ -859,7 +882,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const signal = new AbortController()
             appServer.abortControllerPool.add(abortControllerId, signal)
             executeData.signal = signal
-
             const result = await executeFlow(executeData)
 
             appServer.abortControllerPool.remove(abortControllerId)

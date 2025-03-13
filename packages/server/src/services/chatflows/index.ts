@@ -37,6 +37,10 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
             }
         }
 
+        if (chatflow.type === 'AGENTFLOW') {
+            return { isStreaming: true }
+        }
+
         /*** Get Ending Node with Directed Graph  ***/
         const flowData = chatflow.flowData
         const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
@@ -120,6 +124,8 @@ const getAllChatflows = async (type?: ChatflowType): Promise<ChatFlow[]> => {
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
         if (type === 'MULTIAGENT') {
             return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
+        } else if (type === 'AGENTFLOW') {
+            return dbResponse.filter((chatflow) => chatflow.type === 'AGENTFLOW')
         } else if (type === 'CHATFLOW') {
             // fetch all chatflows that are not agentflow
             return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)

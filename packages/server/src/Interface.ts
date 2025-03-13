@@ -2,8 +2,10 @@ import {
     IAction,
     ICommonObject,
     IFileUpload,
+    IHumanInput,
     INode,
     INodeData as INodeDataFromComponent,
+    INodeExecutionData,
     INodeParams,
     IServerSideEventStreamer
 } from 'flowise-components'
@@ -13,9 +15,11 @@ import { Telemetry } from './utils/telemetry'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'ASSISTANT'
+export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'ASSISTANT' | 'AGENTFLOW'
 
 export type AssistantType = 'CUSTOM' | 'OPENAI' | 'AZURE'
+
+export type ExecutionState = 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'TERMINATED' | 'TIMEOUT' | 'STOPPED'
 
 export enum MODE {
     QUEUE = 'queue',
@@ -57,6 +61,7 @@ export interface IChatMessage {
     role: MessageType
     content: string
     chatflowid: string
+    executionId?: string
     sourceDocuments?: string
     usedTools?: string
     fileAnnotations?: string
@@ -138,6 +143,18 @@ export interface IUpsertHistory {
     result: string
     flowData: string
     date: Date
+}
+
+export interface IExecution {
+    id: string
+    executionData: string
+    state: ExecutionState
+    agentflowId: string
+    sessionId: string
+    action?: string
+    createdDate: Date
+    updatedDate: Date
+    stoppedDate: Date
 }
 
 export interface IComponentNodes {
@@ -227,6 +244,14 @@ export interface IDepthQueue {
     [key: string]: number
 }
 
+export interface IAgentflowExecutedData {
+    nodeLabel: string
+    nodeId: string
+    data: INodeExecutionData
+    previousNodeIds: string[]
+    status?: ExecutionState
+}
+
 export interface IMessage {
     message: string
     type: MessageType
@@ -238,12 +263,19 @@ export interface IncomingInput {
     question: string
     overrideConfig?: ICommonObject
     chatId?: string
+    sessionId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]
     leadEmail?: string
     history?: IMessage[]
     action?: IAction
     streaming?: boolean
+}
+
+export interface IncomingAgentflowInput extends Omit<IncomingInput, 'question'> {
+    question?: string
+    form?: Record<string, any>
+    humanInput?: IHumanInput
 }
 
 export interface IActiveChatflows {
@@ -333,6 +365,8 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     isInternal: boolean
     signal?: AbortController
     files?: Express.Multer.File[]
+    fileUploads?: IFileUpload[]
+    uploadedFilesContent?: string
     isUpsert?: boolean
 }
 

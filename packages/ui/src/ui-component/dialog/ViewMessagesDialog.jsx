@@ -827,6 +827,9 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                     {children}
                                 </code>
                             )
+                        },
+                        p({ children }) {
+                            return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
                         }
                     }}
                 >
@@ -1340,6 +1343,17 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                                 {children}
                                                                                                             </code>
                                                                                                         )
+                                                                                                    },
+                                                                                                    p({ children }) {
+                                                                                                        return (
+                                                                                                            <p
+                                                                                                                style={{
+                                                                                                                    whiteSpace: 'pre-line'
+                                                                                                                }}
+                                                                                                            >
+                                                                                                                {children}
+                                                                                                            </p>
+                                                                                                        )
                                                                                                     }
                                                                                                 }}
                                                                                             >
@@ -1489,6 +1503,9 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                         {children}
                                                                                     </code>
                                                                                 )
+                                                                            },
+                                                                            p({ children }) {
+                                                                                return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
                                                                             }
                                                                         }}
                                                                     >

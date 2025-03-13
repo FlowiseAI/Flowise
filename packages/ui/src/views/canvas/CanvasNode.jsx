@@ -218,6 +218,7 @@ const CanvasNode = ({ data }) => {
                         ))}
                         {data.inputParams
                             .filter((inputParam) => !inputParam.hidden)
+                            .filter((inputParam) => inputParam.display !== false)
                             .map((inputParam, index) => (
                                 <NodeInputHandler
                                     key={index}

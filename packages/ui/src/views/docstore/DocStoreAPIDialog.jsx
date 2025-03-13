@@ -326,6 +326,9 @@ curl -X POST http://localhost:3000/api/v1/document-store/upsert/${dialogProps.st
                                     {children}
                                 </code>
                             )
+                        },
+                        p({ children }) {
+                            return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
                         }
                     }}
                 >

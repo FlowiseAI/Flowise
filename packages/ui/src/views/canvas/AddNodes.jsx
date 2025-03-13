@@ -43,7 +43,7 @@ import LangChainPNG from '@/assets/images/langchain.png'
 import utilNodesPNG from '@/assets/images/utilNodes.png'
 
 // const
-import { baseURL } from '@/store/constant'
+import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import { SET_COMPONENT_NODES } from '@/store/actions'
 
 // ==============================|| ADD NODES||============================== //
@@ -176,7 +176,20 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             }, Object.create(null))
 
             const filteredResult = {}
+            let isAgentflowV2 = true
+            if (localStorage.getItem('agentFlowVersion') === 'v1') {
+                isAgentflowV2 = false
+            }
             for (const category in result) {
+                if (isAgentflowV2) {
+                    if (category !== 'Agent Flows') {
+                        continue
+                    }
+                } else {
+                    if (category === 'Agent Flows') {
+                        continue
+                    }
+                }
                 // Filter out blacklisted categories
                 if (!blacklistCategoriesForAgentCanvas.includes(category)) {
                     // Filter out LlamaIndex nodes
@@ -195,6 +208,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             accordianCategories['Multi Agents'] = true
             accordianCategories['Sequential Agents'] = true
             accordianCategories['Memory'] = true
+            accordianCategories['Agent Flows'] = true
             setCategoryExpanded(accordianCategories)
         } else {
             const taggedNodes = groupByTags(nodes, newTabValue)
@@ -208,7 +222,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
             const filteredResult = {}
             for (const category in result) {
-                if (category === 'Multi Agents' || category === 'Sequential Agents') {
+                if (category === 'Agent Flows' || category === 'Multi Agents' || category === 'Sequential Agents') {
                     continue
                 }
                 if (Object.keys(blacklistForChatflowCanvas).includes(category)) {
@@ -253,6 +267,13 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         } else {
             return utilNodesPNG
         }
+    }
+
+    const renderIcon = (node) => {
+        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === node.name)
+
+        if (!foundIcon) return null
+        return <foundIcon.icon size={30} color={node.color} />
     }
 
     useEffect(() => {
@@ -489,27 +510,43 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                                             }}
                                                                         >
                                                                             <ListItem alignItems='center'>
-                                                                                <ListItemAvatar>
-                                                                                    <div
-                                                                                        style={{
-                                                                                            width: 50,
-                                                                                            height: 50,
-                                                                                            borderRadius: '50%',
-                                                                                            backgroundColor: 'white'
-                                                                                        }}
-                                                                                    >
-                                                                                        <img
+                                                                                {node.color && !node.icon ? (
+                                                                                    <ListItemAvatar>
+                                                                                        <div
                                                                                             style={{
-                                                                                                width: '100%',
-                                                                                                height: '100%',
-                                                                                                padding: 10,
-                                                                                                objectFit: 'contain'
+                                                                                                width: 50,
+                                                                                                height: 'auto',
+                                                                                                display: 'flex',
+                                                                                                alignItems: 'center',
+                                                                                                justifyContent: 'center'
                                                                                             }}
-                                                                                            alt={node.name}
-                                                                                            src={`${baseURL}/api/v1/node-icon/${node.name}`}
-                                                                                        />
-                                                                                    </div>
-                                                                                </ListItemAvatar>
+                                                                                        >
+                                                                                            {renderIcon(node)}
+                                                                                        </div>
+                                                                                    </ListItemAvatar>
+                                                                                ) : (
+                                                                                    <ListItemAvatar>
+                                                                                        <div
+                                                                                            style={{
+                                                                                                width: 50,
+                                                                                                height: 50,
+                                                                                                borderRadius: '50%',
+                                                                                                backgroundColor: 'white'
+                                                                                            }}
+                                                                                        >
+                                                                                            <img
+                                                                                                style={{
+                                                                                                    width: '100%',
+                                                                                                    height: '100%',
+                                                                                                    padding: 10,
+                                                                                                    objectFit: 'contain'
+                                                                                                }}
+                                                                                                alt={node.name}
+                                                                                                src={`${baseURL}/api/v1/node-icon/${node.name}`}
+                                                                                            />
+                                                                                        </div>
+                                                                                    </ListItemAvatar>
+                                                                                )}
                                                                                 <ListItemText
                                                                                     sx={{ ml: 1 }}
                                                                                     primary={
