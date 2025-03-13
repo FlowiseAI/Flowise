@@ -24,12 +24,11 @@ import {
     IUsedTool,
     IVisionChatModal
 } from '../../../src/Interface'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, CustomStreamingHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
-import { CustomStreamingHandler } from '../../../src/utils/customStreamingHandler'
 
 class ToolAgent_Agents implements INode {
     label: string
@@ -146,10 +145,10 @@ class ToolAgent_Agents implements INode {
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
-        
+
         // Add custom streaming handler if detailed streaming is enabled
         let customStreamingHandler = null
-        
+
         if (enableDetailedStreaming && shouldStreamResponse) {
             customStreamingHandler = new CustomStreamingHandler(sseStreamer, chatId)
         }
@@ -162,12 +161,12 @@ class ToolAgent_Agents implements INode {
         if (shouldStreamResponse) {
             const handler = new CustomChainHandler(sseStreamer, chatId)
             const allCallbacks = [loggerHandler, handler, ...callbacks]
-            
+
             // Add detailed streaming handler if enabled
             if (enableDetailedStreaming && customStreamingHandler) {
                 allCallbacks.push(customStreamingHandler)
             }
-            
+
             res = await executor.invoke({ input }, { callbacks: allCallbacks })
             if (res.sourceDocuments) {
                 if (sseStreamer) {
@@ -200,12 +199,12 @@ class ToolAgent_Agents implements INode {
             }
         } else {
             const allCallbacks = [loggerHandler, ...callbacks]
-            
+
             // Add detailed streaming handler if enabled
             if (enableDetailedStreaming && customStreamingHandler) {
                 allCallbacks.push(customStreamingHandler)
             }
-            
+
             res = await executor.invoke({ input }, { callbacks: allCallbacks })
             if (res.sourceDocuments) {
                 sourceDocuments = res.sourceDocuments
