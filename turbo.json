@@ -57,7 +57,7 @@
         "LANGFUSE_PUBLIC_KEY",
         "LANGFUSE_HOST"
     ],
-    
+
     "pipeline": {
         "//#dev-docker": {
             "cache": false
@@ -78,6 +78,9 @@
             "cache": false,
             "dependsOn": ["^build"],
             "outputs": ["dist/**", "build/**", ".next/**"]
+        },
+        "flowise-components:dev": {
+            "cache": false
         },
         "build": {
             "dependsOn": ["^build"],
