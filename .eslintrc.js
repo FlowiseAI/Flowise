@@ -15,7 +15,6 @@ module.exports = {
     },
     parser: '@typescript-eslint/parser',
     ignorePatterns: ['**/node_modules', '**/dist', '**/build', '**/package-lock.json'],
-    plugins: ['unused-imports'],
     rules: {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
         'no-unused-vars': 'off',
