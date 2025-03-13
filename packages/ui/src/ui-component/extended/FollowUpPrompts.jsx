@@ -270,6 +270,14 @@ const followUpPromptsOptions = {
         icon: ollamaIcon,
         inputs: [
             {
+                label: 'Base URL',
+                name: 'baseUrl',
+                type: 'string',
+                placeholder: 'http://127.0.0.1:11434',
+                description: 'Base URL of your Ollama instance',
+                default: 'http://127.0.0.1:11434'
+            },
+            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
