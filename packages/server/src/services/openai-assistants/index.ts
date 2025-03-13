@@ -28,7 +28,9 @@ const getAllOpenaiAssistants = async (credentialId: string): Promise<any> => {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `OpenAI ApiKey not found`)
         }
         const openai = new OpenAI({ apiKey: openAIApiKey })
-        const retrievedAssistants = await openai.beta.assistants.list()
+        const retrievedAssistants = await openai.beta.assistants.list({
+            limit: 100 // Change the limit to 100
+        })
         const dbResponse = retrievedAssistants.data
         return dbResponse
     } catch (error) {
