@@ -76,14 +76,17 @@ if (USE_AWS_SECRETS_MANAGER) {
     const accessKeyId = process.env.SECRETKEY_AWS_ACCESS_KEY
     const secretAccessKey = process.env.SECRETKEY_AWS_SECRET_KEY
 
-    let credentials: SecretsManagerClientConfig['credentials'] | undefined
+    const secretManagerConfig: SecretsManagerClientConfig = {
+        region: region
+    }
+
     if (accessKeyId && secretAccessKey) {
-        credentials = {
+        secretManagerConfig.credentials = {
             accessKeyId,
             secretAccessKey
         }
     }
-    secretsManagerClient = new SecretsManagerClient({ credentials, region })
+    secretsManagerClient = new SecretsManagerClient(secretManagerConfig)
 }
 
 export const databaseEntities: IDatabaseEntity = {
