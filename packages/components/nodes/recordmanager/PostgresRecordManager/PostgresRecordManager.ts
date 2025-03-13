@@ -4,7 +4,6 @@ import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchai
 import { DataSource } from 'typeorm'
 import { getHost, getSSL } from '../../vectorstores/Postgres/utils'
 import { getDatabase, getPort, getTableName } from './utils'
-import fs from 'fs'
 
 const serverCredentialsExists = !!process.env.POSTGRES_RECORDMANAGER_USER && !!process.env.POSTGRES_RECORDMANAGER_PASSWORD
 
