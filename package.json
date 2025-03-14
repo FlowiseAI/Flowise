@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.2.6-hotfix.1",
+    "version": "2.2.7",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -13,7 +13,7 @@
     "scripts": {
         "build": "turbo run build",
         "build-force": "pnpm clean && turbo run build --force",
-        "dev": "turbo run dev --parallel",
+        "dev": "turbo run dev --parallel --no-cache",
         "start": "run-script-os",
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",

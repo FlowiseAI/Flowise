@@ -77,7 +77,7 @@ export const addArrayFilesToStorage = async (mime: string, bf: Buffer, fileName:
         fileNames.push(sanitizedFilename)
         return 'FILE-STORAGE::' + JSON.stringify(fileNames)
     } else {
-        const dir = path.join(getStoragePath(), ...paths)
+        const dir = path.join(getStoragePath(), ...paths.map(_sanitizeFilename))
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })
         }
@@ -110,7 +110,7 @@ export const addSingleFileToStorage = async (mime: string, bf: Buffer, fileName:
         await s3Client.send(putObjCmd)
         return 'FILE-STORAGE::' + sanitizedFilename
     } else {
-        const dir = path.join(getStoragePath(), ...paths)
+        const dir = path.join(getStoragePath(), ...paths.map(_sanitizeFilename))
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true })
         }
@@ -180,7 +180,7 @@ export const getFileFromStorage = async (file: string, ...paths: string[]): Prom
         const buffer = Buffer.concat(response.Body.toArray())
         return buffer
     } else {
-        const fileInStorage = path.join(getStoragePath(), ...paths, sanitizedFilename)
+        const fileInStorage = path.join(getStoragePath(), ...paths.map(_sanitizeFilename), sanitizedFilename)
         return fs.readFileSync(fileInStorage)
     }
 }
@@ -209,7 +209,7 @@ export const removeFilesFromStorage = async (...paths: string[]) => {
         }
         await _deleteS3Folder(Key)
     } else {
-        const directory = path.join(getStoragePath(), ...paths)
+        const directory = path.join(getStoragePath(), ...paths.map(_sanitizeFilename))
         _deleteLocalFolderRecursive(directory)
     }
 }
@@ -243,7 +243,7 @@ export const removeSpecificFileFromStorage = async (...paths: string[]) => {
             const sanitizedFilename = _sanitizeFilename(fileName)
             paths.push(sanitizedFilename)
         }
-        const file = path.join(getStoragePath(), ...paths)
+        const file = path.join(getStoragePath(), ...paths.map(_sanitizeFilename))
         fs.unlinkSync(file)
     }
 }
@@ -258,7 +258,7 @@ export const removeFolderFromStorage = async (...paths: string[]) => {
         }
         await _deleteS3Folder(Key)
     } else {
-        const directory = path.join(getStoragePath(), ...paths)
+        const directory = path.join(getStoragePath(), ...paths.map(_sanitizeFilename))
         _deleteLocalFolderRecursive(directory, true)
     }
 }
@@ -384,20 +384,21 @@ export const getS3Config = () => {
         throw new Error('S3 storage configuration is missing')
     }
 
-    let credentials: S3ClientConfig['credentials'] | undefined
+    const s3Config: S3ClientConfig = {
+        region: region,
+        endpoint: customURL,
+        forcePathStyle: forcePathStyle
+    }
+
     if (accessKeyId && secretAccessKey) {
-        credentials = {
-            accessKeyId,
-            secretAccessKey
+        s3Config.credentials = {
+            accessKeyId: accessKeyId,
+            secretAccessKey: secretAccessKey
         }
     }
 
-    const s3Client = new S3Client({
-        credentials,
-        region,
-        endpoint: customURL,
-        forcePathStyle: forcePathStyle
-    })
+    const s3Client = new S3Client(s3Config)
+
     return { s3Client, Bucket }
 }
 
