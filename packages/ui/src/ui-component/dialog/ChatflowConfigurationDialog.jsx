@@ -11,6 +11,7 @@ import Leads from '@/ui-component/extended/Leads'
 import FollowUpPrompts from '@/ui-component/extended/FollowUpPrompts'
 import FileUpload from '@/ui-component/extended/FileUpload'
 import PostProcessing from '@/ui-component/extended/PostProcessing'
+import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
