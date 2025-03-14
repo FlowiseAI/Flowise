@@ -234,7 +234,10 @@ const processLoader = async (req: Request, res: Response, next: NextFunction) =>
         }
         const docLoaderId = req.params.loaderId
         const body = req.body
-        const apiResponse = await documentStoreService.processLoaderMiddleware(body, docLoaderId)
+        const apiResponse = await documentStoreService.processLoaderMiddleware(
+            { ...body, userId: req.user?.id!, organizationId: req.user?.organizationId! },
+            docLoaderId
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -265,7 +268,7 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
         const body = req.body
         const updateDocStore = new DocumentStore()
         Object.assign(updateDocStore, body)
-        const apiResponse = await documentStoreService.updateDocumentStore(store, updateDocStore)
+        const apiResponse = await documentStoreService.updateDocumentStore(store, updateDocStore, req.user?.id!, req.user?.organizationId!)
         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {
         next(error)
@@ -297,7 +300,11 @@ const previewFileChunks = async (req: Request, res: Response, next: NextFunction
         }
         const body = req.body
         body.preview = true
-        const apiResponse = await documentStoreService.previewChunksMiddleware(body)
+        const apiResponse = await documentStoreService.previewChunksMiddleware({
+            ...body,
+            userId: req.user?.id!,
+            organizationId: req.user?.organizationId!
+        })
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -319,7 +326,12 @@ const insertIntoVectorStore = async (req: Request, res: Response, next: NextFunc
             throw new Error('Error: documentStoreController.insertIntoVectorStore - body not provided!')
         }
         const body = req.body
-        const apiResponse = await documentStoreService.insertIntoVectorStoreMiddleware(body)
+        const apiResponse = await documentStoreService.insertIntoVectorStoreMiddleware(
+            { ...body, userId: req.user?.id!, organizationId: req.user?.organizationId! },
+            true,
+            req.user?.id!,
+            req.user?.organizationId!
+        )
         getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
             status: FLOWISE_COUNTER_STATUS.SUCCESS
         })
@@ -338,7 +350,11 @@ const queryVectorStore = async (req: Request, res: Response, next: NextFunction)
             throw new Error('Error: documentStoreController.queryVectorStore - body not provided!')
         }
         const body = req.body
-        const apiResponse = await documentStoreService.queryVectorStore(body)
+        const apiResponse = await documentStoreService.queryVectorStore(
+            { ...body, userId: req.user?.id!, organizationId: req.user?.organizationId! },
+            req.user?.id!,
+            req.user?.organizationId!
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -353,7 +369,11 @@ const deleteVectorStoreFromStore = async (req: Request, res: Response, next: Nex
                 `Error: documentStoreController.deleteVectorStoreFromStore - storeId not provided!`
             )
         }
-        const apiResponse = await documentStoreService.deleteVectorStoreFromStore(req.params.storeId)
+        const apiResponse = await documentStoreService.deleteVectorStoreFromStore(
+            req.params.storeId,
+            req.user?.id!,
+            req.user?.organizationId!
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -368,7 +388,13 @@ const saveVectorStoreConfig = async (req: Request, res: Response, next: NextFunc
         const body = req.body
         const appDataSource = getRunningExpressApp().AppDataSource
         const componentNodes = getRunningExpressApp().nodesPool.componentNodes
-        const apiResponse = await documentStoreService.saveVectorStoreConfig(appDataSource, componentNodes, body)
+        const apiResponse = await documentStoreService.saveVectorStoreConfig(
+            appDataSource,
+            body,
+            true,
+            req.user?.id!,
+            req.user?.organizationId!
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -381,7 +407,11 @@ const updateVectorStoreConfigOnly = async (req: Request, res: Response, next: Ne
             throw new Error('Error: documentStoreController.updateVectorStoreConfigOnly - body not provided!')
         }
         const body = req.body
-        const apiResponse = await documentStoreService.updateVectorStoreConfigOnly(body)
+        const apiResponse = await documentStoreService.updateVectorStoreConfigOnly({
+            ...body,
+            userId: req.user?.id!,
+            organizationId: req.user?.organizationId!
+        })
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -390,7 +420,7 @@ const updateVectorStoreConfigOnly = async (req: Request, res: Response, next: Ne
 
 const getEmbeddingProviders = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await documentStoreService.getEmbeddingProviders()
+        const apiResponse = await documentStoreService.getEmbeddingProviders(req.user?.id!, req.user?.organizationId!)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -428,7 +458,11 @@ const upsertDocStoreMiddleware = async (req: Request, res: Response, next: NextF
         }
         const body = req.body
         const files = (req.files as Express.Multer.File[]) || []
-        const apiResponse = await documentStoreService.upsertDocStoreMiddleware(req.params.id, body, files)
+        const apiResponse = await documentStoreService.upsertDocStoreMiddleware(
+            req.params.id,
+            { ...body, userId: req.user?.id!, organizationId: req.user?.organizationId! },
+            files
+        )
         getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
             status: FLOWISE_COUNTER_STATUS.SUCCESS
         })
@@ -450,7 +484,11 @@ const refreshDocStoreMiddleware = async (req: Request, res: Response, next: Next
             )
         }
         const body = req.body
-        const apiResponse = await documentStoreService.refreshDocStoreMiddleware(req.params.id, body)
+        const apiResponse = await documentStoreService.refreshDocStoreMiddleware(req.params.id, {
+            ...body,
+            userId: req.user?.id!,
+            organizationId: req.user?.organizationId!
+        })
         getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
             status: FLOWISE_COUNTER_STATUS.SUCCESS
         })

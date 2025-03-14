@@ -36,6 +36,8 @@ export interface IDocumentStoreFileChunk {
     storeId: string
     pageContent: string
     metadata: string
+    userId: string
+    organizationId: string
 }
 
 export interface IDocumentStoreFileChunkPagedResponse {

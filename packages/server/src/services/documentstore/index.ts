@@ -289,7 +289,7 @@ const getDocumentStoreFileChunks = async (
 }
 
 // Sync and refresh chunks for a specific loader or store
-const syncAndRefreshChunks = async (storeId: string, fileId: string, userId?: string, organizationId?: string) => {
+const syncAndRefreshChunks = async (storeId: string, fileId: string, userId: string, organizationId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const componentNodes = appServer.nodesPool.componentNodes
@@ -460,7 +460,7 @@ const deleteDocumentStoreFileChunk = async (storeId: string, docId: string, chun
     }
 }
 
-const deleteVectorStoreFromStore = async (storeId: string) => {
+const deleteVectorStoreFromStore = async (storeId: string, userId: string, organizationId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const componentNodes = appServer.nodesPool.componentNodes
@@ -588,7 +588,12 @@ const editDocumentStoreFileChunk = async (
     }
 }
 
-const updateDocumentStore = async (documentStore: DocumentStore, updatedDocumentStore: DocumentStore) => {
+const updateDocumentStore = async (
+    documentStore: DocumentStore,
+    updatedDocumentStore: DocumentStore,
+    userId: string,
+    organizationId: string
+) => {
     try {
         const appServer = getRunningExpressApp()
         const tmpUpdatedDocumentStore = appServer.AppDataSource.getRepository(DocumentStore).merge(documentStore, updatedDocumentStore)
@@ -602,7 +607,7 @@ const updateDocumentStore = async (documentStore: DocumentStore, updatedDocument
     }
 }
 
-const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore) => {
+const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore, userId: string, organizationId: string) => {
     const splitDataURI = fileBase64.split(',')
     const filename = splitDataURI.pop()?.split(':')[1] ?? ''
     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
@@ -980,7 +985,7 @@ const _saveChunksToStorage = async (
                 for (let j = 0; j < files.length; j++) {
                     const file = files[j]
                     if (re.test(file)) {
-                        const fileMetadata = await _saveFileToStorage(file, entity)
+                        const fileMetadata = await _saveFileToStorage(file, entity, data.userId, data.organizationId)
                         fileNames.push(fileMetadata.name)
                         filesWithMetadata.push(fileMetadata)
                     }
@@ -988,7 +993,7 @@ const _saveChunksToStorage = async (
                 if (fileNames.length) data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
             } else if (re.test(input)) {
                 const fileNames: string[] = []
-                const fileMetadata = await _saveFileToStorage(input, entity)
+                const fileMetadata = await _saveFileToStorage(input, entity, data.userId, data.organizationId)
                 fileNames.push(fileMetadata.name)
                 filesWithMetadata.push(fileMetadata)
                 data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
@@ -1024,7 +1029,9 @@ const _saveChunksToStorage = async (
                     id: uuidv4(),
                     chunkNo: index + 1,
                     pageContent: chunk.pageContent,
-                    metadata: JSON.stringify(chunk.metadata)
+                    metadata: JSON.stringify(chunk.metadata),
+                    userId: data.userId,
+                    organizationId: data.organizationId
                 }
                 const dChunk = appDataSource.getRepository(DocumentStoreFileChunk).create(docChunk)
                 await appDataSource.getRepository(DocumentStoreFileChunk).save(dChunk)
@@ -1139,7 +1146,13 @@ const updateVectorStoreConfigOnly = async (data: ICommonObject) => {
         )
     }
 }
-const saveVectorStoreConfig = async (appDataSource: DataSource, data: ICommonObject, isStrictSave = true) => {
+const saveVectorStoreConfig = async (
+    appDataSource: DataSource,
+    data: ICommonObject,
+    isStrictSave = true,
+    userId: string,
+    organizationId: string
+) => {
     try {
         const entity = await appDataSource.getRepository(DocumentStore).findOneBy({
             id: data.storeId
@@ -1207,14 +1220,24 @@ export const insertIntoVectorStore = async ({
     componentNodes,
     telemetry,
     data,
-    isStrictSave
+    isStrictSave,
+    userId,
+    organizationId
 }: IExecuteVectorStoreInsert) => {
     try {
-        const entity = await saveVectorStoreConfig(appDataSource, data, isStrictSave)
+        const entity = await saveVectorStoreConfig(appDataSource, data, isStrictSave, userId, organizationId)
         entity.status = DocumentStoreStatus.UPSERTING
         await appDataSource.getRepository(DocumentStore).save(entity)
 
-        const indexResult = await _insertIntoVectorStoreWorkerThread(appDataSource, componentNodes, telemetry, data, isStrictSave)
+        const indexResult = await _insertIntoVectorStoreWorkerThread(
+            appDataSource,
+            componentNodes,
+            telemetry,
+            data,
+            isStrictSave,
+            userId,
+            organizationId
+        )
         return indexResult
     } catch (error) {
         throw new InternalFlowiseError(
@@ -1224,7 +1247,7 @@ export const insertIntoVectorStore = async ({
     }
 }
 
-const insertIntoVectorStoreMiddleware = async (data: ICommonObject, isStrictSave = true) => {
+const insertIntoVectorStoreMiddleware = async (data: ICommonObject, isStrictSave = true, userId: string, organizationId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const appDataSource = appServer.AppDataSource
@@ -1238,8 +1261,8 @@ const insertIntoVectorStoreMiddleware = async (data: ICommonObject, isStrictSave
             data,
             isStrictSave,
             isVectorStoreInsert: true,
-            userId: data.userId,
-            organizationId: data.organizationId
+            userId,
+            organizationId
         }
 
         if (process.env.MODE === MODE.QUEUE) {
@@ -1270,10 +1293,12 @@ const _insertIntoVectorStoreWorkerThread = async (
     componentNodes: IComponentNodes,
     telemetry: Telemetry,
     data: ICommonObject,
-    isStrictSave = true
+    isStrictSave = true,
+    userId: string,
+    organizationId: string
 ) => {
     try {
-        const entity = await saveVectorStoreConfig(appDataSource, data, isStrictSave)
+        const entity = await saveVectorStoreConfig(appDataSource, data, isStrictSave, userId, organizationId)
         let upsertHistory: Record<string, any> = {}
         const chatflowid = data.storeId // fake chatflowid because this is not tied to any chatflow
 
@@ -1351,7 +1376,7 @@ const _insertIntoVectorStoreWorkerThread = async (
 }
 
 // Get all component nodes - Embeddings
-const getEmbeddingProviders = async () => {
+const getEmbeddingProviders = async (userId: string, organizationId: string) => {
     try {
         const dbResponse = await nodesService.getAllNodesForCategory('Embeddings')
         return dbResponse.filter((node) => !node.tags?.includes('LlamaIndex'))
@@ -1390,13 +1415,15 @@ const getRecordManagerProviders = async () => {
     }
 }
 
-const queryVectorStore = async (data: ICommonObject) => {
+const queryVectorStore = async (data: ICommonObject, userId: string, organizationId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const componentNodes = appServer.nodesPool.componentNodes
 
         const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
-            id: data.storeId
+            id: data.storeId,
+            userId,
+            organizationId
         })
         if (!entity) {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Document store ${data.storeId} not found`)
@@ -1597,7 +1624,9 @@ const upsertDocStore = async (
     storeId: string,
     data: IDocumentStoreUpsertData,
     files: Express.Multer.File[] = [],
-    isRefreshExisting = false
+    isRefreshExisting = false,
+    userId: string,
+    organizationId: string
 ) => {
     const docId = data.docId
     let metadata = {}
@@ -1683,7 +1712,7 @@ const upsertDocStore = async (
         const docStoreBody = typeof data.docStore === 'string' ? JSON.parse(data.docStore) : data.docStore
         const newDocumentStore = docStoreBody ?? { name: `Document Store ${Date.now().toString()}` }
         const docStore = DocumentStoreDTO.toEntity(newDocumentStore)
-        const documentStore = appDataSource.getRepository(DocumentStore).create(docStore)
+        const documentStore = appDataSource.getRepository(DocumentStore).create({ ...docStore, userId, organizationId })
         const dbResponse = await appDataSource.getRepository(DocumentStore).save(documentStore)
         storeId = dbResponse.id
     }
@@ -1872,7 +1901,17 @@ export const executeDocStoreUpsert = async ({
 }: IExecuteDocStoreUpsert) => {
     const results = []
     for (const item of totalItems) {
-        const res = await upsertDocStore(appDataSource, componentNodes, telemetry, storeId, item, files, isRefreshAPI)
+        const res = await upsertDocStore(
+            appDataSource,
+            componentNodes,
+            telemetry,
+            storeId,
+            item,
+            files,
+            isRefreshAPI,
+            userId,
+            organizationId
+        )
         results.push(res)
     }
     return isRefreshAPI ? results : results[0]

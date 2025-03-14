@@ -151,7 +151,7 @@ const DocumentStoreDetails = () => {
     const [anchorEl, setAnchorEl] = useState(null)
     const open = Boolean(anchorEl)
 
-    const { id:storeId } = useParams()
+    const { storeId } = useParams()
 
     const openPreviewSettings = (id) => {
         navigate('/document-stores/' + storeId + '/' + id)
