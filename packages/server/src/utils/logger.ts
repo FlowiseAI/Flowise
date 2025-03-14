@@ -138,7 +138,7 @@ const logger = createLogger({
 })
 
 export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
-    const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/']
+    const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
     if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
         const fileLogger = createLogger({
             format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json(), errors({ stack: true })),
