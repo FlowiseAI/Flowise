@@ -12,6 +12,12 @@ RUN apk add --no-cache build-base cairo-dev pango-dev
 # Install Chromium
 RUN apk add --no-cache chromium
 
+# Instalar Python 3, pip y libomp (necesario para FAISS)
+RUN apk update && apk add --no-cache python3 py3-pip libomp
+
+# Instalar FAISS para CPU
+RUN pip3 install --no-cache-dir faiss-cpu
+
 #install PNPM globaly
 RUN npm install -g pnpm
 
