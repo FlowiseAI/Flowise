@@ -18,7 +18,7 @@ The following video shows how to inject the widget script into any webpage.
 
 ## Chatflow Config
 
-You can pass `chatflowConfig` JSON object to override existing configuration. This is the same as [#override-config](api.md#override-config 'mention') in API.
+You can pass `chatflowConfig` JSON object to override existing configuration. This is the same as [#override-config](/docs/api/prediction/create-prediction 'mention') in API.
 
 ```html
 <script type="module">

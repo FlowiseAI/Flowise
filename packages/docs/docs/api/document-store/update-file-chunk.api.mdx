@@ -1,0 +1,71 @@
+---
+id: update-file-chunk
+title: "Update a file chunk"
+description: "Update a specific file chunk in a document store"
+sidebar_label: "Update a file chunk"
+hide_title: true
+hide_table_of_contents: true
+api: eJztWFtv2zYU/ivEedoA+ZY6SaunpTfAW9dlTbJiSIyCFo9sLhKpkpQdQ9B/Hw4p21LstZ27hz3kybJ0eL5zv7ACx+cW4lsQOilzVK5nnTYI0wgsJqWRbg3xbQUz5AbNRekWEN9O62kEAm1iZOGkVhDDTSG4Q8aZLTCRqUxYKjNkyaJU90wqxtkGgAWACHSBhtPxiYAYSs/grczwFZ2BCApueI4OjfUSSIIpuFtABIrnCDF4ThMBERj8XEqDAmJnSozAJgvMOcQVuHURSI1Uc4gg1SbnjgBLKaB+rMfrjpRs8hrq6CB2prlA86/A98DeeR5fAPHm+z4Mb00PMQ1c0LqXWqzpaKKVQ+XokRdFJhPvjsFflk5W+xh69hcmjlxjyHlOoqWvUnzd0HvxouTnEpkUqJxMJRqWasPcAltxAxHgA8+LbGuKT6OTZ+NTr6ROJkfAbt07ec1W0i2k8pibkNzBCZ3swDZxdjzcNpraGGfDZ/x8djrqcTxPeuPZkPeePz877eH4dIziJD07PzsjeK/6e92Cl8rhHM0eXnC2KvMZmrZ+m9xrw49qSrE5vtoFwWPlHjEPhEynnue+i64X0u7SXJcukwqtJ27Clz5Y72ldGqZwxQqjRZm4fr9PmubouODuYOJ2hfm1oWTcWp1I7lB4hf9BtOoOrC5NgncQ30ED+qktVb8Q6R1Ed94md2QeqOsInHSewcaTV+TIXZWqiaabm/6FLbSyITtOhkP66Yp/VSYJWpuWWbZmofSJbuQ/5eZTbj7l5nfmZh3BeDjeT7+u7yMWmnnEtGkmFqUdS3WpxH+XiYkW+HXbvTGGhCDato2kWvJMik9NAw/+sJbPv5nlhrwbFMH7aB1bccsalDBEOC4ze0itLvcLISQ98oyhB9qcbAFVkErMaMrzc00E0tqSeL7nOTJp2baC1m2/esEbN54eqqIT5dAQskWzRBMEePLY/8FjoWAsNLEoSm9bmmxjGHQXjYHPNzuomjpeD6rNZF0Pqmb+rYG2EXJxWAVKk0EMC+cKGw8GvJB9t0Cu7ApNn8vBcrSn82WoKlKrJlb8xN3lYx2fSzXvfQu/q0B7mFk8GGQ64dlCWxePh8MhiXiIyzuiYgKXmOki1KOGX2v9uqJoDQHZXsK2XiZEaBYC+h+IIGoe3m6a4M8fr/dD4XLC7nHNeOkW1OxDooRincoHFGzJsxLZ+MXow+L5ST6/uZGvnqnlH+W5XL37bXX+4uFl9vGM996mo4dfLm5+t3/6ykyZ9mG3a7zZhRXNI515YTsutNp6q6t/WyNu9eHRo875vZ2v3fiObFURSJWGEeFRx2K+ZbGLy8lB15BIOVch1Lr7s41YorMMfUzbiHElthRUFtiFD98LYkx5E5iO+sP+sCmQPPEFstk0N+TsqiwKbShhu9nRzgiqFDmX9NkG8p86nykECm1dzlULYntF0JkiO1q3VtJjbhSajHD44AZFxqUi23s1qqb87N1zNJFDxS/eXSfEre0+3izh0wgoo4lJVc24xRuT1TW9/lyioWuSaQRLbiSfkZNvKxDS0rOAOOWZxS8o+8OHpp7+yA7NpQcVa15ytSYfU55CDBDBPa5bdyNUmo6SY3c5cRT+1oJHC7C9uTgKf+O1elpHsEASxvskfG3KQ++aeOxO700LJHw4cZEkWLgv0k5bPe/yhqrtrLloyf0kAYav6CqHr4Kg2uvvK7t/V0HG1bz0IwIElpRJvFvvH9V3r9RBU1RVoLjW96jqemsZR//JLnX9N/cW208=
+sidebar_class_name: "put api-method"
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Update a file chunk"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"put"}
+  path={"/document-store/chunks/{storeId}/{loaderId}/{chunkId}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Update a specific file chunk in a document store
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"in":"path","name":"storeId","required":true,"schema":{"type":"string","format":"uuid"},"description":"Document store ID"},{"in":"path","name":"loaderId","required":true,"schema":{"type":"string"},"description":"Loader ID"},{"in":"path","name":"chunkId","required":true,"schema":{"type":"string"},"description":"Chunk ID"}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the file chunk","example":"chunk_12345"},"docId":{"type":"string","format":"uuid","description":"Document ID within the store","example":"doc_12345"},"storeId":{"type":"string","format":"uuid","description":"Document store ID","example":"603a7b51-ae7c-4b0a-8865-e454ed2f6766"},"chunkNo":{"type":"integer","description":"Chunk number within the document","example":1},"pageContent":{"type":"string","description":"Content of the chunk","example":"This document outlines the requirements for our new product..."},"metadata":{"type":"string","description":"Metadata associated with the chunk","example":"{\"source\":\"product_requirements.pdf\",\"page\":1}"}},"title":"DocumentStoreFileChunk"}}},"required":true}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successfully updated file chunk","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the file chunk","example":"chunk_12345"},"docId":{"type":"string","format":"uuid","description":"Document ID within the store","example":"doc_12345"},"storeId":{"type":"string","format":"uuid","description":"Document store ID","example":"603a7b51-ae7c-4b0a-8865-e454ed2f6766"},"chunkNo":{"type":"integer","description":"Chunk number within the document","example":1},"pageContent":{"type":"string","description":"Content of the chunk","example":"This document outlines the requirements for our new product..."},"metadata":{"type":"string","description":"Metadata associated with the chunk","example":"{\"source\":\"product_requirements.pdf\",\"page\":1}"}},"title":"DocumentStoreFileChunk"}}}},"404":{"description":"Document store, loader, or chunk not found","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

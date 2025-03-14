@@ -1,0 +1,71 @@
+---
+id: get-all-leads-for-chatflow
+title: "Get all leads for a specific chatflow"
+description: "Retrieve all leads associated with a specific chatflow"
+sidebar_label: "Get all leads for a specific chatflow"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV01z2zYQ/SuYPbVT0qJoWh88RY2djFI3Sf2RTOvxdJbEUkRCAjQASvZo+N87ICVZiuTGyaU9xBeL5O7bt3hYYHcJFmcG4hsoCLmBWw8MpbUW9gHimyUkhJr0pLY5xDe3za0HnEyqRWWFkhDDBVktaE4Mi4K1EAyNUalAS5wthM0ZMlNRKjKRsjRHmxVqAR6oijQ6kCmHGGZkJ0Vx7vxfKf3y0axCjSVZ0qalI1zMCm0OHkgsCWIQHDzQdFcLTRxiq2vywKQ5lQjxEuxD5ayM1ULOoPmS/zoUm56Cy06TqZQ0ZJxvGATu367HZZ2mZExWF2yTA3iQKmlJWmePVVWItP3Q+2Sc03KfEGqND+CBsFSarfcq+USpdZlrB29FR0Xw/WQ8yJQu0UIMdd0uwy7TaynuamKCk7QiE6RZpjSzObVCgQd0j2VVOMQ04yfHfQr8UZilfr9PYz9Jo9A/CQeYDYeDKBtEbvG6Nd8nshv4LZbEVHY41BuVS3aqyMFRiaL4Ot6ZM2PIuSZjngT+pHJ5xBW9WL06SlXpglS5ks8g/d6ZMVmXCeknY/zSD4+jk8FwNA4c9Ho/H1ZnF396ukZde21CMLFXNTtRh2lEo2SI/jAZox8lEffH2TH5IQ9HWZ8SwiBc05l+MxVmyBih5LPp8GESJCd85I9OaOBHWYj+OO1n/piPMaCQkmyQtHQ0OYBTtAeXf7N5OVryrShpj6hzZSg5c1/ZIqctkgs0bBVhh10YhJEfjPwwuupHcf8kDsO/oGk8sMK2Bu6Ugcb9eRAdqvCpnGMhOJueskqrueBthG8t8CcKOVX84Go8JvBhcj49nVxN3739++zi4t2FW8qSjMHZVxzXvIWsass4WuzOO4uiMN9/9GSCioOb6jFyV8fP5fl7bSxLiCHr+NJ2ea+VWat1prXSsFYr2lervTSYVJZlqpY/lPpfKHVyuK4saYkFM6TnpBm1Dj/0+s/1auFtrladWNt2uYYPem1H11sK3oBrDJ1sXSNW6wJiyK2tTNzrYSWObE4ozYL0EYrevL9/v2rF69Q9rPSHxvsSx1icCTnzn4N32dkeBot7vUKlWOTK2DgKgsBRPIRy7qwYpzkVqipJ2g3eVid86XZgJ9l2P7xRwkWEVdPpnjsj8FY/Xq0vujcfr/YITN5P2Wd6YFjb3PVp3ebvOudM3BN3UtbEonH/Ih+F5ez6Wrw8lvMP9VAszt8thuP7X4uPA/RfZf373ybXf5g/29tOyEy1FLduPcMm76cHGbjGsETZrWjXxgu5aVQMeOCU7+z7R8FRsCpbTNuyXbXik1avyZRd1lWltNtIu/puawqb9g9MZ/5i57NLolLGlii3QrwmuzVqONqHx4udFJePR8z3DywrrS3d215VoJCuKtv0lqtyWc9QHsSCu0nK7T73erlM0NC1LprGvb6rSbvp6taDOWqBiRPoZglcGPebQ5xhYehfkvjpYjXv/My2B5gnSK4PJ+mOpnY3QQzgwWd66Oan5rbxICfkpFsi3YdJmlJlt1z2DmdXI5uD4/WZ29y4WxlfVEKLfpDOctlZXKnPJJtmw866Z0ewaf4BMBb4RA==
+sidebar_class_name: "get api-method"
+info_path: docs/api/leads/leads-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get all leads for a specific chatflow"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/leads/{id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retrieve all leads associated with a specific chatflow
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"in":"path","name":"id","required":true,"schema":{"type":"string"},"description":"Chatflow ID"}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"array","items":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the lead","example":"cfd531e0-82fc-11e9-bc42-526af7764f64"},"name":{"type":"string","description":"Name of the lead","example":"John Doe"},"email":{"type":"string","description":"Email address of the lead","example":"john.doe@example.com"},"phone":{"type":"string","description":"Phone number of the lead","example":"+1234567890"},"chatflowid":{"type":"string","description":"ID of the chatflow the lead is associated with","example":"7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02"},"chatId":{"type":"string","description":"ID of the chat session the lead is associated with","example":"d7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the lead was created","example":"2024-08-24T14:15:22Z"}},"title":"Lead"}}}}},"400":{"description":"Invalid ID provided","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","example":"VALIDATION_ERROR"},"message":{"type":"string","example":"Invalid input data"},"details":{"type":"array","items":{"type":"object","properties":{"field":{"type":"string","example":"email"},"message":{"type":"string","example":"Must be a valid email address"}}}}},"title":"Error"}}}},"404":{"description":"Leads not found","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","example":"VALIDATION_ERROR"},"message":{"type":"string","example":"Invalid input data"},"details":{"type":"array","items":{"type":"object","properties":{"field":{"type":"string","example":"email"},"message":{"type":"string","example":"Must be a valid email address"}}}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","example":"VALIDATION_ERROR"},"message":{"type":"string","example":"Invalid input data"},"details":{"type":"array","items":{"type":"object","properties":{"field":{"type":"string","example":"email"},"message":{"type":"string","example":"Must be a valid email address"}}}}},"title":"Error"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

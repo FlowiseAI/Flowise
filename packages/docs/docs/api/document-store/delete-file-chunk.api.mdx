@@ -1,0 +1,71 @@
+---
+id: delete-file-chunk
+title: "Delete a file chunk"
+description: "Delete a specific file chunk in a document store"
+sidebar_label: "Delete a file chunk"
+hide_title: true
+hide_table_of_contents: true
+api: eJztVlFv40QQ/iureQJpW6dH4Tg/Ea6tFKigXFtOqIrQ1B7He13v+nbXaSPL/x3N2kltEk5H4YEH+tIknp3vG3+z30wLAVce0jvIbdZUZMKRD9YRLCV4yhqnwgbSuxbuCR25eRNKSO+W3VJCTj5zqg7KGkjhjDQFEih8TZkqVCYKpUlkZWMehDICxRZA9AASbE0O+fgihxTymOBCaXrLZ0BCjQ4rCuR8ZKAYpsZQggSDFUEKMdMiBwmOPjbKUQ5pcA1J8FlJFULaQtjUfahTZgUSCusqDJBC06gcur06JizF4gw6eRBbW8zJ/S3wPbDLmOMTIPH1/TOM+DYjxJKz+NoaT54PvprN+N80/LrJMvK+aLTeiF6TfCQlSMisCWQCH8W61iqLGiYfPJ9v94nZ+w+UBdbTseJB9ei+BxoF3lurCQ1IoCesak19rV38k3A6O92nO5VLil4VKawbWs/YIArbmPzfY57ZnA511pTZuXNMgmNHBYEya9Qq/531JB9Yr4q8x9Vnp9yGj7PelCSGjOIRvRhQ+m4IqLQ/VNY0+zzPFX9ELSgCbU+OgFooFGm+rrFBJSjvG875E1YklBe7No2SBRUivUgcehm/PtR1CxPIMbIntybXE/hfsf+CYrHcUNpnj47WzHMAkunQSOKV80k7+HKXtFuX7JJ28LIOeLKwyr2tN05DCmUItU+TBGt1HEpC4x/JHaNK1id7ZV85mzcZfxnaJbrnNI8PuFJmdfQ5+a772MPJ0iTRNkNdWh/S09lsxhQPZbnkKJHTmrSte0sa8o1G6TU3bN+T44G6E5oRYTD3aIkxCOTw4WI7u354f7PfDVcL8UAbgU0oyYThrohHFUpRqCfKxRp1Q+L0zcm78ttX1er2Vr39yqx/bV6rx8ufH1+/efpev/8Gjy6Kk6cf57e/+N+A1VemsJHi0Bo7y72OE3J+tThIpeDGR9O/2uns91JkVmuKGnop0OS7CL4JYh7lmnNi7pM+6cnx7Hg2eAJm0ROGKbkNF9dNXVvHF2XaDeMO4MtRoeLHvg//bvKYS66tDxWaEcRuvZmMwknV7bNbvWQbGjog0FNIao3KsBXEMtrhuu3taLLfD/i+p8+rUDraTNLtArGUwB3MSdr2Hj3dOt11/PPHhhyveEsJa3QK71nkuxZy5flzDmmB2tMniv3i3WAhX4r97ekvCht+RLNhjbkvIQWQ8ECb0V7HV/FFPJ4Xqxfh797giwnstq4X4W9V65adhJKYTNSkfzrPMqrD6NzeaGTL2Zn22fnl+c05SMCp1/zJWyLAQVpt20fc2AcyXbdjGfg7c+y6PwA2mzqM
+sidebar_class_name: "delete api-method"
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Delete a file chunk"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"delete"}
+  path={"/document-store/chunks/{storeId}/{loaderId}/{chunkId}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Delete a specific file chunk in a document store
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"in":"path","name":"storeId","required":true,"schema":{"type":"string","format":"uuid"},"description":"Document store ID"},{"in":"path","name":"loaderId","required":true,"schema":{"type":"string"},"description":"Loader ID"},{"in":"path","name":"chunkId","required":true,"schema":{"type":"string"},"description":"Chunk ID"}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successfully deleted file chunk","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","example":true}}}}}},"404":{"description":"Document store, loader, or chunk not found","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

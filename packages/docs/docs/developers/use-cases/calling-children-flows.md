@@ -38,7 +38,7 @@ You can achieve this by using the following tools:
 
 ## Custom Tool
 
-With the same example as above, we are going to create a custom tool that will calls the [Prediction API](../api.md#prediction-api) of the Chain of Thought chatflow.
+With the same example as above, we are going to create a custom tool that will calls the [Prediction API](/docs/api/prediction/create-prediction) of the Chain of Thought chatflow.
 
 1. Create a new tool:
 

@@ -1,0 +1,164 @@
+openapi: 3.0.0
+info:
+    title: Leads API
+    description: API for managing leads in chatflows
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
+tags:
+    - name: leads
+      description: Operations for managing leads in chatflows
+paths:
+    /leads:
+        post:
+            tags:
+                - leads
+            security:
+                - bearerAuth: []
+            operationId: createLead
+            summary: Create a new lead in a chatflow
+            description: Create a new lead associated with a specific chatflow
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Lead'
+                required: true
+            responses:
+                '200':
+                    description: Lead created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Lead'
+                '400':
+                    description: Invalid request body
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '422':
+                    description: Validation error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /leads/{id}:
+        get:
+            tags:
+                - leads
+            security:
+                - bearerAuth: []
+            summary: Get all leads for a specific chatflow
+            description: Retrieve all leads associated with a specific chatflow
+            operationId: getAllLeadsForChatflow
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Lead'
+                '400':
+                    description: Invalid ID provided
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Leads not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
+    schemas:
+        Lead:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the lead
+                    example: cfd531e0-82fc-11e9-bc42-526af7764f64
+                name:
+                    type: string
+                    description: Name of the lead
+                    example: John Doe
+                email:
+                    type: string
+                    description: Email address of the lead
+                    example: john.doe@example.com
+                phone:
+                    type: string
+                    description: Phone number of the lead
+                    example: '+1234567890'
+                chatflowid:
+                    type: string
+                    description: ID of the chatflow the lead is associated with
+                    example: 7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02
+                chatId:
+                    type: string
+                    description: ID of the chat session the lead is associated with
+                    example: d7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b
+                createdDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the lead was created
+                    example: '2024-08-24T14:15:22Z'
+        Error:
+            type: object
+            properties:
+                code:
+                    type: string
+                    example: VALIDATION_ERROR
+                message:
+                    type: string
+                    example: Invalid input data
+                details:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            field:
+                                type: string
+                                example: email
+                            message:
+                                type: string
+                                example: Must be a valid email address

@@ -1,0 +1,71 @@
+---
+id: delete-document-store
+title: "Delete a specific document store"
+description: "Deletes a document store by its ID"
+sidebar_label: "Delete a specific document store"
+hide_title: true
+hide_table_of_contents: true
+api: eJztVktv4zYQ/ivEnFqAiZ1t2u3qVLfOAm6DbrpOuigCoxiLY4sbitSSlB8Q9N+LoWTHjt0ihx56qA/Wa/jNN/zmwQYiLgNkj6BcXpdk40WIzhPMJATKa6/jFrLHBuaEnvyojgVkj7N2JkFRyL2uonYWMhiToUhBoNgBiQQk5luhYxCTMUhwFXnkBRMFGai0ZNybT5NbCRV6LCmSD8mvZvAKYwESLJYEGWgFEjx9qbUnBVn0NUkIeUElQtZA3FZsFaLXdgkSFs6XGCGDutYK2hPix3QnY+DgPIXK2UCBEd8Mh3w5Xjet85xCWNTGbEUXinoRO0jInY1kIy/HqjI6T+EPPgfGaE5Zu/lnyiNvg+fNirpjEDpnB4Zz5wyhBQm0wbIy1G1Em34SrofXp5RfhGpdFAtXW/Xv8cydonMaHPO48d55kWwP6IO2KzRa/cnSUogsVUkh4PLVkDvzQ9T7gkSPKNYYRO+lS4SI2oRzYR2jj5TSfItGUHK0W3ngqIGFJsN5ndJUgg6hZsxfsSShg9hnbBIo6pjoJeLQifbtuTyb2EiePQfyK/Idgf8V+y8olsKNhXtuZql/cYuEwXE/HXT/jVYtcGdlKbsGV3sDGRQxViEbDLDSl7EgtGFN/hL1YHV1Etudd6rO+aHPCWjlS5wQcant8uI1eNPO9jxYNhgYl6MpXIjZ9XA4ZIrnUG7ZSihakXFV12V6vINRMuWs7BLvcKDs1WSP0Dfz1OWSEcj+5v2ulf/86f5U8ruJeKKtwDoWZGNfEGKtYyEWekNKrNDUJK7fXX0svn9TLh8e9E/f2NXv9Vu9vv2wfvtu86P59B1evF9cbX4ZPfwW/gCWWNuFSxR7/fddNE0sMbqbnKWy4OxG223t8VwIUuTOGEoaBinQPk8OTncxSnKNGJjzpAO9uhxeDvvCxzwVfj8Qd+ZiWleV81wNx9lwmAFcASVq/hw68x+OPnPIlQuxRHvgohvvAkWoKNcLnZ+OuqMtaJ770+uOBn0CRNrEQWVQWy73FEXTl9TJEUXC7pppxQcWzlG2a5o5Bnrwpm359ZeaPB9iZhJW6DXOWcbHBpQOfK8gW6AJ9A8RfPWx7wRfi9Pjwt9w71+i3bKKnHmQAUh4om13hmlnrYSCUJFPdLoPozynKh4sOWnuXE/7tjO+ub25vwEJeFxILwonOTjLqGk6i3v3RLZt9wQjPzPHtv0L8LmC6w==
+sidebar_class_name: "delete api-method"
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Delete a specific document store"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"delete"}
+  path={"/document-store/store/{id}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Deletes a document store by its ID
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"in":"path","name":"id","required":true,"schema":{"type":"string","format":"uuid"},"description":"Document store ID"}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successfully deleted document store","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","example":true}}}}}},"404":{"description":"Document store not found","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

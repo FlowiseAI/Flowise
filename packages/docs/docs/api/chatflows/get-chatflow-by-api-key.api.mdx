@@ -1,0 +1,71 @@
+---
+id: get-chatflow-by-api-key
+title: "Get chatflow by API key"
+description: "Retrieve a chatflow using an API key"
+sidebar_label: "Get chatflow by API key"
+hide_title: true
+hide_table_of_contents: true
+api: eJzlV0tv2zgQ/ivEnFpAjmXXeWkv6+a1adM2mzgb7AY+0NLIYiuRCknZMQT998VIsvyQtijQHBboSRQ5/OabFznMIUDja5FaoSR4cIdWC1wg48yPuA1jtWSZEXLOuGTj22v2DVfggEpRc9pyHYAHc7RntfD71TgVH0sZy+cGvCdY4xiYOmDQz7SwK/Cecpgh16jHmY3Ae5oWUwdSrnmCFrUpBQRRSrmNwAHJEwQPeCoqChqfM6ExAM/qDB0wfoQJBy8Hu0pJ0lgt5BwKZ8/E2grGjVG+4BYDthQ2YjbCxmYgMhpNqqRBQ6BD16XPLtR95vtoTJjFrPEIOOAraVFakudpGgu/XOh/NbQpbzNVs6/oW3Ag1QRjRaVSBG1rHMAXnqQxTQXDUzccIPaO/MNRbzRzB71TF496wbE7OB6dhO7J4QD2rX+Q4jlDJgKUVoQCNQuV3rN97ezvKf+0opBfkvy+is88QabCFih9z7ntiNE2cF60AD/cf/nMKlFGvuVC0pDwywQNCLSMcxqrFW67baZUjFy2IB8jtBHuGs6EYQ1E4YAwt9ksFv5PwKUVQOHUedsd0l2s6/O187YydF16hVPW00zZMyVDMX8tX9agNBWKeVancsX7dTWRJW0tkscru+Pqn1KyxjNNbpgU0Y8maoIv9rW0VJg9q3oWXzp853OLc6VX39e3lhr8th4NWwTOqhWBplWu7I3BRPgqVrJnkA5Qi8FbUl+p7FAts4QO5rM/xpPLmy+P4MCnh5vJ9fjq4vOEDuld3ZNV2lnOvkZSdc5tp5ZQ6YRbOqa4xZ4VCe5YPXSHo5570huOJoORNzj0hsN/WmYTNuMyYLSdLSOUu6YvuWE1DWKUpcH/gVHMjWU1FygoEMKWGs4a7xU0Peq6UiYRUl75dDY3ZU9HiZALHovg9a4XXwXbbhLS4hz1tp+EtO/auXihtdKs3F04kKAxfN7p765ta3Gyf3ODP1VkNmjTjdPKfY3HRm2Prb3KpLIsVJn8tX102JVV19KiljxmWEr+uv4ptdlI1W0rGUTtpQf9pk3tV1d1P6++dBsY1It1T5rpGDyIrE2N1yfZAxshl2aJ+oCL/qLdct1qFWQ+/bAKCApnH8dYPhdy3vsRvPtKthvM6/dj5fM4UsZ6I9d1iWIXyg1JsQAXGKs0QWkbvK02/Z7yoAr1drPexIk0Qt17l/1RKQROPbhcZ8GHx0mLQNOHZzaiZrRKwaoXD8ULBmzB4wzZ6HRwF50Mk/nDgzh7Jxd/ZcdiefNleXz68j5+POK9y3Dw8nH88Kf5u0wJIUNVUtw7dQ2dpp0s6EpNuKy8unmuOEBBr8QGB+6BW9cN98u6qR8k4zJU42t2n6Wp0pRSu6HdDiddOAkXtGwq8d93lol/qoxNuNxScYV2c8PMVlvvsB1b8k1V/+g7rg4jtS/9NOaibFtK+nldGNvvN2fz+vLq0dQByjSSy/MZN/ig46Kg6ecMqfN5mjqw4FrwGQXjKYdAGBoH4IU8NvgdG97c1cX9lv3Qm+0/zKknuSTeZUqBB+AA0W/ek8W0cCBCHqAuWVaLY9/H1G5ta52VVCzNgXJ1QVnOd0tkryRK9E5KeV5JTNQ3lEXRMLT0TwSL4l9E+2Aj
+sidebar_class_name: "get api-method"
+info_path: docs/api/chatflows/chatflows-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Get chatflow by API key"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/chatflows/apikey/{apikey}"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Retrieve a chatflow using an API key
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"in":"path","name":"apikey","required":true,"schema":{"type":"string"},"description":"API key associated with the chatflow"}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Successful operation","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","example":"d290f1ee-6c54-4b01-90e6-d701748f0851","description":"Unique identifier for the chatflow"},"name":{"type":"string","example":"MyChatFlow","description":"Name of the chatflow"},"flowData":{"type":"string","example":"{}","description":"JSON string containing the flow data"},"deployed":{"type":"boolean","description":"Whether the chatflow is deployed"},"isPublic":{"type":"boolean","description":"Whether the chatflow is public"},"apikeyid":{"type":"string","description":"ID of the associated API key"},"chatbotConfig":{"type":"string","example":"{}","description":"JSON string containing chatbot configuration"},"apiConfig":{"type":"string","example":"{}","description":"JSON string containing API configuration"},"analytic":{"type":"string","example":"{}","description":"JSON string containing analytics data"},"speechToText":{"type":"string","example":"{}","description":"JSON string containing speech-to-text configuration"},"category":{"type":"string","example":"category1;category2","description":"Categories for the chatflow (semicolon-separated)"},"type":{"type":"string","enum":["CHATFLOW","MULTIAGENT"],"description":"Type of the chatflow"},"createdDate":{"type":"string","format":"date-time","example":"2024-08-24T14:15:22Z","description":"Date and time when the chatflow was created"},"updatedDate":{"type":"string","format":"date-time","example":"2024-08-24T14:15:22Z","description":"Date and time when the chatflow was last updated"}},"title":"Chatflow"}}}},"400":{"description":"The specified API key is invalid","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"integer","format":"int32","description":"Error code"},"message":{"type":"string","description":"Error message"}},"required":["code","message"],"title":"Error"}}}},"404":{"description":"Chatflow not found","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"integer","format":"int32","description":"Error code"},"message":{"type":"string","description":"Error message"}},"required":["code","message"],"title":"Error"}}}},"500":{"description":"Internal error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"integer","format":"int32","description":"Error code"},"message":{"type":"string","description":"Error message"}},"required":["code","message"],"title":"Error"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

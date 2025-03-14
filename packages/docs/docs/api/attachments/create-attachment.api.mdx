@@ -1,0 +1,71 @@
+---
+id: create-attachment
+title: "Create a new attachment"
+description: "Upload a file to create a new attachment"
+sidebar_label: "Create a new attachment"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV9tu20YQ/ZXFPCUAbcmJ0TR8qhLEgNoEcWqrQeEIwYgciRuTu/ReJKsC/72YXUqiLo0VoE9F/WKKnJmdOefM7uwKcrKZkbWTWkEKo7rUmAsUU1mScFpkhtCRQKFoIdA5zIqKlIMEdE0G2W2YQwrRbtA1cDizkN7B1svCOAFLmTfSLSG9W8GE0JAZeFdAejduxgkYevBk3RudLyFdQaaV43DpCipfOlmjcb2pNtVZjg75tc0KqsKTW9YEKejJN8o4gdpwjk6S5a9cUcfKOiPVDBLgYOgghYlUaJaQ7EFyW9AGDR/ggSaB2pta26MBD90l15BTLlovoafCtWEhAVK+CkBZK61DximBiqzFGVkYN/wXgZGGckid8RRe2ForG6t70e/zv921t3S0PObC+iwja6e+LLnUDrxY16XMAqO9b5b9T8dW5k8DMVLywZOQOSknp5KMmGoTYOjIqknWSxyJt8Fpaz8+BneMINg9EYtCZoWQVmC5wKUVXzruX4AXbKH5it1FmbIZmWNVPAonK7IOq1o8k0pYyrTK7fNQz6IgtVeUWKBd48/rMesKqxO1w5Y7evm++J7Q0g+rs0lgsnSR5Seg4VhW/rXjL6QS0b9JwDp03n4v69poVmd8aQhz1igZo83x1GPEnQU7IZqNvr/GBU/B+8Pww7sgnV0YdhrwjgWfbJuho6AOvVue1hhuIBgn4KTj/ajToxD7/PJYJw/VHEuZC6lq77jGucwp//caOGL8pFkrpKeRHIjCV6jOmEOclCTCAmLt3yRwOiNrMmKOLH80WJ3mG0zJEW806ESG3lIeaI0JPZNT0eI2Kel5lEx+UoEVZoVUtF9icN/fse+2Il7z/i5WEym/eHlI+VU8c7Qo0czof6r/C1Q3vBe7QvPEVGsbUEeefaDXnZJ4SDJzMjbMSN6UkELhXG3TXg9ree4KQmUXZM5R9uYXBxlfG537jH+IGAiaZD+OdTiTanZ2SrybaHs8WNrrlTrDstDWpZf9fp9TPBblPVuJnOZU6jocjOt4nanwhlUcFdidDTcc8YqMTzDjoS0Y8Q4bHq7Ww9yvn28PibweintaCvSu4CEkNpBYSFeIqXykXMyx9CQuX1/8Xvz8opqNRvLtSzX/w7+Si/cfF69eP74pP/+EZ1fTi8ffBqNP9s9wMEg11SHFgy3disH18GgePCtUqCKu4eDaFQCzH60vzvvn/bb9MQ5GcXqAQeBsMBQ3vq61YTXtctzllQ/SCiV/ttH8l53PXAhLskLVWeLtP47/OyV15vQfuUK0nDp6dL26RKm4KUMJq7YvDm4PrDJ+vVpN0NLIlE3Drx88Gb5RjBOYo5HcpOFCkUBBmJMJjXRPSy4pZnp2y4uzeek5iWO3CxZ6dBpkGdWuY36wA7OIN719/fGG5TdpLzFV2GfCTSPETbaPMUncFfmeqEPy7SdUy04Wq1W0uNX3pJoGkjZdx7+h4avD33ST05w=
+sidebar_class_name: "post api-method"
+info_path: docs/api/attachments/attachments-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Create a new attachment"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/attachments"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Upload a file to create a new attachment
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"content":{"multipart/form-data":{"schema":{"type":"object","properties":{"file":{"type":"string","format":"binary","description":"The file to upload"},"purpose":{"type":"string","description":"The intended purpose of the file","enum":["assistants","messages"]}}}}},"required":true}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Attachment created successfully","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","description":"Unique identifier for the attachment"},"object":{"type":"string","enum":["attachment"],"description":"The object type, which is always \"attachment\""},"created_at":{"type":"integer","description":"Unix timestamp (in seconds) for when the attachment was created"},"filename":{"type":"string","description":"The name of the file"},"purpose":{"type":"string","enum":["assistants","messages"],"description":"The intended purpose of the file"},"bytes":{"type":"integer","description":"The size of the file in bytes"},"status":{"type":"string","enum":["processing","ready","error"],"description":"The status of the file processing"},"content_type":{"type":"string","description":"The MIME type of the file"}},"required":["id","object","created_at","filename","purpose","bytes","status"],"title":"Attachment"}}}},"400":{"description":"Invalid input provided","content":{"application/json":{"schema":{"type":"object","properties":{"error":{"type":"object","properties":{"message":{"type":"string","description":"A human-readable error message"},"type":{"type":"string","description":"The type of error"},"param":{"type":"string","description":"The parameter that caused the error (if applicable)"},"code":{"type":"string","description":"A machine-readable error code"}}}},"required":["error"],"title":"Error"}}}},"413":{"description":"File too large","content":{"application/json":{"schema":{"type":"object","properties":{"error":{"type":"object","properties":{"message":{"type":"string","description":"A human-readable error message"},"type":{"type":"string","description":"The type of error"},"param":{"type":"string","description":"The parameter that caused the error (if applicable)"},"code":{"type":"string","description":"A machine-readable error code"}}}},"required":["error"],"title":"Error"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

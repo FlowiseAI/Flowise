@@ -6,7 +6,7 @@ description: Learn how to upsert data to Vector Stores with AnswerAI
 
 ---
 
-There are two fundamental ways to upsert your data into a [Vector Store](../../using-answerai/sidekick-studio/nodes/vector-stores/) using AnswerAI, either via [API calls](../api.md#vector-upsert-api) or by using a set of dedicated nodes we have ready for this purpose.
+There are two fundamental ways to upsert your data into a [Vector Store](../../using-answerai/sidekick-studio/nodes/vector-stores/) using AnswerAI, either via [API calls](http://localhost:4242/docs/api/vector-upsert/vector-upsert) or by using a set of dedicated nodes we have ready for this purpose.
 
 In this guide, even though it is **highly recommended** that you prepare your data using the [Document Stores](../../using-answerai/knowledge-bases) before upserting to a Vector Store, we will go through the entire process by using the specific nodes required for this end, outlining the steps, advantages of this approach, and optimization strategies for efficient data handling.
 

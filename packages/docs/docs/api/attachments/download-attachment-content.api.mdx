@@ -1,0 +1,71 @@
+---
+id: download-attachment-content
+title: "Download attachment content"
+description: "Download the content of a specific attachment"
+sidebar_label: "Download attachment content"
+hide_title: true
+hide_table_of_contents: true
+api: eJyVVdtu20YQ/ZXFPCXA2pRTo2n4VDWXQm2AOrHdoDCEYrQcihuTu8zuULIg8N+LIamr5cR94mXncs7OnJk1ZBRNsDVb7yCFd37pSo+Z4oKU8Y7JsfK5QhVrMja3RiEzmqIix6DB1xRQfCcZpJAN3uOtyds+BGhgnEdI72DnHmGqIZJpguUVpHdrmBEGCuOGC0jvpu1UQ40BK2IKsTNwWBGkezH+tRlosAK9Ri5AH/G5KUhN3gkDIbTzU+zVBi1oCPStsYEySDk0pCGagiqEdA28qiVj5GDdHFrBFCjW3kWKcv5qNJLHYdYd/+0dbpJRpmJjDMWYN2W5Ag2DhUTBui6t6e4z8YaJzyIHwkrOnoKkIfehQoYUZtZhWEHbtq2Gy9Hld4E5zyr3jcuehvA1itOJ1H72lYwUtQ7SAGz7u6AQfPixWUUx4pxOUTlCq4qmQncWCDOclaS6BGrj3+rB/0dxpAnEQtqgx9gOnfU8320TKi6QlcEmUq+QHtALm6vh3mYlvZToxmfPIlihKayjY4qde1/HXWveDRc81cCWS4n7vmfTW1bEhRcZzqm7dNFDCsme4JL1gXLaxGzlGSksNiprQgkpFMx1TJMEa3vOBaGLSwrnaJPFxSMiV8FnjZEP1QeCVh/HiYxz6+Znz4l33dueDpYmSekNloWPnF6ORiOBeCrKR7FSGS2o9HXX9Jt4e4PnWpq7b8z98bMtnWSEYSLId28Eenj5sBHfH19uHtf3aqLuaaWw4YIcD7pSS8uFyu0DZWqBZUPq8s3F5+KXV9X89ta+/ckt/m5e2+XHv5av3zz8Vn75Gc8+5BcPf45vP8V/QCptXe47iEMb7GQd1fhqchJHLspB199rbsv9aRhBg1S/t744H52PhqmAppsKw9wddzUbT9R1U9c+SN8c1ni/rqCBKrRyHHvzXw+OhUjtI1fo9lJsFxA+mqHHtNa7ufW/99ZQXKYHTuoSrRPRdlzWg3AON5WG9HjpbJJPNUgnisd6PcNIt6FsW/n9raEgi22qYYHBir47fWU2ynsGaY5lpO/QevF5UP9L9cxNdpLY8BOd7Juu5SAF0HBPq0fbtJ22GgrCjEIHtrcZG0M173k/uapEW9tJ9Pt7EQUeKupIQV2WkwjX697ixt+Ta9stYJZvAdq2/wERlAzW
+sidebar_class_name: "get api-method"
+info_path: docs/api/attachments/attachments-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Download attachment content"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/attachments/{attachment_id}/content"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Download the content of a specific attachment
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={[{"name":"attachment_id","in":"path","description":"The ID of the attachment to download","required":true,"schema":{"type":"string"}}]}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={undefined}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Attachment content downloaded successfully","content":{"application/octet-stream":{"schema":{"type":"string","format":"binary"}}}},"404":{"description":"Attachment not found","content":{"application/json":{"schema":{"type":"object","properties":{"error":{"type":"object","properties":{"message":{"type":"string","description":"A human-readable error message"},"type":{"type":"string","description":"The type of error"},"param":{"type":"string","description":"The parameter that caused the error (if applicable)"},"code":{"type":"string","description":"A machine-readable error code"}}}},"required":["error"],"title":"Error"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      

@@ -1,0 +1,71 @@
+---
+id: create-chat-message-feedback-for-chatflow
+title: "Create new chat message feedback"
+description: "Create new feedback for a specific chat flow."
+sidebar_label: "Create new chat message feedback"
+hide_title: true
+hide_table_of_contents: true
+api: eJztV9tu4zYQ/RVinuVrfEn0VCe7Qd3uNmlsN2gDo6ClkcWNRCkkZccw9O/FULIjrbVBUvSpyJNlcubM7cyQ3IPhaw3uAwSI/op7j7B0QKOXKWF24D7sYYVcoZpkJgT3YZkvHUhSVNyIRE59cMFTyA1ehdx8Ra35Gq9LpOtE0WoQJVtwwEftKZGSGrhwZZWYxC07GGZBohhnOkVPBMJjXsgNI+U2OKDwKUNtLhN/B+4evEQalIY+eZpGwrPudL5pAt+D9kKMOX2ZXYrgQrL6hp4BB1JFzhuBmnaFX5HRRgm5BgeCRMXcgAtZJvwTzxdSPGXIhI/SiECgsn6bEI+BQO6AVwb+byxMT6GPuThgTxtx34RDEHFRqWaUd3tXohEw8UKum1BRZjHxbP7z4uvl7O/FLTiH7083978R7eqG7ixUk5FK9V/PwIGJ7KBBypZ5/idu8NXgfW6wZUSMJ6ikyrj0Ge2ybYiyVn625ZqVViDPHTDCRGSjoUUgJwEit1Dog2tUhnZBp4nUBUn73S79/CAynXkeah1kUbQ7WnU+GuSjQf43DZI7MGjqganc8Ej4TMg0MyxVyUb4/yX5vcRvzEDdi89KJYpZ2RfevFWtUjMfDReRbnKrrjnxfUGfPGJoQQ6a1VRa+DJ5w+bkGVSEoVFtUBVQH7mr5846ZcKErjlpom2YnO5B0DnOMrotUQa1vSxlKgIXQmNS7XY6PBVtEyKXeouqzUVn0ztx6VYlfubRn7IUkDvf42jD10KuW2/BmxWyzWBupxMlHo/CRBt30O12ycUmlC8kxXzcYJSkMUpzxKtcD2dEhqLe1UvisQhkkfJjxcAthcApP64Pk+SX+/lppW6n7BF3jGcmpHla8JBthQlZIJ7RZxseZcgGF7278LwfrxcLcXUmN39kY7H9crMdXzxfRvcj3roOes+/Tha/6z9tkYnIdy+Xyc/PPE4jPJx1cBbw82EwGrSG4964NRiO+q3VWeC1+t7F6CwYjXjAR1A/vd6jYy/MR1ZXDpm3ghyOj9opcezZF+jaEId+tz9odcet/sW8N3SHPbd/3u6Oe39R7wgZJLZmJfuPR8LkdtpYFTpvYi4Lltlzt4yDVXqCGqJQ6bW77W7pJPfsYJHc0mFiaTyZslmWpomi7qrTvkp1OiBjLmhbF+I/1bapttSiMZcVE5Vnxo88rQVYeVm8+4lSkt7gs+mkEReSsmsD2pdTo/7Ioh6ktf1+xTUuVJTntPyUoaKH19KBDVeCr6gqD8vcgRC5j8qOmUfckYeFr605WSbxKCMPTuY2zYBCY+J5mJpXZZeVmXd7M6POXJWvrtgOdVB8a5m4BReAXoOkbaeAXdtDxOU6s5McCkwqDq/Phu9mgY2q3OJyV/Fwvy8k5skjyjwHpwzF0H/Il3me/wOO8Aut
+sidebar_class_name: "post api-method"
+info_path: docs/api/feedback/feedback-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import ParamsDetails from "@theme/ParamsDetails";
+import RequestSchema from "@theme/RequestSchema";
+import StatusCodes from "@theme/StatusCodes";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+import Heading from "@theme/Heading";
+
+<Heading
+  as={"h1"}
+  className={"openapi__heading"}
+  children={"Create new chat message feedback"}
+>
+</Heading>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/feedback"}
+  context={"endpoint"}
+>
+  
+</MethodEndpoint>
+
+
+
+Create new feedback for a specific chat flow.
+
+<Heading
+  id={"request"}
+  as={"h2"}
+  className={"openapi-tabs__heading"}
+  children={"Request"}
+>
+</Heading>
+
+<ParamsDetails
+  parameters={undefined}
+>
+  
+</ParamsDetails>
+
+<RequestSchema
+  title={"Body"}
+  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the feedback"},"chatflowid":{"type":"string","format":"uuid","description":"Identifier for the chat flow"},"chatId":{"type":"string","description":"Identifier for the chat"},"messageId":{"type":"string","format":"uuid","description":"Identifier for the message"},"rating":{"type":"string","enum":["THUMBS_UP","THUMBS_DOWN"],"description":"Rating for the message"},"content":{"type":"string","description":"Feedback content"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the feedback was created"}},"title":"ChatMessageFeedback"}}},"required":true}}
+>
+  
+</RequestSchema>
+
+<StatusCodes
+  id={undefined}
+  label={undefined}
+  responses={{"200":{"description":"Feedback successfully created","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the feedback"},"chatflowid":{"type":"string","format":"uuid","description":"Identifier for the chat flow"},"chatId":{"type":"string","description":"Identifier for the chat"},"messageId":{"type":"string","format":"uuid","description":"Identifier for the message"},"rating":{"type":"string","enum":["THUMBS_UP","THUMBS_DOWN"],"description":"Rating for the message"},"content":{"type":"string","description":"Feedback content"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the feedback was created"}},"title":"ChatMessageFeedback"}}}},"400":{"description":"Invalid input provided","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code"},"message":{"type":"string","description":"Error message"},"details":{"type":"object","description":"Additional error details"}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code"},"message":{"type":"string","description":"Error message"},"details":{"type":"object","description":"Additional error details"}},"title":"Error"}}}}}}
+>
+  
+</StatusCodes>
+
+
+      
