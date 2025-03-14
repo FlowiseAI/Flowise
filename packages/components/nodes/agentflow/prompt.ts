@@ -41,7 +41,7 @@ The output should be a concise paragraph summarizing the conversation, with spec
 - Ensure clarity and conciseness, highlighting essential information effectively.
 - Make sure the final question or prompt is relevant to the conversation and offers clear options for user engagement.`
 
-export const CONDITION_AGENT_TOOL_NAME = `Here's a scenario for which I would like you to create a short function name. Function name must be in English and cannot be more than 30 characters.
+export const CONDITION_AGENT_TOOL_NAME = `Here's a scenario for which I would like you to create a short function name. Function name must be in English and should have at most 64 characters.
 
 <scenario>
 {scenario}

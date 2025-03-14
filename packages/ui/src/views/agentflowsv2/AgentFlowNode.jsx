@@ -331,7 +331,8 @@ const AgentFlowNode = ({ data }) => {
                                 // Array of model configs to check and render
                                 const modelConfigs = [
                                     { model: data.inputs?.llmModel, config: data.inputs?.llmModelConfig },
-                                    { model: data.inputs?.agentModel, config: data.inputs?.agentModelConfig }
+                                    { model: data.inputs?.agentModel, config: data.inputs?.agentModelConfig },
+                                    { model: data.inputs?.conditionAgentModel, config: data.inputs?.conditionAgentModelConfig }
                                 ]
 
                                 // Filter out undefined models and render each valid one

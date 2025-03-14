@@ -1130,7 +1130,7 @@ const NodeInputHandler = ({
                             </>
                         )}
                         {inputParam.type === 'options' && (
-                            <div key={JSON.stringify(data.inputs[inputParam.name])}>
+                            <div key={`${data.id}_${JSON.stringify(data.inputs[inputParam.name])}`}>
                                 <Dropdown
                                     disabled={disabled}
                                     name={inputParam.name}
@@ -1142,7 +1142,7 @@ const NodeInputHandler = ({
                             </div>
                         )}
                         {inputParam.type === 'multiOptions' && (
-                            <div key={JSON.stringify(data.inputs[inputParam.name])}>
+                            <div key={`${data.id}_${JSON.stringify(data.inputs[inputParam.name])}`}>
                                 <MultiDropdown
                                     disabled={disabled}
                                     name={inputParam.name}
@@ -1156,7 +1156,7 @@ const NodeInputHandler = ({
                             <>
                                 {data.inputParams.length === 1 && <div style={{ marginTop: 10 }} />}
                                 <div
-                                    key={`${reloadTimestamp}_${JSON.stringify(data.inputs[inputParam.name])}`}
+                                    key={`${reloadTimestamp}_${data.id}_${JSON.stringify(data.inputs[inputParam.name])}`}
                                     style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}
                                 >
                                     <AsyncDropdown
@@ -1250,7 +1250,9 @@ const NodeInputHandler = ({
                         {inputParam.loadConfig && data && data.inputs && data.inputs[inputParam.name] && (
                             <>
                                 <ConfigInput
-                                    key={`${JSON.stringify(data.inputs[inputParam.name])}_${arrayIndex}_${parentParamForArray?.name}`}
+                                    key={`${data.id}_${JSON.stringify(data.inputs[inputParam.name])}_${arrayIndex}_${
+                                        parentParamForArray?.name
+                                    }`}
                                     data={data}
                                     inputParam={inputParam}
                                     disabled={disabled}

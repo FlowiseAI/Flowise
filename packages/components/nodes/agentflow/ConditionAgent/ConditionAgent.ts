@@ -73,6 +73,14 @@ class ConditionAgent_Agentflow implements INode {
                 loadConfig: true
             },
             {
+                label: 'Instructions',
+                name: 'conditionAgentInstructions',
+                type: 'string',
+                rows: 4,
+                acceptVariable: true,
+                default: DEFAULT_INSTRUCTIONS
+            },
+            {
                 label: 'Input',
                 name: 'conditionAgentInput',
                 type: 'string',
@@ -99,14 +107,6 @@ class ConditionAgent_Agentflow implements INode {
                         scenario: ''
                     }
                 ]
-            },
-            {
-                label: 'Instructions',
-                name: 'conditionAgentInstructions',
-                type: 'string',
-                rows: 4,
-                acceptVariable: true,
-                default: DEFAULT_INSTRUCTIONS
             },
             {
                 label: 'Enable Memory',
