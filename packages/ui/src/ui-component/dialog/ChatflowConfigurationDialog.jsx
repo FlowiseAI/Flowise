@@ -4,27 +4,38 @@ import { createPortal } from 'react-dom'
 import { Box, Dialog, DialogContent, DialogTitle, Tabs, Tab } from '@mui/material'
 import { tabsClasses } from '@mui/material/Tabs'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
-import Security from '@/ui-component/extended/Security'
+import RateLimit from '@/ui-component/extended/RateLimit'
+import AllowedDomains from '@/ui-component/extended/AllowedDomains'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 import Leads from '@/ui-component/extended/Leads'
-import FollowUpPrompts from '@/ui-component/extended/FollowUpPrompts'
+import VisibilitySettings from '@/ui-component/extended/VisibilitySettings'
+import GeneralSettings from '@/ui-component/extended/GeneralSettings'
+import ChatLinksSettings from '@/ui-component/extended/ChatLinksSettings'
 import FileUpload from '@/ui-component/extended/FileUpload'
 import PostProcessing from '@/ui-component/extended/PostProcessing'
-import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
+// import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
-        label: 'Security',
-        id: 'security'
+        label: 'General',
+        id: 'generalSettings'
+    },
+    {
+        label: 'Visibility',
+        id: 'visibilitySettings'
+    },
+    {
+        label: 'Chat links',
+        id: 'chatLinks'
+    },
+    {
+        label: 'Rate Limiting',
+        id: 'rateLimiting'
     },
     {
         label: 'Starter Prompts',
         id: 'conversationStarters'
-    },
-    {
-        label: 'Follow-up Prompts',
-        id: 'followUpPrompts'
     },
     {
         label: 'Speech to Text',
@@ -35,9 +46,13 @@ const CHATFLOW_CONFIGURATION_TABS = [
         id: 'chatFeedback'
     },
     {
-        label: 'Analyse Chatflow',
-        id: 'analyseChatflow'
+        label: 'Allowed Domains',
+        id: 'allowedDomains'
     },
+    // {
+    //     label: 'Analyse Chatflow',
+    //     id: 'analyseChatflow'
+    // },
     {
         label: 'Leads',
         id: 'leads'
@@ -93,7 +108,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
             onClose={onCancel}
             open={show}
             fullWidth
-            maxWidth={'lg'}
+            maxWidth={'md'}
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
@@ -133,13 +148,16 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                 </Tabs>
                 {filteredTabs.map((item, index) => (
                     <TabPanel key={index} value={tabValue} index={index}>
-                        {item.id === 'security' && <Security dialogProps={dialogProps} />}
+                        {item.id === 'rateLimiting' && <RateLimit dialogProps={dialogProps} />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
-                        {item.id === 'followUpPrompts' ? <FollowUpPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
-                        {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
+                        {item.id === 'allowedDomains' ? <AllowedDomains dialogProps={dialogProps} /> : null}
+                        {/* {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null} */}
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
+                        {item.id === 'visibilitySettings' ? <VisibilitySettings dialogProps={dialogProps} /> : null}
+                        {item.id === 'chatLinks' ? <ChatLinksSettings dialogProps={dialogProps} /> : null}
+                        {item.id === 'generalSettings' ? <GeneralSettings dialogProps={dialogProps} /> : null}
                         {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}
                         {item.id === 'postProcessing' ? <PostProcessing dialogProps={dialogProps} /> : null}
                     </TabPanel>
