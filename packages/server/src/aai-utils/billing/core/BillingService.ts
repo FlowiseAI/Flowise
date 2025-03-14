@@ -32,7 +32,7 @@ export class BillingService implements BillingProvider {
         this.paymentProvider = stripeProvider
         this.usageProvider = langfuseProvider
         this.stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-            apiVersion: '2025-01-27.acacia'
+            apiVersion: '2025-02-24.acacia'
         })
     }
 
