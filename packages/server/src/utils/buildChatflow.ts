@@ -56,7 +56,7 @@ import {
     constructGraphs,
     getAPIOverrideConfig
 } from '../utils'
-import { validateAPIKey, validateChatflowAPIKey } from './validateKey'
+import { validateChatflowAPIKey } from './validateKey'
 import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
 import { buildAgentGraph } from './buildAgentGraph'
@@ -700,6 +700,8 @@ export const executeFlow = async ({
                     const customFuncNodeInstance = new nodeModule.nodeClass()
                     let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
                     result.text = moderatedResponse
+                    // Post Processing Custom function doesn't format the raw output, so leaving this here in case we want to test more.
+                    // result.text = handleEscapeCharacters(moderatedResponse, true)
                     resultText = result.text
                 } catch (e) {
                     logger.log('[server]: Post Processing Error:', e)
@@ -984,7 +986,7 @@ const validateAndSaveChat = async (
         // Check if over limit
         const isOverLimit = totalUsage >= planLimits
 
-        console.log('[BuildChatflow] Usage summary:', { totalUsage, planLimits, isOverLimit })
+        // console.log('[BuildChatflow] Usage summary:', { totalUsage, planLimits, isOverLimit })
         if (isOverLimit) {
             throw new InternalFlowiseError(
                 StatusCodes.PAYMENT_REQUIRED,
