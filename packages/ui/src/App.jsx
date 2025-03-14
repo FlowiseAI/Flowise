@@ -46,7 +46,7 @@ const App = () => {
     React.useEffect(() => {
         ;(async () => {
             try {
-                console.log('user', { user, isLoading })
+                // console.log('user', { user, isLoading })
                 if (!user && !isLoading) {
                     await signinWithRedirect()
                 } else if (user) {

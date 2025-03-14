@@ -457,7 +457,7 @@ export function AnswersProvider({
                 async onopen(response) {
                     if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
                         setIsChatFlowAvailableToStream(true)
-                        console.log('Connection established successfully')
+                        // console.log('Connection established successfully')
                         // Connection established successfully
                     } else {
                         throw new Error('Failed to establish connection')
@@ -465,7 +465,7 @@ export function AnswersProvider({
                 },
                 async onmessage(ev) {
                     const payload = JSON.parse(ev.data)
-                    console.log('payload', payload)
+                    // console.log('payload', payload)
                     switch (payload.event) {
                         case 'start':
                             // Already created an empty message when starting the stream
