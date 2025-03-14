@@ -2,7 +2,7 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchain/community/indexes/base'
 import { DataSource } from 'typeorm'
-import { getHost } from '../../vectorstores/Postgres/utils'
+import { getHost, getSSL } from '../../vectorstores/Postgres/utils'
 import { getDatabase, getPort, getTableName } from './utils'
 
 const serverCredentialsExists = !!process.env.POSTGRES_RECORDMANAGER_USER && !!process.env.POSTGRES_RECORDMANAGER_PASSWORD
@@ -49,6 +49,14 @@ class PostgresRecordManager_RecordManager implements INode {
                 name: 'port',
                 type: 'number',
                 placeholder: getPort(),
+                optional: true
+            },
+            {
+                label: 'SSL',
+                name: 'ssl',
+                description: 'Use SSL to connect to Postgres',
+                type: 'boolean',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -149,6 +157,7 @@ class PostgresRecordManager_RecordManager implements INode {
             type: 'postgres',
             host: getHost(nodeData),
             port: getPort(nodeData),
+            ssl: getSSL(nodeData),
             username: user,
             password: password,
             database: getDatabase(nodeData)

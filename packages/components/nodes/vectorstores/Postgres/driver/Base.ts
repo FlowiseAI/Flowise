@@ -2,7 +2,7 @@ import { VectorStore } from '@langchain/core/vectorstores'
 import { getCredentialData, getCredentialParam, ICommonObject, INodeData } from '../../../../src'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
-import { getDatabase, getHost, getPort, getTableName } from '../utils'
+import { getDatabase, getHost, getPort, getSSL, getTableName } from '../utils'
 
 export abstract class VectorStoreDriver {
     constructor(protected nodeData: INodeData, protected options: ICommonObject) {}
@@ -21,6 +21,10 @@ export abstract class VectorStoreDriver {
 
     getPort() {
         return getPort(this.nodeData) as number
+    }
+
+    getSSL() {
+        return getSSL(this.nodeData) as boolean
     }
 
     getDatabase() {
