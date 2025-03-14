@@ -21,6 +21,13 @@ spec:
           ports:
             - containerPort: 8000
           args: ["--port", "8000", "--host", "0.0.0.0"]
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 4Gi
 
 ---
 

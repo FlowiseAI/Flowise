@@ -47,6 +47,11 @@ spec:
                 secretKeyRef:
                   name: credentials
                   key: database_pass
+            - name: FLOWISE_SECRETKEY_OVERWRITE
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: database_pass
             - name: FLOWISE_USERNAME
               value: "d8sdkjad"
             - name: FLOWISE_PASSWORD
@@ -66,16 +71,16 @@ spec:
                   key: s3_storage_secret_access_key
             - name: S3_STORAGE_REGION
               value: "eu-central-1"
-            - name: MODE
-              value: "queue"
-            - name: QUEUE_NAME
-              value: "flowise-queue"
-            - name: WORKER_CONCURRENCY
-              value: "10000"
-            - name: REDIS_HOST
-              value: "xheal-flowise.nif9dl.ng.0001.euc1.cache.amazonaws.com"
-            - name: REDIS_PORT
-              value: "6379"
+            # - name: MODE
+            #   value: "queue"
+            # - name: QUEUE_NAME
+            #   value: "flowise-queue"
+            # - name: WORKER_CONCURRENCY
+            #   value: "10000"
+            # - name: REDIS_HOST
+            #   value: "xheal-flowise.nif9dl.ng.0001.euc1.cache.amazonaws.com"
+            # - name: REDIS_PORT
+            #   value: "6379"
           volumeMounts:
           - name: api-keys-config
             mountPath: /usr/src/packages/server/api.json
