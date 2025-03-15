@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
     g++ \
     libcairo2-dev \
     libpango-1.0-0 \
-    chromium
+    chromium \
+    curl
 
 # Instalar FAISS para CPU
 RUN pip3 install --no-cache-dir faiss-cpu
