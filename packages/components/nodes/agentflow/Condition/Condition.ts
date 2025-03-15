@@ -1,5 +1,4 @@
 import { CommonType, ICommonObject, ICondition, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
-import { BaseMessageLike } from '@langchain/core/messages'
 
 class Condition_Agentflow implements INode {
     label: string
@@ -261,7 +260,6 @@ class Condition_Agentflow implements INode {
 
     async run(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const state = options.agentflowRuntime?.state as ICommonObject
-        const chatHistory = (options.agentflowRuntime?.chatHistory as BaseMessageLike[]) ?? []
 
         const compareOperationFunctions: {
             [key: string]: (value1: CommonType, value2: CommonType) => boolean
@@ -342,8 +340,7 @@ class Condition_Agentflow implements INode {
             name: this.name,
             input: { conditions: initialConditions },
             output: { conditions },
-            state,
-            chatHistory
+            state
         }
 
         return returnOutput

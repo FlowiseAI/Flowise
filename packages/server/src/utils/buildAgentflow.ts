@@ -120,7 +120,7 @@ interface IExecuteAgentFlowParams extends Omit<IExecuteFlowParams, 'incomingInpu
     incomingInput: IncomingAgentflowInput
 }
 
-const MAX_LOOP_COUNT = process.env.MAX_LOOP_COUNT ? parseInt(process.env.MAX_LOOP_COUNT) : 2
+const MAX_LOOP_COUNT = process.env.MAX_LOOP_COUNT ? parseInt(process.env.MAX_LOOP_COUNT) : 10
 
 /**
  * Add execution to database
@@ -233,9 +233,7 @@ export const resolveVariables = async (
 
         const turndownService = new TurndownService()
 
-        console.log('value', value)
         value = turndownService.turndown(value)
-        console.log('TURNEDOWN value', value)
 
         const matches = value.match(/{{(.*?)}}/g)
 
@@ -283,7 +281,6 @@ export const resolveVariables = async (
             }
 
             // Find node data in executed data
-            console.log('variableFullPath', variableFullPath)
             // sometimes turndown value returns a backslash like `llmAgentflow\_1`, remove the backslash
             const nodeData = agentFlowExecutedData?.find((data) => data.nodeId === variableFullPath.replace('\\', ''))
             if (nodeData && nodeData.data) {
@@ -292,7 +289,6 @@ export const resolveVariables = async (
                 resolvedValue = resolvedValue.replace(match, actualValue?.toString() ?? match)
             }
         }
-        console.log('resolvedValue value', resolvedValue)
 
         return resolvedValue
     }
@@ -777,6 +773,7 @@ const executeNode = async ({
             sessionId,
             apiMessageId,
             chatHistory: pastChatHistory,
+            state: agentflowRuntime.state,
             ...overrideConfig
         }
 
@@ -1126,7 +1123,7 @@ export const executeAgentFlow = async ({
         if (!currentNode) continue
 
         const reactFlowNode = nodes.find((nd) => nd.id === currentNode.nodeId)
-        if (!reactFlowNode || reactFlowNode === undefined) continue
+        if (!reactFlowNode || reactFlowNode === undefined || reactFlowNode.data.name === 'stickyNoteAgentflow') continue
 
         let nodeResult
         try {

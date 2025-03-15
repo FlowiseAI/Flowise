@@ -81,7 +81,8 @@ class Loop_Agentflow implements INode {
             input: data,
             output: {
                 content: 'Loop back to ' + `${loopBackToNodeLabel} (${loopBackToNodeId})`,
-                nodeID: loopBackToNodeId
+                nodeID: loopBackToNodeId,
+                maxLoopCount: _maxLoopCount ? parseInt(_maxLoopCount) : 10
             },
             state
         }

@@ -658,6 +658,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                                         const match = /language-(\w+)/.exec(className || '')
                                                                         return !inline ? (
                                                                             <CodeBlock
+                                                                                isDialog={true}
                                                                                 key={Math.random()}
                                                                                 language={(match && match[1]) || ''}
                                                                                 value={String(children).replace(/\n$/, '')}
@@ -748,6 +749,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                             const match = /language-(\w+)/.exec(className || '')
                                                             return !inline ? (
                                                                 <CodeBlock
+                                                                    isDialog={true}
                                                                     key={Math.random()}
                                                                     language={(match && match[1]) || ''}
                                                                     value={String(children).replace(/\n$/, '')}
@@ -778,6 +780,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                         const match = /language-(\w+)/.exec(className || '')
                                                         return !inline ? (
                                                             <CodeBlock
+                                                                isDialog={true}
                                                                 key={Math.random()}
                                                                 language={(match && match[1]) || ''}
                                                                 value={String(children).replace(/\n$/, '')}
@@ -849,6 +852,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                         const match = /language-(\w+)/.exec(className || '')
                                         return !inline ? (
                                             <CodeBlock
+                                                isDialog={true}
                                                 key={Math.random()}
                                                 language={(match && match[1]) || ''}
                                                 value={String(children).replace(/\n$/, '')}
@@ -910,6 +914,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                         const match = /language-(\w+)/.exec(className || '')
                                                         return !inline ? (
                                                             <CodeBlock
+                                                                isDialog={true}
                                                                 key={Math.random()}
                                                                 language={(match && match[1]) || ''}
                                                                 value={String(children).replace(/\n$/, '')}
@@ -940,6 +945,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                     const match = /language-(\w+)/.exec(className || '')
                                                     return !inline ? (
                                                         <CodeBlock
+                                                            isDialog={true}
                                                             key={Math.random()}
                                                             language={(match && match[1]) || ''}
                                                             value={String(children).replace(/\n$/, '')}
@@ -988,6 +994,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                             const match = /language-(\w+)/.exec(className || '')
                                             return !inline ? (
                                                 <CodeBlock
+                                                    isDialog={true}
                                                     key={Math.random()}
                                                     language={(match && match[1]) || ''}
                                                     value={String(children).replace(/\n$/, '')}

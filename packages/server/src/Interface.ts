@@ -347,6 +347,7 @@ export interface IFlowConfig {
     chatHistory: IMessage[]
     apiMessageId: string
     overrideConfig?: ICommonObject
+    state?: ICommonObject
 }
 
 export interface IPredictionQueueAppServer {

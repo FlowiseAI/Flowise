@@ -22,7 +22,7 @@ import { useTheme } from '@mui/material/styles'
 import CanvasNode from './AgentFlowNode'
 import AgentFlowEdge from './AgentFlowEdge'
 import ConnectionLine from './ConnectionLine'
-import StickyNote from '@/views/canvas/StickyNote'
+import StickyNote from './StickyNote'
 import CanvasHeader from '@/views/canvas/CanvasHeader'
 import AddNodes from '@/views/canvas/AddNodes'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
@@ -243,7 +243,7 @@ const AgentflowCanvas = () => {
     // eslint-disable-next-line
     const onNodeDoubleClick = useCallback((event, node) => {
         if (!node || !node.data) return
-        if (node.data.type === 'stickyNote') {
+        if (node.data.name === 'stickyNoteAgentflow') {
             // dont show dialog
         } else {
             const dialogProps = {

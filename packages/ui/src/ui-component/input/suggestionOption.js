@@ -41,7 +41,7 @@ const fetchVariables = async () => {
     }
 }
 
-export const suggestionOptions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes) => ({
+export const suggestionOptions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData) => ({
     char: '{{',
     items: async ({ query }) => {
         const defaultItems = [
@@ -77,6 +77,18 @@ export const suggestionOptions = (availableNodesForVariable, availableState, acc
                 description: 'Output from the current node',
                 category: 'Node Outputs'
             })
+
+            const structuredOutputs = nodeData?.inputs?.llmStructuredOutput ?? []
+            if (structuredOutputs && structuredOutputs.length > 0) {
+                structuredOutputs.forEach((item) => {
+                    defaultItems.unshift({
+                        id: `output.${item.key}`,
+                        mentionLabel: `output.${item.key}`,
+                        description: `${item.description}`,
+                        category: 'Node Outputs'
+                    })
+                })
+            }
         }
 
         // Fetch variables if cache is empty

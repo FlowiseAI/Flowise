@@ -531,12 +531,11 @@ class Agent_Agentflow implements INode {
                         messages.push(llmMessages)
                         uniqueImageMessages.push(storeMessages)
                     }
-                } else {
-                    messages.push({
-                        role: 'user',
-                        content: input
-                    })
                 }
+                messages.push({
+                    role: 'user',
+                    content: input
+                })
             }
             delete nodeData.inputs?.agentMessages
 

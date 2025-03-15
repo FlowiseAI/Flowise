@@ -78,13 +78,16 @@ export const ArrayRenderer = ({ inputParam, data, disabled }) => {
             name: i,
             description: `Condition ${i}`
         }))
-        // always append additional output anchor for ELSE
-        updatedOutputs.push({
-            id: `${data.id}-output-${items.length}`,
-            label: items.length,
-            name: items.length,
-            description: 'Else'
-        })
+
+        // always append additional output anchor for ELSE for condition
+        if (data.name === 'conditionAgentflow') {
+            updatedOutputs.push({
+                id: `${data.id}-output-${items.length}`,
+                label: items.length,
+                name: items.length,
+                description: 'Else'
+            })
+        }
         data.outputAnchors = updatedOutputs
 
         const nodes = reactFlowInstance.getNodes()

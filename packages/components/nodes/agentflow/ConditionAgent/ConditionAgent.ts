@@ -1,45 +1,9 @@
 import { AnalyticHandler } from '../../../src/handler'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams, IUsedTool } from '../../../src/Interface'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { getUniqueImageMessages, processMessagesWithImages } from '../utils'
-import { CONDITION_AGENT_TOOL_NAME, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
+import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { z } from 'zod'
-import { StructuredTool } from '@langchain/core/tools'
-import zodToJsonSchema from 'zod-to-json-schema'
-
-const DEFAULT_INSTRUCTIONS = `You are part of a multi-agent system designed to make agent coordination and execution easy. Your are given an input and a set of scenarios, your goal is to analyze the conversation, identify the matching scenario, then use one of the tools provided to answer the user's question.
-
-Scenarios: {scenarios}
-`
-const DEFAULT_USER_MESSAGE = `From the conversation, what is the best tool to use? Only use the tools that are provided.`
-
-class ScenarioTool extends StructuredTool {
-    name = ''
-    description = ''
-    schema
-
-    constructor(fields: ICommonObject) {
-        super()
-        this.name = fields.name
-        this.description = fields.description
-        this.schema = fields.schema
-    }
-
-    async _call() {
-        return ''
-    }
-}
-
-interface ISimpliefiedTool {
-    name: string
-    description: string
-    schema: any
-    toolNode: {
-        label: string
-        name: string
-    }
-}
 
 class ConditionAgent_Agentflow implements INode {
     label: string
@@ -76,9 +40,10 @@ class ConditionAgent_Agentflow implements INode {
                 label: 'Instructions',
                 name: 'conditionAgentInstructions',
                 type: 'string',
+                description: 'A general instructions of what the condition agent should do',
                 rows: 4,
                 acceptVariable: true,
-                default: DEFAULT_INSTRUCTIONS
+                placeholder: 'Determine if the user is interested in learning about AI'
             },
             {
                 label: 'Input',
@@ -105,10 +70,13 @@ class ConditionAgent_Agentflow implements INode {
                 default: [
                     {
                         scenario: ''
+                    },
+                    {
+                        scenario: ''
                     }
                 ]
-            },
-            {
+            }
+            /*{
                 label: 'Enable Memory',
                 name: 'conditionAgentEnableMemory',
                 type: 'boolean',
@@ -167,7 +135,7 @@ class ConditionAgent_Agentflow implements INode {
                 show: {
                     conditionAgentMemoryType: 'conversationSummaryBuffer'
                 }
-            }
+            }*/
         ]
         this.outputs = [
             {
@@ -208,7 +176,52 @@ class ConditionAgent_Agentflow implements INode {
         }
     }
 
-    async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
+    private parseJsonMarkdown(jsonString: string): any {
+        // Strip whitespace
+        jsonString = jsonString.trim()
+        const starts = ['```json', '```', '``', '`', '{']
+        const ends = ['```', '``', '`', '}']
+
+        let startIndex = -1
+        let endIndex = -1
+
+        // Find start of JSON
+        for (const s of starts) {
+            startIndex = jsonString.indexOf(s)
+            if (startIndex !== -1) {
+                if (jsonString[startIndex] !== '{') {
+                    startIndex += s.length
+                }
+                break
+            }
+        }
+
+        // Find end of JSON
+        if (startIndex !== -1) {
+            for (const e of ends) {
+                endIndex = jsonString.lastIndexOf(e, jsonString.length)
+                if (endIndex !== -1) {
+                    if (jsonString[endIndex] === '}') {
+                        endIndex += 1
+                    }
+                    break
+                }
+            }
+        }
+
+        if (startIndex !== -1 && endIndex !== -1 && startIndex < endIndex) {
+            const extractedContent = jsonString.slice(startIndex, endIndex).trim()
+            try {
+                return JSON.parse(extractedContent)
+            } catch (error) {
+                throw new Error(`Invalid JSON object. Error: ${error}`)
+            }
+        }
+
+        throw new Error('Could not find JSON block in the output.')
+    }
+
+    async run(nodeData: INodeData, question: string, options: ICommonObject): Promise<any> {
         let llmIds: ICommonObject | undefined
         let analyticHandlers = options.analyticHandlers as AnalyticHandler
 
@@ -222,7 +235,7 @@ class ConditionAgent_Agentflow implements INode {
                 throw new Error('Model is required')
             }
             const conditionAgentInput = nodeData.inputs?.conditionAgentInput as string
-            let input = conditionAgentInput || DEFAULT_USER_MESSAGE
+            let input = conditionAgentInput || question
             const conditionAgentInstructions = nodeData.inputs?.conditionAgentInstructions as string
 
             // Extract memory and configuration options
@@ -255,74 +268,41 @@ class ConditionAgent_Agentflow implements INode {
                 throw new Error('Scenarios are required')
             }
 
-            let structuredOutputs = []
-            let tools = []
-            let usedTools: IUsedTool[] = []
-
-            // generate name and description for each scenario
-            for (const _scenario of _conditionAgentScenarios) {
-                const scenarioContent = _scenario.scenario
-                const response = await llmNodeInstance.invoke(CONDITION_AGENT_TOOL_NAME.replace('{scenario}', scenarioContent))
-                const _scenarioName = typeof response.content === 'string' ? response.content : scenarioContent.substring(0, 30)
-                // convert to small case and replace space with underscore
-                const scenarioName = _scenarioName
-                    .trim()
-                    .toLowerCase()
-                    .replace(/ /g, '_')
-                    .replace(/[^a-z0-9_-]/g, '')
-                const scenarioDescription = scenarioContent
-
-                const zodObj: ICommonObject = {}
-                zodObj[scenarioName] = z.string().describe(scenarioDescription || '')
-                const structuredOutput = z.object(zodObj)
-
-                const tool = new ScenarioTool({
-                    name: scenarioName,
-                    description: scenarioDescription,
-                    schema: structuredOutput
-                })
-                tools.push(tool)
-
-                structuredOutputs.push({
-                    name: scenarioName,
-                    description: scenarioDescription,
-                    schema: structuredOutput
-                })
-            }
-            if (llmNodeInstance && tools.length > 0) {
-                // @ts-ignore
-                llmNodeInstance = llmNodeInstance.bindTools(tools)
-            }
-
-            const availableTools: ISimpliefiedTool[] = tools.map((tool) => {
-                const componentNode = options.componentNodes['customTool']
-
-                const jsonSchema = zodToJsonSchema(tool.schema)
-                if (jsonSchema.$schema) {
-                    delete jsonSchema.$schema
-                }
-
-                return {
-                    name: tool.name,
-                    description: tool.description,
-                    schema: jsonSchema,
-                    toolNode: {
-                        label: componentNode?.label || tool.name,
-                        name: componentNode?.name || tool.name
-                    }
-                }
-            })
-
             // Prepare messages array
             const messages: BaseMessageLike[] = [
                 {
                     role: 'system',
-                    content: conditionAgentInstructions.replace(
-                        '{scenarios}',
-                        _conditionAgentScenarios.map((scenario) => scenario.scenario).join('\n')
-                    )
+                    content: CONDITION_AGENT_SYSTEM_PROMPT
+                },
+                {
+                    role: 'user',
+                    content: `{"input": "Hello", "scenarios": ["user is asking about AI", "default"], "instruction": "Your task is to check and see if user is asking topic about AI"}`
+                },
+                {
+                    role: 'assistant',
+                    content: `\`\`\`json\n{"output": "default"}\n\`\`\``
+                },
+                {
+                    role: 'user',
+                    content: `{"input": "What is AIGC?", "scenarios": ["user is asking about AI", "default"], "instruction": "Your task is to check and see if user is asking topic about AI"}`
+                },
+                {
+                    role: 'assistant',
+                    content: `\`\`\`json\n{"output": "user is asking about AI"}\n\`\`\``
+                },
+                {
+                    role: 'user',
+                    content: `{"input": "Can you explain deep learning?", "scenarios": ["user is interested in AI topics", "default"], "instruction": "Determine if the user is interested in learning about AI"}`
+                },
+                {
+                    role: 'assistant',
+                    content: `\`\`\`json\n{"output": "user is interested in AI topics"}\n\`\`\``
                 }
             ]
+
+            input = `{"input": ${input}, "scenarios": ${JSON.stringify(
+                _conditionAgentScenarios.map((scenario) => scenario.scenario)
+            )}, "instruction": ${conditionAgentInstructions}}`
 
             // Handle memory management if enabled
             if (enableMemory) {
@@ -347,12 +327,11 @@ class ConditionAgent_Agentflow implements INode {
                         const { llmMessages } = imageContents
                         messages.push(llmMessages)
                     }
-                } else {
-                    messages.push({
-                        role: 'user',
-                        content: input
-                    })
                 }
+                messages.push({
+                    role: 'user',
+                    content: input
+                })
             }
 
             // Initialize response and determine if streaming is possible
@@ -382,17 +361,14 @@ class ConditionAgent_Agentflow implements INode {
             }
 
             let calledOutputName = 'default'
-
-            if (response.tool_calls && response.tool_calls.length > 0) {
-                const inputArgs = response.tool_calls[0].args
-                calledOutputName = Object.keys(inputArgs)[0]
-                usedTools = response.tool_calls.map((toolCall) => {
-                    return {
-                        tool: toolCall.name,
-                        toolInput: toolCall.args,
-                        toolOutput: ''
-                    }
-                })
+            try {
+                const parsedResponse = this.parseJsonMarkdown(response.content as string)
+                if (!parsedResponse.output) {
+                    throw new Error('Missing "output" key in response')
+                }
+                calledOutputName = parsedResponse.output
+            } catch (error) {
+                console.warn(`Failed to parse LLM response: ${error}. Using default output.`)
             }
 
             // Clean up empty inputs
@@ -402,28 +378,17 @@ class ConditionAgent_Agentflow implements INode {
                 }
             }
 
-            const conditions = structuredOutputs.map((output) => {
+            // Find the first exact match
+            const matchedScenarioIndex = _conditionAgentScenarios.findIndex(
+                (scenario) => calledOutputName.toLowerCase() === scenario.scenario.toLowerCase()
+            )
+
+            const conditions = _conditionAgentScenarios.map((scenario, index) => {
                 return {
-                    output: output.name,
-                    isFullfilled: output.name === calledOutputName
+                    output: scenario.scenario,
+                    isFullfilled: index === matchedScenarioIndex
                 }
             })
-
-            // If no condition is fullfilled, add isFullfilled to the ELSE condition
-            const dummyElseConditionData = {
-                output: 'default'
-            }
-            if (!conditions.some((c) => c.isFullfilled)) {
-                conditions.push({
-                    ...dummyElseConditionData,
-                    isFullfilled: true
-                })
-            } else {
-                conditions.push({
-                    ...dummyElseConditionData,
-                    isFullfilled: false
-                })
-            }
 
             const returnOutput = {
                 id: nodeData.id,
@@ -431,12 +396,7 @@ class ConditionAgent_Agentflow implements INode {
                 input: { messages },
                 output: {
                     conditions,
-                    content:
-                        response.tool_calls && response.tool_calls.length > 0
-                            ? JSON.stringify(response.tool_calls, null, 2)
-                            : response.content,
-                    availableTools,
-                    usedTools,
+                    content: typeof response.content === 'string' ? response.content : JSON.stringify(response.content),
                     timeMetadata: {
                         start: startTime,
                         end: endTime,

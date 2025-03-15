@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { AnalyticHandler } from '../../../src/handler'
 import { ILLMMessage, IStructuredOutput } from '../Interface.Agentflow'
 import { getUniqueImageMessages, processMessagesWithImages, replaceBase64ImagesWithFileReferences, updateFlowState } from '../utils'
+import { get } from 'lodash'
 
 class LLM_Agentflow implements INode {
     label: string
@@ -198,6 +199,7 @@ class LLM_Agentflow implements INode {
                         type: 'string',
                         placeholder: 'value1, value2, value3',
                         description: 'Enum values. Separated by comma',
+                        optional: true,
                         show: {
                             'llmStructuredOutput[$index].type': 'enum'
                         }
@@ -350,12 +352,11 @@ class LLM_Agentflow implements INode {
                         messages.push(llmMessages)
                         uniqueImageMessages.push(storeMessages)
                     }
-                } else {
-                    messages.push({
-                        role: 'user',
-                        content: input
-                    })
                 }
+                messages.push({
+                    role: 'user',
+                    content: input
+                })
             }
             delete nodeData.inputs?.llmMessages
 
@@ -425,8 +426,31 @@ class LLM_Agentflow implements INode {
             // Process template variables in state
             if (newState && Object.keys(newState).length > 0) {
                 for (const key in newState) {
-                    if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = finalResponse
+                    const stateValue = newState[key].toString()
+                    if (stateValue.includes('{{ output')) {
+                        // Handle simple output replacement
+                        if (stateValue === '{{ output }}') {
+                            newState[key] = finalResponse
+                            continue
+                        }
+
+                        // Handle JSON path expressions like {{ output.item1 }}
+                        // eslint-disable-next-line
+                        const match = stateValue.match(/{{[\s]*output\.([\w\.]+)[\s]*}}/)
+                        if (match) {
+                            try {
+                                // Parse the response if it's JSON
+                                const jsonResponse = typeof finalResponse === 'string' ? JSON.parse(finalResponse) : finalResponse
+                                // Get the value using lodash get
+                                const path = match[1]
+                                const value = get(jsonResponse, path)
+                                newState[key] = value ?? stateValue // Fall back to original if path not found
+                            } catch (e) {
+                                // If JSON parsing fails, keep original template
+                                console.warn(`Failed to parse JSON or find path in output: ${e}`)
+                                newState[key] = stateValue
+                            }
+                        }
                     }
                 }
             }

@@ -45,6 +45,8 @@ const checkFlowValidation = async (flowId: string): Promise<IValidationResult[]>
 
         // Validate each node
         for (const node of nodes) {
+            if (node.data.name === 'stickyNoteAgentflow') continue
+
             const nodeIssues = []
 
             // Check if node is connected
