@@ -4,17 +4,18 @@
 # Run image
 # docker run -d -p 3000:3000 flowise
 
-FROM node:20-alpine
-RUN apk add --update libc6-compat python3 make g++
-# needed for pdfjs-dist
-RUN apk add --no-cache build-base cairo-dev pango-dev
+FROM node:20-bullseye-slim
 
-# Install Chromium
-RUN apk add --no-cache chromium
-
-# Install curl for container-level health checks
-# Fixes: https://github.com/FlowiseAI/Flowise/issues/4126
-RUN apk add --no-cache curl
+# Instalar Python, pip, libomp, Chromium y demás paquetes que antes usabas con apk
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    libomp-dev \
+    make \
+    g++ \
+    libcairo2-dev \
+    libpango-1.0-0 \
+    chromium
 
 #install PNPM globaly
 RUN npm install -g pnpm
