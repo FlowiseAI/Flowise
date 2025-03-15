@@ -20,6 +20,10 @@ RUN apt-get update && apt-get install -y \
 # Instalar FAISS para CPU
 RUN pip3 install --no-cache-dir faiss-cpu
 
+# Install curl for container-level health checks
+# Fixes: https://github.com/FlowiseAI/Flowise/issues/4126
+RUN apk add --no-cache curl
+
 #install PNPM globaly
 RUN npm install -g pnpm
 
