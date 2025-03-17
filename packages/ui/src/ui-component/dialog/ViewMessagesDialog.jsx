@@ -347,7 +347,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (chatmsg.sourceDocuments) msg.sourceDocuments = chatmsg.sourceDocuments
             if (chatmsg.usedTools) msg.usedTools = chatmsg.usedTools
             if (chatmsg.fileAnnotations) msg.fileAnnotations = chatmsg.fileAnnotations
-            if (chatmsg.feedback) msg.feedback = chatmsg.feedback?.content
+            if (chatmsg.feedback) {
+                msg.feedback = chatmsg.feedback?.content
+                msg.rating = chatmsg.feedback?.rating
+            }
             if (chatmsg.agentReasoning) msg.agentReasoning = chatmsg.agentReasoning
             if (chatmsg.artifacts) {
                 msg.artifacts = chatmsg.artifacts
@@ -981,6 +984,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
                                         src={msgEmptySVG}
                                         alt='msgEmptySVG'
+                                        width={100}
+                                        height={100}
                                     />
                                 </Box>
                                 <div>No Messages</div>
