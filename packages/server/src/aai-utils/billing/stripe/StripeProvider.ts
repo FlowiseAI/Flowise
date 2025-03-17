@@ -311,12 +311,12 @@ export class StripeProvider {
             const failedEvents: Array<{ traceId: string; error: string }> = []
             const processedTraces: string[] = []
 
-            console.log('Syncing usage to Stripe', {
-                count: creditsData.length,
-                batchSize: BATCH_SIZE,
-                delayBetweenBatches: DELAY_BETWEEN_BATCHES,
-                metersMap
-            })
+            // console.log('Syncing usage to Stripe', {
+            //     count: creditsData.length,
+            //     batchSize: BATCH_SIZE,
+            //     delayBetweenBatches: DELAY_BETWEEN_BATCHES,
+            //     metersMap
+            // })
             // Process in optimized batches
             for (let i = 0; i < creditsData.length; i += BATCH_SIZE) {
                 const batch = creditsData.slice(i, i + BATCH_SIZE)
@@ -337,14 +337,14 @@ export class StripeProvider {
                         }
 
                         let retryCount = 0
-                        console.log('Event sync', {
-                            totalCreditsWithMargin,
-                            meterId,
-                            timestamp,
-                            data,
-                            retries: BILLING_CONFIG.VALIDATION.MAX_RETRIES,
-                            retryCount
-                        })
+                        // console.log('Event sync', {
+                        //     totalCreditsWithMargin,
+                        //     meterId,
+                        //     timestamp,
+                        //     data,
+                        //     retries: BILLING_CONFIG.VALIDATION.MAX_RETRIES,
+                        //     retryCount
+                        // })
                         while (retryCount < BILLING_CONFIG.VALIDATION.MAX_RETRIES) {
                             try {
                                 const app = getRunningExpressApp()
@@ -377,7 +377,7 @@ export class StripeProvider {
                                     log.error('Failed to create meter event', { error: error.message, stripeMeterEvent })
                                     throw error
                                 })
-                                console.log('RESULT', result)
+                                // console.log('RESULT', result)
                                 // const usageEvent = await app.AppDataSource.getRepository(UsageEvent).save({
                                 //     traceId: data.traceId,
                                 //     userId: data.userId,

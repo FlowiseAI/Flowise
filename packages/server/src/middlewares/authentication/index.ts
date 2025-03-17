@@ -301,11 +301,11 @@ export const authenticationHandlerMiddleware =
                 }
             }
 
-            console.log(
-                `[AuthMiddleware] Auth successful for user: ${req.user?.id} with ${apiKeyUser ? 'APIKEY' : 'JWT'} in ${
-                    new Date().getTime() - startTime
-                }ms`
-            )
+            // console.log(
+            //     `[AuthMiddleware] Auth successful for user: ${req.user?.id} with ${apiKeyUser ? 'APIKEY' : 'JWT'} in ${
+            //         new Date().getTime() - startTime
+            //     }ms`
+            // )
             return next()
         })
     }

@@ -454,7 +454,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                 baseUrl: process.env.LANGFUSE_HOST ?? 'https://cloud.langfuse.com',
                 sdkIntegration: 'Flowise'
             }
-            console.log('Langfuse override enabled', analytic)
+            // console.log('Langfuse override enabled', analytic)
         }
         const callbacks: any = []
 
@@ -535,7 +535,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         langFuseOptions = { ...langFuseOptions, ...nodeData?.inputs?.analytics?.langFuse }
                         console.debug('LangFuse Options updated with nodeData inputs:', langFuseOptions)
                     }
-                    console.log('ChatOptions', options)
+                    // console.log('ChatOptions', options)
                     const metadata: TraceMetadata = {
                         chatflowName: chatflow.name,
                         chatId: options.chatId,
@@ -989,7 +989,7 @@ export class AnalyticHandler {
                         }
                     })
                 }
-                console.log('test', langfuseTraceClient)
+                // console.log('test', langfuseTraceClient)
                 if (shutdown) {
                     const langfuse: Langfuse = this.handlers['langFuse'].client
                     await langfuse.shutdownAsync()
@@ -1393,7 +1393,7 @@ export class AnalyticHandler {
                 })
                 this.handlers['langFuse'].toolSpan = { [toolSpan.id]: toolSpan }
                 returnIds['langFuse'].toolSpan = toolSpan.id
-                console.log(`Langfuse tool span created: ${toolSpan.id}`)
+                // console.log(`Langfuse tool span created: ${toolSpan.id}`)
             }
         }
 
@@ -1487,7 +1487,7 @@ export class AnalyticHandler {
                 toolSpan.end({
                     output
                 })
-                console.log(`Langfuse tool span ended: ${toolSpan.id}`)
+                // console.log(`Langfuse tool span ended: ${toolSpan.id}`)
             }
         }
 
