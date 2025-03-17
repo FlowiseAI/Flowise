@@ -1,0 +1,45 @@
+---
+id: delete-chatflow
+title: 'Delete a chatflow'
+description: 'Delete a chatflow by ID'
+sidebar_label: 'Delete a chatflow'
+hide_title: true
+hide_table_of_contents: true
+api: eJyNVMFu2zAM/RWBpw3Q4nToLjotWDogQw/FmmGHIAfGpmOhtuRKdLbA8L8PtN3UTdNiJ1vSI/n0+MQWMoppsDVb78DAkkpiUqjSAjkv/R+1O6rVEjT4mgIKapWBgazHfRtBoIFxH8Fs4CkuwlZDpLQJlo9gNi3sCAOFRcMFmM2222qoMWBFTCH2ACsEauQCNDisCAzYDDQEemxsoAwMh4Y0xLSgCsG0wMdaUJGDdXvo9NllnujJBaReoFh7FylK7Of5XD5vRAz3y1Rs0pRizJuyPEqB60tR64JUrCm1uaVMrZbKRmXdAUubDTHX71RynlXuG9dDv1xKv3JMwWGpKAQfoOs0VMSFf+4D6EE3A8lJ/6S1WQfSg3B4UrgJJRgomOtokgRrO+OC0MU/FGZok8MVnEt4F3zWpLJQQyLo9HmeyLi3bv/pf/LdD9jLyUySlD7FsvCRzfV8PheKl7LcCkpldKDS1xU5PuWbmO5ebDL0emq9k2ukIoxukvUAAj3+fPehQgYDP36ve82ty30fbrmkSQejWtytXlFc3K1U7oOq0A03fn4YGqQhA+xqNp/NQUPqHWPKkn+0/qKXcbFS901d+8Cgz2SfSg0aqEIrx3GAf31xLPxrH7lCNynx6rGf36LteZHjdyfDqCfTX07qEq0TJ/dc29GW07GgwdhMhoN0WY7adoeRfoWy62T7saEgA2Or4YDB4k7E3rSQ2Sj/GZgcy0jvMP3wcxwYH9V0ArxBdNxEd5TGYNnICjQ80HEYQN12+uCWN7c36xvQgC/ddOaenvLF1G07INb+gVzXnSqxrKVY1/0DhcTnFw==
+sidebar_class_name: 'delete api-method'
+info_path: docs/api/chatflows/chatflows-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete a chatflow'}></Heading>
+
+<MethodEndpoint method={'delete'} path={'/chatflows/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Delete a chatflow by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chatflow ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': { description: 'Chatflow deleted successfully' },
+        '400': { description: 'The specified ID is invalid' },
+        '404': { description: 'Chatflow not found' },
+        '500': { description: 'Internal error' }
+    }}
+></StatusCodes>

@@ -44,6 +44,11 @@ import { ApiKeyEnhancement1720230151481 } from './1720230151481-ApiKeyEnhancemen
 import { AddStripeCustomerId1734126321905 } from './1734126321905-AddStripeCustomerId'
 import { BillingSchemaEnhancement1740447708857 } from './1740447708857-BillingSchemaEnhancement'
 import { BilingOrganization1740859194641 } from './1740859194641-BilingOrganization'
+import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
+import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
+import { AddFollowUpPrompts1726666309552 } from './1726666309552-AddFollowUpPrompts'
+import { AddTypeToAssistant1733011290987 } from './1733011290987-AddTypeToAssistant'
+import { UpdateUserUniqueAuth0Id1741898609435 } from './1741898609435-UpdateUserUniqueAuth0Id'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -91,5 +96,10 @@ export const postgresMigrations = [
     AddChat1732145631409,
     AddStripeCustomerId1734126321905,
     BillingSchemaEnhancement1740447708857,
-    BilingOrganization1740859194641
+    BilingOrganization1740859194641,
+    AddCustomTemplate1725629836652,
+    AddArtifactsToChatMessage1726156258465,
+    AddFollowUpPrompts1726666309552,
+    AddTypeToAssistant1733011290987,
+    UpdateUserUniqueAuth0Id1741898609435
 ]

@@ -14,7 +14,6 @@ import {
     Invoice,
     UsageStats,
     SubscriptionWithUsage,
-    CustomerStatus,
     UsageSummary
 } from './types'
 import { LangfuseProvider } from '../langfuse/LangfuseProvider'
@@ -32,7 +31,7 @@ export class BillingService implements BillingProvider {
         this.paymentProvider = stripeProvider
         this.usageProvider = langfuseProvider
         this.stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-            apiVersion: '2025-01-27.acacia'
+            apiVersion: '2025-02-24.acacia'
         })
     }
 
@@ -75,7 +74,7 @@ export class BillingService implements BillingProvider {
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
         const startTime = Math.floor(startOfMonth.getTime() / 1000)
         const endTime = Math.floor(now.getTime() / 1000)
-        console.log('Getting usage summary for customer', customerId)
+        // console.log('Getting usage summary for customer', customerId)
         const meters = await this.stripeClient.billing.meters.list()
         const summariesPromises = meters.data.map((meter) =>
             this.stripeClient.billing.meters.listEventSummaries(meter.id, {
@@ -86,7 +85,7 @@ export class BillingService implements BillingProvider {
         )
 
         const summaries = await Promise.all(summariesPromises)
-        console.log('Summaries', summaries)
+        // console.log('Summaries', summaries)
         const usageByMeter: Record<string, number> = {
             ai_tokens: 0,
             compute: 0,

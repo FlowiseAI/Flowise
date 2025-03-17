@@ -10,7 +10,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](../README.md) | [中文](./README-ZH.md) | 日本語 | [한국어](./README-KR.md)
+[English](../README.md) | [繁體中文](./README-TW.md) | [簡體中文](./README-ZH.md) | 日本語 | [한국어](./README-KR.md)
 
 <h3>ドラッグ＆ドロップでカスタマイズした LLM フローを構築できる UI</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
@@ -180,9 +180,9 @@ Flowise は、インスタンスを設定するためのさまざまな環境変
 
       </details>
 
-## 💻 クラウドホスト
+## ☁️ クラウドホスト
 
-近日公開
+[Flowise Cloud の使い方を始める](https://flowiseai.com/)
 
 ## 🙋 サポート
 

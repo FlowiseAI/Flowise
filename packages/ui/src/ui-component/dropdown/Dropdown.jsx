@@ -18,7 +18,7 @@ const StyledPopper = styled(Popper)({
     }
 })
 
-export const Dropdown = ({ name, value, loading, options, onSelect, disabled = false, disableClearable = false }) => {
+export const Dropdown = ({ name, value, loading, options, onSelect, disabled = false, freeSolo = false, disableClearable = false }) => {
     const customization = useSelector((state) => state.customization)
     const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
     const getDefaultOptionValue = () => ''
@@ -29,6 +29,7 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
             <Autocomplete
                 id={name}
                 disabled={disabled}
+                freeSolo={freeSolo}
                 disableClearable={disableClearable}
                 size='small'
                 loading={loading}
@@ -40,11 +41,48 @@ export const Dropdown = ({ name, value, loading, options, onSelect, disabled = f
                     onSelect(value)
                 }}
                 PopperComponent={StyledPopper}
-                renderInput={(params) => (
-                    <TextField {...params} value={internalValue} sx={{ height: '100%', '& .MuiInputBase-root': { height: '100%' } }} />
-                )}
+                renderInput={(params) => {
+                    const matchingOption = findMatchingOptions(options, internalValue)
+                    return (
+                        <TextField
+                            {...params}
+                            value={internalValue}
+                            sx={{
+                                height: '100%',
+                                '& .MuiInputBase-root': { height: '100%' }
+                            }}
+                            InputProps={{
+                                ...params.InputProps,
+                                startAdornment: matchingOption?.imageSrc ? (
+                                    <Box
+                                        component='img'
+                                        src={matchingOption.imageSrc}
+                                        alt={matchingOption.label || 'Selected Option'}
+                                        sx={{
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: '50%'
+                                        }}
+                                    />
+                                ) : null
+                            }}
+                        />
+                    )
+                }}
                 renderOption={(props, option) => (
-                    <Box component='li' {...props}>
+                    <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {option.imageSrc && (
+                            <img
+                                src={option.imageSrc}
+                                alt={option.description}
+                                style={{
+                                    width: 30,
+                                    height: 30,
+                                    padding: 1,
+                                    borderRadius: '50%'
+                                }}
+                            />
+                        )}
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <Typography variant='h5'>{option.label}</Typography>
                             {option.description && (
@@ -64,6 +102,7 @@ Dropdown.propTypes = {
     value: PropTypes.string,
     loading: PropTypes.bool,
     options: PropTypes.array,
+    freeSolo: PropTypes.bool,
     onSelect: PropTypes.func,
     disabled: PropTypes.bool,
     disableClearable: PropTypes.bool

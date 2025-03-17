@@ -2,15 +2,17 @@
 import { initAuth0 } from '@auth0/nextjs-auth0'
 
 const getBaseUrl = () => {
-    if (process.env.AUTH0_BASE_URL) {
-        return process.env.AUTH0_BASE_URL
-    }
+    let baseURL
     if (process.env.VERCEL_PREVIEW_URL) {
-        return `https://${process.env.VERCEL_PREVIEW_URL}`
+        baseURL = `https://${process.env.VERCEL_PREVIEW_URL}`
     }
     if (process.env.VERCEL_URL) {
-        return `https://${process.env.VERCEL_URL}`
+        baseURL = `https://${process.env.VERCEL_URL}`
     }
+    if (process.env.AUTH0_BASE_URL) {
+        baseURL = process.env.AUTH0_BASE_URL
+    }
+    if (baseURL) return baseURL
     throw new Error('No valid baseURL found. Set either VERCEL_PREVIEW_URL, VERCEL_URL, or AUTH0_BASE_URL environment variable.')
 }
 

@@ -6,7 +6,7 @@ export class User implements IUser {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
-    @Column()
+    @Column({ unique: true })
     auth0Id: string
 
     @Column({ nullable: true })

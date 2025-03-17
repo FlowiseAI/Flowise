@@ -1,5 +1,5 @@
 import { IUser } from '../Interface'
-import { utilValidateKey } from './validateKey'
+import { validateChatflowAPIKey } from './validateKey'
 import { Request } from 'express'
 
 const checkOwnership = async (entryOrArray: any | Array<any>, user: IUser | undefined, req?: Request) => {
@@ -8,7 +8,7 @@ const checkOwnership = async (entryOrArray: any | Array<any>, user: IUser | unde
         // Check for API key access if request is provided
         if (req && entry) {
             try {
-                const isValidApiKey = await utilValidateKey(req, entry)
+                const isValidApiKey = await validateChatflowAPIKey(req, entry)
                 if (isValidApiKey) return true
             } catch (error) {
                 // If API key validation fails, continue with regular ownership check

@@ -1,4 +1,6 @@
-import { useRouter as useNextRouter, usePathname as useNextPathname } from 'next/navigation'
+'use client'
+
+import { useRouter as useNextRouter, usePathname as useNextPathname, useParams as useNextParams } from 'next/navigation'
 import NextLink, { LinkProps as NextLinkProps } from 'next/link'
 import React from 'react'
 
@@ -70,20 +72,7 @@ export const useLocation = () => {
 }
 
 export const useParams = () => {
-    const pathname = usePathname()
-    const params: { [key: string]: string } = {}
-
-    if (pathname) {
-        const segments = pathname.split('/')
-        const dynamicSegments = segments.filter((segment) => segment.startsWith(':'))
-
-        dynamicSegments.forEach((segment, index) => {
-            const key = segment.slice(1) // Remove the ':' prefix
-            const value = segments[segments.indexOf(`:${key}`)]
-            params[key] = value
-        })
-    }
-
+    const params = useNextParams()
     return params
 }
 

@@ -12,22 +12,25 @@
         ]
     },
     "dependencies": {
-        "@docusaurus/core": "3.5.2",
-        "@docusaurus/preset-classic": "3.5.2",
-        "@docusaurus/theme-mermaid": "3.5.2",
+        "@docusaurus/core": "3.7.0",
+        "@docusaurus/preset-classic": "3.7.0",
+        "@docusaurus/theme-mermaid": "3.7.0",
         "@mdx-js/react": "^3.0.0",
         "aai-embed": "workspace:*",
-        "aai-embed-react": "workspace:^",
+        "aai-embed-react": "workspace:*",
         "clsx": "^2.0.0",
+        "docusaurus-plugin-openapi-docs": "^4.3.6",
+        "docusaurus-theme-openapi-docs": "^4.3.6",
+        "js-yaml": "^4.1.0",
         "prism-react-renderer": "^2.3.0",
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
         "troika-three-text": "^0.49.1"
     },
     "devDependencies": {
-        "@docusaurus/module-type-aliases": "3.5.2",
-        "@docusaurus/tsconfig": "3.5.2",
-        "@docusaurus/types": "3.5.2",
+        "@docusaurus/module-type-aliases": "3.7.0",
+        "@docusaurus/tsconfig": "3.7.0",
+        "@docusaurus/types": "3.7.0",
         "typescript": "~5.5.2"
     },
     "engines": {
@@ -36,7 +39,7 @@
     "name": "docs",
     "private": true,
     "scripts": {
-        "build": "docusaurus build",
+        "build": "pnpm api-docs && docusaurus build",
         "clear": "docusaurus clear",
         "deploy": "docusaurus deploy",
         "dev": "docusaurus start --port 4242",
@@ -46,7 +49,11 @@
         "swizzle": "docusaurus swizzle",
         "typecheck": "tsc",
         "write-heading-ids": "docusaurus write-heading-ids",
-        "write-translations": "docusaurus write-translations"
+        "write-translations": "docusaurus write-translations",
+        "gen-api-docs": "docusaurus gen-api-docs all",
+        "clean-api-docs": "docusaurus clean-api-docs all",
+        "api-docs": "node generate-api-docs.js",
+        "gen-full-api-spec": "node devscripts/generate-full-openapi.js"
     },
     "version": "0.0.0"
 }

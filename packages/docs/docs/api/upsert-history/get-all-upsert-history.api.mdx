@@ -1,0 +1,108 @@
+---
+id: get-all-upsert-history
+title: 'Get all upsert history records'
+description: 'Retrieve all upsert history records with optional filters'
+sidebar_label: 'Get all upsert history records'
+hide_title: true
+hide_table_of_contents: true
+api: eJy9lt1v2zYQwP8V4p5aQI4/6jSpnmY0bedi2Io4xYDFfqDFk8VWIlXylNQQ9L8PRymOFTtpsw3Li0ORvPvd8b5qUOgTp0vS1kAMl0hO4w0KmeeiKj06Epn2ZN1WOEysU17casqEDTdkLlKdEzoPEdgSneSvcwUxbJBmef45iPi1lQARkNx4iK+hFT3oRMMqAo9J5TRtIb6uYY3SoZtVlEF8vWpWEZTSyQKDJj6gGbaUlEEERhYIMWgFETj8VmmHCmJyFUbgkwwLCXENtC35lCenzQaa6IHhbzNJaW5vxfxCkO2s2pm83kITdVq/VRhM6dRap9D1NKcy90+ojgBNVbATZou3EMHFu8VbdoDCVFY5QRy+HwAurCMRlAmbCspQOPRVTl68kD5Bo7TZCOsE32pXLx9l9iQdXUjC53Gn1hWSAZUkHJAu8BDzfd9xqbOFoEx7EXQKvileaJPkldc3+DgiGvW/AFaGdN4SolFH+FZM4EtrPHrWORmN+OfB41RJgt6nVS52WQARJNYQGuLzsixznYSN4RfPl+pDQ6Rzkn2gCQu/992uv2BCEEHpWDzpFkWrJ51QVSEl+qSfjf5WodAKDelUoxOpdSGcjmY7R+t3WZQ5q0hSdfpqjKPB+SRNBuMxvhmsk+lkcDp5LdOzs9fT9PWUHZ50uXScr88zv7gL57tbQnpvEy0JVVtqDuF6VGfJFM/XZ3Jwtn4jB9P1VA3epK9wMFGT83SMa5SjCVO16fJjostw7o6qU7x71UgwASohvZDi4+KP38V9Xu+Y6iXnGFV+CfESfBsdS4iWHJlyCXG9hK+4Dbs3Mq9wCU3DkOyAC0lHo/tBHLOrWNpT/no+trEKmfp6FS0B1aZbBDhOjp9Mu4e0nMtCGiV4V9xmaI5iilvpRYmOJWI/+CajyXQwOh9MplfjaTw+jSeTv6BpIiBN4UCv1Vx2KQsN/0Vweixr54bQcQ/z6G7QCXTOuiCzQMps18U47bjRxDDsd61hrVUD3Ln4dtuXKpdDDBlR6ePhUJb6hDKUxt+iO5F6eDM+8MwnZ1WVBONbQaEk9uV4khttNoOfkbdozx4XFg+HuU1knllP8XQ0GjHiMSm/8Smh8AZzWxZoaCdvr1UvuH61pWi/Ye8ChDVCV6953R6CqPvn/V3YfPzzKnhdm9SG670XFd2Titmn+QHn7NM8FLBCmtbs4zMLRMBP1N4Zn4xORl11lkmoCF3TmQXHzuZiUZWldfz0/YfYdz5HZyE1b/v2+C+9bbaotJ4KafZUfEB6YrZ6aF9930L+1WjWPQjhdxqWudSG0zmYVnfBfTCSRRBrxXMJxwrv1/Vaevzs8qbhz22/5phX2st1vtegHzXhn8wwj8B/xe3e8BVqKMQQwv3neZ47rDzJsj9U/Tc8P5pNnsS5H6DuYVa8cJppnvlyLy67Keyl+OGk/AjW3YxjtvtMd7haQbNqIshQ8pMyXbsxSxIsae/KwSTFZu0K9od3VxCB7BeiB4UnSD+KU9ftiSv7FU3T7OiI1wzYNH8DYDCKog==
+sidebar_class_name: 'get api-method'
+info_path: docs/api/upsert-history/upsert-history-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get all upsert history records'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/upsert-history/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve all upsert history records with optional filters
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[
+        { in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chatflow ID to filter records by' },
+        {
+            in: 'query',
+            name: 'order',
+            required: false,
+            schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
+            description: 'Sort order of the results (ascending or descending)'
+        },
+        {
+            in: 'query',
+            name: 'startDate',
+            required: false,
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Filter records from this start date (inclusive)'
+        },
+        {
+            in: 'query',
+            name: 'endDate',
+            required: false,
+            schema: { type: 'string', format: 'date-time' },
+            description: 'Filter records until this end date (inclusive)'
+        }
+    ]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    format: 'uuid',
+                                    description: 'Unique identifier for the upsert history record',
+                                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                                },
+                                chatflowid: {
+                                    type: 'string',
+                                    description: 'ID of the chatflow associated with the upsert history',
+                                    example: '7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02'
+                                },
+                                result: {
+                                    type: 'string',
+                                    description: 'Result of the upsert operation, stored as a JSON string',
+                                    example: '{"status":"success","data":{"key":"value"}}'
+                                },
+                                flowData: {
+                                    type: 'string',
+                                    description: 'Flow data associated with the upsert operation, stored as a JSON string',
+                                    example: '{"nodes":[],"edges":[]}'
+                                },
+                                date: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Date and time when the upsert operation was performed',
+                                    example: '2024-08-24T14:15:22Z'
+                                }
+                            },
+                            title: 'UpsertHistoryResponse'
+                        }
+                    }
+                }
+            }
+        },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

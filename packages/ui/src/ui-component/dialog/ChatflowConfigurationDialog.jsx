@@ -12,6 +12,9 @@ import Leads from '@/ui-component/extended/Leads'
 import VisibilitySettings from '@/ui-component/extended/VisibilitySettings'
 import GeneralSettings from '@/ui-component/extended/GeneralSettings'
 import ChatLinksSettings from '@/ui-component/extended/ChatLinksSettings'
+import FileUpload from '@/ui-component/extended/FileUpload'
+import PostProcessing from '@/ui-component/extended/PostProcessing'
+// import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
@@ -53,6 +56,15 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Leads',
         id: 'leads'
+    },
+    {
+        label: 'File Upload',
+        id: 'fileUpload'
+    },
+    {
+        label: 'Post Processing',
+        id: 'postProcessing',
+        hideInAgentFlow: true
     }
 ]
 
@@ -85,9 +97,11 @@ function a11yProps(index) {
     }
 }
 
-const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
+const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCancel }) => {
     const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const [tabValue, setTabValue] = useState(0)
+
+    const filteredTabs = CHATFLOW_CONFIGURATION_TABS.filter((tab) => !isAgentCanvas || !tab.hideInAgentFlow)
 
     const component = show ? (
         <Dialog
@@ -98,8 +112,8 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
             aria-labelledby='alert-dialog-title'
             aria-describedby='alert-dialog-description'
         >
-            <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                <div style={{ display: 'flex', flexDirection: 'row' }}>{dialogProps.title}</div>
+            <DialogTitle sx={{ fontSize: '1.25rem' }} id='alert-dialog-title'>
+                {dialogProps.title}
             </DialogTitle>
             <DialogContent>
                 <Tabs
@@ -117,16 +131,22 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                     variant='scrollable'
                     scrollButtons='auto'
                 >
-                    {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
+                    {filteredTabs.map((item, index) => (
                         <Tab
-                            sx={{ minHeight: '40px', height: '40px', textAlign: 'left', display: 'flex', alignItems: 'start', mb: 1 }}
+                            sx={{
+                                minHeight: '40px',
+                                height: '40px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                mb: 1
+                            }}
                             key={index}
                             label={item.label}
                             {...a11yProps(index)}
                         ></Tab>
                     ))}
                 </Tabs>
-                {CHATFLOW_CONFIGURATION_TABS.map((item, index) => (
+                {filteredTabs.map((item, index) => (
                     <TabPanel key={index} value={tabValue} index={index}>
                         {item.id === 'rateLimiting' && <RateLimit dialogProps={dialogProps} />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
@@ -138,6 +158,8 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
                         {item.id === 'visibilitySettings' ? <VisibilitySettings dialogProps={dialogProps} /> : null}
                         {item.id === 'chatLinks' ? <ChatLinksSettings dialogProps={dialogProps} /> : null}
                         {item.id === 'generalSettings' ? <GeneralSettings dialogProps={dialogProps} /> : null}
+                        {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}
+                        {item.id === 'postProcessing' ? <PostProcessing dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>
@@ -149,6 +171,7 @@ const ChatflowConfigurationDialog = ({ show, dialogProps, onCancel }) => {
 
 ChatflowConfigurationDialog.propTypes = {
     show: PropTypes.bool,
+    isAgentCanvas: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func
 }

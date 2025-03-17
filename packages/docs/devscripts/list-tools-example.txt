@@ -1,0 +1,141 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Untitled API Document",
+    "description": "",
+    "version": "1.0.0",
+    "contact": {
+      "name": "bradtaylorsf",
+      "email": "bradtaylorsf@gmail.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://echo.paw.cloud/{basePath}",
+      "description": "",
+      "variables": {
+        "basePath": {
+          "default": "/api/v1"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/{baseURL}/tools": {
+      "get": {
+        "summary": "List all tools",
+        "description": "Retrieve a list of all tools",
+        "operationId": "985e19d5-f84a-4c1e-9ca8-459044a9fde7",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "Bearer 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY",
+              "description": ""
+            }
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "application/json",
+              "description": ""
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Retrieve a list of all tools",
+          "content": {
+            "text/plain": {}
+          },
+          "required": false
+        },
+        "responses": {
+          "401": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statusCode": {
+                      "type": "integer",
+                      "format": "int64",
+                      "example": 401
+                    },
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Invalid Compact JWS"
+                    },
+                    "stack": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {
+              "Access-Control-Allow-Credentials": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "true"
+                }
+              },
+              "Content-Type": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "application/json; charset=utf-8"
+                }
+              },
+              "Connection": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "close"
+                }
+              },
+              "Etag": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "W/\"4d-SQUA0isKfWIChTbwil4e7kfyiVM\""
+                }
+              },
+              "Date": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "Sun, 09 Mar 2025 20:29:32 GMT"
+                }
+              },
+              "Content-Length": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "77"
+                }
+              },
+              "Vary": {
+                "description": "",
+                "schema": {
+                  "type": "string",
+                  "example": "Origin"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    }
+  },
+  "components": {}
+}

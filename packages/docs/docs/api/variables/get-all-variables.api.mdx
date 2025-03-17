@@ -1,0 +1,75 @@
+---
+id: get-all-variables
+title: 'List all variables'
+description: 'Retrieve a list of all environment variables'
+sidebar_label: 'List all variables'
+hide_title: true
+hide_table_of_contents: true
+api: eJy9VU2P2zYQ/SvEnFqAsmXXu0l0qoGmhdugWHSdBO3CCMbSyGZCkQpJeWMI+u/FSFpHsh1ke6kvlsSZN4/z8aaGjHzqVBmUNZDAXxScogMJFFr5IGwuUGtB5qCcNQWZIA7oFG41eZBgS3LIrqsMEthRWGr9bnAecOcheYCvPhsJntLKqXCE5KGGLaEjt6zCHpKHTbOR4MiX1njykNQwj2P+G5O8r9KUvM8rLU4EQEJqTSAT2B7LUqu0PZh+9OxUg0/3VCA/hWNJkAA6h0eQoAIVfvDdbj9SGkBC6Rg+qI6KygY2PjhldiAht67AAAlUlcpAnjF9a9TnioTKyASVK3Iit06EPZ2yCBLoCxalZtQ0z25+mlEcvZznaTSb0atomy7m0c38FvMXL24X+e0CGgkGC7pGZhz8TyyIC/jNcMu71Yc/Xv/NiAfU1TMg37HZFUxTad0+JsFVNIxRHCNPqaMQfaIjR+oCfC/Q+lhexBE/0GQ3kaJzkcJUxZbcj6Mr9XCNhNQRBsp+wXA13KluGQaKgiroggO7CjSZ4FPxuCczpvOIXvRRRhzm8XwRxS+j+WI9WySzm2Q+/4cZVWX2PzDS6IPoQz2DFldEhdbgaXCh4Z+Em2uztzKBnEEtPLkDOUHOWdfCFBT2tpcBHh7kkYbpUC46H98OfuU0JLAPofTJdIqlmoQ9ofGP5CaopofZxe3vnM2qlF/64NDIcxwfcKfMLnoO3n1nex0smU61TVHvrQ/JIo5jpngN5Q1biYwOpG3ZCuQT3kDq7ll7OhkZCt6pCTgi56c1g6Q3Atk//PrUGr+/X7e5Via3rftZ6bxY3q0uKC7vVq3uFGi6G39Lzrk4nctsEk/iXlMxbTW1Ex1YtildrsR9VZbWcanHJRimnRuwQMXHvjP/eXTMdymtDwWaQYg3vHl47Qy5ja5UfxX7/7qy+owH+hKmpUZl2tHkG9R9z56tK+4A/ljXW/T01umm4c+fK3K8wjbyZN5uMAl7woxc2+SseQks05RKTlSvspfriXvlND+/vV6DBBx3yFlHtOhPe8wcB9h13Vms7ScyTQOyJxH4HZpN0zT/Ah4ptd0=
+sidebar_class_name: 'get api-method'
+info_path: docs/api/variables/variables-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'List all variables'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/variables'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a list of all environment variables
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: {
+                                    type: 'string',
+                                    format: 'uuid',
+                                    description: 'Unique identifier for the variable',
+                                    example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                                },
+                                name: { type: 'string', description: 'Name of the variable', example: 'API_KEY' },
+                                value: { type: 'string', description: 'Value of the variable', nullable: true, example: 'my-secret-key' },
+                                type: { type: 'string', description: 'Type of the variable (e.g., string, number)', example: 'string' },
+                                createdDate: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Date and time when the variable was created',
+                                    example: '2024-08-24T14:15:22Z'
+                                },
+                                updatedDate: {
+                                    type: 'string',
+                                    format: 'date-time',
+                                    description: 'Date and time when the variable was last updated',
+                                    example: '2024-08-24T14:15:22Z'
+                                }
+                            },
+                            title: 'Variable'
+                        }
+                    }
+                }
+            }
+        },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

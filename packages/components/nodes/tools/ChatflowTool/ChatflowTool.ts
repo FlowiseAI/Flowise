@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm'
 import { z } from 'zod'
-import { NodeVM } from 'vm2'
+import { NodeVM } from '@flowiseai/nodevm'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
 import { StructuredTool } from '@langchain/core/tools'
@@ -23,7 +23,7 @@ class ChatflowTool_Tools implements INode {
     constructor() {
         this.label = 'Chatflow Tool'
         this.name = 'ChatflowTool'
-        this.version = 3.0
+        this.version = 5.0
         this.type = 'ChatflowTool'
         this.icon = 'chatflowTool.svg'
         this.category = 'Tools'
@@ -56,6 +56,20 @@ class ChatflowTool_Tools implements INode {
                 rows: 3,
                 placeholder:
                     'State of the Union QA - useful for when you need to ask questions about the most recent state of the union address.'
+            },
+            {
+                label: 'Return Direct',
+                name: 'returnDirect',
+                type: 'boolean',
+                optional: true
+            },
+            {
+                label: 'Override Config',
+                name: 'overrideConfig',
+                description: 'Override the config passed to the Chatflow.',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Base URL',
@@ -126,7 +140,14 @@ class ChatflowTool_Tools implements INode {
         const _name = nodeData.inputs?.name as string
         const description = nodeData.inputs?.description as string
         const useQuestionFromChat = nodeData.inputs?.useQuestionFromChat as boolean
+        const returnDirect = nodeData.inputs?.returnDirect as boolean
         const customInput = nodeData.inputs?.customInput as string
+        const overrideConfig =
+            typeof nodeData.inputs?.overrideConfig === 'string' &&
+            nodeData.inputs.overrideConfig.startsWith('{') &&
+            nodeData.inputs.overrideConfig.endsWith('}')
+                ? JSON.parse(nodeData.inputs.overrideConfig)
+                : nodeData.inputs?.overrideConfig
 
         const startNewSession = nodeData.inputs?.startNewSession as boolean
 
@@ -143,13 +164,23 @@ class ChatflowTool_Tools implements INode {
         let toolInput = ''
         if (useQuestionFromChat) {
             toolInput = input
-        } else if (!customInput) {
+        } else if (customInput) {
             toolInput = customInput
         }
 
         let name = _name || 'chatflow_tool'
 
-        return new ChatflowTool({ name, baseURL, description, chatflowid: selectedChatflowId, startNewSession, headers, input: toolInput })
+        return new ChatflowTool({
+            name,
+            baseURL,
+            description,
+            returnDirect,
+            chatflowid: selectedChatflowId,
+            startNewSession,
+            headers,
+            input: toolInput,
+            overrideConfig
+        })
     }
 }
 
@@ -172,26 +203,33 @@ class ChatflowTool extends StructuredTool {
 
     headers = {}
 
+    overrideConfig?: object
+
     schema = z.object({
         input: z.string().describe('input question')
+        // overrideConfig: z.record(z.any()).optional().describe('override config'), // This will be passed to the Agent, so comment it for now.
     }) as any
 
     constructor({
         name,
         description,
+        returnDirect,
         input,
         chatflowid,
         startNewSession,
         baseURL,
-        headers
+        headers,
+        overrideConfig
     }: {
         name: string
         description: string
+        returnDirect: boolean
         input: string
         chatflowid: string
         startNewSession: boolean
         baseURL: string
         headers: ICommonObject
+        overrideConfig?: object
     }) {
         super()
         this.name = name
@@ -201,6 +239,8 @@ class ChatflowTool extends StructuredTool {
         this.startNewSession = startNewSession
         this.headers = headers
         this.chatflowid = chatflowid
+        this.overrideConfig = overrideConfig
+        this.returnDirect = returnDirect
     }
 
     async call(
@@ -244,6 +284,9 @@ class ChatflowTool extends StructuredTool {
             await runManager?.handleToolError(e)
             throw e
         }
+        if (result && typeof result !== 'string') {
+            result = JSON.stringify(result)
+        }
         await runManager?.handleToolEnd(result)
         return result
     }
@@ -260,7 +303,9 @@ class ChatflowTool extends StructuredTool {
             question: inputQuestion,
             chatId: this.startNewSession ? uuidv4() : flowConfig?.chatId,
             overrideConfig: {
-                sessionId: this.startNewSession ? uuidv4() : flowConfig?.sessionId
+                sessionId: this.startNewSession ? uuidv4() : flowConfig?.sessionId,
+                ...(this.overrideConfig ?? {}),
+                ...(arg.overrideConfig ?? {})
             }
         }
 
@@ -273,7 +318,15 @@ class ChatflowTool extends StructuredTool {
             body: JSON.stringify(body)
         }
 
-        let sandbox = { $callOptions: options, $callBody: body }
+        let sandbox = {
+            $callOptions: options,
+            $callBody: body,
+            util: undefined,
+            Symbol: undefined,
+            child_process: undefined,
+            fs: undefined,
+            process: undefined
+        }
 
         const code = `
 const fetch = require('node-fetch');
@@ -304,7 +357,10 @@ try {
             require: {
                 external: { modules: deps },
                 builtin: builtinDeps
-            }
+            },
+            eval: false,
+            wasm: false,
+            timeout: 10000
         } as any
 
         const vm = new NodeVM(vmOptions)

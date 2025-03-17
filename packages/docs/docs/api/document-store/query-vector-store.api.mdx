@@ -1,0 +1,86 @@
+---
+id: query-vector-store
+title: 'Query vector store'
+description: 'Query the vector store for similar documents'
+sidebar_label: 'Query vector store'
+hide_title: true
+hide_table_of_contents: true
+api: eJydVk1v4zYQ/SvEnLqAHCup8wFdtm7TBVwUaLZ2u4fAhzE1sbihSC1JOTEE/fdiKDmWnKDZNpdQ0nA+3rx54wYCbj1k95BbWZdkwsQH6wjWCXiStVNhD9l9AxtCR25ehwKy+3W7TiAnL52qgrIGMvhck9uLUJDYkQzWiehGPPBJlUqjE4cIHhKwFTnkq4scMvjGl/+O95YxegKOvtXkw88230PWgLQmkAl8xKrSSsbL06+egzfgZUEl8insK4IM7OYrydD7UY5yLjGmtMgh6QJyjZXjTIIiH930Bkc/PjhltnBa7W1fiojpisUtJEDPWFaaL12lP+L15vJ8gnQtJ7NNipObm6vLCc0uZ5RfPFxdX11Be8ji3WA9tFZ4QicLxnQU7kuBQSgfwZdYqYBa2AfxyaGR9BFa/hsCEVxN8YWvrPFd5Rdpyv/GgZe1lOT9Q631XtAzyTpQLmLWwppRoyH5/y0a9yCoklb4SGZgaupyQ+4VMCtVkghsy+j0CUYYuhx/UEaUSmvlSVqT+w8Mem6lH7hG53APCahApX8/uwq39Mux0NPGHZuyKpR/aUp3gZvCj+zjjFMpKWCO4U1QMM8Vl4n6bgzPKGI7CNkA1qGwDjL4zRZG3FruSo6B7S/Si9kkvZlczCCyIagQ0zwQuWMJf5m9xYSF2aFWueinUmx4LNsELt82DuQMauHJ7cgJcs46aLuCC8sDX1kfsUWWE5iOtWfaEas7dzPCYsS+fNSi2mnIoAih8tl0ipU6CwWh8U/kzlBNd+evmHLnbF5LfuiTgjY59eMDbpXZTr7H37KzfdtZNp1qK1EX1odslqYpp/iWl9/ZSuS0I22rKCcHfwP1XfLcdL0favALEzgi4xPNIOuNIOkPn6wrMTAnvqxiD3ge/zyK669H+ryo3/cJ2It+vStACSjzYLvhHtOu18/53eIVOPO7RdweJZoO6wNJOsHxiZBWa4pN9YlAkx8XjFBGzGP/5uyYidM5PT9Lz9Jeq1DGETYYYTuYi2VdVdYxO8f0GFKCJ71ExZ99Z/7T6DPjzBQv0QxCdDp+opqjogd77r8u1J4NgZ7DtNKoDMMeK2j6MXu14hmYl0EbLkUmLts3zQY9/eV02/Lrvt336wR26BRuuJX36zaBgjAnF2fzkZgRvUROVpwVm+s6iu3pXuDB6W7MpaQq/KvteiAgd38sV8zx/udBaXO+4/CJVz4+QQbxR0YkBxvEdw1oNNsat2zb+eRO4XigTgYoVnVYFmY/yLBpOouVfSTTtpD0pQR+hnbdtu0/dEo6uA==
+sidebar_class_name: 'post api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Query vector store'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/document-store/vectorstore/query'} context={'endpoint'}></MethodEndpoint>
+
+Query the vector store for similar documents
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    required: ['storeId', 'query'],
+                    properties: {
+                        storeId: { type: 'string', description: 'Document Store ID', example: '603a7b51-ae7c-4b0a-8865-e454ed2f6766' },
+                        query: { type: 'string', description: 'Query to search for', example: 'What is the capital of France?' }
+                    }
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully executed query on vector store',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            timeTaken: { type: 'number', description: 'Time taken to execute the query (in milliseconds)' },
+                            docs: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        pageContent: { type: 'string', example: 'This is the content of the page.' },
+                                        metadata: {
+                                            type: 'object',
+                                            additionalProperties: { type: 'string' },
+                                            example: { author: 'John Doe', date: '2024-08-24' }
+                                        }
+                                    },
+                                    title: 'Document'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid request body' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

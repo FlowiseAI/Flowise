@@ -35,6 +35,7 @@ const getChatById = async (chatId: string, user: IUser) => {
                 organization: { id: user.organizationId }
             },
             relations: {
+                chatflow: true
                 // users: true,
                 // messages: true
             },

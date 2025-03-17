@@ -1,0 +1,244 @@
+openapi: 3.0.0
+info:
+    title: Prediction API
+    description: API for creating and managing predictions in TheAnswer
+    version: 1.0.0
+    contact:
+        name: TheAnswer Support
+        url: https://theanswer.ai/support
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai
+      description: Production server
+    - url: https://api.staging.theanswer.ai
+      description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
+tags:
+    - name: prediction
+      description: Endpoints for creating and managing predictions
+paths:
+    /prediction/{id}:
+        post:
+            tags:
+                - prediction
+            security:
+                - bearerAuth: []
+            operationId: createPrediction
+            summary: Create a new prediction
+            description: Create a new prediction for a specific chatflow
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Prediction'
+                    multipart/form-data:
+                        schema:
+                            type: object
+                            properties:
+                                question:
+                                    type: string
+                                    description: Question to ask during the prediction process
+                                files:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: binary
+                                    description: Files to be uploaded
+                                modelName:
+                                    type: string
+                                    nullable: true
+                                    example: ''
+                                    description: Other override configurations
+                            required:
+                                - question
+                required: true
+            responses:
+                '200':
+                    description: Prediction created successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    text:
+                                        type: string
+                                        description: The result of the prediction
+                                    json:
+                                        type: object
+                                        description: The result of the prediction in JSON format if available
+                                    question:
+                                        type: string
+                                        description: The question asked during the prediction process
+                                    chatId:
+                                        type: string
+                                        description: The chat ID associated with the prediction
+                                    chatMessageId:
+                                        type: string
+                                        description: The chat message ID associated with the prediction
+                                    sessionId:
+                                        type: string
+                                        description: The session ID associated with the prediction
+                                    memoryType:
+                                        type: string
+                                        description: The memory type associated with the prediction
+                                    sourceDocuments:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Document'
+                                    usedTools:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/UsedTool'
+                                    fileAnnotations:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/FileAnnotation'
+                '400':
+                    description: Invalid input provided
+                '404':
+                    description: Chatflow not found
+                '422':
+                    description: Validation error
+                '500':
+                    description: Internal server error
+components:
+    schemas:
+        Prediction:
+            type: object
+            properties:
+                question:
+                    type: string
+                    description: The question being asked
+                overrideConfig:
+                    type: object
+                    description: The configuration to override the default prediction settings (optional)
+                history:
+                    type: array
+                    description: The history messages to be prepended (optional)
+                    items:
+                        type: object
+                        properties:
+                            role:
+                                type: string
+                                enum:
+                                    - apiMessage
+                                    - userMessage
+                                description: The role of the message
+                                example: apiMessage
+                            content:
+                                type: string
+                                description: The content of the message
+                                example: Hello, how can I help you?
+                uploads:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            type:
+                                type: string
+                                enum:
+                                    - audio
+                                    - url
+                                    - file
+                                    - file:rag
+                                    - file:full
+                                description: The type of file upload
+                                example: file
+                            name:
+                                type: string
+                                description: The name of the file or resource
+                                example: image.png
+                            data:
+                                type: string
+                                description: The base64-encoded data or URL for the resource
+                                example: >-
+                                    data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG
+                            mime:
+                                type: string
+                                description: The MIME type of the file or resource
+                                example: image/png
+        PredictionResponse:
+            type: object
+            properties:
+                text:
+                    type: string
+                    description: The result of the prediction
+                json:
+                    type: object
+                    description: The result of the prediction in JSON format if available
+                question:
+                    type: string
+                    description: The question asked during the prediction process
+                chatId:
+                    type: string
+                    description: The chat ID associated with the prediction
+                chatMessageId:
+                    type: string
+                    description: The chat message ID associated with the prediction
+                sessionId:
+                    type: string
+                    description: The session ID associated with the prediction
+                memoryType:
+                    type: string
+                    description: The memory type associated with the prediction
+                sourceDocuments:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Document'
+                usedTools:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UsedTool'
+                fileAnnotations:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/FileAnnotation'
+        Document:
+            type: object
+            properties:
+                pageContent:
+                    type: string
+                    example: This is the content of the page.
+                metadata:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    example:
+                        author: John Doe
+                        date: '2024-08-24'
+        UsedTool:
+            type: object
+            properties:
+                tool:
+                    type: string
+                    example: Name of the tool
+                toolInput:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    example:
+                        input: search query
+                toolOutput:
+                    type: string
+        FileAnnotation:
+            type: object
+            properties:
+                filePath:
+                    type: string
+                    example: path/to/file
+                fileName:
+                    type: string
+                    example: file.txt
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

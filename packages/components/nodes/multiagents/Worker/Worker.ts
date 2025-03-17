@@ -233,7 +233,7 @@ async function createAgent(
             sessionId: flowObj?.sessionId,
             chatId: flowObj?.chatId,
             input: flowObj?.input,
-            verbose: process.env.DEBUG === 'true' ? true : false,
+            verbose: process.env.DEBUG === 'true',
             maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
         })
         return executor

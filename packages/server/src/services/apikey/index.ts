@@ -29,6 +29,9 @@ const _apikeysStoredInDb = (): boolean => {
 }
 
 const getAllApiKeys = async (user: IUser) => {
+    if (!user) {
+        throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+    }
     try {
         if (_apikeysStoredInJson()) {
             const keys = await getAPIKeys_json()
@@ -59,14 +62,14 @@ const getAllApiKeys = async (user: IUser) => {
     }
 }
 
-const getApiKey = async (keyName: string) => {
+const getApiKey = async (apiKey: string) => {
     try {
         if (_apikeysStoredInJson()) {
-            return getApiKey_json(keyName)
+            return getApiKey_json(apiKey)
         } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
             const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-                keyName: keyName
+                apiKey: apiKey
             })
             if (!currentKey) {
                 return undefined
@@ -246,7 +249,6 @@ const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
             // Convert JSON data to ApiKey entity
             const apiKey = new ApiKey()
             Object.assign(apiKey, apiKeyData)
-            console.log(`[ApiKey] Successfully verified key: ${apiKey.keyName} (${apiKey.id})`)
             return apiKey
         } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
@@ -261,7 +263,6 @@ const verifyApiKey = async (paramApiKey: string): Promise<ApiKey | null> => {
             // Update lastUsedAt
             apiKey.lastUsedAt = new Date()
             await appServer.AppDataSource.getRepository(ApiKey).save(apiKey)
-            console.log(`[ApiKey] Successfully verified key: ${apiKey.userId}  ${apiKey.keyName} (${apiKey.id})`)
             return apiKey
         } else {
             console.error('[ApiKey] Unknown storage type configuration')

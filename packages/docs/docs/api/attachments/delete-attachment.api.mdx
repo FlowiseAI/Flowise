@@ -1,0 +1,87 @@
+---
+id: delete-attachment
+title: 'Delete an attachment'
+description: 'Delete a specific attachment'
+sidebar_label: 'Delete an attachment'
+hide_title: true
+hide_table_of_contents: true
+api: eJytVsGO2zgM/RWBpxZQ43QxJ582wMwCKXoYdGbRwzRYMDITq7UlV5IzGxj69wUtJ7GTYCaHPSWOycdH8pFMBwV55XQTtDWQwz1VFEig8A0pvdFKYAioyppMAAm2IYdsuiwgh6I3XowNAm495C9w8vKwkuBJtU6HPeQvHawJHblFG0rIX1ZxJaFBhzUFcr43MFgT5COMf3QBEjQTbDCUIM9YP5cklvfCbkQoacRYBCsSSZDg6HerHRWQB9eSBK9KqhHyDsK+4Xg+OG22EJmRI99Y48nz+z/mc/6YxjylPYQohG+VIu83bVXtQYKyJnBV8g6waSqt+splPz37d5fx7fonKS5i47jOQafourjk+HYBDnxGrYvyAH8Fi0xbT5s2GyC4d5eREpJgGCleS61Kob3A6hX3Xvy4AvMDmMAB88RgbW1FaE4UuDMXIb+XFEpy5719RX/IFGIc9/cFer0c6zlKJuhQ0VHnxUi7MTLI3fzuzVYbG8TGtqb4//pLzln3vllN3uOW3tfCQpRtjeaTIyxwXZHoA4iDf5SD/y2aYgtWVeIYh0m9zfc41CKUGITC1lPRNzER+qA3YqjbuqKPjK5scVOCNapSGzpPsXdPfRyLIZEfNf8hZZMsawqlPW0zrjuvmByy0Q7LuskyisArze0OC6t1FeRQhtD4PMuw0bNQEhr/Sm6GOtt9vsjh0dmiVfwgEhBEeY7jA2612X66Be8p2V4Hy7Ossgqr0vqQ383nc6Z4DeUrW4mCdlTZptf7AW+0w59Y10mT401+7BpHhGG99kPeG4EcvvxlXY0Bcvjy/bmfW202tncfunOaNi8Wj8vL9j8uxYYFjSblvNHVeDF4kMCdSdafZ/PZfBhWTOtvOC+Lvp6LpXhqm8Y6nrhp/cc15xVVo+bXPpn/OXnNiTTWhxrNKMThmprpFZ3k0532yHvXdyhwoH9D1lSoDc9Mz7kbRDs9vBLy6Q1dSWANsF3XrdHT366KkX/+3ZLj67ySsEOneah6ZRfa8/cC8g1Wnt7g/uHbMHIfxU3n+Goyw49o+H7usGr5CST8ov3FH4K4ihJKwoJcTzXZLJSiJoy8L1Yza/k49PcPXx+eH0ACTkV8Jto+wFVyXZcsnu0vMjEeuQZ+Zo4x/geUSkKH
+sidebar_class_name: 'delete api-method'
+info_path: docs/api/attachments/attachments-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete an attachment'}></Heading>
+
+<MethodEndpoint method={'delete'} path={'/attachments/{attachment_id}'} context={'endpoint'}></MethodEndpoint>
+
+Delete a specific attachment
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[
+        { name: 'attachment_id', in: 'path', description: 'The ID of the attachment to delete', required: true, schema: { type: 'string' } }
+    ]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Attachment deleted successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', description: 'The ID of the deleted attachment' },
+                            object: {
+                                type: 'string',
+                                enum: ['attachment.deleted'],
+                                description: 'The object type, which is always "attachment.deleted"'
+                            },
+                            deleted: { type: 'boolean', enum: [true], description: 'Whether the attachment was deleted' }
+                        },
+                        required: ['id', 'object', 'deleted'],
+                        title: 'DeletedAttachment'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Attachment not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            error: {
+                                type: 'object',
+                                properties: {
+                                    message: { type: 'string', description: 'A human-readable error message' },
+                                    type: { type: 'string', description: 'The type of error' },
+                                    param: { type: 'string', description: 'The parameter that caused the error (if applicable)' },
+                                    code: { type: 'string', description: 'A machine-readable error code' }
+                                }
+                            }
+                        },
+                        required: ['error'],
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

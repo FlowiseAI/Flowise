@@ -22,7 +22,8 @@ import {
     INodeData,
     INodeParams,
     IDatabaseEntity,
-    MemoryMethods
+    MemoryMethods,
+    IServerSideEventStreamer
 } from '../../../src/Interface'
 import { QA_TEMPLATE, REPHRASE_TEMPLATE, RESPONSE_TEMPLATE } from './prompts'
 
@@ -181,6 +182,10 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const chatflowid = options.chatflowid as string
 
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
+
         let customResponsePrompt = responsePrompt
         // If the deprecated systemMessagePrompt is still exists
         if (systemMessagePrompt) {
@@ -205,7 +210,9 @@ class ConversationalRetrievalQAChain_Chains implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (options.shouldStreamResponse) {
+                    streamResponse(options.sseStreamer, options.chatId, e.message)
+                }
                 return formatResponse(e.message)
             }
         }
@@ -234,18 +241,22 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         let sourceDocuments: ICommonObject[] = []
         let text = ''
         let isStreamingStarted = false
-        const isStreamingEnabled = options.socketIO && options.socketIOClientId
 
         for await (const chunk of stream) {
             streamedResponse = applyPatch(streamedResponse, chunk.ops).newDocument
 
             if (streamedResponse.final_output) {
                 text = streamedResponse.final_output?.output
-                if (isStreamingEnabled) options.socketIO.to(options.socketIOClientId).emit('end')
                 if (Array.isArray(streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output)) {
                     sourceDocuments = streamedResponse?.logs?.[sourceRunnableName]?.final_output?.output
-                    if (isStreamingEnabled && returnSourceDocuments)
-                        options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', sourceDocuments)
+                    if (shouldStreamResponse && returnSourceDocuments) {
+                        if (sseStreamer) {
+                            sseStreamer.streamSourceDocumentsEvent(chatId, sourceDocuments)
+                        }
+                    }
+                }
+                if (shouldStreamResponse && sseStreamer) {
+                    sseStreamer.streamEndEvent(chatId)
                 }
             }
 
@@ -258,9 +269,17 @@ class ConversationalRetrievalQAChain_Chains implements INode {
 
                 if (!isStreamingStarted) {
                     isStreamingStarted = true
-                    if (isStreamingEnabled) options.socketIO.to(options.socketIOClientId).emit('start', token)
+                    if (shouldStreamResponse) {
+                        if (sseStreamer) {
+                            sseStreamer.streamStartEvent(chatId, token)
+                        }
+                    }
                 }
-                if (isStreamingEnabled) options.socketIO.to(options.socketIOClientId).emit('token', token)
+                if (shouldStreamResponse) {
+                    if (sseStreamer) {
+                        sseStreamer.streamTokenEvent(chatId, token)
+                    }
+                }
             }
         }
 
@@ -424,7 +443,7 @@ class BufferMemory extends FlowiseMemory implements MemoryMethods {
         }
 
         if (returnBaseMessages) {
-            return mapChatMessageToBaseMessage(chatMessage)
+            return await mapChatMessageToBaseMessage(chatMessage)
         }
 
         let returnIMessages: IMessage[] = []

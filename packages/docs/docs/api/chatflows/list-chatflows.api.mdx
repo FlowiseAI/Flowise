@@ -1,0 +1,68 @@
+---
+id: list-chatflows
+title: 'List all chatflows'
+description: 'Retrieve a list of all chatflows'
+sidebar_label: 'List all chatflows'
+hide_title: true
+hide_table_of_contents: true
+api: eJytVU1v2zgQ/SvCnOVYNpw21V7WSJvWi3Q32LgosIYPY2lss6FILjlyIgj674uR7FT2ukEK1BdT5JvHx/msIaeQeeVYWQMp/E3sFe0owkirwJFdR6h1lG2R19o+BojBOvIo8FkOKQjqunfKuAmQLuC7xTKGQFnpFVeQLmpYEXry05K3kC6WzTIGT8FZEyhAWsM4SeTvWNZ9mWUUwrrU0fP1EENmDZNhwaNzWmXtwfBbEKMaQralAmXFlSNIAb3HCmJQTEXo7dvVN8oYYnBe6Fl1UlTewwT2ymwgBnrCwmnZysfvkvWIaPAmu5wMJqtkNHiX0JtB/jYZvZ1crZOryxE0MRgs6GWmz5X48EbbR8GL394j48s2dSPYnJy2FfWVrqzVhEZOVbgrV1pl50/RqQeqzr2yidsArixfW7NWm9coQad+AmxQV3wk7IfY4Iiy7dzO6Ylfg8+QaWN99TL2gBr9dliNxbgzOGNoykLy+vrTdH5z+9dXiOHzl9v5bPrxw59zWMq1npApf498lmBtfYEsWYNMA1YFHckZJ+PJILkajCfz0SQdXabj8T+ip3T5L2eVZypuAYfShUZ+MVyeq76ZYfIGdUTeW9/aF8RbK/W/obZuUKoZhv0+EcjvyIe25kuvIYUtswvpcIhOXfCW0IRH8heohrsRxCd33nmbl5l8RB0RNPEpT2DcKLMZvIbvvsOeJ0uHQ20z1FsbOJ0kSSISz7HcCirKaUfauoIMP/P1uty9tJ2ug/R73XPw5EbxTwuTimxBEO8XN4eQ/vF13vpambVtzU9iFqLp3ex/Eqd3s2htfVSg6V7cj4kEpIONLpKLZN9CMWvrqmtTMG3dOJ1F96Vz1kt4j93ed7VkW4FKjkMH//3oWPQ7G7hA07viVkbL6Vw5ekb9vbe/ZibtPcv0xEOnUbXtrVVd73PzZCJJpGWzrlcY6IvXTSPb/5YkfWOxjGGHXuFKHL6Q6t4S5uTbZH6gStyUZeTEOTvUZTtcTieQ5MRznXz8MIcY8DgTTiLfsh9Glal63HXdIeb2gUzTQLwXwfINzbJpmv8AoRigyQ==
+sidebar_class_name: 'get api-method'
+info_path: docs/api/chatflows/chatflows-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'List all chatflows'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/chatflows'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a list of all chatflows
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string', example: 'd290f1ee-6c54-4b01-90e6-d701748f0851' },
+                                name: { type: 'string', example: 'MyChatFlow' },
+                                flowData: { type: 'string', example: '{}' },
+                                deployed: { type: 'boolean' },
+                                isPublic: { type: 'boolean' },
+                                apikeyid: { type: 'string' },
+                                chatbotConfig: { type: 'string', example: '{}' },
+                                apiConfig: { type: 'string', example: '{}' },
+                                analytic: { type: 'string', example: '{}' },
+                                speechToText: { type: 'string', example: '{}' },
+                                category: { type: 'string', example: 'category1;category2' },
+                                type: { type: 'string', enum: ['CHATFLOW', 'MULTIAGENT'] },
+                                createdDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' },
+                                updatedDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' }
+                            },
+                            title: 'Chatflow'
+                        }
+                    }
+                }
+            }
+        },
+        '500': { description: 'Internal error' }
+    }}
+></StatusCodes>

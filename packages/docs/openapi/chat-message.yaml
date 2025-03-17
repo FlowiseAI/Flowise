@@ -1,0 +1,377 @@
+openapi: 3.0.0
+info:
+    title: Chat Message API
+    description: API for managing chat messages
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
+tags:
+    - name: chatmessage
+      description: Operations for managing chat messages
+paths:
+    /chatmessage/{id}:
+        get:
+            tags:
+                - chatmessage
+            security:
+                - bearerAuth: []
+            operationId: getAllChatMessages
+            summary: List all chat messages
+            description: Retrieve all chat messages for a specific chatflow.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+                - in: query
+                  name: chatType
+                  schema:
+                      type: string
+                      enum:
+                          - INTERNAL
+                          - EXTERNAL
+                  description: Filter by chat type
+                - in: query
+                  name: order
+                  schema:
+                      type: string
+                      enum:
+                          - ASC
+                          - DESC
+                  description: Sort order
+                - in: query
+                  name: chatId
+                  schema:
+                      type: string
+                  description: Filter by chat ID
+                - in: query
+                  name: memoryType
+                  schema:
+                      type: string
+                      example: Buffer Memory
+                  description: Filter by memory type
+                - in: query
+                  name: sessionId
+                  schema:
+                      type: string
+                  description: Filter by session ID
+                - in: query
+                  name: startDate
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter by start date
+                - in: query
+                  name: endDate
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter by end date
+                - in: query
+                  name: feedback
+                  schema:
+                      type: boolean
+                  description: Filter by feedback
+                - in: query
+                  name: feedbackType
+                  schema:
+                      type: string
+                      enum:
+                          - THUMBS_UP
+                          - THUMBS_DOWN
+                  description: Filter by feedback type
+            responses:
+                '200':
+                    description: A list of chat messages
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/ChatMessage'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        delete:
+            tags:
+                - chatmessage
+            security:
+                - bearerAuth: []
+            operationId: removeAllChatMessages
+            summary: Delete all chat messages
+            description: Delete all chat messages for a specific chatflow.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+                - in: query
+                  name: chatId
+                  schema:
+                      type: string
+                  description: Filter by chat ID
+                - in: query
+                  name: memoryType
+                  schema:
+                      type: string
+                      example: Buffer Memory
+                  description: Filter by memory type
+                - in: query
+                  name: sessionId
+                  schema:
+                      type: string
+                  description: Filter by session ID
+                - in: query
+                  name: chatType
+                  schema:
+                      type: string
+                      enum:
+                          - INTERNAL
+                          - EXTERNAL
+                  description: Filter by chat type
+            responses:
+                '200':
+                    description: Chat messages deleted successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                '400':
+                    description: Invalid parameters
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Chat messages not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Internal error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
+    schemas:
+        ChatMessage:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    example: d290f1ee-6c54-4b01-90e6-d701748f0851
+                role:
+                    type: string
+                    enum:
+                        - apiMessage
+                        - userMessage
+                    example: apiMessage
+                chatflowid:
+                    type: string
+                    format: uuid
+                    example: d290f1ee-6c54-4b01-90e6-d701748f0852
+                content:
+                    type: string
+                    example: Hello, how can I help you today?
+                sourceDocuments:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/Document'
+                usedTools:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/UsedTool'
+                fileAnnotations:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/FileAnnotation'
+                agentReasoning:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/AgentReasoning'
+                fileUploads:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/FileUpload'
+                action:
+                    type: array
+                    nullable: true
+                    items:
+                        $ref: '#/components/schemas/Action'
+                chatType:
+                    type: string
+                    enum:
+                        - INTERNAL
+                        - EXTERNAL
+                    example: INTERNAL
+                chatId:
+                    type: string
+                    example: chat12345
+                memoryType:
+                    type: string
+                    nullable: true
+                sessionId:
+                    type: string
+                    nullable: true
+                createdDate:
+                    type: string
+                    format: date-time
+                    example: '2024-08-24T14:15:22Z'
+                leadEmail:
+                    type: string
+                    nullable: true
+                    example: user@example.com
+        Document:
+            type: object
+            properties:
+                pageContent:
+                    type: string
+                    example: This is the content of the page.
+                metadata:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    example:
+                        author: John Doe
+                        date: '2024-08-24'
+        UsedTool:
+            type: object
+            properties:
+                tool:
+                    type: string
+                    example: Name of the tool
+                toolInput:
+                    type: object
+                    additionalProperties:
+                        type: string
+                    example:
+                        input: search query
+                toolOutput:
+                    type: string
+        FileAnnotation:
+            type: object
+            properties:
+                filePath:
+                    type: string
+                    example: path/to/file
+                fileName:
+                    type: string
+                    example: file.txt
+        FileUpload:
+            type: object
+            properties:
+                data:
+                    type: string
+                    example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG
+                type:
+                    type: string
+                    example: image
+                name:
+                    type: string
+                    example: image.png
+                mime:
+                    type: string
+                    example: image/png
+        Action:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    example: 61beeb58-6ebe-4d51-aa0b-41d4c546ff08
+                mapping:
+                    type: object
+                    properties:
+                        approve:
+                            type: string
+                            example: 'Yes'
+                        reject:
+                            type: string
+                            example: 'No'
+                        toolCalls:
+                            type: array
+                            example: []
+                elements:
+                    type: array
+        AgentReasoning:
+            type: object
+            properties:
+                agentName:
+                    type: string
+                    example: agent
+                messages:
+                    type: array
+                    items:
+                        type: string
+                    example:
+                        - hello
+                nodeName:
+                    type: string
+                    example: seqAgent
+                nodeId:
+                    type: string
+                    example: seqAgent_0
+                usedTools:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UsedTool'
+                sourceDocuments:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Document'
+                state:
+                    type: object
+                    additionalProperties:
+                        type: string
+        Error:
+            type: object
+            properties:
+                code:
+                    type: string
+                    example: invalid_request_error
+                message:
+                    type: string
+                    example: The request was unacceptable, often due to missing a required parameter.
+                param:
+                    type: string
+                    example: id
+                type:
+                    type: string
+                    example: invalid_request_error
+            required:
+                - code
+                - message
