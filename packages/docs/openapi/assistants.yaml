@@ -31,7 +31,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/AssistantInput'
+                            $ref: '#/components/schemas/Assistant'
                 required: true
             responses:
                 '200':
@@ -42,16 +42,8 @@ paths:
                                 $ref: '#/components/schemas/Assistant'
                 '400':
                     description: Invalid input provided
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '422':
                     description: Validation exception
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         get:
             summary: List all assistants
             description: Retrieve a list of all assistants
@@ -71,10 +63,6 @@ paths:
                                     $ref: '#/components/schemas/Assistant'
                 '500':
                     description: Internal error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
     /assistants/{id}:
         get:
             summary: Get assistant by ID
@@ -100,22 +88,10 @@ paths:
                                 $ref: '#/components/schemas/Assistant'
                 '400':
                     description: The specified ID is invalid
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '404':
                     description: Assistant not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         put:
             summary: Update assistant details
             description: Update the details of an existing assistant
@@ -135,8 +111,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/AssistantInput'
-                required: true
+                            $ref: '#/components/schemas/Assistant'
             responses:
                 '200':
                     description: Assistant updated successfully
@@ -146,22 +121,10 @@ paths:
                                 $ref: '#/components/schemas/Assistant'
                 '400':
                     description: The specified ID is invalid or body is missing
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '404':
                     description: Assistant not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         delete:
             summary: Delete an assistant
             description: Delete an assistant by ID
@@ -177,48 +140,21 @@ paths:
                   schema:
                       type: string
                   description: Assistant ID
-                - in: query
-                  name: isDeleteBoth
-                  required: false
-                  schema:
-                      type: boolean
-                  description: Whether to delete both the assistant and its associated resources
             responses:
                 '200':
                     description: Assistant deleted successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        example: true
                 '400':
                     description: The specified ID is invalid
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '404':
                     description: Assistant not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
 components:
     securitySchemes:
         bearerAuth:
             type: http
             scheme: bearer
             bearerFormat: JWT
-            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
     schemas:
         AssistantInput:
             type: object
@@ -282,7 +218,6 @@ components:
                             example: assistant
                         description:
                             type: string
-                            example: A helpful AI assistant
                         model:
                             type: string
                             example: gpt-4
@@ -321,10 +256,6 @@ components:
                     type: string
                     format: date-time
                     example: '2024-08-24T14:15:22Z'
-            required:
-                - id
-                - details
-                - credential
         Error:
             type: object
             properties:

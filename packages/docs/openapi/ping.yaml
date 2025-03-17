@@ -42,4 +42,3 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
-            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY

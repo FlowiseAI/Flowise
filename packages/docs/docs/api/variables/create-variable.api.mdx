@@ -1,71 +1,112 @@
 ---
 id: create-variable
-title: "Create a new variable"
-description: "Create a new environment variable"
-sidebar_label: "Create a new variable"
+title: 'Create a new variable'
+description: 'Create a new environment variable'
+sidebar_label: 'Create a new variable'
 hide_title: true
 hide_table_of_contents: true
-api: eJztV1lv20YQ/iuLeWoBUgcjX3yq7DiomiBRbdlBagjFihyKG5NLZg/JgsD/XsySsqmjjVCkffKTVrtzzzfDmTXEqCMlSiMKCSFcKeQGGWcSlwzlQqhC5igNW3Al+CxD8KAoUXGiH8UQQuQ47l+eDZ9rCB9gw6Fh6oHGyCphVhA+rGGGXKEaWpNC+DCtph4o/GZRm8siXkG4hqiQBqWhIy/LTEROXferJhvXoKMUc04nsyoRQihmXzEyUMsRCmPSL3nuzCGSqQelIruNQE2M7vFFgDZKyDl4O9H4yHNkRcJMiu0A4BPPy4z4huPRn++vv0DlwYJn9giR90R2QKa0WeaOoVEW2zryla8xUmj8R1yRplrB9xRNVuWeHvYTduYdj9UsHpM2n6H6eculRlxFioRxV5vkjmRpDVT09BJoMtdd6LKQuo5u0OvRz67njRE1YmKmbRSh1onNshV4/z7p25kV8aHYJIXKuYEQrBXxXqzupPhmkYkYpRGJQMWSQv191qMkPnnTx55/HiSR3+/jhT+LBoF/Epzy5OzsdJCcDihRryD7Hsi8pn3Eb7k5qO45bzE36BvhSnrbhreuYcmY0Stbpii3zVlyvYHclg1BLxj4vXM/GEz6g7B/EgbBH2SRLeP/waKMa8MaVUeYdaAaqRArDwaHam0kFzwTMWv6KptRY/1hJZaj1nx+BDyulSoU25BvYVoydI9FFFlFjaTywN0cK9XRtEVe8pjd1P6SMG24sfqqiNt2CmlwjmpP5K+TyZjVHCwilpbgQa/XDr/Tvol9EBzqc5mIXWBrF1/j/sPjfnIY8waV5BnTqBaoXoP/nwS/8iBHkxY0+pWFdnHiNMhB92Xgo3mPcqDduGdVBiGkxpQ67HZ5KTomRS71ElWHi+6iv2fZWBWxjVwJ1YKg8nblaMPnQs79Y+Td1rSHhYXdblZEPEsLbcjvHpl4SMoHomIxLjArSjcUb+S1BtxbglONmPaY+5wM0kjxcWQQNkTgNYd3m6/Lb58newYMxyP2iCvGrUlpUqmRzJbCpCwRTxgzNx+wwUX/Jj0P8vndnbh6Ixf39kwsP3xanl08XWafT7n/Luk/vR/e/a6/uC8LlcLNywR+vQHBZkx+nkCeB5CdecHbAW/lgZBJ4dze+WppNhyPDnpGI1fOZZ2pQ6sH4YpAVbP0O71OrylvHpm2tQ4KwxG7tWVZKILoNnTacCHQ51zQs67Jf9l6pvgQznMuWyq21qTWgLXlVWuPOWqvamJo8Ml0y4wL6aYRsnzd1NjOUkWIpcv1esY13qmsquj6m0VFi9bUeyZ3e5YHKfIYlStKSlsIV7WB/qTuK5vs7vVJqpiaYxhFWJp/pJ22WsT40y3heNYsdrnrTKD4kpY1voQQ3EJJ3K5m3N0aMi7n1nVbqGVSGvh2Je1UjvOqeeJy1bJwva4pJsUjyqoCr3HF0H+oplVV/QVF/CTE
-sidebar_class_name: "post api-method"
+api: eJztV9+P4jYQ/leseWolB0LK7l3zVHp3lWirFnW5q9oVqkwygO8SO2s7cCjK/16NE9gEci196dO+gLHnl8ffNzNUkKJNjCyc1ApieGNQOGSCKTwwVHtptMpRObYXRop1hsBBF2gEyc9TiCHxGh+ej53YWogf4aRhYcXBYlIa6Y4QP1awRmHQzEq3g/hxVa84GHwq0brvdXqEuIJEK4fK0VIURSYT72780VKMFdhkh7mglTsWCDHo9UdMHHAoDAXnJFo6lWlHxjoj1RY4bLTJhYMYylKmwC8S8F7JpxKZTFE5uZFo2EYb5nbYzQB+FnmRkdVkk959M8EweB1tkmAywW+DdTKNgrvoXmxevbqfbu6nUHNQIsehYPrOfxE5Mr35srvZYv7XT+/+IIt7kZU3mPxAYgM2VZllfhk7U2LXR34MLCYGXfAJj+SpcfBvjpbH4soP+wpH2xFnjQpnqszXaL7uXak1V/MWSelb4Qbdnd8tFQ4DJ3O8iuGtx65KGZ2yww5VP5yDsKz10oshCqNpEL4OoulyMo0nd3EU/UkRlUX6P0SUCetY6+qGsOhFpPMCZ9bVtEskkgbT5kn9hi20sg0ZojCkr0t0tHG0WWG2TBK0dlNm2RH4CxFfiPhCxP9IxJrDdIhrc7UXmUxZ2+vYmpodCUfREDEzmXqyMTRGGxK8G7bq0CiRMYtmj+YkXXPI0e00dehCW09JQf0Wxs99mdoyKVnflUuTQQw75wobj8eikCO3Q6HsAc1IyPF+cpXThdFpmfggG0NQ80s71omtVNvgFnsPjeywsXg8znQisp22Lp6GYUghDln5maRYinvMdOFnl5O9zhzyQJWrKU7daeQMLfJI+fFiELdCwNvFDyfA/fj70iebKuJvz0PMuxN0mtp3W3U6FadzcTnXlotSwK8I0GPsMFwvSPRFqkm10T4RF9C2bLaYXyV7tpj7upwL1bzd0MxISCOYNSqTUTgK294iEt9bTvf24JjN2UNZFNoQaPtg6gKICJoLSce2Ef+ud0yvQsjPheq46M23nSrcu1VnAL1pIG5fw+FnNy4yIZUvWRR51bLuYhomDNNmVa2Fxfcmq2vafirR0IS84mdxPyBz2KFI0XiaEgBieNMEGFCx7+DkqkkThxqNWZJg4f5RdtUpGotfH5YE93Yiz3VKOkYcgPvPGPw/AdL2LPJ7FWRCbUuxJdnGJj2D6HPrgkv+Vu2RUMdOhFXVSCz1J1R1Dby9iqPfUK/quv4bFWFHZQ==
+sidebar_class_name: 'post api-method'
 info_path: docs/api/variables/variables-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Create a new variable"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new variable'}></Heading>
 
-<MethodEndpoint
-  method={"post"}
-  path={"/variables"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'post'} path={'/variables'} context={'endpoint'}></MethodEndpoint>
 
 Create a new environment variable
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
-<ParamsDetails
-  parameters={undefined}
->
-  
-</ParamsDetails>
+<ParamsDetails parameters={undefined}></ParamsDetails>
 
 <RequestSchema
-  title={"Body"}
-  body={{"content":{"application/json":{"schema":{"type":"object","required":["name","type"],"properties":{"name":{"type":"string","description":"Name of the variable","example":"API_KEY"},"value":{"type":"string","description":"Value of the variable","nullable":true,"example":"my-secret-key"},"type":{"type":"string","description":"Type of the variable (e.g., string, number)","example":"string"}},"title":"VariableInput"}}},"required":true}}
->
-  
-</RequestSchema>
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            format: 'uuid',
+                            description: 'Unique identifier for the variable',
+                            example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                        },
+                        name: { type: 'string', description: 'Name of the variable', example: 'API_KEY' },
+                        value: { type: 'string', description: 'Value of the variable', nullable: true, example: 'my-secret-key' },
+                        type: { type: 'string', description: 'Type of the variable (e.g., string, number)', example: 'string' },
+                        createdDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the variable was created',
+                            example: '2024-08-24T14:15:22Z'
+                        },
+                        updatedDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the variable was last updated',
+                            example: '2024-08-24T14:15:22Z'
+                        }
+                    },
+                    title: 'Variable'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Variable created successfully","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the variable","example":"cfd531e0-82fc-11e9-bc42-526af7764f64"},"name":{"type":"string","description":"Name of the variable","example":"API_KEY"},"value":{"type":"string","description":"Value of the variable","nullable":true,"example":"my-secret-key"},"type":{"type":"string","description":"Type of the variable (e.g., string, number)","example":"string"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the variable was created","example":"2024-08-24T14:15:22Z"},"updatedDate":{"type":"string","format":"date-time","description":"Date and time when the variable was last updated","example":"2024-08-24T14:15:22Z"}},"title":"Variable"}}}},"400":{"description":"Invalid request body","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error message","example":"An error occurred"},"error":{"type":"string","description":"Error type","example":"Bad Request"},"statusCode":{"type":"integer","description":"HTTP status code","example":400}},"title":"Error"}}}},"422":{"description":"Validation error","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error message","example":"An error occurred"},"error":{"type":"string","description":"Error type","example":"Bad Request"},"statusCode":{"type":"integer","description":"HTTP status code","example":400}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error message","example":"An error occurred"},"error":{"type":"string","description":"Error type","example":"Bad Request"},"statusCode":{"type":"integer","description":"HTTP status code","example":400}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Variable created successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid',
+                                description: 'Unique identifier for the variable',
+                                example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                            },
+                            name: { type: 'string', description: 'Name of the variable', example: 'API_KEY' },
+                            value: { type: 'string', description: 'Value of the variable', nullable: true, example: 'my-secret-key' },
+                            type: { type: 'string', description: 'Type of the variable (e.g., string, number)', example: 'string' },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the variable was created',
+                                example: '2024-08-24T14:15:22Z'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the variable was last updated',
+                                example: '2024-08-24T14:15:22Z'
+                            }
+                        },
+                        title: 'Variable'
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid request body' },
+        '422': { description: 'Validation error' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

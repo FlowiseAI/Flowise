@@ -1,63 +1,39 @@
 ---
 id: ping-server
-title: "Ping the server"
-description: "Ping the server to check if it is running"
-sidebar_label: "Ping the server"
+title: 'Ping the server'
+description: 'Ping the server to check if it is running'
+sidebar_label: 'Ping the server'
 hide_title: true
 hide_table_of_contents: true
-api: eJyVU01v2zAM/SsCz27sdN266rRsWIdsBdY1zYqhyEF1GFuoLWkSnQ8Y/u8DZa9N0h62ky2K5BPfe2xhiSH32pG2BiRca1MIKlEE9Gv0gqzIS8wfhV4JTUIH4RtjtCkgAevQK66bLkGC06aYxSJIgFQRQN7HICwS8BicNQEDyBZOs4w/h8B96SFAbg2hIU4m3FLqKqUNn0JeYq1ifOcQJATyfQluVe0qDjlrCui6rkvg7WuAU0Pojar+ToreWw+cXiOVlkcqkCABp6gECanrEfp0nq6FxlcgoSRyQaapcnpEJSoTNuhHSqfrMSTH/Hq7bHI+DLjQJcd9AqlCm+LkX/rN+tzXm8k0rWyuqtIGkmdZlvETX+tyxVliiWusrKvR0FO/BQ+cN17Tbsak9wo+oPLoJw0T86QBIzI/MQ3kkATJ8HNpfa0IJHy9u33xgMn1VDziTqiGSjSk8+grsdFUipXe4lKsVdWgOLsY35TvT+tiPtef3pj1z+Zcb66+b84vth+ru3fq5HI13n6bzH+EX1FKbVY2PlFTNEW09+R6+pJHzbbhK7Gyvvf8M68ikKImQAIsfV8xHmWjbDCpyqNJjYqDT6Jgk6mYNc5Zzx46FHhfVPZsrTRfhz79w8E1T+FsoFqZPYijNT0ep31enf/a6EHJvWXrhre3wxo8rzSbis9t+6ACzn3VdRz+3aDfgbxfJLBWXqsH5v1+0SVQolqij3vziDvmKc/RMTtR2yPcxd4efvl8C133Bz6QmZ4=
-sidebar_class_name: "get api-method"
+api: eJyVU7GO2zAM/RWBsxv7inbR1AxtkaLDAWnRIcjAODxbOFtSKTq9wPC/F5TduyS9oZ1sUY+k+N7jCEdKNbsoLniwcO98Y6Qlk4hPxEaCqVuqH417ME6MS4YH751voIAQiVHzNkewEJ1vtjkJChBsEthdDsK+AKYUg0+UwI7wtqr0c914Tr1uUAcv5EXBQk9Sxg6d11OqW+oxx8+RwEISnlPoCfvYaSgG38A0TVMB719ruPFC7LH7MykxBwaF9yRt0JEaEiggorRgoYxzhxmu040wcAcWWpGYbFlidCtpCX36RbxCV57uoLjll8NxqPWw9IWpuK2TBBvnmzf/Um87Y18vZsuyCzV2bUhi31VVpU98rcpXRZkjnagLsScvz/X2OnA9sJPzVkmfFTwQMvF6UGKeNdCOyk+GgV1AUCw/nwL3KGDhy49vmWbnH0JOd5IFy9Zb32/+ntGppHplHgLPfnyZ2SRBGRIUoLLMGXeralUtBsI6G8hjftQ6k7nemO0QY2DV95r8S8LVTz06vU4z/MPVtU4RQ5Ie/UWLmxW6HWd8sfV/bdvC8sUiTMvbx8WiL+umgut5HA+Y6Dt306ThnwPxGexuX8AJ2eFBed/tpwJawiNx9vQjnZWnuqao7JywG2777i925PNHVfM3D213ZQ==
+sidebar_class_name: 'get api-method'
 info_path: docs/api/ping/ping-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Ping the server"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Ping the server'}></Heading>
 
-<MethodEndpoint
-  method={"get"}
-  path={"/ping"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'get'} path={'/ping'} context={'endpoint'}></MethodEndpoint>
 
 Ping the server to check if it is running
 
-<ParamsDetails
-  parameters={undefined}
->
-  
-</ParamsDetails>
+<ParamsDetails parameters={undefined}></ParamsDetails>
 
-<RequestSchema
-  title={"Body"}
-  body={undefined}
->
-  
-</RequestSchema>
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Server is running","content":{"text/plain":{"schema":{"type":"string","example":"pong"}}}},"500":{"description":"Internal server error"}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': { description: 'Server is running', content: { 'text/plain': { schema: { type: 'string', example: 'pong' } } } },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

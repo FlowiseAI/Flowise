@@ -1,71 +1,114 @@
 ---
 id: update-variable
-title: "Update a variable by ID"
-description: "Update a specific environment variable by ID"
-sidebar_label: "Update a variable by ID"
+title: 'Update a variable by ID'
+description: 'Update a specific environment variable by ID'
+sidebar_label: 'Update a variable by ID'
 hide_title: true
 hide_table_of_contents: true
-api: eJztV21v2zYQ/ivEfWoBOn6pk7T6NDdJMa/FlqVOiy4IBlo6WWwkUiUpO4ah/z4cKbvyS9Js6L7lk2XxXp67e466W0GCNjaydFIriOC6TIRDJpgtMZapjBmquTRaFagcmwsjxTRHNl2y8Tlw0CUaQarjBCKovPKnRgg4ODGzEN3AWs/CLQeLcWWkW0J0s4IpCoNmVLkMopvb+pZDKYwo0KGxXkASqlK4DDgoUSBEIBPgYPBbJQ0mEDlTIQcbZ1gIiFbgliVJWWekmkHNdyJcw6MAyB8ZQuve6mRJ2rFWDpWjR1GWuYx9eN2vlpRX+2709CvGbgvQTQDKgwiFZChPTqIlxRDFLs5dmL+LAplOmctwk3bggPeiKHPSG12O/35/8YUCnIu8eoLJTyR2wKaq8tw/Nqn87qNYdizGBl3nDpfkKTj4kaPJstzzw17g0eyIs6DCmaqKKZqXWyGtS0aOpPOv1tUaq7JyUNPRduX9C1tqZUN2B70e/TxQ88DQhNkqjtHatMrzJfD/XvTtysrkUG5SbQrhqD0qz9ydhlPyW4VMJqicTCUalmrzcNXjNDl+1cde5/UgjTv9Pr7pTOPhoHM8OBHp6enJMD0ZUqGeSfYjknGIDRIZzoU76G5TN6JMx0nf0tsYzv1dqRJGp2yRodqGsxCWNV62MAx6g2Gn97ozGE76w6h/HA0GfxGihp7/M6JcWLfuhCfAOtCN1Ig1h+GhXhuruchlwsbnTBvW3K5sqpMlK42ey8Q7/UkdV6C1YvYEtlwYow1bi29RXDH0hzqOK0P3Ss3Bv3mqVS/TNvlWJOwqBE7GrBOusmc6aeOUyuEMzZ7JXyeTSxY0WEwqLcPDXq9dDe99U4rhI9ee0o6lulLPmf/5mT8+3AQOjRI5s2jmaEKcz8n/ycmvORToMk2zJ40HPAyKEXQ3A2d3JZMaaOikOoSRsjI5RJA5V9qo2xWlPHIZCmUXaI6E7M77e+gujU6qmP40BYWa79qxTsykmnWeYu9jkD1sLOp2cx2LPNPWUew9gnjIygeSYgnOMdeln8/X9lpT9keiVGBNe9beFIQ8QjM+0/8gBLx5eLf+5Pz2ebIHYHQ5Zne4ZKJyGY0vgc1sIV3GUnmPCfNDAxu+6V9lrwfF7Ppanr1S80/VqVx8+GNx+ub+bf75RHTepf3796PrP+0X/7mhdrj6PpZfrImwnp03Y8lmKtkZIvj+EiBVqn3YO58yy0aX44OR0RxWCBUqdWgLsuQfjQ0q/aPeUa9pcRG7NlpPhdGYfazKUhvi6TZ12nQh4hdC0rEN4r9sHVN+Sm1dIVTLxWZt29vQtuJqrTf/dtNrEurw3nXLXEjl5xUKY9V0XXvN4xDJhFYfIjEdrVZTYfHa5HVNr79VaGgBvOUbJd+aibT0nECUitziI/BfXDVrwEvW3ugeANq8FGrZ4gxwILL4hbK+rTlkKBI0Hkg4OAvuOpNw1a0V965uauCgMYpjLN2jsretW+vymrpq2uyehb8rwYgF7ZNiETBqH73vYP9uBblQs8rf/xBMEinEdl/v9LEP6mAWVqsgMdF3qOp6kxRH/ykvdf0PuJGDfQ==
-sidebar_class_name: "put api-method"
+api: eJztV1tv2zYU/ivEeWoByrc5aaeneUsHeBsGo0k6bIEx0OKRzVYiGZJyagj678WhZMe3ZOnD3vIkiTx3nu/wUw0SfeaUDcpoSOHWShGQCeYtZipXGUO9Vs7oEnVga+GUWBTIFhs2vQIOxqITpDqVkEIVlT91QsAhiKWH9A62eh7mHDxmlVNhA+ldDQsUDt2kCitI7+bNnIMVTpQY0PkooCgqK8IKOGhRIqSgJHBweF8phxLS4Crk4LMVlgLSGsLGkpQPTuklNPwow214lAD5I0Pow89Gbkg7MzqgDvQqrC1UFtPrf/akXJ+6MYvPmAXgYB0VIyj0tKvkaSgccuNKEahSVUziqPZa3VfIlEQdVK7Qsdw4Fla4qztwwK+itAVZzXJ58cMQB8n7UZ4lwyH+mCyy8Si5GF2K/N27y3F+Oab026qdBnPo/E9RIjP50+4ms+m/v3/4myyuRVG9wOQnEjtjU1dFEV+7o3v0UW4Sj5nDkHzBDXlqHfyXo5uNPfHD3mBv2eOsVeFMV+UC3duDlB5bJHMoAsorEc66250b9XcSVIknMVxF2GjJaJc9rFAfhvMgPOu8HMQwGozGyeB9MhrfDMfp8CIdjf6hiFos/d8RFcIH1rl6QVh0IipEgR3KG1o9RGNc8NZo34JhNBjQ4wkcdu6Zr7IMvc+rotgAfwXiKxBfgfidQGw4jM9hbarXolCSTa+Ycay78djCyA2zzqyVRAlRd/wMTrUJLDeVjqIX590EdFoUzKNbo2PonHEx2BLDyhBFsFWEKN3nKfR3vKBfK9kAcQNSbG/+yhWQwioE69N+X1jVCysU2j+g6wnVXw9PCj1zRlYZfXQRQMOP7fgglkovk5fYu25lzxtL+/3CZKJYGR/S8WAwoBDPWfmDpJjENRbGRhq1tbdHhq5pnLUTa58S7fqNPELHcui7FQLevfy67cLf/rqJBacx+fGR2XzY9lM7EF82snaEaztxdgPnaD7wE1QcwPh8Dx8h60n8KZ2bWIijfvdsMpueFHsym8ZhXQrdnt05+uopE3S+VRn2Br1Bd+GILF4427xjc0ym7Lqy1jjq3MNm2m8gQm0pFG37Vvyng206FWt8KIXec7Hj2yfU+iCvPV76vRS9O5qAX0PfFkLpONQojbrD4T4/55AqSSyd2pq26nohPN66omlo+b5CR8x9zndKEaxSeXqXkOai8PhM+G8+dlzhLdun4k8E2i0KvdnrPuBAbRf/BJp5w2GFQqKLgbQbv7TuErqQ9hRPiARButWYZBna8KzsfG+OzW5vCHzdT0NpJKk48UB/JuKhjdHE7COm41oNhdDLSixJtjVJTSEOkX6E7JjU2SrUdStxY76gbppdUQJ9U12a5hut/aYe
+sidebar_class_name: 'put api-method'
 info_path: docs/api/variables/variables-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Update a variable by ID"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Update a variable by ID'}></Heading>
 
-<MethodEndpoint
-  method={"put"}
-  path={"/variables/{id}"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'put'} path={'/variables/{id}'} context={'endpoint'}></MethodEndpoint>
 
 Update a specific environment variable by ID
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
 <ParamsDetails
-  parameters={[{"in":"path","name":"id","required":true,"schema":{"type":"string"},"description":"Variable ID"}]}
->
-  
-</ParamsDetails>
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Variable ID' }]}
+></ParamsDetails>
 
 <RequestSchema
-  title={"Body"}
-  body={{"content":{"application/json":{"schema":{"type":"object","required":["name","type"],"properties":{"name":{"type":"string","description":"Name of the variable","example":"API_KEY"},"value":{"type":"string","description":"Value of the variable","nullable":true,"example":"my-secret-key"},"type":{"type":"string","description":"Type of the variable (e.g., string, number)","example":"string"}},"title":"VariableInput"}}},"required":true}}
->
-  
-</RequestSchema>
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            format: 'uuid',
+                            description: 'Unique identifier for the variable',
+                            example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                        },
+                        name: { type: 'string', description: 'Name of the variable', example: 'API_KEY' },
+                        value: { type: 'string', description: 'Value of the variable', nullable: true, example: 'my-secret-key' },
+                        type: { type: 'string', description: 'Type of the variable (e.g., string, number)', example: 'string' },
+                        createdDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the variable was created',
+                            example: '2024-08-24T14:15:22Z'
+                        },
+                        updatedDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the variable was last updated',
+                            example: '2024-08-24T14:15:22Z'
+                        }
+                    },
+                    title: 'Variable'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Variable updated successfully","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the variable","example":"cfd531e0-82fc-11e9-bc42-526af7764f64"},"name":{"type":"string","description":"Name of the variable","example":"API_KEY"},"value":{"type":"string","description":"Value of the variable","nullable":true,"example":"my-secret-key"},"type":{"type":"string","description":"Type of the variable (e.g., string, number)","example":"string"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the variable was created","example":"2024-08-24T14:15:22Z"},"updatedDate":{"type":"string","format":"date-time","description":"Date and time when the variable was last updated","example":"2024-08-24T14:15:22Z"}},"title":"Variable"}}}},"400":{"description":"Invalid ID or request body provided","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error message","example":"An error occurred"},"error":{"type":"string","description":"Error type","example":"Bad Request"},"statusCode":{"type":"integer","description":"HTTP status code","example":400}},"title":"Error"}}}},"404":{"description":"Variable not found","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error message","example":"An error occurred"},"error":{"type":"string","description":"Error type","example":"Bad Request"},"statusCode":{"type":"integer","description":"HTTP status code","example":400}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error message","example":"An error occurred"},"error":{"type":"string","description":"Error type","example":"Bad Request"},"statusCode":{"type":"integer","description":"HTTP status code","example":400}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Variable updated successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid',
+                                description: 'Unique identifier for the variable',
+                                example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                            },
+                            name: { type: 'string', description: 'Name of the variable', example: 'API_KEY' },
+                            value: { type: 'string', description: 'Value of the variable', nullable: true, example: 'my-secret-key' },
+                            type: { type: 'string', description: 'Type of the variable (e.g., string, number)', example: 'string' },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the variable was created',
+                                example: '2024-08-24T14:15:22Z'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the variable was last updated',
+                                example: '2024-08-24T14:15:22Z'
+                            }
+                        },
+                        title: 'Variable'
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid ID or request body provided' },
+        '404': { description: 'Variable not found' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

@@ -1,0 +1,101 @@
+---
+description: Use this information when answering questions abut how the embeded chatbot works
+globs: 
+alwaysApply: false
+---
+# Embed Package (aai-embed)
+
+## Overview
+The embed package provides a JavaScript library that allows TheAnswer chatbots to be embedded into external websites. It creates a standalone widget that can be easily integrated with any web application.
+
+## Purpose in the Monorepo
+This package enables integration of TheAnswer chatbots with external websites, increasing the platform's reach and usability. It serves as the distribution mechanism for allowing customers to embed chatbots into their own web properties.
+
+## Key Features
+- Standalone chatbot widget
+- Customizable UI (themes, colors, positions)
+- Event-based API for integration
+- Cross-browser compatibility
+- Mobile-responsive design
+- File upload capabilities
+- Markdown rendering
+- Streaming responses
+
+## Technical Details
+
+### Technologies Used
+- **Solid.js**: For UI rendering (lightweight alternative to React)
+- **Rollup**: For bundling
+- **Tailwind CSS**: For styling
+- **TypeScript**: For type-safe development
+- **Axios**: For API calls
+
+### Dependencies
+- **@ts-stack/markdown**: For markdown rendering
+- **axios**: For API requests
+- **form-data**: For handling file uploads
+- **solid-js** and **solid-element**: For UI rendering
+- **zod**: For validation
+- **device-detector-js**: For device detection
+
+### Project Structure
+The embed package is structured to provide:
+- A main entry point for initialization
+- UI components built with Solid.js
+- Theme configuration
+- API client for communication with TheAnswer server
+- Event system for external communication
+
+### Build Process
+Uses Rollup for creating optimized browser bundles with different build targets (ESM, UMD).
+
+## Development Guidelines
+
+### Coding Standards
+- Use TypeScript for type safety
+- Follow Solid.js best practices
+- Minimize bundle size
+- Handle errors gracefully
+
+### Integration Guidelines
+- Provide clear documentation for embedding
+- Support common integration scenarios
+- Ensure backward compatibility when possible
+
+### Testing
+- Test across different browsers
+- Validate mobile responsiveness
+- Ensure accessibility compliance
+
+## Scripts and Commands
+- `dev`: Runs development server with hot reload
+- `build`: Creates production-ready bundle
+- `lint`: Runs ESLint
+- `format`: Formats code using Prettier
+
+## Usage Example
+```html
+<script src="https://cdn.example.com/aai-embed.js"></script>
+<script>
+  window.AaiEmbed.init({
+    chatflowId: 'your-chatflow-id',
+    apiHost: 'https://your-api-host',
+    theme: {
+      primaryColor: '#4CAF50',
+      position: 'bottom-right'
+    }
+  });
+</script>
+```
+
+## Browser Support
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+- Mobile browsers
+
+## Performance Considerations
+- Lightweight bundle size
+- Lazy loading of resources
+- Optimized rendering 

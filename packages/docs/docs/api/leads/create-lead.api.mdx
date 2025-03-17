@@ -1,71 +1,120 @@
 ---
 id: create-lead
-title: "Create a new lead in a chatflow"
-description: "Create a new lead associated with a specific chatflow"
-sidebar_label: "Create a new lead in a chatflow"
+title: 'Create a new lead in a chatflow'
+description: 'Create a new lead associated with a specific chatflow'
+sidebar_label: 'Create a new lead in a chatflow'
 hide_title: true
 hide_table_of_contents: true
-api: eJztWE1z2zYQ/SsYXEtaEi1bEk9RYmdGqRu7/kim9Wg6S2IpIiEBBgAtazT8750FJZuylcbt9JCDT5bBxe4D3r7FAmvuYGF5fMsLBGH5POAW09pIt+Lx7ZonCAbNtHY5j2/nzTzgukIDTmo1EzzmqUFweIYgeMAF2tTIij7ymL/znxgwhUtG3hlYq1MJDgVbSpczYLbCVGYyZWkOLiv0kgfc4LcarXurxYrHa55q5VA5+glVVcjUB+99sRRkzW2aYwn0y60q5DHXyRdMHQ94ZQiqk2jpqxQdG+uMVAse8EybEhyPeV3L5yu4UfJbjUwKVE5mEg3LtGEuR78cHnC8h7IqyGOaiaPDAfbDcZSl4WCAkzBJh1F4FB1DNhodD7PjIW8CrqDEfUB2A3+EEpnO9of6oHPFTjSSOyxBFj/2d0pmDIQwaO13HX/RuToQGt9shg5SXVKQKtfqBaAvyIypukzQfDfGL4PocHh0PBpP+uR6S/t+dnb9z062XrezHkIwaZ8m107UUTrEcTKCcJRMIBwmQxFOskMMIxGNswEmCP1oC2f2r6Ewi9ZKrV4MR4ySfnIkxuH4CI/DYRZBOEkHWTgRE+hjhEl2nHg4XkHiBNze7X9IXgEOQydLfAb0xCtQCUZf2TLHDsglWLaJsIMu6kfDsD8Oo+H1YBgPjuIo+pM3TcCddN7Aq72hEZKqNCh47EyNfsBWWtlWclG/T392EdHkbVhm6zRFa7O6KFY8eJX6q9Rfpf5TSr0J+HCfmmfqDgop2ObMZgkd2v+bkFMt9u7G4wI+Tc9mJ9Pr2fnHv04vL88vaStLtBYWP5i4BS5VVTsmwAFNFehAFrYzFYwBWpF0WNofI84kFnuT6jFyq+OX4vytpl2lLqrFi115e2Y6bJ0ao82Wrih6Ttcn8uG5YOhtX6n6Cag62q8sh0ZBwSyaOzSvfP0sfHn3Ltd0+6m09UCBrke8116h6AZFlFl/gapNwWOeO1fZuNeDSh64HEHZJZoDkL27wfPD1WhRp16krSPeBE/9WAcLqRbhS/xdtbb7ncW9XqFTKHJtXTzs9/sEcZ+XM7JiAu+w0FWJyj3461wZryj7Wrq6F8cHFigi7Y834/HGiAebH++3p9yHz9fPAEwvZuwrrhjULqcmrU389iKZyXsURGONbDgZXObjqFzc3Mh3h+ruUz2Sy7Pz5Why/7b4fAzh+2xw/+v05nf7hz/qSDmXj1fO021+tH3ky7q9bbP32LA99Gv7W62HTmunS9ptkl7Wyjx2Mi/rNZ60Gt9pAQIuVaY9c51OwLLpxWwvMdQsl6DaRPMyYFI9NG+kCRJEaz846B/0N5UMUl/JNrs39Wk8nbGruqq0IWntpn031TtbbFvzNzufiVvSZwmqE+L5o4RUDLrPDzuL6zw//Of3jE3uO7x3vaoAqWh7/brWm8rReXwhHdLAep2AxRtTNA0Nf6vR0IPMPOB3YCQkxMntvAl4jiDQ+FLzFVcEswUcXlNYMi9qX22fHhZUB9oZ0zTFyv2j7bxT9C7Or0idyeZ9pvQnCTfg325gyWPO6ZWIZvtK4MfWvAC1qH1R5q1PIgh268OTeuBXtT0t1KqDcL1uLa71V1RNw4PNUhz9z5t50zR/A19FTeo=
-sidebar_class_name: "post api-method"
+api: eJztV01z2zYQ/SuYvZa0KEayJJ7i1umMMpnWUzvtTD06LImliYQEGAC04tHwv3cW+jBlKa3bUw85iQIe3i4W+xaLDXh8cJDdQ00oHawicFR0VvknyO43kBNasledryC7X/WrCExLFr0yeikhg8ISevpAKCECSa6wquVJyOCnMCVQaFoLZhfonCkUepJirXwlULiWClWqQhQV+rI2a4jA0peOnP/RyCfINlAY7Ul7/sS2rVURjI8+OTayAVdU1CB/+aeWIAOTf6LCQwStZVe9IsezSg4wzlulHyCC0tgGPWTQdep0Bx+1+tKRUJK0V6UiK0pjha8obAcioK/YtDUzFqWcvhlTEs/TsojHY1rEeTFJ42l6ieVsdjkpLyfQR6CxoXOOHBv+BRsSpjxv6r2ptLg2xHTUoKr/me8dwwRKacm5bxJ/MpW+kIbe7oYuCtOwkbYy+hVO3zBM6K7JyX7Txg/j9M1kejmbLxKm3h/7+dM55l9e71n3qw4mhHIvk+vI6qyY0DyfYTzLFxhP8omMF+UbilOZzssx5YRJundn+a9dEY6cU0a/2h05y5N8KufxfEqX8aRMMV4U4zJeyAUmlFJeXubBnaAgeY3+bPgPySvRU+xVQyeOXgcFail4VqwrGji5Rid2Fo68S5N0EifzOJ3cjSfZeJql6Z/Q9xF45QMgqL3nEZaqsiQh87ajMOBao91WcmmS8M+xR7x4b1a4rijIubKr6yeIvkv9u9S/S/1/KfU+gsk5NS/1I9ZKit2dLXK+tBmcpqfg3xkaJC3IWmMZOD3P6slqrIUj+0h2j+4jaMhXhvuO1rggfOTGBEbb5oV7F17gQuvS2RoyqLxvXTYaYasufEWo3ZrsBarR4/g0ra2RXREc3BJBH73kcR4flH6IX8N3u8WeJ8tGo9oUWFfG+WySJAm7eI7lA6OEpEeqTduQ9ge+QbN2y7VxW/6GLdshk9gixyfAINuBINp9/LzPr/d/3IVAc8397bkRe7dPmW11fV0N3JfA5zJ2qGLnC9Ch/hzVjuPS8TqBP+v7dQp8IcBvCCMCpUsTojrQhxNXN8uTU7u6WYYrpEG9TYKQokLpQ0njfOVk3eLHF8lFsrsDsQh34C56VyHFrpbitmtbYzntj1NymIaDELst/O3RNJ8ta6dBPTBx2qorLXDYlB9tbtCU/+cuf5eXnr76UVuj0hzesK/NTtWDJwlrhAc2mxwdfbR13/Pwl44sP1NWETyiVZjzmdyv+ggqQkk2lIHP9MRubh2O79gsw+uOzZ+0GazR7YqroqDW/y12NShIN7/e3rGcdq+WxkheYzG8aHANGQC/nXh1UGkY20CN+qHDh3AnB04+IDzW7guthl3tplA/DTzcbLaIO/OZdN9DtNuK5//Qr/q+/wuegJ/8
+sidebar_class_name: 'post api-method'
 info_path: docs/api/leads/leads-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Create a new lead in a chatflow"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new lead in a chatflow'}></Heading>
 
-<MethodEndpoint
-  method={"post"}
-  path={"/leads"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'post'} path={'/leads'} context={'endpoint'}></MethodEndpoint>
 
 Create a new lead associated with a specific chatflow
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
-<ParamsDetails
-  parameters={undefined}
->
-  
-</ParamsDetails>
+<ParamsDetails parameters={undefined}></ParamsDetails>
 
 <RequestSchema
-  title={"Body"}
-  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the lead","example":"cfd531e0-82fc-11e9-bc42-526af7764f64"},"name":{"type":"string","description":"Name of the lead","example":"John Doe"},"email":{"type":"string","description":"Email address of the lead","example":"john.doe@example.com"},"phone":{"type":"string","description":"Phone number of the lead","example":"+1234567890"},"chatflowid":{"type":"string","description":"ID of the chatflow the lead is associated with","example":"7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02"},"chatId":{"type":"string","description":"ID of the chat session the lead is associated with","example":"d7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the lead was created","example":"2024-08-24T14:15:22Z"}},"title":"Lead"}}},"required":true}}
->
-  
-</RequestSchema>
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            format: 'uuid',
+                            description: 'Unique identifier for the lead',
+                            example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                        },
+                        name: { type: 'string', description: 'Name of the lead', example: 'John Doe' },
+                        email: { type: 'string', description: 'Email address of the lead', example: 'john.doe@example.com' },
+                        phone: { type: 'string', description: 'Phone number of the lead', example: '+1234567890' },
+                        chatflowid: {
+                            type: 'string',
+                            description: 'ID of the chatflow the lead is associated with',
+                            example: '7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02'
+                        },
+                        chatId: {
+                            type: 'string',
+                            description: 'ID of the chat session the lead is associated with',
+                            example: 'd7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b'
+                        },
+                        createdDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the lead was created',
+                            example: '2024-08-24T14:15:22Z'
+                        }
+                    },
+                    title: 'Lead'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Lead created successfully","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the lead","example":"cfd531e0-82fc-11e9-bc42-526af7764f64"},"name":{"type":"string","description":"Name of the lead","example":"John Doe"},"email":{"type":"string","description":"Email address of the lead","example":"john.doe@example.com"},"phone":{"type":"string","description":"Phone number of the lead","example":"+1234567890"},"chatflowid":{"type":"string","description":"ID of the chatflow the lead is associated with","example":"7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02"},"chatId":{"type":"string","description":"ID of the chat session the lead is associated with","example":"d7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the lead was created","example":"2024-08-24T14:15:22Z"}},"title":"Lead"}}}},"400":{"description":"Invalid request body","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","example":"VALIDATION_ERROR"},"message":{"type":"string","example":"Invalid input data"},"details":{"type":"array","items":{"type":"object","properties":{"field":{"type":"string","example":"email"},"message":{"type":"string","example":"Must be a valid email address"}}}}},"title":"Error"}}}},"422":{"description":"Validation error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","example":"VALIDATION_ERROR"},"message":{"type":"string","example":"Invalid input data"},"details":{"type":"array","items":{"type":"object","properties":{"field":{"type":"string","example":"email"},"message":{"type":"string","example":"Must be a valid email address"}}}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","example":"VALIDATION_ERROR"},"message":{"type":"string","example":"Invalid input data"},"details":{"type":"array","items":{"type":"object","properties":{"field":{"type":"string","example":"email"},"message":{"type":"string","example":"Must be a valid email address"}}}}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Lead created successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid',
+                                description: 'Unique identifier for the lead',
+                                example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                            },
+                            name: { type: 'string', description: 'Name of the lead', example: 'John Doe' },
+                            email: { type: 'string', description: 'Email address of the lead', example: 'john.doe@example.com' },
+                            phone: { type: 'string', description: 'Phone number of the lead', example: '+1234567890' },
+                            chatflowid: {
+                                type: 'string',
+                                description: 'ID of the chatflow the lead is associated with',
+                                example: '7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02'
+                            },
+                            chatId: {
+                                type: 'string',
+                                description: 'ID of the chat session the lead is associated with',
+                                example: 'd7b0b5d8-85e6-4f2a-9c1f-9d9a0e2ebf6b'
+                            },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the lead was created',
+                                example: '2024-08-24T14:15:22Z'
+                            }
+                        },
+                        title: 'Lead'
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid request body' },
+        '422': { description: 'Validation error' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

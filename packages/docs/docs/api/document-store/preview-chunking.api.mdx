@@ -1,71 +1,166 @@
 ---
 id: preview-chunking
-title: "Preview document chunks"
-description: "Preview document chunks from loader"
-sidebar_label: "Preview document chunks"
+title: 'Preview document chunks'
+description: 'Preview document chunks from loader'
+sidebar_label: 'Preview document chunks'
 hide_title: true
 hide_table_of_contents: true
-api: eJztWG1v2zYQ/ivEfdoAxS9puq76NNdpgHTFmtXJiiEwClo6W2xkUiUpO57h/z4cSdmSrTjJVmz7sHxIFOn4HHkvz91xDZbPDMS3kKqknKO0J8YqjTCOwGBSamFXEN+uYYJcox6UNoP4drwZR5CiSbQorFASYrjSuBC4ZBUMS7JS3hk21WrOcsVT1BCBKlBzWnGZQgyFXzMkSSFnEIHGryUa+0alK4jXkChpUVp65EWRi8St7X4xpHINJslwzunJrgqEGNTkCyYWIig0abICDX0VaU3GWO11TZWecwsxlKVIYf88N1J8LZGJFKUVU4GaTZVmNsPdCZ2hdmfDez4vclLhX33un744ewmbKPx/2bqLptbLc6amTksLbJFOd2i/8Dk+jkdSRxCvzi/Ye/96CzxUcipmbUZtQnu50rtza5xDJWswqtQJIWXWFibudsO3TqLm3cqaHXe6TQSmyIW1zzWXxXvLqqWNM2qKYiMWCDXw51vvYQUfKwVsmHHNE4uaXZP0qJKuKf571n1wE2tw6TYSfyDE/V6vF/kXHxaoc15AfNrrkXGnIvcpEbRzrfnqQPkFSTGr2CQ4lNJDWJybfzrXaL8NY9OLXWLJZ7vxALDQKi0T+5mYR2ikUDSdkGke9jH461VxBN4jFZx48zGkK24zMnsrUrcsyBeme2zHxgXAVo+QFmcuUpqKKE7qW2ZCssnKoqlr7PdOzzZRnYOP737oBRu43024wR/OGMpEpZh+3ziR/xY+VWooSsPJUipLzsXBFeMIrLBu7XmgjRFxsKcwilrY7K/fcm+DWapMeARR6VDW9nGtLtG9MIWSxkf+aa9Hf/YsXSYJGjMt83zFQr0LpRGib1XfAt5hWv8rOVsxesPXqUp2aVvwGQ7/Yli1ol9nwuzqsiptLiQxWIasniVui6rUTOKShTTqdDq0pTlannLbauzmfgZpKuiR56xadPTotfr3YOZ6k0Dcj4CXNlMaYninMsnOVQjp/Sh1eWKV5flw3/m7pK+lMlm91m0NVdmwfcualxv3E8FZW1xfygXPRcpCw8Ym1LF9u4BW6ROI963WSjMnWw8G4bf2OWzNe9cYZ+CnQVbizRDD7WGX3LCghdBTtFzkrXn2YOigU1StbITLVGBO3XFgPmFMiVUVE4ZtSagRF27j4B32st1hFjVpNqgXqP0G/vfYf8Fjnn4y5UYiZZxxXb8A3eZQ1vXFrBsymUqac6ZxE1qp81qPzQvRsRlyaZaoO1x0F/3DfsPzEXWYHgg20T6OsXwm5OzkKXgjL9sOFne7uUp4nilj47Ner0dbbEN5T1IsxQXmqvCDVsCrzaQjiksfevXJdOtP0kj2cWLUazghiMLDRVXb3n26PnT61SW7wxUjKqbq5lOCLYXN2FTcY8oWPC+Rnb3uf8x+PJ3Pbm7E8IVc/Fa+Esv3H5avXt+/yT/9wE8upv37nwc3v5rfHV1TTn3cDbhvdwFEBbg5NdaHRvAloj731Se3w8HtGQNXc96qDUv7s9ITxpy2KecJY8l2KrkNhqj1+FWLf6x0Bo9XddQnzqPNctUrU5dbY8EHmtLxJgIhp8pF2F4pZq5jZIOry9ZIot5gzqXPjObdgYlYovIcXQqaiHGZbiWIr9jAZduAgCnNPWi/0+v0AnPzxDF3MFIlzkZlUShNRNJM5noCE4XNuaDPxov/1PhMEUtsNOeypuKBa579k9eubp54MxS8SBNut8i5kBSbbvfr4NSDK6oq8GHb21A/T/xCwus1ufJG55sNvf5aoqabrHEEC64Fn5APb8mvGToQCr87XO06zhMa7MjylOzUVO+XR+I3v2KQJFjYo7LjGslffRgR60zCLdfc1U7QnBidfsfgrspcVJCAe7eGnMtZ6YoieExyEW/y3h7PuVNVQ4Fc1Xa4XnuJa3WHcrOBKBzF0v8U8JvNn5ox+3U=
-sidebar_class_name: "post api-method"
+api: eJztWG1v2zYQ/ivEfZZjx81Lq0/LEndI0WZG7aLoAmOgpZPFViJVkkrqGvrvw5GSLdlOnHTFtg/rh0aWjs/d8R7eC1dg+cJAeAuxisocpe0ZqzTCLACDUamFXUJ4u4I5co36orQphLezahZAjCbSorBCSQhhrPFO4D1rYFiUlvKLYYlWOcsUj1FDAKpAzWnFdQwhFH7NJUkKuYAANH4t0dhfVbyEcAWRkhalpUdeFJmI3Nr+Z0MqV2CiFHNOT3ZZIISg5p8xshBAoUmTFWjoq4hbMsZqrytROucWQihLEcO2Px+k+FoiEzFKKxKBmiVKM5vixkO3UY1vVQD+6Xqvsi749RVTiQPbXn3Dczy8nqQeQrhUMhGLfZvSxfBypQ/H2rkNmikyYe1z/bH4zbJmaRvm+Y49CPX3PNyBtcryzHHQtDBlmc8dZbuYUxJm/iMZ6lneguH6h1C45pFF7ZCM5bY0+zYLZZnTWR29G08/QQCTTzeX9Z/rm9/oaXrxdgQB3Iw+QgAfxpPR+6n/4p9HV7BzcidOXbPrD7Lb/X4eGbpYBJKIDNueca35EgIQFnPzTx9kMoaMks+mZrMyFzmONSbi2+H1767fjVjhhLdhjPiOh0kzEd93DPhXqdIYURaOJY/HJuYWe1bkuOPXFbfIuIwZfWX3Kco1Orvnhq3hKzplwmak4Kqm1oSY9daR9LUzhzZFlTp6QkQnTu4g8SONjjs8Owx5uZZl3BgVCW4xZvfCpo/r0JguY03CLR1zpTLkckfJxxRtiu18zVJu2BxRshZQFTQF9scwhWFCshqC5SrGFqTLl5eq9MX5ceLebGXLXdgDgVW67i6gqirfJAhNW2V1ie6FKZQ0PkcMBwP6sxXqMorQmKTMsuVad527g5/VZkTbNeSZ2a3gC7zcmLJzor/xvHB7NE0pNsYFq7a9YTFhHLnUhJbH3O41m8exIA95Nu4Y0NVYtVSugJc2VRpCeKNSya6UO8fckvxwMDzpDV72hic+Ptuh9PHdW2WFtLhwlFmrOh4cYNmeNaeV+xfAyb7gX8s7nomY1c0lm1N3+fOiTgw+mBhGWivNnGw7ksKb9mdtmg+cMXzxZMhGvMsPXDtLGbTWQugxWi6yvWTsol+sOcLQKWpWdliRCMyok3clNABhTIlNrRSGrU9qhxfOcPABO90fMIuaNBvUd6i9Af9H7L8QMZ9ZUuXGN2Xc5nKaCaHfHSD7vor0mxJE4yQF07hpstQZhJBaW5iw3+eFOLIpcmnuUR9x0b873vFurFVcRq6T90BQBds4xvKFkIveU/AmXnY/WNjvZyriWaqMDU8GgwGZuA/lLUmxGO8wU4Wv7DVea36eEC899dpT9DqepJH2x4lRjXZCENQPr5sW6s3HqUulxPf3m0F5tAku9cfwIuEvT5Ozk97p+fF57+T0bNibv0ii3jB6dfYiOTvjCT+D9rS6oWt7Bt1+u566tmbDjVx31Nt930bolINBd3oabPradfu6nj5araWfJW6f57bcMq7dwrdMdh35PkM2zW5d9857w1fT49Pw9DgcvjwanB//4YNfN6EbzHYfuXnb7vyonWk1bZ2f7VJIFVLIRDkObRVb5hondjG+3k0Q42s3++Rceu5321ETsEhlGbpDZgLXkjcSrme7cOfpgoDpIHvQ46PB0aDOzTxyubne4kacTcqiUJpSRfe4to8oJamcC7c1XvyXzmfiPeWbnMuWigcunbY9b10kPfGeqj6ZdFfQLzIupJtzdObbNHcHtn1h1pwT2ERwFgBlEBJerebc4AedVRW9/lqipnu1WQB3XAs+pxjezqoAUnQgROsvuPS3GGR6b0omkXjmEvZOAaQM5ldcRBEW9lHZWSuNj3+fTCnZ1HduriMPQXPK2fR/CO7izrGCBNy7FWRcLkpX9sBjUoh4N7NtZTLnVdMby2XLwtXKS0zVF5RVBUHtiqXfUM2qqvoLjukb2A==
+sidebar_class_name: 'post api-method'
 info_path: docs/api/document-store/document-store-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Preview document chunks"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Preview document chunks'}></Heading>
 
-<MethodEndpoint
-  method={"post"}
-  path={"/document-store/loader/preview"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'post'} path={'/document-store/loader/preview'} context={'endpoint'}></MethodEndpoint>
 
 Preview document chunks from loader
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
-<ParamsDetails
-  parameters={undefined}
->
-  
-</ParamsDetails>
+<ParamsDetails parameters={undefined}></ParamsDetails>
 
 <RequestSchema
-  title={"Body"}
-  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the document store loader","example":"loader_12345"},"loaderId":{"type":"string","description":"ID of the loader","example":"pdf"},"loaderName":{"type":"string","description":"Name of the loader","example":"PDF Loader"},"loaderConfig":{"type":"object","description":"Configuration for the loader","example":{"source":"https://example.com/document.pdf"}},"splitterId":{"type":"string","description":"ID of the text splitter","example":"recursive"},"splitterName":{"type":"string","description":"Name of the text splitter","example":"Recursive Character Text Splitter"},"splitterConfig":{"type":"object","description":"Configuration for the text splitter","example":{"chunkSize":1000,"chunkOverlap":200}},"files":{"type":"array","description":"Files to be loaded","items":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the file","example":"file_12345"},"name":{"type":"string","description":"Name of the file","example":"product_requirements.pdf"},"type":{"type":"string","description":"Type of the file","example":"pdf"},"path":{"type":"string","description":"Path to the file","example":"/uploads/product_requirements.pdf"},"size":{"type":"integer","description":"Size of the file in bytes","example":1024},"content":{"type":"string","description":"Content of the file (base64 encoded)","example":"base64encodedcontent"}},"required":["name","type"],"title":"DocumentStoreLoaderFile"}}},"required":["loaderId","splitterId","files"],"title":"DocumentStoreLoaderForPreview"}}},"required":true}}
->
-  
-</RequestSchema>
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', format: 'uuid', description: 'Unique identifier for the document store loader' },
+                        loaderId: { type: 'string', description: 'ID of the loader' },
+                        loaderName: { type: 'string', description: 'Name of the loader' },
+                        loaderConfig: { type: 'object', description: 'Configuration for the loader' },
+                        splitterId: { type: 'string', description: 'ID of the text splitter' },
+                        splitterName: { type: 'string', description: 'Name of the text splitter' },
+                        splitterConfig: { type: 'object', description: 'Configuration for the text splitter' },
+                        totalChunks: { type: 'number', description: 'Total number of chunks' },
+                        totalChars: { type: 'number', description: 'Total number of characters' },
+                        status: {
+                            type: 'string',
+                            enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                            description: 'Status of the document store loader'
+                        },
+                        storeId: { type: 'string', description: 'ID of the document store' },
+                        files: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string', format: 'uuid', description: 'Unique identifier for the file' },
+                                    name: { type: 'string', description: 'Name of the file' },
+                                    mimePrefix: { type: 'string', description: 'MIME prefix of the file' },
+                                    size: { type: 'number', description: 'Size of the file' },
+                                    status: {
+                                        type: 'string',
+                                        enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                                        description: 'Status of the file'
+                                    },
+                                    uploaded: {
+                                        type: 'string',
+                                        format: 'date-time',
+                                        description: 'Date and time when the file was uploaded'
+                                    }
+                                },
+                                title: 'DocumentStoreLoaderFile'
+                            }
+                        },
+                        source: { type: 'string', description: 'Source of the document store loader' },
+                        credential: { type: 'string', description: 'Credential associated with the document store loader' },
+                        rehydrated: { type: 'boolean', description: 'Whether the loader has been rehydrated' },
+                        preview: { type: 'boolean', description: 'Whether the loader is in preview mode' },
+                        previewChunkCount: { type: 'number', description: 'Number of chunks in preview mode' }
+                    },
+                    title: 'DocumentStoreLoaderForPreview'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Successfully preview chunks","content":{"application/json":{"schema":{"type":"object","properties":{"chunks":{"type":"array","items":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the document","example":"doc_12345"},"pageContent":{"type":"string","description":"Content of the document","example":"This document outlines the requirements for our new product..."},"metadata":{"type":"object","description":"Additional metadata for the document","example":{"source":"product_requirements.pdf","page":1,"author":"John Doe"}}},"title":"Document"}},"totalChunks":{"type":"integer","example":10},"previewChunkCount":{"type":"integer","example":5}}}}}},"400":{"description":"Invalid request body","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully preview chunks',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            chunks: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        pageContent: { type: 'string', example: 'This is the content of the page.' },
+                                        metadata: {
+                                            type: 'object',
+                                            additionalProperties: { type: 'string' },
+                                            example: { author: 'John Doe', date: '2024-08-24' }
+                                        }
+                                    },
+                                    title: 'Document'
+                                }
+                            },
+                            totalChunks: { type: 'integer', example: 10 },
+                            previewChunkCount: { type: 'integer', example: 5 }
+                        }
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid request body',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            code: { type: 'string', description: 'Error code', example: 'invalid_request' },
+                            message: { type: 'string', description: 'Error message', example: 'The request was invalid' },
+                            details: {
+                                type: 'object',
+                                description: 'Additional error details',
+                                example: { field: 'name', issue: 'Name is required' }
+                            }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>

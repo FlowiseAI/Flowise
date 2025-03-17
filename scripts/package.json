@@ -1,0 +1,13 @@
+{
+    "name": "theanswer-scripts",
+    "version": "1.0.0",
+    "description": "Utility scripts for TheAnswer project",
+    "private": true,
+    "scripts": {
+        "sync-openapi": "node sync-openapi-docs.js"
+    },
+    "dependencies": {
+        "chalk": "^4.1.2",
+        "js-yaml": "^4.1.0"
+    }
+}

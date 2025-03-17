@@ -31,7 +31,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/VariableInput'
+                            $ref: '#/components/schemas/Variable'
                 required: true
             responses:
                 '200':
@@ -42,22 +42,10 @@ paths:
                                 $ref: '#/components/schemas/Variable'
                 '400':
                     description: Invalid request body
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '422':
                     description: Validation error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         get:
             summary: List all variables
             description: Retrieve a list of all environment variables
@@ -77,10 +65,6 @@ paths:
                                     $ref: '#/components/schemas/Variable'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
     /variables/{id}:
         put:
             summary: Update a variable by ID
@@ -101,7 +85,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/VariableInput'
+                            $ref: '#/components/schemas/Variable'
                 required: true
             responses:
                 '200':
@@ -112,22 +96,10 @@ paths:
                                 $ref: '#/components/schemas/Variable'
                 '400':
                     description: Invalid ID or request body provided
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '404':
                     description: Variable not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         delete:
             summary: Delete a variable by ID
             description: Delete a specific environment variable by ID
@@ -146,39 +118,18 @@ paths:
             responses:
                 '200':
                     description: Variable deleted successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        example: true
                 '400':
                     description: Invalid ID provided
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '404':
                     description: Variable not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
 components:
     securitySchemes:
         bearerAuth:
             type: http
             scheme: bearer
             bearerFormat: JWT
-            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
     schemas:
         VariableInput:
             type: object

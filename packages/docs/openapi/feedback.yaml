@@ -42,16 +42,8 @@ paths:
                                 $ref: '#/components/schemas/ChatMessageFeedback'
                 '400':
                     description: Invalid input provided
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
     /feedback/{id}:
         get:
             tags:
@@ -105,10 +97,6 @@ paths:
                                     $ref: '#/components/schemas/ChatMessageFeedback'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         put:
             tags:
                 - feedback
@@ -138,22 +126,10 @@ paths:
                                 $ref: '#/components/schemas/ChatMessageFeedback'
                 '400':
                     description: Invalid input provided
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '404':
                     description: Feedback with the specified ID was not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
 components:
     schemas:
         ChatMessageFeedback:
@@ -204,4 +180,3 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
-            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY

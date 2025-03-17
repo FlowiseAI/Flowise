@@ -31,7 +31,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ToolInput'
+                            $ref: '#/components/schemas/Tool'
                 required: true
             responses:
                 '200':
@@ -42,22 +42,10 @@ paths:
                                 $ref: '#/components/schemas/Tool'
                 '400':
                     description: Invalid request body
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '422':
                     description: Validation error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         get:
             summary: List all tools
             description: Retrieve a list of all tools
@@ -77,10 +65,6 @@ paths:
                                     $ref: '#/components/schemas/Tool'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
     /tools/{id}:
         get:
             summary: Get a tool by ID
@@ -106,22 +90,10 @@ paths:
                                 $ref: '#/components/schemas/Tool'
                 '400':
                     description: Invalid ID provided
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '404':
                     description: Tool not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         put:
             summary: Update a tool by ID
             description: Update a specific tool by ID
@@ -141,7 +113,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/ToolInput'
+                            $ref: '#/components/schemas/Tool'
                 required: true
             responses:
                 '200':
@@ -152,22 +124,10 @@ paths:
                                 $ref: '#/components/schemas/Tool'
                 '400':
                     description: Invalid ID or request body provided
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '404':
                     description: Tool not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         delete:
             summary: Delete a tool by ID
             description: Delete a specific tool by ID
@@ -186,39 +146,18 @@ paths:
             responses:
                 '200':
                     description: Tool deleted successfully
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        example: true
                 '400':
                     description: Invalid ID provided
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '404':
                     description: Tool not found
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
 components:
     securitySchemes:
         bearerAuth:
             type: http
             scheme: bearer
             bearerFormat: JWT
-            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
     schemas:
         ToolInput:
             type: object
