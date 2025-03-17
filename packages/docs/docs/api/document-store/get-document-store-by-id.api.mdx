@@ -1,71 +1,82 @@
 ---
 id: get-document-store-by-id
-title: "Get a specific document store"
-description: "Retrieves details of a specific document store by its ID"
-sidebar_label: "Get a specific document store"
+title: 'Get a specific document store'
+description: 'Retrieves details of a specific document store by its ID'
+sidebar_label: 'Get a specific document store'
 hide_title: true
 hide_table_of_contents: true
-api: eJztV21v2zYQ/ivEfdoAKZEdx070aW6dFu7SNIudFV0cDLR4stnKokpSTgxD/304Unb81iVFh2Ef9sWirONzz/GO97IEyycG4jsQKilnmNvQWKUR7gMwmJRa2gXEd0sYI9eou6WdQnx3X90HINAkWhZWqhxiuEGrJc7RMIGWy8wwlTLOTIGJTGXCVvDMwbPxgklrWL8HAagCNSeYvoAYJmh7teyARF8t+gICKLjmM7SojaMjSWfB7RQCyPkMIQZJYhq/llKjgNjqEgMwyRRnHOIl2EVBUsZqmU8ggFTpGbcQQ1lKAdWuPb1tvv0ekM0aTaFyg4YQm1FEj+19gzJJ0Ji0zLIF0/WhiB3zIYBE5RZzSwC8KDKZuBM4/mwIZbnPW40/Y2LpIDSdl5WegxTP27Zr2m0uv5bIpMDcylSiZqnSzE5xnyU+8lmREXY7OuGd8Wkj5NhJwtY44uHZWfs0xNZpC0UzbXfabTpF74x9StsUrvgMKUCeUXqtlSgTy1bOcGe056vnlPWe3l6g0wWdOxGeZayoGYhNBoznYh3Z7h9DpDLFhYvP5whdekHGjVGJ5BYFe5B2eoBZ4B+CccPeDT5csTXiE+HlaKV5RFdjBFKMIB5B0mp28LR9Ho7PGjxstc95OG60kjDlnRMhTsccW+cjCEbOZW7Hde8N89xGUN1XZNPDFDXeGjwYZttWXWc8QcPcjgOmMGlYaVC80KRkym2aqQdn1Aho2XBsadUcgadnLLflwRPHvJxRWrt4fz38BAEMPl29rh/9q7e0GnYvLyCAq4uPEMDt9eDiZui/+PVFD/aS3MCpe0kQkbYqgDkmVmkXUq9VnsrJ88fo5UqfEdc30wN9V1CQGufWQuaYqBzd8SUOfgQxBUou8NGJCJWYEVTuTHE2RiFkPvkxxmuY76WrCsy53CM7UwIzJ2Dx0YZr+JALHkZRc0VfY6K0eM9zPkH9YyZ4KDbzWN9rh0YhzZ4Zpc6evsbHx5lKeDZVxsbtk875yohEI6WFHrcHk+k6vwtuMbRyhvtJj1t0eYq+0qXMD93JB25YrWvLjmbUPAmjRhg1ho1mHEVxFP1BvMpC/Gu8Mm4sqxUeJtccNlrxSU2u2iz+d74O3QdgpXWbtnoKqCqSb0Wt/QK+U/hzZVmqylz8czU7UeIFJfJCa6WZk900XuZznknxJ9mKxpJTZmgMn7wYciW+iTp00e4Q3dnXWnypde3cIbO20btCSFryjKFTtNq5oWgJqcSM2jznnwCkMSWuGgJp2NqFzkEr5znitdNOD3Vd/dyiJs0G9Ry1J/C/x/4LHnPm2qmqe3vXytMQAcfbE8ex/11KUQHNHuRH3+uXOoMYptYWlDB5IY/sFHluHlAfcXk8b+y3Ir5ro1zugaAKdnGM5RNXPl6AN/Cyh8G2kngriiKieAjlkqSYwDlmqvAppsbbGLYGFJI+6jZHrrUrSSPUcw29eyEI6sWbVQZ+93G47+/rPvuCC8ZLO6Xe398G33um8hEFm/OsRNY6b9xMz5qzye2tfH2Sz38vO/Lh8sND5/zxVfaxzcM3aePx1+7tb+aTy7syT5WjuJNrme+lu9f9g1SozLraSke7XQBMwBKVZeh8aAJXMFYSFOus69zVJWCKEw/aOIqOovrW88Td+no2XImzQVkUSlMUbkfDZgRQ+M+4pM/Gi/+y9ZlMLpSxM55vqHiL9tvz7q79y6fM9COTcx0T1BAdFxmXbjZyhi3rW7Y311PP7J+xFFQgKWxJbrkcc4O3Oqsq+vtriZom//sA5lxLPibP3i1BSENrAXHKM4N/Y9dPN3Vm+JntD9Pf4F7/yfMFOZaCEWKAAL7gwk/41X0VwBRpRnF0/IdukmBhN7bsJXu6Yus09PaC7gbfvlg7F8mhH6SzXHqJofqCeVWt2Vl6J4JV9RcoyfKf
-sidebar_class_name: "get api-method"
+api: eJy9Vk1v4zYQ/SvEnFpAib1FetGp7toNvMimwdrBYhHkQJNji7sSqZAjp4ag/14MKXv9laRAgF4syRy+NzOc4ZsWSK4C5A+gnWoqtHQRyHmExwwCqsYb2kD+0MICpUc/aqiA/OGxe8xAY1De1GSchRy+IHmDawxCI0lTBuGWQopQozJLo8QWXkR4sdgIQ0FMx5CBq9FLhplqyGGFNO5tZ2z652aqIYNaelkhoQ/RHcOctaQCMrCyQsjBsJnHp8Z41JCTbzCDoAqsJOQt0KZmq0De2BVksHS+kgQ5NI3R0B3Hs/VBRCfYUY7ZY6idDRgY8bfhkB+H+2aNUhjCsinLjfB9UvRR+JCBcpbQEgPIui6NihkYfA+M0p767RbfUREnwnO+yCQfjH47tuPQ7q15alAYjZbM0qAXS+cFFXjsZbfN7SnDIeKtrJDP+zzGge1bUOOfXy8jlk7qWAlvod0kQyFDcMpIQi2eDRVnYLP00EIG8Wn2963oEbsMngv0eB/wbKoP+e5KqTCIuOMMiTBBNAH1K2SBJDVnI0PbVNyok89382+Qwezb7cf+Mb295rf56GYCGdxOvkIG93ezyZd5WknvkzGctO0s0r2c6TUqcj72wEdnl2b1dg6SXZNaeldaCejNXGO1QK2NXb2PbQfzCpVH5bz+LK1coX8fXYISVcJ6hVN55CIcSzrbVbu+1ZLwgkyFp/0hCYW0WvAqF5o9V2fPMoiei2mbWv9vtKUMJHpC6LoMyFCJezfqLNVWx2tXw6vTK3R8CGodiaVrbIzk93N37tQSeitLEdCv0Qv03vnIXSEVrleVKCIsXzA41LpB+m2N7oBVjzGSyjS+hBwKojrkg4GszSUVKG14Rn8pzWD94fQC8E43KhZHAoIuO8YJJFfGri7+C94s2Z4HyweD0ilZFi5QfjUcDtnFcyg3bCU0rrF0dUptj7cn8zOWnKQq+2K/KxdmhF5R+TsZQda//LUtok9f5zH3xi5d3H50/r2iju6mJ36O7qaxp2IjcdiH9RUyoVxZYsxvyGI9bi2CMFaMYipHDMxnmEA/XA4vh73iShUVt58YtuZi1tS181whhye1fzp8A1fS8HJI5n8cLHPItQtUSbtHcY308hR0HH/7cyp4zzzVnxfhPzSoS2lsvAI4sLbvgJNpj3UnPXOjWSW4pNiubRcy4L0vu47/fmrQ8zz4mMFaeiMXfLIPLWgT+F1DvpRlwFfi+uVLP6H9Kk5HrBd87/+UdsMHK8uGvyCDH7hJc1/32GVQIGt9dCctjJTCmva2nAxaXP67K+J6MocM5GHRHxV5RD/rTtsmi7n7gbbrdt4Rf7ODXfcvhJP2kA==
+sidebar_class_name: 'get api-method'
 info_path: docs/api/document-store/document-store-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Get a specific document store"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Get a specific document store'}></Heading>
 
-<MethodEndpoint
-  method={"get"}
-  path={"/document-store/store/{id}"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'get'} path={'/document-store/store/{id}'} context={'endpoint'}></MethodEndpoint>
 
 Retrieves details of a specific document store by its ID
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
 <ParamsDetails
-  parameters={[{"in":"path","name":"id","required":true,"schema":{"type":"string","format":"uuid"},"description":"Document store ID"}]}
->
-  
-</ParamsDetails>
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document Store ID' }]}
+></ParamsDetails>
 
-<RequestSchema
-  title={"Body"}
-  body={undefined}
->
-  
-</RequestSchema>
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Successfully retrieved document store","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the document store","example":"603a7b51-ae7c-4b0a-8865-e454ed2f6766"},"name":{"type":"string","description":"Name of the document store","example":"Product Documentation"},"description":{"type":"string","description":"Description of the document store","example":"Store for all product documentation and specifications"},"loaders":{"type":"string","description":"Loaders associated with the document store, stored as JSON string","example":"{\"loaders\":[{\"id\":\"c427e569-b81a-469a-b14c-fa73dd5bae49\",\"name\":\"PDF Loader\"}]}"},"whereUsed":{"type":"string","description":"Places where the document store is used, stored as JSON string","example":"{\"chatflows\":[\"flow1\",\"flow2\"]}"},"status":{"type":"string","enum":["EMPTY","SYNC","SYNCING","STALE","NEW","UPSERTING","UPSERTED"],"description":"Status of the document store","example":"SYNC"},"vectorStoreConfig":{"type":"string","description":"Configuration for the vector store, stored as JSON string","example":"{\"type\":\"pinecone\",\"config\":{\"index\":\"docs\"}}"},"embeddingConfig":{"type":"string","description":"Configuration for the embedding, stored as JSON string","example":"{\"type\":\"openai\",\"config\":{\"model\":\"text-embedding-ada-002\"}}"},"recordManagerConfig":{"type":"string","description":"Configuration for the record manager, stored as JSON string","example":"{\"type\":\"redis\",\"config\":{\"url\":\"redis://localhost:6379\"}}"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the document store was created","example":"2023-01-01T12:00:00Z"},"updatedDate":{"type":"string","format":"date-time","description":"Date and time when the document store was last updated","example":"2023-01-02T14:30:00Z"}},"required":["name"],"title":"DocumentStore"}}}},"404":{"description":"Document store not found","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully retrieved document store',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', format: 'uuid', description: 'Unique identifier for the document store' },
+                            name: { type: 'string', description: 'Name of the document store' },
+                            description: { type: 'string', description: 'Description of the document store' },
+                            loaders: { type: 'string', description: 'Loaders associated with the document store, stored as JSON string' },
+                            whereUsed: { type: 'string', description: 'Places where the document store is used, stored as JSON string' },
+                            status: {
+                                type: 'string',
+                                enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                                description: 'Status of the document store'
+                            },
+                            vectorStoreConfig: { type: 'string', description: 'Configuration for the vector store, stored as JSON string' },
+                            embeddingConfig: { type: 'string', description: 'Configuration for the embedding, stored as JSON string' },
+                            recordManagerConfig: {
+                                type: 'string',
+                                description: 'Configuration for the record manager, stored as JSON string'
+                            },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the document store was created'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the document store was last updated'
+                            }
+                        },
+                        title: 'DocumentStore'
+                    }
+                }
+            }
+        },
+        '404': { description: 'Document store not found' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

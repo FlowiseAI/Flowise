@@ -1,71 +1,62 @@
 ---
 id: patch-delete-upsert-history
-title: "Delete upsert history records"
-description: "Soft delete upsert history records by IDs"
-sidebar_label: "Delete upsert history records"
+title: 'Delete upsert history records'
+description: 'Soft delete upsert history records by IDs'
+sidebar_label: 'Delete upsert history records'
 hide_title: true
 hide_table_of_contents: true
-api: eJztVttu20YQ/ZXFPLUAZck3OeZTFNtB1BqtY1sJAkMoRuRQ3JjkMrtLXUDw34vZpRzqUiMFgj5VLyK5czkzZ2Z2aojJRFqWVqoCQnhQiRUxZWRJVKUhbUUqjVV6LTRFSsdGzNZifG0gAFWSRtYbxxBCiTZKr53mxCl+8HoQgMW5gfAJvMFeaxCmARiKKi3tGsKnGmaEmvSosimET9NmGkCJGnOypI0TkIX3k0IABeYEIcgYAtD0rZKaYgitrigAE6WUI4Q12HXJUsZqWcyhCXaivUrRJplaivE1sD82RMa+U/GatSNVWCosP2JZZjJy0fa/Glau992o2VeKLARQas6NlWT4VMamI4RaIydFWsrNPsYAEqVztBBCVcl4H/OtNFao5DA7zIywqmUQGv7t5sd9MKUqjId3Mhjw304dVFFExiRVlq1ba/GmAiD4WZkx3ktHcKZURlhAALTCvMyoxdxGcnYI67hYYCYZnmNPzJi+n4YxUjEdomkbw43WSgsn24EO4z8+jW7H13/d33yc3Dw8Mps5GYPzHza5Ed+yuhNwp01cuViUmTkU2baDURxLfsRMkPO10QwAX47uOsnwTARgpXU4HELwzJwfZsaSZvuG9IK0d/M/Nf8pNS4um6qXGc1p5BkaQn97IPdrGTfAQ5nJ8iO30hmEkFpbmrDfx1Ie2ZSwMEvSRyj7i+M96HdaxVXELy3r0AS7dozFuSzmvR+x9+BlDxsL+/1MRZilytjwbDAYMMRDVm5ZSsS0oEyVORX2xV7nFnrguvOl1b2LXshij9BeL25YOSEI2of3m8H92+fHfUbvxuKZ1gIrm1Jh25IXS2lTkcgVxWKBWUXi7PL4Pn1zks8nE3l1Wiw+VRdyefvn8uJy9S77PMTe++R49fto8tF8AeaWe+b++7V1s6nE9tp5gtME35wnw7Pe+cXxRe/sfHjSm50mUe8kuhyeJsMhJjiEaROALBLlgm1LyN/ior3GxehufDCohDsBC0/S4ZUBAuCC8jrHR4OjQTsDMHIzoL3LR64MRmPxUJWl0twV22XTLRXuuhwlHxsv/nbrmHNTKmNzLDourl/bbHbD6ywA/2ovaqvF0sr2ywxlwa3vIqnbzttbhQIIZcwLERcyn9f1DA1NdNY0/PlbRZqXpGkAC9QSZ8zQUw2xNPwcQ5hgZuiVAH65b5eAX0V36/kHtJtdpWBorjAhBAjgmdZ+6Wq4YlLCmLQD4g+uvLveI6t/V9yb8dzEXmMURVTaV2WnnQF2N3q8+sAN125oubsBQOOS10BcepTKxe/62H2rIcNiXrnRDt4olwdud/dON7uwDuahrr3Eo3qmomle0mL5nTPTNH8DKrHtUw==
-sidebar_class_name: "patch api-method"
+api: eJyVVU2P2zYQ/SvEnFqAXnm/nEanursJ4iKHRXaDHAwfxuLIYiKRDEl5Ywj678WIWsdru0Hri0Vxvt+bpw4UhcJrF7U1kMOjLaNQVFMk0bpAPopKh2j9TngqrFdBrHdicR9AgnXkkf0WCnJwGIvqfvD8PDh+SH4gIeImQL6EFHAyBoSVhEBF63XcQb7sYE3oyc/bWEG+XPUrCQ49NhTJh8FAm5SnAgkGG4IctAIJnr632pOCPPqWJISiogYh7yDuHFuF6LXZQC+Pur2rMJa1fRaLe+B8HIhC/MuqHXsX1kQykR/RuVoXQ7fZ18DO3Wkau/5KRQQJzvNsoqbAt1qFAyP0HnkoOlITTmuUUFrfYIQc2lar05o/6hCFLc+jw8iIaEcEoR9+3Fdw1oRUztV0yn9HuLdFQSGUbV3vRm/1gjjXcHPOaWG2WGu2G8Ym1jy3XsLteeNI3mAtAvkteUHeWw9cXUOxsnsK8fgY4hyy13zJOq16YM6wf2JE62vIoYrRhTzL0OmLWBGa8Ez+AnW2vYTj8T14q9qCD2Mh0MvjOCHiRpvN5L/Ee0y254PlWVbbAuvKhpjfTKdTLvFclI9sJRRtqbauIRP38Q6W5JH5ljA8XJU9gzgjjOznczICOT68f+HV31+ehrkzjz/9ZPy7H9i4mvaMXcJ1iX/clrObye2byzeTm9vZ1WR9XRaTq+Lt7LqczbDEGax6CdqUdihERw4ASQDEqABi/rA46Xj+sBCl9aJBkwZ4Xm1AAoOdfC4vphdTkMNeYjHs5SgD8wGi+UI8ts5Zzzv4GtJDGEECNaj5OiTzP19d82ycDbFBc5Di/leieNzegXb8L0kdkYz0I2auRm14nYZOunErTlRUQq4VaymTjO+7bo2BPvu67/n195Y86+tKwha9xjUjtOxA6cDPCvIS60C/aOC3T6O+/i4OBfNfqn2ROcOlbbFu+QQSvtEu6XXPjKkIFfmhkHRxl9JNntj9p+OJ7vJC7AXjYf5094EJPgp2YxU7eXzmrwI+p8x26GnYm+FdBzWaTYsbtk1BGXJ8vU1H2zOUera3rksWT/Ybmb7ftxr5zN32/T+qmowD
+sidebar_class_name: 'patch api-method'
 info_path: docs/api/upsert-history/upsert-history-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Delete upsert history records"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete upsert history records'}></Heading>
 
-<MethodEndpoint
-  method={"patch"}
-  path={"/upsert-history/{id}"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'patch'} path={'/upsert-history/{id}'} context={'endpoint'}></MethodEndpoint>
 
 Soft delete upsert history records by IDs
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
 <ParamsDetails
-  parameters={[{"in":"path","name":"id","required":true,"schema":{"type":"string"},"description":"Chatflow ID"}]}
->
-  
-</ParamsDetails>
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chatflow ID' }]}
+></ParamsDetails>
 
 <RequestSchema
-  title={"Body"}
-  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"ids":{"type":"array","items":{"type":"string","format":"uuid"},"description":"List of upsert history record IDs to delete"}}}}},"required":true}}
->
-  
-</RequestSchema>
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        ids: {
+                            type: 'array',
+                            items: { type: 'string', format: 'uuid' },
+                            description: 'List of upsert history record IDs to delete'
+                        }
+                    }
+                }
+            }
+        }
+    }}
+></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Successfully deleted records","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","example":true}}}}}},"400":{"description":"Invalid request body","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"INVALID_REQUEST"},"message":{"type":"string","description":"Error message","example":"Invalid request parameters"},"details":{"type":"object","description":"Additional error details","additionalProperties":true}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"INVALID_REQUEST"},"message":{"type":"string","description":"Error message","example":"Invalid request parameters"},"details":{"type":"object","description":"Additional error details","additionalProperties":true}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': { description: 'Successfully deleted records' },
+        '400': { description: 'Invalid request body' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

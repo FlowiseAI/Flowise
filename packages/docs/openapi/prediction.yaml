@@ -66,7 +66,41 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/PredictionResponse'
+                                type: object
+                                properties:
+                                    text:
+                                        type: string
+                                        description: The result of the prediction
+                                    json:
+                                        type: object
+                                        description: The result of the prediction in JSON format if available
+                                    question:
+                                        type: string
+                                        description: The question asked during the prediction process
+                                    chatId:
+                                        type: string
+                                        description: The chat ID associated with the prediction
+                                    chatMessageId:
+                                        type: string
+                                        description: The chat message ID associated with the prediction
+                                    sessionId:
+                                        type: string
+                                        description: The session ID associated with the prediction
+                                    memoryType:
+                                        type: string
+                                        description: The memory type associated with the prediction
+                                    sourceDocuments:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/Document'
+                                    usedTools:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/UsedTool'
+                                    fileAnnotations:
+                                        type: array
+                                        items:
+                                            $ref: '#/components/schemas/FileAnnotation'
                 '400':
                     description: Invalid input provided
                 '404':
@@ -110,7 +144,13 @@ components:
                         properties:
                             type:
                                 type: string
-                                description: The type of file upload (e.g., 'file', 'audio', 'url')
+                                enum:
+                                    - audio
+                                    - url
+                                    - file
+                                    - file:rag
+                                    - file:full
+                                description: The type of file upload
                                 example: file
                             name:
                                 type: string
@@ -119,13 +159,12 @@ components:
                             data:
                                 type: string
                                 description: The base64-encoded data or URL for the resource
-                                example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG
+                                example: >-
+                                    data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAABjElEQVRIS+2Vv0oDQRDG
                             mime:
                                 type: string
                                 description: The MIME type of the file or resource
                                 example: image/png
-            required:
-                - question
         PredictionResponse:
             type: object
             properties:
@@ -203,4 +242,3 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT
-            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY

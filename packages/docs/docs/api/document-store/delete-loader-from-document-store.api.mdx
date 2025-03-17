@@ -1,71 +1,52 @@
 ---
 id: delete-loader-from-document-store
-title: "Delete specific document loader and associated chunks from document store"
-description: "Delete specific document loader and associated chunks from document store. This does not delete data from vector store."
-sidebar_label: "Delete specific document loader and associated chunks from document store"
+title: 'Delete specific document loader and associated chunks from document store'
+description: 'Delete specific document loader and associated chunks from document store. This does not delete data from vector store.'
+sidebar_label: 'Delete specific document loader and associated chunks from document store'
 hide_title: true
 hide_table_of_contents: true
-api: eJztV99v2zYQ/leIe9oAJnK6bF31NG9JAW/BljXJiiEwBoY8WWwoUiUpJ4ag/304Unbs2BuKrcP6UL9Ysk7ffbzvfrmHKBYByltQTnYN2ngUovMIcw4BZed1XEF528MdCo9+2sUaytv5MOegMEiv26idhRLO0GBEFlqUutKSreGYcUKhZ8IqJkJwUouIism6s/eBVd41T6bJ8zG7rnVgymFg1kWmMrASUWTzJcro/GgMHFyLXhCLmYISsvlFcvrau+ZsBL9Kp+LQCi8ajOhDOpYm7q2INXCwokEoIQHPFHDw+L7THhWU0XfIIcgaGwFlD3HVZlOv7QI4VM43IkIJXacVDHvBWZ8wsWCzMxj4Qd85WP+R8xyU5H1O+KF1NmAgyBeTCX3tvnjVSYkhVJ0xq1EGtZbzgHDAQTob0UaCEm1rtEy6FO8C4fX7R3B371BGUsWTilFnNiE73jK8c86gsMABH0XTGsxRGdKHw+kh+jO7FEYrNjtjrXdLrVB9PIrSKTykxS6Fc++dZ8l2iznozOwPkhhDJMkaDEEsPhhybb6Nel0jGxHZgwhs9JITIgptwqFj7aJPldJ0KQzD5Gj95pajHiqNhmotJS0HHUJHmD+LBpkObJO5SZuoY6KXiMNar9N9vZ4VCdV+5Tr7WbRPRLSvDxdZRE+eA/ol+kzgs2KfgmLpuLF2T1MxjT8a4FDsTvsid/WiH2ffUPTrSTQALQKkbR6YnTdQQh1jG8qiEK0+jjUKGx7QHwtdLE/2Dnvpneok3YxJkobfLk6IYqHt4uhD8K6y7WGwsiiMk8LULsTydDKZEMVDKBdkxRQu0bg2D7ERb2vzuaI0zZm4vf9s5CWPMI7mNKaSEfDx4vV6MP/49no/By5n7B5XTHSxRhvHCmEPOtas0o+o2FKYDtnpq5M39bcvmsXNjf7hK7v8rXupHy5+eXj56vF78/YbcfS6Onn8aXrza/gdSHNtK5cojgnxrK1OL2cHqVSU7sLm0O4O9sCZdMZg0jDwtMqtLSj/2TTJNSVgypMMenI8OZ6MnUDI1AnGJWdtzq66tnWeymM3G7YzgEqiEZoeh2z+3c5jOnLrQmyE3XLx0bbR57Hqnzrb/7jyjukX8TEWrRHaUvdJMezHCt/b5/m4WwKH8mnDLTcL55wD1Qy92fd3IuCNN8NAP7/v0NN/gDmHpfBa3FFa3fagdKBrBWUlTMC/CdQXb8ZW9SXb34T/4jTjj8KuKKuoEqAE4HCPq60dnYr/3/F4Wor/EZFN/Ib5wKHGFGKKTn48lRLbuPXi3jCkdrNp02fnF+fX58BB7PaZZ30lOTjIq++zxbW7RzsMG5qR7onjMPwJMBbZog==
-sidebar_class_name: "delete api-method"
+api: eJzFVU1v2zAM/SsCTxugxtnQXXxagHRAhh6KpcMORQ6sxdRCZcmV5GyB4f8+UHLafG0YtgI7JbKfHsn3SLqHiA8ByjtQruoasvEiROcJVhICVZ3XcQvlXQ/3hJ78rIs1lHerYSVBUai8bqN2FkqYk6FIIrRU6bWuxI5OGIeKvECrBIbgKo2RlKjqzj4GsfaueYGmyBNxW+sglKMgrItCZWKFETN8Q1V0fgSDBNeSR85ioaCEDL9OQT9518xH8mWqSkKLHhuK5EMqS3PuLcYaJFhsCEpIxAsFEjw9ddqTgjL6jiSEqqYGoewhbtsM9do+wHAixq6iFFUs5jDIs7GyOK8ULBedoq2YL7TOBgpM8X465Z/Di8uuqiiEdWfMdpRZ7ew6YwxHvjzHs7AbNFqJxVy03m20IpWxl6fYI2XY4LXrbLrw4Tx5JG/RiEB+Q16Q987DMEhoKNbuxfLkLXcnFIetXOSSin40dij6newDcJczb+6GzhsooY6xDWVRYKsnsSa04Tv5Cepi8w6Oxb/xTnUVH8YEk9OHPCHig7YPF3/Ct8zY82RlURhXoaldiOXldDrlFM+xXDNKKNqQcW12cOTbG+slN1huj/3hfu43jghjH/I5g0COfz4532CEEj5/u01+aLt26bqOhk6tnt0sTvKc3SzE2nnRoM1lH3ZckKJyxlDSN8i0Q3aIILQVsyTljInZw0z6bjKdTEFC5WzEKnJK47Tt4GLZta3zEeSRU/vugARqUPPrkOEfD15zya0LsUG7F+LV1uCxVn2qh2z8r7t2bI1IP2LRGtSW5zZp2I/Td/IhkeOSAwnly2otnzffSgL3M9/s+3sM9NWbYeDHTx15/visJGzQa7zntrrrQenA/xWUazSBfiPUmy/jUn0rTlfyL6oZH6Ldcleh6fgEEh5pu/dx4MH8tzxetvVfJfKs37Da34Xzq+ur2yuQgIfDfDS8ScezAfo+I27dI9lheI4X+czBhuEno9/Zhw==
+sidebar_class_name: 'delete api-method'
 info_path: docs/api/document-store/document-store-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
 <Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Delete specific document loader and associated chunks from document store"}
->
-</Heading>
+    as={'h1'}
+    className={'openapi__heading'}
+    children={'Delete specific document loader and associated chunks from document store'}
+></Heading>
 
-<MethodEndpoint
-  method={"delete"}
-  path={"/document-store/loader/{storeId}/{loaderId}"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'delete'} path={'/document-store/loader/{storeId}/{loaderId}'} context={'endpoint'}></MethodEndpoint>
 
 Delete specific document loader and associated chunks from document store. This does not delete data from vector store.
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
 <ParamsDetails
-  parameters={[{"in":"path","name":"storeId","required":true,"schema":{"type":"string","format":"uuid"},"description":"Document Store ID"},{"in":"path","name":"loaderId","required":true,"schema":{"type":"string","format":"uuid"},"description":"Document Loader ID"}]}
->
-  
-</ParamsDetails>
+    parameters={[
+        { in: 'path', name: 'storeId', required: true, schema: { type: 'string' }, description: 'Document Store ID' },
+        { in: 'path', name: 'loaderId', required: true, schema: { type: 'string' }, description: 'Document Loader ID' }
+    ]}
+></ParamsDetails>
 
-<RequestSchema
-  title={"Body"}
-  body={undefined}
->
-  
-</RequestSchema>
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Successfully deleted loader from document store","content":{"application/json":{"schema":{"type":"object","properties":{"success":{"type":"boolean","example":true}}}}}},"400":{"description":"Invalid ID provided","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}},"404":{"description":"Document Store not found","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': { description: 'Successfully deleted loader from document store' },
+        '400': { description: 'Invalid ID provided' },
+        '404': { description: 'Document Store not found' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

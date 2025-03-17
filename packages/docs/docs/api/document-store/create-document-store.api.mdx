@@ -1,71 +1,118 @@
 ---
 id: create-document-store
-title: "Create a new document store"
-description: "Creates a new document store with the provided details"
-sidebar_label: "Create a new document store"
+title: 'Create a new document store'
+description: 'Creates a new document store with the provided details'
+sidebar_label: 'Create a new document store'
 hide_title: true
 hide_table_of_contents: true
-api: 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
-sidebar_class_name: "post api-method"
+api: eJztWE1v2zgQ/SvEnOX4I3HS6rTexLtwkaZG7aDoBj6MxZHNViJVkrJrGPrvC1Lyh2wlWWyBvWxOosnhGw755pHjLVhcGAifgKsoT0nalrFKE8wCMBTlWtgNhE9bmBNq0oPcLiF8mhWzADiZSIvMCiUhhFtNaMkwZJLWbAfGPBhbC7tkdkks02olOHHGyaJIDASgMtLoQEYcQog8zF01feKXEoCmHzkZ+7viGwi3EClpSVrXxCxLROTnt78Zt5ItmGhJKbqW3WQEIaj5N4osBJBp580KMm5U8CMbY7WQCwggVjpFCyHkueBwGuajFD9yYoKTtCIWpFmstA+tHjIUAUhMqclDHfEBU2IqfgajZvsa1N3h1/OIiUJO2ryOdl8aMjRGRQIt8cM51mGD8sMZGvZh8umBVYhFAOslaXo01LjVdX/jBCMyzM9ocMKEYbkh/oIzY9HmjZGRzFNH8uHH8fQrBDD5+nBbfUYPf7rWdHA/hAAehl8ggMfxZPh5Wo6U7eEdnFF+4t09v9MriqzSnsO3SsZi8foelHZ5mRB7apVAr+41pXPiXMjFr3nbw7zgSlOkNP+IEhekf81dCcXSEusFn6U08Du0jVm1z1uOllpWpHSeH2iJoeTMjTqiySaerdGwypdzm2f8P3OboLGscghFEYAVNnHu6oJYFEWpiUK7xLI6J99hMiVNqW29Tsd9TgibRxEZE+dJstmFeMrb4E1d39T1TV3f1PX/rK5FAFdNAjqSK0wEZ9V7lM3dg7QIoN9sbElLTJghvSLNSGulvd+U7FK5126mjBdOdK9qaNef4O2dIJfzjX+G5zqBEJbWZiZstzETF3ZJKM2a9AWK9qp7nvha8TzypCiBoAhOcYzFhZCL1j/Bm5S2zWBhu52oCJOlMja86nQ6bolNKPfOinFaUaKy8pwqvKPCY+KumvI2OS4/9jRxHt3+eDMIKyMIqsYfO/J8+DL1++6usM+HUmL4E9Msod1lBZcxvuvH11et/k33pnXVv+615pdx1OpF768v4+trjPEadhfPc2m4797fBIeuI7k+dO5kda+eDcJ2JLWnKnQYalSNw3AtwaHX6V21Ojet3vtptx/2u2Hv3UXnpvsXnKTk84ZFAELGyh/HSR4xv3g2GI/OtmcwHnlt8oLkaFTPUxOwSCUJeb6awOf1zsIwIdnAU3Mw8vukTQnavehcdKqXC0b+5VId0s6cTfIsU9olW535x2z324vCDZvS/LfasKOQy9gU5ZGLsvBtrHtPoz+qXP99vVxx39JP284SFNLLqAtqWwnJWS3vSFbV9C4xncV2O0dDjzopCtf9Iyft6vxZACvUAufuPJ9mRQBLcjT22vOdNuU940JoTd06nHmSu/WcPRWdMJQzBlFEmX3RdnYkiuNPk6nL4arYTxV3czSuHcdxDSH4fw08Q5yB79tCgnKR48LZlpjuuLAuGCcC4aOqhlBujla43ZYWU/WdZFFAUIVi3W8oZkVR/A3+h/XR
+sidebar_class_name: 'post api-method'
 info_path: docs/api/document-store/document-store-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Create a new document store"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new document store'}></Heading>
 
-<MethodEndpoint
-  method={"post"}
-  path={"/document-store/store"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'post'} path={'/document-store/store'} context={'endpoint'}></MethodEndpoint>
 
 Creates a new document store with the provided details
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
-<ParamsDetails
-  parameters={undefined}
->
-  
-</ParamsDetails>
+<ParamsDetails parameters={undefined}></ParamsDetails>
 
 <RequestSchema
-  title={"Body"}
-  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the document store","example":"603a7b51-ae7c-4b0a-8865-e454ed2f6766"},"name":{"type":"string","description":"Name of the document store","example":"Product Documentation"},"description":{"type":"string","description":"Description of the document store","example":"Store for all product documentation and specifications"},"loaders":{"type":"string","description":"Loaders associated with the document store, stored as JSON string","example":"{\"loaders\":[{\"id\":\"c427e569-b81a-469a-b14c-fa73dd5bae49\",\"name\":\"PDF Loader\"}]}"},"whereUsed":{"type":"string","description":"Places where the document store is used, stored as JSON string","example":"{\"chatflows\":[\"flow1\",\"flow2\"]}"},"status":{"type":"string","enum":["EMPTY","SYNC","SYNCING","STALE","NEW","UPSERTING","UPSERTED"],"description":"Status of the document store","example":"SYNC"},"vectorStoreConfig":{"type":"string","description":"Configuration for the vector store, stored as JSON string","example":"{\"type\":\"pinecone\",\"config\":{\"index\":\"docs\"}}"},"embeddingConfig":{"type":"string","description":"Configuration for the embedding, stored as JSON string","example":"{\"type\":\"openai\",\"config\":{\"model\":\"text-embedding-ada-002\"}}"},"recordManagerConfig":{"type":"string","description":"Configuration for the record manager, stored as JSON string","example":"{\"type\":\"redis\",\"config\":{\"url\":\"redis://localhost:6379\"}}"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the document store was created","example":"2023-01-01T12:00:00Z"},"updatedDate":{"type":"string","format":"date-time","description":"Date and time when the document store was last updated","example":"2023-01-02T14:30:00Z"}},"required":["name"],"title":"DocumentStore"}}},"required":true}}
->
-  
-</RequestSchema>
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', format: 'uuid', description: 'Unique identifier for the document store' },
+                        name: { type: 'string', description: 'Name of the document store' },
+                        description: { type: 'string', description: 'Description of the document store' },
+                        loaders: { type: 'string', description: 'Loaders associated with the document store, stored as JSON string' },
+                        whereUsed: { type: 'string', description: 'Places where the document store is used, stored as JSON string' },
+                        status: {
+                            type: 'string',
+                            enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                            description: 'Status of the document store'
+                        },
+                        vectorStoreConfig: { type: 'string', description: 'Configuration for the vector store, stored as JSON string' },
+                        embeddingConfig: { type: 'string', description: 'Configuration for the embedding, stored as JSON string' },
+                        recordManagerConfig: { type: 'string', description: 'Configuration for the record manager, stored as JSON string' },
+                        createdDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the document store was created'
+                        },
+                        updatedDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the document store was last updated'
+                        }
+                    },
+                    title: 'DocumentStore'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Successfully created document store","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the document store","example":"603a7b51-ae7c-4b0a-8865-e454ed2f6766"},"name":{"type":"string","description":"Name of the document store","example":"Product Documentation"},"description":{"type":"string","description":"Description of the document store","example":"Store for all product documentation and specifications"},"loaders":{"type":"string","description":"Loaders associated with the document store, stored as JSON string","example":"{\"loaders\":[{\"id\":\"c427e569-b81a-469a-b14c-fa73dd5bae49\",\"name\":\"PDF Loader\"}]}"},"whereUsed":{"type":"string","description":"Places where the document store is used, stored as JSON string","example":"{\"chatflows\":[\"flow1\",\"flow2\"]}"},"status":{"type":"string","enum":["EMPTY","SYNC","SYNCING","STALE","NEW","UPSERTING","UPSERTED"],"description":"Status of the document store","example":"SYNC"},"vectorStoreConfig":{"type":"string","description":"Configuration for the vector store, stored as JSON string","example":"{\"type\":\"pinecone\",\"config\":{\"index\":\"docs\"}}"},"embeddingConfig":{"type":"string","description":"Configuration for the embedding, stored as JSON string","example":"{\"type\":\"openai\",\"config\":{\"model\":\"text-embedding-ada-002\"}}"},"recordManagerConfig":{"type":"string","description":"Configuration for the record manager, stored as JSON string","example":"{\"type\":\"redis\",\"config\":{\"url\":\"redis://localhost:6379\"}}"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the document store was created","example":"2023-01-01T12:00:00Z"},"updatedDate":{"type":"string","format":"date-time","description":"Date and time when the document store was last updated","example":"2023-01-02T14:30:00Z"}},"required":["name"],"title":"DocumentStore"}}}},"400":{"description":"Invalid request body","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully created document store',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', format: 'uuid', description: 'Unique identifier for the document store' },
+                            name: { type: 'string', description: 'Name of the document store' },
+                            description: { type: 'string', description: 'Description of the document store' },
+                            loaders: { type: 'string', description: 'Loaders associated with the document store, stored as JSON string' },
+                            whereUsed: { type: 'string', description: 'Places where the document store is used, stored as JSON string' },
+                            status: {
+                                type: 'string',
+                                enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                                description: 'Status of the document store'
+                            },
+                            vectorStoreConfig: { type: 'string', description: 'Configuration for the vector store, stored as JSON string' },
+                            embeddingConfig: { type: 'string', description: 'Configuration for the embedding, stored as JSON string' },
+                            recordManagerConfig: {
+                                type: 'string',
+                                description: 'Configuration for the record manager, stored as JSON string'
+                            },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the document store was created'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the document store was last updated'
+                            }
+                        },
+                        title: 'DocumentStore'
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid request body' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

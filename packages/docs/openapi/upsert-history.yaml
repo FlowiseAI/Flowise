@@ -67,18 +67,8 @@ paths:
                                 type: array
                                 items:
                                     $ref: '#/components/schemas/UpsertHistoryResponse'
-                '400':
-                    description: Invalid parameters
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
         patch:
             summary: Delete upsert history records
             description: Soft delete upsert history records by IDs
@@ -106,37 +96,19 @@ paths:
                                         type: string
                                         format: uuid
                                     description: List of upsert history record IDs to delete
-                required: true
             responses:
                 '200':
                     description: Successfully deleted records
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    success:
-                                        type: boolean
-                                        example: true
                 '400':
                     description: Invalid request body
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
                 '500':
                     description: Internal server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Error'
 components:
     securitySchemes:
         bearerAuth:
             type: http
             scheme: bearer
             bearerFormat: JWT
-            description: API key authentication with fixed value 491Rh82mgUUiC3nvVu7iwLOw79xBlW6a-Ff1xKAUQsY
     schemas:
         UpsertHistoryResponse:
             type: object

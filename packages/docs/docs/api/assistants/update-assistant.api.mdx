@@ -1,71 +1,123 @@
 ---
 id: update-assistant
-title: "Update assistant details"
-description: "Update the details of an existing assistant"
-sidebar_label: "Update assistant details"
+title: 'Update assistant details'
+description: 'Update the details of an existing assistant'
+sidebar_label: 'Update assistant details'
 hide_title: true
 hide_table_of_contents: true
-api: eJztWFlz2zYQ/iuYfWpnSIuU5YtPVa6pkk7r+kiaejweiFhKiEmABUDZqob/vbOETFOMojgzfmmbNx57YY9vd7ECgTY1snRSK0jgshTcIXNzZAIdl7llOmNcMbyX1kk1Y9xaaR1XDgLQJRpOnBMBCVQN77jz3/GZheQKWh4L1wFYTCsj3RKSqxVMkRs048rNIbm6rq8DKLnhBTo0tiGQZFbJ3RwCULxASEAKCMDgX5U0KCBxpsIAbDrHgkOyArcsico6I9UM6qB3xNZANnkFpJAkoXUvtFgSe6qVQ+XokZdlLtPmhINPlrhXn+vR00+Y0mlLQ/5wEi39Xbvv64T+UH2zA8B7XpQ5fXp0ef8wu7jGbI55mVU5G0/YhohCC8x3M89KF46IVirrTJWSOrub5aOuGDfIeKu3VRowodlSV4ZN0TrmNOPK3qFhjeOlVowrQS9mSTodFk1iVabrGFUVUzRdlTHR6vKmfAKV3ggFN4YvIQDpsNhyrLrDfgVZpZrzQwCpFngjlUNTGkpRCCCTOd5Y5Cadw/Va1Y1BqyuT4tbwcyEkyeP56UYibNLVdV0HkBoUqJzkX4nXkZie7KfRMDwWBzwcxfFRyI+zONwX2fTwaBhP9/dPmnCmWp2bdLewgSz4DO2gjd9eSU6pu0V31Sb4hpHXATjpfP49cE9UWTXn6Rdt88GWWlnvgGEU+crZXq4eXwSzVZqitVmV58smJs9Sr1LsdooYnkRZjBgepgejcDSN4vAkwsNQHEXx0eg4i44PYl+fT6z7rynk1rqbv6e/4sdJ9cfk8vzd+58/vb3NzvShzBek6TtwfAeOfwVwNNZQ6b7ibmvGZtoU3FGRcYehkwVuiB1Gw1EYHYfD0UU8SuKDZDj8k6SuAeFZpfZArhk1nox0a9+PtuHYxRyZLTGVmUTBJq+YtEyqBc+lYNqwqRZL+lRIa735z4RraIw2u8P2mkhYgdbyGZJjreOu6qYWZe7MZ+2DU6Vy+8OumFEU9b3ndXc81WhqvTTahfZKO5bpSon/gSsOtiXMhNBC8Zx51v+6F6i9oJtr2iRoXgj80J/AI5rYwUqKGmiDMIuH/aAyOSQwd660yWDAS7nn5ui7xB6Xg0UM/QXg1GjhGxPzgqAO+nKs4zOpZuFT5J172u3CksEg1ynP59o68khEJm6T8gtRMYELzHVZoHKtvM7KdE4x9mHsLk5tWEgjrHchevdEEKwf3jzE6u2Hi88MGJ9O2C0uGa/cnDDOpxe7k27OMnmPgi14XiEbncRn8+NhMbu8lC/31eJ9dSTvfvnt7ujk/kX+4ZCHb7L4/t348nf7sYFTys+zxxXr9UN6bKxI682uu1z2rNs+lLQzyXrw6M8dzzVc9GaLuJ0f4nZG+KZ+v6Xd97v201pzpzN/uf1KlekmS/oNy7Lx6WRrJmQEAFz5zO66nNogFZ8njfeivWiNTTx1nVCOG1+OJ+y8KkttKFSbJdYtK4KNgkv6bT35Txu/yTeltq7gqqNifVnRmsYeG3Vv2G2h8xsvONZl5fDeDcqcS9WMHaaZqTw8bVxuBJBIQcGlaqd/q9WUW7w0eV3TZ59LydV1AAtuJJ82c+IKhLT0LCDJeG5xh/k/nK3R9Ee2cY/xBVMfplZFGdyULyQAAdzi0t+j1DR5zpELNI0l/sdLry+8IPZHxs+6DkGd5xinKZZuJ+11B+BPLwl/pusbFyphSMDwO7rX4XfeRl22u0PzbQU5V7OKOlICXiSlBd9EwB7iNYfa6oXVylNc6FtUdd06xdE7+aWu/wFvhYiU
-sidebar_class_name: "put api-method"
+api: eJztl19v4zYMwL+KwKcNsBs7Tf/5adluw3IbhuLabrsVRcFYdKI7W9IkOb0s8HcfaLtpkqa9Hu4e+5TYpkiKpH4iVyDJ507ZoIyGDK6sxEAizElICqhKL0whUAv6pHxQeibQe+UD6gARGEsOeeVEQgZ1u3a88T3gzEN2Des1Hm4i8JTXToUlZNcrmBI6cuM6zCG7vmluIrDosKJAzrcCit2yGOYQgcaKIAMlIQJH/9bKkYQsuJoi8PmcKoRsBWFpWcoHp/QMmmhni2sHxeQNsEHWRD78aOSSl+dGB9KB/6K1pcrbHQ4+eF69emzHTD9Qzru1juMRFHn+quRjXyKgT1jZkl/J4VlSpETxcX40ikfTJI3PEjqO5UmSnoxOi+T0KO2cb9Pw9QbR+3D73/QPej+p/55cXfz2568f3n4s3pljVS7YUhfdz6joc7sb1T1Rr4yk8nl9MxviEcsq7YOrc9bln1/y3tQCHQkUcyptUZcPBRkJacTS1E5MyQcRjEDt78iJNr3KaIFa8oNbss1AVVu+tdvcta6rKblNkynLGntrXyBlthKFzuESIlCBqj3bajaWX0NR63b/EEFuJN0qHchZxwcBIihUSbee0OVzuOlN3TrypnY57S0OlFKxPizPt8pkW65pmiaC3JEkHRR+Jl8ncnp2mCfD+FQeYTxK05MYT4s0PpTF9PhkmE4PD8/adOZGX7j8eWUDVeGM/GCdvwPbBSV3hIHkGwx7y7EwrsLAJwgDxUFVtKV2mAxHcXIaD0eX6ShLj7Lh8B/W2tHp22rlRKjQCjxgrwupI2+N9l3Mh0nCP09xqHdN+DrPyfuiLstlWwavIHoF0SuIXkH0NSAa7WPP5ZyEt5SrQpEUkzdCeaH0AkslhXFiauSSX1XK+75ARsnoOYRpE0Rhai1Z9mifyQmXkcZSkHPGtS5XFOaGO0dbtxThJi+Dhzz4wUrJBrhjdIv7frB2JWQwD8H6bDBAqw7CnLrzdYBqsEhht+E7d0Z2R1p0iqCJdvX4gDOlZ/FL9F10svuVZYNBaXIs58aHbJQkCbu4T8vvLCUkLag0tiId1vo2WuQLZnx3XDYb5XXVsEXoe19+7oQg6v/8cl9Lb/+6bCPOd8e7h3b35/uy6qD9sqtg6yZolz0P9HXbvjk5bMdiXfw9qnse7+L4WzF3B7npGqvpGp1fhME9FNyF2cuItQGsJ6i0A6X9ONhhzJMkUrowbTHtosOL8fnkUZbG5xNRGCcq1N0BGE/ExmQXAZ/RTjQ9SA6SvoXBvG1h+iIYt1kZT8RFba1xXAvbJ3Hz9DH5KlT82XfiP2x95ihb40OFesNEP8OuXbufZHc3tDHqfeHc25++QJ/CwJaodMt1115aHcW2Zt4IMiW5TBgK/G21mqKnK1c2Db/uqjK7volggU7htL2IVyCV5/8SsgJLT8+4/927fhr+XmyNt0+4et8WaD4LCyxrfoIIPtKyG68bvtrnhJJc60n34afOXnzJyx8WPmpOmYjdinGekw3Pyt5s3APnV5fMrn4QZxhABg7veNzHu85HY9fNWftuBSXqWY0zlu1UclngNih3wNhuam8UVqtO4tJ8JN0066AEfua4NM3/7/rLGw==
+sidebar_class_name: 'put api-method'
 info_path: docs/api/assistants/assistants-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Update assistant details"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Update assistant details'}></Heading>
 
-<MethodEndpoint
-  method={"put"}
-  path={"/assistants/{id}"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'put'} path={'/assistants/{id}'} context={'endpoint'}></MethodEndpoint>
 
 Update the details of an existing assistant
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
 <ParamsDetails
-  parameters={[{"in":"path","name":"id","required":true,"schema":{"type":"string"},"description":"Assistant ID"}]}
->
-  
-</ParamsDetails>
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Assistant ID' }]}
+></ParamsDetails>
 
 <RequestSchema
-  title={"Body"}
-  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"details":{"type":"object","properties":{"name":{"type":"string","example":"assistant"},"description":{"type":"string","example":"A helpful AI assistant"},"model":{"type":"string","example":"gpt-4"},"instructions":{"type":"string","example":"You are a helpful assistant, do your best to answer question and query"},"temperature":{"type":"number","example":1},"top_p":{"type":"number","example":1},"tools":{"type":"array","items":{"type":"string"},"example":["function","code_interpreter","file_search"]},"tool_resources":{"type":"object","additionalProperties":{"type":"object"}}}},"credential":{"type":"string","example":"7db93c02-8d5a-4117-a8f1-3dfb6721b339"},"iconSrc":{"type":"string","example":"/images/assistant.png"}},"required":["details","credential"],"title":"AssistantInput"}}},"required":true}}
->
-  
-</RequestSchema>
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', example: 'd290f1ee-6c54-4b01-90e6-d701748f0851' },
+                        details: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string', example: 'asst_zbNeYIuXIUSKVHjJkfRo6ilv' },
+                                name: { type: 'string', example: 'assistant' },
+                                description: { type: 'string' },
+                                model: { type: 'string', example: 'gpt-4' },
+                                instructions: {
+                                    type: 'string',
+                                    example: 'You are a helpful assistant, do your best to answer question and query'
+                                },
+                                temperature: { type: 'number', example: 1 },
+                                top_p: { type: 'number', example: 1 },
+                                tools: {
+                                    type: 'array',
+                                    items: { type: 'string' },
+                                    example: ['function', 'code_interpreter', 'file_search']
+                                },
+                                tool_resources: { type: 'object', additionalProperties: { type: 'object' } }
+                            }
+                        },
+                        credential: { type: 'string', example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339' },
+                        iconSrc: { type: 'string', example: '/images/assistant.png' },
+                        createdDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' },
+                        updatedDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' }
+                    },
+                    title: 'Assistant'
+                }
+            }
+        }
+    }}
+></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Assistant updated successfully","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","example":"d290f1ee-6c54-4b01-90e6-d701748f0851"},"details":{"type":"object","properties":{"id":{"type":"string","example":"asst_zbNeYIuXIUSKVHjJkfRo6ilv"},"name":{"type":"string","example":"assistant"},"description":{"type":"string","example":"A helpful AI assistant"},"model":{"type":"string","example":"gpt-4"},"instructions":{"type":"string","example":"You are a helpful assistant, do your best to answer question and query"},"temperature":{"type":"number","example":1},"top_p":{"type":"number","example":1},"tools":{"type":"array","items":{"type":"string"},"example":["function","code_interpreter","file_search"]},"tool_resources":{"type":"object","additionalProperties":{"type":"object"}}}},"credential":{"type":"string","example":"7db93c02-8d5a-4117-a8f1-3dfb6721b339"},"iconSrc":{"type":"string","example":"/images/assistant.png"},"createdDate":{"type":"string","format":"date-time","example":"2024-08-24T14:15:22Z"},"updatedDate":{"type":"string","format":"date-time","example":"2024-08-24T14:15:22Z"}},"required":["id","details","credential"],"title":"Assistant"}}}},"400":{"description":"The specified ID is invalid or body is missing","content":{"application/json":{"schema":{"type":"object","properties":{"error":{"type":"string","example":"Error message"},"status":{"type":"integer","format":"int32","example":400}},"required":["error"],"title":"Error"}}}},"404":{"description":"Assistant not found","content":{"application/json":{"schema":{"type":"object","properties":{"error":{"type":"string","example":"Error message"},"status":{"type":"integer","format":"int32","example":400}},"required":["error"],"title":"Error"}}}},"500":{"description":"Internal error","content":{"application/json":{"schema":{"type":"object","properties":{"error":{"type":"string","example":"Error message"},"status":{"type":"integer","format":"int32","example":400}},"required":["error"],"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Assistant updated successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', example: 'd290f1ee-6c54-4b01-90e6-d701748f0851' },
+                            details: {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string', example: 'asst_zbNeYIuXIUSKVHjJkfRo6ilv' },
+                                    name: { type: 'string', example: 'assistant' },
+                                    description: { type: 'string' },
+                                    model: { type: 'string', example: 'gpt-4' },
+                                    instructions: {
+                                        type: 'string',
+                                        example: 'You are a helpful assistant, do your best to answer question and query'
+                                    },
+                                    temperature: { type: 'number', example: 1 },
+                                    top_p: { type: 'number', example: 1 },
+                                    tools: {
+                                        type: 'array',
+                                        items: { type: 'string' },
+                                        example: ['function', 'code_interpreter', 'file_search']
+                                    },
+                                    tool_resources: { type: 'object', additionalProperties: { type: 'object' } }
+                                }
+                            },
+                            credential: { type: 'string', example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339' },
+                            iconSrc: { type: 'string', example: '/images/assistant.png' },
+                            createdDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' },
+                            updatedDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' }
+                        },
+                        title: 'Assistant'
+                    }
+                }
+            }
+        },
+        '400': { description: 'The specified ID is invalid or body is missing' },
+        '404': { description: 'Assistant not found' },
+        '500': { description: 'Internal error' }
+    }}
+></StatusCodes>

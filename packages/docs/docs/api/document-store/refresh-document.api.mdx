@@ -1,71 +1,199 @@
 ---
 id: refresh-document
-title: "Re-process and upsert all documents in document store"
-description: "Re-process and upsert all existing documents in document store"
-sidebar_label: "Re-process and upsert all documents in document store"
+title: 'Re-process and upsert all documents in document store'
+description: 'Re-process and upsert all existing documents in document store'
+sidebar_label: 'Re-process and upsert all documents in document store'
 hide_title: true
 hide_table_of_contents: true
-api: eJztWNtu20YQ/ZXFPCUAbUmOkzR8qmLHgNo0cSU7QWEIwYocihtTXGZ3qUsJ/nsxu6RM6mohQNGHPlkmh2dm53pmCzB8qsF/gFAG+QxTc6aNVAhjDzQGuRJmBf5DARPkClU/NzH4D+Ny7EGIOlAiM0Km4MMQzzIlA9Sa8TRkeaZRGcaThOFSaCPSKas1aCbS9T/MqfNAZqg4gQ1C8EFhpFDH15UUeJBxxWdoUGlrjyClGTcxeJDyGYIPIgQPFP7IhcIQfKNy9EAHMc44+AWYVUZS2iiRTsGDSKoZN+BDnosQys0D1arZiAxkg2ugQxM8avNehivCDGRqyDy/AJ5liQjsCTrfNUEU28rl5DsG9jSKzmsEanorwuMGbtp3n4ofOTIRYmpEJFCxSCpmYtxwLUskD1GBB7jksywhFe7Rt97Fq8vXdHL3/2CnFW2tg2smI6tlB2wWRk9on2xQjuGR1AHE2+sb9tE9XgNfyTQS011ObUM7udwl1do520oK0DJXASHFxmTa73Sqd+eBnHVqb57b05Ue6CwRxpzqLoNLw+pPW2dUVGZazBEa4Kd7b7+CYa2AXcVc8cCgYnckPaqlG4p/zrt7jSggiPP0cST+RvB73W7Xcw8+z1ElPAP/otsl50YicSVRaedK8dWW8huSYkaySRVQKg9hcKb/7Voje1vOpgdPhZWeHMYtwEzJMA/Mt6qx2QZ6XlWagz0Gf7fKDsA7JNtJjyLdchOT23cidfKMYqE7hyzWNgHWekRqcGozpa2I8qRpMk2MycqgbmrsdS8uS6/Zgw9bf+UEW7gvJlzjm0uGaSBDDF+2TuTeVa9qNZSlT0PmwYW4CsXYAyOM/bYeH3Z6uBZGWQvl5vfr3tvqLHUlHEGUaugG5SYuDT/7QGcy1S7zL7pd+rPh6TygoR3lSbJiuMQgN8iq6cvWMxm8k0ddXbnPLEvt7GgITqRMkKfbueEkmTbc5LqOZtPUdQQrL8xQaz59RqX84QSZezoh0kLYCnWemIOanuiCYz4YMt3wrM2aOpBfMDBS3Vu5YRUgih/JXO6K0SCd80SErCIfbELs4/SI7PE8Zfdx13xQSipmZZvHFs60b5VpcIq3HWQt3kS9s053h11w4otWiyNphotkZ0K10fthKOgnTxhaRfWXrakUCUyIb1ZVLLTOse7IQrN1QZXNAFrDwQXs9e6AGVSkWaOao3IG/B+x/0LE7HFNLAkik9ptFjT7oNPegDpVE+wUIiypOdtQuuUjV0mDLfJMnJsYeaoXqM656Mx725PTzUTiSg4ISm8TRxs+Fen07Dl4Iye7G8zvdBIZ8CSW2viX3W6XTNyF8pGkWIhzTGTmVoYKr7H+jSgrXeI1l8B1NEkjVIuW7dtWCLzqx03NrH77ercd8tsBe8QV47mJiVu5gmALYWIWiSWGbM6THNnlu94w/uViNr2/F1ev0vmX/K1YfPy8ePtu+T75+oaf3US95e/9+z/1X7bVUkUNn1a1D0/pQ/Svvf801x9Lh9obTHMH2V5BTlgd2ptDg/Zvsv5nEPZdfP0ZBHvNrx8qRzTY6nqN3kvfar5ZOakum6O0r2Z9xNcaPXAPvRqXHog0kjbDNqhPtYv3bwc7M4lI+YynrjLaW7D2WCCTBG0Jas/eUbTuI/q22voETGXuQHvn3fNu1bd5YPt25aRanI3yLJOK2ki7mJsFTA1sxgW91k7819ZryljqRTOeNlTsv1E5fJHS8kvjiuLnr2iq8NOS18kSLlJKanvsosqGrWskr77JAQ98ERKfpa5EkkVBCXCvkrKkxz9yVHTVNPZgzpXgE4r8QwGh0PQ7BD/iicYD53sxrHr/S7Z9ebPH+pqspkSobK8BH8CDR1y5GyWbjzHa8idz3ItqlTij1arx4dZQp77svugHAWbmoOy4MZpuP4+oW06qe6aZnfig+II8yhfOSGmdYDuzfVZAwtNpbkc5OExKLd7u1xv92Z5qpxuKwkncyUdMy3LtFUP/k2PK8h/Wwwjb
-sidebar_class_name: "post api-method"
+api: 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
+sidebar_class_name: 'post api-method'
 info_path: docs/api/document-store/document-store-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Re-process and upsert all documents in document store"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Re-process and upsert all documents in document store'}></Heading>
 
-<MethodEndpoint
-  method={"post"}
-  path={"/document-store/refresh/{id}"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'post'} path={'/document-store/refresh/{id}'} context={'endpoint'}></MethodEndpoint>
 
 Re-process and upsert all existing documents in document store
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
 <ParamsDetails
-  parameters={[{"in":"path","name":"id","required":true,"schema":{"type":"string","format":"uuid"},"description":"Document Store ID"}]}
->
-  
-</ParamsDetails>
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document Store ID' }]}
+></ParamsDetails>
 
 <RequestSchema
-  title={"Body"}
-  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the document store loader","example":"loader_12345"},"loaderId":{"type":"string","description":"ID of the loader","example":"pdf"},"loaderName":{"type":"string","description":"Name of the loader","example":"PDF Loader"},"loaderConfig":{"type":"object","description":"Configuration for the loader","example":{"source":"https://example.com/document.pdf"}},"splitterId":{"type":"string","description":"ID of the text splitter","example":"recursive"},"splitterName":{"type":"string","description":"Name of the text splitter","example":"Recursive Character Text Splitter"},"splitterConfig":{"type":"object","description":"Configuration for the text splitter","example":{"chunkSize":1000,"chunkOverlap":200}},"files":{"type":"array","description":"Files to be loaded","items":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the file","example":"file_12345"},"name":{"type":"string","description":"Name of the file","example":"product_requirements.pdf"},"type":{"type":"string","description":"Type of the file","example":"pdf"},"path":{"type":"string","description":"Path to the file","example":"/uploads/product_requirements.pdf"},"size":{"type":"integer","description":"Size of the file in bytes","example":1024},"content":{"type":"string","description":"Content of the file (base64 encoded)","example":"base64encodedcontent"}},"required":["name","type"],"title":"DocumentStoreLoaderFile"}}},"required":["loaderId","splitterId","files"],"title":"DocumentStoreLoaderForRefresh"}}},"required":true}}
->
-  
-</RequestSchema>
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        items: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    docId: {
+                                        type: 'string',
+                                        format: 'uuid',
+                                        nullable: true,
+                                        description:
+                                            'Document ID within the store. If provided, existing configuration from the document will be used for the new document'
+                                    },
+                                    metadata: {
+                                        type: 'object',
+                                        nullable: true,
+                                        description: 'Metadata associated with the document',
+                                        example: { foo: 'bar' }
+                                    },
+                                    replaceExisting: {
+                                        type: 'boolean',
+                                        nullable: true,
+                                        description:
+                                            'Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store'
+                                    },
+                                    createNewDocStore: {
+                                        type: 'boolean',
+                                        nullable: true,
+                                        description: 'Whether to create a new document store'
+                                    },
+                                    docStore: {
+                                        type: 'object',
+                                        nullable: true,
+                                        description: 'Only when createNewDocStore is true, pass in the new document store configuration',
+                                        properties: {
+                                            name: {
+                                                type: 'string',
+                                                example: 'plainText',
+                                                description: 'Name of the new document store to be created'
+                                            },
+                                            description: {
+                                                type: 'string',
+                                                example: 'plainText',
+                                                description: 'Description of the new document store to be created'
+                                            }
+                                        }
+                                    },
+                                    loader: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: { type: 'string', example: 'plainText', description: 'Name of the loader (camelCase)' },
+                                            config: { type: 'object', description: 'Configuration for the loader' }
+                                        }
+                                    },
+                                    splitter: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: {
+                                                type: 'string',
+                                                example: 'recursiveCharacterTextSplitter',
+                                                description: 'Name of the text splitter (camelCase)'
+                                            },
+                                            config: { type: 'object', description: 'Configuration for the text splitter' }
+                                        }
+                                    },
+                                    embedding: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: {
+                                                type: 'string',
+                                                example: 'openAIEmbeddings',
+                                                description: 'Name of the embedding generator (camelCase)'
+                                            },
+                                            config: { type: 'object', description: 'Configuration for the embedding generator' }
+                                        }
+                                    },
+                                    vectorStore: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: { type: 'string', example: 'faiss', description: 'Name of the vector store (camelCase)' },
+                                            config: { type: 'object', description: 'Configuration for the vector store' }
+                                        }
+                                    },
+                                    recordManager: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: {
+                                                type: 'string',
+                                                example: 'postgresRecordManager',
+                                                description: 'Name of the record manager (camelCase)'
+                                            },
+                                            config: { type: 'object', description: 'Configuration for the record manager' }
+                                        }
+                                    }
+                                },
+                                title: 'DocumentStoreLoaderForUpsert'
+                            }
+                        }
+                    },
+                    title: 'DocumentStoreLoaderForRefresh'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Successfully execute refresh operation","content":{"application/json":{"schema":{"type":"array","items":{"type":"object","properties":{"success":{"type":"boolean","description":"Success status of the operation","example":true},"message":{"type":"string","description":"Message describing the result of the operation","example":"Document upserted successfully"}},"title":"VectorUpsertResponse"}}}}},"400":{"description":"Invalid request body","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"code":{"type":"string","description":"Error code","example":"invalid_request"},"message":{"type":"string","description":"Error message","example":"The request was invalid"},"details":{"type":"object","description":"Additional error details","example":{"field":"name","issue":"Name is required"}}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully execute refresh operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                numAdded: { type: 'number', description: 'Number of vectors added', example: 1 },
+                                numDeleted: { type: 'number', description: 'Number of vectors deleted', example: 1 },
+                                numUpdated: { type: 'number', description: 'Number of vectors updated', example: 1 },
+                                numSkipped: {
+                                    type: 'number',
+                                    description: 'Number of vectors skipped (not added, deleted, or updated)',
+                                    example: 1
+                                },
+                                addedDocs: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            pageContent: { type: 'string', example: 'This is the content of the page.' },
+                                            metadata: {
+                                                type: 'object',
+                                                additionalProperties: { type: 'string' },
+                                                example: { author: 'John Doe', date: '2024-08-24' }
+                                            }
+                                        },
+                                        title: 'Document'
+                                    }
+                                }
+                            },
+                            title: 'VectorUpsertResponse'
+                        }
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid request body' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

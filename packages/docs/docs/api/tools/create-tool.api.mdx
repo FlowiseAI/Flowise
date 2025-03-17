@@ -1,71 +1,140 @@
 ---
 id: create-tool
-title: "Create a new tool"
-description: "Create a new tool"
-sidebar_label: "Create a new tool"
+title: 'Create a new tool'
+description: 'Create a new tool'
+sidebar_label: 'Create a new tool'
 hide_title: true
 hide_table_of_contents: true
-api: eJztWFmP2zYQ/isE+9AEkM/1HlFf6iS7gNNtdrv2JmjXRkBLI5uJRCo87DUE/fdiSNmRjyZGkaYv+2JL5HDu+TijgsagI8Vzw6WgIX2lgBkgjAhYEiNlSgMqc1AM9wcxDWnkKEZ+y7CZpuEDRUpNJwHVEFnFzYqGDwWdAlOg+tbMafgwKScBVfDZgjYvZbyiYUEjKQwIg48sz1MeOTGtjxp1KaiO5pAxfDKrHGhI5fQjRIYGNFeolOGgcVewDGpU2iguZjTYMe0ty4DIhJg5rC2DR5blKZ6JmYEPhmfwwW2VO4e/xfv1l7d/FNF3S8RqiEkiFYmdo0VMUCzZOFmj8EimUn1b7CskI0xrGXFmICZLbuaHpf90dXV6fnKCzHkkxVBFh9gLm6ZsigeMsrArbiitioDc3107A9ZyftYEWW6JmxuT67DVqlaakcxaSKRbaHYzFzPUZC/ARyryZnjzlvjDx1lfjJ2EMQ3HVRKNaTCupdGYhsWYJlJlzPjnDb3XydHXtHBbrzGE60NlWaJNiRX/wrVXVkT4yFJuViSup5MikYzhODuTig2ZgUHlRjyDZ17B56QgCoxVwtU27j573jTyWkYshaFTc036CylpWfpy5QpiLHFXZNtqTwJquHGCEQ8GIrcG3VA/iMa6BZ1LoX29dttt/Nv2AHIgHlxiom0UgdaJTdMVDb4XTvD4UGC8zTSk1vJ4r8TuBf9sgfAYhOEJB7WV+lvOj5L49KQD7cZFN4kanQ68aEyjXrdx2j1jyfn5WS8562GGPMHVE1ztW/9/QAeGzlccwsFXiwP90MDQ7yfTVmIs5yA2AsiS6XVNb/m72+72Gu2LRrc36vTCzmnY7f6F2tg8/o+1SZk2pBJzhErlNsQhupUB7R0CsIFYsJTHpOpxyBSbnO+GXRlozWZH4MalUlKRNXndwl0Fc6ZYBgZUVcPx0dwd7Rbrt+/614PXH277d/3fL0eXd0OPSYbxVB8ybptrP465T2ECTsD65G7u1+PhVFkHpNvdD8g7tNZ523N9CsaPCcbp4eowoJCnBrUA9RSRHxeRMqAZmLnE6S2X2jmP4UxGW35uw7ENg6Ld1GZVWrsRWc6bZg5M6CWoJuOtRWdPv1slY+v7Ts+IlsEuH23YjItZ4xh+Q097mFnYaqXYss6lNmGv3W6jioe4uMaWxLCAVOYZCLPhV5tTh5hfPoXq0+omIiiRVjc/vnsiGlQPV+sL6c370X7YbgfkE6wIs2aO3aNPbX8FJ/wRYrJgqQXSe9G5m190s9n9PX91Ihbv7DlfXt8sz188vkzfn7HGVdJ5/K1//4f+011IWBt3Xwbpy3WarQfh3e5wT69jO7tNY7dpx2rd2DE905eW6YdNYOsu6ruOQgHlIpEuLWrNgCb928HBqKNXMyZ8FkdWG5mRdalhnXnKTrPdbFcQyCJTC2DfVUd/QIY2z6XCit2upnoFIdJkjOO29uS/bm1jymDZZ0zURBz60LMzQ2yg+SBxVSAGHk0rTxkXrn9DLYsKXmqfhbBYcaEopkzDvUrLEpc/W1D4qWgS0AVT3APZw6QM6BxYDMrh0SdYudnBKdMYoVgkTy2K37szECz8iX4UQW6+SjupIePtzRBLeFp9msoc3lPFljRwvyF1n8J8ZYSFXytoysTMupuHep7obrYNIjug4ayqtphY1TQsCk8xkp9AuGT2phh8p+WkLMu/Ae+iyig=
-sidebar_class_name: "post api-method"
+api: eJztV99v2zYQ/leI28Ne5F+K03R6mtcuQIqiDWpnAxYYBU2ebLYSqZBUXMPQ/14cJTuyrbTGgAF7yIstkR/vuyPvPp62INEJqwqvjIYE3ljkHhlnGtfMG5NBBKZAy2n+RkICIiBm9ZTnSwfJPRDSwTwCh6K0ym8gud/CArlFOyn9CpL7eTWPwOJDic7/YeQGki0Ioz1qT4+8KDIlAs3giyNftuDECnNOT35TICRgFl9QeIigsOSUV+hoVskWxnmr9BIiSI3NuYcEylJJiI4CvdPqoUSmJGqvUoWWpcYyv8Jd1PiN50VGFkUqLy9GOOy9jlPRG43wt95CjOPeZfyKp1dXr8bpqzFUEWieY5cjh8QfeI7MpN1Uknv87FWOn8NUdbT4Z7bfPr09SzEJQ6x0KEPIMpy3loxo2f6sHZELkxn7c9o3BGPcOSMU9yjZWvlVN/sv19eXVxcXZFwJo6dWdJnXZZbxBS3wtsRjuqkprUB29+n9wZn96hiZPKBbeV+4ZDBoRvrC5AMCuQGF3S/0kjw5ybMzHXk3/fiB1Yufj76KIC31vwjzutSCHnmm/IbJ9tFaJozEH3LWZSrfct+Zk/vioH3o0dGfJtNBYqxXqPcEbM0daxgO9jsexuPe8HUvHs9G42R0mcTxP+RNWcj/2JuMO88amjNcqiLwygdAkLKKRkidlEVZn0cYcIXRrlaZeDikv0O3aPFuJ5grhUDn0jLLNhC9qNuLur2o24u6/T/UrYpg3CVgN/qRZ0qypjNjC2rNCBzHp+C/CBoKiKG1xhLwstuqR6t5xhzaR7Q7dBVBjn5lqI8sjAtax6k7hEHdQVIDSQtc6B9Lm7WynBeq71fItVuj7XM1eByd7OOtNbIMedUwQxUd23GeL5Ve9s6xN62x3caSwSAzgmcr43wyHg6H5GKXlfeEYhIfMTNFjtrv7bU65ilVWq347b55n07ECE0103sNgqh5uN4l2bu/Z2Gj6Zr59NRu/7lLmfpCOU/2d6p/rNzHAZ6tunvR3UtlSynP0bMnOWvVVxCgp/cDceiukKOafbaylU5NOINWNTk2ub053YLbmxB6znWdMqJ03uRsl9eU1DVy1B/2h017wEVoD5pdnoRUnNywaVkUxlJ5HKZuO11JBnKuaNrV8N8PpikHqMZyrlsUXd93R5fwvm3pBDfZ6PGbHxQZVzoIIHm5bWq59TVIlUED2+2CO7yzWVXR8EOJlr4Q5xE8cqvqS+J+XkWwQi7RhuL/iptw+QZnejOiJXhWEv1JP0WVWa+YCIGF/yF23pKh24/TGRVR80WaG0lrLF9DFH4TCF/Adfom23psCxnXy5IvCVvbpO3mhxV7VKEhqmaK603Lw+22RszMV9RVBVETiqd3qOZVVX0HnahMlg==
+sidebar_class_name: 'post api-method'
 info_path: docs/api/tools/tools-api
 custom_edit_url: null
 ---
 
-import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
-import ParamsDetails from "@theme/ParamsDetails";
-import RequestSchema from "@theme/RequestSchema";
-import StatusCodes from "@theme/StatusCodes";
-import OperationTabs from "@theme/OperationTabs";
-import TabItem from "@theme/TabItem";
-import Heading from "@theme/Heading";
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
 
-<Heading
-  as={"h1"}
-  className={"openapi__heading"}
-  children={"Create a new tool"}
->
-</Heading>
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new tool'}></Heading>
 
-<MethodEndpoint
-  method={"post"}
-  path={"/tools"}
-  context={"endpoint"}
->
-  
-</MethodEndpoint>
-
-
+<MethodEndpoint method={'post'} path={'/tools'} context={'endpoint'}></MethodEndpoint>
 
 Create a new tool
 
-<Heading
-  id={"request"}
-  as={"h2"}
-  className={"openapi-tabs__heading"}
-  children={"Request"}
->
-</Heading>
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
 
-<ParamsDetails
-  parameters={undefined}
->
-  
-</ParamsDetails>
+<ParamsDetails parameters={undefined}></ParamsDetails>
 
 <RequestSchema
-  title={"Body"}
-  body={{"content":{"application/json":{"schema":{"type":"object","properties":{"name":{"type":"string","description":"Name of the tool","example":"date_time_tool"},"description":{"type":"string","description":"Description of the tool","example":"A tool used for date and time operations"},"color":{"type":"string","description":"Color associated with the tool","example":"#FF5733"},"iconSrc":{"type":"string","nullable":true,"description":"Source URL for the tool's icon","example":"https://example.com/icons/date.png"},"schema":{"type":"string","nullable":true,"description":"JSON schema associated with the tool","example":"{\"type\":\"object\",\"properties\":{\"format\":{\"type\":\"string\",\"description\":\"Date format\"}}}"},"func":{"type":"string","nullable":true,"description":"Functionality description or code associated with the tool","example":"function getDateTime(format) { return new Date().toLocaleString(format); }"}},"required":["name","description"],"title":"ToolInput"}}},"required":true}}
->
-  
-</RequestSchema>
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: {
+                            type: 'string',
+                            format: 'uuid',
+                            description: 'Unique identifier for the tool',
+                            example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                        },
+                        name: { type: 'string', description: 'Name of the tool', example: 'date_time_tool' },
+                        description: {
+                            type: 'string',
+                            description: 'Description of the tool',
+                            example: 'A tool used for date and time operations'
+                        },
+                        color: { type: 'string', description: 'Color associated with the tool', example: '#FF5733' },
+                        iconSrc: {
+                            type: 'string',
+                            nullable: true,
+                            description: "Source URL for the tool's icon",
+                            example: 'https://example.com/icons/date.png'
+                        },
+                        schema: { type: 'string', nullable: true, description: 'JSON schema associated with the tool' },
+                        func: { type: 'string', nullable: true, description: 'Functionality description or code associated with the tool' },
+                        createdDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the tool was created',
+                            example: '2024-08-24T14:15:22Z'
+                        },
+                        updatedDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the tool was last updated',
+                            example: '2024-08-24T14:15:22Z'
+                        }
+                    },
+                    title: 'Tool'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
 
 <StatusCodes
-  id={undefined}
-  label={undefined}
-  responses={{"200":{"description":"Tool created successfully","content":{"application/json":{"schema":{"type":"object","properties":{"id":{"type":"string","format":"uuid","description":"Unique identifier for the tool","example":"cfd531e0-82fc-11e9-bc42-526af7764f64"},"name":{"type":"string","description":"Name of the tool","example":"date_time_tool"},"description":{"type":"string","description":"Description of the tool","example":"A tool used for date and time operations"},"color":{"type":"string","description":"Color associated with the tool","example":"#FF5733"},"iconSrc":{"type":"string","nullable":true,"description":"Source URL for the tool's icon","example":"https://example.com/icons/date.png"},"schema":{"type":"string","nullable":true,"description":"JSON schema associated with the tool"},"func":{"type":"string","nullable":true,"description":"Functionality description or code associated with the tool"},"createdDate":{"type":"string","format":"date-time","description":"Date and time when the tool was created","example":"2024-08-24T14:15:22Z"},"updatedDate":{"type":"string","format":"date-time","description":"Date and time when the tool was last updated","example":"2024-08-24T14:15:22Z"}},"title":"Tool"}}}},"400":{"description":"Invalid request body","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error message","example":"Invalid request parameters"},"code":{"type":"string","description":"Error code","example":"INVALID_PARAMETERS"},"details":{"type":"object","description":"Additional error details","nullable":true}},"title":"Error"}}}},"422":{"description":"Validation error","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error message","example":"Invalid request parameters"},"code":{"type":"string","description":"Error code","example":"INVALID_PARAMETERS"},"details":{"type":"object","description":"Additional error details","nullable":true}},"title":"Error"}}}},"500":{"description":"Internal server error","content":{"application/json":{"schema":{"type":"object","properties":{"message":{"type":"string","description":"Error message","example":"Invalid request parameters"},"code":{"type":"string","description":"Error code","example":"INVALID_PARAMETERS"},"details":{"type":"object","description":"Additional error details","nullable":true}},"title":"Error"}}}}}}
->
-  
-</StatusCodes>
-
-
-      
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Tool created successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid',
+                                description: 'Unique identifier for the tool',
+                                example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                            },
+                            name: { type: 'string', description: 'Name of the tool', example: 'date_time_tool' },
+                            description: {
+                                type: 'string',
+                                description: 'Description of the tool',
+                                example: 'A tool used for date and time operations'
+                            },
+                            color: { type: 'string', description: 'Color associated with the tool', example: '#FF5733' },
+                            iconSrc: {
+                                type: 'string',
+                                nullable: true,
+                                description: "Source URL for the tool's icon",
+                                example: 'https://example.com/icons/date.png'
+                            },
+                            schema: { type: 'string', nullable: true, description: 'JSON schema associated with the tool' },
+                            func: {
+                                type: 'string',
+                                nullable: true,
+                                description: 'Functionality description or code associated with the tool'
+                            },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the tool was created',
+                                example: '2024-08-24T14:15:22Z'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the tool was last updated',
+                                example: '2024-08-24T14:15:22Z'
+                            }
+                        },
+                        title: 'Tool'
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid request body' },
+        '422': { description: 'Validation error' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>
