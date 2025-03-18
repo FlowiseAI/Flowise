@@ -1,0 +1,35 @@
+{
+    "name": "Node.js & TypeScript",
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bookworm",
+    "forwardPorts": [
+        3000
+    ],
+    "portsAttributes": {
+        "3000": {
+            "label": "Flowise"
+        }
+    },
+
+    // Volume mounts for persistent storage between container rebuilds
+    "mounts": [
+        // Persists node_modules to avoid reinstalling packages on container rebuild
+        // Using Docker volumes instead of bind mounts improves I/O performance significantly
+        "source=${localWorkspaceFolderBasename}-node_modules,target=/workspaces/${localWorkspaceFolderBasename}/node_modules,type=volume",
+        // Persists pnpm's global store to cache downloaded packages
+        // Located in the node user's home directory to avoid permission issues
+        "source=${localWorkspaceFolderBasename}-pnpm-store,target=/home/node/.local/share/pnpm/store,type=volume"
+    ],
+
+    // Commands to run after the container is created but before VS Code connects
+    // 1. Create directories 2. Fix permissions 3. Install pnpm 4. Configure pnpm store 5. Install dependencies
+    "postCreateCommand": "sudo mkdir -p /workspaces/${localWorkspaceFolderBasename}/node_modules /home/node/.local/share/pnpm/store && sudo chown -R node:node /workspaces/${localWorkspaceFolderBasename} /home/node/.local/share/pnpm/store && npm i -g pnpm && pnpm config set store-dir /home/node/.local/share/pnpm/store && pnpm install",
+    // VS Code specific settings
+    "customizations": {
+        "vscode": {
+            "settings": {
+                // Use pnpm as the default package manager in VS Code
+                "npm.packageManager": "pnpm"
+            }
+        }
+    }
+}
