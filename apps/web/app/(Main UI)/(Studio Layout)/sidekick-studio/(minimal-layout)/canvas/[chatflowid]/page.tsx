@@ -1,6 +1,6 @@
 import React from 'react'
-
-import View from '@/views/canvas/index'
+import dynamic from 'next/dynamic'
+const View = dynamic(() => import('@/views/canvas/index'), { ssr: false })
 
 const Page = ({ params }: { params: { chatflowid: string } }) => {
     return (
