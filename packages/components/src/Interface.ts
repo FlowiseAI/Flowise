@@ -436,6 +436,7 @@ export type FollowUpPromptProviderConfig = {
     [key in FollowUpPromptProvider]: {
         credentialId: string
         modelName: string
+        baseUrl: string
         prompt: string
         temperature: string
     }
