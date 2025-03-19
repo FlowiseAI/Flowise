@@ -126,19 +126,21 @@ const getCachedSession = cache(
             session.user.chatflowDomain = session.user.chatflowDomain?.replace('8080', '4000')
         }
         //Check if user has a subscription make sure no error is thrown
-        let subscription = null
-        try {
-            // console.log('session.user.stripeCustomerId', session.user)
-            subscription = await stripe.subscriptions.list({
-                customer: session.user.stripeCustomerId,
-                status: 'active'
-            })
-        } catch (error) {
-            console.error('Error checking Stripe subscription:', error)
-        }
-        if (subscription?.data?.length && subscription?.data?.length > 0) {
-            const subscriptionData = subscription.data[0]
-            session.user.subscription = subscriptionData
+        if (session?.user) {
+            let subscription = null
+            try {
+                // console.log('session.user.stripeCustomerId', session.user)
+                subscription = await stripe.subscriptions.list({
+                    customer: session.user.stripeCustomerId,
+                    status: 'active'
+                })
+            } catch (error) {
+                console.error('Error checking Stripe subscription:', error)
+            }
+            if (subscription?.data?.length && subscription?.data?.length > 0) {
+                const subscriptionData = subscription.data[0]
+                session.user.subscription = subscriptionData
+            }
         }
 
         return session as { user: User; flagsmithState: any; accessToken: string; subscription: any }
