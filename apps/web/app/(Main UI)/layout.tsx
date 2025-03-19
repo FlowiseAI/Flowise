@@ -14,19 +14,15 @@ const MainUiLayout = async (props: {
 }) => {
     const [session] = await Promise.all([getCachedSession()])
 
-    // TODO: Check if the user is accessing the correct answeraiDomain
-    // Get the current domain from the request
-    // Check if the domain is the same as the answeraiDomain
-    // If not, redirect to the correct domain
-    // If yes, continue
-    // If no answeraiDomain, continue
-    // If no session, continue
-    // If no session, redirect to the login page
     const headersList = headers()
     const host = headersList.get('host') || ''
     const currentDomain = host.split(':')[0] // Remove port if present
-    if (session?.user?.answersDomain !== currentDomain && !currentDomain.includes('localhost') && !currentDomain.includes('staging.')) {
-        console.log('Redirecting to:', session.user.answersDomain)
+    const userDomain = session ? session?.user?.answersDomain?.split('https://')[1] : null // Remove the protocol
+
+    console.log('userDomain', userDomain, session?.user?.answersDomain, 'currentDomain', currentDomain)
+
+    if (userDomain && userDomain !== currentDomain && !currentDomain.includes('localhost') && !currentDomain.includes('staging.')) {
+        console.log('Redirecting to:', session.user.answersDomain, 'from', currentDomain)
         redirect(session.user.answersDomain)
     }
 
