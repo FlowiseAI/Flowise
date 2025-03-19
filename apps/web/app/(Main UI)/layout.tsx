@@ -21,7 +21,7 @@ const MainUiLayout = async (props: {
 
     console.log('userDomain', userDomain, session?.user?.answersDomain, 'currentDomain', currentDomain)
 
-    if (userDomain && userDomain !== currentDomain && !currentDomain.includes('localhost') && !currentDomain.includes('staging.')) {
+    if (userDomain && userDomain !== currentDomain && !currentDomain.includes('localhost')) {
         console.log('Redirecting to:', session.user.answersDomain, 'from', currentDomain)
         redirect(session.user.answersDomain)
     }
