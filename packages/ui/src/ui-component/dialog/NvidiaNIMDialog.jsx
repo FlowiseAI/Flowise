@@ -22,11 +22,11 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const portalElement = document.getElementById('portal')
 
     const modelOptions = {
-        'nv-mistralai/mistral-nemo-12b-instruct:1.8.0-rtx': {
+        'nvcr.io/nim/nv-mistralai/mistral-nemo-12b-instruct:1.8.0-rtx': {
             label: 'Mistral Nemo 12B Instruct',
             licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nim/teams/nv-mistralai/containers/mistral-nemo-12b-instruct'
         },
-        'meta/llama-3.1-8b-instruct:1.8.0-RTX': {
+        'nvcr.io/nim/meta/llama-3.1-8b-instruct:1.8.0-RTX': {
             label: 'Llama 3.1 8B Instruct',
             licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nim/teams/meta/containers/llama-3.1-8b-instruct'
         }
