@@ -1,32 +1,32 @@
-import { useState, useEffect } from 'react'
-import { createPortal } from 'react-dom'
-import axios from 'axios'
-import PropTypes from 'prop-types'
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Button,
     CircularProgress,
-    Stepper,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControl,
+    InputLabel,
+    MenuItem,
+    Select,
     Step,
     StepLabel,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel
+    Stepper
 } from '@mui/material'
+import axios from 'axios'
+import PropTypes from 'prop-types'
+import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const portalElement = document.getElementById('portal')
 
     const modelOptions = {
-        'nv-mistralai/mistral-nemo-12b-instruct:latest': {
+        'nv-mistralai/mistral-nemo-12b-instruct:1.8.0-rtx': {
             label: 'Mistral Nemo 12B Instruct',
-            licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nvidia/teams/nv-mistralai/containers/mistral-nemo-12b-instruct'
+            licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nim/teams/nv-mistralai/containers/mistral-nemo-12b-instruct'
         },
-        'meta/llama-3.1-8b-instruct-rtx:latest': {
+        'meta/llama-3.1-8b-instruct:1.8.0-RTX': {
             label: 'Llama 3.1 8B Instruct',
             licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nim/teams/meta/containers/llama-3.1-8b-instruct'
         }
