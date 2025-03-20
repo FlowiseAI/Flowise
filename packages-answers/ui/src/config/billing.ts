@@ -1,33 +1,33 @@
 // Constants for billing calculations
-const CREDIT_PRICE_USD = 0.00004 // $20 for 500k credits
-const PRO_PLAN_CREDITS = 500000 // 500k credits for Pro plan
-const FREE_PLAN_CREDITS = 10000 // 10k credits for Free plan
+const BILLING_CREDIT_PRICE_USD = 0.00004 // $20 for 500k credits
+const BILLING_PRO_PLAN_CREDITS = 500000 // 500k credits for Pro plan
+const BILLING_FREE_PLAN_CREDITS = 10000 // 10k credits for Free plan
 
 export const BILLING_CONFIG = {
     // Base rate: $20 for 500,000 credits = $0.00004 per credit
-    CREDIT_TO_USD: CREDIT_PRICE_USD,
+    CREDIT_TO_USD: BILLING_CREDIT_PRICE_USD,
 
     // Plan limits
     PLAN_LIMITS: {
-        PRO: PRO_PLAN_CREDITS,
-        FREE: FREE_PLAN_CREDITS
+        PRO: BILLING_PRO_PLAN_CREDITS,
+        FREE: BILLING_FREE_PLAN_CREDITS
     },
 
     RATES: {
         AI_TOKENS: {
             UNIT: 1000,
             CREDITS: 100,
-            COST: 100 * CREDIT_PRICE_USD // $0.004 for 1000 tokens
+            COST: 100 * BILLING_CREDIT_PRICE_USD // $0.004 for 1000 tokens
         },
         COMPUTE: {
             UNIT: 1, // minutes
             CREDITS: 50,
-            COST: 50 * CREDIT_PRICE_USD // $0.002 per minute
+            COST: 50 * BILLING_CREDIT_PRICE_USD // $0.002 per minute
         },
         STORAGE: {
             UNIT: 1, // GB per month
             CREDITS: 500,
-            COST: 500 * CREDIT_PRICE_USD // $0.02 per GB
+            COST: 500 * BILLING_CREDIT_PRICE_USD // $0.02 per GB
         }
     },
 

@@ -1,7 +1,7 @@
 import Stripe from 'stripe'
 
 // Initialize Stripe client
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+export const stripe = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY!)
 
 // Stripe-specific billing configuration
 export const STRIPE_CONFIG = {

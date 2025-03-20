@@ -152,7 +152,7 @@ async function getSubscriptionWithUsage(subscriptionId: string) {
 
 async function handleWebhook(payload: any, signature: string) {
     try {
-        const event = stripeClient.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET!)
+        const event = stripeClient.webhooks.constructEvent(payload, signature, process.env.BILLING_STRIPE_WEBHOOK_SECRET!)
 
         const appServer = getRunningExpressApp()
         const stripeEventRepo = appServer.AppDataSource.getRepository(StripeEvent)

@@ -3,36 +3,36 @@ import { Logger } from 'winston'
 import { Langfuse } from 'langfuse'
 
 // Initialize Stripe client
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '')
+export const stripe = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY || '')
 
 // Initialize logger
 export const log = console as unknown as Logger
 
 // Default customer ID for development
-export const DEFAULT_CUSTOMER_ID = process.env.DEFAULT_STRIPE_CUSTOMER_ID ?? 'cus_Re7UrYXnBJisB8'
+export const DEFAULT_CUSTOMER_ID = process.env.BILLING_DEFAULT_STRIPE_CUSTOMER_ID ?? 'cus_Re7UrYXnBJisB8'
 
 // Load environment variables with defaults
-const CREDIT_PRICE_USD = parseFloat(process.env.CREDIT_PRICE_USD || '0.00004') // $20 for 500k credits
+const BILLING_CREDIT_PRICE_USD = parseFloat(process.env.BILLING_CREDIT_PRICE_USD || '0.00004') // $20 for 500k credits
 const MARGIN_MULTIPLIER = parseFloat(process.env.BILLING_MARGIN_MULTIPLIER || '1.2') // 20% margin
-const PRO_PLAN_CREDITS = parseInt(process.env.PRO_PLAN_CREDITS || '500000') // 500k credits for Pro plan
-const FREE_PLAN_CREDITS = parseInt(process.env.FREE_PLAN_CREDITS || '10000') // 10k credits for Free plan
+const BILLING_PRO_PLAN_CREDITS = parseInt(process.env.BILLING_PRO_PLAN_CREDITS || '500000') // 500k credits for Pro plan
+const BILLING_FREE_PLAN_CREDITS = parseInt(process.env.BILLING_FREE_PLAN_CREDITS || '10000') // 10k credits for Free plan
 
 // Billing configuration
 export const BILLING_CONFIG = {
     PRICE_IDS: {
         FREE_MONTHLY: process.env.STRIPE_FREE_PRICE_ID || 'price_1QhDqdFeRAHyP6byOK161faI',
-        PAID_MONTHLY: process.env.STRIPE_PAID_PRICE_ID || 'price_1QhDqdFeRAHyP6byOK161faI'
+        PAID_MONTHLY: process.env.BILLING_STRIPE_PAID_PRICE_ID || 'price_1QhDqdFeRAHyP6byOK161faI'
     },
     // Base rate: $20 for 500,000 credits = $0.00004 per credit
-    CREDIT_TO_USD: CREDIT_PRICE_USD,
+    CREDIT_TO_USD: BILLING_CREDIT_PRICE_USD,
     MARGIN_MULTIPLIER: MARGIN_MULTIPLIER,
-    CREDITS_METER_ID: process.env.STRIPE_CREDITS_METER_ID || 'mtr_test_61S7tgODE3yzFip9Q41FeRAHyP6byJRI',
-    CREDITS_METER_NAME: 'credits',
+    BILLING_CREDITS_METER_ID: process.env.STRIPE_CREDITS_METER_ID || 'mtr_test_61S7tgODE3yzFip9Q41FeRAHyP6byJRI',
+    BILLING_CREDITS_METER_NAME: 'credits',
 
     // Plan limits
     PLAN_LIMITS: {
-        PRO: PRO_PLAN_CREDITS,
-        FREE: FREE_PLAN_CREDITS
+        PRO: BILLING_PRO_PLAN_CREDITS,
+        FREE: BILLING_FREE_PLAN_CREDITS
     },
 
     // Validation rules

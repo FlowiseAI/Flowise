@@ -18,14 +18,14 @@ The billing configuration is centralized in `config.ts` and uses environment var
 
 | Variable                    | Description                             | Default                        |
 | --------------------------- | --------------------------------------- | ------------------------------ |
-| `CREDIT_PRICE_USD`          | Base price per Credit in USD            | 0.00004 ($20 for 500k Credits) |
+| `BILLING_CREDIT_PRICE_USD`          | Base price per Credit in USD            | 0.00004 ($20 for 500k Credits) |
 | `BILLING_MARGIN_MULTIPLIER` | Margin multiplier for billing           | 1.2 (20% margin)               |
-| `PRO_PLAN_CREDITS`          | Number of Credits included in Pro plan  | 500000                         |
-| `FREE_PLAN_CREDITS`         | Number of Credits included in Free plan | 10000                          |
-| `STRIPE_SECRET_KEY`         | Stripe API secret key                   | -                              |
+| `BILLING_PRO_PLAN_CREDITS`          | Number of Credits included in Pro plan  | 500000                         |
+| `BILLING_FREE_PLAN_CREDITS`         | Number of Credits included in Free plan | 10000                          |
+| `BILLING_STRIPE_SECRET_KEY`         | Stripe API secret key                   | -                              |
 | `STRIPE_CREDITS_METER_ID`   | Stripe meter ID for Credits             | -                              |
 | `STRIPE_FREE_PRICE_ID`      | Stripe price ID for Free plan           | -                              |
-| `STRIPE_PAID_PRICE_ID`      | Stripe price ID for Paid plan           | -                              |
+| `BILLING_STRIPE_PAID_PRICE_ID`      | Stripe price ID for Paid plan           | -                              |
 
 ### Resource Allocation
 
@@ -69,4 +69,4 @@ Usage is calculated based on the following formulas:
 -   Compute: `minutes * 50 = Credits`
 -   Storage: `GB * 500 = Credits`
 
-Total cost is calculated as: `Credits * CREDIT_PRICE_USD`
+Total cost is calculated as: `Credits * BILLING_CREDIT_PRICE_USD`

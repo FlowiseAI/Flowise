@@ -607,8 +607,8 @@ export class StripeProvider {
                 .map((summary) => {
                     // Map meter IDs to their names based on config
                     let meterName = 'Unknown'
-                    if (summary.meter === BILLING_CONFIG.CREDITS_METER_ID) {
-                        meterName = BILLING_CONFIG.CREDITS_METER_NAME
+                    if (summary.meter === BILLING_CONFIG.BILLING_CREDITS_METER_ID) {
+                        meterName = BILLING_CONFIG.BILLING_CREDITS_METER_NAME
                     }
 
                     return {
@@ -946,7 +946,7 @@ export class StripeProvider {
 
     async handleWebhook(payload: any, signature: string): Promise<any> {
         try {
-            const event = this.stripeClient.webhooks.constructEvent(payload, signature, process.env.STRIPE_WEBHOOK_SECRET!)
+            const event = this.stripeClient.webhooks.constructEvent(payload, signature, process.env.BILLING_STRIPE_WEBHOOK_SECRET!)
 
             const appServer = getRunningExpressApp()
             const stripeEventRepo = appServer.AppDataSource.getRepository(StripeEvent)

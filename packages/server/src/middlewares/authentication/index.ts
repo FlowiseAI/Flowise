@@ -273,7 +273,7 @@ export const authenticationHandlerMiddleware =
                             stripeCustomerId = organization.stripeCustomerId
                         } else {
                             try {
-                                const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '')
+                                const stripe = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY ?? '')
 
                                 const customer = await stripe.customers.create({
                                     email,
