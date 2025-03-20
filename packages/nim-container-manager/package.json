@@ -1,0 +1,21 @@
+{
+    "name": "nim-container-manager",
+    "version": "1.0.5",
+    "description": "Manages the container runtime for NVIDIA NIM via interfacing with the podman API",
+    "main": "src/NimContainerManager.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "nvidia",
+        "nim",
+        "container",
+        "podman",
+        "docker"
+    ],
+    "author": "Timothy Carambat from Mintplex Labs",
+    "license": "MIT",
+    "dependencies": {
+        "dockerode": "^3.3.5"
+    }
+}
