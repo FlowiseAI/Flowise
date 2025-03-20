@@ -27,6 +27,6 @@ export class Organization implements IOrganization {
     @Column({ type: 'boolean', default: false })
     billingPoolEnabled?: boolean
 
-    @Column({ type: 'uuid', nullable: true })
+    @Column({ nullable: true })
     stripeCustomerId?: string
 }
