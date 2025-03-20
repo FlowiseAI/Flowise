@@ -1,5 +1,6 @@
 import axios from 'axios'
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
+import logger from '../../utils/logger'
 
 const { NimContainerManager } = require('nim-container-manager')
 
@@ -65,13 +66,17 @@ const startContainer = async (req: Request, res: Response, next: NextFunction) =
 const getImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const imageTag = req.body.imageTag
+        logger.info('[NIM Debug] Getting image with tag:', imageTag)
         const images = await NimContainerManager.userImageLibrary()
+        logger.info('[NIM Debug] userImageLibrary response:', images)
         const image = images.find((img: any) => img.tag === imageTag)
         if (!image) {
+            logger.info('[NIM Debug] Image not found in library')
             return res.status(404).send(`Image ${imageTag} not found`)
         }
         return res.json(image)
     } catch (error) {
+        logger.error('[NIM Debug] Error in getImage:', error)
         next(error)
     }
 }
@@ -79,18 +84,23 @@ const getImage = async (req: Request, res: Response, next: NextFunction) => {
 const getContainer = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const imageTag = req.body.imageTag
+        logger.info('[NIM Debug] Getting container for image tag:', imageTag)
         const images = await NimContainerManager.userImageLibrary()
+        logger.info('[NIM Debug] userImageLibrary response for container:', images)
         const image = images.find((img: any) => img.tag === imageTag)
         if (!image) {
+            logger.info('[NIM Debug] Image not found in library for container')
             return res.status(404).send(`Image ${imageTag} not found`)
         }
         if (!image.container) {
+            logger.info('[NIM Debug] Container not found for image')
             return res.status(404).send(`Container of ${imageTag} not found`)
         }
         const container = image.container
         container.image = image.name
         return res.json(container)
     } catch (error) {
+        logger.error('[NIM Debug] Error in getContainer:', error)
         next(error)
     }
 }
