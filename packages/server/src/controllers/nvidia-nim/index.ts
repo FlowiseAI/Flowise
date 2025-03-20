@@ -1,7 +1,7 @@
 import axios from 'axios'
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 
-const { NimContainerManager } = require('nim-container-manager')
+const { NimContainerManager } = require('flowise-nim-container-manager')
 
 const getToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
