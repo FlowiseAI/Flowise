@@ -22,13 +22,17 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const portalElement = document.getElementById('portal')
 
     const modelOptions = {
-        'nvcr.io/nim/nv-mistralai/mistral-nemo-12b-instruct:1.8.0-rtx': {
-            label: 'Mistral Nemo 12B Instruct',
-            licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nim/teams/nv-mistralai/containers/mistral-nemo-12b-instruct'
-        },
         'nvcr.io/nim/meta/llama-3.1-8b-instruct:1.8.0-RTX': {
             label: 'Llama 3.1 8B Instruct',
             licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nim/teams/meta/containers/llama-3.1-8b-instruct'
+        },
+        'nvcr.io/nim/deepseek-ai/deepseek-r1-distill-llama-8b:1.8.0-RTX': {
+            label: 'DeepSeek R1 Distill Llama 8B',
+            licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nim/teams/deepseek-ai/containers/deepseek-r1-distill-llama-8b'
+        },
+        'nvcr.io/nim/nv-mistralai/mistral-nemo-12b-instruct:1.8.0-rtx': {
+            label: 'Mistral Nemo 12B Instruct',
+            licenseUrl: 'https://catalog.ngc.nvidia.com/orgs/nim/teams/nv-mistralai/containers/mistral-nemo-12b-instruct'
         }
     }
 
