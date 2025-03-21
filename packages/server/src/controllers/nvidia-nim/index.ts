@@ -57,7 +57,13 @@ const startContainer = async (req: Request, res: Response, next: NextFunction) =
         const imageTag = req.body.imageTag
         const apiKey = req.body.apiKey
         const hostPort = req.body.hostPort
-        const nimRelaxMemConstraints = req.body.nimRelaxMemConstraints
+        const nimRelaxMemConstraints = parseInt(req.body.nimRelaxMemConstraints)
+
+        // Validate nimRelaxMemConstraints
+        if (isNaN(nimRelaxMemConstraints) || (nimRelaxMemConstraints !== 0 && nimRelaxMemConstraints !== 1)) {
+            return res.status(400).send('nimRelaxMemConstraints must be 0 or 1')
+        }
+
         logger.info(`hostPort: ${hostPort}`)
         logger.info(`nimRelaxMemConstraints: ${nimRelaxMemConstraints}`)
         await NimContainerManager.startContainer(imageTag, apiKey, hostPort, nimRelaxMemConstraints)

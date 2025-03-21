@@ -166,7 +166,7 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
             await axios.post('/api/v1/nvidia-nim/start-container', {
                 imageTag,
                 apiKey,
-                nimRelaxMemConstraints: nimRelaxMemConstraints === '1',
+                nimRelaxMemConstraints: parseInt(nimRelaxMemConstraints),
                 hostPort: parseInt(hostPort)
             })
 
