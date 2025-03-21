@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { NextFunction, Request, Response } from 'express'
+import logger from '../../utils/logger'
 
 const { NimContainerManager } = require('flowise-nim-container-manager')
 
@@ -55,7 +56,11 @@ const startContainer = async (req: Request, res: Response, next: NextFunction) =
     try {
         const imageTag = req.body.imageTag
         const apiKey = req.body.apiKey
-        await NimContainerManager.startContainer(imageTag, apiKey)
+        const hostPort = req.body.hostPort
+        const nimRelaxMemConstraints = req.body.nimRelaxMemConstraints
+        logger.info('hostPort', hostPort)
+        logger.info('nimRelaxMemConstraints', nimRelaxMemConstraints)
+        await NimContainerManager.startContainer(imageTag, apiKey, hostPort, nimRelaxMemConstraints)
         return res.send(`Starting container ${imageTag}`)
     } catch (error) {
         next(error)
