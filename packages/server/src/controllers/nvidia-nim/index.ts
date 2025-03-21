@@ -85,11 +85,30 @@ const getImage = async (req: Request, res: Response, next: NextFunction) => {
 const getContainer = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const imageTag = req.body.imageTag
+        const port = req.body.port
+
+        // First check if the image exists
         const images = await NimContainerManager.userImageLibrary()
         const image = images.find((img: any) => img.tag === imageTag)
         if (!image) {
             return res.status(404).send(`Image ${imageTag} not found`)
         }
+
+        // If port is provided, check for container with specific port
+        if (port) {
+            const containers = await NimContainerManager.listRunningContainers()
+            const container = containers.find(
+                (cont: any) => cont.image === image.name && cont.ports && cont.ports.some((p: any) => p.hostPort === port)
+            )
+
+            if (!container) {
+                return res.status(404).send(`Container of ${imageTag} with port ${port} not found`)
+            }
+            container.image = image.name
+            return res.json(container)
+        }
+
+        // If no port specified, return the container associated with the image
         if (!image.container) {
             return res.status(404).send(`Container of ${imageTag} not found`)
         }
