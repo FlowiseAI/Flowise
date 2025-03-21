@@ -25,6 +25,7 @@ export const OMIT_QUEUE_JOB_DATA = ['componentNodes', 'appDataSource', 'sseStrea
 
 export const INPUT_PARAMS_TYPE = [
     'asyncOptions',
+    'asyncMultiOptions',
     'options',
     'multiOptions',
     'datagrid',

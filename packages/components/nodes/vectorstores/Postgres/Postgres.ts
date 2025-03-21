@@ -84,6 +84,14 @@ class Postgres_VectorStores implements INode {
                 optional: true
             },
             {
+                label: 'SSL',
+                name: 'ssl',
+                description: 'Use SSL to connect to Postgres',
+                type: 'boolean',
+                additionalParams: true,
+                optional: true
+            },
+            {
                 label: 'Table Name',
                 name: 'tableName',
                 type: 'string',
