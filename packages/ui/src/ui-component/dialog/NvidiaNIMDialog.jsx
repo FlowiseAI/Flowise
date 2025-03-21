@@ -145,33 +145,26 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const handleStartContainer = async () => {
         try {
             setLoading(true)
-            // If we're starting a new container (existingContainer is null), check if there's a container with the same port
-            if (!existingContainer) {
-                try {
-                    const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', {
-                        imageTag,
-                        port: parseInt(hostPort)
-                    })
-                    if (containerResponse.data) {
-                        setExistingContainer(containerResponse.data)
-                        setShowContainerConfirm(true)
-                        setLoading(false)
-                        return
-                    }
-                } catch (err) {
-                    // Continue if container not found
-                    if (err.response?.status !== 404) {
-                        throw err
-                    }
+            try {
+                const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', {
+                    imageTag,
+                    port: parseInt(hostPort)
+                })
+                if (containerResponse.data) {
+                    setExistingContainer(containerResponse.data)
+                    setShowContainerConfirm(true)
+                    setLoading(false)
+                    return
                 }
-                // No container found with this port, proceed with starting new container
-                await startNewContainer()
-                return
+            } catch (err) {
+                // Continue if container not found
+                if (err.response?.status !== 404) {
+                    throw err
+                }
             }
 
-            // If we have an existing container, show the confirmation dialog
-            setShowContainerConfirm(true)
-            setLoading(false)
+            // No container found with this port, proceed with starting new container
+            await startNewContainer()
         } catch (err) {
             let errorData = err.message
             if (typeof err === 'string') {
@@ -239,7 +232,10 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
             // Start polling for container status
             const interval = setInterval(async () => {
                 try {
-                    const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
+                    const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', {
+                        imageTag,
+                        port: parseInt(hostPort)
+                    })
                     if (containerResponse.data) {
                         clearInterval(interval)
                         setLoading(false)
