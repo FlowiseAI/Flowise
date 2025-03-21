@@ -157,6 +157,12 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                     return
                 }
             } catch (err) {
+                // Handle port in use by non-model container
+                if (err.response?.status === 409) {
+                    alert(`Port ${hostPort} is already in use by another container. Please choose a different port.`)
+                    setLoading(false)
+                    return
+                }
                 // Continue if container not found
                 if (err.response?.status !== 404) {
                     throw err

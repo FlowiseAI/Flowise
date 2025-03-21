@@ -97,14 +97,28 @@ const getContainer = async (req: Request, res: Response, next: NextFunction) => 
         // Get all running containers
         const containers = await NimContainerManager.listRunningContainers()
 
-        // Find container with matching image and port
-        const container = containers.find(
-            (cont: any) => cont.image === image.name && cont.ports && cont.ports.some((p: any) => p.hostPort === port)
-        )
+        // Check if port is in use
+        const portInUse = containers.find((cont: any) => cont.port === port)
+        if (portInUse) {
+            // Check if the container using this port is from one of our model options
+            const modelOptions = [
+                'nvcr.io/nim/meta/llama-3.1-8b-instruct:1.8.0-RTX',
+                'nvcr.io/nim/deepseek-ai/deepseek-r1-distill-llama-8b:1.8.0-RTX',
+                'nvcr.io/nim/nv-mistralai/mistral-nemo-12b-instruct:1.8.0-rtx'
+            ]
+            const isModelContainer = modelOptions.includes(portInUse.image)
 
-        if (container) {
-            container.image = image.name
-            return res.json(container)
+            if (isModelContainer) {
+                // If it's a model container, return it for the "use existing" flow
+                portInUse.image = image.name
+                return res.json(portInUse)
+            } else {
+                // If it's not a model container, return a special error
+                return res.status(409).send({
+                    message: `Port ${port} is already in use by another container`,
+                    container: portInUse
+                })
+            }
         }
 
         // If no container found with matching port, return 404
