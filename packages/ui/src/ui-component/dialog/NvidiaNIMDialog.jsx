@@ -437,14 +437,21 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                             <strong>Status:</strong> {existingContainer?.status || 'N/A'}
                         </p>
                     </div>
-                    <p>Would you like to:</p>
+                    <p>You can:</p>
                     <ul>
                         <li>Use the existing container (recommended)</li>
-                        <li>Start a new container on a different port</li>
+                        <li>Change the port and try again</li>
                     </ul>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setShowContainerConfirm(false)}>Cancel</Button>
+                    <Button
+                        onClick={() => {
+                            setShowContainerConfirm(false)
+                            setExistingContainer(null)
+                        }}
+                    >
+                        Cancel
+                    </Button>
                     <Button
                         onClick={() => {
                             setShowContainerConfirm(false)
@@ -452,14 +459,6 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                         }}
                     >
                         Use Existing
-                    </Button>
-                    <Button
-                        onClick={() => {
-                            setShowContainerConfirm(false)
-                            setExistingContainer(null)
-                        }}
-                    >
-                        Start New
                     </Button>
                 </DialogActions>
             </Dialog>
