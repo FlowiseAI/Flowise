@@ -85,17 +85,51 @@ const getImage = async (req: Request, res: Response, next: NextFunction) => {
 const getContainer = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const imageTag = req.body.imageTag
+        const port = req.body.port
+
+        // First check if the image exists
         const images = await NimContainerManager.userImageLibrary()
         const image = images.find((img: any) => img.tag === imageTag)
         if (!image) {
             return res.status(404).send(`Image ${imageTag} not found`)
         }
-        if (!image.container) {
-            return res.status(404).send(`Container of ${imageTag} not found`)
+
+        const containers = await NimContainerManager.listRunningContainers()
+        const portInUse = containers.find((cont: any) => cont.port === port)
+        if (portInUse) {
+            const isModelContainer = portInUse.image === image.tag
+            if (isModelContainer) {
+                portInUse.image = image.name
+                return res.json(portInUse)
+            } else {
+                return res.status(409).send({
+                    message: `Port ${port} is already in use by another container`,
+                    container: portInUse
+                })
+            }
         }
-        const container = image.container
-        container.image = image.name
-        return res.json(container)
+
+        // If no container found with matching port, return 404
+        return res.status(404).send(`Container of ${imageTag} with port ${port} not found`)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const listRunningContainers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const containers = await NimContainerManager.listRunningContainers()
+        return res.json(containers)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const stopContainer = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const containerId = req.body.containerId
+        const containerInfo = await NimContainerManager.stopContainer(containerId)
+        return res.json(containerInfo)
     } catch (error) {
         next(error)
     }
@@ -108,5 +142,7 @@ export default {
     pullImage,
     startContainer,
     getImage,
-    getContainer
+    getContainer,
+    listRunningContainers,
+    stopContainer
 }
