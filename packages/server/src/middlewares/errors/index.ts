@@ -5,6 +5,8 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 // we need eslint because we have to pass next arg for the error middleware
 // eslint-disable-next-line
 async function errorHandlerMiddleware(err: InternalFlowiseError, req: Request, res: Response, next: NextFunction) {
+    if (err.message.includes('401 Incorrect API key provided'))
+        err.message = '401 Invalid model key or Incorrect local model configuration.'
     let displayedError = {
         statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
         success: false,

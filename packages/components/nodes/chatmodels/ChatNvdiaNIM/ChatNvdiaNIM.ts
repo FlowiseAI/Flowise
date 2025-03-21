@@ -1,5 +1,5 @@
-import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
+import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -16,13 +16,13 @@ class ChatNvdiaNIM_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Chat Nvidia NIM'
-        this.name = 'chatNvidiaNIM'
-        this.version = 1.0
-        this.type = 'ChatNvidiaNIM'
+        this.label = 'Chat NVIDIA NIM'
+        this.name = 'Chat NVIDIA NIM'
+        this.version = 1.1
+        this.type = 'Chat NVIDIA NIM'
         this.icon = 'nvdia.svg'
         this.category = 'Chat Models'
-        this.description = 'Wrapper around Nvdia NIM Inference API'
+        this.description = 'Wrapper around NVIDIA NIM Inference API'
         this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
         this.credential = {
             label: 'Connect Credential',
@@ -153,7 +153,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
             try {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
             } catch (exception) {
-                throw new Error("Invalid JSON in the ChatNvidiaNIM's baseOptions: " + exception)
+                throw new Error("Invalid JSON in the Chat NVIDIA NIM's baseOptions: " + exception)
             }
         }
 

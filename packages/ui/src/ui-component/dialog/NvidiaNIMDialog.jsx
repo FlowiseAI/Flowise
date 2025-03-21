@@ -11,7 +11,8 @@ import {
     Select,
     Step,
     StepLabel,
-    Stepper
+    Stepper,
+    TextField
 } from '@mui/material'
 import axios from 'axios'
 import PropTypes from 'prop-types'
@@ -40,6 +41,8 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const [loading, setLoading] = useState(false)
     const [imageTag, setImageTag] = useState('')
     const [pollInterval, setPollInterval] = useState(null)
+    const [nimRelaxMemConstraints, setNimRelaxMemConstraints] = useState('0')
+    const [hostPort, setHostPort] = useState('8080')
 
     const steps = ['Download Installer', 'Pull Image', 'Start Container']
 
@@ -162,7 +165,9 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
 
             await axios.post('/api/v1/nvidia-nim/start-container', {
                 imageTag,
-                apiKey
+                apiKey,
+                nimRelaxMemConstraints: parseInt(nimRelaxMemConstraints),
+                hostPort: parseInt(hostPort)
             })
 
             // Start polling for container status
@@ -202,6 +207,14 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
         if (activeStep === 1 && !imageTag) {
             alert('Please enter an image tag')
             return
+        }
+
+        if (activeStep === 2) {
+            const port = parseInt(hostPort)
+            if (isNaN(port) || port < 1 || port > 65535) {
+                alert('Please enter a valid port number between 1 and 65535')
+                return
+            }
         }
 
         switch (activeStep) {
@@ -299,7 +312,29 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                                 <p>Starting container...</p>
                             </>
                         ) : (
-                            <p>Image is ready! Click Next to start the container.</p>
+                            <>
+                                <FormControl fullWidth sx={{ mt: 2 }}>
+                                    <InputLabel>Relax Memory Constraints</InputLabel>
+                                    <Select
+                                        label='Relax Memory Constraints'
+                                        value={nimRelaxMemConstraints}
+                                        onChange={(e) => setNimRelaxMemConstraints(e.target.value)}
+                                    >
+                                        <MenuItem value='1'>Yes</MenuItem>
+                                        <MenuItem value='0'>No</MenuItem>
+                                    </Select>
+                                </FormControl>
+                                <TextField
+                                    fullWidth
+                                    type='number'
+                                    label='Host Port'
+                                    value={hostPort}
+                                    onChange={(e) => setHostPort(e.target.value)}
+                                    inputProps={{ min: 1, max: 65535 }}
+                                    sx={{ mt: 2 }}
+                                />
+                                <p style={{ marginTop: 20 }}>Click Next to start the container.</p>
+                            </>
                         )}
                     </div>
                 )}
@@ -313,7 +348,10 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                         Next
                     </Button>
                 )}
-                <Button onClick={activeStep === 0 ? handleDownloadInstaller : handleNext} disabled={loading}>
+                <Button
+                    onClick={activeStep === 0 ? handleDownloadInstaller : handleNext}
+                    disabled={loading || (activeStep === 2 && (!nimRelaxMemConstraints || !hostPort))}
+                >
                     {activeStep === 0 ? 'Download' : 'Next'}
                 </Button>
             </DialogActions>
