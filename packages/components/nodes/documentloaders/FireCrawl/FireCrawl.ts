@@ -222,8 +222,10 @@ class FirecrawlApp {
         return {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${this.apiKey}`,
+            'X-Origin': 'flowise',
+            'X-Origin-Type': 'integration',
             ...(idempotencyKey ? { 'x-idempotency-key': idempotencyKey } : {})
-        } as AxiosRequestHeaders & { 'x-idempotency-key'?: string }
+        } as AxiosRequestHeaders & { 'X-Origin': string; 'X-Origin-Type': string; 'x-idempotency-key'?: string }
     }
 
     private postRequest(url: string, data: Params, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
