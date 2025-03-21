@@ -614,8 +614,8 @@ importers:
                 specifier: workspace:^
                 version: link:../components
             flowise-nim-container-manager:
-                specifier: ^1.0.9
-                version: 1.0.9
+                specifier: ^1.0.10
+                version: 1.0.10
             flowise-ui:
                 specifier: workspace:^
                 version: link:../ui
@@ -9808,8 +9808,8 @@ packages:
     flowise-embed@2.1.0:
         resolution: { integrity: sha512-a6A4gnYUCOXxiSQtIZciAQe9vyN7geM5CIv5fVTOpCEkjK13j2tSRjKe+XZqm8hb/nYe5me+5qCsrioqXjl3Kw== }
 
-    flowise-nim-container-manager@1.0.9:
-        resolution: { integrity: sha512-YobgVv/u8/HEElnLNQE91LT2c7hEvI9VxpSqNR9adkT1bM0O3Gza9hy63UZCOj/cG20/KYVk+1gr2ltoolAN8g== }
+    flowise-nim-container-manager@1.0.10:
+        resolution: { integrity: sha512-j9ULWZVbRQwy0qjfmGZucl6Yxdz25m/+tEVlx+RCcSAOE16TUciM2WXThC2dVS1ijrGeoK8V0uTT3dP5Emkwcw== }
 
     flowise-react-json-view@1.21.7:
         resolution: { integrity: sha512-oFjwtSLJkUWk6waLh8heCQ4o9b60FJRA2X8LefaZp5WaJvj/Rr2HILjk+ocf1JkfTcq8jc6t2jfIybg4leWsaQ== }
@@ -29308,7 +29308,7 @@ snapshots:
             - debug
             - supports-color
 
-    flowise-nim-container-manager@1.0.9:
+    flowise-nim-container-manager@1.0.10:
         dependencies:
             dockerode: 4.0.4
             express: 4.21.1
