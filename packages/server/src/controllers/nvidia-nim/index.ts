@@ -101,6 +101,25 @@ const getContainer = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
+const listRunningContainers = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const containers = await NimContainerManager.listRunningContainers()
+        return res.json(containers)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const stopContainer = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const containerId = req.body.containerId
+        const containerInfo = await NimContainerManager.stopContainer(containerId)
+        return res.json(containerInfo)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     preload,
     getToken,
@@ -108,5 +127,7 @@ export default {
     pullImage,
     startContainer,
     getImage,
-    getContainer
+    getContainer,
+    listRunningContainers,
+    stopContainer
 }

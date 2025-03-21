@@ -43,6 +43,8 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const [pollInterval, setPollInterval] = useState(null)
     const [nimRelaxMemConstraints, setNimRelaxMemConstraints] = useState('0')
     const [hostPort, setHostPort] = useState('8080')
+    const [showContainerConfirm, setShowContainerConfirm] = useState(false)
+    const [existingContainer, setExistingContainer] = useState(null)
 
     const steps = ['Download Installer', 'Pull Image', 'Start Container']
 
@@ -145,12 +147,10 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
             setLoading(true)
             try {
                 const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
-                if (containerResponse.data && containerResponse.data && containerResponse.data.status === 'running') {
-                    // wait additional 10 seconds for container to be ready
-                    await new Promise((resolve) => setTimeout(resolve, 10000))
+                if (containerResponse.data) {
+                    setExistingContainer(containerResponse.data)
+                    setShowContainerConfirm(true)
                     setLoading(false)
-                    onComplete(containerResponse.data)
-                    onClose()
                     return
                 }
             } catch (err) {
@@ -160,6 +160,22 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                 }
             }
 
+            await startNewContainer()
+        } catch (err) {
+            let errorData = err.message
+            if (typeof err === 'string') {
+                errorData = err
+            } else if (err.response?.data) {
+                errorData = err.response.data.message
+            }
+            alert('Failed to check container status: ' + errorData)
+            setLoading(false)
+        }
+    }
+
+    const startNewContainer = async () => {
+        try {
+            setLoading(true)
             const tokenResponse = await axios.get('/api/v1/nvidia-nim/get-token')
             const apiKey = tokenResponse.data.access_token
 
@@ -199,6 +215,42 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                 errorData = err.response.data.message
             }
             alert('Failed to start container: ' + errorData)
+            setLoading(false)
+        }
+    }
+
+    const handleUseExistingContainer = async () => {
+        try {
+            setLoading(true)
+            // Start polling for container status
+            const interval = setInterval(async () => {
+                try {
+                    const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
+                    if (containerResponse.data) {
+                        clearInterval(interval)
+                        setLoading(false)
+                        onComplete(containerResponse.data)
+                        onClose()
+                    }
+                } catch (err) {
+                    // Continue polling if container not found
+                    if (err.response?.status !== 404) {
+                        clearInterval(interval)
+                        alert('Failed to check container status: ' + err.message)
+                        setLoading(false)
+                    }
+                }
+            }, 5000)
+
+            setPollInterval(interval)
+        } catch (err) {
+            let errorData = err.message
+            if (typeof err === 'string') {
+                errorData = err
+            } else if (err.response?.data) {
+                errorData = err.response.data.message
+            }
+            alert('Failed to check container status: ' + errorData)
             setLoading(false)
         }
     }
@@ -251,111 +303,151 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     }, [open])
 
     const component = open ? (
-        <Dialog open={open}>
-            <DialogTitle>NIM Setup</DialogTitle>
-            <DialogContent>
-                <Stepper activeStep={activeStep}>
-                    {steps.map((label) => (
-                        <Step key={label}>
-                            <StepLabel>{label}</StepLabel>
-                        </Step>
-                    ))}
-                </Stepper>
+        <>
+            <Dialog open={open}>
+                <DialogTitle>NIM Setup</DialogTitle>
+                <DialogContent>
+                    <Stepper activeStep={activeStep}>
+                        {steps.map((label) => (
+                            <Step key={label}>
+                                <StepLabel>{label}</StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
 
-                {activeStep === 0 && (
-                    <div style={{ marginTop: 20 }}>
-                        <p style={{ marginBottom: 20 }}>
-                            Would you like to download the NIM installer? Click Next if it has been installed
-                        </p>
-                        {loading && <CircularProgress />}
-                    </div>
-                )}
+                    {activeStep === 0 && (
+                        <div style={{ marginTop: 20 }}>
+                            <p style={{ marginBottom: 20 }}>
+                                Would you like to download the NIM installer? Click Next if it has been installed
+                            </p>
+                            {loading && <CircularProgress />}
+                        </div>
+                    )}
 
-                {activeStep === 1 && (
-                    <div>
-                        <FormControl fullWidth sx={{ mt: 2 }}>
-                            <InputLabel>Model</InputLabel>
-                            <Select label='Model' value={imageTag} onChange={(e) => setImageTag(e.target.value)}>
-                                {Object.entries(modelOptions).map(([value, { label }]) => (
-                                    <MenuItem key={value} value={value}>
-                                        {label}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                        {imageTag && (
-                            <Button
-                                variant='text'
-                                size='small'
-                                sx={{ mt: 1 }}
-                                onClick={() => window.open(modelOptions[imageTag].licenseUrl, '_blank')}
-                            >
-                                View License
-                            </Button>
-                        )}
-                        {loading && (
-                            <div>
-                                <div style={{ marginBottom: 20 }} />
-                                <CircularProgress />
-                                <p>Pulling image...</p>
-                            </div>
-                        )}
-                    </div>
-                )}
+                    {activeStep === 1 && (
+                        <div>
+                            <FormControl fullWidth sx={{ mt: 2 }}>
+                                <InputLabel>Model</InputLabel>
+                                <Select label='Model' value={imageTag} onChange={(e) => setImageTag(e.target.value)}>
+                                    {Object.entries(modelOptions).map(([value, { label }]) => (
+                                        <MenuItem key={value} value={value}>
+                                            {label}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            {imageTag && (
+                                <Button
+                                    variant='text'
+                                    size='small'
+                                    sx={{ mt: 1 }}
+                                    onClick={() => window.open(modelOptions[imageTag].licenseUrl, '_blank')}
+                                >
+                                    View License
+                                </Button>
+                            )}
+                            {loading && (
+                                <div>
+                                    <div style={{ marginBottom: 20 }} />
+                                    <CircularProgress />
+                                    <p>Pulling image...</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
-                {activeStep === 2 && (
-                    <div>
-                        {loading ? (
-                            <>
-                                <div style={{ marginBottom: 20 }} />
-                                <CircularProgress />
-                                <p>Starting container...</p>
-                            </>
-                        ) : (
-                            <>
-                                <FormControl fullWidth sx={{ mt: 2 }}>
-                                    <InputLabel>Relax Memory Constraints</InputLabel>
-                                    <Select
-                                        label='Relax Memory Constraints'
-                                        value={nimRelaxMemConstraints}
-                                        onChange={(e) => setNimRelaxMemConstraints(e.target.value)}
-                                    >
-                                        <MenuItem value='1'>Yes</MenuItem>
-                                        <MenuItem value='0'>No</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                <TextField
-                                    fullWidth
-                                    type='number'
-                                    label='Host Port'
-                                    value={hostPort}
-                                    onChange={(e) => setHostPort(e.target.value)}
-                                    inputProps={{ min: 1, max: 65535 }}
-                                    sx={{ mt: 2 }}
-                                />
-                                <p style={{ marginTop: 20 }}>Click Next to start the container.</p>
-                            </>
-                        )}
-                    </div>
-                )}
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose} variant='outline'>
-                    Cancel
-                </Button>
-                {activeStep === 0 && (
-                    <Button onClick={handleNext} variant='outline' color='secondary'>
-                        Next
+                    {activeStep === 2 && (
+                        <div>
+                            {loading ? (
+                                <>
+                                    <div style={{ marginBottom: 20 }} />
+                                    <CircularProgress />
+                                    <p>Starting container...</p>
+                                </>
+                            ) : (
+                                <>
+                                    <FormControl fullWidth sx={{ mt: 2 }}>
+                                        <InputLabel>Relax Memory Constraints</InputLabel>
+                                        <Select
+                                            label='Relax Memory Constraints'
+                                            value={nimRelaxMemConstraints}
+                                            onChange={(e) => setNimRelaxMemConstraints(e.target.value)}
+                                        >
+                                            <MenuItem value='1'>Yes</MenuItem>
+                                            <MenuItem value='0'>No</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                    <TextField
+                                        fullWidth
+                                        type='number'
+                                        label='Host Port'
+                                        value={hostPort}
+                                        onChange={(e) => setHostPort(e.target.value)}
+                                        inputProps={{ min: 1, max: 65535 }}
+                                        sx={{ mt: 2 }}
+                                    />
+                                    <p style={{ marginTop: 20 }}>Click Next to start the container.</p>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={onClose} variant='outline'>
+                        Cancel
                     </Button>
-                )}
-                <Button
-                    onClick={activeStep === 0 ? handleDownloadInstaller : handleNext}
-                    disabled={loading || (activeStep === 2 && (!nimRelaxMemConstraints || !hostPort))}
-                >
-                    {activeStep === 0 ? 'Download' : 'Next'}
-                </Button>
-            </DialogActions>
-        </Dialog>
+                    {activeStep === 0 && (
+                        <Button onClick={handleNext} variant='outline' color='secondary'>
+                            Next
+                        </Button>
+                    )}
+                    <Button
+                        onClick={activeStep === 0 ? handleDownloadInstaller : handleNext}
+                        disabled={loading || (activeStep === 2 && (!nimRelaxMemConstraints || !hostPort))}
+                    >
+                        {activeStep === 0 ? 'Download' : 'Next'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={showContainerConfirm} onClose={() => setShowContainerConfirm(false)}>
+                <DialogTitle>Container Already Exists</DialogTitle>
+                <DialogContent>
+                    <p>A container for this image already exists:</p>
+                    <div style={{ margin: '16px 0', padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                        <p>
+                            <strong>Name:</strong> {existingContainer?.name || 'N/A'}
+                        </p>
+                        <p>
+                            <strong>Status:</strong> {existingContainer?.status || 'N/A'}
+                        </p>
+                    </div>
+                    <p>Would you like to:</p>
+                    <ul>
+                        <li>Use the existing container (recommended)</li>
+                        <li>Start a new container on a different port</li>
+                    </ul>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setShowContainerConfirm(false)}>Cancel</Button>
+                    <Button
+                        onClick={() => {
+                            setShowContainerConfirm(false)
+                            handleUseExistingContainer()
+                        }}
+                    >
+                        Use Existing
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            setShowContainerConfirm(false)
+                            startNewContainer()
+                        }}
+                    >
+                        Start New
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     ) : null
 
     return createPortal(component, portalElement)
