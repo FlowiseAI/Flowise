@@ -58,8 +58,8 @@ const startContainer = async (req: Request, res: Response, next: NextFunction) =
         const apiKey = req.body.apiKey
         const hostPort = req.body.hostPort
         const nimRelaxMemConstraints = req.body.nimRelaxMemConstraints
-        logger.info('hostPort', hostPort)
-        logger.info('nimRelaxMemConstraints', nimRelaxMemConstraints)
+        logger.info(`hostPort: ${hostPort}`)
+        logger.info(`nimRelaxMemConstraints: ${nimRelaxMemConstraints}`)
         await NimContainerManager.startContainer(imageTag, apiKey, hostPort, nimRelaxMemConstraints)
         return res.send(`Starting container ${imageTag}`)
     } catch (error) {
