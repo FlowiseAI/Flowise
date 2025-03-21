@@ -145,6 +145,12 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
     const handleStartContainer = async () => {
         try {
             setLoading(true)
+            // If we're starting a new container (existingContainer is null), skip the container check
+            if (!existingContainer) {
+                await startNewContainer()
+                return
+            }
+
             try {
                 const containerResponse = await axios.post('/api/v1/nvidia-nim/get-container', { imageTag })
                 if (containerResponse.data) {
