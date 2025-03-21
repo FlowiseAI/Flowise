@@ -440,7 +440,7 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                     <Button
                         onClick={() => {
                             setShowContainerConfirm(false)
-                            startNewContainer()
+                            setExistingContainer(null)
                         }}
                     >
                         Start New
