@@ -1,505 +1,504 @@
 {
-  "nodes": [
-    {
-      "id": "chatOpenAI_0",
-      "position": {
-        "x": 707.5800903626107,
-        "y": 109.12476306943097
-      },
-      "type": "customNode",
-      "data": {
-        "id": "chatOpenAI_0",
-        "label": "ChatOpenAI",
-        "version": 6,
-        "name": "chatOpenAI",
-        "type": "ChatOpenAI",
-        "baseClasses": [
-          "ChatOpenAI",
-          "BaseChatModel",
-          "BaseLanguageModel",
-          "Runnable"
-        ],
-        "category": "Chat Models",
-        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
-        "inputParams": [
-          {
-            "label": "Connect Credential",
-            "name": "credential",
-            "type": "credential",
-            "credentialNames": [
-              "openAIApi"
-            ],
-            "id": "chatOpenAI_0-input-credential-credential"
-          },
-          {
-            "label": "Model Name",
-            "name": "modelName",
-            "type": "asyncOptions",
-            "loadMethod": "listModels",
-            "default": "gpt-3.5-turbo",
-            "id": "chatOpenAI_0-input-modelName-asyncOptions"
-          },
-          {
-            "label": "Temperature",
-            "name": "temperature",
-            "type": "number",
-            "step": 0.1,
-            "default": 0.9,
-            "optional": true,
-            "id": "chatOpenAI_0-input-temperature-number"
-          },
-          {
-            "label": "Max Tokens",
-            "name": "maxTokens",
-            "type": "number",
-            "step": 1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-maxTokens-number"
-          },
-          {
-            "label": "Top Probability",
-            "name": "topP",
-            "type": "number",
-            "step": 0.1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-topP-number"
-          },
-          {
-            "label": "Frequency Penalty",
-            "name": "frequencyPenalty",
-            "type": "number",
-            "step": 0.1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-frequencyPenalty-number"
-          },
-          {
-            "label": "Presence Penalty",
-            "name": "presencePenalty",
-            "type": "number",
-            "step": 0.1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-presencePenalty-number"
-          },
-          {
-            "label": "Timeout",
-            "name": "timeout",
-            "type": "number",
-            "step": 1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-timeout-number"
-          },
-          {
-            "label": "BasePath",
-            "name": "basepath",
-            "type": "string",
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-basepath-string"
-          },
-          {
-            "label": "BaseOptions",
-            "name": "baseOptions",
-            "type": "json",
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-baseOptions-json"
-          },
-          {
-            "label": "Allow Image Uploads",
-            "name": "allowImageUploads",
-            "type": "boolean",
-            "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
-            "default": false,
-            "optional": true,
-            "id": "chatOpenAI_0-input-allowImageUploads-boolean"
-          },
-          {
-            "label": "Image Resolution",
-            "description": "This parameter controls the resolution in which the model views the image.",
-            "name": "imageResolution",
-            "type": "options",
-            "options": [
-              {
-                "label": "Low",
-                "name": "low"
-              },
-              {
-                "label": "High",
-                "name": "high"
-              },
-              {
-                "label": "Auto",
-                "name": "auto"
-              }
-            ],
-            "default": "low",
-            "optional": false,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-imageResolution-options"
-          }
-        ],
-        "inputAnchors": [
-          {
-            "label": "Cache",
-            "name": "cache",
-            "type": "BaseCache",
-            "optional": true,
-            "id": "chatOpenAI_0-input-cache-BaseCache"
-          }
-        ],
-        "inputs": {
-          "cache": "",
-          "modelName": "gpt-4o",
-          "temperature": 0.9,
-          "maxTokens": "",
-          "topP": "",
-          "frequencyPenalty": "",
-          "presencePenalty": "",
-          "timeout": "",
-          "basepath": "",
-          "baseOptions": "",
-          "allowImageUploads": "",
-          "imageResolution": "low"
+    "description": "Create detailed, engaging narratives from scene descriptions by analyzing visual elements and generating rich, contextual storytelling",
+    "nodes": [
+        {
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 707.5800903626107,
+                "y": 109.12476306943097
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "version": 6,
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_0-input-modelName-asyncOptions"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-4o",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "baseOptions": "",
+                    "allowImageUploads": "",
+                    "imageResolution": "low"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 669,
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 707.5800903626107,
+                "y": 109.12476306943097
+            }
         },
-        "outputAnchors": [
-          {
-            "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-            "name": "chatOpenAI",
-            "label": "ChatOpenAI",
-            "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
-            "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 669,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 707.5800903626107,
-        "y": 109.12476306943097
-      }
-    },
-    {
-      "id": "conversationChain_0",
-      "position": {
-        "x": 1415.1149109696803,
-        "y": 404.29342957440826
-      },
-      "type": "customNode",
-      "data": {
-        "id": "conversationChain_0",
-        "label": "Conversation Chain",
-        "version": 3,
-        "name": "conversationChain",
-        "type": "ConversationChain",
-        "baseClasses": [
-          "ConversationChain",
-          "LLMChain",
-          "BaseChain",
-          "Runnable"
-        ],
-        "category": "Chains",
-        "description": "Chat models specific conversational chain with memory",
-        "inputParams": [
-          {
-            "label": "System Message",
-            "name": "systemMessagePrompt",
-            "type": "string",
-            "rows": 4,
-            "description": "If Chat Prompt Template is provided, this will be ignored",
-            "additionalParams": true,
-            "optional": true,
-            "default": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
-            "placeholder": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
-            "id": "conversationChain_0-input-systemMessagePrompt-string"
-          }
-        ],
-        "inputAnchors": [
-          {
-            "label": "Chat Model",
-            "name": "model",
-            "type": "BaseChatModel",
-            "id": "conversationChain_0-input-model-BaseChatModel"
-          },
-          {
-            "label": "Memory",
-            "name": "memory",
-            "type": "BaseMemory",
-            "id": "conversationChain_0-input-memory-BaseMemory"
-          },
-          {
-            "label": "Chat Prompt Template",
-            "name": "chatPromptTemplate",
-            "type": "ChatPromptTemplate",
-            "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
-            "optional": true,
-            "id": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
-          },
-          {
-            "label": "Input Moderation",
-            "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
-            "name": "inputModeration",
-            "type": "Moderation",
-            "optional": true,
-            "list": true,
-            "id": "conversationChain_0-input-inputModeration-Moderation"
-          }
-        ],
-        "inputs": {
-          "model": "{{chatOpenAI_0.data.instance}}",
-          "memory": "{{bufferMemory_0.data.instance}}",
-          "chatPromptTemplate": "{{chatPromptTemplate_0.data.instance}}",
-          "inputModeration": "",
-          "systemMessagePrompt": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know."
+        {
+            "id": "conversationChain_0",
+            "position": {
+                "x": 1415.1149109696803,
+                "y": 404.29342957440826
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationChain_0",
+                "label": "Conversation Chain",
+                "version": 3,
+                "name": "conversationChain",
+                "type": "ConversationChain",
+                "baseClasses": ["ConversationChain", "LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chat models specific conversational chain with memory",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "If Chat Prompt Template is provided, this will be ignored",
+                        "additionalParams": true,
+                        "optional": true,
+                        "default": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+                        "placeholder": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+                        "id": "conversationChain_0-input-systemMessagePrompt-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "conversationChain_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseMemory",
+                        "id": "conversationChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Chat Prompt Template",
+                        "name": "chatPromptTemplate",
+                        "type": "ChatPromptTemplate",
+                        "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
+                        "optional": true,
+                        "id": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationChain_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "memory": "{{RedisBackedChatMemory_0.data.instance}}",
+                    "chatPromptTemplate": "{{chatPromptTemplate_0.data.instance}}",
+                    "inputModeration": "",
+                    "systemMessagePrompt": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationChain_0-output-conversationChain-ConversationChain|LLMChain|BaseChain|Runnable",
+                        "name": "conversationChain",
+                        "label": "ConversationChain",
+                        "description": "Chat models specific conversational chain with memory",
+                        "type": "ConversationChain | LLMChain | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 434,
+            "positionAbsolute": {
+                "x": 1415.1149109696803,
+                "y": 404.29342957440826
+            },
+            "selected": false
         },
-        "outputAnchors": [
-          {
-            "id": "conversationChain_0-output-conversationChain-ConversationChain|LLMChain|BaseChain|Runnable",
-            "name": "conversationChain",
-            "label": "ConversationChain",
-            "description": "Chat models specific conversational chain with memory",
-            "type": "ConversationChain | LLMChain | BaseChain | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 434,
-      "positionAbsolute": {
-        "x": 1415.1149109696803,
-        "y": 404.29342957440826
-      },
-      "selected": false
-    },
-    {
-      "id": "bufferMemory_0",
-      "position": {
-        "x": 1237.7743419928909,
-        "y": 1413.4671602506792
-      },
-      "type": "customNode",
-      "data": {
-        "id": "bufferMemory_0",
-        "label": "Buffer Memory",
-        "version": 2,
-        "name": "bufferMemory",
-        "type": "BufferMemory",
-        "baseClasses": [
-          "BufferMemory",
-          "BaseChatMemory",
-          "BaseMemory"
-        ],
-        "category": "Memory",
-        "description": "Retrieve chat messages stored in database",
-        "inputParams": [
-          {
-            "label": "Session Id",
-            "name": "sessionId",
-            "type": "string",
-            "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
-            "default": "",
-            "additionalParams": true,
-            "optional": true,
-            "id": "bufferMemory_0-input-sessionId-string"
-          },
-          {
-            "label": "Memory Key",
-            "name": "memoryKey",
-            "type": "string",
-            "default": "chat_history",
-            "additionalParams": true,
-            "id": "bufferMemory_0-input-memoryKey-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "sessionId": "",
-          "memoryKey": "chat_history"
+        {
+            "width": 300,
+            "height": 328,
+            "id": "RedisBackedChatMemory_0",
+            "position": {
+                "x": 75,
+                "y": 82
+            },
+            "type": "customNode",
+            "data": {
+                "id": "RedisBackedChatMemory_0",
+                "label": "Redis-Backed Chat Memory",
+                "version": 2,
+                "name": "RedisBackedChatMemory",
+                "type": "RedisBackedChatMemory",
+                "baseClasses": ["RedisBackedChatMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Summarizes the conversation and stores the memory in Redis server",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "optional": true,
+                        "credentialNames": ["redisCacheApi", "redisCacheUrlApi"],
+                        "id": "RedisBackedChatMemory_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Session Timeouts",
+                        "name": "sessionTTL",
+                        "type": "number",
+                        "description": "Seconds till a session expires. If not specified, the session will never expire.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-sessionTTL-number"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "RedisBackedChatMemory_0-input-memoryKey-string"
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "windowSize",
+                        "type": "number",
+                        "description": "Window of size k to surface the last k back-and-forth to use as memory.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-windowSize-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "sessionTTL": "",
+                    "memoryKey": "chat_history",
+                    "windowSize": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+                        "name": "RedisBackedChatMemory",
+                        "label": "RedisBackedChatMemory",
+                        "description": "Summarizes the conversation and stores the memory in Redis server",
+                        "type": "RedisBackedChatMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {}
+            }
         },
-        "outputAnchors": [
-          {
-            "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-            "name": "bufferMemory",
-            "label": "BufferMemory",
-            "description": "Retrieve chat messages stored in database",
-            "type": "BufferMemory | BaseChatMemory | BaseMemory"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 251,
-      "positionAbsolute": {
-        "x": 1237.7743419928909,
-        "y": 1413.4671602506792
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "chatPromptTemplate_0",
-      "position": {
-        "x": 631.7826806295478,
-        "y": 924.2443882639457
-      },
-      "type": "customNode",
-      "data": {
-        "id": "chatPromptTemplate_0",
-        "label": "Chat Prompt Template",
-        "version": 1,
-        "name": "chatPromptTemplate",
-        "type": "ChatPromptTemplate",
-        "baseClasses": [
-          "ChatPromptTemplate",
-          "BaseChatPromptTemplate",
-          "BasePromptTemplate",
-          "Runnable"
-        ],
-        "category": "Prompts",
-        "description": "Schema to represent a chat prompt",
-        "inputParams": [
-          {
-            "label": "System Message",
-            "name": "systemMessagePrompt",
-            "type": "string",
-            "rows": 4,
-            "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
-            "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
-          },
-          {
-            "label": "Human Message",
-            "name": "humanMessagePrompt",
-            "type": "string",
-            "rows": 4,
-            "placeholder": "{text}",
-            "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
-          },
-          {
-            "label": "Format Prompt Values",
-            "name": "promptValues",
-            "type": "json",
-            "optional": true,
-            "acceptVariable": true,
-            "list": true,
-            "id": "chatPromptTemplate_0-input-promptValues-json"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "systemMessagePrompt": "You are a skilled Scene Narrator AI, capable of converting basic scene descriptions or script snippets into vivid, visually descriptive narrations. Your task is to take a given scene description and transform it into a rich, detailed narration that brings the scene to life for the audience.\n\nFollow these guidelines when creating your narration:\n1. Use vivid, sensory language to describe the setting, characters, and actions.\n2. Focus on visual details that create a clear mental image for the audience.\n3. Maintain the tone and mood of the original scene description.\n4. Expand on implied details to create a more immersive experience.\n5. Use varied sentence structures to create rhythm and flow in your narration.\n\nHere is the scene description you will be working with:\n\n{scene_description}\n\nTo create your narration:\n1. Carefully read and analyze the given scene description.\n2. Identify the key elements: setting, characters, actions, and mood.\n3. Expand on these elements using descriptive language and sensory details.\n4. Organize your narration in a logical flow that guides the audience through the scene.\n5. Ensure your narration captures the essence of the original description while providing a more immersive experience.\n\nPresent your final narration within <narration> tags. Aim for a length of 3-5 paragraphs, depending on the complexity of the original scene description.\n\nHere's an example of how to approach this task:\n\nInput scene description:\n<scene_description>\nA woman enters a dimly lit bar. She sits at the counter and orders a drink.\n</scene_description>\n\nOutput narration:\n<narration>\nThe heavy wooden door creaks open, allowing a sliver of streetlight to penetrate the smoky haze of the bar. A woman steps inside, her silhouette briefly illuminated before she's swallowed by the dim interior. The soft clack of her heels on the worn hardwood floor punctuates the low murmur of conversation and the faint strains of a melancholy jazz tune.\n\nShe makes her way to the bar, weaving between tables where patrons hunch over their drinks, lost in their own worlds. The bartender, a grizzled man with rolled-up sleeves, glances up as she approaches. Without a word, she slides onto a cracked leather stool, its metal base scraping softly against the floor.\n\nThe woman's fingers, adorned with a single silver ring, drum a quiet rhythm on the scarred mahogany counter. Her eyes, adjusting to the low light, scan the rows of bottles lining the mirrored backdrop of the bar. With a slight nod to the bartender, she orders her drink, her voice barely audible above the ambient noise. As he turns to prepare her order, she settles in, a solitary figure bathed in the warm, amber glow of the overhead lamps, ready to lose herself in the comforting anonymity of the night.\n</narration>\n\nNow, using the scene description provided, create your own visually descriptive narration. Remember to use vivid language, focus on sensory details, and maintain the tone of the original scene while expanding it into a more immersive experience.",
-          "humanMessagePrompt": "{scene_description}",
-          "promptValues": "{\"scene_description\":\"{{question}}\"}"
+        {
+            "id": "chatPromptTemplate_0",
+            "position": {
+                "x": 631.7826806295478,
+                "y": 924.2443882639457
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatPromptTemplate_0",
+                "label": "Chat Prompt Template",
+                "version": 1,
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "chatPromptTemplate_0-input-promptValues-json"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "systemMessagePrompt": "You are a skilled Scene Narrator AI, capable of converting basic scene descriptions or script snippets into vivid, visually descriptive narrations. Your task is to take a given scene description and transform it into a rich, detailed narration that brings the scene to life for the audience.\n\nFollow these guidelines when creating your narration:\n1. Use vivid, sensory language to describe the setting, characters, and actions.\n2. Focus on visual details that create a clear mental image for the audience.\n3. Maintain the tone and mood of the original scene description.\n4. Expand on implied details to create a more immersive experience.\n5. Use varied sentence structures to create rhythm and flow in your narration.\n\nHere is the scene description you will be working with:\n\n{scene_description}\n\nTo create your narration:\n1. Carefully read and analyze the given scene description.\n2. Identify the key elements: setting, characters, actions, and mood.\n3. Expand on these elements using descriptive language and sensory details.\n4. Organize your narration in a logical flow that guides the audience through the scene.\n5. Ensure your narration captures the essence of the original description while providing a more immersive experience.\n\nPresent your final narration within <narration> tags. Aim for a length of 3-5 paragraphs, depending on the complexity of the original scene description.\n\nHere's an example of how to approach this task:\n\nInput scene description:\n<scene_description>\nA woman enters a dimly lit bar. She sits at the counter and orders a drink.\n</scene_description>\n\nOutput narration:\n<narration>\nThe heavy wooden door creaks open, allowing a sliver of streetlight to penetrate the smoky haze of the bar. A woman steps inside, her silhouette briefly illuminated before she's swallowed by the dim interior. The soft clack of her heels on the worn hardwood floor punctuates the low murmur of conversation and the faint strains of a melancholy jazz tune.\n\nShe makes her way to the bar, weaving between tables where patrons hunch over their drinks, lost in their own worlds. The bartender, a grizzled man with rolled-up sleeves, glances up as she approaches. Without a word, she slides onto a cracked leather stool, its metal base scraping softly against the floor.\n\nThe woman's fingers, adorned with a single silver ring, drum a quiet rhythm on the scarred mahogany counter. Her eyes, adjusting to the low light, scan the rows of bottles lining the mirrored backdrop of the bar. With a slight nod to the bartender, she orders her drink, her voice barely audible above the ambient noise. As he turns to prepare her order, she settles in, a solitary figure bathed in the warm, amber glow of the overhead lamps, ready to lose herself in the comforting anonymity of the night.\n</narration>\n\nNow, using the scene description provided, create your own visually descriptive narration. Remember to use vivid language, focus on sensory details, and maintain the tone of the original scene while expanding it into a more immersive experience.",
+                    "humanMessagePrompt": "{scene_description}",
+                    "promptValues": "{\"scene_description\":\"{{question}}\"}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "description": "Schema to represent a chat prompt",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 688,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 631.7826806295478,
+                "y": 924.2443882639457
+            },
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
-            "name": "chatPromptTemplate",
-            "label": "ChatPromptTemplate",
-            "description": "Schema to represent a chat prompt",
-            "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 688,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 631.7826806295478,
-        "y": 924.2443882639457
-      },
-      "dragging": false
-    },
-    {
-      "id": "stickyNote_4",
-      "position": {
-        "x": 2005.7455157421682,
-        "y": 206.32085087394705
-      },
-      "type": "stickyNote",
-      "data": {
-        "id": "stickyNote_4",
-        "label": "Sticky Note",
-        "version": 1,
-        "name": "stickyNote",
-        "type": "StickyNote",
-        "baseClasses": [
-          "StickyNote"
-        ],
-        "category": "Utilities",
-        "description": "Add a sticky note",
-        "inputParams": [
-          {
-            "label": "",
-            "name": "note",
-            "type": "string",
-            "rows": 1,
-            "placeholder": "Type something here",
-            "optional": true,
-            "id": "stickyNote_4-input-note-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "note": "Instructions for Best Results:\n\n1. Click the green chat box and type in\nan imaginative scene. \n2. Sit back and enjoy an amazing scene created on your imagination."
+        {
+            "id": "stickyNote_4",
+            "position": {
+                "x": 2005.7455157421682,
+                "y": 206.32085087394705
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_4",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_4-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Instructions for Best Results:\n\n1. Click the green chat box and type in\nan imaginative scene. \n2. Sit back and enjoy an amazing scene created on your imagination."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_4-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 143,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 2005.7455157421682,
+                "y": 206.32085087394705
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationChain_0-conversationChain_0-input-model-BaseChatModel"
         },
-        "outputAnchors": [
-          {
-            "id": "stickyNote_4-output-stickyNote-StickyNote",
-            "name": "stickyNote",
-            "label": "StickyNote",
-            "description": "Add a sticky note",
-            "type": "StickyNote"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 143,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 2005.7455157421682,
-        "y": 206.32085087394705
-      },
-      "dragging": false
-    }
-  ],
-  "edges": [
-    {
-      "source": "chatOpenAI_0",
-      "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-      "target": "conversationChain_0",
-      "targetHandle": "conversationChain_0-input-model-BaseChatModel",
-      "type": "buttonedge",
-      "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationChain_0-conversationChain_0-input-model-BaseChatModel"
-    },
-    {
-      "source": "bufferMemory_0",
-      "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-      "target": "conversationChain_0",
-      "targetHandle": "conversationChain_0-input-memory-BaseMemory",
-      "type": "buttonedge",
-      "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-conversationChain_0-conversationChain_0-input-memory-BaseMemory"
-    },
-    {
-      "source": "chatPromptTemplate_0",
-      "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
-      "target": "conversationChain_0",
-      "targetHandle": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate",
-      "type": "buttonedge",
-      "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-conversationChain_0-conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
-    }
-  ]
+        {
+            "source": "RedisBackedChatMemory_0",
+            "sourceHandle": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-memory-BaseMemory",
+            "type": "buttonedge",
+            "id": "RedisBackedChatMemory_0-RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory-conversationChain_0-conversationChain_0-input-memory-BaseMemory"
+        },
+        {
+            "source": "chatPromptTemplate_0",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate",
+            "type": "buttonedge",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-conversationChain_0-conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
+        }
+    ]
 }
