@@ -172,6 +172,7 @@ Passage:`
         else if (promptKey) obj.promptTemplate = promptKey
 
         const retriever = new HydeRetriever(obj)
+        retriever.filter = vectorStore?.lc_kwargs?.filter ?? (vectorStore as any).filter
 
         if (output === 'retriever') return retriever
         else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)

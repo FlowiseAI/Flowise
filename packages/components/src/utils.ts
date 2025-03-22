@@ -27,14 +27,18 @@ if (USE_AWS_SECRETS_MANAGER) {
     const accessKeyId = process.env.SECRETKEY_AWS_ACCESS_KEY
     const secretAccessKey = process.env.SECRETKEY_AWS_SECRET_KEY
 
-    let credentials: SecretsManagerClientConfig['credentials'] | undefined
+    const secretManagerConfig: SecretsManagerClientConfig = {
+        region: region
+    }
+
     if (accessKeyId && secretAccessKey) {
-        credentials = {
+        secretManagerConfig.credentials = {
             accessKeyId,
             secretAccessKey
         }
     }
-    secretsManagerClient = new SecretsManagerClient({ credentials, region })
+
+    secretsManagerClient = new SecretsManagerClient(secretManagerConfig)
 }
 
 /*
@@ -819,6 +823,12 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
                     zodObj[sch.property] = z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
                 } else {
                     zodObj[sch.property] = z.boolean().describe(sch.description).optional()
+                }
+            } else if (sch.type === 'date') {
+                if (sch.required) {
+                    zodObj[sch.property] = z.date({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.date().describe(sch.description).optional()
                 }
             }
         }
