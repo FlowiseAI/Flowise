@@ -20,7 +20,7 @@ import { ChatMistralAI } from '@langchain/mistralai'
 import { ChatOpenAI } from '../../chatmodels/ChatOpenAI/FlowiseChatOpenAI'
 import { ChatAnthropic } from '../../chatmodels/ChatAnthropic/FlowiseChatAnthropic'
 import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
-import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
+import { addMultiModalContentToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 
 const sysPrompt = `You are a supervisor tasked with managing a conversation between the following workers: {team_members}.
 Given the following user request, respond with the worker to act next.
@@ -209,6 +209,15 @@ class Supervisor_MultiAgents implements INode {
                 prompt = messages.prompt
                 multiModalMessageContent = messages.multiModalMessageContent
 
+                const multiModalContent = await addMultiModalContentToMessages(
+                    nodeData,
+                    options,
+                    llmSupportsVision(llm) ? llm.multiModalOption : undefined
+                )
+
+                // Filter out only image content
+                multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
+
                 if ((llm as any).bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
                 }
@@ -226,13 +235,15 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         } else {
                             return {
@@ -249,10 +260,14 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
-                // @ts-ignore
-                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
-                prompt = messages.prompt
-                multiModalMessageContent = messages.multiModalMessageContent
+                const multiModalContent = await addMultiModalContentToMessages(
+                    nodeData,
+                    options,
+                    llmSupportsVision(llm) ? llm.multiModalOption : undefined
+                )
+
+                // Filter out only image content
+                multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
 
                 // Force OpenAI to use tool
                 const modelWithTool = llm.bind({
@@ -272,13 +287,15 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         } else {
                             return {
@@ -299,9 +316,14 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
-                const messages = await processImageMessage(2, llm, prompt, nodeData, options)
-                prompt = messages.prompt
-                multiModalMessageContent = messages.multiModalMessageContent
+                const multiModalContent = await addMultiModalContentToMessages(
+                    nodeData,
+                    options,
+                    llmSupportsVision(llm) ? llm.multiModalOption : undefined
+                )
+
+                // Filter out only image content
+                multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
 
                 if (llm.bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
@@ -319,13 +341,15 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         } else {
                             return {
@@ -342,9 +366,14 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
-                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
-                prompt = messages.prompt
-                multiModalMessageContent = messages.multiModalMessageContent
+                const multiModalContent = await addMultiModalContentToMessages(
+                    nodeData,
+                    options,
+                    llmSupportsVision(llm) ? llm.multiModalOption : undefined
+                )
+
+                // Filter out only image content
+                multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
 
                 if (llm.bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
@@ -362,13 +391,15 @@ class Supervisor_MultiAgents implements INode {
                             return {
                                 next: toolAgentAction.toolInput.next,
                                 instructions: toolAgentAction.toolInput.instructions,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: toolAgentAction.toolInput.summarization
                             }
                         } else if (typeof x === 'object' && 'returnValues' in x) {
                             return {
                                 next: 'FINISH',
                                 instructions: x.returnValues?.output,
-                                team_members: members.join(', ')
+                                team_members: members.join(', '),
+                                summarization: defaultSummarization
                             }
                         } else {
                             return {
@@ -411,9 +442,14 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
-                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
-                prompt = messages.prompt
-                multiModalMessageContent = messages.multiModalMessageContent
+                const multiModalContent = await addMultiModalContentToMessages(
+                    nodeData,
+                    options,
+                    llmSupportsVision(llm) ? llm.multiModalOption : undefined
+                )
+
+                // Filter out only image content
+                multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
 
                 // Force Mistral to use tool
                 // @ts-ignore
@@ -460,9 +496,14 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
-                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
-                prompt = messages.prompt
-                multiModalMessageContent = messages.multiModalMessageContent
+                const multiModalContent = await addMultiModalContentToMessages(
+                    nodeData,
+                    options,
+                    llmSupportsVision(llm) ? llm.multiModalOption : undefined
+                )
+
+                // Filter out only image content
+                multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
 
                 if ((llm as any).bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
@@ -507,10 +548,14 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
-                // @ts-ignore
-                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
-                prompt = messages.prompt
-                multiModalMessageContent = messages.multiModalMessageContent
+                const multiModalContent = await addMultiModalContentToMessages(
+                    nodeData,
+                    options,
+                    llmSupportsVision(llm) ? llm.multiModalOption : undefined
+                )
+
+                // Filter out only image content
+                multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
 
                 // Force OpenAI to use tool
                 const modelWithTool = llm.bind({
@@ -560,9 +605,14 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
-                const messages = await processImageMessage(2, llm, prompt, nodeData, options)
-                prompt = messages.prompt
-                multiModalMessageContent = messages.multiModalMessageContent
+                const multiModalContent = await addMultiModalContentToMessages(
+                    nodeData,
+                    options,
+                    llmSupportsVision(llm) ? llm.multiModalOption : undefined
+                )
+
+                // Filter out only image content
+                multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
 
                 if (llm.bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
@@ -606,9 +656,14 @@ class Supervisor_MultiAgents implements INode {
                     ['human', userPrompt]
                 ])
 
-                const messages = await processImageMessage(1, llm, prompt, nodeData, options)
-                prompt = messages.prompt
-                multiModalMessageContent = messages.multiModalMessageContent
+                const multiModalContent = await addMultiModalContentToMessages(
+                    nodeData,
+                    options,
+                    llmSupportsVision(llm) ? llm.multiModalOption : undefined
+                )
+
+                // Filter out only image content
+                multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
 
                 if (llm.bindTools === undefined) {
                     throw new Error(`This agent only compatible with function calling models.`)
@@ -639,9 +694,8 @@ class Supervisor_MultiAgents implements INode {
                         } else {
                             return {
                                 next: 'FINISH',
-                                instructions: defaultInstruction,
-                                team_members: members.join(', '),
-                                summarization: defaultSummarization
+                                instructions: 'Conversation finished',
+                                team_members: members.join(', ')
                             }
                         }
                     })
@@ -715,16 +769,21 @@ const processImageMessage = async (
 
     if (llmSupportsVision(llm)) {
         const visionChatModel = llm as IVisionChatModal
-        multiModalMessageContent = await addImagesToMessages(nodeData, options, llm.multiModalOption)
+        if (visionChatModel.multiModalOption) {
+            const multiModalContent = await addMultiModalContentToMessages(nodeData, options, visionChatModel.multiModalOption)
 
-        if (multiModalMessageContent?.length) {
-            visionChatModel.setVisionModel()
+            // Filter out only image content
+            multiModalMessageContent = multiModalContent.filter((content) => content.type === 'image_url') as MessageContentImageUrl[]
 
-            const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
+            if (multiModalMessageContent?.length) {
+                visionChatModel.setVisionModel()
 
-            prompt.promptMessages.splice(index, 0, msg)
-        } else {
-            visionChatModel.revertToOriginalModel()
+                const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
+
+                prompt.promptMessages.splice(index, 0, msg)
+            } else {
+                visionChatModel.revertToOriginalModel()
+            }
         }
     }
 
