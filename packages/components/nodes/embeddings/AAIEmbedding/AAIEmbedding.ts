@@ -15,10 +15,10 @@ class AAIEmbedding_Embeddings implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Answer Agent Embeddings'
+        this.label = 'AAI Embeddings'
         this.name = 'AAIEmbeddings'
         this.version = 4.0
-        this.type = 'OpenAIEmbeddings'
+        this.type = 'AAIEmbeddings'
         this.icon = 'answerai-square-black.png'
         this.category = 'Embeddings'
         this.description = 'Answer Agent API to generate embeddings for a given text'
