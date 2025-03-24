@@ -18,7 +18,7 @@ class AAIChatMemory_Memory implements INode {
     constructor() {
         this.label = 'Answer Agent Chat Memory'
         this.name = 'AAIChatMemory'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'AAIChatMemory'
         this.icon = 'answerai-square-black.png'
         this.category = 'Memory'

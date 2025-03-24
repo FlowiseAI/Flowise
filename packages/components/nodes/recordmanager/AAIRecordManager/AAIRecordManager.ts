@@ -111,25 +111,6 @@ class AAIRecordManager_RecordManager implements INode {
             process.env.POSTGRES_RECORDMANAGER_TABLE_NAME ||
             'upsertion_records'
 
-        // Log connection details for debugging
-        console.log('AAIRecordManager - Connection details:', {
-            user,
-            passwordProvided: !!password,
-            host,
-            database,
-            port,
-            tableName,
-            connectionString: `postgresql://${user}:***@${host}:${port}/${database}` // Shows connection string format (password hidden)
-        })
-
-        // Check which env vars are being used
-        console.log('AAIRecordManager - Environment variables found:', {
-            AAI_USER: !!process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_USER,
-            POSTGRES_USER: !!process.env.POSTGRES_USER,
-            AAI_PASSWORD: !!process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PASSWORD,
-            POSTGRES_PASSWORD: !!process.env.POSTGRES_PASSWORD
-        })
-
         const additionalConfig = nodeData.inputs?.additionalConfig as string
         const _namespace = nodeData.inputs?.namespace as string
         const namespace = _namespace ? _namespace : options.chatflowid
@@ -209,15 +190,6 @@ class PostgresRecordManager implements RecordManagerInterface {
         if (postgresConnectionOptions.port === 3006) {
             throw new Error('Invalid port number')
         }
-
-        console.log('PostgresRecordManager - Connecting with options:', {
-            type: postgresConnectionOptions.type,
-            host: postgresConnectionOptions.host,
-            port: postgresConnectionOptions.port,
-            database: postgresConnectionOptions.database,
-            username: postgresConnectionOptions.username,
-            passwordProvided: !!postgresConnectionOptions.password
-        })
 
         try {
             const dataSource = new DataSource(postgresConnectionOptions)

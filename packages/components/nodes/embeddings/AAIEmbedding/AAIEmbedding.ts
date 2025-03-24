@@ -17,7 +17,7 @@ class AAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'AAI Embeddings'
         this.name = 'AAIEmbeddings'
-        this.version = 4.0
+        this.version = 1.0
         this.type = 'AAIEmbeddings'
         this.icon = 'answerai-square-black.png'
         this.category = 'Embeddings'
