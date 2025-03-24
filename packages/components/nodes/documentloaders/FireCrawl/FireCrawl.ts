@@ -47,6 +47,7 @@ interface CrawlResponse {
     success: boolean
     id: string
     url: string
+    error?: string
 }
 
 interface CrawlStatusResponse {
@@ -165,6 +166,10 @@ class FirecrawlApp {
             const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/crawl', jsonData, headers)
             if (response.status === 200) {
                 const crawlResponse = response.data as CrawlResponse
+                if (!crawlResponse.success) {
+                    throw new Error(`Crawl request failed: ${crawlResponse.error || 'Unknown error'}`)
+                }
+
                 if (waitUntilDone) {
                     return this.monitorJobStatus(crawlResponse.id, headers, pollInterval)
                 } else {
@@ -174,8 +179,13 @@ class FirecrawlApp {
                 this.handleError(response, 'start crawl job')
             }
         } catch (error: any) {
-            throw new Error(error.message)
+            if (error.response?.data?.error) {
+                throw new Error(`Crawl failed: ${error.response.data.error}`)
+            }
+
+            throw new Error(`Crawl failed: ${error.message}`)
         }
+
         return { success: false, id: '', url: '' }
     }
 
@@ -309,7 +319,7 @@ interface FirecrawlLoaderParameters {
     params?: Record<string, unknown>
 }
 
-class FireCrawlLoader extends BaseDocumentLoader {
+export class FireCrawlLoader extends BaseDocumentLoader {
     private apiKey: string
     private apiUrl: string
     private url: string
@@ -355,13 +365,22 @@ class FireCrawlLoader extends BaseDocumentLoader {
             }
             firecrawlDocs = [response.data as FirecrawlDocument]
         } else if (this.mode === 'getExtractStatus') {
-            const response = await app.getExtractStatus(this.params as any as string)
+            const jobId = this.params?.jobId as string
+            const response = await app.getExtractStatus(jobId)
             if (!response.success) {
                 throw new Error(`Firecrawl: Failed to get extract status.`)
             }
             return response.data
         } else {
             throw new Error(`Unrecognized mode '${this.mode}'. Expected one of 'crawl', 'scrape', 'extract'.`)
+        }
+
+        if (this.mode === 'extract') {
+            const newDoc = new Document({
+                pageContent: JSON.stringify(firecrawlDocs),
+                metadata: {}
+            })
+            return [newDoc]
         }
 
         return firecrawlDocs.map(
@@ -483,15 +502,6 @@ class FireCrawl_DocumentLoaders implements INode {
                 default: '10000'
             },
             {
-                // generateImgAltText
-                label: '[Crawl] Generate Image Alt Text',
-                name: 'generateImgAltText',
-                type: 'boolean',
-                description: 'Generate alt text for images',
-                optional: true,
-                additionalParams: true
-            },
-            {
                 label: '[Extract] Schema',
                 name: 'extractSchema',
                 type: 'json',
@@ -538,7 +548,6 @@ class FireCrawl_DocumentLoaders implements INode {
         const url = nodeData.inputs?.url as string
         const crawlerType = nodeData.inputs?.crawlerType as string
         const limit = nodeData.inputs?.limit as string
-        const generateImgAltText = nodeData.inputs?.generateImgAltText as boolean
         const onlyMainContent = nodeData.inputs?.onlyMainContent as boolean
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const firecrawlApiToken = getCredentialParam('firecrawlApiToken', credentialData, nodeData)
@@ -561,17 +570,16 @@ class FireCrawl_DocumentLoaders implements INode {
             apiKey: firecrawlApiToken,
             apiUrl: firecrawlApiUrl,
             params: {
-                includePaths: urlPatternsIncludes,
-                excludePaths: urlPatternsExcludes,
-                generateImgAltText,
-                limit: limit ? parseFloat(limit) : 1000,
-                onlyMainContent,
-                includeTags: nodeData.inputs?.includeTags,
-                excludeTags: nodeData.inputs?.excludeTags,
-                extractOptions: {
-                    schema: extractSchema ?? undefined,
-                    prompt: extractPrompt ?? undefined
-                }
+                scrapeOptions: {
+                    includePaths: urlPatternsIncludes,
+                    excludePaths: urlPatternsExcludes,
+                    limit: limit ? parseFloat(limit) : 1000,
+                    onlyMainContent,
+                    includeTags: nodeData.inputs?.includeTags,
+                    excludeTags: nodeData.inputs?.excludeTags
+                },
+                schema: extractSchema ?? undefined,
+                prompt: extractPrompt ?? undefined
             }
         }
         const loader = new FireCrawlLoader(input)
@@ -613,3 +621,6 @@ class FireCrawl_DocumentLoaders implements INode {
 }
 
 module.exports = { nodeClass: FireCrawl_DocumentLoaders }
+
+// FOR TESTING PURPOSES
+// export { FireCrawl_DocumentLoaders }
