@@ -429,7 +429,7 @@ const NvidiaNIMDialog = ({ open, onClose, onComplete }) => {
                 <DialogTitle>Container Already Exists</DialogTitle>
                 <DialogContent>
                     <p>A container for this image already exists:</p>
-                    <div style={{ margin: '16px 0', padding: '12px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                    <div>
                         <p>
                             <strong>Name:</strong> {existingContainer?.name || 'N/A'}
                         </p>
