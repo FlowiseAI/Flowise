@@ -31,7 +31,7 @@ import 'global-agent/bootstrap'
 import authenticationHandlerMiddleware from './middlewares/authentication'
 import passport from 'passport'
 import passportConfig from './config/passport'
-import session from 'express-session'
+import session from 'cookie-session'
 declare global {
     namespace Express {
         namespace Multer {
@@ -139,11 +139,7 @@ export class App {
         this.app.use(
             session({
                 secret: process.env.SESSION_SECRET ?? 'theanswerai',
-                resave: false,
-                saveUninitialized: false,
-                cookie: {
-                    secure: process.env.NODE_ENV === 'production'
-                }
+                secure: process.env.NODE_ENV === 'production'
             })
         )
         this.app.use(passport.initialize())
