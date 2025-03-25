@@ -356,6 +356,7 @@ export class StripeProvider {
                                     payload: {
                                         value: totalCreditsWithMargin.toString(),
                                         stripe_customer_id: data.stripeCustomerId,
+                                        user_id: data.userId,
                                         trace_id: data.traceId,
                                         ai_tokens_credits: (aiTokens * BILLING_CONFIG.MARGIN_MULTIPLIER).toString(),
                                         compute_credits: (data.credits.compute * BILLING_CONFIG.MARGIN_MULTIPLIER).toString(),
