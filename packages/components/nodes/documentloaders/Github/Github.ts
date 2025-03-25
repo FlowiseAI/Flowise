@@ -62,6 +62,24 @@ class Github_DocumentLoaders implements INode {
                 additionalParams: true
             },
             {
+                label: 'Github Base URL',
+                name: 'githubBaseUrl',
+                type: 'string',
+                placeholder: `https://git.example.com`,
+                description: 'Custom Github Base Url (e.g. Enterprise)',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Github Instance API',
+                name: 'githubInstanceApi',
+                type: 'string',
+                placeholder: `https://api.github.com`,
+                description: 'Custom Github API Url (e.g. Enterprise)',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Ignore Paths',
                 name: 'ignorePath',
                 description: 'An array of paths to be ignored',
@@ -134,6 +152,8 @@ class Github_DocumentLoaders implements INode {
         const ignorePath = nodeData.inputs?.ignorePath as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
+        const githubInstanceApi = nodeData.inputs?.githubInstanceApi as string
+        const githubBaseUrl = nodeData.inputs?.githubBaseUrl as string
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -153,6 +173,12 @@ class Github_DocumentLoaders implements INode {
         if (maxConcurrency) githubOptions.maxConcurrency = parseInt(maxConcurrency, 10)
         if (maxRetries) githubOptions.maxRetries = parseInt(maxRetries, 10)
         if (ignorePath) githubOptions.ignorePaths = JSON.parse(ignorePath)
+        if (githubInstanceApi) {
+            githubOptions.apiUrl = githubInstanceApi.endsWith('/') ? githubInstanceApi.slice(0, -1) : githubInstanceApi
+        }
+        if (githubBaseUrl) {
+            githubOptions.baseUrl = githubBaseUrl.endsWith('/') ? githubBaseUrl.slice(0, -1) : githubBaseUrl
+        }
 
         const loader = new GithubRepoLoader(repoLink, githubOptions)
 
