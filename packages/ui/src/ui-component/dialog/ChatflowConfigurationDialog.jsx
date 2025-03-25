@@ -14,12 +14,17 @@ import GeneralSettings from '@/ui-component/extended/GeneralSettings'
 import ChatLinksSettings from '@/ui-component/extended/ChatLinksSettings'
 import FileUpload from '@/ui-component/extended/FileUpload'
 import PostProcessing from '@/ui-component/extended/PostProcessing'
+import Security from '@/ui-component/extended/Security'
 // import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 
 const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'General',
         id: 'generalSettings'
+    },
+    {
+        label: 'Security',
+        id: 'security'
     },
     {
         label: 'Visibility',
@@ -131,7 +136,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                     variant='scrollable'
                     scrollButtons='auto'
                 >
-                    {filteredTabs.map((item, index) => (
+                    {filteredTabs.map((item) => (
                         <Tab
                             sx={{
                                 minHeight: '40px',
@@ -140,14 +145,14 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                                 alignItems: 'center',
                                 mb: 1
                             }}
-                            key={index}
+                            key={item.id}
                             label={item.label}
-                            {...a11yProps(index)}
-                        ></Tab>
+                            {...a11yProps(filteredTabs.indexOf(item))}
+                        />
                     ))}
                 </Tabs>
-                {filteredTabs.map((item, index) => (
-                    <TabPanel key={index} value={tabValue} index={index}>
+                {filteredTabs.map((item) => (
+                    <TabPanel key={item.id} value={tabValue} index={filteredTabs.indexOf(item)}>
                         {item.id === 'rateLimiting' && <RateLimit dialogProps={dialogProps} />}
                         {item.id === 'conversationStarters' ? <StarterPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
@@ -160,6 +165,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                         {item.id === 'generalSettings' ? <GeneralSettings dialogProps={dialogProps} /> : null}
                         {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}
                         {item.id === 'postProcessing' ? <PostProcessing dialogProps={dialogProps} /> : null}
+                        {item.id === 'security' ? <Security dialogProps={dialogProps} /> : null}
                     </TabPanel>
                 ))}
             </DialogContent>
