@@ -1,4 +1,4 @@
-import { flatten, uniq } from 'lodash'
+import { difference, flatten, uniq } from 'lodash'
 import { DataSource } from 'typeorm'
 import { z } from 'zod'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
@@ -430,8 +430,15 @@ class LLMNode_SeqAgents implements INode {
         const abortControllerSignal = options.signal as AbortController
         const llmNodeInputVariables = uniq([...getInputVariables(systemPrompt), ...getInputVariables(humanPrompt)])
 
-        if (!llmNodeInputVariables.every((element) => Object.keys(llmNodeInputVariablesValues).includes(element))) {
-            throw new Error('LLM Node input variables values are not provided!')
+        const missingInputVars = difference(llmNodeInputVariables, Object.keys(llmNodeInputVariablesValues)).join(' ')
+        const allVariablesSatisfied = missingInputVars.length === 0
+        if (!allVariablesSatisfied) {
+            const nodeInputVars = llmNodeInputVariables.join(' ')
+            const providedInputVars = Object.keys(llmNodeInputVariablesValues).join(' ')
+
+            throw new Error(
+                `LLM Node input variables values are not provided! Required: ${nodeInputVars}, Provided: ${providedInputVars}. Missing: ${missingInputVars}`
+            )
         }
 
         const workerNode = async (state: ISeqAgentsState, config: RunnableConfig) => {
