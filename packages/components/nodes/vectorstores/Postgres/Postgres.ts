@@ -12,6 +12,26 @@ import { getContentColumnName, getDatabase, getHost, getPort, getTableName } fro
 
 const serverCredentialsExists = !!process.env.POSTGRES_VECTORSTORE_USER && !!process.env.POSTGRES_VECTORSTORE_PASSWORD
 
+// added temporarily to fix the base class return for VectorStore when postgres node is using TypeORM
+function getVectorStoreBaseClasses() {
+    // Try getting base classes through the utility function
+    const baseClasses = getBaseClasses(VectorStore)
+
+    // If we got results, return them
+    if (baseClasses && baseClasses.length > 0) {
+        return baseClasses
+    }
+
+    // If VectorStore is recognized as a class but getBaseClasses returned nothing,
+    // return the known inheritance chain
+    if (VectorStore instanceof Function) {
+        return ['VectorStore']
+    }
+
+    // Fallback to minimum required class
+    return ['VectorStore']
+}
+
 class Postgres_VectorStores implements INode {
     label: string
     name: string
@@ -195,7 +215,11 @@ class Postgres_VectorStores implements INode {
             {
                 label: 'Postgres Vector Store',
                 name: 'vectorStore',
-                baseClasses: [this.type, ...getBaseClasses(VectorStore)]
+                baseClasses: [
+                    this.type,
+                    // ...getBaseClasses(VectorStore), // disabled temporarily for using TypeORM
+                    ...getVectorStoreBaseClasses() // added temporarily for using TypeORM
+                ]
             }
         ]
     }
