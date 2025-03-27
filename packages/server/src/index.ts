@@ -4,7 +4,7 @@ import http from 'http'
 import basicAuth from 'express-basic-auth'
 import { DataSource } from 'typeorm'
 import { MODE } from './Interface'
-import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
+import { getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
@@ -31,7 +31,8 @@ import 'global-agent/bootstrap'
 import authenticationHandlerMiddleware from './middlewares/authentication'
 import passport from 'passport'
 import passportConfig from './config/passport'
-import session from 'cookie-session'
+import session from 'express-session'
+import { redisStore } from './AppConfig'
 declare global {
     namespace Express {
         namespace Multer {
@@ -138,10 +139,17 @@ export class App {
         // Passport Middleware
         this.app.use(
             session({
+                store: redisStore,
                 secret: process.env.SESSION_SECRET ?? 'theanswerai',
-                secure: process.env.NODE_ENV === 'production'
+                resave: false,
+                saveUninitialized: false,
+                cookie: {
+                    secure: process.env.NODE_ENV === 'production',
+                    maxAge: 60 * 60 * 1000 // 1 hour to match Google token expiry
+                }
             })
         )
+
         this.app.use(passport.initialize())
         this.app.use(passport.session())
 
