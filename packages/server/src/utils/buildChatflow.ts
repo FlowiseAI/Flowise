@@ -156,9 +156,9 @@ const getChatHistory = async ({
 
     if (isAgentFlow) {
         const startNode = nodes.find((node) => node.data.name === 'seqStart')
-        if (!startNode?.data?.inputs?.memory) return []
+        if (!startNode?.data?.inputs?.agentMemory) return prependMessages
 
-        const memoryNodeId = startNode.data.inputs.memory.split('.')[0].replace('{{', '')
+        const memoryNodeId = startNode.data.inputs.agentMemory.split('.')[0].replace('{{', '')
         const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
 
         if (memoryNode) {
