@@ -455,7 +455,7 @@ const checkIfDocLoaderShouldBeIgnored = (
 }
 
 type BuildFlowParams = {
-    user: IUser | undefined
+    user?: IUser
     startingNodeIds: string[]
     reactFlowNodes: IReactFlowNode[]
     reactFlowEdges: IReactFlowEdge[]

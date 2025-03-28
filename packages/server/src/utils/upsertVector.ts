@@ -33,9 +33,10 @@ import { v4 as uuidv4 } from 'uuid'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../Interface.Metrics'
 import { Variable } from '../database/entities/Variable'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
+import { IsNull } from 'typeorm'
 
 export const executeUpsert = async ({
-    user,   
+    user,
     componentNodes,
     incomingInput,
     chatflow,
@@ -148,7 +149,9 @@ export const executeUpsert = async ({
     const { startingNodeIds, depthQueue } = getStartingNodes(filteredGraph, stopNodeId)
 
     /*** Get API Config ***/
-    const availableVariables = await appDataSource.getRepository(Variable).find({ where: { userId: user.id } })
+    const availableVariables = await appDataSource
+        .getRepository(Variable)
+        .find({ where: user ? { userId: user.id } : { userId: IsNull() } })
     const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
     const upsertedResult = await buildFlow({
