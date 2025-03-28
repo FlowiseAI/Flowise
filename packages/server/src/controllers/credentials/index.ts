@@ -80,9 +80,21 @@ const updateCredential = async (req: Request, res: Response, next: NextFunction)
 
 const updateAndRefreshToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!req.body.credentialId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Credential ID is required'
+            })
+        }
+
         const apiResponse = await credentialsService.updateAndRefreshToken(req.body.credentialId, req.user?.id)
-        return res.json(apiResponse)
+        return res.json({
+            success: true,
+            message: 'Token refreshed successfully',
+            data: apiResponse
+        })
     } catch (error) {
+        console.error('Error refreshing token:', error)
         next(error)
     }
 }

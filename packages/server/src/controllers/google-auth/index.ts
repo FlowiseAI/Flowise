@@ -23,7 +23,8 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
                 'https://www.googleapis.com/auth/gmail.readonly',
                 'https://www.googleapis.com/auth/gmail.labels'
             ],
-            accessType: 'offline'
+            accessType: 'offline',
+            prompt: 'consent'
         })(req, res, next)
     } catch (error) {
         // eslint-disable-next-line no-console
