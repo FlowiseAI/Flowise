@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import * as path from 'path'
-import { DataSource } from 'typeorm'
+import { DataSource, IsNull, Not } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
 import { omit } from 'lodash'
 import {
@@ -86,7 +86,7 @@ const initEndingNode = async ({
     nodeOverrides,
     variableOverrides
 }: {
-    user: IUser
+    user?: IUser
     endingNodeIds: string[]
     componentNodes: IComponentNodes
     reactFlowNodes: IReactFlowNode[]
@@ -430,7 +430,10 @@ export const executeFlow = async ({
     })
 
     /*** Get API Config ***/
-    const availableVariables = await appDataSource.getRepository(Variable).find({ where: { userId: user.id } })
+    // TODO: Support organization and global variables
+    const availableVariables = await appDataSource
+        .getRepository(Variable)
+        .find({ where: user ? { userId: user.id } : { userId: IsNull() } })
     const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(chatflow)
 
     const flowConfig: IFlowConfig = {
@@ -670,7 +673,7 @@ export const executeFlow = async ({
             createdDate: userMessageDateTime,
             fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
             leadEmail: incomingInput.leadEmail,
-            userId: user.id
+            userId: user?.id ?? ''
         }
         await utilAddChatMessage(userMessage, appDataSource)
 
@@ -718,7 +721,7 @@ export const executeFlow = async ({
             chatId,
             memoryType,
             sessionId,
-            userId: user?.id
+            userId: user?.id ?? ''
         }
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)

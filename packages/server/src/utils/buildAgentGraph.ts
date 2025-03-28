@@ -19,14 +19,24 @@ import { StatusCodes } from 'http-status-codes'
 import { v4 as uuidv4 } from 'uuid'
 import { StructuredTool } from '@langchain/core/tools'
 import { BaseMessage, HumanMessage, AIMessage, AIMessageChunk, ToolMessage } from '@langchain/core/messages'
-import { IChatFlow, IComponentNodes, IDepthQueue, IReactFlowNode, IReactFlowEdge, IMessage, IncomingInput, IFlowConfig, IUser } from '../Interface'
+import {
+    IChatFlow,
+    IComponentNodes,
+    IDepthQueue,
+    IReactFlowNode,
+    IReactFlowEdge,
+    IMessage,
+    IncomingInput,
+    IFlowConfig,
+    IUser
+} from '../Interface'
 import { databaseEntities, clearSessionMemory, getAPIOverrideConfig } from '../utils'
 import { replaceInputsWithConfig, resolveVariables } from '.'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { getErrorMessage } from '../errors/utils'
 import logger from './logger'
 import { Variable } from '../database/entities/Variable'
-import { DataSource } from 'typeorm'
+import { DataSource, IsNull } from 'typeorm'
 import { CachePool } from '../CachePool'
 
 /**
@@ -70,8 +80,8 @@ export const buildAgentGraph = async ({
     shouldStreamResponse: boolean
     cachePool: CachePool
     baseURL: string
-    signal?: AbortController,
-    user: IUser
+    signal?: AbortController
+    user?: IUser
 }): Promise<any> => {
     try {
         const chatflowid = flowConfig.chatflowid
@@ -405,7 +415,7 @@ export const buildAgentGraph = async ({
 }
 
 type MultiAgentsGraphParams = {
-    user: IUser
+    user?: IUser
     agentflow: IChatFlow
     appDataSource: DataSource
     mapNameToLabel: Record<string, { label: string; nodeName: string }>
@@ -463,7 +473,9 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
     const workerNodes = reactFlowNodes.filter((node) => workerNodeIds.includes(node.data.id))
 
     /*** Get API Config ***/
-    const availableVariables = await appDataSource.getRepository(Variable).find({ where: { userId: user.id } })
+    const availableVariables = await appDataSource
+        .getRepository(Variable)
+        .find({ where: user ? { userId: user.id } : { userId: IsNull() } })
     const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(agentflow)
 
     let supervisorWorkers: { [key: string]: IMultiAgentNode[] } = {}
@@ -617,7 +629,7 @@ const compileMultiAgentsGraph = async (params: MultiAgentsGraphParams) => {
 }
 
 type SeqAgentsGraphParams = {
-    user:IUser
+    user?: IUser
     depthQueue: IDepthQueue
     agentflow: IChatFlow
     appDataSource: DataSource
@@ -696,7 +708,9 @@ const compileSeqAgentsGraph = async (params: SeqAgentsGraphParams) => {
     let interruptToolNodeNames = []
 
     /*** Get API Config ***/
-    const availableVariables = await appDataSource.getRepository(Variable).find({ where: { userId: user.id } })
+    const availableVariables = await appDataSource
+        .getRepository(Variable)
+        .find({ where: user ? { userId: user.id } : { userId: IsNull() } })
     const { nodeOverrides, variableOverrides, apiOverrideStatus } = getAPIOverrideConfig(agentflow)
 
     const initiateNode = async (node: IReactFlowNode) => {

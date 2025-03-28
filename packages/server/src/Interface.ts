@@ -391,7 +391,7 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     signal?: AbortController
     files?: Express.Multer.File[]
     isUpsert?: boolean
-    user: IUser
+    user?: IUser
 }
 
 export interface INodeOverrides {
