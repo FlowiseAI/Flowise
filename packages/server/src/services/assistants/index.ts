@@ -16,6 +16,7 @@ import { ICommonObject } from 'flowise-components'
 import logger from '../../utils/logger'
 import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
 import { INPUT_PARAMS_TYPE } from '../../utils/constants'
+import { validate } from 'uuid'
 
 const createAssistant = async (requestBody: any): Promise<Assistant> => {
     try {
@@ -339,6 +340,12 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
 
 const importAssistants = async (newAssistants: Partial<Assistant>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
+        for (const data of newAssistants) {
+            if (data.id && !validate(data.id)) {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: importAssistants - invalid id!`)
+            }
+        }
+
         const appServer = getRunningExpressApp()
         const repository = queryRunner ? queryRunner.manager.getRepository(Assistant) : appServer.AppDataSource.getRepository(Assistant)
 
