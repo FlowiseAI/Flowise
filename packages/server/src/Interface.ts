@@ -94,7 +94,7 @@ export interface IChatMessage {
     artifacts?: string
     chatType: string
     chatId: string
-    userId: string
+    userId?: string
     memoryType?: string
     sessionId?: string
     createdDate: Date
