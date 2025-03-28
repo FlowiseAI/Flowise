@@ -21,6 +21,7 @@ import { ContentfulConfig } from '@/ui-component/contentful/ContentfulConfig'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import ManageScrapedLinksDialog from '@/ui-component/dialog/ManageScrapedLinksDialog'
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
+import { GmailLabelPicker } from '@/ui-component/gmail/GmailLabelPicker'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
@@ -146,6 +147,16 @@ const DocStoreInputHandler = ({
                                     data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
                                     handleCredentialChange(newValue)
                                 }}
+                            />
+                        )}
+                        {inputParam && data.name === 'gmail' && inputParam.name === 'selectedLabels' && (
+                            <GmailLabelPicker
+                                disabled={disabled}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? '[]'}
+                                credentialId={selectedCredential}
+                                credentialData={selectedCredentialData}
+                                handleCredentialDataChange={handleCredentialDataChange}
                             />
                         )}
                         {inputParam && data.name === 'googleDrive' && inputParam.name === 'selectedFiles' && (

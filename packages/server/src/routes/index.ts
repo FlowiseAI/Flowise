@@ -47,6 +47,7 @@ import chatsRouter from './chats'
 import googleAuthRouter from './google-auth'
 import billingRouter from './billing'
 import nvidiaNimRouter from './nvidia-nim'
+import gmailRouter from './gmail'
 
 const router = express.Router()
 
@@ -98,5 +99,6 @@ router.use('/upsert-history', upsertHistoryRouter)
 router.use('/chats', chatsRouter)
 router.use('/billing', billingRouter)
 router.use('/nvidia-nim', nvidiaNimRouter)
+router.use('/gmail', gmailRouter)
 
 export default router
