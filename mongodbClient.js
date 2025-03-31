@@ -30,7 +30,7 @@ async function getChatHistory(sessionId) {
   try {
     const client = await connectDB();
     const db = client.db('dex_cambro');
-    const collection = db.collection('knowledge');
+    const collection = db.collection('dexcambro');
 
     // Find chat history by sessionId. If none exists, return an empty history.
     const chatHistory = await collection.findOne({ sessionId });
