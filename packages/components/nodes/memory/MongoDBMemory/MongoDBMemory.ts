@@ -54,11 +54,11 @@ class MongoDB_Memory implements INode {
                 type: 'string'
             },
             {
-                label: 'Session Id (User ID)',
-                name: 'sessionId',
+                label: 'Username',
+                name: 'username',
                 type: 'string',
                 description:
-                    'This will be used as the userID to identify the chat history. If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat">more</a>',
+                    'Enter the username that will be used as the userID for the chat history. If not specified, a random id will be used. Learn <a target="_blank" href="https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat">more</a>',
                 default: '',
                 additionalParams: true,
                 optional: true
@@ -82,7 +82,8 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     const databaseName = nodeData.inputs?.databaseName as string
     const collectionName = nodeData.inputs?.collectionName as string
     const memoryKey = nodeData.inputs?.memoryKey as string
-    const sessionId = nodeData.inputs?.sessionId as string
+    // Use the username input as the userID (falling back to an empty string if not provided)
+    const userID = nodeData.inputs?.username as string
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
@@ -90,7 +91,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
 
     return new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
-        sessionId, // will be used as userID in the updated methods
+        sessionId: userID, // Using the username as the session/user id.
         mongoConnection: {
             databaseName,
             collectionName,
@@ -111,7 +112,7 @@ interface BufferMemoryExtendedInput {
 }
 
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
-    // We repurpose sessionId as userID
+    // We use the sessionId field as the userID (derived from the username input)
     sessionId = ''
     mongoConnection: {
         databaseName: string
@@ -134,7 +135,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const client = new MongoClient(this.mongoConnection.mongoDBConnectUrl, { driverInfo: this.mongoConnection.driverInfo })
         await client.connect()
         const collection = client.db(this.mongoConnection.databaseName).collection(this.mongoConnection.collectionName)
-        // Use "userID" (which is our sessionId) as the key
+        // Use the provided username (or fallback to stored sessionId) as userID
         const id = overrideSessionId ? overrideSessionId : this.sessionId
         const document = await collection.findOne({ userID: id })
         const chatHistory: string = document?.chatHistory || ""
