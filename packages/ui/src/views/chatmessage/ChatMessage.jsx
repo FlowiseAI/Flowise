@@ -99,12 +99,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
     const [userInput, setUserInput] = useState('')
     const [loading, setLoading] = useState(false)
-    const [messages, setMessages] = useState([
-        {
-            message: 'Hi there! How can I help?',
-            type: 'apiMessage'
-        }
-    ])
+    const [messages, setMessages] = useState([])
     const [socketIOClientId, setSocketIOClientId] = useState('')
     const [isChatFlowAvailableToStream, setIsChatFlowAvailableToStream] = useState(false)
     const [isChatFlowAvailableForSpeech, setIsChatFlowAvailableForSpeech] = useState(false)
@@ -700,11 +695,16 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 }
                 return obj
             })
-            setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
+            setMessages(loadedMessages)
             setLocalStorageChatflow(chatflowid, chatId)
+        } else {
+            setMessages([
+                {
+                    message: 'Hi there! How can I help?',
+                    type: 'apiMessage'
+                }
+            ])
         }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChatmessageApi.data])
 
     // Get chatflow streaming capability
@@ -775,11 +775,14 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     useEffect(() => {
         let socket
         if (open && chatflowid) {
-            // API request
-            getChatmessageApi.request(chatflowid)
-            getIsChatflowStreamingApi.request(chatflowid)
-            getAllowChatFlowUploads.request(chatflowid)
-            getChatflowConfig.request(chatflowid)
+            // Only make API calls if we don't have messages yet
+            if (!messages.length) {
+                // API request
+                getChatmessageApi.request(chatflowid)
+                getIsChatflowStreamingApi.request(chatflowid)
+                getAllowChatFlowUploads.request(chatflowid)
+                getChatflowConfig.request(chatflowid)
+            }
 
             // Scroll to bottom
             scrollToBottom()
@@ -962,7 +965,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             loading ||
             !chatflowid ||
             (leadsConfig?.status && !isLeadSaved) ||
-            (messages[messages.length - 1].action && Object.keys(messages[messages.length - 1].action).length > 0)
+            (messages.length > 0 && messages[messages.length - 1].action && Object.keys(messages[messages.length - 1].action).length > 0)
         )
     }
 
