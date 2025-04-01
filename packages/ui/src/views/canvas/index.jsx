@@ -311,9 +311,11 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                         description: chatflow.description || '',
                         visibility: chatflow.visibility || [],
                         category: chatflow.category || '',
-                        chatbotConfig: chatflow.chatbotConfig ? JSON.stringify(chatflow.chatbotConfig) : JSON.stringify({
-                            chatLinksInNewTab: { status: true }
-                        })
+                        chatbotConfig: chatflow.chatbotConfig
+                            ? JSON.stringify(chatflow.chatbotConfig)
+                            : JSON.stringify({
+                                  chatLinksInNewTab: { status: true }
+                              })
                     }
                 }
                 createNewChatflowApi.request(newChatflowBody)

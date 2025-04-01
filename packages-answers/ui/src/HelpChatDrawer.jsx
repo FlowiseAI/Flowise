@@ -212,7 +212,7 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
                         type='module'
                         dangerouslySetInnerHTML={{
                             __html: `
-                                import Chatbot from "https://cdn.jsdelivr.net/npm/aai-embed/dist/web.js"
+                                import Chatbot from "https://cdn.jsdelivr.net/npm/aai-embed@1/dist/web.js"
                                 Chatbot.initFull({
                                     chatflowid: "${chatflowid}",
                                     apiHost: "${apiHost}",
