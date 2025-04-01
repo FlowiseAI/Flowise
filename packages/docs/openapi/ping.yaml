@@ -1,0 +1,44 @@
+openapi: 3.0.0
+info:
+    title: Ping API
+    description: Simple API for checking server status
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
+tags:
+    - name: ping
+      description: Operations for checking server status
+paths:
+    /ping:
+        get:
+            summary: Ping the server
+            description: Ping the server to check if it is running
+            operationId: pingServer
+            tags:
+                - ping
+            responses:
+                '200':
+                    description: Server is running
+                    content:
+                        text/plain:
+                            schema:
+                                type: string
+                                example: pong
+                '500':
+                    description: Internal server error
+components:
+    schemas: {}
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

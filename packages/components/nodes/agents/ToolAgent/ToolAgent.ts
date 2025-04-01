@@ -1,4 +1,5 @@
 import { flatten } from 'lodash'
+import { Tool } from '@langchain/core/tools'
 import { BaseMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import { RunnableSequence } from '@langchain/core/runnables'
@@ -6,8 +7,23 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
-import { getBaseClasses } from '../../../src/utils'
-import { FlowiseMemory, ICommonObject, INode, INodeData, INodeParams, IUsedTool, IVisionChatModal } from '../../../src/Interface'
+import {
+    extractOutputFromArray,
+    getBaseClasses,
+    handleEscapeCharacters,
+    removeInvalidImageMarkdown,
+    transformBracesWithColon
+} from '../../../src/utils'
+import {
+    FlowiseMemory,
+    ICommonObject,
+    INode,
+    INodeData,
+    INodeParams,
+    IServerSideEventStreamer,
+    IUsedTool,
+    IVisionChatModal
+} from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
@@ -25,12 +41,11 @@ class ToolAgent_Agents implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
-    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Tool Agent'
         this.name = 'toolAgent'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
         this.icon = 'toolAgent.png'
@@ -56,21 +71,21 @@ class ToolAgent_Agents implements INode {
                     'Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat'
             },
             {
-                label: 'Prompt',
-                name: 'prompt',
-                type: 'BasePromptTemplate',
-                optional: true,
-                description: 'Custom prompt for the agent. If not provided, default system message will be used'
+                label: 'Chat Prompt Template',
+                name: 'chatPromptTemplate',
+                type: 'ChatPromptTemplate',
+                description: 'Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable',
+                optional: true
             },
             {
                 label: 'System Message',
                 name: 'systemMessage',
                 type: 'string',
                 default: `You are a helpful AI assistant.`,
+                description: 'If Chat Prompt Template is provided, this will be ignored',
                 rows: 4,
                 optional: true,
-                additionalParams: true,
-                description: 'Used only if no custom prompt is provided'
+                additionalParams: true
             },
             {
                 label: 'Input Moderation',
@@ -99,7 +114,9 @@ class ToolAgent_Agents implements INode {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
-        const isStreamable = options.socketIO && options.socketIOClientId
+        const shouldStreamResponse = options.shouldStreamResponse
+        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
+        const chatId = options.chatId
 
         if (moderations && moderations.length > 0) {
             try {
@@ -107,8 +124,9 @@ class ToolAgent_Agents implements INode {
                 input = await checkInputs(moderations, input)
             } catch (e) {
                 await new Promise((resolve) => setTimeout(resolve, 500))
-                if (isStreamable)
-                    streamResponse(options.socketIO && options.socketIOClientId, e.message, options.socketIO, options.socketIOClientId)
+                if (shouldStreamResponse) {
+                    streamResponse(sseStreamer, chatId, e.message)
+                }
                 return formatResponse(e.message)
             }
         }
@@ -121,17 +139,39 @@ class ToolAgent_Agents implements INode {
         let res: ChainValues = {}
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
+        let artifacts = []
 
-        if (isStreamable) {
-            const handler = new CustomChainHandler(options.socketIO, options.socketIOClientId)
+        if (shouldStreamResponse) {
+            const handler = new CustomChainHandler(sseStreamer, chatId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
-                options.socketIO.to(options.socketIOClientId).emit('sourceDocuments', flatten(res.sourceDocuments))
+                if (sseStreamer) {
+                    sseStreamer.streamSourceDocumentsEvent(chatId, flatten(res.sourceDocuments))
+                }
                 sourceDocuments = res.sourceDocuments
             }
             if (res.usedTools) {
-                options.socketIO.to(options.socketIOClientId).emit('usedTools', res.usedTools)
+                if (sseStreamer) {
+                    sseStreamer.streamUsedToolsEvent(chatId, flatten(res.usedTools))
+                }
                 usedTools = res.usedTools
+            }
+            if (res.artifacts) {
+                if (sseStreamer) {
+                    sseStreamer.streamArtifactsEvent(chatId, flatten(res.artifacts))
+                }
+                artifacts = res.artifacts
+            }
+            // If the tool is set to returnDirect, stream the output to the client
+            if (res.usedTools && res.usedTools.length) {
+                let inputTools = nodeData.inputs?.tools
+                inputTools = flatten(inputTools)
+                for (const tool of res.usedTools) {
+                    const inputTool = inputTools.find((inputTool: Tool) => inputTool.name === tool.tool)
+                    if (inputTool && inputTool.returnDirect && shouldStreamResponse) {
+                        sseStreamer.streamTokenEvent(chatId, tool.toolOutput)
+                    }
+                }
             }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
@@ -141,16 +181,17 @@ class ToolAgent_Agents implements INode {
             if (res.usedTools) {
                 usedTools = res.usedTools
             }
+            if (res.artifacts) {
+                artifacts = res.artifacts
+            }
         }
 
         let output = res?.output
-        if (Array.isArray(output)) {
-            output = output[0]?.text || ''
-        } else if (typeof output === 'object') {
-            output = output?.text || ''
-        }
+        output = extractOutputFromArray(res?.output)
+        output = removeInvalidImageMarkdown(output)
 
         // Claude 3 Opus tends to spit out <thinking>..</thinking> as well, discard that in final output
+        // https://docs.anthropic.com/en/docs/build-with-claude/tool-use#chain-of-thought
         const regexPattern: RegExp = /<thinking>[\s\S]*?<\/thinking>/
         const matches: RegExpMatchArray | null = output.match(regexPattern)
         if (matches) {
@@ -175,13 +216,16 @@ class ToolAgent_Agents implements INode {
 
         let finalRes = output
 
-        if (sourceDocuments.length || usedTools.length) {
+        if (sourceDocuments.length || usedTools.length || artifacts.length) {
             const finalRes: ICommonObject = { text: output }
             if (sourceDocuments.length) {
                 finalRes.sourceDocuments = flatten(sourceDocuments)
             }
             if (usedTools.length) {
                 finalRes.usedTools = usedTools
+            }
+            if (artifacts.length) {
+                finalRes.artifacts = artifacts
             }
             return finalRes
         }
@@ -198,41 +242,45 @@ const prepareAgent = async (
     const model = nodeData.inputs?.model as BaseChatModel
     const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
-    const systemMessage = nodeData.inputs?.systemMessage as string
-    const customPrompt = nodeData.inputs?.prompt
+    let systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
     const prependMessages = options?.prependMessages
 
-    let prompt: ChatPromptTemplate
+    systemMessage = transformBracesWithColon(systemMessage)
 
-    if (customPrompt) {
-        if (customPrompt instanceof ChatPromptTemplate) {
-            prompt = customPrompt
-            if (!prompt.promptMessages.some((msg) => msg instanceof MessagesPlaceholder && msg.variableName === 'agent_scratchpad')) {
-                prompt.promptMessages.push(new MessagesPlaceholder('agent_scratchpad'))
-            }
-        } else if (customPrompt instanceof PromptTemplate) {
-            // Convert PromptTemplate to ChatPromptTemplate
-            prompt = ChatPromptTemplate.fromMessages([
-                ['system', systemMessage],
-                new MessagesPlaceholder(memoryKey),
-                HumanMessagePromptTemplate.fromTemplate(`{${inputKey}}`),
-                new MessagesPlaceholder('agent_scratchpad')
-            ])
-        } else {
-            throw new Error('Unsupported prompt type. Please use ChatPromptTemplate or PromptTemplate.')
-        }
-    } else {
-        // Use default prompt
-        prompt = ChatPromptTemplate.fromMessages([
-            ['system', systemMessage],
+    let prompt = ChatPromptTemplate.fromMessages([
+        ['system', systemMessage],
+        new MessagesPlaceholder(memoryKey),
+        ['human', `{${inputKey}}`],
+        new MessagesPlaceholder('agent_scratchpad')
+    ])
+
+    let promptVariables = {}
+    const chatPromptTemplate = nodeData.inputs?.chatPromptTemplate as ChatPromptTemplate
+    if (chatPromptTemplate && chatPromptTemplate.promptMessages.length) {
+        const humanPrompt = chatPromptTemplate.promptMessages[chatPromptTemplate.promptMessages.length - 1]
+        const messages = [
+            ...chatPromptTemplate.promptMessages.slice(0, -1),
             new MessagesPlaceholder(memoryKey),
-            ['human', `{${inputKey}}`],
+            humanPrompt,
             new MessagesPlaceholder('agent_scratchpad')
-        ])
+        ]
+        prompt = ChatPromptTemplate.fromMessages(messages)
+        if ((chatPromptTemplate as any).promptValues) {
+            const promptValuesRaw = (chatPromptTemplate as any).promptValues
+            const promptValues = handleEscapeCharacters(promptValuesRaw, true)
+            for (const val in promptValues) {
+                promptVariables = {
+                    ...promptVariables,
+                    [val]: () => {
+                        return promptValues[val]
+                    }
+                }
+            }
+        }
     }
 
     if (llmSupportsVision(model)) {
@@ -274,7 +322,31 @@ const prepareAgent = async (
     if (model.bindTools === undefined) {
         throw new Error(`This agent requires that the "bindTools()" method be implemented on the input model.`)
     }
+    // Filter tools from tools with duplicate names, make sure the logs clearly show what happened
+    // Check for duplicate tool names and filter them out
+    // TODO: WE ABSOLUTELY NEED TO FIX THIS
+    // TODO: Why tools are duplicated?
+    const initialToolCount = tools.length
+    const uniqueToolNames = new Set(tools.map((tool: Tool) => tool.name))
 
+    if (initialToolCount > uniqueToolNames.size) {
+        console.log(`[ToolAgent] Found duplicate tool names. Initial count: ${initialToolCount}, unique count: ${uniqueToolNames.size}`)
+        const duplicateTools = tools
+            .map((tool: Tool) => tool.name)
+            .filter((name: string, index: number, array: string[]) => array.indexOf(name) !== index)
+        console.log(`[ToolAgent] Duplicate tool names: ${JSON.stringify(duplicateTools)}`)
+    }
+
+    tools = tools.filter((tool: Tool, index: number, self: Tool[]) => {
+        const firstIndex = self.findIndex((t) => t.name === tool.name)
+        const isDuplicate = firstIndex !== index
+        if (isDuplicate) {
+            console.log(`[ToolAgent] Filtering out duplicate tool: ${tool.name}`)
+        }
+        return firstIndex === index 
+    })
+
+    console.log(`[ToolAgent] Binding ${tools.length} tools to model: ${tools.map((t: Tool) => t.name).join(', ')}`)
     const modelWithTools = model.bindTools(tools)
 
     const runnableAgent = RunnableSequence.from([
@@ -284,7 +356,8 @@ const prepareAgent = async (
             [memoryKey]: async (_: { input: string; steps: ToolsAgentStep[] }) => {
                 const messages = (await memory.getChatMessages(flowObj?.sessionId, true, prependMessages)) as BaseMessage[]
                 return messages ?? []
-            }
+            },
+            ...promptVariables
         },
         prompt,
         modelWithTools,
@@ -297,7 +370,7 @@ const prepareAgent = async (
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
-        verbose: process.env.DEBUG === 'true' ? true : false,
+        verbose: process.env.DEBUG === 'true',
         maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
 

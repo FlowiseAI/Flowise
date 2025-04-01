@@ -30,6 +30,11 @@ import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
 import AdminOutlinedIcon from '@mui/icons-material/AdminPanelSettings'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
+import Dialog from '@mui/material/Dialog'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import PurchaseSubscription from './billing/PurchaseSubscription'
+import StarIcon from '@mui/icons-material/Star'
 
 const drawerWidth = 240
 
@@ -80,10 +85,11 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const user = session?.user
     const [drawerOpen, setDrawerOpen] = useState(false)
     const [submenuOpen, setSubmenuOpen] = useState('')
+    const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false)
     const pathname = usePathname()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
-    const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores']
+    const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores', 'billing']
     const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin']
 
     const filterMenuItems = (items: MenuConfig[]) => {
@@ -101,9 +107,6 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
         {
             ...(flags['chatflow:use'].enabled
                 ? {
-                      //   text: 'Sidekick Studio',
-                      //   link: '/sidekick-studio',
-                      //   icon: <ConstructionOutlinedIcon color='primary' />,
                       subMenu: [
                           {
                               id: 'chatflows',
@@ -147,11 +150,17 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                               link: '/sidekick-studio/apikey',
                               icon: <VpnKeyOutlinedIcon color='primary' />
                           },
+                          //   {
+                          //       id: 'admin',
+                          //       text: 'Admin',
+                          //       link: '/sidekick-studio/admin',
+                          //       icon: <AdminOutlinedIcon color='primary' />
+                          //   },
                           {
-                              id: 'admin',
-                              text: 'Admin',
-                              link: '/sidekick-studio/admin',
-                              icon: <AdminOutlinedIcon color='primary' />
+                              id: 'billing',
+                              text: 'Billing',
+                              link: '/billing',
+                              icon: <StarIcon color='primary' />
                           }
                       ]
                   }
@@ -179,249 +188,304 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
         setDrawerOpen(false)
     }
 
+    const handleSubscriptionOpen = () => {
+        setSubscriptionDialogOpen(true)
+        handleClose()
+    }
+
+    const handleSubscriptionClose = () => {
+        setSubscriptionDialogOpen(false)
+    }
+
     return (
-        <Drawer open={drawerOpen} variant='permanent' className={drawerOpen ? 'MuiDrawer-open' : 'MuiDrawer-closed'} sx={{}}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    justifyContent: drawerOpen ? 'space-between' : 'center',
-                    flexDirection: 'column',
-                    p: 1
-                }}
-            >
+        <>
+            <Drawer open={drawerOpen} variant='permanent' className={drawerOpen ? 'MuiDrawer-open' : 'MuiDrawer-closed'} sx={{}}>
                 <Box
                     sx={{
                         display: 'flex',
-                        flexDirection: drawerOpen ? 'row' : 'column',
+                        justifyContent: drawerOpen ? 'space-between' : 'center',
+                        flexDirection: 'column',
                         p: 1
                     }}
                 >
-                    <IconButton onClick={toggleDrawer}>
-                        <ViewSidebarOutlinedIcon
-                            sx={{
-                                transform: drawerOpen ? 'scaleX(-1)' : 'none',
-                                color: 'primary.main'
-                            }}
-                        />
-                    </IconButton>
-                    <IconButton onClick={toggleHelpChat}>
-                        <ContactSupport
-                            sx={{
-                                transform: drawerOpen ? 'scaleX(1)' : 'none',
-                                color: 'primary.main'
-                            }}
-                        />
-                    </IconButton>
-                </Box>
-                <Button
-                    href='/chat'
-                    variant='outlined'
-                    onClick={handleNewChat}
-                    component={NextLink}
-                    endIcon={<RateReviewIcon />}
-                    fullWidth
-                    sx={{
-                        minWidth: 0,
-                        textTransform: 'capitalize',
-                        justifyContent: 'space-between',
-                        '.MuiDrawer-closed & .MuiButton-endIcon': {
-                            margin: 0
-                        }
-                    }}
-                >
-                    <Box
-                        component='span'
-                        sx={{
-                            overflow: 'hidden',
-                            transition: '.2s',
-                            maxWidth: '240px',
-                            '.MuiDrawer-closed &': {
-                                maxWidth: '0',
-                                opacity: 0
-                            }
-                        }}
-                    >
-                        New chat
-                    </Box>
-                </Button>
-            </Box>
-            <Box
-                sx={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
-                    '&::-webkit-scrollbar': {
-                        transition: 'opacity 0.5s ease',
-                        opacity: drawerOpen ? 1 : 0
-                    },
-                    '&::-webkit-scrollbar ': {
-                        transition: '.2s',
-                        ...(!drawerOpen && {
-                            width: '0px'
-                        })
-                    }
-                }}
-            >
-                {chatList}
-            </Box>
-
-            <List sx={{ display: 'flex', flexDirection: 'column' }} disablePadding>
-                {menuConfig.map((item, index) => (
-                    <Box key={item.text || index}>
-                        <ListItem disablePadding>
-                            {item.text && (
-                                <ListItemButton
-                                    selected={!!item.link && pathname.startsWith(item.link)}
-                                    href={item.link}
-                                    component={item.link ? NextLink : 'button'}
-                                    sx={{ flex: 1, display: 'flex', width: '100%' }}
-                                    onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : item.text ?? '')}
-                                >
-                                    <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                                    <Typography
-                                        sx={{
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis',
-                                            textTransform: 'capitalize',
-                                            display: '-webkit-box',
-                                            WebkitBoxOrient: 'vertical',
-                                            WebkitLineClamp: '1',
-                                            flex: '1'
-                                        }}
-                                    >
-                                        {item.text}
-                                    </Typography>
-                                </ListItemButton>
-                            )}
-                        </ListItem>
-
-                        <Collapse
-                            key={`${item.text}-collapse`}
-                            in={
-                                true
-                                // drawerOpen ||
-                                // (pathname && item?.link
-                                //     ? pathname.includes(item?.link)
-                                //     : item.subMenu
-                                //     ? item.subMenu?.findIndex((subItem) => pathname.includes(subItem.link)) !== -1
-                                //     : false)
-                            }
-                            timeout='auto'
-                        >
-                            {item.subMenu?.map((subItem) => (
-                                <ListItem key={subItem.text} disablePadding>
-                                    <ListItemButton component={NextLink} href={subItem.link} selected={pathname === subItem.link}>
-                                        <Tooltip title={drawerOpen ? null : subItem.text}>
-                                            <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
-                                        </Tooltip>
-                                        <Typography>{subItem.text}</Typography>
-                                    </ListItemButton>
-                                </ListItem>
-                            ))}
-                        </Collapse>
-                    </Box>
-                ))}
-
-                <ListItem disablePadding sx={{ display: 'block' }}>
                     <Box
                         sx={{
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            width: '100%',
-                            gap: 1,
-                            pl: 0.5
+                            flexDirection: drawerOpen ? 'row' : 'column',
+                            p: 1
                         }}
                     >
-                        <Avatar
-                            src={user?.picture}
+                        <IconButton onClick={toggleDrawer}>
+                            <ViewSidebarOutlinedIcon
+                                sx={{
+                                    transform: drawerOpen ? 'scaleX(-1)' : 'none',
+                                    color: 'primary.main'
+                                }}
+                            />
+                        </IconButton>
+                        <IconButton onClick={toggleHelpChat}>
+                            <ContactSupport
+                                sx={{
+                                    transform: drawerOpen ? 'scaleX(1)' : 'none',
+                                    color: 'primary.main'
+                                }}
+                            />
+                        </IconButton>
+                    </Box>
+                    <Button
+                        href='/chat'
+                        variant='outlined'
+                        onClick={handleNewChat}
+                        component={NextLink}
+                        endIcon={<RateReviewIcon />}
+                        fullWidth
+                        sx={{
+                            minWidth: 0,
+                            textTransform: 'capitalize',
+                            justifyContent: 'space-between',
+                            '.MuiDrawer-closed & .MuiButton-endIcon': {
+                                margin: 0
+                            }
+                        }}
+                    >
+                        <Box
+                            component='span'
                             sx={{
-                                bgcolor: 'secondary.main',
-                                height: '32px',
-                                width: '32px',
-                                cursor: 'pointer'
+                                overflow: 'hidden',
+                                transition: '.2s',
+                                maxWidth: '240px',
+                                '.MuiDrawer-closed &': {
+                                    maxWidth: '0',
+                                    opacity: 0
+                                }
                             }}
-                            onClick={handleClick}
-                        />
+                        >
+                            New chat
+                        </Box>
+                    </Button>
+                </Box>
+                <Box
+                    sx={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        overflowX: 'hidden',
+                        '&::-webkit-scrollbar': {
+                            transition: 'opacity 0.5s ease',
+                            opacity: drawerOpen ? 1 : 0
+                        },
+                        '&::-webkit-scrollbar ': {
+                            transition: '.2s',
+                            ...(!drawerOpen && {
+                                width: '0px'
+                            })
+                        }
+                    }}
+                >
+                    {chatList}
+                </Box>
+
+                <List sx={{ display: 'flex', flexDirection: 'column' }} disablePadding>
+                    {menuConfig.map((item, index) => (
+                        <Box key={item.text || index}>
+                            <ListItem disablePadding>
+                                {item.text && (
+                                    <ListItemButton
+                                        selected={!!item.link && pathname.startsWith(item.link)}
+                                        href={item.link}
+                                        component={item.link ? NextLink : 'button'}
+                                        sx={{ flex: 1, display: 'flex', width: '100%' }}
+                                        onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : item.text ?? '')}
+                                    >
+                                        <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+                                        <Typography
+                                            sx={{
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                                textTransform: 'capitalize',
+                                                display: '-webkit-box',
+                                                WebkitBoxOrient: 'vertical',
+                                                WebkitLineClamp: '1',
+                                                flex: '1'
+                                            }}
+                                        >
+                                            {item.text}
+                                        </Typography>
+                                    </ListItemButton>
+                                )}
+                            </ListItem>
+
+                            <Collapse
+                                key={`${item.text}-collapse`}
+                                in={
+                                    true
+                                    // drawerOpen ||
+                                    // (pathname && item?.link
+                                    //     ? pathname.includes(item?.link)
+                                    //     : item.subMenu
+                                    //     ? item.subMenu?.findIndex((subItem) => pathname.includes(subItem.link)) !== -1
+                                    //     : false)
+                                }
+                                timeout='auto'
+                            >
+                                {item.subMenu?.map((subItem) => (
+                                    <ListItem key={subItem.text} disablePadding>
+                                        <ListItemButton
+                                            component={subItem.link ? NextLink : 'button'}
+                                            href={subItem.link || '#'}
+                                            selected={pathname === subItem.link}
+                                        >
+                                            <Tooltip title={drawerOpen ? null : subItem.text}>
+                                                <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
+                                            </Tooltip>
+                                            <Typography>{subItem.text}</Typography>
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                            </Collapse>
+                        </Box>
+                    ))}
+
+                    {/* <ListItem disablePadding>
+                        <ListItemButton
+                            onClick={handleSubscriptionOpen}
+                            sx={{ bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' }, borderRadius: 1, mb: 1 }}
+                        >
+                            <ListItemIcon>
+                                <StarIcon sx={{ color: '#fff' }} />
+                            </ListItemIcon>
+                            <Typography
+                                sx={{
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    textTransform: 'capitalize',
+                                    display: '-webkit-box',
+                                    WebkitBoxOrient: 'vertical',
+                                    WebkitLineClamp: '1',
+                                    flex: '1',
+                                    color: '#fff'
+                                }}
+                            >
+                                Buy Credits
+                            </Typography>
+                        </ListItemButton>
+                    </ListItem> */}
+
+                    <ListItem disablePadding sx={{ display: 'block' }}>
                         <Box
                             sx={{
                                 display: 'flex',
-                                overflow: 'hidden',
                                 alignItems: 'center',
+                                justifyContent: 'space-between',
                                 width: '100%',
-                                maxWidth: 124
+                                gap: 1,
+                                pl: 0.5
                             }}
                         >
-                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                <Typography
-                                    variant='caption'
-                                    sx={{
-                                        width: '100%',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {user?.email}
-                                </Typography>
-                                <Typography
-                                    variant='caption'
-                                    sx={{
-                                        width: '100%',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {user?.org_name}
-                                </Typography>
+                            <Avatar
+                                src={user?.picture}
+                                sx={{
+                                    bgcolor: 'secondary.main',
+                                    height: '32px',
+                                    width: '32px',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={handleClick}
+                            />
+                            <Box
+                                sx={{
+                                    display: 'flex',
+                                    overflow: 'hidden',
+                                    alignItems: 'center',
+                                    width: '100%',
+                                    maxWidth: 124
+                                }}
+                            >
+                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                    <Typography
+                                        variant='caption'
+                                        sx={{
+                                            width: '100%',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {user?.email}
+                                    </Typography>
+                                    <Typography
+                                        variant='caption'
+                                        sx={{
+                                            width: '100%',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {user?.org_name}
+                                    </Typography>
+                                </Box>
                             </Box>
-                        </Box>
-                        <IconButton
-                            aria-label='more options'
-                            sx={{ minHeight: 48, width: 48, justifyContent: 'center' }}
-                            aria-controls='simple-menu'
-                            aria-haspopup='true'
-                            onClick={handleClick}
-                        >
-                            <MoreVertIcon />
-                        </IconButton>
-                        <Menu id='simple-menu' anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
-                            <MenuItem disabled>
-                                <Typography
-                                    variant='caption'
-                                    sx={{
-                                        opacity: 0.9,
-                                        width: '100%',
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap'
+                            <IconButton
+                                aria-label='more options'
+                                sx={{ minHeight: 48, width: 48, justifyContent: 'center' }}
+                                aria-controls='simple-menu'
+                                aria-haspopup='true'
+                                onClick={handleClick}
+                            >
+                                <MoreVertIcon />
+                            </IconButton>
+                            <Menu id='simple-menu' anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={handleClose}>
+                                <MenuItem disabled>
+                                    <Typography
+                                        variant='caption'
+                                        sx={{
+                                            opacity: 0.9,
+                                            width: '100%',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                        }}
+                                    >
+                                        {user?.org_name}
+                                    </Typography>
+                                </MenuItem>
+                                <MenuItem onClick={handleSubscriptionOpen}>Upgrade Plan</MenuItem>
+                                <MenuItem
+                                    onClick={() => {
+                                        handleClose()
+                                        window.location.href = '/api/auth/login'
                                     }}
                                 >
-                                    {user?.org_name}
-                                </Typography>
-                            </MenuItem>
-                            <MenuItem
-                                onClick={() => {
-                                    handleClose()
-                                    window.location.href = '/api/auth/login'
-                                }}
-                            >
-                                Switch Organization
-                            </MenuItem>
-                            <MenuItem
-                                onClick={() => {
-                                    handleClose()
-                                    window.location.href = '/api/auth/logout'
-                                }}
-                            >
-                                Sign Out
-                            </MenuItem>
-                        </Menu>
-                    </Box>
-                </ListItem>
-            </List>
-        </Drawer>
+                                    Switch Organization
+                                </MenuItem>
+                                <MenuItem
+                                    onClick={() => {
+                                        handleClose()
+                                        window.location.href = '/api/auth/logout'
+                                    }}
+                                >
+                                    Sign Out
+                                </MenuItem>
+                            </Menu>
+                        </Box>
+                    </ListItem>
+                </List>
+            </Drawer>
+            <Dialog
+                open={subscriptionDialogOpen}
+                onClose={handleSubscriptionClose}
+                fullWidth
+                maxWidth='md'
+                aria-labelledby='subscription-dialog-title'
+            >
+                <DialogTitle sx={{ fontSize: '1rem' }} id='subscription-dialog-title'>
+                    Upgrade your plan
+                </DialogTitle>
+                <DialogContent>
+                    <PurchaseSubscription />
+                </DialogContent>
+            </Dialog>
+        </>
     )
 }
 

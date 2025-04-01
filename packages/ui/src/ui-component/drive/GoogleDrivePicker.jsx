@@ -13,6 +13,7 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
     const [selectedFiles, setSelectedFiles] = useState(value ? JSON.parse(value) : [])
     const [accessToken, setAccessToken] = useState(null)
     const [isTokenExpired, setIsTokenExpired] = useState(false)
+    const [isRefreshing, setIsRefreshing] = useState(false)
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
     const getCredentialDataApi = useApi(credentialsApi.getSpecificCredential)
@@ -121,9 +122,13 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
 
     const handleRefreshAccessToken = async () => {
         try {
+            setIsRefreshing(true)
             const response = await credentialsApi.refreshAccessToken({ credentialId })
+
             if (response.status === 200) {
+                getCredentialDataApi.request(credentialId)
                 setIsTokenExpired(false)
+
                 enqueueSnackbar({
                     message: 'Successfully refreshed access token',
                     options: {
@@ -139,8 +144,11 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
             }
         } catch (error) {
             console.error('Error refreshing access token:', error)
+
+            const errorMessage = error.response?.data?.message || 'Error refreshing access token'
+
             enqueueSnackbar({
-                message: 'Error refreshing access token',
+                message: errorMessage,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -151,6 +159,8 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
                     )
                 }
             })
+        } finally {
+            setIsRefreshing(false)
         }
     }
     return (

@@ -29,9 +29,10 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import HowToUseFunctionDialog from './HowToUseFunctionDialog'
+import PasteJSONDialog from './PasteJSONDialog'
 
 // Icons
-import { IconX, IconFileDownload, IconPlus } from '@tabler/icons-react'
+import { IconX, IconFileDownload, IconPlus, IconTemplate, IconCode } from '@tabler/icons-react'
 
 // API
 import toolsApi from '@/api/tools'
@@ -44,6 +45,7 @@ import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
 import { generateRandomGradient, formatDataGridRows } from '@/utils/genericHelper'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 import { useFlags } from 'flagsmith/react'
 
 const exampleAPIFunc = `/*
@@ -100,6 +102,11 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
 
     const flags = useFlags(['org:manage'])
 
+    const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
+    const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
+
+    const [showPasteJSONDialog, setShowPasteJSONDialog] = useState(false)
+
     const deleteItem = useCallback(
         (id) => () => {
             setTimeout(() => {
@@ -124,6 +131,20 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 return allRows
             })
         })
+    }
+
+    const onSaveAsTemplate = () => {
+        setExportAsTemplateDialogProps({
+            title: 'Export As Template',
+            tool: {
+                name: toolName,
+                description: toolDesc,
+                iconSrc: toolIcon,
+                schema: toolSchema,
+                func: toolFunc
+            }
+        })
+        setExportAsTemplateDialogOpen(true)
     }
 
     const onRowUpdate = (newRow) => {
@@ -247,7 +268,9 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 delete toolData.createdDate
                 delete toolData.updatedDate
                 let dataStr = JSON.stringify(toolData, null, 2)
-                let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                //let dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+                const blob = new Blob([dataStr], { type: 'application/json' })
+                const dataUri = URL.createObjectURL(blob)
 
                 let exportFileDefaultName = `${toolName}-CustomTool.json`
 
@@ -423,6 +446,10 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
         },
         [visibility]
     )
+    const handlePastedJSON = (formattedData) => {
+        setToolSchema(formattedData)
+        setShowPasteJSONDialog(false)
+    }
 
     const component = show ? (
         <Dialog
@@ -436,11 +463,24 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             <DialogTitle sx={{ fontSize: '1rem', p: 3, pb: 0 }} id='alert-dialog-title'>
                 <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                     {dialogProps.title}
-                    {dialogProps.type === 'EDIT' && (
-                        <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileDownload />}>
-                            Export
-                        </Button>
-                    )}
+                    <Box>
+                        {dialogProps.type === 'EDIT' && (
+                            <>
+                                <Button
+                                    style={{ marginRight: '10px' }}
+                                    variant='outlined'
+                                    onClick={() => onSaveAsTemplate()}
+                                    startIcon={<IconTemplate />}
+                                    color='secondary'
+                                >
+                                    Save As Template
+                                </Button>
+                                <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileDownload />}>
+                                    Export
+                                </Button>
+                            </>
+                        )}
+                    </Box>
                 </Box>
             </DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxHeight: '75vh', position: 'relative', px: 3, pb: 3 }}>
@@ -536,9 +576,21 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                         </FormControl>
                     </Box>
                     <Box>
-                        <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
-                            <Typography variant='overline'>Input Schema</Typography>
-                            <TooltipWithParser title={'What is the input format in JSON?'} />
+                        <Stack sx={{ position: 'relative', justifyContent: 'space-between' }} direction='row'>
+                            <Stack sx={{ position: 'relative', alignItems: 'center' }} direction='row'>
+                                <Typography variant='overline'>Input Schema</Typography>
+                                <TooltipWithParser title={'What is the input format in JSON?'} />
+                            </Stack>
+                            {dialogProps.type !== 'TEMPLATE' && (
+                                <Stack direction='row' spacing={1}>
+                                    <Button variant='outlined' onClick={() => setShowPasteJSONDialog(true)} startIcon={<IconCode />}>
+                                        Paste JSON
+                                    </Button>
+                                    <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
+                                        Add Item
+                                    </Button>
+                                </Stack>
+                            )}
                         </Stack>
                         {dialogProps.type !== 'TEMPLATE' && (
                             <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
@@ -601,7 +653,24 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                 )}
             </DialogActions>
             <ConfirmDialog />
+            {exportAsTemplateDialogOpen && (
+                <ExportAsTemplateDialog
+                    show={exportAsTemplateDialogOpen}
+                    dialogProps={exportAsTemplateDialogProps}
+                    onCancel={() => setExportAsTemplateDialogOpen(false)}
+                />
+            )}
+
             <HowToUseFunctionDialog show={showHowToDialog} onCancel={() => setShowHowToDialog(false)} />
+
+            {showPasteJSONDialog && (
+                <PasteJSONDialog
+                    show={showPasteJSONDialog}
+                    onCancel={() => setShowPasteJSONDialog(false)}
+                    onConfirm={handlePastedJSON}
+                    customization={customization}
+                />
+            )}
         </Dialog>
     ) : null
 

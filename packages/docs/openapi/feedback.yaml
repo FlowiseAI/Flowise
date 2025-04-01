@@ -1,0 +1,182 @@
+openapi: 3.0.0
+info:
+    title: Feedback API
+    description: API for managing chat message feedback
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
+tags:
+    - name: feedback
+      description: Operations for managing chat message feedback
+paths:
+    /feedback:
+        post:
+            tags:
+                - feedback
+            security:
+                - bearerAuth: []
+            operationId: createChatMessageFeedbackForChatflow
+            summary: Create new chat message feedback
+            description: Create new feedback for a specific chat flow.
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatMessageFeedback'
+                required: true
+            responses:
+                '200':
+                    description: Feedback successfully created
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatMessageFeedback'
+                '400':
+                    description: Invalid input provided
+                '500':
+                    description: Internal server error
+    /feedback/{id}:
+        get:
+            tags:
+                - feedback
+            security:
+                - bearerAuth: []
+            summary: List all chat message feedbacks for a chatflow
+            description: Retrieve all feedbacks for a chatflow
+            operationId: getAllChatMessageFeedback
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+                - in: query
+                  name: chatId
+                  schema:
+                      type: string
+                  description: Chat ID to filter feedbacks (optional)
+                - in: query
+                  name: sortOrder
+                  schema:
+                      type: string
+                      enum:
+                          - asc
+                          - desc
+                      default: asc
+                  description: Sort order of feedbacks (optional)
+                - in: query
+                  name: startDate
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter feedbacks starting from this date (optional)
+                - in: query
+                  name: endDate
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter feedbacks up to this date (optional)
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/ChatMessageFeedback'
+                '500':
+                    description: Internal server error
+        put:
+            tags:
+                - feedback
+            security:
+                - bearerAuth: []
+            summary: Update chat message feedback
+            description: Update a specific feedback
+            operationId: updateChatMessageFeedbackForChatflow
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chat Message Feedback ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChatMessageFeedback'
+            responses:
+                '200':
+                    description: Feedback successfully updated
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChatMessageFeedback'
+                '400':
+                    description: Invalid input provided
+                '404':
+                    description: Feedback with the specified ID was not found
+                '500':
+                    description: Internal server error
+components:
+    schemas:
+        ChatMessageFeedback:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the feedback
+                chatflowid:
+                    type: string
+                    format: uuid
+                    description: Identifier for the chat flow
+                chatId:
+                    type: string
+                    description: Identifier for the chat
+                messageId:
+                    type: string
+                    format: uuid
+                    description: Identifier for the message
+                rating:
+                    type: string
+                    enum:
+                        - THUMBS_UP
+                        - THUMBS_DOWN
+                    description: Rating for the message
+                content:
+                    type: string
+                    description: Feedback content
+                createdDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the feedback was created
+        Error:
+            type: object
+            properties:
+                code:
+                    type: string
+                    description: Error code
+                message:
+                    type: string
+                    description: Error message
+                details:
+                    type: object
+                    description: Additional error details
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT

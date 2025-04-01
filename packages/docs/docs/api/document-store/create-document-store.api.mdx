@@ -1,0 +1,118 @@
+---
+id: create-document-store
+title: 'Create a new document store'
+description: 'Creates a new document store with the provided details'
+sidebar_label: 'Create a new document store'
+hide_title: true
+hide_table_of_contents: true
+api: eJztWE1v2zgQ/SvEnOX4I3HS6rTexLtwkaZG7aDoBj6MxZHNViJVkrJrGPrvC1Lyh2wlWWyBvWxOosnhGw755pHjLVhcGAifgKsoT0nalrFKE8wCMBTlWtgNhE9bmBNq0oPcLiF8mhWzADiZSIvMCiUhhFtNaMkwZJLWbAfGPBhbC7tkdkks02olOHHGyaJIDASgMtLoQEYcQog8zF01feKXEoCmHzkZ+7viGwi3EClpSVrXxCxLROTnt78Zt5ItmGhJKbqW3WQEIaj5N4osBJBp580KMm5U8CMbY7WQCwggVjpFCyHkueBwGuajFD9yYoKTtCIWpFmstA+tHjIUAUhMqclDHfEBU2IqfgajZvsa1N3h1/OIiUJO2ryOdl8aMjRGRQIt8cM51mGD8sMZGvZh8umBVYhFAOslaXo01LjVdX/jBCMyzM9ocMKEYbkh/oIzY9HmjZGRzFNH8uHH8fQrBDD5+nBbfUYPf7rWdHA/hAAehl8ggMfxZPh5Wo6U7eEdnFF+4t09v9MriqzSnsO3SsZi8foelHZ5mRB7apVAr+41pXPiXMjFr3nbw7zgSlOkNP+IEhekf81dCcXSEusFn6U08Du0jVm1z1uOllpWpHSeH2iJoeTMjTqiySaerdGwypdzm2f8P3OboLGscghFEYAVNnHu6oJYFEWpiUK7xLI6J99hMiVNqW29Tsd9TgibRxEZE+dJstmFeMrb4E1d39T1TV3f1PX/rK5FAFdNAjqSK0wEZ9V7lM3dg7QIoN9sbElLTJghvSLNSGulvd+U7FK5126mjBdOdK9qaNef4O2dIJfzjX+G5zqBEJbWZiZstzETF3ZJKM2a9AWK9qp7nvha8TzypCiBoAhOcYzFhZCL1j/Bm5S2zWBhu52oCJOlMja86nQ6bolNKPfOinFaUaKy8pwqvKPCY+KumvI2OS4/9jRxHt3+eDMIKyMIqsYfO/J8+DL1++6usM+HUmL4E9Msod1lBZcxvuvH11et/k33pnXVv+615pdx1OpF768v4+trjPEadhfPc2m4797fBIeuI7k+dO5kda+eDcJ2JLWnKnQYalSNw3AtwaHX6V21Ojet3vtptx/2u2Hv3UXnpvsXnKTk84ZFAELGyh/HSR4xv3g2GI/OtmcwHnlt8oLkaFTPUxOwSCUJeb6awOf1zsIwIdnAU3Mw8vukTQnavehcdKqXC0b+5VId0s6cTfIsU9olW535x2z324vCDZvS/LfasKOQy9gU5ZGLsvBtrHtPoz+qXP99vVxx39JP284SFNLLqAtqWwnJWS3vSFbV9C4xncV2O0dDjzopCtf9Iyft6vxZACvUAufuPJ9mRQBLcjT22vOdNuU940JoTd06nHmSu/WcPRWdMJQzBlFEmX3RdnYkiuNPk6nL4arYTxV3czSuHcdxDSH4fw08Q5yB79tCgnKR48LZlpjuuLAuGCcC4aOqhlBujla43ZYWU/WdZFFAUIVi3W8oZkVR/A3+h/XR
+sidebar_class_name: 'post api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new document store'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/document-store/store'} context={'endpoint'}></MethodEndpoint>
+
+Creates a new document store with the provided details
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', format: 'uuid', description: 'Unique identifier for the document store' },
+                        name: { type: 'string', description: 'Name of the document store' },
+                        description: { type: 'string', description: 'Description of the document store' },
+                        loaders: { type: 'string', description: 'Loaders associated with the document store, stored as JSON string' },
+                        whereUsed: { type: 'string', description: 'Places where the document store is used, stored as JSON string' },
+                        status: {
+                            type: 'string',
+                            enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                            description: 'Status of the document store'
+                        },
+                        vectorStoreConfig: { type: 'string', description: 'Configuration for the vector store, stored as JSON string' },
+                        embeddingConfig: { type: 'string', description: 'Configuration for the embedding, stored as JSON string' },
+                        recordManagerConfig: { type: 'string', description: 'Configuration for the record manager, stored as JSON string' },
+                        createdDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the document store was created'
+                        },
+                        updatedDate: {
+                            type: 'string',
+                            format: 'date-time',
+                            description: 'Date and time when the document store was last updated'
+                        }
+                    },
+                    title: 'DocumentStore'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully created document store',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', format: 'uuid', description: 'Unique identifier for the document store' },
+                            name: { type: 'string', description: 'Name of the document store' },
+                            description: { type: 'string', description: 'Description of the document store' },
+                            loaders: { type: 'string', description: 'Loaders associated with the document store, stored as JSON string' },
+                            whereUsed: { type: 'string', description: 'Places where the document store is used, stored as JSON string' },
+                            status: {
+                                type: 'string',
+                                enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                                description: 'Status of the document store'
+                            },
+                            vectorStoreConfig: { type: 'string', description: 'Configuration for the vector store, stored as JSON string' },
+                            embeddingConfig: { type: 'string', description: 'Configuration for the embedding, stored as JSON string' },
+                            recordManagerConfig: {
+                                type: 'string',
+                                description: 'Configuration for the record manager, stored as JSON string'
+                            },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the document store was created'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the document store was last updated'
+                            }
+                        },
+                        title: 'DocumentStore'
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid request body' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

@@ -1,0 +1,152 @@
+openapi: 3.0.0
+info:
+    title: Upsert History API
+    description: API for managing upsert history records
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
+tags:
+    - name: upsert-history
+      description: Operations for managing upsert history records
+paths:
+    /upsert-history/{id}:
+        get:
+            summary: Get all upsert history records
+            description: Retrieve all upsert history records with optional filters
+            operationId: getAllUpsertHistory
+            tags:
+                - upsert-history
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID to filter records by
+                - in: query
+                  name: order
+                  required: false
+                  schema:
+                      type: string
+                      enum:
+                          - ASC
+                          - DESC
+                      default: ASC
+                  description: Sort order of the results (ascending or descending)
+                - in: query
+                  name: startDate
+                  required: false
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter records from this start date (inclusive)
+                - in: query
+                  name: endDate
+                  required: false
+                  schema:
+                      type: string
+                      format: date-time
+                  description: Filter records until this end date (inclusive)
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/UpsertHistoryResponse'
+                '500':
+                    description: Internal server error
+        patch:
+            summary: Delete upsert history records
+            description: Soft delete upsert history records by IDs
+            operationId: patchDeleteUpsertHistory
+            tags:
+                - upsert-history
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Chatflow ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                ids:
+                                    type: array
+                                    items:
+                                        type: string
+                                        format: uuid
+                                    description: List of upsert history record IDs to delete
+            responses:
+                '200':
+                    description: Successfully deleted records
+                '400':
+                    description: Invalid request body
+                '500':
+                    description: Internal server error
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+    schemas:
+        UpsertHistoryResponse:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the upsert history record
+                    example: cfd531e0-82fc-11e9-bc42-526af7764f64
+                chatflowid:
+                    type: string
+                    description: ID of the chatflow associated with the upsert history
+                    example: 7c4e8b7a-7b9a-4b4d-9f3e-2d28f1ebea02
+                result:
+                    type: string
+                    description: Result of the upsert operation, stored as a JSON string
+                    example: '{"status":"success","data":{"key":"value"}}'
+                flowData:
+                    type: string
+                    description: Flow data associated with the upsert operation, stored as a JSON string
+                    example: '{"nodes":[],"edges":[]}'
+                date:
+                    type: string
+                    format: date-time
+                    description: Date and time when the upsert operation was performed
+                    example: '2024-08-24T14:15:22Z'
+        Error:
+            type: object
+            properties:
+                code:
+                    type: string
+                    description: Error code
+                    example: INVALID_REQUEST
+                message:
+                    type: string
+                    description: Error message
+                    example: Invalid request parameters
+                details:
+                    type: object
+                    description: Additional error details
+                    additionalProperties: true

@@ -5,6 +5,7 @@ import { authenticateApiKey } from '@utils/auth/authenticateApiKey'
 import * as jose from 'jose'
 import { User } from 'types'
 import flagsmith from 'flagsmith/isomorphic'
+import { stripe } from '@aai-utils/billing/stripe/config'
 
 const getCachedSession = cache(
     async (req?: any, res: any = new Response()): Promise<{ user: User; flagsmithState: any; accessToken: string }> => {
@@ -112,10 +113,37 @@ const getCachedSession = cache(
             // console.log('FlagsmithState', flagsmithState);
             session.flagsmithState = flagsmithState
         }
-        if (session?.user?.chatflowDomain) {
+
+        // Check for CHATFLOW_DOMAIN_OVERRIDE to override the chatflowDomain
+        if (process.env.CHATFLOW_DOMAIN_OVERRIDE) {
+            console.log('CHATFLOW_DOMAIN_OVERRIDE', process.env.CHATFLOW_DOMAIN_OVERRIDE)
+            // Override chatflowDomain with the environment variable
+            if (session?.user) {
+                session.user.chatflowDomain = process.env.CHATFLOW_DOMAIN_OVERRIDE
+            }
+        } else if (session?.user?.chatflowDomain) {
+            // Apply existing transformation if no override
             session.user.chatflowDomain = session.user.chatflowDomain?.replace('8080', '4000')
         }
-        return session as { user: User; flagsmithState: any; accessToken: string }
+        //Check if user has a subscription make sure no error is thrown
+        if (session?.user) {
+            let subscription = null
+            try {
+                // console.log('session.user.stripeCustomerId', session.user)
+                subscription = await stripe.subscriptions.list({
+                    customer: session.user.stripeCustomerId,
+                    status: 'active'
+                })
+            } catch (error) {
+                console.error('Error checking Stripe subscription:', error)
+            }
+            if (subscription?.data?.length && subscription?.data?.length > 0) {
+                const subscriptionData = subscription.data[0]
+                session.user.subscription = subscriptionData
+            }
+        }
+
+        return session as { user: User; flagsmithState: any; accessToken: string; subscription: any }
     }
 )
 

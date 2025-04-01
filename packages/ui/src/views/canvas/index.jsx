@@ -680,6 +680,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                                 fitView
                                 deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                                 minZoom={0.1}
+                                className='chatflow-canvas'
                             >
                                 <Controls
                                     style={{

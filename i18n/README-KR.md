@@ -10,7 +10,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](../README.md) | [中文](./README-ZH.md) | [日本語](./README-JA.md) | 한국어
+[English](../README.md) | [繁體中文](./README-TW.md) | [簡體中文](./README-ZH.md) | [日本語](./README-JA.md) | 한국어
 
 <h3>드래그 앤 드롭 UI로 맞춤형 LLM 플로우 구축하기</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
@@ -180,9 +180,9 @@ Flowise는 인스턴스 구성을 위한 다양한 환경 변수를 지원합니
 
       </details>
 
-## 💻 클라우드 호스팅 서비스
+## ☁️ 클라우드 호스팅 서비스
 
-곧 출시될 예정입니다.
+[Flowise Cloud 시작하기](https://flowiseai.com/)
 
 ## 🙋 기술 지원
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Box, Typography, IconButton, Chip, Tooltip, Divider, alpha, Button, Snackbar } from '@mui/material'
+import { Box, Typography, IconButton, Chip, Tooltip, alpha, Button } from '@mui/material'
 import { Sidekick } from 'types'
-import ShareIcon from '@mui/icons-material/Share'
 import {
     Star as StarIcon,
     StarBorder as StarBorderIcon,
@@ -109,7 +108,7 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
             }
             if (!user) {
                 const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-                const loginUrl = `/api/auth/login?returnTo=${redirectUrl}`
+                const loginUrl = `/api/auth/login?redirect_uri=${redirectUrl}`
                 setNavigationState(state)
                 window.location.href = loginUrl
             } else {
@@ -199,12 +198,16 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
                         </Typography>
 
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                            <Typography variant='body2' color='text.secondary' sx={{ mr: 1 }}>
-                                By {sidekick?.chatflow?.owner || 'Unknown'}
-                            </Typography>
+                            {sidekick?.chatflow?.owner && (
+                                <Typography variant='body2' color='text.secondary' sx={{ mr: 1 }}>
+                                    By sidekick?.chatflow?.owner
+                                </Typography>
+                            )}
+
                             {sidekick?.chatflow?.isOwner && (
                                 <Chip label='Owner' size='small' color='primary' variant='outlined' sx={{ mr: 1 }} />
                             )}
+
                             {sidekick?.categories?.length > 0 && (
                                 <Tooltip title={sidekick.categories.map((category) => category.trim().split(';').join(', ')).join(', ')}>
                                     <Chip

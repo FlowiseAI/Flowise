@@ -5,14 +5,40 @@ import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IMessage, INodeData, IVariable } from './Interface'
+import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
+import { omit } from 'lodash'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
+import { Document } from '@langchain/core/documents'
+import { getFileFromStorage } from './storageUtils'
+import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
+import { customGet } from '../nodes/sequentialagents/commonUtils'
+import { TextSplitter } from 'langchain/text_splitter'
+import { DocumentLoader } from 'langchain/document_loaders/base'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
+export const FLOWISE_CHATID = 'flowise_chatId'
+
+let secretsManagerClient: SecretsManagerClient | null = null
+const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
+if (USE_AWS_SECRETS_MANAGER) {
+    const region = process.env.SECRETKEY_AWS_REGION || 'us-east-1' // Default region if not provided
+    const accessKeyId = process.env.SECRETKEY_AWS_ACCESS_KEY
+    const secretAccessKey = process.env.SECRETKEY_AWS_SECRET_KEY
+
+    let credentials: SecretsManagerClientConfig['credentials'] | undefined
+    if (accessKeyId && secretAccessKey) {
+        credentials = {
+            accessKeyId,
+            secretAccessKey
+        }
+    }
+    secretsManagerClient = new SecretsManagerClient({ credentials, region })
+}
+
 /*
- * List of dependencies allowed to be import in vm2
+ * List of dependencies allowed to be import in @flowiseai/nodevm
  */
 export const availableDependencies = [
     '@aws-sdk/client-bedrock-runtime',
@@ -26,6 +52,22 @@ export const availableDependencies = [
     '@google-ai/generativelanguage',
     '@google/generative-ai',
     '@huggingface/inference',
+    '@langchain/anthropic',
+    '@langchain/aws',
+    '@langchain/cohere',
+    '@langchain/community',
+    '@langchain/core',
+    '@langchain/google-genai',
+    '@langchain/google-vertexai',
+    '@langchain/groq',
+    '@langchain/langgraph',
+    '@langchain/mistralai',
+    '@langchain/mongodb',
+    '@langchain/ollama',
+    '@langchain/openai',
+    '@langchain/pinecone',
+    '@langchain/qdrant',
+    '@langchain/weaviate',
     '@notionhq/client',
     '@opensearch-project/opensearch',
     '@pinecone-database/pinecone',
@@ -229,12 +271,37 @@ export const getInputVariables = (paramValue: string): string[] => {
             const variableStartIdx = variableStack[variableStack.length - 1].startIdx
             const variableEndIdx = startIdx
             const variableFullPath = returnVal.substring(variableStartIdx, variableEndIdx)
-            inputVariables.push(variableFullPath)
+            if (!variableFullPath.includes(':')) inputVariables.push(variableFullPath)
             variableStack.pop()
         }
         startIdx += 1
     }
     return inputVariables
+}
+
+/**
+ * Transform curly braces into double curly braces if the content includes a colon.
+ * @param input - The original string that may contain { ... } segments.
+ * @returns The transformed string, where { ... } containing a colon has been replaced with {{ ... }}.
+ */
+export const transformBracesWithColon = (input: string): string => {
+    // This regex will match anything of the form `{ ... }` (no nested braces).
+    // `[^{}]*` means: match any characters that are not `{` or `}` zero or more times.
+    const regex = /\{([^{}]*?)\}/g
+
+    return input.replace(regex, (match, groupContent) => {
+        // groupContent is the text inside the braces `{ ... }`.
+
+        if (groupContent.includes(':')) {
+            // If there's a colon in the content, we turn { ... } into {{ ... }}
+            // The match is the full string like: "{ answer: hello }"
+            // groupContent is the inner part like: " answer: hello "
+            return `{{${groupContent}}}`
+        } else {
+            // Otherwise, leave it as is
+            return match
+        }
+    })
 }
 
 /**
@@ -277,7 +344,7 @@ export const getAvailableURLs = async (url: string, limit: number) => {
         }
 
         return availableUrls
-    } catch (err) {
+    } catch (err: any) {
         throw new Error(`getAvailableURLs: ${err?.message}`)
     }
 }
@@ -296,7 +363,7 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
         try {
             const urlObj = new URL(linkElement.href, baseURL)
             urls.push(urlObj.href)
-        } catch (err) {
+        } catch (err: any) {
             if (process.env.DEBUG === 'true') console.error(`error with scraped URL: ${err.message}`)
             continue
         }
@@ -311,7 +378,8 @@ function getURLsFromHTML(htmlBody: string, baseURL: string): string[] {
  */
 function normalizeURL(urlString: string): string {
     const urlObj = new URL(urlString)
-    const hostPath = urlObj.hostname + urlObj.pathname + urlObj.search
+    const port = urlObj.port ? `:${urlObj.port}` : ''
+    const hostPath = urlObj.hostname + port + urlObj.pathname + urlObj.search
     if (hostPath.length > 0 && hostPath.slice(-1) == '/') {
         // handling trailing slash
         return hostPath.slice(0, -1)
@@ -362,7 +430,7 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
         for (const nextURL of nextURLs) {
             pages = await crawl(baseURL, nextURL, pages, limit)
         }
-    } catch (err) {
+    } catch (err: any) {
         if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
     }
     return pages
@@ -414,7 +482,7 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
 
         const xmlBody = await resp.text()
         urls = getURLsFromXML(xmlBody, limit)
-    } catch (err) {
+    } catch (err: any) {
         if (process.env.DEBUG === 'true') console.error(`error in fetch url: ${err.message}, on page: ${currentURL}`)
     }
     return urls
@@ -471,7 +539,7 @@ const getEncryptionKey = async (): Promise<string> => {
     }
     try {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
-    } catch (error) {
+    } catch (error: any) {
         throw new Error(error)
     }
 }
@@ -484,10 +552,33 @@ const getEncryptionKey = async (): Promise<string> => {
  * @returns {Promise<ICommonObject>}
  */
 const decryptCredentialData = async (encryptedData: string): Promise<ICommonObject> => {
-    const encryptKey = await getEncryptionKey()
-    const decryptedData = AES.decrypt(encryptedData, encryptKey)
+    let decryptedDataStr: string
+
+    if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
+        try {
+            const command = new GetSecretValueCommand({ SecretId: encryptedData })
+            const response = await secretsManagerClient.send(command)
+
+            if (response.SecretString) {
+                const secretObj = JSON.parse(response.SecretString)
+                decryptedDataStr = JSON.stringify(secretObj)
+            } else {
+                throw new Error('Failed to retrieve secret value.')
+            }
+        } catch (error) {
+            console.error(error)
+            throw new Error('Credentials could not be decrypted.')
+        }
+    } else {
+        // Fallback to existing code
+        const encryptKey = await getEncryptionKey()
+        const decryptedData = AES.decrypt(encryptedData, encryptKey)
+        decryptedDataStr = decryptedData.toString(enc.Utf8)
+    }
+
+    if (!decryptedDataStr) return {}
     try {
-        return JSON.parse(decryptedData.toString(enc.Utf8))
+        return JSON.parse(decryptedDataStr)
     } catch (e) {
         console.error(e)
         throw new Error('Credentials could not be decrypted.')
@@ -523,13 +614,24 @@ export const getCredentialData = async (selectedCredentialId: string, options: I
         const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
 
         return decryptedCredentialData
-    } catch (e) {
+    } catch (e: any) {
         throw new Error(e)
     }
 }
 
-export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData): any => {
-    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? undefined
+/**
+ * Get first non falsy value
+ *
+ * @param {...any} values
+ *
+ * @returns {any|undefined}
+ */
+export const defaultChain = (...values: any[]): any | undefined => {
+    return values.filter(Boolean)[0]
+}
+
+export const getCredentialParam = (paramName: string, credentialData: ICommonObject, nodeData: INodeData, defaultValue?: any): any => {
+    return (nodeData.inputs as ICommonObject)[paramName] ?? credentialData[paramName] ?? defaultValue ?? undefined
 }
 
 // reference https://www.freeformatter.com/json-escape.html
@@ -588,14 +690,77 @@ export const getUserHome = (): string => {
  * @param {IChatMessage[]} chatmessages
  * @returns {BaseMessage[]}
  */
-export const mapChatMessageToBaseMessage = (chatmessages: any[] = []): BaseMessage[] => {
+export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Promise<BaseMessage[]> => {
     const chatHistory = []
 
     for (const message of chatmessages) {
         if (message.role === 'apiMessage' || message.type === 'apiMessage') {
             chatHistory.push(new AIMessage(message.content || ''))
         } else if (message.role === 'userMessage' || message.role === 'userMessage') {
-            chatHistory.push(new HumanMessage(message.content || ''))
+            // check for image/files uploads
+            if (message.fileUploads) {
+                // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
+                try {
+                    let messageWithFileUploads = ''
+                    const uploads = JSON.parse(message.fileUploads)
+                    const imageContents: MessageContentImageUrl[] = []
+                    for (const upload of uploads) {
+                        if (upload.type === 'stored-file' && upload.mime.startsWith('image')) {
+                            const fileData = await getFileFromStorage(upload.name, message.chatflowid, message.chatId)
+                            // as the image is stored in the server, read the file and convert it to base64
+                            const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
+
+                            imageContents.push({
+                                type: 'image_url',
+                                image_url: {
+                                    url: bf
+                                }
+                            })
+                        } else if (upload.type === 'url' && upload.mime.startsWith('image')) {
+                            imageContents.push({
+                                type: 'image_url',
+                                image_url: {
+                                    url: upload.data
+                                }
+                            })
+                        } else if (upload.type === 'stored-file:full') {
+                            const fileLoaderNodeModule = await import('../nodes/documentloaders/File/File')
+                            // @ts-ignore
+                            const fileLoaderNodeInstance = new fileLoaderNodeModule.nodeClass()
+                            const options = {
+                                retrieveAttachmentChatId: true,
+                                chatflowid: message.chatflowid,
+                                chatId: message.chatId
+                            }
+                            const nodeData = {
+                                inputs: {
+                                    txtFile: `FILE-STORAGE::${JSON.stringify([upload.name])}`
+                                }
+                            }
+                            const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
+                            const pageContents = documents.map((doc) => doc.pageContent).join('\n')
+                            messageWithFileUploads += `<doc name='${upload.name}'>${pageContents}</doc>\n\n`
+                        }
+                    }
+                    const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
+                    chatHistory.push(
+                        new HumanMessage({
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: messageContent
+                                },
+                                ...imageContents
+                            ]
+                        })
+                    )
+                } catch (e) {
+                    // failed to parse fileUploads, continue with text only
+                    chatHistory.push(new HumanMessage(message.content || ''))
+                }
+            } else {
+                chatHistory.push(new HumanMessage(message.content || ''))
+            }
         }
     }
     return chatHistory
@@ -643,18 +808,33 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
         const zodObj: ICommonObject = {}
         for (const sch of parsedSchema) {
             if (sch.type === 'string') {
-                if (sch.required) z.string({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.string().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.string({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.string().describe(sch.description).optional()
+                }
             } else if (sch.type === 'number') {
-                if (sch.required) z.number({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.number().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.number({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.number().describe(sch.description).optional()
+                }
             } else if (sch.type === 'boolean') {
-                if (sch.required) z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
-                zodObj[sch.property] = z.boolean().describe(sch.description)
+                if (sch.required) {
+                    zodObj[sch.property] = z.boolean({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.boolean().describe(sch.description).optional()
+                }
+            } else if (sch.type === 'date') {
+                if (sch.required) {
+                    zodObj[sch.property] = z.date({ required_error: `${sch.property} required` }).describe(sch.description)
+                } else {
+                    zodObj[sch.property] = z.date().describe(sch.description).optional()
+                }
             }
         }
         return zodObj
-    } catch (e) {
+    } catch (e: any) {
         throw new Error(e)
     }
 }
@@ -803,4 +983,203 @@ export const getVersion: () => Promise<{ version: string }> = async () => {
     }
 
     throw new Error('None of the package.json paths could be parsed')
+}
+
+/**
+ * Map Ext to InputField
+ * @param {string} ext
+ * @returns {string}
+ */
+export const mapExtToInputField = (ext: string) => {
+    switch (ext) {
+        case '.txt':
+            return 'txtFile'
+        case '.pdf':
+            return 'pdfFile'
+        case '.json':
+            return 'jsonFile'
+        case '.csv':
+        case '.xls':
+        case '.xlsx':
+            return 'csvFile'
+        case '.jsonl':
+            return 'jsonlinesFile'
+        case '.docx':
+        case '.doc':
+            return 'docxFile'
+        case '.yaml':
+            return 'yamlFile'
+        default:
+            return 'txtFile'
+    }
+}
+
+/**
+ * Map MimeType to InputField
+ * @param {string} mimeType
+ * @returns {string}
+ */
+export const mapMimeTypeToInputField = (mimeType: string) => {
+    switch (mimeType) {
+        case 'text/plain':
+            return 'txtFile'
+        case 'application/pdf':
+            return 'pdfFile'
+        case 'application/json':
+            return 'jsonFile'
+        case 'text/csv':
+            return 'csvFile'
+        case 'application/json-lines':
+        case 'application/jsonl':
+        case 'text/jsonl':
+            return 'jsonlinesFile'
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'docxFile'
+        case 'application/vnd.yaml':
+        case 'application/x-yaml':
+        case 'text/vnd.yaml':
+        case 'text/x-yaml':
+        case 'text/yaml':
+            return 'yamlFile'
+        default:
+            return 'txtFile'
+    }
+}
+
+/**
+ * Map MimeType to Extension
+ * @param {string} mimeType
+ * @returns {string}
+ */
+export const mapMimeTypeToExt = (mimeType: string) => {
+    switch (mimeType) {
+        case 'text/plain':
+            return 'txt'
+        case 'application/pdf':
+            return 'pdf'
+        case 'application/json':
+            return 'json'
+        case 'text/csv':
+            return 'csv'
+        case 'application/json-lines':
+        case 'application/jsonl':
+        case 'text/jsonl':
+            return 'jsonl'
+        case 'application/msword':
+            return 'doc'
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            return 'docx'
+        case 'application/vnd.ms-excel':
+            return 'xls'
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            return 'xlsx'
+        default:
+            return ''
+    }
+}
+
+// remove invalid markdown image pattern: ![<some-string>](<some-string>)
+export const removeInvalidImageMarkdown = (output: string): string => {
+    return typeof output === 'string' ? output.replace(/!\[.*?\]\((?!https?:\/\/).*?\)/g, '') : output
+}
+
+/**
+ * Extract output from array
+ * @param {any} output
+ * @returns {string}
+ */
+export const extractOutputFromArray = (output: any): string => {
+    if (Array.isArray(output)) {
+        return output.map((o) => o.text).join('\n')
+    } else if (typeof output === 'object') {
+        if (output.text) return output.text
+        else return JSON.stringify(output)
+    }
+    return output
+}
+
+/**
+ * Loop through the object and replace the key with the value
+ * @param {any} obj
+ * @param {any} sourceObj
+ * @returns {any}
+ */
+export const resolveFlowObjValue = (obj: any, sourceObj: any): any => {
+    if (typeof obj === 'object' && obj !== null) {
+        const resolved: any = Array.isArray(obj) ? [] : {}
+        for (const key in obj) {
+            const value = obj[key]
+            resolved[key] = resolveFlowObjValue(value, sourceObj)
+        }
+        return resolved
+    } else if (typeof obj === 'string' && obj.startsWith('$flow')) {
+        return customGet(sourceObj, obj)
+    } else {
+        return obj
+    }
+}
+
+export const handleDocumentLoaderOutput = (docs: Document[], output: string) => {
+    if (output === 'document') {
+        return docs
+    } else {
+        let finaltext = ''
+        for (const doc of docs) {
+            finaltext += `${doc.pageContent}\n`
+        }
+        return handleEscapeCharacters(finaltext, false)
+    }
+}
+
+export const parseDocumentLoaderMetadata = (metadata: object | string): object => {
+    if (!metadata) return {}
+
+    if (typeof metadata !== 'object') {
+        return JSON.parse(metadata)
+    }
+
+    return metadata
+}
+
+export const handleDocumentLoaderMetadata = (
+    docs: Document[],
+    _omitMetadataKeys: string,
+    metadata: object | string = {},
+    sourceIdKey?: string
+) => {
+    let omitMetadataKeys: string[] = []
+    if (_omitMetadataKeys) {
+        omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
+    }
+
+    metadata = parseDocumentLoaderMetadata(metadata)
+
+    return docs.map((doc) => ({
+        ...doc,
+        metadata:
+            _omitMetadataKeys === '*'
+                ? metadata
+                : omit(
+                      {
+                          ...metadata,
+                          ...doc.metadata,
+                          ...(sourceIdKey ? { [sourceIdKey]: doc.metadata[sourceIdKey] || sourceIdKey } : undefined)
+                      },
+                      omitMetadataKeys
+                  )
+    }))
+}
+
+export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, textSplitter?: TextSplitter) => {
+    let docs: Document[] = []
+
+    if (textSplitter) {
+        let splittedDocs = await loader.load()
+        splittedDocs = await textSplitter.splitDocuments(splittedDocs)
+        docs = splittedDocs
+    } else {
+        docs = await loader.load()
+    }
+
+    return docs
 }

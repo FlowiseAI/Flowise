@@ -14,6 +14,9 @@ export class Chat {
     @Column({ nullable: true })
     chatflowChatId: string
 
+    @Column({ nullable: true })
+    chatflowId: string
+
     @ManyToOne(() => ChatFlow, { nullable: true })
     chatflow: ChatFlow
 

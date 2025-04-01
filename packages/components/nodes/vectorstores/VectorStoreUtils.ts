@@ -83,3 +83,19 @@ export const addMMRInputParams = (inputs: any[]) => {
 
     inputs.push(...mmrInputParams)
 }
+
+export const howToUseFileUpload = `
+**File Upload**
+
+This allows file upload on the chat. Uploaded files will be upserted on the fly to the vector store.
+
+**Note:**
+- You can only turn on file upload for one vector store at a time.
+- At least one Document Loader node should be connected to the document input.
+- Document Loader should be file types like PDF, DOCX, TXT, etc.
+
+**How it works**
+- Uploaded files will have the metadata updated with the chatId.
+- This will allow the file to be associated with the chatId.
+- When querying, metadata will be filtered by chatId to retrieve files associated with the chatId.
+`

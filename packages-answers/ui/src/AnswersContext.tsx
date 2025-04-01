@@ -2,30 +2,19 @@
 import React, { SetStateAction, createContext, useCallback, useContext, useRef, useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
-import useSWR, { mutate } from 'swr'
 import { cloneDeep } from 'lodash'
-import socketIOClient from 'socket.io-client'
 // @ts-ignore
 import { deepmerge } from '@utils/deepmerge'
-import { useStreamedResponse } from './useStreamedResponse'
 import { clearEmptyValues } from './clearEmptyValues'
 import predictionApi from '@/api/prediction'
+import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
 
-import {
-    AnswersFilters,
-    AppSettings,
-    Chat,
-    Journey,
-    Message,
-    Prompt,
-    Sidekick,
-    User,
-    MessageFeedback,
-    SidekickListItem,
-    ChatbotConfig,
-    FlowData
-} from 'types'
+import { AnswersFilters, AppSettings, Chat, Journey, Message, Prompt, Sidekick, User, MessageFeedback, SidekickListItem } from 'types'
+import { ChatbotConfig } from './types'
+import { FlowData } from './types'
+
 // import { useUserPlans } from './hooks/useUserPlan';
+import { v4 as uuidv4 } from 'uuid'
 
 interface PredictionParams {
     question: string
@@ -35,6 +24,7 @@ interface PredictionParams {
     uploads?: string[]
     audio?: File | null
     socketIOClientId?: string
+    streaming?: boolean
 }
 
 interface AnswersContextType {
@@ -149,51 +139,8 @@ interface AnswersProviderProps {
     // chats?: Chat[];
 }
 
-const fetcher = (url: string) => {
-    return axios
-        .get(url)
-        .then((res) => {
-            return res.data
-        })
-        .catch((error) => {
-            throw error
-        })
-}
-
-// Add axios interceptor setup
-const setupAxiosInterceptors = (apiUrl: string) => {
-    // Create axios instance
-    const axiosInstance = axios.create({
-        baseURL: apiUrl
-    })
-
-    // Request interceptor
-    axiosInstance.interceptors.request.use(
-        (config) => {
-            // Get token from session storage
-            const token = sessionStorage.getItem('access_token')
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`
-            }
-
-            // Get chatflow domain from user
-            const baseURL = sessionStorage.getItem('baseURL') || ''
-            if (baseURL) {
-                config.baseURL = `${baseURL}/api/v1`
-            }
-
-            return config
-        },
-        (error) => {
-            return Promise.reject(error)
-        }
-    )
-
-    return axiosInstance
-}
-
 export function AnswersProvider({
-    chat: initialChat,
+    chat,
     journey: initialJourney,
     sidekicks,
     user,
@@ -204,10 +151,9 @@ export function AnswersProvider({
     apiUrl = '/api'
 }: AnswersProviderProps) {
     const router = useRouter()
-    const axiosInstance = React.useMemo(() => setupAxiosInterceptors(apiUrl), [apiUrl])
     const [error, setError] = useState(null)
     const [inputValue, setInputValue] = useState('')
-    // const [chat, setChat] = useState<Chat | undefined>(initialChat);
+    // const [chat, setChat] = useState<Chat | undefined>(chat);
     const [journey, setJourney] = useState<Journey | undefined>(initialJourney)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -218,81 +164,19 @@ export function AnswersProvider({
 
     const [gptModel, setGptModel] = useState('gpt-3.5-turbo')
     const messageIdx = useRef(0)
-    // const { mutateActiveUserPlan } = useUserPlans();
 
-    const { isStreaming, generateResponse } = useStreamedResponse({
-        apiUrl,
-        onError: (err) => {
-            setIsLoading(false)
-            setError(err)
-        },
-        // setChat,
-        onChunk: (chunk: Message) => {
-            // const idx = messages?.length;
+    const [chatId, setChatId] = useState<string | undefined>(chat?.id ?? uuidv4())
 
-            setMessages((currentMessages) => {
-                const newMessages = [...currentMessages]
-                newMessages[messageIdx.current] = { ...chunk, isLoading: true }
-
-                if (chunk?.chat) {
-                    if (chunk.chat?.id !== chatId) {
-                        setChatId(chunk.chat.id)
-                    }
-                    if (chunk.chat.journeyId && chunk.chat?.journeyId !== journeyId) {
-                        setJourneyId(chunk.chat.journeyId)
-                    }
-                }
-                return newMessages
-            })
-        },
-        onEnd: ({ chat, ...rest }) => {
-            // Check if the current route is the chat
-            if (chat) {
-                const { id } = chat as Chat
-                if (id) {
-                    setMessages((currentMessages) => {
-                        const newMessages = [...currentMessages]
-                        newMessages[messageIdx.current] = { ...newMessages[messageIdx.current], isLoading: false }
-                        return newMessages
-                    })
-                    setChatId(id)
-                    // history.replaceState(null, '', `/chat/${id}`);
-                }
-                // router.refresh();
-                mutate('/api/chats')
-                // mutateActiveUserPlan();
-            } else {
-                console.log('NoChatOnEnd', { chat, ...rest })
-            }
-            setIsLoading(false)
-        }
-    })
-    const [chatId, setChatId] = useState<string | undefined>(initialChat?.id)
     // false to disable for now
-    const { data: chat } = useSWR<Chat>(!isStreaming && chatId && false ? `${apiUrl}/chats/${chatId}` : null, fetcher, {
-        revalidateOnFocus: false,
-        revalidateIfStale: false,
-        // refreshInterval: isStreaming ? 0 : 1000,
-        fallbackData: initialChat,
-        onSuccess(data, key, config) {
-            // TODO: re enable once polling is fixed for shared chats
-            // setMessages(data.messages!);
-        }
-    })
+
     const [sidekick, setSidekick] = useState<SidekickListItem | undefined>(
-        sidekicks?.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid)
+        sidekicks?.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid || s.id === chat?.chatflowId)
     )
     const chatbotConfig = React.useMemo(() => sidekick?.chatbotConfig, [sidekick])
     const flowData = React.useMemo(() => sidekick?.flowData, [sidekick])
     const [messages, setMessages] = useState<Array<Message>>(chat?.messages ?? [])
     const [filters, setFilters] = useState<AnswersFilters>(deepmerge({}, appSettings?.filters, journey?.filters, chat?.filters))
 
-    // const setFilters = (filters: SetStateAction<AnswersFilters>) => {
-    //   setFiltersState((currentFilters) => {
-    //     const newFilters = typeof filters === 'function' ? filters(currentFilters) : filters;
-    //     return deepmerge({}, currentFilters, newFilters);
-    //   });
-    // };
     const addMessage = useCallback(
         (message: Message) => {
             setMessages((currentMessages) => {
@@ -480,38 +364,41 @@ export function AnswersProvider({
                     question: content,
                     chatId,
                     journeyId,
-                    history: messages?.map(({ content, role }) => ({
-                        message: content,
-                        type: role === 'assistant' ? 'apiMessage' : 'userMessage'
-                    })),
+                    // history: messages?.map(({ content, role }) => ({
+                    //     message: content,
+                    //     type: role === 'assistant' ? 'apiMessage' : 'userMessage'
+                    // })),
                     uploads: files,
                     audio,
-                    chatType: 'ANSWERAI',
-                    socketIOClientId: isChatFlowAvailableToStream ? socketIOClientId : undefined
+                    chatType: 'ANSWERAI'
                 }
 
-                const response = await predictionApi.sendMessageAndGetPrediction(sidekick?.id!, params)
-                const data = response.data
-                setMessages((prevMessages) => {
-                    let allMessages = [...cloneDeep(prevMessages)]
-                    if (allMessages[allMessages.length - 1].type === 'apiMessage') {
-                        allMessages[allMessages.length - 1].id = data?.chatMessageId
-                    }
-                    return allMessages
-                })
-                setChatId(data.chatId)
-
-                if (content === '' && data.question) {
-                    // the response contains the question even if it was in an audio format
-                    // so if input is empty but the response contains the question, update the user message to show the question
+                if (isChatFlowAvailableToStream) {
+                    // Use fetchEventSource for streaming
+                    fetchResponseFromEventStream(sidekick?.id!, params)
+                } else {
+                    const response = await predictionApi.sendMessageAndGetPrediction(sidekick?.id!, params)
+                    const data = response.data
                     setMessages((prevMessages) => {
                         let allMessages = [...cloneDeep(prevMessages)]
-                        if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
-                        allMessages[allMessages.length - 2].content = data.question
+                        if (allMessages[allMessages.length - 1].type === 'apiMessage') {
+                            allMessages[allMessages.length - 1].id = data?.chatMessageId
+                        }
                         return allMessages
                     })
-                }
-                if (!isChatFlowAvailableToStream) {
+                    setChatId(data.chatId)
+
+                    if (content === '' && data.question) {
+                        // the response contains the question even if it was in an audio format
+                        // so if input is empty but the response contains the question, update the user message to show the question
+                        setMessages((prevMessages) => {
+                            let allMessages = [...cloneDeep(prevMessages)]
+                            if (allMessages[allMessages.length - 2].type === 'apiMessage') return allMessages
+                            allMessages[allMessages.length - 2].content = data.question
+                            return allMessages
+                        })
+                    }
+
                     let text = ''
                     if (data.text) text = data.text
                     else if (data.json) text = '```json\n' + JSON.stringify(data.json, null, 2)
@@ -535,35 +422,8 @@ export function AnswersProvider({
                         }
                     ])
                 }
-                // if (!isChatFlowAvailableToStream || !socketIOClientId) {
 
-                //     if (data?.chatId) {
-                //         setChatId(data.chatId)
-                //     }
-
-                //     setMessages((prevMessages) => [
-                //         ...prevMessages,
-                //         {
-                //             role: 'assistant',
-                //             content: data.text || JSON.stringify(data.json || data, null, 2),
-                //             id: data?.chatMessageId,
-                //             sourceDocuments: data?.sourceDocuments,
-                //             usedTools: data?.usedTools,
-                //             fileAnnotations: data?.fileAnnotations,
-                //             agentReasoning: data?.agentReasoning,
-                //             action: data?.action,
-                //             isLoading: false,
-                //             chat: data.chat
-                //         } as Message
-                //     ])
-
-                mutate('/api/chats')
                 setIsLoading(false)
-                // } else {
-                //     // For streaming, the socket connection will handle message updates
-                //     setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '', isLoading: true } as Message])
-                // }
-
                 setInputValue('')
             } catch (err: any) {
                 const errorMessage = err.response?.data?.message || 'Error sending message'
@@ -572,83 +432,142 @@ export function AnswersProvider({
                 setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: errorMessage } as Message])
             }
         },
-        [
-            addMessage,
-            chatId,
-            journeyId,
-            messages,
-            socketIOClientId,
-            isChatFlowAvailableToStream,
-            setInputValue,
-            setMessages,
-            setChatId,
-            setJourneyId,
-            mutate
-        ]
+        [addMessage, chatId, journeyId, messages, isChatFlowAvailableToStream, setInputValue, setMessages, setChatId, setJourneyId]
     )
 
+    // Add fetchResponseFromEventStream function
+    const fetchResponseFromEventStream = async (chatflowid: string, params: PredictionParams) => {
+        const baseURL = sessionStorage.getItem('baseURL') || ''
+        const token = sessionStorage.getItem('access_token')
+        // Set streaming flag
+        params.streaming = true
+
+        try {
+            // Start with empty message that will be updated by streaming
+            setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '', isLoading: true } as Message])
+            await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
+                openWhenHidden: true,
+                method: 'POST',
+                body: JSON.stringify(params),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-request-from': 'internal',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                },
+                async onopen(response) {
+                    if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
+                        setIsChatFlowAvailableToStream(true)
+                        // console.log('Connection established successfully')
+                        // Connection established successfully
+                    } else {
+                        throw new Error('Failed to establish connection')
+                    }
+                },
+                async onmessage(ev) {
+                    const payload = JSON.parse(ev.data)
+                    // console.log('payload', payload)
+                    switch (payload.event) {
+                        case 'start':
+                            // Already created an empty message when starting the stream
+                            break
+                        case 'token':
+                            updateLastMessage(payload.data)
+                            break
+                        case 'sourceDocuments':
+                            updateLastMessageSourceDocuments(payload.data)
+                            break
+                        case 'usedTools':
+                            updateLastMessageUsedTools(payload.data)
+                            break
+                        case 'fileAnnotations':
+                            updateLastMessageFileAnnotations(payload.data)
+                            break
+                        case 'agentReasoning':
+                            updateLastMessageAgentReasoning(payload.data)
+                            break
+                        case 'action':
+                            updateLastMessageAction(payload.data)
+                            break
+                        case 'nextAgent':
+                            updateLastMessageNextAgent(payload.data)
+                            break
+                        case 'metadata':
+                            if (payload.data.chatId) {
+                                setChatId(payload.data.chatId)
+                            }
+                            break
+                        case 'error':
+                            setError(payload.data)
+                            // Update the current assistant message to show the error
+                            setMessages((prevMessages) => {
+                                const allMessages = [...cloneDeep(prevMessages)]
+                                const lastMessage = allMessages[allMessages.length - 1]
+                                if (lastMessage?.role === 'user') return allMessages
+                                lastMessage.content = `Error: ${payload.data}`
+                                lastMessage.isLoading = false
+                                return allMessages
+                            })
+                            break
+                        case 'abort':
+                            abortMessage()
+                            break
+                        case 'end':
+                            setMessages((prevMessages) => {
+                                const allMessages = [...cloneDeep(prevMessages)]
+                                const lastMessage = allMessages[allMessages.length - 1]
+                                if (lastMessage?.role === 'user') return allMessages
+                                lastMessage.isLoading = false
+                                return allMessages
+                            })
+                            setIsLoading(false)
+                            break
+                    }
+                },
+                async onclose() {
+                    // Clean up on close
+                    setIsLoading(false)
+                },
+                async onerror(err) {
+                    console.error('EventSource Error: ', err)
+                    setError('Error during streaming')
+                    setIsLoading(false)
+                    throw err
+                }
+            })
+        } catch (error: any) {
+            console.error('Stream error:', error)
+            setError(error.message || 'Error during streaming')
+            setIsLoading(false)
+        }
+    }
+
+    // Replace Socket.IO effect with event source availability check
     useEffect(() => {
-        let socket: any
+        // Check if streaming is available for this chatflow
         if (sidekick?.id) {
-            const baseURL = sessionStorage.getItem('baseURL') || ''
-            socket = socketIOClient(baseURL, {
-                path: '/socket.io',
-                transports: ['websocket', 'polling']
-            })
-
-            socket.on('connect', () => {
-                setSocketIOClientId(socket.id)
-                setIsChatFlowAvailableToStream(true)
-            })
-
-            socket.on('start', () => {
-                setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '', isLoading: true } as Message])
-            })
-
-            socket.on('token', updateLastMessage)
-            socket.on('sourceDocuments', updateLastMessageSourceDocuments)
-            socket.on('usedTools', updateLastMessageUsedTools)
-            socket.on('fileAnnotations', updateLastMessageFileAnnotations)
-            socket.on('agentReasoning', updateLastMessageAgentReasoning)
-            socket.on('action', updateLastMessageAction)
-            socket.on('nextAgent', updateLastMessageNextAgent)
-            socket.on('abort', abortMessage)
-
-            socket.on('end', () => {
-                setMessages((prevMessages) => {
-                    const allMessages = [...cloneDeep(prevMessages)]
-                    const lastMessage = allMessages[allMessages.length - 1]
-                    if (lastMessage?.role === 'user') return allMessages
-                    lastMessage.isLoading = false
-                    return allMessages
-                })
-                setIsLoading(false)
-            })
-
-            socket.on('disconnect', () => {
-                setIsChatFlowAvailableToStream(false)
-                setSocketIOClientId('')
-            })
-
-            socket.on('error', (error: any) => {
-                setError(error?.message || 'Error during streaming')
-                setIsLoading(false)
-            })
-
-            return () => {
-                if (socket) {
-                    socket.disconnect()
-                    setSocketIOClientId('')
+            const checkStreamingAvailability = async () => {
+                try {
+                    // You might need to implement this method in your API to check if streaming is available
+                    const streamable = await predictionApi.checkIfChatflowIsValidForStreaming(sidekick.id)
+                    setIsChatFlowAvailableToStream(streamable?.isStreaming || false)
+                } catch (error) {
+                    console.error('Error checking streaming availability:', error)
                     setIsChatFlowAvailableToStream(false)
                 }
             }
+
+            checkStreamingAvailability()
+        }
+
+        return () => {
+            // Clean up if needed
         }
     }, [sidekick?.id])
 
     React.useEffect(() => {
         setJourney(initialJourney)
-        setFilters(deepmerge({}, initialJourney?.filters, initialChat?.filters))
-    }, [initialChat, initialJourney, appSettings])
+        setFilters(deepmerge({}, initialJourney?.filters, chat?.filters))
+    }, [chat, initialJourney, appSettings])
 
     const [previews, setPreviews] = useState<any[]>([])
     const [isDragActive, setIsDragActive] = useState(false)
@@ -809,4 +728,18 @@ export function AnswersProvider({
     }
     // @ts-ignore
     return <AnswersContext.Provider value={contextValue}>{children}</AnswersContext.Provider>
+}
+
+// Add a fallback implementation for checkIfChatflowIsValidForStreaming if it doesn't exist in predictionApi
+if (!predictionApi.checkIfChatflowIsValidForStreaming) {
+    predictionApi.checkIfChatflowIsValidForStreaming = async (chatflowId: string) => {
+        const baseURL = sessionStorage.getItem('baseURL') || ''
+        try {
+            const response = await axios.get(`${baseURL}/api/v1/chatflows-streaming/${chatflowId}`)
+            return response.data
+        } catch (error) {
+            console.error('Error checking if chatflow is valid for streaming:', error)
+            return { isStreaming: false }
+        }
+    }
 }

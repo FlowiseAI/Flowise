@@ -1,0 +1,45 @@
+---
+id: delete-tool
+title: 'Delete a tool by ID'
+description: 'Delete a specific tool by ID'
+sidebar_label: 'Delete a tool by ID'
+hide_title: true
+hide_table_of_contents: true
+api: eJyNVMtu2zAQ/BViTy3AWk6RXniqAaeAixyCxkUPhg+0uLaIUCRDrtwagv69WElxbNdpe5JIDmeHs48WDOYy2Ug2eFAwR4eEQoscsbRbWwoKwYnNQSzmICFETJqhCwMKTA9ehuBAAuldBrUCxmdYS8hYNsnSAdSqhQ3qhGnWUAVqte7WEqJOukbClHuA5ehRUwUSvK4RFFgDEhI+NzahAUWpQQm5rLDWoFqgQ2RUpmT9Djp58RKWxaI5VsIcg8+Y+d7H6ZQ/V9DDe4zITVliztvGuQMT3167sfB77awRi7mIKeytQTNgb99g94HENjS+h326TkmYvHYiY9pjEphSSNB1EmqkKrxaDnKwSkHR21201nTAlvO9wdAmOVBQEcWsikJHO6EKtc8/MU20LfY3cOnYQwqmKXkxCoBOXvJk0jvrdx/+h+9xwF4nU0XhQqldFTKp2+l0yhKvsdwzShjcowuxRk9HvpMae+SqGNJ7WmnHIuGIMBYPrwcQyPHnS0i1JlDw9cey99v6beivW3I4JjCL2cPiD3mzh4XYhiRq7YfXlk2mUIuhDSRwPgbkzWQ6mYKEMnjSJTH9WOiz3sXZQjw2MYZEIC9cP3UaJGCtLR/nAf757Jjlx5Cp1v4kxLGvz9r57Cltrww9/XsMjK4S/qIiOm09l3QvuR0L82UOSFDW8DTgPPN22250xu/JdR1vPzeYeEKsJex1snrDdq9aMDbzvwG11S7jX6S++zZOiPfipeXfEDhuan/gvGjX8AokPOFhmDbd+rTV5nf3d8s7kKDPa+midnq5V6nbdkAswxP6rjtGIl5zsK77DdR13X8=
+sidebar_class_name: 'delete api-method'
+info_path: docs/api/tools/tools-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Delete a tool by ID'}></Heading>
+
+<MethodEndpoint method={'delete'} path={'/tools/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Delete a specific tool by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Tool ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': { description: 'Tool deleted successfully' },
+        '400': { description: 'Invalid ID provided' },
+        '404': { description: 'Tool not found' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

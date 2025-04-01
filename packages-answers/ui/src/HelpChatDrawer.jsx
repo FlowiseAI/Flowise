@@ -182,7 +182,6 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
                 anchor='right'
                 open={helpChatOpen}
                 variant='permanent'
-                keepMounted={true}
                 sx={{
                     height: '100vh',
                     width: helpChatOpen ? drawerWidth : 0,

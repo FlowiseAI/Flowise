@@ -71,7 +71,7 @@ class MultiQueryRetriever_Retrievers implements INode {
 
         const retriever = MultiQueryRetriever.fromLLM({
             llm: model,
-            retriever: vectorStore.asRetriever(),
+            retriever: vectorStore.asRetriever({ filter: vectorStore?.lc_kwargs?.filter ?? vectorStore?.filter }),
             verbose: process.env.DEBUG === 'true',
             // @ts-ignore
             prompt: PromptTemplate.fromTemplate(prompt)

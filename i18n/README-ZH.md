@@ -10,7 +10,7 @@
 [![GitHub星图](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub分支](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](../README.md) | 中文 | [日本語](./README-JA.md) | [한국어](./README-KR.md)
+[English](../README.md) | 簡體中文 | [日本語](./README-JA.md) | [한국어](./README-KR.md)
 
 <h3>拖放界面构建定制化的LLM流程</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
@@ -180,9 +180,9 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 
       </details>
 
-## 💻 云托管
+## ☁️ 云托管
 
-即将推出
+[开始使用云托管](https://flowiseai.com/)
 
 ## 🙋 支持
 

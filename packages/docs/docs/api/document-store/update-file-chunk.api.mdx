@@ -1,0 +1,149 @@
+---
+id: update-file-chunk
+title: 'Update a file chunk'
+description: 'Update a specific file chunk in a document store'
+sidebar_label: 'Update a file chunk'
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: 'put api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Update a file chunk'}></Heading>
+
+<MethodEndpoint method={'put'} path={'/document-store/chunks/{storeId}/{loaderId}/{chunkId}'} context={'endpoint'}></MethodEndpoint>
+
+Update a specific file chunk in a document store
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[
+        { in: 'path', name: 'storeId', required: true, schema: { type: 'string' }, description: 'Document Store ID' },
+        { in: 'path', name: 'loaderId', required: true, schema: { type: 'string' }, description: 'Document Loader ID' },
+        { in: 'path', name: 'chunkId', required: true, schema: { type: 'string' }, description: 'Document Chunk ID' }
+    ]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        pageContent: { type: 'string', example: 'This is the content of the page.' },
+                        metadata: {
+                            type: 'object',
+                            additionalProperties: { type: 'string' },
+                            example: { author: 'John Doe', date: '2024-08-24' }
+                        }
+                    },
+                    title: 'Document'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully updated chunk',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            chunks: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string', format: 'uuid', description: 'Unique identifier for the file chunk' },
+                                        docId: { type: 'string', format: 'uuid', description: 'Document ID within the store' },
+                                        storeId: { type: 'string', format: 'uuid', description: 'Document Store ID' },
+                                        chunkNo: { type: 'integer', description: 'Chunk number within the document' },
+                                        pageContent: { type: 'string', description: 'Content of the chunk' },
+                                        metadata: { type: 'string', description: 'Metadata associated with the chunk' }
+                                    },
+                                    title: 'DocumentStoreFileChunk'
+                                }
+                            },
+                            count: { type: 'number', example: 1 },
+                            file: {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string', format: 'uuid', description: 'Unique identifier for the document store loader' },
+                                    loaderId: { type: 'string', description: 'ID of the loader' },
+                                    loaderName: { type: 'string', description: 'Name of the loader' },
+                                    loaderConfig: { type: 'object', description: 'Configuration for the loader' },
+                                    splitterId: { type: 'string', description: 'ID of the text splitter' },
+                                    splitterName: { type: 'string', description: 'Name of the text splitter' },
+                                    splitterConfig: { type: 'object', description: 'Configuration for the text splitter' },
+                                    totalChunks: { type: 'number', description: 'Total number of chunks' },
+                                    totalChars: { type: 'number', description: 'Total number of characters' },
+                                    status: {
+                                        type: 'string',
+                                        enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                                        description: 'Status of the document store loader'
+                                    },
+                                    storeId: { type: 'string', description: 'ID of the document store' },
+                                    files: {
+                                        type: 'array',
+                                        items: {
+                                            type: 'object',
+                                            properties: {
+                                                id: { type: 'string', format: 'uuid', description: 'Unique identifier for the file' },
+                                                name: { type: 'string', description: 'Name of the file' },
+                                                mimePrefix: { type: 'string', description: 'MIME prefix of the file' },
+                                                size: { type: 'number', description: 'Size of the file' },
+                                                status: {
+                                                    type: 'string',
+                                                    enum: ['EMPTY', 'SYNC', 'SYNCING', 'STALE', 'NEW', 'UPSERTING', 'UPSERTED'],
+                                                    description: 'Status of the file'
+                                                },
+                                                uploaded: {
+                                                    type: 'string',
+                                                    format: 'date-time',
+                                                    description: 'Date and time when the file was uploaded'
+                                                }
+                                            },
+                                            title: 'DocumentStoreLoaderFile'
+                                        }
+                                    },
+                                    source: { type: 'string', description: 'Source of the document store loader' },
+                                    credential: { type: 'string', description: 'Credential associated with the document store loader' },
+                                    rehydrated: { type: 'boolean', description: 'Whether the loader has been rehydrated' },
+                                    preview: { type: 'boolean', description: 'Whether the loader is in preview mode' },
+                                    previewChunkCount: { type: 'number', description: 'Number of chunks in preview mode' }
+                                },
+                                title: 'DocumentStoreLoaderForPreview'
+                            },
+                            currentPage: { type: 'number' },
+                            storeName: { type: 'string' },
+                            description: { type: 'string' }
+                        },
+                        title: 'DocumentStoreFileChunkPagedResponse'
+                    }
+                }
+            }
+        },
+        '404': { description: 'Document store not found' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

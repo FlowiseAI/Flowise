@@ -1,1159 +1,1140 @@
 {
-  "nodes": [
-    {
-      "id": "chatOpenAI_0",
-      "position": {
-        "x": 707.5800903626107,
-        "y": 109.12476306943097
-      },
-      "type": "customNode",
-      "data": {
-        "id": "chatOpenAI_0",
-        "label": "ChatOpenAI",
-        "version": 6,
-        "name": "chatOpenAI",
-        "type": "ChatOpenAI",
-        "baseClasses": [
-          "ChatOpenAI",
-          "BaseChatModel",
-          "BaseLanguageModel",
-          "Runnable"
-        ],
-        "category": "Chat Models",
-        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
-        "inputParams": [
-          {
-            "label": "Connect Credential",
-            "name": "credential",
-            "type": "credential",
-            "credentialNames": [
-              "openAIApi"
-            ],
-            "id": "chatOpenAI_0-input-credential-credential"
-          },
-          {
-            "label": "Model Name",
-            "name": "modelName",
-            "type": "asyncOptions",
-            "loadMethod": "listModels",
-            "default": "gpt-3.5-turbo",
-            "id": "chatOpenAI_0-input-modelName-asyncOptions"
-          },
-          {
-            "label": "Temperature",
-            "name": "temperature",
-            "type": "number",
-            "step": 0.1,
-            "default": 0.9,
-            "optional": true,
-            "id": "chatOpenAI_0-input-temperature-number"
-          },
-          {
-            "label": "Max Tokens",
-            "name": "maxTokens",
-            "type": "number",
-            "step": 1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-maxTokens-number"
-          },
-          {
-            "label": "Top Probability",
-            "name": "topP",
-            "type": "number",
-            "step": 0.1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-topP-number"
-          },
-          {
-            "label": "Frequency Penalty",
-            "name": "frequencyPenalty",
-            "type": "number",
-            "step": 0.1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-frequencyPenalty-number"
-          },
-          {
-            "label": "Presence Penalty",
-            "name": "presencePenalty",
-            "type": "number",
-            "step": 0.1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-presencePenalty-number"
-          },
-          {
-            "label": "Timeout",
-            "name": "timeout",
-            "type": "number",
-            "step": 1,
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-timeout-number"
-          },
-          {
-            "label": "BasePath",
-            "name": "basepath",
-            "type": "string",
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-basepath-string"
-          },
-          {
-            "label": "BaseOptions",
-            "name": "baseOptions",
-            "type": "json",
-            "optional": true,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-baseOptions-json"
-          },
-          {
-            "label": "Allow Image Uploads",
-            "name": "allowImageUploads",
-            "type": "boolean",
-            "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
-            "default": false,
-            "optional": true,
-            "id": "chatOpenAI_0-input-allowImageUploads-boolean"
-          },
-          {
-            "label": "Image Resolution",
-            "description": "This parameter controls the resolution in which the model views the image.",
-            "name": "imageResolution",
-            "type": "options",
-            "options": [
-              {
-                "label": "Low",
-                "name": "low"
-              },
-              {
-                "label": "High",
-                "name": "high"
-              },
-              {
-                "label": "Auto",
-                "name": "auto"
-              }
-            ],
-            "default": "low",
-            "optional": false,
-            "additionalParams": true,
-            "id": "chatOpenAI_0-input-imageResolution-options"
-          }
-        ],
-        "inputAnchors": [
-          {
-            "label": "Cache",
-            "name": "cache",
-            "type": "BaseCache",
-            "optional": true,
-            "id": "chatOpenAI_0-input-cache-BaseCache"
-          }
-        ],
-        "inputs": {
-          "cache": "",
-          "modelName": "gpt-4o",
-          "temperature": 0.9,
-          "maxTokens": "",
-          "topP": "",
-          "frequencyPenalty": "",
-          "presencePenalty": "",
-          "timeout": "",
-          "basepath": "",
-          "baseOptions": "",
-          "allowImageUploads": "",
-          "imageResolution": "low"
+    "nodes": [
+        {
+            "id": "chatOpenAI_0",
+            "position": {
+                "x": 707.5800903626107,
+                "y": 109.12476306943097
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatOpenAI_0",
+                "label": "ChatOpenAI",
+                "version": 6,
+                "name": "chatOpenAI",
+                "type": "ChatOpenAI",
+                "baseClasses": ["ChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "category": "Chat Models",
+                "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["openAIApi"],
+                        "id": "chatOpenAI_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-3.5-turbo",
+                        "id": "chatOpenAI_0-input-modelName-asyncOptions"
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-temperature-number"
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-maxTokens-number"
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-topP-number"
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-frequencyPenalty-number"
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-presencePenalty-number"
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-timeout-number"
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-basepath-string"
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-baseOptions-json"
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Automatically uses gpt-4-vision-preview when image is being uploaded from chat. Only works with LLMChain, Conversation Chain, ReAct Agent, and Conversational Agent",
+                        "default": false,
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-allowImageUploads-boolean"
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "chatOpenAI_0-input-imageResolution-options"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "chatOpenAI_0-input-cache-BaseCache"
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-4o",
+                    "temperature": 0.9,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "basepath": "",
+                    "baseOptions": "",
+                    "allowImageUploads": "",
+                    "imageResolution": "low"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "chatOpenAI",
+                        "label": "ChatOpenAI",
+                        "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
+                        "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 669,
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 707.5800903626107,
+                "y": 109.12476306943097
+            }
         },
-        "outputAnchors": [
-          {
-            "id": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-            "name": "chatOpenAI",
-            "label": "ChatOpenAI",
-            "description": "Wrapper around OpenAI large language models that use the Chat endpoint",
-            "type": "ChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 669,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 707.5800903626107,
-        "y": 109.12476306943097
-      }
-    },
-    {
-      "id": "conversationChain_0",
-      "position": {
-        "x": 1415.1149109696803,
-        "y": 404.29342957440826
-      },
-      "type": "customNode",
-      "data": {
-        "id": "conversationChain_0",
-        "label": "Conversation Chain",
-        "version": 3,
-        "name": "conversationChain",
-        "type": "ConversationChain",
-        "baseClasses": [
-          "ConversationChain",
-          "LLMChain",
-          "BaseChain",
-          "Runnable"
-        ],
-        "category": "Chains",
-        "description": "Chat models specific conversational chain with memory",
-        "inputParams": [
-          {
-            "label": "System Message",
-            "name": "systemMessagePrompt",
-            "type": "string",
-            "rows": 4,
-            "description": "If Chat Prompt Template is provided, this will be ignored",
-            "additionalParams": true,
-            "optional": true,
-            "default": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
-            "placeholder": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
-            "id": "conversationChain_0-input-systemMessagePrompt-string"
-          }
-        ],
-        "inputAnchors": [
-          {
-            "label": "Chat Model",
-            "name": "model",
-            "type": "BaseChatModel",
-            "id": "conversationChain_0-input-model-BaseChatModel"
-          },
-          {
-            "label": "Memory",
-            "name": "memory",
-            "type": "BaseMemory",
-            "id": "conversationChain_0-input-memory-BaseMemory"
-          },
-          {
-            "label": "Chat Prompt Template",
-            "name": "chatPromptTemplate",
-            "type": "ChatPromptTemplate",
-            "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
-            "optional": true,
-            "id": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
-          },
-          {
-            "label": "Input Moderation",
-            "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
-            "name": "inputModeration",
-            "type": "Moderation",
-            "optional": true,
-            "list": true,
-            "id": "conversationChain_0-input-inputModeration-Moderation"
-          }
-        ],
-        "inputs": {
-          "model": "{{chatOpenAI_0.data.instance}}",
-          "memory": "{{bufferMemory_0.data.instance}}",
-          "chatPromptTemplate": "{{chatPromptTemplate_0.data.instance}}",
-          "inputModeration": "",
-          "systemMessagePrompt": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know."
+        {
+            "id": "conversationChain_0",
+            "position": {
+                "x": 1415.1149109696803,
+                "y": 404.29342957440826
+            },
+            "type": "customNode",
+            "data": {
+                "id": "conversationChain_0",
+                "label": "Conversation Chain",
+                "version": 3,
+                "name": "conversationChain",
+                "type": "ConversationChain",
+                "baseClasses": ["ConversationChain", "LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chat models specific conversational chain with memory",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "If Chat Prompt Template is provided, this will be ignored",
+                        "additionalParams": true,
+                        "optional": true,
+                        "default": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+                        "placeholder": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know.",
+                        "id": "conversationChain_0-input-systemMessagePrompt-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "id": "conversationChain_0-input-model-BaseChatModel"
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseMemory",
+                        "id": "conversationChain_0-input-memory-BaseMemory"
+                    },
+                    {
+                        "label": "Chat Prompt Template",
+                        "name": "chatPromptTemplate",
+                        "type": "ChatPromptTemplate",
+                        "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
+                        "optional": true,
+                        "id": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "conversationChain_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{chatOpenAI_0.data.instance}}",
+                    "memory": "{{RedisBackedChatMemory_0.data.instance}}",
+                    "chatPromptTemplate": "{{chatPromptTemplate_0.data.instance}}",
+                    "inputModeration": "",
+                    "systemMessagePrompt": "The following is a friendly conversation between a human and an AI. The AI is talkative and provides lots of specific details from its context. If the AI does not know the answer to a question, it truthfully says it does not know."
+                },
+                "outputAnchors": [
+                    {
+                        "id": "conversationChain_0-output-conversationChain-ConversationChain|LLMChain|BaseChain|Runnable",
+                        "name": "conversationChain",
+                        "label": "ConversationChain",
+                        "description": "Chat models specific conversational chain with memory",
+                        "type": "ConversationChain | LLMChain | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 434,
+            "positionAbsolute": {
+                "x": 1415.1149109696803,
+                "y": 404.29342957440826
+            },
+            "selected": false
         },
-        "outputAnchors": [
-          {
-            "id": "conversationChain_0-output-conversationChain-ConversationChain|LLMChain|BaseChain|Runnable",
-            "name": "conversationChain",
-            "label": "ConversationChain",
-            "description": "Chat models specific conversational chain with memory",
-            "type": "ConversationChain | LLMChain | BaseChain | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 434,
-      "positionAbsolute": {
-        "x": 1415.1149109696803,
-        "y": 404.29342957440826
-      },
-      "selected": false
-    },
-    {
-      "id": "bufferMemory_0",
-      "position": {
-        "x": 1237.7743419928909,
-        "y": 1413.4671602506792
-      },
-      "type": "customNode",
-      "data": {
-        "id": "bufferMemory_0",
-        "label": "Buffer Memory",
-        "version": 2,
-        "name": "bufferMemory",
-        "type": "BufferMemory",
-        "baseClasses": [
-          "BufferMemory",
-          "BaseChatMemory",
-          "BaseMemory"
-        ],
-        "category": "Memory",
-        "description": "Retrieve chat messages stored in database",
-        "inputParams": [
-          {
-            "label": "Session Id",
-            "name": "sessionId",
-            "type": "string",
-            "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
-            "default": "",
-            "additionalParams": true,
-            "optional": true,
-            "id": "bufferMemory_0-input-sessionId-string"
-          },
-          {
-            "label": "Memory Key",
-            "name": "memoryKey",
-            "type": "string",
-            "default": "chat_history",
-            "additionalParams": true,
-            "id": "bufferMemory_0-input-memoryKey-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "sessionId": "",
-          "memoryKey": "chat_history"
+        {
+            "width": 300,
+            "height": 328,
+            "id": "RedisBackedChatMemory_0",
+            "position": {
+                "x": 75,
+                "y": 82
+            },
+            "type": "customNode",
+            "data": {
+                "id": "RedisBackedChatMemory_0",
+                "label": "Redis-Backed Chat Memory",
+                "version": 2,
+                "name": "RedisBackedChatMemory",
+                "type": "RedisBackedChatMemory",
+                "baseClasses": ["RedisBackedChatMemory", "BaseChatMemory", "BaseMemory"],
+                "category": "Memory",
+                "description": "Summarizes the conversation and stores the memory in Redis server",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "optional": true,
+                        "credentialNames": ["redisCacheApi", "redisCacheUrlApi"],
+                        "id": "RedisBackedChatMemory_0-input-credential-credential"
+                    },
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Session Timeouts",
+                        "name": "sessionTTL",
+                        "type": "number",
+                        "description": "Seconds till a session expires. If not specified, the session will never expire.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-sessionTTL-number"
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "RedisBackedChatMemory_0-input-memoryKey-string"
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "windowSize",
+                        "type": "number",
+                        "description": "Window of size k to surface the last k back-and-forth to use as memory.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-windowSize-number"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "sessionTTL": "",
+                    "memoryKey": "chat_history",
+                    "windowSize": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+                        "name": "RedisBackedChatMemory",
+                        "label": "RedisBackedChatMemory",
+                        "description": "Summarizes the conversation and stores the memory in Redis server",
+                        "type": "RedisBackedChatMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {}
+            }
         },
-        "outputAnchors": [
-          {
-            "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-            "name": "bufferMemory",
-            "label": "BufferMemory",
-            "description": "Retrieve chat messages stored in database",
-            "type": "BufferMemory | BaseChatMemory | BaseMemory"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 251,
-      "positionAbsolute": {
-        "x": 1237.7743419928909,
-        "y": 1413.4671602506792
-      },
-      "selected": false,
-      "dragging": false
-    },
-    {
-      "id": "chatPromptTemplate_0",
-      "position": {
-        "x": 631.7826806295478,
-        "y": 924.2443882639457
-      },
-      "type": "customNode",
-      "data": {
-        "id": "chatPromptTemplate_0",
-        "label": "Chat Prompt Template",
-        "version": 1,
-        "name": "chatPromptTemplate",
-        "type": "ChatPromptTemplate",
-        "baseClasses": [
-          "ChatPromptTemplate",
-          "BaseChatPromptTemplate",
-          "BasePromptTemplate",
-          "Runnable"
-        ],
-        "category": "Prompts",
-        "description": "Schema to represent a chat prompt",
-        "inputParams": [
-          {
-            "label": "System Message",
-            "name": "systemMessagePrompt",
-            "type": "string",
-            "rows": 4,
-            "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
-            "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
-          },
-          {
-            "label": "Human Message",
-            "name": "humanMessagePrompt",
-            "type": "string",
-            "rows": 4,
-            "placeholder": "{text}",
-            "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
-          },
-          {
-            "label": "Format Prompt Values",
-            "name": "promptValues",
-            "type": "json",
-            "optional": true,
-            "acceptVariable": true,
-            "list": true,
-            "id": "chatPromptTemplate_0-input-promptValues-json"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "systemMessagePrompt": "You are a PRFAQ Creator, an AI assistant designed to help create Press Release and FAQ (PRFAQ) documents for product launches. Your task is to generate a comprehensive PRFAQ based on the provided product details, launch information, and target audience. Follow these instructions carefully to create an effective PRFAQ document.\n\nFirst, you will receive the following information:\n\n{product_details}\n{launch_information}\n{target_audience}\n\nAnalyze this information carefully. The PRFAQ document you create should consist of two main sections: a press release and a frequently asked questions (FAQ) section.\n\nFor the press release section:\n1. Start with an attention-grabbing headline that summarizes the key benefit or feature of the product.\n2. In the first paragraph, provide a brief overview of the product, including its name, key features, and the problem it solves.\n3. Include a quote from a company executive or product manager highlighting the product's significance.\n4. Describe the product's main features and benefits in more detail.\n5. Mention the product's availability, pricing (if applicable), and where customers can find more information.\n6. End with a brief company boilerplate (a short description of the company).\n\nFor the FAQ section:\n1. Anticipate and answer 5-7 questions that potential customers or media might ask about the product.\n2. Include questions about features, benefits, pricing, availability, compatibility, and any potential concerns.\n3. Provide clear, concise answers that highlight the product's strengths and address potential objections.\n\nWhen creating the PRFAQ:\n- Use a professional, enthusiastic tone throughout the document.\n- Tailor the language and content to the specified target audience.\n- Emphasize the unique selling points and competitive advantages of the product.\n- Ensure all information is consistent with the provided product details and launch information.\n- Use bullet points or short paragraphs to improve readability.\n\nFormat your response as follows:\n1. Begin with a brief introduction explaining that this is a PRFAQ for the specified product.\n2. Present the press release section, clearly labeled as \"Press Release.\"\n3. Follow with the FAQ section, clearly labeled as \"Frequently Asked Questions.\"\n\nPlease provide your complete PRFAQ document within <prfaq> tags. Begin now.",
-          "humanMessagePrompt": "",
-          "promptValues": "{\"product_details\":\"{{plainText_0.data.instance}}\",\"launch_information\":\"{{plainText_1.data.instance}}\",\"target_audience\":\"{{plainText_2.data.instance}}\"}"
+        {
+            "id": "chatPromptTemplate_0",
+            "position": {
+                "x": 631.7826806295478,
+                "y": 924.2443882639457
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatPromptTemplate_0",
+                "label": "Chat Prompt Template",
+                "version": 1,
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "chatPromptTemplate_0-input-promptValues-json"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "systemMessagePrompt": "You are a PRFAQ Creator, an AI assistant designed to help create Press Release and FAQ (PRFAQ) documents for product launches. Your task is to generate a comprehensive PRFAQ based on the provided product details, launch information, and target audience. Follow these instructions carefully to create an effective PRFAQ document.\n\nFirst, you will receive the following information:\n\n{product_details}\n{launch_information}\n{target_audience}\n\nAnalyze this information carefully. The PRFAQ document you create should consist of two main sections: a press release and a frequently asked questions (FAQ) section.\n\nFor the press release section:\n1. Start with an attention-grabbing headline that summarizes the key benefit or feature of the product.\n2. In the first paragraph, provide a brief overview of the product, including its name, key features, and the problem it solves.\n3. Include a quote from a company executive or product manager highlighting the product's significance.\n4. Describe the product's main features and benefits in more detail.\n5. Mention the product's availability, pricing (if applicable), and where customers can find more information.\n6. End with a brief company boilerplate (a short description of the company).\n\nFor the FAQ section:\n1. Anticipate and answer 5-7 questions that potential customers or media might ask about the product.\n2. Include questions about features, benefits, pricing, availability, compatibility, and any potential concerns.\n3. Provide clear, concise answers that highlight the product's strengths and address potential objections.\n\nWhen creating the PRFAQ:\n- Use a professional, enthusiastic tone throughout the document.\n- Tailor the language and content to the specified target audience.\n- Emphasize the unique selling points and competitive advantages of the product.\n- Ensure all information is consistent with the provided product details and launch information.\n- Use bullet points or short paragraphs to improve readability.\n\nFormat your response as follows:\n1. Begin with a brief introduction explaining that this is a PRFAQ for the specified product.\n2. Present the press release section, clearly labeled as \"Press Release.\"\n3. Follow with the FAQ section, clearly labeled as \"Frequently Asked Questions.\"\n\nPlease provide your complete PRFAQ document within <prfaq> tags. Begin now.",
+                    "humanMessagePrompt": "",
+                    "promptValues": "{\"product_details\":\"{{plainText_0.data.instance}}\",\"launch_information\":\"{{plainText_1.data.instance}}\",\"target_audience\":\"{{plainText_2.data.instance}}\"}"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "description": "Schema to represent a chat prompt",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 688,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 631.7826806295478,
+                "y": 924.2443882639457
+            },
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
-            "name": "chatPromptTemplate",
-            "label": "ChatPromptTemplate",
-            "description": "Schema to represent a chat prompt",
-            "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 688,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 631.7826806295478,
-        "y": 924.2443882639457
-      },
-      "dragging": false
-    },
-    {
-      "id": "plainText_0",
-      "position": {
-        "x": 213.34047568368794,
-        "y": 358.6257120683014
-      },
-      "type": "customNode",
-      "data": {
-        "id": "plainText_0",
-        "label": "Plain Text",
-        "version": 2,
-        "name": "plainText",
-        "type": "Document",
-        "baseClasses": [
-          "Document"
-        ],
-        "category": "Document Loaders",
-        "description": "Load data from plain text",
-        "inputParams": [
-          {
-            "label": "Text",
-            "name": "text",
-            "type": "string",
-            "rows": 4,
-            "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
-            "id": "plainText_0-input-text-string"
-          },
-          {
-            "label": "Additional Metadata",
-            "name": "metadata",
-            "type": "json",
-            "description": "Additional metadata to be added to the extracted documents",
-            "optional": true,
-            "additionalParams": true,
-            "id": "plainText_0-input-metadata-json"
-          },
-          {
-            "label": "Omit Metadata Keys",
-            "name": "omitMetadataKeys",
-            "type": "string",
-            "rows": 4,
-            "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
-            "placeholder": "key1, key2, key3.nestedKey1",
-            "optional": true,
-            "additionalParams": true,
-            "id": "plainText_0-input-omitMetadataKeys-string"
-          }
-        ],
-        "inputAnchors": [
-          {
-            "label": "Text Splitter",
-            "name": "textSplitter",
-            "type": "TextSplitter",
-            "optional": true,
-            "id": "plainText_0-input-textSplitter-TextSplitter"
-          }
-        ],
-        "inputs": {
-          "text": "<product_details>\n//add your product details here\n</product_details>\n",
-          "textSplitter": "",
-          "metadata": "",
-          "omitMetadataKeys": ""
+        {
+            "id": "plainText_0",
+            "position": {
+                "x": 213.34047568368794,
+                "y": 358.6257120683014
+            },
+            "type": "customNode",
+            "data": {
+                "id": "plainText_0",
+                "label": "Plain Text",
+                "version": 2,
+                "name": "plainText",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from plain text",
+                "inputParams": [
+                    {
+                        "label": "Text",
+                        "name": "text",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
+                        "id": "plainText_0-input-text-string"
+                    },
+                    {
+                        "label": "Additional Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "description": "Additional metadata to be added to the extracted documents",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "plainText_0-input-metadata-json"
+                    },
+                    {
+                        "label": "Omit Metadata Keys",
+                        "name": "omitMetadataKeys",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
+                        "placeholder": "key1, key2, key3.nestedKey1",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "plainText_0-input-omitMetadataKeys-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "plainText_0-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "text": "<product_details>\n//add your product details here\n</product_details>\n",
+                    "textSplitter": "",
+                    "metadata": "",
+                    "omitMetadataKeys": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "description": "Array of document objects containing metadata and pageContent",
+                        "options": [
+                            {
+                                "id": "plainText_0-output-document-Document|json",
+                                "name": "document",
+                                "label": "Document",
+                                "description": "Array of document objects containing metadata and pageContent",
+                                "type": "Document | json"
+                            },
+                            {
+                                "id": "plainText_0-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "description": "Concatenated string from pageContent of documents",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "text"
+                },
+                "selected": false
+            },
+            "width": 300,
+            "height": 485,
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 213.34047568368794,
+                "y": 358.6257120683014
+            }
         },
-        "outputAnchors": [
-          {
-            "name": "output",
-            "label": "Output",
-            "type": "options",
-            "description": "Array of document objects containing metadata and pageContent",
-            "options": [
-              {
-                "id": "plainText_0-output-document-Document|json",
-                "name": "document",
-                "label": "Document",
-                "description": "Array of document objects containing metadata and pageContent",
-                "type": "Document | json"
-              },
-              {
-                "id": "plainText_0-output-text-string|json",
-                "name": "text",
-                "label": "Text",
-                "description": "Concatenated string from pageContent of documents",
-                "type": "string | json"
-              }
-            ],
-            "default": "document"
-          }
-        ],
-        "outputs": {
-          "output": "text"
+        {
+            "id": "plainText_1",
+            "position": {
+                "x": 64.72868243403622,
+                "y": 1018.0193442207506
+            },
+            "type": "customNode",
+            "data": {
+                "id": "plainText_1",
+                "label": "Plain Text",
+                "version": 2,
+                "name": "plainText",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from plain text",
+                "inputParams": [
+                    {
+                        "label": "Text",
+                        "name": "text",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
+                        "id": "plainText_1-input-text-string"
+                    },
+                    {
+                        "label": "Additional Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "description": "Additional metadata to be added to the extracted documents",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "plainText_1-input-metadata-json"
+                    },
+                    {
+                        "label": "Omit Metadata Keys",
+                        "name": "omitMetadataKeys",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
+                        "placeholder": "key1, key2, key3.nestedKey1",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "plainText_1-input-omitMetadataKeys-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "plainText_1-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "text": "<launch_information>\n//details about your launch plan\n</launch_information>\n",
+                    "textSplitter": "",
+                    "metadata": "",
+                    "omitMetadataKeys": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "description": "Array of document objects containing metadata and pageContent",
+                        "options": [
+                            {
+                                "id": "plainText_1-output-document-Document|json",
+                                "name": "document",
+                                "label": "Document",
+                                "description": "Array of document objects containing metadata and pageContent",
+                                "type": "Document | json"
+                            },
+                            {
+                                "id": "plainText_1-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "description": "Concatenated string from pageContent of documents",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "text"
+                },
+                "selected": false
+            },
+            "width": 300,
+            "height": 485,
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 64.72868243403622,
+                "y": 1018.0193442207506
+            }
         },
-        "selected": false
-      },
-      "width": 300,
-      "height": 485,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 213.34047568368794,
-        "y": 358.6257120683014
-      }
-    },
-    {
-      "id": "plainText_1",
-      "position": {
-        "x": 64.72868243403622,
-        "y": 1018.0193442207506
-      },
-      "type": "customNode",
-      "data": {
-        "id": "plainText_1",
-        "label": "Plain Text",
-        "version": 2,
-        "name": "plainText",
-        "type": "Document",
-        "baseClasses": [
-          "Document"
-        ],
-        "category": "Document Loaders",
-        "description": "Load data from plain text",
-        "inputParams": [
-          {
-            "label": "Text",
-            "name": "text",
-            "type": "string",
-            "rows": 4,
-            "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
-            "id": "plainText_1-input-text-string"
-          },
-          {
-            "label": "Additional Metadata",
-            "name": "metadata",
-            "type": "json",
-            "description": "Additional metadata to be added to the extracted documents",
-            "optional": true,
-            "additionalParams": true,
-            "id": "plainText_1-input-metadata-json"
-          },
-          {
-            "label": "Omit Metadata Keys",
-            "name": "omitMetadataKeys",
-            "type": "string",
-            "rows": 4,
-            "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
-            "placeholder": "key1, key2, key3.nestedKey1",
-            "optional": true,
-            "additionalParams": true,
-            "id": "plainText_1-input-omitMetadataKeys-string"
-          }
-        ],
-        "inputAnchors": [
-          {
-            "label": "Text Splitter",
-            "name": "textSplitter",
-            "type": "TextSplitter",
-            "optional": true,
-            "id": "plainText_1-input-textSplitter-TextSplitter"
-          }
-        ],
-        "inputs": {
-          "text": "<launch_information>\n//details about your launch plan\n</launch_information>\n",
-          "textSplitter": "",
-          "metadata": "",
-          "omitMetadataKeys": ""
+        {
+            "id": "stickyNote_0",
+            "position": {
+                "x": 207.4634001592783,
+                "y": 835.7151608468484
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_0",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_0-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "A"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_0-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 42,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 207.4634001592783,
+                "y": 835.7151608468484
+            },
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "name": "output",
-            "label": "Output",
-            "type": "options",
-            "description": "Array of document objects containing metadata and pageContent",
-            "options": [
-              {
-                "id": "plainText_1-output-document-Document|json",
-                "name": "document",
-                "label": "Document",
-                "description": "Array of document objects containing metadata and pageContent",
-                "type": "Document | json"
-              },
-              {
-                "id": "plainText_1-output-text-string|json",
-                "name": "text",
-                "label": "Text",
-                "description": "Concatenated string from pageContent of documents",
-                "type": "string | json"
-              }
-            ],
-            "default": "document"
-          }
-        ],
-        "outputs": {
-          "output": "text"
+        {
+            "id": "stickyNote_1",
+            "position": {
+                "x": 65.32060453152891,
+                "y": 1490.391941334096
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_1",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_1-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "B"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_1-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 42,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 65.32060453152891,
+                "y": 1490.391941334096
+            },
+            "dragging": false
         },
-        "selected": false
-      },
-      "width": 300,
-      "height": 485,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 64.72868243403622,
-        "y": 1018.0193442207506
-      }
-    },
-    {
-      "id": "stickyNote_0",
-      "position": {
-        "x": 207.4634001592783,
-        "y": 835.7151608468484
-      },
-      "type": "stickyNote",
-      "data": {
-        "id": "stickyNote_0",
-        "label": "Sticky Note",
-        "version": 1,
-        "name": "stickyNote",
-        "type": "StickyNote",
-        "baseClasses": [
-          "StickyNote"
-        ],
-        "category": "Utilities",
-        "description": "Add a sticky note",
-        "inputParams": [
-          {
-            "label": "",
-            "name": "note",
-            "type": "string",
-            "rows": 1,
-            "placeholder": "Type something here",
-            "optional": true,
-            "id": "stickyNote_0-input-note-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "note": "A"
+        {
+            "id": "stickyNote_2",
+            "position": {
+                "x": 292.58538321948055,
+                "y": 278.67632542865334
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_2",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_2-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Here you can add your product details here e.g. what the product is, any key features, compatibility with other devices etc.. \n"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_2-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 103,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 292.58538321948055,
+                "y": 278.67632542865334
+            },
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "stickyNote_0-output-stickyNote-StickyNote",
-            "name": "stickyNote",
-            "label": "StickyNote",
-            "description": "Add a sticky note",
-            "type": "StickyNote"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 42,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 207.4634001592783,
-        "y": 835.7151608468484
-      },
-      "dragging": false
-    },
-    {
-      "id": "stickyNote_1",
-      "position": {
-        "x": 65.32060453152891,
-        "y": 1490.391941334096
-      },
-      "type": "stickyNote",
-      "data": {
-        "id": "stickyNote_1",
-        "label": "Sticky Note",
-        "version": 1,
-        "name": "stickyNote",
-        "type": "StickyNote",
-        "baseClasses": [
-          "StickyNote"
-        ],
-        "category": "Utilities",
-        "description": "Add a sticky note",
-        "inputParams": [
-          {
-            "label": "",
-            "name": "note",
-            "type": "string",
-            "rows": 1,
-            "placeholder": "Type something here",
-            "optional": true,
-            "id": "stickyNote_1-input-note-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "note": "B"
+        {
+            "id": "stickyNote_3",
+            "position": {
+                "x": 208.87184649050783,
+                "y": 976.0169735849777
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_3",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_3-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Here you can add details like\nlaunch date, availability details, URLs, info about the Launch activities like virtual events, social media campaigns etc. "
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_3-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 103,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 208.87184649050783,
+                "y": 976.0169735849777
+            },
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "stickyNote_1-output-stickyNote-StickyNote",
-            "name": "stickyNote",
-            "label": "StickyNote",
-            "description": "Add a sticky note",
-            "type": "StickyNote"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 42,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 65.32060453152891,
-        "y": 1490.391941334096
-      },
-      "dragging": false
-    },
-    {
-      "id": "stickyNote_2",
-      "position": {
-        "x": 292.58538321948055,
-        "y": 278.67632542865334
-      },
-      "type": "stickyNote",
-      "data": {
-        "id": "stickyNote_2",
-        "label": "Sticky Note",
-        "version": 1,
-        "name": "stickyNote",
-        "type": "StickyNote",
-        "baseClasses": [
-          "StickyNote"
-        ],
-        "category": "Utilities",
-        "description": "Add a sticky note",
-        "inputParams": [
-          {
-            "label": "",
-            "name": "note",
-            "type": "string",
-            "rows": 1,
-            "placeholder": "Type something here",
-            "optional": true,
-            "id": "stickyNote_2-input-note-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "note": "Here you can add your product details here e.g. what the product is, any key features, compatibility with other devices etc.. \n"
+        {
+            "id": "stickyNote_4",
+            "position": {
+                "x": 1987.5551946614194,
+                "y": 174.90120537083527
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_4",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_4-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Instructions for Best Results:\n\n1. Start with adding your product details into Instance A.\n2. Then add your product launch details into Instance B abd give info about your target audience in instance C.\n3. Save Your Chatflow: Once you're all set, save the chatflow.\n4. Analyze Your FLOW: Click the green chat box and type \"GO!\"\n5. Boom! you got your press release and FAQs all done and dusted!"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_4-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 284,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1987.5551946614194,
+                "y": 174.90120537083527
+            },
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "stickyNote_2-output-stickyNote-StickyNote",
-            "name": "stickyNote",
-            "label": "StickyNote",
-            "description": "Add a sticky note",
-            "type": "StickyNote"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 103,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 292.58538321948055,
-        "y": 278.67632542865334
-      },
-      "dragging": false
-    },
-    {
-      "id": "stickyNote_3",
-      "position": {
-        "x": 208.87184649050783,
-        "y": 976.0169735849777
-      },
-      "type": "stickyNote",
-      "data": {
-        "id": "stickyNote_3",
-        "label": "Sticky Note",
-        "version": 1,
-        "name": "stickyNote",
-        "type": "StickyNote",
-        "baseClasses": [
-          "StickyNote"
-        ],
-        "category": "Utilities",
-        "description": "Add a sticky note",
-        "inputParams": [
-          {
-            "label": "",
-            "name": "note",
-            "type": "string",
-            "rows": 1,
-            "placeholder": "Type something here",
-            "optional": true,
-            "id": "stickyNote_3-input-note-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "note": "Here you can add details like\nlaunch date, availability details, URLs, info about the Launch activities like virtual events, social media campaigns etc. "
+        {
+            "id": "plainText_2",
+            "position": {
+                "x": 200.78365786002036,
+                "y": 1592.3173097774002
+            },
+            "type": "customNode",
+            "data": {
+                "id": "plainText_2",
+                "label": "Plain Text",
+                "version": 2,
+                "name": "plainText",
+                "type": "Document",
+                "baseClasses": ["Document"],
+                "category": "Document Loaders",
+                "description": "Load data from plain text",
+                "inputParams": [
+                    {
+                        "label": "Text",
+                        "name": "text",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
+                        "id": "plainText_2-input-text-string"
+                    },
+                    {
+                        "label": "Additional Metadata",
+                        "name": "metadata",
+                        "type": "json",
+                        "description": "Additional metadata to be added to the extracted documents",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "plainText_2-input-metadata-json"
+                    },
+                    {
+                        "label": "Omit Metadata Keys",
+                        "name": "omitMetadataKeys",
+                        "type": "string",
+                        "rows": 4,
+                        "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
+                        "placeholder": "key1, key2, key3.nestedKey1",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "plainText_2-input-omitMetadataKeys-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Text Splitter",
+                        "name": "textSplitter",
+                        "type": "TextSplitter",
+                        "optional": true,
+                        "id": "plainText_2-input-textSplitter-TextSplitter"
+                    }
+                ],
+                "inputs": {
+                    "text": "<target_audience>\n//mention your details about target audience here\n</target_audience>",
+                    "textSplitter": "",
+                    "metadata": "",
+                    "omitMetadataKeys": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "description": "Array of document objects containing metadata and pageContent",
+                        "options": [
+                            {
+                                "id": "plainText_2-output-document-Document|json",
+                                "name": "document",
+                                "label": "Document",
+                                "description": "Array of document objects containing metadata and pageContent",
+                                "type": "Document | json"
+                            },
+                            {
+                                "id": "plainText_2-output-text-string|json",
+                                "name": "text",
+                                "label": "Text",
+                                "description": "Concatenated string from pageContent of documents",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "document"
+                    }
+                ],
+                "outputs": {
+                    "output": "text"
+                },
+                "selected": false
+            },
+            "width": 300,
+            "height": 485,
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 200.78365786002036,
+                "y": 1592.3173097774002
+            }
         },
-        "outputAnchors": [
-          {
-            "id": "stickyNote_3-output-stickyNote-StickyNote",
-            "name": "stickyNote",
-            "label": "StickyNote",
-            "description": "Add a sticky note",
-            "type": "StickyNote"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 103,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 208.87184649050783,
-        "y": 976.0169735849777
-      },
-      "dragging": false
-    },
-    {
-      "id": "stickyNote_4",
-      "position": {
-        "x": 1987.5551946614194,
-        "y": 174.90120537083527
-      },
-      "type": "stickyNote",
-      "data": {
-        "id": "stickyNote_4",
-        "label": "Sticky Note",
-        "version": 1,
-        "name": "stickyNote",
-        "type": "StickyNote",
-        "baseClasses": [
-          "StickyNote"
-        ],
-        "category": "Utilities",
-        "description": "Add a sticky note",
-        "inputParams": [
-          {
-            "label": "",
-            "name": "note",
-            "type": "string",
-            "rows": 1,
-            "placeholder": "Type something here",
-            "optional": true,
-            "id": "stickyNote_4-input-note-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "note": "Instructions for Best Results:\n\n1. Start with adding your product details into Instance A.\n2. Then add your product launch details into Instance B abd give info about your target audience in instance C.\n3. Save Your Chatflow: Once you're all set, save the chatflow.\n4. Analyze Your FLOW: Click the green chat box and type \"GO!\"\n5. Boom! you got your press release and FAQs all done and dusted!"
+        {
+            "id": "stickyNote_5",
+            "position": {
+                "x": 197.71204486803038,
+                "y": 2064.173510074943
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_5",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_5-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "C"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_5-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 42,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 197.71204486803038,
+                "y": 2064.173510074943
+            },
+            "dragging": false
         },
-        "outputAnchors": [
-          {
-            "id": "stickyNote_4-output-stickyNote-StickyNote",
-            "name": "stickyNote",
-            "label": "StickyNote",
-            "description": "Add a sticky note",
-            "type": "StickyNote"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 284,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 1987.5551946614194,
-        "y": 174.90120537083527
-      },
-      "dragging": false
-    },
-    {
-      "id": "plainText_2",
-      "position": {
-        "x": 200.78365786002036,
-        "y": 1592.3173097774002
-      },
-      "type": "customNode",
-      "data": {
-        "id": "plainText_2",
-        "label": "Plain Text",
-        "version": 2,
-        "name": "plainText",
-        "type": "Document",
-        "baseClasses": [
-          "Document"
-        ],
-        "category": "Document Loaders",
-        "description": "Load data from plain text",
-        "inputParams": [
-          {
-            "label": "Text",
-            "name": "text",
-            "type": "string",
-            "rows": 4,
-            "placeholder": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua...",
-            "id": "plainText_2-input-text-string"
-          },
-          {
-            "label": "Additional Metadata",
-            "name": "metadata",
-            "type": "json",
-            "description": "Additional metadata to be added to the extracted documents",
-            "optional": true,
-            "additionalParams": true,
-            "id": "plainText_2-input-metadata-json"
-          },
-          {
-            "label": "Omit Metadata Keys",
-            "name": "omitMetadataKeys",
-            "type": "string",
-            "rows": 4,
-            "description": "Each document loader comes with a default set of metadata keys that are extracted from the document. You can use this field to omit some of the default metadata keys. The value should be a list of keys, seperated by comma. Use * to omit all metadata keys execept the ones you specify in the Additional Metadata field",
-            "placeholder": "key1, key2, key3.nestedKey1",
-            "optional": true,
-            "additionalParams": true,
-            "id": "plainText_2-input-omitMetadataKeys-string"
-          }
-        ],
-        "inputAnchors": [
-          {
-            "label": "Text Splitter",
-            "name": "textSplitter",
-            "type": "TextSplitter",
-            "optional": true,
-            "id": "plainText_2-input-textSplitter-TextSplitter"
-          }
-        ],
-        "inputs": {
-          "text": "<target_audience>\n//mention your details about target audience here\n</target_audience>",
-          "textSplitter": "",
-          "metadata": "",
-          "omitMetadataKeys": ""
+        {
+            "id": "stickyNote_6",
+            "position": {
+                "x": -98.45897025537195,
+                "y": 1689.1405858128276
+            },
+            "type": "stickyNote",
+            "data": {
+                "id": "stickyNote_6",
+                "label": "Sticky Note",
+                "version": 1,
+                "name": "stickyNote",
+                "type": "StickyNote",
+                "baseClasses": ["StickyNote"],
+                "category": "Utilities",
+                "description": "Add a sticky note",
+                "inputParams": [
+                    {
+                        "label": "",
+                        "name": "note",
+                        "type": "string",
+                        "rows": 1,
+                        "placeholder": "Type something here",
+                        "optional": true,
+                        "id": "stickyNote_6-input-note-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "note": "Here you can specify your target audience like :\nHikers, campers, and backpackers who need reliable power sources during their adventures\n- Eco-friendly consumers looking to reduce their carbon footprint\n- Tech-savvy individuals who appreciate innovative gadgets\n- Urban professionals who enjoy weekend outdoor escapes\n- Travelers seeking portable charging solutions for off-grid locations\n"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "stickyNote_6-output-stickyNote-StickyNote",
+                        "name": "stickyNote",
+                        "label": "StickyNote",
+                        "description": "Add a sticky note",
+                        "type": "StickyNote"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 304,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -98.45897025537195,
+                "y": 1689.1405858128276
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "chatOpenAI_0",
+            "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationChain_0-conversationChain_0-input-model-BaseChatModel"
         },
-        "outputAnchors": [
-          {
-            "name": "output",
-            "label": "Output",
-            "type": "options",
-            "description": "Array of document objects containing metadata and pageContent",
-            "options": [
-              {
-                "id": "plainText_2-output-document-Document|json",
-                "name": "document",
-                "label": "Document",
-                "description": "Array of document objects containing metadata and pageContent",
-                "type": "Document | json"
-              },
-              {
-                "id": "plainText_2-output-text-string|json",
-                "name": "text",
-                "label": "Text",
-                "description": "Concatenated string from pageContent of documents",
-                "type": "string | json"
-              }
-            ],
-            "default": "document"
-          }
-        ],
-        "outputs": {
-          "output": "text"
+        {
+            "source": "RedisBackedChatMemory_0",
+            "sourceHandle": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-memory-BaseMemory",
+            "type": "buttonedge",
+            "id": "RedisBackedChatMemory_0-RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory-conversationChain_0-conversationChain_0-input-memory-BaseMemory"
         },
-        "selected": false
-      },
-      "width": 300,
-      "height": 485,
-      "selected": false,
-      "dragging": false,
-      "positionAbsolute": {
-        "x": 200.78365786002036,
-        "y": 1592.3173097774002
-      }
-    },
-    {
-      "id": "stickyNote_5",
-      "position": {
-        "x": 197.71204486803038,
-        "y": 2064.173510074943
-      },
-      "type": "stickyNote",
-      "data": {
-        "id": "stickyNote_5",
-        "label": "Sticky Note",
-        "version": 1,
-        "name": "stickyNote",
-        "type": "StickyNote",
-        "baseClasses": [
-          "StickyNote"
-        ],
-        "category": "Utilities",
-        "description": "Add a sticky note",
-        "inputParams": [
-          {
-            "label": "",
-            "name": "note",
-            "type": "string",
-            "rows": 1,
-            "placeholder": "Type something here",
-            "optional": true,
-            "id": "stickyNote_5-input-note-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "note": "C"
+        {
+            "source": "chatPromptTemplate_0",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "conversationChain_0",
+            "targetHandle": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate",
+            "type": "buttonedge",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-conversationChain_0-conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
         },
-        "outputAnchors": [
-          {
-            "id": "stickyNote_5-output-stickyNote-StickyNote",
-            "name": "stickyNote",
-            "label": "StickyNote",
-            "description": "Add a sticky note",
-            "type": "StickyNote"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 42,
-      "selected": false,
-      "positionAbsolute": {
-        "x": 197.71204486803038,
-        "y": 2064.173510074943
-      },
-      "dragging": false
-    },
-    {
-      "id": "stickyNote_6",
-      "position": {
-        "x": -98.45897025537195,
-        "y": 1689.1405858128276
-      },
-      "type": "stickyNote",
-      "data": {
-        "id": "stickyNote_6",
-        "label": "Sticky Note",
-        "version": 1,
-        "name": "stickyNote",
-        "type": "StickyNote",
-        "baseClasses": [
-          "StickyNote"
-        ],
-        "category": "Utilities",
-        "description": "Add a sticky note",
-        "inputParams": [
-          {
-            "label": "",
-            "name": "note",
-            "type": "string",
-            "rows": 1,
-            "placeholder": "Type something here",
-            "optional": true,
-            "id": "stickyNote_6-input-note-string"
-          }
-        ],
-        "inputAnchors": [],
-        "inputs": {
-          "note": "Here you can specify your target audience like :\nHikers, campers, and backpackers who need reliable power sources during their adventures\n- Eco-friendly consumers looking to reduce their carbon footprint\n- Tech-savvy individuals who appreciate innovative gadgets\n- Urban professionals who enjoy weekend outdoor escapes\n- Travelers seeking portable charging solutions for off-grid locations\n"
+        {
+            "source": "plainText_0",
+            "sourceHandle": "plainText_0-output-text-string|json",
+            "target": "chatPromptTemplate_0",
+            "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
+            "type": "buttonedge",
+            "id": "plainText_0-plainText_0-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
         },
-        "outputAnchors": [
-          {
-            "id": "stickyNote_6-output-stickyNote-StickyNote",
-            "name": "stickyNote",
-            "label": "StickyNote",
-            "description": "Add a sticky note",
-            "type": "StickyNote"
-          }
-        ],
-        "outputs": {},
-        "selected": false
-      },
-      "width": 300,
-      "height": 304,
-      "selected": false,
-      "positionAbsolute": {
-        "x": -98.45897025537195,
-        "y": 1689.1405858128276
-      },
-      "dragging": false
-    }
-  ],
-  "edges": [
-    {
-      "source": "chatOpenAI_0",
-      "sourceHandle": "chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
-      "target": "conversationChain_0",
-      "targetHandle": "conversationChain_0-input-model-BaseChatModel",
-      "type": "buttonedge",
-      "id": "chatOpenAI_0-chatOpenAI_0-output-chatOpenAI-ChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-conversationChain_0-conversationChain_0-input-model-BaseChatModel"
-    },
-    {
-      "source": "bufferMemory_0",
-      "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-      "target": "conversationChain_0",
-      "targetHandle": "conversationChain_0-input-memory-BaseMemory",
-      "type": "buttonedge",
-      "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-conversationChain_0-conversationChain_0-input-memory-BaseMemory"
-    },
-    {
-      "source": "chatPromptTemplate_0",
-      "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
-      "target": "conversationChain_0",
-      "targetHandle": "conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate",
-      "type": "buttonedge",
-      "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-conversationChain_0-conversationChain_0-input-chatPromptTemplate-ChatPromptTemplate"
-    },
-    {
-      "source": "plainText_0",
-      "sourceHandle": "plainText_0-output-text-string|json",
-      "target": "chatPromptTemplate_0",
-      "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
-      "type": "buttonedge",
-      "id": "plainText_0-plainText_0-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
-    },
-    {
-      "source": "plainText_1",
-      "sourceHandle": "plainText_1-output-text-string|json",
-      "target": "chatPromptTemplate_0",
-      "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
-      "type": "buttonedge",
-      "id": "plainText_1-plainText_1-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
-    },
-    {
-      "source": "plainText_2",
-      "sourceHandle": "plainText_2-output-text-string|json",
-      "target": "chatPromptTemplate_0",
-      "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
-      "type": "buttonedge",
-      "id": "plainText_2-plainText_2-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
-    }
-  ]
+        {
+            "source": "plainText_1",
+            "sourceHandle": "plainText_1-output-text-string|json",
+            "target": "chatPromptTemplate_0",
+            "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
+            "type": "buttonedge",
+            "id": "plainText_1-plainText_1-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
+        },
+        {
+            "source": "plainText_2",
+            "sourceHandle": "plainText_2-output-text-string|json",
+            "target": "chatPromptTemplate_0",
+            "targetHandle": "chatPromptTemplate_0-input-promptValues-json",
+            "type": "buttonedge",
+            "id": "plainText_2-plainText_2-output-text-string|json-chatPromptTemplate_0-chatPromptTemplate_0-input-promptValues-json"
+        }
+    ],
+    "description": "Generate Press Release FAQ (PRFAQ) documents using Amazon's working backwards methodology to define product vision and customer benefits"
 }

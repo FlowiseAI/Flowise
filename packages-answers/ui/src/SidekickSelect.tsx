@@ -179,7 +179,7 @@ const WhiteIconButton = styled(IconButton)(({ theme }) => ({
 }))
 
 const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
-    const { setSidekick, sidekick: selectedSidekick, setSidekick: setSelectedSidekick } = useAnswers()
+    const { chat, setSidekick, sidekick: selectedSidekick, setSidekick: setSelectedSidekick } = useAnswers()
     const router = useRouter()
     const { user } = useUser()
     const searchbarRef = useRef<HTMLInputElement>(null)
@@ -261,16 +261,16 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         try {
             const res = await fetch(url)
             if (res.status === 401) {
-                // window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
-                window.location.href = '/api/auth/login'
+                // window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
+                window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
             } else {
                 return res.json()
             }
         } catch (error) {
             console.log('error', error)
             if (error instanceof Response && error.status === 401) {
-                window.location.href = '/api/auth/login'
-                // window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.href)
+                window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
+                // window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
             }
             return { sidekicks: [], categories: { top: [], more: [] } }
         }
@@ -358,13 +358,17 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     }, [combinedSidekicks, favorites, allCategories])
 
     const handleSidekickSelect = (sidekick: Sidekick) => {
-        setSelectedSidekick(sidekick)
-        setSidekick(sidekick)
-        setOpen(false)
-        setIsMarketplaceDialogOpen(false)
-        const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
-        sidekickHistory.lastUsed = sidekick
-        localStorage.setItem('sidekickHistory', JSON.stringify(sidekickHistory))
+        if (!chat?.id) {
+            router.push(`/chat/${sidekick.id}`)
+        } else {
+            setSelectedSidekick(sidekick)
+            setSidekick(sidekick)
+            setOpen(false)
+            setIsMarketplaceDialogOpen(false)
+            const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
+            sidekickHistory.lastUsed = sidekick
+            localStorage.setItem('sidekickHistory', JSON.stringify(sidekickHistory))
+        }
     }
 
     const handleMoreClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -408,7 +412,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             }
             if (!user) {
                 const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-                const loginUrl = `/api/auth/login?returnTo=${redirectUrl}`
+                const loginUrl = `/api/auth/login?redirect_uri=${redirectUrl}`
                 setNavigationState(state)
                 window.location.href = loginUrl
             } else {

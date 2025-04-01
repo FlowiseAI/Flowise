@@ -1,0 +1,121 @@
+---
+id: create-assistant
+title: 'Create a new assistant'
+description: 'Create a new assistant with the provided details'
+sidebar_label: 'Create a new assistant'
+hide_title: true
+hide_table_of_contents: true
+api: eJztl9ty2zYQhl8Fs9ekRcryiVdVT1OlndYTOWlTj8YDEUsJNgmgAChb0fDdOwvKMsUojpvm0jc2BS7+BbC7HxcbEOhyK42XWkEGP1jkHhlnCu8Zd046z5Vn99IvmV8iM1avpEDBBHouSwcRaIOW0/SJgAzyIDB+nAkReL5wkF3DTs3BLAKHeW2lX0N2vYE5cot2XPslZNezZhaBxX9qdP57LdaQbSDXyqPy9MiNKWUeHA5uHS16Ay5fYsXpya8NQgZ6fos5OTeWluclOnorRcfGeSvVAiLAB16ZkobE8CIpUsT4ND8ZxaN5ksYXCZ7G4ixJz0bnRXJ+kkITwePm/7dD7py/+Tj/HT9M6r8m76a/vv/l9s1d8VafynJFnhSv8IsS26MOC+sEsz+riaDSAsvn9RbGxyOylcp5W+ek5Z6f8kHXjFvKmiWWpqjLp8yJmNBsrWvL5ug885px5e7RshBeqRXjStAPuyafHquQTbXt7lrV1Rxt12VKttrcmBdY6b1AcWv5GiKQHqsD22o606+hqFXYP0SQa4E3Unm0xqIPfgpZ4o1DbvMlzLaubiw6XdscDyYHF0KSHi8v99Jk365pmiaiQhKovORfiNeZmF8c58kwPhcnPB6l6VnMz4s0PhbF/PRsmM6Pjy9COHOtpjZ/XmwgK75AN9jF78i0h9KWtfiR+4PpWGhbcU8VxD3GXla4JztMhqM4OY+Ho6t0lKUn2XD4N6nWRnxzVQqE9MHgiULhRIkp0qKAzNsaw4AzWrk2BsMkoX/7ONwpsO0BMFfnOTpX1GW5DmnxCqZXML2C6RVMXw2mJoLRIfZM1IqXUjCpTO13jRetbjQcfmr+nowDfRg+5NgOk3iFfqmpNTPaBRBwarNg0OnHqB2zK7QudGO1LSGDpffGZYMBN/LIL7GtjiMuB6sUevUMl1aLtiBZKwRN1Ndxni+kWsQv0Zu2tofFssGg1Dkvl9r5bJQkCS3xkMpvZMUErrDUpkLld3qd/nNKhG6TvduF7mJOHul8ghlkWyOItg8/P2bCmz+vwmkT+d8+Na8/PSZFi9yXgXyP42Ha8zh+pHEHuf2z2KXuFrRbmvZh+q2I2QNmuoNiugPff4LYAYb1UfQy3nRw8xmm9JByuJh7hPgsR6QqdEimfuE7Nr6cfBKl8eWEFdqyiqu2AMYTtlemVKOtaXqUHCXbBoTnoQHZJsE4RGU8YdPaGG0pF/YrsVt9xK2KS3rtWvPv9l7TKRM3Kq46Lg7fEvvb6VzbvuZeuS1Ajw9+YEouVQCzDV+dlmH9OyURgUY3mzl3+M6WTUPDbUpm17MIVtxKPg/fUPowLpELtAF6d7imZbYLjq/IN5mXdairfmtHRGpnjHNi7bO2sw6DL/+YXhE8tvdaqkbIwPJ7iMLfDMKNetfbhLENlFwtar4g21aT4sL3SdUjU9jVY2+h1p0VbjatxZW+Q9U0EG234uk3NLOmaf4Fp2dsRA==
+sidebar_class_name: 'post api-method'
+info_path: docs/api/assistants/assistants-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Create a new assistant'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/assistants'} context={'endpoint'}></MethodEndpoint>
+
+Create a new assistant with the provided details
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails parameters={undefined}></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', example: 'd290f1ee-6c54-4b01-90e6-d701748f0851' },
+                        details: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string', example: 'asst_zbNeYIuXIUSKVHjJkfRo6ilv' },
+                                name: { type: 'string', example: 'assistant' },
+                                description: { type: 'string' },
+                                model: { type: 'string', example: 'gpt-4' },
+                                instructions: {
+                                    type: 'string',
+                                    example: 'You are a helpful assistant, do your best to answer question and query'
+                                },
+                                temperature: { type: 'number', example: 1 },
+                                top_p: { type: 'number', example: 1 },
+                                tools: {
+                                    type: 'array',
+                                    items: { type: 'string' },
+                                    example: ['function', 'code_interpreter', 'file_search']
+                                },
+                                tool_resources: { type: 'object', additionalProperties: { type: 'object' } }
+                            }
+                        },
+                        credential: { type: 'string', example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339' },
+                        iconSrc: { type: 'string', example: '/images/assistant.png' },
+                        createdDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' },
+                        updatedDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' }
+                    },
+                    title: 'Assistant'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Assistant created successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string', example: 'd290f1ee-6c54-4b01-90e6-d701748f0851' },
+                            details: {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string', example: 'asst_zbNeYIuXIUSKVHjJkfRo6ilv' },
+                                    name: { type: 'string', example: 'assistant' },
+                                    description: { type: 'string' },
+                                    model: { type: 'string', example: 'gpt-4' },
+                                    instructions: {
+                                        type: 'string',
+                                        example: 'You are a helpful assistant, do your best to answer question and query'
+                                    },
+                                    temperature: { type: 'number', example: 1 },
+                                    top_p: { type: 'number', example: 1 },
+                                    tools: {
+                                        type: 'array',
+                                        items: { type: 'string' },
+                                        example: ['function', 'code_interpreter', 'file_search']
+                                    },
+                                    tool_resources: { type: 'object', additionalProperties: { type: 'object' } }
+                                }
+                            },
+                            credential: { type: 'string', example: '7db93c02-8d5a-4117-a8f1-3dfb6721b339' },
+                            iconSrc: { type: 'string', example: '/images/assistant.png' },
+                            createdDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' },
+                            updatedDate: { type: 'string', format: 'date-time', example: '2024-08-24T14:15:22Z' }
+                        },
+                        title: 'Assistant'
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid input provided' },
+        '422': { description: 'Validation exception' }
+    }}
+></StatusCodes>
