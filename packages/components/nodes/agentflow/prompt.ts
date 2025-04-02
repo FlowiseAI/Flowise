@@ -13,33 +13,31 @@ Conversation:
 
 New summary:`
 
-export const DEFAULT_HUMAN_INPUT_DESCRIPTION = `Summarize the conversation, placing higher emphasis on the last few messages, while encouraging user interaction to guide the workflow.
+export const DEFAULT_HUMAN_INPUT_DESCRIPTION = `Summarize the conversation between the user and the assistant, reiterate the last message from the assistant, and ask if user would like to proceed or if they have any feedback. 
+- Begin by capturing the key points of the conversation, ensuring that you reflect the main ideas and themes discussed.
+- Then, clearly reproduce the last message sent by the assistant to maintain continuity. Make sure the whole message is reproduced.
+- Finally, ask the user if they would like to proceed, or provide any feedback on the last assistant message
 
-## Steps
+## Output Format The output should be structured in three parts in text:
 
-1. **Review the Conversation**: Read through the entire conversation to understand the context and flow.
-2. **Identify Key Points**: Note the main topics, questions, and any decisions made during the conversation.
-3. **Highlight the Last Messages**: Focus on the content of the last few messages, providing details and context as needed.
-4. **Encourage Further Interaction**: Conclude the summary with a question or prompt for the user to decide the next step.
+- A summary of the conversation (1-3 sentences).
+- The last assistant message (exactly as it appeared).
+- Ask the user if they would like to proceed, or provide any feedback on last assistant message. No other explanation and elaboration is needed.
+`
 
-## Output Format
-
-The output should be a concise paragraph summarizing the conversation, with special attention on the final messages. End the summary with an open-ended question or suggestion to engage the user in deciding the next steps.
-
-## Example
-
-**Input:**
-- Message 1: "Hi, I have a question about my order status."
-- Message 2: "The order is processed, awaiting shipping."
-- Message 3: "Can you provide an estimated delivery date?"
-
-**Output:**
-"In this conversation, the user inquired about their order status, and it was clarified that the order has been processed and is awaiting shipping. In the latest messages, the user has requested an estimated delivery date. Would you like to connect with a customer service representative to get more detailed information on the delivery schedule?" 
-
-## Notes
-
-- Ensure clarity and conciseness, highlighting essential information effectively.
-- Make sure the final question or prompt is relevant to the conversation and offers clear options for user engagement.`
+export const DEFAULT_HUMAN_INPUT_DESCRIPTION_HTML = `<p>Summarize the conversation between the user and the assistant, reiterate the last message from the assistant, and ask if user would like to proceed or if they have any feedback. </p>
+<ul>
+<li>Begin by capturing the key points of the conversation, ensuring that you reflect the main ideas and themes discussed.</li>
+<li>Then, clearly reproduce the last message sent by the assistant to maintain continuity. Make sure the whole message is reproduced.</li>
+<li>Finally, ask the user if they would like to proceed, or provide any feedback on the last assistant message</li>
+</ul>
+<h2 id="output-format-the-output-should-be-structured-in-three-parts-">Output Format The output should be structured in three parts in text:</h2>
+<ul>
+<li>A summary of the conversation (1-3 sentences).</li>
+<li>The last assistant message (exactly as it appeared).</li>
+<li>Ask the user if they would like to proceed, or provide any feedback on last assistant message. No other explanation and elaboration is needed.</li>
+</ul>
+`
 
 export const CONDITION_AGENT_SYSTEM_PROMPT = `You are part of a multi-agent system designed to make agent coordination and execution easy. Your task is to analyze the given input and select one matching scenario from a provided set of scenarios. If none of the scenarios match the input, you should return "default."
 

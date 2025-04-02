@@ -11,7 +11,7 @@ import {
     IServerSideEventStreamer
 } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
-import { DEFAULT_HUMAN_INPUT_DESCRIPTION } from '../prompt'
+import { DEFAULT_HUMAN_INPUT_DESCRIPTION, DEFAULT_HUMAN_INPUT_DESCRIPTION_HTML } from '../prompt'
 
 class HumanInput_Agentflow implements INode {
     label: string
@@ -80,7 +80,7 @@ class HumanInput_Agentflow implements INode {
                 label: 'Prompt',
                 name: 'humanInputModelPrompt',
                 type: 'string',
-                default: DEFAULT_HUMAN_INPUT_DESCRIPTION,
+                default: DEFAULT_HUMAN_INPUT_DESCRIPTION_HTML,
                 acceptVariable: true,
                 generateInstruction: true,
                 rows: 4,
@@ -92,7 +92,7 @@ class HumanInput_Agentflow implements INode {
                 label: 'Enable Feedback',
                 name: 'humanInputEnableFeedback',
                 type: 'boolean',
-                default: false
+                default: true
             }
         ]
         this.outputs = [
@@ -194,6 +194,10 @@ class HumanInput_Agentflow implements INode {
                 input,
                 output,
                 state
+            }
+
+            if (humanInput.feedback) {
+                ;(nodeOutput as any).chatHistory = [{ role: 'user', content: humanInput.feedback }]
             }
 
             return nodeOutput
