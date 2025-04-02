@@ -166,6 +166,32 @@ async function replaceDuplicateIdsForAssistant(queryRunner: QueryRunner, origina
 
 async function replaceDuplicateIdsForChatMessage(queryRunner: QueryRunner, originalData: ExportData, chatMessages: ChatMessage[]) {
     try {
+        const chatmessageChatflowIds = chatMessages.map((chatMessage) => {
+            return { id: chatMessage.chatflowid, qty: 0 }
+        })
+        const originalDataChatflowIds = originalData.ChatFlow.map((chatflow) => chatflow.id)
+        chatmessageChatflowIds.forEach((item) => {
+            if (originalDataChatflowIds.includes(item.id)) {
+                item.qty += 1
+            }
+        })
+        const databaseChatflowIds = await (
+            await queryRunner.manager.find(ChatFlow, {
+                where: { id: In(chatmessageChatflowIds.map((chatmessageChatflowId) => chatmessageChatflowId.id)) }
+            })
+        ).map((chatflow) => chatflow.id)
+        chatmessageChatflowIds.forEach((item) => {
+            if (databaseChatflowIds.includes(item.id)) {
+                item.qty += 1
+            }
+        })
+
+        const missingChatflowIds = chatmessageChatflowIds.filter((item) => item.qty === 0).map((item) => item.id)
+        if (missingChatflowIds.length > 0) {
+            chatMessages = chatMessages.filter((chatMessage) => !missingChatflowIds.includes(chatMessage.chatflowid))
+            originalData.ChatMessage = chatMessages
+        }
+
         const ids = chatMessages.map((chatMessage) => chatMessage.id)
         const records = await queryRunner.manager.find(ChatMessage, {
             where: { id: In(ids) }
@@ -191,6 +217,56 @@ async function replaceDuplicateIdsForChatMessageFeedback(
     chatMessageFeedbacks: ChatMessageFeedback[]
 ) {
     try {
+        const feedbackChatflowIds = chatMessageFeedbacks.map((feedback) => {
+            return { id: feedback.chatflowid, qty: 0 }
+        })
+        const originalDataChatflowIds = originalData.ChatFlow.map((chatflow) => chatflow.id)
+        feedbackChatflowIds.forEach((item) => {
+            if (originalDataChatflowIds.includes(item.id)) {
+                item.qty += 1
+            }
+        })
+        const databaseChatflowIds = await (
+            await queryRunner.manager.find(ChatFlow, {
+                where: { id: In(feedbackChatflowIds.map((feedbackChatflowId) => feedbackChatflowId.id)) }
+            })
+        ).map((chatflow) => chatflow.id)
+        feedbackChatflowIds.forEach((item) => {
+            if (databaseChatflowIds.includes(item.id)) {
+                item.qty += 1
+            }
+        })
+
+        const feedbackMessageIds = chatMessageFeedbacks.map((feedback) => {
+            return { id: feedback.messageId, qty: 0 }
+        })
+        const originalDataMessageIds = originalData.ChatMessage.map((chatMessage) => chatMessage.id)
+        feedbackMessageIds.forEach((item) => {
+            if (originalDataMessageIds.includes(item.id)) {
+                item.qty += 1
+            }
+        })
+        const databaseMessageIds = await (
+            await queryRunner.manager.find(ChatMessage, {
+                where: { id: In(feedbackMessageIds.map((feedbackMessageId) => feedbackMessageId.id)) }
+            })
+        ).map((chatMessage) => chatMessage.id)
+        feedbackMessageIds.forEach((item) => {
+            if (databaseMessageIds.includes(item.id)) {
+                item.qty += 1
+            }
+        })
+
+        const missingChatflowIds = feedbackChatflowIds.filter((item) => item.qty === 0).map((item) => item.id)
+        const missingMessageIds = feedbackMessageIds.filter((item) => item.qty === 0).map((item) => item.id)
+
+        if (missingChatflowIds.length > 0 || missingMessageIds.length > 0) {
+            chatMessageFeedbacks = chatMessageFeedbacks.filter(
+                (feedback) => !missingChatflowIds.includes(feedback.chatflowid) && !missingMessageIds.includes(feedback.messageId)
+            )
+            originalData.ChatMessageFeedback = chatMessageFeedbacks
+        }
+
         const ids = chatMessageFeedbacks.map((chatMessageFeedback) => chatMessageFeedback.id)
         const records = await queryRunner.manager.find(ChatMessageFeedback, {
             where: { id: In(ids) }
