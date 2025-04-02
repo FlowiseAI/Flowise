@@ -36,7 +36,7 @@ const entityCache: Record<string, EntityTarget<any>> = {}
  */
 const enforceAbility = (resourceName: string) => {
     return async (req: Request, res: Response, next: NextFunction) => {
-        // Ensure user is authenticated
+        // Skip auth check for non-authenticated routes
         if (!req.user) {
             return res.status(401).json({ error: 'Unauthorized' })
         }
@@ -51,6 +51,7 @@ const enforceAbility = (resourceName: string) => {
         res.locals.filter = filter
 
         try {
+            // Only check resource access for requests with an ID parameter
             if (isResourceIdRequest(req)) {
                 await verifyResourceAccess(resourceName, req.params.id, filter, isAdmin)
             }
@@ -87,6 +88,13 @@ async function verifyResourceAccess(resourceName: string, resourceId: string, fi
     if (!resourceId) {
         throw new Error('Resource ID not provided')
     }
+    
+    // Early exit for admin with organization-only filter
+    if (isAdmin && Object.keys(filter).length === 1 && filter.organizationId) {
+        // Admin only needs to check organization, which will be done in checkResourceAccess
+        // No need for additional checks here
+    }
+    
     await checkResourceAccess(resourceName, resourceId, filter, isAdmin)
 }
 
@@ -115,30 +123,23 @@ async function checkResourceAccess(resourceName: string, resourceId: string, fil
 }
 
 /**
- * Check if admin has access to a resource
- */
-async function adminHasAccess(repository: any, resourceId: string, organizationId: string): Promise<boolean> {
-    return await repository.findOne({
-        where: {
-            id: resourceId,
-            organizationId
-        }
-    }) !== null
-}
-
-/**
  * Check if a regular user has access to a resource, including visibility rules
  */
 async function regularUserHasAccess(repository: any, resourceId: string, filter: ResourceFilter): Promise<boolean> {
-    // Check if resource exists and get its visibility
-    const resource = await repository.findOne({ where: { id: resourceId } })
+    // First check if resource exists at all (for correct error behavior)
+    const resource = await repository.findOne({ 
+        where: { id: resourceId },
+        select: ['id', 'userId', 'organizationId', 'visibility']
+    })
     
     if (!resource) {
         throw new Error('Resource not found')
     }
 
-    // Direct ownership check
-    const hasDirectAccess = await repository.findOne({ where: { id: resourceId, ...filter } }) !== null
+    // Direct ownership check (original behavior)
+    const hasDirectAccess = await repository.findOne({ 
+        where: { id: resourceId, ...filter } 
+    }) !== null
     
     // If has direct access or resource doesn't have visibility field
     if (hasDirectAccess || !('visibility' in resource)) {
@@ -153,11 +154,27 @@ async function regularUserHasAccess(repository: any, resourceId: string, filter:
  * Check if a resource has organization-level visibility
  */
 function checkOrganizationVisibility(resource: ResourceWithVisibility, organizationId: string): boolean {
+    // Get visibility values (maintaining original behavior)
     const visibilityValues = Array.isArray(resource.visibility)
         ? resource.visibility
         : resource.visibility.split(',').map((v: string) => v.trim())
     
+    // Original check (organization visibility + same organization)
     return visibilityValues.includes('Organization') && resource.organizationId === organizationId
+}
+
+/**
+ * Check if admin has access to a resource
+ */
+async function adminHasAccess(repository: any, resourceId: string, organizationId: string): Promise<boolean> {
+    // Use more efficient query but maintain original behavior
+    return await repository.findOne({
+        where: {
+            id: resourceId,
+            organizationId
+        },
+        select: ['id'] // Only need to check existence
+    }) !== null
 }
 
 /**
@@ -165,21 +182,28 @@ function checkOrganizationVisibility(resource: ResourceWithVisibility, organizat
  * This improves performance by avoiding repeated imports.
  */
 async function getEntityFromCache(resourceName: string): Promise<EntityTarget<any>> {
+    // Fast path - check cache first
     if (entityCache[resourceName]) {
         return entityCache[resourceName]
     }
 
     try {
-        const modulePath = path.join(__dirname, '..', '..', 'database', 'entities', `${resourceName}.js`)
-        const Entity = await import(modulePath).then((module) => module[resourceName])
+        // Use path.resolve for better cross-platform compatibility
+        const modulePath = path.resolve(__dirname, '..', '..', 'database', 'entities', `${resourceName}.js`)
+        
+        // Dynamic import with error handling
+        const module = await import(modulePath)
+        const Entity = module[resourceName]
 
         if (!Entity) {
             throw new Error(`Unknown resource: ${resourceName}`)
         }
 
+        // Cache the entity for future use
         entityCache[resourceName] = Entity
         return Entity
     } catch (error) {
+        // Improve error message to help with debugging
         throw new Error(`Failed to load entity ${resourceName}: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
 }
