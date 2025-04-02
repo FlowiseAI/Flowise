@@ -122,19 +122,19 @@ const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: 
     }
 }
 
-async function replaceDuplicateIdsForChatFlow(queryRunner: QueryRunner, orginalData: ExportData, chatflows: ChatFlow[]) {
+async function replaceDuplicateIdsForChatFlow(queryRunner: QueryRunner, originalData: ExportData, chatflows: ChatFlow[]) {
     try {
         const ids = chatflows.map((chatflow) => chatflow.id)
         const records = await queryRunner.manager.find(ChatFlow, {
             where: { id: In(ids) }
         })
-        if (records.length < 0) return orginalData
+        if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
             const newId = uuidv4()
-            orginalData = JSON.parse(JSON.stringify(orginalData).replaceAll(oldId, newId))
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
         }
-        return orginalData
+        return originalData
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -143,19 +143,19 @@ async function replaceDuplicateIdsForChatFlow(queryRunner: QueryRunner, orginalD
     }
 }
 
-async function replaceDuplicateIdsForAssistant(queryRunner: QueryRunner, orginalData: ExportData, assistants: Assistant[]) {
+async function replaceDuplicateIdsForAssistant(queryRunner: QueryRunner, originalData: ExportData, assistants: Assistant[]) {
     try {
         const ids = assistants.map((assistant) => assistant.id)
         const records = await queryRunner.manager.find(Assistant, {
             where: { id: In(ids) }
         })
-        if (records.length < 0) return orginalData
+        if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
             const newId = uuidv4()
-            orginalData = JSON.parse(JSON.stringify(orginalData).replaceAll(oldId, newId))
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
         }
-        return orginalData
+        return originalData
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -164,19 +164,19 @@ async function replaceDuplicateIdsForAssistant(queryRunner: QueryRunner, orginal
     }
 }
 
-async function replaceDuplicateIdsForChatMessage(queryRunner: QueryRunner, orginalData: ExportData, chatMessages: ChatMessage[]) {
+async function replaceDuplicateIdsForChatMessage(queryRunner: QueryRunner, originalData: ExportData, chatMessages: ChatMessage[]) {
     try {
         const ids = chatMessages.map((chatMessage) => chatMessage.id)
         const records = await queryRunner.manager.find(ChatMessage, {
             where: { id: In(ids) }
         })
-        if (records.length < 0) return orginalData
+        if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
             const newId = uuidv4()
-            orginalData = JSON.parse(JSON.stringify(orginalData).replaceAll(oldId, newId))
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
         }
-        return orginalData
+        return originalData
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -187,7 +187,7 @@ async function replaceDuplicateIdsForChatMessage(queryRunner: QueryRunner, orgin
 
 async function replaceDuplicateIdsForChatMessageFeedback(
     queryRunner: QueryRunner,
-    orginalData: ExportData,
+    originalData: ExportData,
     chatMessageFeedbacks: ChatMessageFeedback[]
 ) {
     try {
@@ -195,13 +195,13 @@ async function replaceDuplicateIdsForChatMessageFeedback(
         const records = await queryRunner.manager.find(ChatMessageFeedback, {
             where: { id: In(ids) }
         })
-        if (records.length < 0) return orginalData
+        if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
             const newId = uuidv4()
-            orginalData = JSON.parse(JSON.stringify(orginalData).replaceAll(oldId, newId))
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
         }
-        return orginalData
+        return originalData
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -210,19 +210,19 @@ async function replaceDuplicateIdsForChatMessageFeedback(
     }
 }
 
-async function replaceDuplicateIdsForCustomTemplate(queryRunner: QueryRunner, orginalData: ExportData, customTemplates: CustomTemplate[]) {
+async function replaceDuplicateIdsForCustomTemplate(queryRunner: QueryRunner, originalData: ExportData, customTemplates: CustomTemplate[]) {
     try {
         const ids = customTemplates.map((customTemplate) => customTemplate.id)
         const records = await queryRunner.manager.find(CustomTemplate, {
             where: { id: In(ids) }
         })
-        if (records.length < 0) return orginalData
+        if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
             const newId = uuidv4()
-            orginalData = JSON.parse(JSON.stringify(orginalData).replaceAll(oldId, newId))
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
         }
-        return orginalData
+        return originalData
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -231,19 +231,19 @@ async function replaceDuplicateIdsForCustomTemplate(queryRunner: QueryRunner, or
     }
 }
 
-async function replaceDuplicateIdsForDocumentStore(queryRunner: QueryRunner, orginalData: ExportData, documentStores: DocumentStore[]) {
+async function replaceDuplicateIdsForDocumentStore(queryRunner: QueryRunner, originalData: ExportData, documentStores: DocumentStore[]) {
     try {
         const ids = documentStores.map((documentStore) => documentStore.id)
         const records = await queryRunner.manager.find(DocumentStore, {
             where: { id: In(ids) }
         })
-        if (records.length < 0) return orginalData
+        if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
             const newId = uuidv4()
-            orginalData = JSON.parse(JSON.stringify(orginalData).replaceAll(oldId, newId))
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
         }
-        return orginalData
+        return originalData
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -254,7 +254,7 @@ async function replaceDuplicateIdsForDocumentStore(queryRunner: QueryRunner, org
 
 async function replaceDuplicateIdsForDocumentStoreFileChunk(
     queryRunner: QueryRunner,
-    orginalData: ExportData,
+    originalData: ExportData,
     documentStoreFileChunks: DocumentStoreFileChunk[]
 ) {
     try {
@@ -262,13 +262,13 @@ async function replaceDuplicateIdsForDocumentStoreFileChunk(
         const records = await queryRunner.manager.find(DocumentStoreFileChunk, {
             where: { id: In(ids) }
         })
-        if (records.length < 0) return orginalData
+        if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
             const newId = uuidv4()
-            orginalData = JSON.parse(JSON.stringify(orginalData).replaceAll(oldId, newId))
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
         }
-        return orginalData
+        return originalData
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -277,19 +277,19 @@ async function replaceDuplicateIdsForDocumentStoreFileChunk(
     }
 }
 
-async function replaceDuplicateIdsForTool(queryRunner: QueryRunner, orginalData: ExportData, tools: Tool[]) {
+async function replaceDuplicateIdsForTool(queryRunner: QueryRunner, originalData: ExportData, tools: Tool[]) {
     try {
         const ids = tools.map((tool) => tool.id)
         const records = await queryRunner.manager.find(Tool, {
             where: { id: In(ids) }
         })
-        if (records.length < 0) return orginalData
+        if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
             const newId = uuidv4()
-            orginalData = JSON.parse(JSON.stringify(orginalData).replaceAll(oldId, newId))
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
         }
-        return orginalData
+        return originalData
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -298,19 +298,19 @@ async function replaceDuplicateIdsForTool(queryRunner: QueryRunner, orginalData:
     }
 }
 
-async function replaceDuplicateIdsForVariable(queryRunner: QueryRunner, orginalData: ExportData, variables: Variable[]) {
+async function replaceDuplicateIdsForVariable(queryRunner: QueryRunner, originalData: ExportData, variables: Variable[]) {
     try {
         const ids = variables.map((variable) => variable.id)
         const records = await queryRunner.manager.find(Variable, {
             where: { id: In(ids) }
         })
-        if (records.length < 0) return orginalData
+        if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
             const newId = uuidv4()
-            orginalData = JSON.parse(JSON.stringify(orginalData).replaceAll(oldId, newId))
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
         }
-        return orginalData
+        return originalData
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
