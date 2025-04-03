@@ -24,7 +24,7 @@ import {
     IUsedTool,
     IVisionChatModal
 } from '../../../src/Interface'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, CustomStreamingHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
@@ -101,6 +101,15 @@ class ToolAgent_Agents implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Enable Detailed Streaming',
+                name: 'enableDetailedStreaming',
+                type: 'boolean',
+                default: false,
+                description: 'Stream detailed intermediate steps during agent execution',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -113,6 +122,7 @@ class ToolAgent_Agents implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const enableDetailedStreaming = nodeData.inputs?.enableDetailedStreaming as boolean
 
         const shouldStreamResponse = options.shouldStreamResponse
         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
@@ -136,6 +146,13 @@ class ToolAgent_Agents implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
+        // Add custom streaming handler if detailed streaming is enabled
+        let customStreamingHandler = null
+
+        if (enableDetailedStreaming && shouldStreamResponse) {
+            customStreamingHandler = new CustomStreamingHandler(sseStreamer, chatId)
+        }
+
         let res: ChainValues = {}
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
@@ -143,7 +160,14 @@ class ToolAgent_Agents implements INode {
 
         if (shouldStreamResponse) {
             const handler = new CustomChainHandler(sseStreamer, chatId)
-            res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
+            const allCallbacks = [loggerHandler, handler, ...callbacks]
+
+            // Add detailed streaming handler if enabled
+            if (enableDetailedStreaming && customStreamingHandler) {
+                allCallbacks.push(customStreamingHandler)
+            }
+
+            res = await executor.invoke({ input }, { callbacks: allCallbacks })
             if (res.sourceDocuments) {
                 if (sseStreamer) {
                     sseStreamer.streamSourceDocumentsEvent(chatId, flatten(res.sourceDocuments))
@@ -174,7 +198,14 @@ class ToolAgent_Agents implements INode {
                 }
             }
         } else {
-            res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+            const allCallbacks = [loggerHandler, ...callbacks]
+
+            // Add detailed streaming handler if enabled
+            if (enableDetailedStreaming && customStreamingHandler) {
+                allCallbacks.push(customStreamingHandler)
+            }
+
+            res = await executor.invoke({ input }, { callbacks: allCallbacks })
             if (res.sourceDocuments) {
                 sourceDocuments = res.sourceDocuments
             }
