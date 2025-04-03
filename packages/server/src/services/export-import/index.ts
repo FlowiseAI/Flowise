@@ -395,20 +395,33 @@ async function replaceDuplicateIdsForVariable(queryRunner: QueryRunner, original
     }
 }
 
+function reduceSpaceForChatflowFlowData(chatflows: ChatFlow[]) {
+    return chatflows.map((chatflow) => {
+        return { ...chatflow, flowData: JSON.stringify(JSON.parse(chatflow.flowData)) }
+    })
+}
+
 const importData = async (importData: ExportData) => {
     let queryRunner
     try {
         queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
+        await queryRunner.connect()
 
         try {
-            if (importData.AgentFlow.length > 0)
+            if (importData.AgentFlow.length > 0) {
+                importData.AgentFlow = reduceSpaceForChatflowFlowData(importData.AgentFlow)
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AgentFlow)
-            if (importData.AssistantFlow.length > 0)
+            }
+            if (importData.AssistantFlow.length > 0) {
+                importData.AssistantFlow = reduceSpaceForChatflowFlowData(importData.AssistantFlow)
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AssistantFlow)
+            }
             if (importData.Assistant.length > 0)
                 importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.Assistant)
-            if (importData.ChatFlow.length > 0)
+            if (importData.ChatFlow.length > 0) {
+                importData.ChatFlow = reduceSpaceForChatflowFlowData(importData.ChatFlow)
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.ChatFlow)
+            }
             if (importData.ChatMessage.length > 0)
                 importData = await replaceDuplicateIdsForChatMessage(queryRunner, importData, importData.ChatMessage)
             if (importData.ChatMessageFeedback.length > 0)
