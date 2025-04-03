@@ -3,8 +3,8 @@ import { exportData, stringify } from '@/utils/exportImport'
 import useNotifier from '@/utils/useNotifier'
 import PropTypes from 'prop-types'
 import { useEffect, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
 import { createPortal } from 'react-dom'
+import { useDispatch, useSelector } from 'react-redux'
 
 // material-ui
 import {
@@ -12,22 +12,22 @@ import {
     Box,
     Button,
     ButtonBase,
+    Checkbox,
     ClickAwayListener,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     Divider,
+    FormControlLabel,
     List,
     ListItemButton,
     ListItemIcon,
     ListItemText,
     Paper,
     Popper,
-    Typography,
-    Dialog,
-    DialogTitle,
-    DialogContent,
     Stack,
-    FormControlLabel,
-    Checkbox,
-    DialogActions
+    Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -40,9 +40,9 @@ import AboutDialog from '@/ui-component/dialog/AboutDialog'
 import Transitions from '@/ui-component/extended/Transitions'
 
 // assets
+import ExportingGIF from '@/assets/images/Exporting.gif'
 import { IconFileExport, IconFileUpload, IconInfoCircle, IconLogout, IconSettings, IconX } from '@tabler/icons-react'
 import './index.css'
-import ExportingGIF from '@/assets/images/Exporting.gif'
 
 //API
 import exportImportApi from '@/api/exportimport'
@@ -52,12 +52,22 @@ import useApi from '@/hooks/useApi'
 import { getErrorMessage } from '@/utils/errorHandler'
 import { useNavigate } from 'react-router-dom'
 
-const dataToExport = ['Chatflows', 'Agentflows', 'Tools', 'Variables', 'Assistants']
+const dataToExport = [
+    'Agentflows',
+    'Assistants',
+    'Chatflows',
+    'Chat Messages',
+    'Chat Feedbacks',
+    'Custom Templates',
+    'Document Stores',
+    'Tools',
+    'Variables'
+]
 
 const ExportDialog = ({ show, onCancel, onExport }) => {
     const portalElement = document.getElementById('portal')
 
-    const [selectedData, setSelectedData] = useState(['Chatflows', 'Agentflows', 'Tools', 'Variables', 'Assistants'])
+    const [selectedData, setSelectedData] = useState(dataToExport)
     const [isExporting, setIsExporting] = useState(false)
 
     useEffect(() => {
@@ -243,11 +253,15 @@ const ProfileSection = ({ username, handleLogout }) => {
 
     const onExport = (data) => {
         const body = {}
-        if (data.includes('Chatflows')) body.chatflow = true
         if (data.includes('Agentflows')) body.agentflow = true
+        if (data.includes('Assistants')) body.assistant = true
+        if (data.includes('Chatflows')) body.chatflow = true
+        if (data.includes('Chat Messages')) body.chat_message = true
+        if (data.includes('Chat Feedbacks')) body.chat_feedback = true
+        if (data.includes('Custom Templates')) body.custom_template = true
+        if (data.includes('Document Stores')) body.document_store = true
         if (data.includes('Tools')) body.tool = true
         if (data.includes('Variables')) body.variable = true
-        if (data.includes('Assistants')) body.assistant = true
 
         exportAllApi.request(body)
     }
