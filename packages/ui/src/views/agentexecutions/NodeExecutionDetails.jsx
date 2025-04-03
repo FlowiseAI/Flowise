@@ -804,8 +804,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                 })()}
                             </Box>
                         ))
-                    ) : data?.input?.form ? (
-                        <JSONViewer data={data.input.form} />
+                    ) : data?.input?.form || data?.input?.http ? (
+                        <JSONViewer data={data.input.form || data.input.http} />
                     ) : data?.input?.code ? (
                         <Box
                             sx={{
@@ -876,8 +876,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                     <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
                         Output
                     </Typography>
-                    {data?.output?.form ? (
-                        <JSONViewer data={data.output.form} />
+                    {data?.output?.form || data?.output?.http ? (
+                        <JSONViewer data={data.output.form || data.output.http} />
                     ) : (
                         <Box
                             sx={{
@@ -1011,7 +1011,9 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                         }
                                     }}
                                 >
-                                    {data?.error || `*No error details*`}
+                                    {typeof data?.error === 'object'
+                                        ? JSON.stringify(data.error, null, 2)
+                                        : data?.error || `*No error details*`}
                                 </MemoizedReactMarkdown>
                             </Box>
                         </>

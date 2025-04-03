@@ -11,7 +11,8 @@ import {
     IconReplaceUser,
     IconRepeat,
     IconSubtask,
-    IconNote
+    IconNote,
+    IconWorld
 } from '@tabler/icons-react'
 
 export const gridSpacing = 3
@@ -83,5 +84,10 @@ export const AGENTFLOW_ICONS = [
         name: 'stickyNoteAgentflow',
         icon: IconNote,
         color: '#fee440'
+    },
+    {
+        name: 'httpAgentflow',
+        icon: IconWorld,
+        color: '#FF7F7F'
     }
 ]
