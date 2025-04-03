@@ -356,6 +356,7 @@ export const MessageCard = ({
                                 defaultExpanded={true}
                                 key={agentObject.agentName}
                                 sx={{
+                                    p: 0,
                                     // bgcolor: 'rgba(0,0,0,0.15)',
                                     borderRadius: 1,
                                     boxShadow: 'none',
@@ -387,6 +388,46 @@ export const MessageCard = ({
                                 </CustomAccordionSummary>
                                 <CustomAccordionDetails sx={{ p: 0 }}>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {/* Tools used section */}
+                                        {agentObject.usedTools &&
+                                            Array.isArray(agentObject.usedTools) &&
+                                            agentObject.usedTools.length > 0 &&
+                                            agentObject.usedTools[0] !== null && (
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                                                    {agentObject.usedTools.map(({ tool, toolInput }: any, idx) => {
+                                                        if (!tool) return null
+                                                        return (
+                                                            // <Chip
+                                                            //     key={idx}
+                                                            //     label={typeof tool === 'string' ? tool : 'Tool'}
+                                                            //     size='small'
+                                                            //     variant='outlined'
+                                                            //     sx={{
+                                                            //         height: '20px',
+                                                            //         fontSize: '0.65rem',
+                                                            //         color: 'primary.light',
+                                                            //         borderColor: 'rgba(25, 118, 210, 0.5)'
+                                                            //     }}
+                                                            // />
+                                                            <Chip
+                                                                key={`tool-${idx}`}
+                                                                label={`Use ${tool} with ${Object.keys(toolInput)?.reduce((acc, key) => {
+                                                                    return acc + `${key}: ${toolInput[key]}`
+                                                                }, '')}`}
+                                                                size='small'
+                                                                sx={{
+                                                                    height: '24px',
+                                                                    bgcolor: 'rgba(0,0,0,0.3)',
+                                                                    color: '#f48771',
+                                                                    fontSize: '0.75rem',
+                                                                    fontFamily: 'monospace',
+                                                                    '& .MuiChip-label': { px: 1 }
+                                                                }}
+                                                            />
+                                                        )
+                                                    })}
+                                                </Box>
+                                            )}
                                         {/* Messages formatted as paragraph with pills */}
                                         {agentObject.messages && Array.isArray(agentObject.messages) && (
                                             <Box sx={{ mb: 1 }}>
@@ -394,6 +435,7 @@ export const MessageCard = ({
                                                     sx={{
                                                         display: 'flex',
                                                         flexWrap: 'wrap',
+                                                        flexDirection: 'column',
                                                         gap: 0.75,
                                                         alignItems: 'center',
                                                         mb: 1
@@ -401,16 +443,31 @@ export const MessageCard = ({
                                                 >
                                                     {agentObject.messages.map(
                                                         (
-                                                            agentObjectMessage: Array<{
-                                                                index: string
-                                                                text?: string
-                                                                type?: string
-                                                                input?: string
-                                                                name?: string
-                                                            }>,
+                                                            agentObjectMessage: Array<
+                                                                | string
+                                                                | {
+                                                                      index: string
+                                                                      text?: string
+                                                                      type?: string
+                                                                      input?: string
+                                                                      name?: string
+                                                                  }
+                                                            >,
                                                             idx: number
                                                         ) => {
                                                             console.log(agentObjectMessage)
+                                                            if (typeof agentObjectMessage === 'string') {
+                                                                return (
+                                                                    <Typography
+                                                                        key={`text-${idx}`}
+                                                                        variant='body2'
+                                                                        component='span'
+                                                                        sx={{ color: '#e0e0e0', lineHeight: 1.5 }}
+                                                                    >
+                                                                        {agentObjectMessage}
+                                                                    </Typography>
+                                                                )
+                                                            }
                                                             if (agentObjectMessage.length) {
                                                                 return (
                                                                     <Typography
@@ -418,7 +475,11 @@ export const MessageCard = ({
                                                                         variant='body2'
                                                                         component='span'
                                                                         sx={{
+                                                                            width: '100%',
                                                                             color: '#e0e0e0',
+                                                                            display: 'flex',
+                                                                            flexDirection: 'column',
+                                                                            gap: 0.5,
                                                                             lineHeight: 1.5
                                                                         }}
                                                                     >
@@ -440,7 +501,9 @@ export const MessageCard = ({
                                                                                             }, '')}`}
                                                                                             size='small'
                                                                                             sx={{
+                                                                                                display: 'block',
                                                                                                 height: '24px',
+                                                                                                width: 'fit-content',
                                                                                                 bgcolor: 'rgba(0,0,0,0.3)',
                                                                                                 color: '#f48771',
                                                                                                 fontSize: '0.75rem',
@@ -461,43 +524,6 @@ export const MessageCard = ({
                                                 </Box>
                                             </Box>
                                         )}
-
-                                        {/* Tools used section */}
-                                        {agentObject.usedTools &&
-                                            Array.isArray(agentObject.usedTools) &&
-                                            agentObject.usedTools.length > 0 &&
-                                            agentObject.usedTools[0] !== null && (
-                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
-                                                    <Typography
-                                                        variant='caption'
-                                                        component='span'
-                                                        sx={{
-                                                            color: '#9e9e9e',
-                                                            mr: 0.5,
-                                                            alignSelf: 'center'
-                                                        }}
-                                                    >
-                                                        Tools:
-                                                    </Typography>
-                                                    {agentObject.usedTools.map((tool, idx) => {
-                                                        if (!tool) return null
-                                                        return (
-                                                            <Chip
-                                                                key={idx}
-                                                                label={typeof tool === 'string' ? tool : 'Tool'}
-                                                                size='small'
-                                                                variant='outlined'
-                                                                sx={{
-                                                                    height: '20px',
-                                                                    fontSize: '0.65rem',
-                                                                    color: 'primary.light',
-                                                                    borderColor: 'rgba(25, 118, 210, 0.5)'
-                                                                }}
-                                                            />
-                                                        )
-                                                    })}
-                                                </Box>
-                                            )}
 
                                         {/* Artifacts section */}
                                         {agentObject.artifacts &&
@@ -619,7 +645,7 @@ export const MessageCard = ({
                 )}
 
                 {/* Message content bubble */}
-                {hasContent && content ? (
+                {hasContent && content && typeof content === 'string' && content !== '[object Object]' ? (
                     <Box
                         sx={{
                             display: 'flex',
@@ -769,12 +795,8 @@ export const MessageCard = ({
                 ) : null}
             </Box>
 
-            {/* Tools Used Section - Only show once */}
-            {(other as any).usedTools && (other as any).usedTools.length > 0 && (
+            {/* {(other as any).usedTools && (other as any).usedTools.length > 0 && (
                 <Box sx={{ mt: 2, width: '100%' }}>
-                    {/* <Typography variant='subtitle2' sx={{ mb: 1, color: '#9e9e9e' }}>
-                        Tools Used
-                    </Typography> */}
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         {(other as any).usedTools.map((tool: any, index: number) => {
                             if (tool && typeof tool === 'object') {
@@ -804,7 +826,7 @@ export const MessageCard = ({
                         })}
                     </Box>
                 </Box>
-            )}
+            )} */}
 
             {/* Action Buttons - Improved UI */}
             {(other as any).action && (
