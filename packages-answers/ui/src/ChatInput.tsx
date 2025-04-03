@@ -38,7 +38,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
     const [isLoadingRecording, setIsLoadingRecording] = useState(false)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const recordingIntervalRef = useRef<number | undefined>(undefined)
-    const { chat, journey, messages, sendMessage, isLoading, sidekick, gptModel, startNewChat, chatbotConfig } = useAnswers()
+    const { chat, journey, messages, sendMessage, isLoading, sidekick, gptModel, startNewChat, chatbotConfig, handleAbort } = useAnswers()
     const constraints = sidekick?.constraints
     const [isMessageStopping, setIsMessageStopping] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
@@ -299,15 +299,14 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         }
     }
 
-    const handleAbort = async () => {
+    const handleAbortMessage = async () => {
         setIsMessageStopping(true)
         try {
-            // Need to implement abort functionality in AnswersContext
-            await abortMessage(chat?.id)
+            await handleAbort()
             setIsMessageStopping(false)
         } catch (error) {
             setIsMessageStopping(false)
-            // Handle error
+            console.error('Error stopping message:', error)
         }
     }
 
@@ -389,6 +388,15 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
         >
+            {/* Add a stop button when message is loading */}
+            {isLoading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mb: 2 }}>
+                    <Button variant='outlined' color='secondary' onClick={handleAbortMessage} disabled={isMessageStopping}>
+                        {isMessageStopping ? 'Stopping...' : 'Stop Generating'}
+                    </Button>
+                </Box>
+            )}
+
             {!messages?.length ? (
                 <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', alignItems: 'flex-end' }}>
                     <DefaultPrompts prompts={chatbotConfig?.starterPrompts} onPromptSelected={handlePromptSelected} />

@@ -14,6 +14,7 @@ export interface Message {
     usedTools?: any[]
     fileAnnotations?: any[]
     agentReasoning?: any[]
+    artifacts?: any[]
     action?: any
     isLoading?: boolean
     fileUploads?: FileUpload[] | string

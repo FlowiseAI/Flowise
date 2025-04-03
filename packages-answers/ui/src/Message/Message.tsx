@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { AxiosError } from 'axios'
 import { useFlags } from 'flagsmith/react'
 import ReactMarkdown from 'react-markdown'
@@ -7,15 +7,8 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { duotoneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import Image from 'next/image'
 import { JsonViewer } from '@textea/json-viewer'
-
-import Avatar from '@mui/material/Avatar'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
+import { Box, Typography, Link, Avatar, Chip, Button, Accordion, AccordionSummary, AccordionDetails } from '@mui/material'
 import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
-import CardMedia from '@mui/material/CardMedia'
-
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ThumbUpIcon from '@mui/icons-material/ThumbUp'
 import ThumbDownIcon from '@mui/icons-material/ThumbDown'
@@ -24,15 +17,19 @@ import LinkIcon from '@mui/icons-material/Link'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
 import OpenInFullIcon from '@mui/icons-material/OpenInFull'
+import CloseIcon from '@mui/icons-material/Close'
 
 import { countTokens } from '@utils/utilities/countTokens'
-
 import { useAnswers } from '../AnswersContext'
-import { Accordion, AccordionSummary, AccordionDetails } from '../Accordion'
+import {
+    Accordion as CustomAccordion,
+    AccordionSummary as CustomAccordionSummary,
+    AccordionDetails as CustomAccordionDetails
+} from '../Accordion'
 import FeedbackModal from '@ui/FeedbackModal'
 import { AppService, Document, Message, FileUpload } from 'types'
 import { Rating } from 'db/generated/prisma-client'
-import { Card, CardContent, Chip, CircularProgress, Stack, Tooltip } from '@mui/material'
+import { Card, CircularProgress, Stack, Tooltip } from '@mui/material'
 import { CodePreview } from './CodePreview'
 import { PreviewDialog } from './PreviewDialog'
 import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
@@ -43,6 +40,12 @@ import multiagent_supervisorPNG from './../../../../packages/ui/src/assets/image
 import multiagent_workerPNG from './../../../../packages/ui/src/assets/images/multiagent_worker.png'
 import { isValidURL, removeDuplicateURL } from '../../../../packages/ui/src/utils/genericHelper.js'
 import dynamic from 'next/dynamic'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogTitle from '@mui/material/DialogTitle'
+import parse from 'html-react-parser'
+import { AnswersContext } from '../AnswersContext'
 
 const SourceDocDialog = dynamic(() => import('../../../../packages/ui/src/ui-component/dialog/SourceDocDialog'))
 
@@ -64,6 +67,7 @@ interface MessageExtra {
     setSelectedDocuments?: (documents: Document[]) => void
     isLoading?: boolean
     fileUploads?: string | FileUpload[]
+    content: undefined | string | any
 }
 interface MessageCardProps extends Partial<Message>, MessageExtra {
     error?: AxiosError<MessageExtra>
@@ -86,14 +90,8 @@ const getLanguageFromClassName = (className: string | undefined) => {
 }
 
 const getAgentIcon = (nodeName: string | undefined, instructions: string | undefined) => {
-    if (nodeName) {
-        const baseURL = 'https://lr-staging.studio.theanswer.ai'
-        return `${baseURL}/api/v1/node-icon/${nodeName}`
-    } else if (instructions) {
-        return multiagent_supervisorPNG
-    } else {
-        return multiagent_workerPNG
-    }
+    // Simple placeholder icon (can be replaced with actual icons when available)
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40NzcgMiAyIDYuNDc3IDIgMTJDMiAxNy41MjMgNi40NzcgMjIgMTIgMjJDMTcuNTIzIDIyIDIyIDE3LjUyMyAyMiAxMkMyMiA2LjQ3NyAxNy41MjMgMiAxMiAyWk0xMi43NSAxNi43NVYxOEgxMS4yNVYxNi43NUg5LjAyMzQzQzguNDU4MTkgMTYuNzUgOCAxNi4yOTE4IDggMTUuNzI2NlYxMC4yMDMxQzggOS42Mzc4OSA4LjQ1ODE5IDkuMTc5NjkgOS4wMjM0NCA5LjE3OTY5SDE0Ljk3NjZDMTUuNTQxOCA5LjE3OTY5IDE2IDkuNjM3ODkgMTYgMTAuMjAzMVYxNS43MjY2QzE2IDE2LjI5MTggMTUuNTQxOCAxNi43NSAxNC45NzY2IDE2Ljc1SDEyLjc1Wk0xMiA2QzEyLjgyODQgNiAxMy41IDYuNjcxNTcgMTMuNSA3LjVDMTMuNSA4LjMyODQzIDEyLjgyODQgOSAxMiA5QzExLjE3MTYgOSAxMC41IDguMzI4NDMgMTAuNSA3LjVDMTAuNSA2LjY3MTU3IDExLjE3MTYgNiAxMiA2WiIgZmlsbD0iY3VycmVudENvbG9yIi8+Cjwvc3ZnPgo='
 }
 
 const getLabel = (URL: any, source: any) => {
@@ -150,7 +148,7 @@ export const MessageCard = ({
 }: MessageCardProps) => {
     other = { ...other, role, user } as any
     const { developer_mode } = useFlags(['developer_mode']) // only causes re-render if specified flag values / traits change
-    const { user: currentUser, sendMessageFeedback, appSettings, messages } = useAnswers()
+    const { user: currentUser, sendMessageFeedback, sendMessage, appSettings, messages, sidekick } = useAnswers()
     const contextDocumentsBySource: Record<string, Document[]> = React.useMemo(
         () =>
             contextDocuments?.reduce((uniqueDocuments: Record<string, Document[]>, current) => {
@@ -347,6 +345,208 @@ export const MessageCard = ({
                         title='AI'
                     />
                 )}
+
+                {/* Agent Reasoning Section - Moved above message content and made collapsible */}
+                {(other as any).agentReasoning &&
+                    Array.isArray((other as any).agentReasoning) &&
+                    (other as any).agentReasoning.length > 0 &&
+                    (other as any).agentReasoning.map((agentObject: any) => {
+                        return (
+                            <CustomAccordion
+                                defaultExpanded={true}
+                                key={agentObject.agentName}
+                                sx={{
+                                    // bgcolor: 'rgba(0,0,0,0.15)',
+                                    borderRadius: 1,
+                                    boxShadow: 'none',
+                                    '&:before': { display: 'none' },
+                                    mb: 1
+                                }}
+                            >
+                                <CustomAccordionSummary
+                                    expandIcon={<ExpandMoreIcon sx={{ color: '#e0e0e0' }} width={16} height={16} />}
+                                    sx={{
+                                        p: 0,
+                                        minHeight: '36px',
+                                        '& .MuiAccordionSummary-content': {
+                                            margin: '6px 0'
+                                        }
+                                    }}
+                                >
+                                    <Typography
+                                        variant='body2'
+                                        sx={{
+                                            color: '#e0e0e0',
+                                            fontWeight: 'bold',
+                                            display: 'flex',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        {agentObject.agentName || 'Agent Reasoning'}
+                                    </Typography>
+                                </CustomAccordionSummary>
+                                <CustomAccordionDetails sx={{ p: 0 }}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {/* Messages formatted as paragraph with pills */}
+                                        {agentObject.messages && Array.isArray(agentObject.messages) && (
+                                            <Box sx={{ mb: 1 }}>
+                                                <Box
+                                                    sx={{
+                                                        display: 'flex',
+                                                        flexWrap: 'wrap',
+                                                        gap: 0.75,
+                                                        alignItems: 'center',
+                                                        mb: 1
+                                                    }}
+                                                >
+                                                    {agentObject.messages.map(
+                                                        (
+                                                            agentObjectMessage: Array<{
+                                                                index: string
+                                                                text?: string
+                                                                type?: string
+                                                                input?: string
+                                                                name?: string
+                                                            }>,
+                                                            idx: number
+                                                        ) => {
+                                                            console.log(agentObjectMessage)
+                                                            if (agentObjectMessage.length) {
+                                                                return (
+                                                                    <Typography
+                                                                        key={`text-${idx}`}
+                                                                        variant='body2'
+                                                                        component='span'
+                                                                        sx={{
+                                                                            color: '#e0e0e0',
+                                                                            lineHeight: 1.5
+                                                                        }}
+                                                                    >
+                                                                        {Array.isArray(agentObjectMessage) &&
+                                                                            agentObjectMessage?.map((message) => {
+                                                                                if (message.text) return message.text
+
+                                                                                if (message.type === 'tool_use' && message.name) {
+                                                                                    const input = message?.input
+                                                                                        ? JSON.parse(message.input)
+                                                                                        : {}
+                                                                                    return (
+                                                                                        <Chip
+                                                                                            key={`tool-${idx}`}
+                                                                                            label={`Use ${message.name} with ${Object.keys(
+                                                                                                input
+                                                                                            )?.reduce((acc, key) => {
+                                                                                                return acc + `${key}: ${input[key]}`
+                                                                                            }, '')}`}
+                                                                                            size='small'
+                                                                                            sx={{
+                                                                                                height: '24px',
+                                                                                                bgcolor: 'rgba(0,0,0,0.3)',
+                                                                                                color: '#f48771',
+                                                                                                fontSize: '0.75rem',
+                                                                                                fontFamily: 'monospace',
+                                                                                                '& .MuiChip-label': { px: 1 }
+                                                                                            }}
+                                                                                        />
+                                                                                    )
+                                                                                }
+                                                                            })}
+                                                                    </Typography>
+                                                                )
+                                                            }
+
+                                                            return null
+                                                        }
+                                                    )}
+                                                </Box>
+                                            </Box>
+                                        )}
+
+                                        {/* Tools used section */}
+                                        {agentObject.usedTools &&
+                                            Array.isArray(agentObject.usedTools) &&
+                                            agentObject.usedTools.length > 0 &&
+                                            agentObject.usedTools[0] !== null && (
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+                                                    <Typography
+                                                        variant='caption'
+                                                        component='span'
+                                                        sx={{
+                                                            color: '#9e9e9e',
+                                                            mr: 0.5,
+                                                            alignSelf: 'center'
+                                                        }}
+                                                    >
+                                                        Tools:
+                                                    </Typography>
+                                                    {agentObject.usedTools.map((tool, idx) => {
+                                                        if (!tool) return null
+                                                        return (
+                                                            <Chip
+                                                                key={idx}
+                                                                label={typeof tool === 'string' ? tool : 'Tool'}
+                                                                size='small'
+                                                                variant='outlined'
+                                                                sx={{
+                                                                    height: '20px',
+                                                                    fontSize: '0.65rem',
+                                                                    color: 'primary.light',
+                                                                    borderColor: 'rgba(25, 118, 210, 0.5)'
+                                                                }}
+                                                            />
+                                                        )
+                                                    })}
+                                                </Box>
+                                            )}
+
+                                        {/* Artifacts section */}
+                                        {agentObject.artifacts &&
+                                            Array.isArray(agentObject.artifacts) &&
+                                            agentObject.artifacts.length > 0 &&
+                                            agentObject.artifacts[0] !== null && (
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                    <Typography
+                                                        variant='caption'
+                                                        component='span'
+                                                        sx={{
+                                                            color: '#9e9e9e',
+                                                            mr: 0.5,
+                                                            alignSelf: 'center'
+                                                        }}
+                                                    >
+                                                        Artifacts:
+                                                    </Typography>
+                                                    {agentObject.artifacts.map((artifact, idx) => {
+                                                        if (!artifact) return null
+                                                        return (
+                                                            <Chip
+                                                                key={idx}
+                                                                label={typeof artifact.name === 'string' ? artifact.name : 'Artifact'}
+                                                                size='small'
+                                                                variant='outlined'
+                                                                sx={{
+                                                                    height: '20px',
+                                                                    fontSize: '0.65rem',
+                                                                    color: 'success.light',
+                                                                    borderColor: 'rgba(76, 175, 80, 0.5)'
+                                                                }}
+                                                                onClick={() =>
+                                                                    artifact.data &&
+                                                                    onSourceDialogClick(
+                                                                        artifact.data,
+                                                                        `${typeof artifact.name === 'string' ? artifact.name : 'Artifact'}`
+                                                                    )
+                                                                }
+                                                            />
+                                                        )
+                                                    })}
+                                                </Box>
+                                            )}
+                                    </Box>
+                                </CustomAccordionDetails>
+                            </CustomAccordion>
+                        )
+                    })}
 
                 {/* Files and Audio section */}
                 {parsedFileUploads?.length > 0 && (
@@ -545,8 +745,7 @@ export const MessageCard = ({
                                                                 code: codeExample,
                                                                 language,
                                                                 getHTMLPreview,
-                                                                getReactPreview,
-                                                                title: 'Code'
+                                                                getReactPreview
                                                             })
                                                         }
                                                         expandable={true}
@@ -570,360 +769,168 @@ export const MessageCard = ({
                 ) : null}
             </Box>
 
-            {other.agentReasoning && (
-                <div style={{ display: 'block', flexDirection: 'row', width: '100%' }}>
-                    {other.agentReasoning.map((agent: any, index: number) => {
-                        return agent.nextAgent ? (
-                            <Card
-                                key={index}
-                                sx={{
-                                    // border: customization.isDarkMode ? 'none' : '1px solid #e0e0e0',
-                                    // borderRadius: `${customization.borderRadius}px`,
-                                    // background: customization.isDarkMode
-                                    //     ? `linear-gradient(to top, #303030, #212121)`
-                                    //     : `linear-gradient(to top, #f6f3fb, #f2f8fc)`,
-                                    mb: 1
-                                }}
-                            >
-                                <CardContent>
-                                    <Stack
+            {/* Tools Used Section - Only show once */}
+            {(other as any).usedTools && (other as any).usedTools.length > 0 && (
+                <Box sx={{ mt: 2, width: '100%' }}>
+                    {/* <Typography variant='subtitle2' sx={{ mb: 1, color: '#9e9e9e' }}>
+                        Tools Used
+                    </Typography> */}
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                        {(other as any).usedTools.map((tool: any, index: number) => {
+                            if (tool && typeof tool === 'object') {
+                                return (
+                                    <Chip
+                                        size='small'
+                                        key={index}
+                                        label={typeof tool.tool === 'string' ? tool.tool : 'Tool'}
+                                        component='a'
                                         sx={{
-                                            alignItems: 'center',
-                                            justifyContent: 'flex-start',
-                                            width: '100%'
+                                            borderColor: tool.error ? 'error.main' : 'primary.light',
+                                            color: tool.error ? 'error.main' : 'primary.light',
+                                            '&:hover': {
+                                                bgcolor: 'rgba(25, 118, 210, 0.08)'
+                                            }
                                         }}
-                                        flexDirection='row'
-                                    >
-                                        <Box sx={{ height: 'auto', pr: 1 }}>
-                                            <Image
-                                                style={{
-                                                    objectFit: 'cover',
-                                                    height: '35px',
-                                                    width: 'auto'
-                                                }}
-                                                src={nextAgentGIF}
-                                                alt='agentPNG'
-                                                width={35}
-                                                height={35}
-                                            />
-                                        </Box>
-                                        <div>{agent.nextAgent}</div>
-                                    </Stack>
-                                </CardContent>
-                            </Card>
-                        ) : (
-                            <Card
-                                key={index}
-                                sx={{
-                                    // border: customization.isDarkMode ? 'none' : '1px solid #e0e0e0',
-                                    // borderRadius: `${customization.borderRadius}px`,
-                                    // background: customization.isDarkMode
-                                    //     ? `linear-gradient(to top, #303030, #212121)`
-                                    //     : `linear-gradient(to top, #f6f3fb, #f2f8fc)`,
-                                    mb: 1
-                                }}
-                            >
-                                <CardContent>
-                                    <Stack
-                                        sx={{
-                                            alignItems: 'center',
-                                            justifyContent: 'flex-start',
-                                            width: '100%'
-                                        }}
-                                        flexDirection='row'
-                                    >
-                                        <Box sx={{ height: 'auto', pr: 1 }}>
-                                            <Image
-                                                style={{
-                                                    objectFit: 'cover',
-                                                    height: '25px',
-                                                    width: 'auto'
-                                                }}
-                                                src={getAgentIcon(agent.nodeName, agent.instructions)}
-                                                alt='agentPNG'
-                                            />
-                                        </Box>
-                                        <div>{agent.agentName}</div>
-                                    </Stack>
-                                    {agent.usedTools && agent.usedTools.length > 0 && (
-                                        <div
-                                            style={{
-                                                display: 'block',
-                                                flexDirection: 'row',
-                                                width: '100%'
-                                            }}
-                                        >
-                                            {agent.usedTools.map((tool, index) => {
-                                                return tool !== null ? (
-                                                    <Chip
-                                                        size='small'
-                                                        key={index}
-                                                        label={tool.tool}
-                                                        component='a'
-                                                        sx={{ mr: 1, mt: 1 }}
-                                                        variant='outlined'
-                                                        clickable
-                                                        // icon={<IconTool size={15} />}
-                                                        onClick={() => onSourceDialogClick(tool, 'Used Tools')}
-                                                    />
-                                                ) : null
-                                            })}
-                                        </div>
-                                    )}
-                                    {agent.state && Object.keys(agent.state).length > 0 && (
-                                        <div
-                                            style={{
-                                                display: 'block',
-                                                flexDirection: 'row',
-                                                width: '100%'
-                                            }}
-                                        >
-                                            <Chip
-                                                size='small'
-                                                label={'State'}
-                                                component='a'
-                                                sx={{ mr: 1, mt: 1 }}
-                                                variant='outlined'
-                                                clickable
-                                                // icon={<IconDeviceSdCard size={15} />}
-                                                onClick={() => onSourceDialogClick(agent.state, 'State')}
-                                            />
-                                        </div>
-                                    )}
-                                    {agent.messages.length > 0 && (
-                                        <ReactMarkdown
-                                            components={{
-                                                p: (paragraph: any) => {
-                                                    const { node } = paragraph
-
-                                                    if (node.children[0].tagName === 'img') {
-                                                        const image = node.children[0]
-                                                        const metastring = image.properties.alt
-                                                        const alt = metastring?.replace(/ *\{[^)]*\} */g, '')
-                                                        const metaWidth = metastring.match(/{([^}]+)x/)
-                                                        const metaHeight = metastring.match(/x([^}]+)}/)
-                                                        const width = metaWidth ? metaWidth[1] : undefined
-                                                        const height = metaHeight ? metaHeight[1] : undefined
-                                                        const isPriority = metastring?.toLowerCase().match('{priority}')
-                                                        const hasCaption = metastring?.toLowerCase().includes('{caption:')
-                                                        const caption = metastring?.match(/{caption: (.*?)}/)?.pop()
-
-                                                        return (
-                                                            <Box
-                                                                component='a'
-                                                                href={image.properties.src}
-                                                                target='_blank'
-                                                                sx={{
-                                                                    display: 'block',
-                                                                    height: '40vh',
-                                                                    width: '100%',
-                                                                    img: { objectFit: 'contain' }
-                                                                }}
-                                                            >
-                                                                <Image
-                                                                    src={image.properties.src}
-                                                                    // width={width}
-                                                                    // height={height}
-                                                                    layout='fill'
-                                                                    className='postImg'
-                                                                    alt={alt}
-                                                                    priority={isPriority}
-                                                                />
-                                                                {hasCaption ? (
-                                                                    <div className='caption' aria-label={caption}>
-                                                                        {caption}
-                                                                    </div>
-                                                                ) : null}
-                                                            </Box>
-                                                        )
-                                                    }
-                                                    return <p>{paragraph.children}</p>
-                                                },
-
-                                                code({ node, inline, className, children, ...props }) {
-                                                    const codeExample = String(children).replace(/\n$/, '')
-
-                                                    if (!inline) {
-                                                        const language = getLanguageFromClassName(className)
-                                                        const canPreview =
-                                                            ['html', 'jsx', 'tsx'].includes(language) ||
-                                                            (language === 'javascript' && isReactComponent(codeExample))
-
-                                                        // Show all non-inline code as CodeCard
-                                                        return (
-                                                            <Box sx={{ my: 2 }}>
-                                                                <CodeCard
-                                                                    code={codeExample}
-                                                                    language={language}
-                                                                    title='Code'
-                                                                    onCopy={() => handleCopyCodeClick(codeExample)}
-                                                                    onPreview={() =>
-                                                                        setPreviewCode?.({
-                                                                            code: codeExample,
-                                                                            language,
-                                                                            getHTMLPreview,
-                                                                            getReactPreview,
-                                                                            title: 'Code'
-                                                                        })
-                                                                    }
-                                                                    expandable={true}
-                                                                />
-                                                            </Box>
-                                                        )
-                                                    }
-
-                                                    return (
-                                                        <code className={className} {...props}>
-                                                            {children}
-                                                        </code>
-                                                    )
-                                                }
-                                            }}
-                                        >
-                                            {agent.messages.length > 1 ? agent.messages.join('\\n') : agent.messages[0]}
-                                        </ReactMarkdown>
-                                    )}
-                                    {agent.instructions && <p>{agent.instructions}</p>}
-                                    {agent.messages.length === 0 && !agent.instructions && <p>Finished</p>}
-                                    {agent.sourceDocuments && agent.sourceDocuments.length > 0 && (
-                                        <div
-                                            style={{
-                                                display: 'block',
-                                                flexDirection: 'row',
-                                                width: '100%'
-                                            }}
-                                        >
-                                            {removeDuplicateURL(agent).map((source, index) => {
-                                                const URL =
-                                                    source && source.metadata && source.metadata.source
-                                                        ? isValidURL(source.metadata.source)
-                                                        : undefined
-                                                return (
-                                                    <Chip
-                                                        size='small'
-                                                        key={index}
-                                                        label={getLabel(URL, source) || ''}
-                                                        component='a'
-                                                        sx={{ mr: 1, mb: 1 }}
-                                                        variant='outlined'
-                                                        clickable
-                                                        onClick={() =>
-                                                            URL ? onURLClick(source.metadata.source) : onSourceDialogClick(source, 'Source')
-                                                        }
-                                                    />
-                                                )
-                                            })}
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        )
-                    })}
-                </div>
+                                        variant='outlined'
+                                        clickable
+                                        onClick={() =>
+                                            tool.output &&
+                                            onSourceDialogClick(tool.output, `${typeof tool.tool === 'string' ? tool.tool : 'Tool'} Output`)
+                                        }
+                                    />
+                                )
+                            }
+                            return null
+                        })}
+                    </Box>
+                </Box>
             )}
 
-            <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
+            {/* Action Buttons - Improved UI */}
+            {(other as any).action && (
+                <Box sx={{ mt: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    {(other as any).action.text && (
+                        <Typography variant='body1' sx={{ mb: 1 }}>
+                            {(other as any).action.text}
+                        </Typography>
+                    )}
+                    {(other as any).action.elements && (other as any).action.elements.length > 0 && (
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                            {(other as any).action.elements.map((element: any, idx: number) => {
+                                const isApprove = element.type === 'approve-button' || element.label === 'YES' || element.label === 'Yes'
+                                const isReject = element.type === 'reject-button' || element.label === 'NO' || element.label === 'No'
 
-            {/* 
-            // TODO: Add feedback buttons
-            {!isUserMessage ? (
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        display: 'flex',
-                        gap: 0.5
-                    }}
-                >
-                    {lastInteraction ? (
-                        <IconButton disabled size='small' sx={{ p: 0.5 }}>
-                            {lastInteraction == 'thumbsUp' ? (
-                                <ThumbUpIcon sx={{ fontSize: 14 }} />
-                            ) : (
-                                <ThumbDownIcon sx={{ fontSize: 14 }} />
-                            )}
-                        </IconButton>
-                    ) : (
-                        <>
-                            <IconButton
-                                color={lastInteraction === 'like' ? 'secondary' : 'default'}
-                                size='small'
-                                data-cy='like-button'
-                                onClick={handleLike}
-                                sx={{ p: 0.5 }}
-                            >
-                                <ThumbUpIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
-                            <IconButton
-                                size='small'
-                                color={lastInteraction === 'dislike' ? 'secondary' : 'default'}
-                                onClick={handleDislike}
-                                sx={{ p: 0.5 }}
-                            >
-                                <ThumbDownIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
-                        </>
+                                return (
+                                    <Button
+                                        key={idx}
+                                        variant={element.style === 'primary' ? 'contained' : 'outlined'}
+                                        color={
+                                            isApprove ? 'success' : isReject ? 'error' : element.style === 'danger' ? 'error' : 'primary'
+                                        }
+                                        sx={{
+                                            minWidth: '80px',
+                                            fontWeight: 'bold',
+                                            borderRadius: '20px'
+                                        }}
+                                        startIcon={isApprove ? '✓' : isReject ? '✗' : null}
+                                        onClick={async (e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+
+                                            try {
+                                                // For direct button action handlers
+                                                if (element.type === 'button' && typeof element.onClick === 'function') {
+                                                    element.onClick()
+                                                    return
+                                                }
+
+                                                // Clear the action from the current message (consistent with ChatMessage behavior)
+                                                if (id && messages) {
+                                                    const updatedMessages = messages.map((msg) => {
+                                                        if (msg.id === id) {
+                                                            return { ...msg, action: null }
+                                                        }
+                                                        return msg
+                                                    })
+                                                    // NOTE: We don't need to manually update messages here as the context will handle it
+                                                }
+
+                                                // Call the sendMessage function with the element's label and action
+                                                await sendMessage({
+                                                    content: element.label,
+                                                    sidekick,
+                                                    action: (other as any).action
+                                                })
+
+                                                console.log(`Action clicked: ${element.label}`)
+                                            } catch (err) {
+                                                console.error('Error handling action click:', err)
+                                            }
+                                        }}
+                                    >
+                                        {element.label}
+                                    </Button>
+                                )
+                            })}
+                        </Box>
                     )}
                 </Box>
-            ) : null} */}
+            )}
+
+            {sourceDialogOpen && sourceDialogProps && (
+                <Dialog open={sourceDialogOpen} onClose={() => setSourceDialogOpen(false)} maxWidth='md' fullWidth>
+                    <DialogTitle>{sourceDialogProps.title || 'Source'}</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ maxHeight: '60vh', overflow: 'auto' }}>
+                            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                                {typeof sourceDialogProps.data === 'string'
+                                    ? sourceDialogProps.data
+                                    : JSON.stringify(sourceDialogProps.data, null, 2)}
+                            </pre>
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setSourceDialogOpen(false)}>Close</Button>
+                    </DialogActions>
+                </Dialog>
+            )}
 
             {developer_mode?.enabled ? (
                 <Box>
                     {contextDocuments?.length ? (
-                        <Accordion TransitionProps={{ unmountOnExit: true }}>
-                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                        <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
+                            <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>
                                     Context ({countTokens(contextDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
                                 </Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
+                            </CustomAccordionSummary>
+                            <CustomAccordionDetails>
                                 <Typography sx={{ whiteSpace: 'pre-line' }} variant='body1' color='text.secondary' component='div'>
                                     {contextDocuments?.map((d) => d.pageContent)?.join('/n')}
                                 </Typography>
-                            </AccordionDetails>
-                        </Accordion>
+                            </CustomAccordionDetails>
+                        </CustomAccordion>
                     ) : null}
-                    {/* {error ? (
-              <>
-                <Accordion TransitionProps={{ unmountOnExit: true }}>
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls="panel1a-content"
-                    id="panel1a-header">
-                    <Typography variant="overline">Error</Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <JsonViewer
-                      rootName="error"
-                      value={error}
-                      theme={'dark'}
-                      collapseStringsAfterLength={100}
-                    />
-                  </AccordionDetails>
-                </Accordion>
-              </>
-            ) : null} */}
 
                     {summary ? (
-                        <Accordion TransitionProps={{ unmountOnExit: true }}>
-                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                        <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
+                            <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>Summary ({summary?.length})</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
+                            </CustomAccordionSummary>
+                            <CustomAccordionDetails>
                                 <Typography sx={{ whiteSpace: 'pre-line' }} variant='body1' color='text.secondary' component='div'>
                                     {summary}
                                 </Typography>
-                            </AccordionDetails>
-                        </Accordion>
+                            </CustomAccordionDetails>
+                        </CustomAccordion>
                     ) : null}
 
                     {pineconeData ? (
-                        <Accordion TransitionProps={{ unmountOnExit: true }}>
-                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                        <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
+                            <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>Pinecone Data</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
+                            </CustomAccordionSummary>
+                            <CustomAccordionDetails>
                                 <JsonViewer
                                     rootName='pineconeData'
                                     value={{
@@ -934,16 +941,16 @@ export const MessageCard = ({
                                     // defaultInspectDepth={0}
                                     collapseStringsAfterLength={100}
                                 />
-                            </AccordionDetails>
-                        </Accordion>
+                            </CustomAccordionDetails>
+                        </CustomAccordion>
                     ) : null}
 
                     {completionRequest ? (
-                        <Accordion TransitionProps={{ unmountOnExit: true }}>
-                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                        <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
+                            <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>Completion request</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
+                            </CustomAccordionSummary>
+                            <CustomAccordionDetails>
                                 <JsonViewer
                                     rootName='completionRequest'
                                     value={completionRequest}
@@ -951,16 +958,16 @@ export const MessageCard = ({
                                     // defaultInspectDepth={0}
                                     collapseStringsAfterLength={100}
                                 />
-                            </AccordionDetails>
-                        </Accordion>
+                            </CustomAccordionDetails>
+                        </CustomAccordion>
                     ) : null}
 
                     {completionData ? (
-                        <Accordion TransitionProps={{ unmountOnExit: true }}>
-                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                        <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
+                            <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>Completion</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
+                            </CustomAccordionSummary>
+                            <CustomAccordionDetails>
                                 <JsonViewer
                                     rootName=''
                                     value={completionData}
@@ -968,17 +975,17 @@ export const MessageCard = ({
                                     // defaultInspectDepth={0}
                                     collapseStringsAfterLength={100}
                                 />
-                            </AccordionDetails>
-                        </Accordion>
+                            </CustomAccordionDetails>
+                        </CustomAccordion>
                     ) : null}
 
                     {Object.keys(other)?.length ? (
                         // Use the @mui accordion component to wrap the extra and response
-                        <Accordion TransitionProps={{ unmountOnExit: true }}>
-                            <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
+                        <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
+                            <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>Extra</Typography>
-                            </AccordionSummary>
-                            <AccordionDetails>
+                            </CustomAccordionSummary>
+                            <CustomAccordionDetails>
                                 <JsonViewer
                                     rootName=''
                                     value={other}
@@ -986,8 +993,8 @@ export const MessageCard = ({
                                     // defaultInspectDepth={0}
                                     collapseStringsAfterLength={100}
                                 />
-                            </AccordionDetails>
-                        </Accordion>
+                            </CustomAccordionDetails>
+                        </CustomAccordion>
                     ) : null}
                 </Box>
             ) : null}
