@@ -1056,15 +1056,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                 if (message.followUpPrompts) obj.followUpPrompts = JSON.parse(message.followUpPrompts)
                 return obj
             })
-            setMessages(loadedMessages)
+            setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
             setLocalStorageChatflow(chatflowid, chatId)
-        } else {
-            setMessages([
-                {
-                    message: 'Hi there! How can I help?',
-                    type: 'apiMessage'
-                }
-            ])
         }
     }, [getChatmessageApi.data])
 
@@ -1157,13 +1150,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     useEffect(() => {
         if (open && chatflowid) {
             // Only make API calls if we don't have messages yet
-            if (!messages.length) {
-                // API request
-                getChatmessageApi.request(chatflowid)
-                getIsChatflowStreamingApi.request(chatflowid)
-                getAllowChatFlowUploads.request(chatflowid)
-                getChatflowConfig.request(chatflowid)
-            }
+            // API request
+            getChatmessageApi.request(chatflowid)
+            getIsChatflowStreamingApi.request(chatflowid)
+            getAllowChatFlowUploads.request(chatflowid)
+            getChatflowConfig.request(chatflowid)
 
             // Scroll to bottom
             scrollToBottom()
@@ -1625,6 +1616,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                 >
                                                                     <Box sx={{ height: 'auto', pr: 1 }}>
                                                                         <Image
+                                                                            height={35}
+                                                                            width={35}
                                                                             style={{
                                                                                 objectFit: 'cover',
                                                                                 height: '35px',
@@ -1661,6 +1654,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                 >
                                                                     <Box sx={{ height: 'auto', pr: 1 }}>
                                                                         <Image
+                                                                            height={25}
+                                                                            width={25}
                                                                             style={{
                                                                                 objectFit: 'cover',
                                                                                 height: '25px',

@@ -603,6 +603,8 @@ export const MessageCard = ({
                                                 }}
                                                 src={nextAgentGIF}
                                                 alt='agentPNG'
+                                                width={35}
+                                                height={35}
                                             />
                                         </Box>
                                         <div>{agent.nextAgent}</div>
