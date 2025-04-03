@@ -29,6 +29,7 @@ import {
 import { useTheme, darken } from '@mui/material/styles'
 import { useSnackbar } from 'notistack'
 import { IconCoins, IconClock, IconChevronDown } from '@tabler/icons-react'
+import toolSVG from '@/assets/images/tool.svg'
 
 // Project imports
 import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
@@ -345,6 +346,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                         alt={tool.name}
                                                         onError={(e) => {
                                                             e.target.onerror = null
+                                                            e.target.style.padding = '5px'
+                                                            e.target.src = toolSVG
                                                         }}
                                                     />
                                                 </div>
@@ -478,6 +481,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                                 alt={toolCall.name}
                                                                 onError={(e) => {
                                                                     e.target.onerror = null
+                                                                    e.target.style.padding = '5px'
+                                                                    e.target.src = toolSVG
                                                                 }}
                                                             />
                                                         </div>
@@ -549,7 +554,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                 alt={message.name}
                                                 onError={(e) => {
                                                     e.target.onerror = null
-                                                    e.target.src = `${baseURL}/images/icons/default-node.svg`
+                                                    e.target.style.padding = '5px'
+                                                    e.target.src = toolSVG
                                                 }}
                                             />
                                         </div>
@@ -713,6 +719,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                     }
                                                     onError={(e) => {
                                                         e.target.onerror = null
+                                                        e.target.style.padding = '5px'
+                                                        e.target.src = toolSVG
                                                     }}
                                                     sx={{
                                                         height: 'auto',
