@@ -69,6 +69,14 @@ class MongoDB_Memory implements INode {
                 type: 'string',
                 default: 'chat_history',
                 additionalParams: true
+            },
+            {
+                label: 'Username',
+                name: 'username',
+                type: 'string',
+                default: '',
+                additionalParams: true,
+                optional: true
             }
         ]
     }
@@ -83,6 +91,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     const collectionName = nodeData.inputs?.collectionName as string
     const memoryKey = nodeData.inputs?.memoryKey as string
     const sessionId = nodeData.inputs?.sessionId as string
+    const username = nodeData.inputs?.username as string
 
     const credentialData = await getCredentialData(nodeData.credential ?? '', options)
     const mongoDBConnectUrl = getCredentialParam('mongoDBConnectUrl', credentialData, nodeData)
@@ -91,6 +100,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
     return new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
         sessionId,
+        username,
         mongoConnection: {
             databaseName,
             collectionName,
@@ -102,6 +112,7 @@ const initializeMongoDB = async (nodeData: INodeData, options: ICommonObject): P
 
 interface BufferMemoryExtendedInput {
     sessionId: string
+    username?: string
     mongoConnection: {
         databaseName: string
         collectionName: string
@@ -112,6 +123,7 @@ interface BufferMemoryExtendedInput {
 
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     sessionId = ''
+    username: string = ''
     mongoConnection: {
         databaseName: string
         collectionName: string
@@ -122,6 +134,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     constructor(fields: BufferMemoryInput & BufferMemoryExtendedInput) {
         super(fields)
         this.sessionId = fields.sessionId
+        this.username = fields.username || ''
         this.mongoConnection = fields.mongoConnection
     }
 
@@ -150,6 +163,12 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const collection = client.db(this.mongoConnection.databaseName).collection(this.mongoConnection.collectionName)
 
         const id = overrideSessionId ? overrideSessionId : this.sessionId
+        // Prepare common fields to update: lastUpdated and username (if provided)
+        const commonUpdateFields = {
+            lastUpdated: new Date(),
+            ...(this.username ? { username: this.username } : {})
+        }
+
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
 
@@ -159,6 +178,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
             await collection.updateOne(
                 { sessionId: id },
                 {
+                    $set: commonUpdateFields,
                     $push: { messages: { $each: messageToAdd } }
                 },
                 { upsert: true }
@@ -171,6 +191,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
             await collection.updateOne(
                 { sessionId: id },
                 {
+                    $set: commonUpdateFields,
                     $push: { messages: { $each: messageToAdd } }
                 },
                 { upsert: true }
@@ -193,3 +214,4 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
 }
 
 module.exports = { nodeClass: MongoDB_Memory }
+
