@@ -19,7 +19,7 @@ import { aMonthAgo } from '.'
  * @param {ChatMessageRatingType[]} feedbackTypes
  */
 interface GetChatMessageParams {
-    user: IUser,
+    user: IUser
     chatflowid: string
     chatTypes?: ChatType[]
     sortOrder?: string
@@ -70,7 +70,9 @@ export const utilGetChatMessage = async ({
         if (sessionId) {
             query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
         }
-        if (user.id && !user.roles?.includes('Admin')) {
+
+        // Non-admin users can only see their own messages
+        if (!user.roles?.includes('Admin')) {
             query.andWhere('chat_message.userId = :userId', { userId: user.id })
         }
 
@@ -123,9 +125,10 @@ export const utilGetChatMessage = async ({
             chatId,
             memoryType: memoryType ?? undefined,
             sessionId: sessionId ?? undefined,
+            // Non-admin users can only see their own messages
+            userId: !user.roles?.includes('Admin') ? user.id : undefined,
             createdDate: createdDateQuery,
-            id: messageId ?? undefined,
-            userId: user.roles?.includes('Admin') ? undefined : user.id,
+            id: messageId ?? undefined
         },
         order: {
             createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'

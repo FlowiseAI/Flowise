@@ -962,7 +962,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                             gap: 10,
                             marginBottom: 16,
                             marginLeft: 8,
@@ -970,6 +970,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                         }}
                     >
                         <StatsCard title='Total Messages' stat={`${stats.totalMessages}`} />
+                        <StatsCard title='Total Chats' stat={`${chatlogs ? chatlogs.length : 0}`} />
                         <StatsCard title='Total Feedback Received' stat={`${stats.totalFeedback}`} />
                         <StatsCard
                             title='Positive Feedback'
@@ -984,8 +985,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
                                         src={msgEmptySVG}
                                         alt='msgEmptySVG'
-                                        width={100}
-                                        height={100}
+                                        width={200}
+                                        height={200}
                                     />
                                 </Box>
                                 <div>No Messages</div>
@@ -1197,6 +1198,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                         height: '25px',
                                                                                                         width: 'auto'
                                                                                                     }}
+                                                                                                    height={25}
+                                                                                                    width={25}
                                                                                                     src={
                                                                                                         agent.instructions
                                                                                                             ? multiagent_supervisorPNG

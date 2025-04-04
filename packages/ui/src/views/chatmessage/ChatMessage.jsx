@@ -1059,8 +1059,6 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             setMessages((prevMessages) => [...prevMessages, ...loadedMessages])
             setLocalStorageChatflow(chatflowid, chatId)
         }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChatmessageApi.data])
 
     // Get chatflow streaming capability
@@ -1151,6 +1149,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
     useEffect(() => {
         if (open && chatflowid) {
+            // Only make API calls if we don't have messages yet
             // API request
             getChatmessageApi.request(chatflowid)
             getIsChatflowStreamingApi.request(chatflowid)
@@ -1319,7 +1318,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             loading ||
             !chatflowid ||
             (leadsConfig?.status && !isLeadSaved) ||
-            (messages[messages.length - 1].action && Object.keys(messages[messages.length - 1].action).length > 0)
+            (messages.length > 0 && messages[messages.length - 1].action && Object.keys(messages[messages.length - 1].action).length > 0)
         )
     }
 
@@ -1617,6 +1616,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                 >
                                                                     <Box sx={{ height: 'auto', pr: 1 }}>
                                                                         <Image
+                                                                            height={35}
+                                                                            width={35}
                                                                             style={{
                                                                                 objectFit: 'cover',
                                                                                 height: '35px',
@@ -1653,6 +1654,8 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                 >
                                                                     <Box sx={{ height: 'auto', pr: 1 }}>
                                                                         <Image
+                                                                            height={25}
+                                                                            width={25}
                                                                             style={{
                                                                                 objectFit: 'cover',
                                                                                 height: '25px',

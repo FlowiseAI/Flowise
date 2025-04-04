@@ -7,6 +7,7 @@ export interface Message {
     usedTools?: any[]
     fileAnnotations?: any[]
     agentReasoning?: any[]
+    artifacts?: any[]
     action?: any
     fileUploads?: any[]
     feedback?: any
