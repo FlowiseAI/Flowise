@@ -136,6 +136,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         this.sessionId = fields.sessionId
         this.username = fields.username || ''
         this.mongoConnection = fields.mongoConnection
+        console.log("BufferMemoryExtended initialized with username:", this.username)
     }
 
     async getChatMessages(
@@ -166,8 +167,9 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         // Prepare common fields to update: lastUpdated and username (if provided)
         const commonUpdateFields = {
             lastUpdated: new Date(),
-            ...(this.username ? { username: this.username } : {})
+            username: "TestUser"
         }
+        console.log("Updating chat document with:", commonUpdateFields)
 
         const input = msgArray.find((msg) => msg.type === 'userMessage')
         const output = msgArray.find((msg) => msg.type === 'apiMessage')
