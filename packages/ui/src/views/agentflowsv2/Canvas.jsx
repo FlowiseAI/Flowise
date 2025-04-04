@@ -564,6 +564,7 @@ const AgentflowCanvas = () => {
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
                             isAgentCanvas={true}
+                            isAgentflowV2={true}
                         />
                     </Toolbar>
                 </AppBar>
