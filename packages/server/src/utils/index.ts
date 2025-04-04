@@ -878,8 +878,9 @@ export const getVariableValue = async (
 
             if (variableFullPath.startsWith('$vars.')) {
                 const vars = await getGlobalVariable(flowConfig, availableVariables, variableOverrides)
-                const variableValue = get(vars, variableFullPath.replace('$vars.', ''))
+                let variableValue = get(vars, variableFullPath.replace('$vars.', ''))
                 if (variableValue != null) {
+                    variableValue = JSON.stringify(variableValue).slice(1, -1)
                     variableDict[`{{${variableFullPath}}}`] = variableValue
                     returnVal = returnVal.split(`{{${variableFullPath}}}`).join(variableValue)
                 }
