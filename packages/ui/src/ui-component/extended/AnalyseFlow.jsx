@@ -30,6 +30,7 @@ import lunarySVG from '@/assets/images/lunary.svg'
 import langwatchSVG from '@/assets/images/langwatch.svg'
 import arizePNG from '@/assets/images/arize.png'
 import phoenixPNG from '@/assets/images/phoenix.png'
+import opikPNG from '@/assets/images/opik.png'
 
 // store
 import useNotifier from '@/utils/useNotifier'
@@ -179,6 +180,33 @@ const analyticProviders = [
                 type: 'string',
                 optional: true,
                 description: 'If not provided, default will be used.',
+                placeholder: 'default'
+            },
+            {
+                label: 'On/Off',
+                name: 'status',
+                type: 'boolean',
+                optional: true
+            }
+        ]
+    },
+    {
+        label: 'Opik',
+        name: 'opik',
+        icon: opikPNG,
+        url: 'https://www.comet.com/opik',
+        inputs: [
+            {
+                label: 'Connect Credential',
+                name: 'credential',
+                type: 'credential',
+                credentialNames: ['opikApi']
+            },
+            {
+                label: 'Project Name',
+                name: 'opikProjectName',
+                type: 'string',
+                description: 'Name of your Opik project',
                 placeholder: 'default'
             },
             {

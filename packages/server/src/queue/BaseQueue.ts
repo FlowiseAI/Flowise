@@ -1,4 +1,4 @@
-import { Queue, Worker, Job, QueueEvents, RedisOptions } from 'bullmq'
+import { Queue, Worker, Job, QueueEvents, RedisOptions, KeepJobs } from 'bullmq'
 import { v4 as uuidv4 } from 'uuid'
 import logger from '../utils/logger'
 
@@ -6,6 +6,8 @@ const QUEUE_REDIS_EVENT_STREAM_MAX_LEN = process.env.QUEUE_REDIS_EVENT_STREAM_MA
     ? parseInt(process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN)
     : 10000
 const WORKER_CONCURRENCY = process.env.WORKER_CONCURRENCY ? parseInt(process.env.WORKER_CONCURRENCY) : 100000
+const REMOVE_ON_AGE = process.env.REMOVE_ON_AGE ? parseInt(process.env.REMOVE_ON_AGE) : -1
+const REMOVE_ON_COUNT = process.env.REMOVE_ON_COUNT ? parseInt(process.env.REMOVE_ON_COUNT) : -1
 
 export abstract class BaseQueue {
     protected queue: Queue
@@ -34,7 +36,24 @@ export abstract class BaseQueue {
 
     public async addJob(jobData: any): Promise<Job> {
         const jobId = jobData.id || uuidv4()
-        return await this.queue.add(jobId, jobData, { removeOnFail: true })
+
+        let removeOnFail: number | boolean | KeepJobs | undefined = true
+        let removeOnComplete: number | boolean | KeepJobs | undefined = undefined
+
+        // Only override removal options if age or count is specified
+        if (REMOVE_ON_AGE !== -1 || REMOVE_ON_COUNT !== -1) {
+            const keepJobObj: KeepJobs = {}
+            if (REMOVE_ON_AGE !== -1) {
+                keepJobObj.age = REMOVE_ON_AGE
+            }
+            if (REMOVE_ON_COUNT !== -1) {
+                keepJobObj.count = REMOVE_ON_COUNT
+            }
+            removeOnFail = keepJobObj
+            removeOnComplete = keepJobObj
+        }
+
+        return await this.queue.add(jobId, jobData, { removeOnFail, removeOnComplete })
     }
 
     public createWorker(concurrency: number = WORKER_CONCURRENCY): Worker {

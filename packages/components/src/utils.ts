@@ -284,14 +284,16 @@ export const getInputVariables = (paramValue: string): string[] => {
 }
 
 /**
- * Transform curly braces into double curly braces if the content includes a colon.
+ * Transform single curly braces into double curly braces if the content includes a colon.
  * @param input - The original string that may contain { ... } segments.
  * @returns The transformed string, where { ... } containing a colon has been replaced with {{ ... }}.
  */
 export const transformBracesWithColon = (input: string): string => {
-    // This regex will match anything of the form `{ ... }` (no nested braces).
-    // `[^{}]*` means: match any characters that are not `{` or `}` zero or more times.
-    const regex = /\{([^{}]*?)\}/g
+    // This regex uses negative lookbehind (?<!{) and negative lookahead (?!})
+    // to ensure we only match single curly braces, not double ones.
+    // It will match a single { that's not preceded by another {,
+    // followed by any content without braces, then a single } that's not followed by another }.
+    const regex = /(?<!\{)\{([^{}]*?)\}(?!\})/g
 
     return input.replace(regex, (match, groupContent) => {
         // groupContent is the text inside the braces `{ ... }`.
