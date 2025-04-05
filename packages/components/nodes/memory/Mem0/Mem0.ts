@@ -30,7 +30,7 @@ class Mem0_Memory implements INode {
     constructor() {
         this.label = 'Mem0'
         this.name = 'mem0'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Mem0'
         this.icon = 'mem0.svg'
         this.category = 'Memory'
@@ -53,6 +53,7 @@ class Mem0_Memory implements INode {
                 default: 'flowise-default-user',
                 optional: true
             },
+            // Added toggle to use Flowise chat ID
             {
                 label: 'Use Flowise Chat ID',
                 name: 'useFlowiseChatId',
@@ -234,6 +235,7 @@ class Mem0MemoryExtended extends BaseMem0Memory implements MemoryMethods {
         this.useFlowiseChatId = fields.useFlowiseChatId
     }
 
+    // Selects Mem0 user_id based on toggle state (Flowise chat ID or input field)
     private getEffectiveUserId(overrideUserId?: string): string {
         let effectiveUserId: string | undefined
 
@@ -306,31 +308,17 @@ class Mem0MemoryExtended extends BaseMem0Memory implements MemoryMethods {
             },
             take: 10
         })
-
         chatMessage = chatMessage.reverse()
 
-        let returnIMessages: IMessage[] = []
-        for (const m of chatMessage) {
-            returnIMessages.push({
-                message: m.content as string,
-                type: m.role as MessageType
-            })
-        }
+        let returnIMessages: IMessage[] = chatMessage.map((m) => ({
+            message: m.content as string,
+            type: m.role as MessageType
+        }))
 
         if (prependMessages?.length) {
-            chatMessage.unshift(
-                ...prependMessages.map(
-                    (m) =>
-                        ({
-                            role: m.type,
-                            content: m.message,
-                            sessionId: flowiseSessionId,
-                            chatflowid: this.chatflowid,
-                            createdDate: new Date()
-                        } as any)
-                )
-            )
             returnIMessages.unshift(...prependMessages)
+            // Reverted to original simpler unshift
+            chatMessage.unshift(...(prependMessages as any)) // Cast as any
         }
 
         if (returnBaseMessages) {
@@ -341,12 +329,10 @@ class Mem0MemoryExtended extends BaseMem0Memory implements MemoryMethods {
                 const systemMessage = {
                     role: 'apiMessage' as MessageType,
                     content: mem0History,
-                    id: uuidv4(),
-                    sessionId: flowiseSessionId,
-                    chatflowid: this.chatflowid,
-                    createdDate: new Date()
+                    id: uuidv4()
                 }
-                chatMessage.unshift(systemMessage as any)
+                // Ensure Mem0 history message also conforms structurally if mapChatMessageToBaseMessage is strict
+                chatMessage.unshift(systemMessage as any) // Cast needed if mixing structures
             } else if (mem0History) {
                 console.warn('Mem0 history is not a string, cannot prepend directly.')
             }
