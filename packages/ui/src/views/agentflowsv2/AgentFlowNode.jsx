@@ -234,24 +234,6 @@ const AgentFlowNode = ({ data }) => {
                     </Tooltip>
                 )}
 
-                {data && data.outputResponses && data.outputResponses.needRetest && (
-                    <Avatar
-                        variant='rounded'
-                        sx={{
-                            ...theme.typography.smallAvatar,
-                            borderRadius: '50%',
-                            background: theme.palette.warning.dark,
-                            color: 'white',
-                            ml: 2,
-                            position: 'absolute',
-                            top: -10,
-                            right: -10
-                        }}
-                    >
-                        <IconExclamationMark />
-                    </Avatar>
-                )}
-
                 <Box sx={{ width: '100%' }}>
                     {!data.hideInput && (
                         <Handle

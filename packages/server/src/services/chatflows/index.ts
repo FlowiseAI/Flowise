@@ -333,7 +333,7 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
         if (dbResponse.chatbotConfig || uploadsConfig) {
             try {
                 const parsedConfig = dbResponse.chatbotConfig ? JSON.parse(dbResponse.chatbotConfig) : {}
-                return { ...parsedConfig, uploads: uploadsConfig }
+                return { ...parsedConfig, uploads: uploadsConfig, flowData: dbResponse.flowData }
             } catch (e) {
                 throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
             }

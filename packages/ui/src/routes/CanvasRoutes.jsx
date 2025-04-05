@@ -8,6 +8,7 @@ import MinimalLayout from '@/layout/MinimalLayout'
 const Canvas = Loadable(lazy(() => import('@/views/canvas')))
 const MarketplaceCanvas = Loadable(lazy(() => import('@/views/marketplaces/MarketplaceCanvas')))
 const CanvasV2 = Loadable(lazy(() => import('@/views/agentflowsv2/Canvas')))
+const MarketplaceCanvasV2 = Loadable(lazy(() => import('@/views/agentflowsv2/MarketplaceCanvas')))
 
 // ==============================|| CANVAS ROUTING ||============================== //
 
@@ -42,6 +43,10 @@ const CanvasRoutes = {
         {
             path: '/marketplace/:id',
             element: <MarketplaceCanvas />
+        },
+        {
+            path: '/v2/marketplace/:id',
+            element: <MarketplaceCanvasV2 />
         }
     ]
 }

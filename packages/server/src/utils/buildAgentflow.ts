@@ -282,7 +282,11 @@ export const resolveVariables = async (
 
             // Find node data in executed data
             // sometimes turndown value returns a backslash like `llmAgentflow\_1`, remove the backslash
-            const nodeData = agentFlowExecutedData?.find((data) => data.nodeId === variableFullPath.replace('\\', ''))
+            const cleanNodeId = variableFullPath.replace('\\', '')
+            // Find the last (most recent) matching node data instead of the first one
+            const nodeData = agentFlowExecutedData
+                ? [...agentFlowExecutedData].reverse().find((data) => data.nodeId === cleanNodeId)
+                : undefined
             if (nodeData && nodeData.data) {
                 // Replace the reference with actual value
                 const actualValue = (nodeData.data['output'] as ICommonObject)?.content
