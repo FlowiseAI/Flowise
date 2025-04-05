@@ -139,7 +139,6 @@ class Jira_DocumentLoaders implements INode {
         } else {
             docs = await loader.load()
         }
-        console.log(`Loaded ${docs.length} Jira document(s)`);
 
         if (metadata) {
             const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
