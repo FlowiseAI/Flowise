@@ -26,9 +26,9 @@ export const validateMessageExists = async (messageId: string): Promise<ChatMess
  * Validates that the feedback ID exists
  * @param {string} feedbackId
  */
-export const validateFeedbackExists = async (feedbackId: string): Promise<boolean> => {
+export const validateFeedbackExists = async (feedbackId: string): Promise<ChatMessageFeedback> => {
     const appServer = getRunningExpressApp()
-    const feedbackExists = await appServer.AppDataSource.getRepository(ChatMessageFeedback).exists({
+    const feedbackExists = await appServer.AppDataSource.getRepository(ChatMessageFeedback).findOne({
         where: { id: feedbackId }
     })
 
@@ -36,7 +36,7 @@ export const validateFeedbackExists = async (feedbackId: string): Promise<boolea
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Feedback with ID ${feedbackId} not found`)
     }
 
-    return true
+    return feedbackExists
 }
 
 /**
@@ -91,7 +91,11 @@ export const validateFeedbackForUpdate = async (
     feedback: Partial<IChatMessageFeedback>
 ): Promise<Partial<IChatMessageFeedback>> => {
     // First validate the feedback exists
-    await validateFeedbackExists(feedbackId)
+    const existingFeedback = await validateFeedbackExists(feedbackId)
+
+    feedback.messageId = feedback.messageId ?? existingFeedback.messageId
+    feedback.chatId = feedback.chatId ?? existingFeedback.chatId
+    feedback.chatflowid = feedback.chatflowid ?? existingFeedback.chatflowid
 
     // If messageId is provided, validate it exists and get the message
     let message: ChatMessage | null = null
