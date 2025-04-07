@@ -25,19 +25,17 @@ if (process.env.STORAGE_TYPE === 's3') {
         throw new Error('S3 storage configuration is missing')
     }
 
-    let credentials: S3ClientConfig['credentials'] | undefined
-    if (accessKeyId && secretAccessKey) {
-        credentials = {
-            accessKeyId,
-            secretAccessKey
-        }
-    }
-
     const s3Config: S3ClientConfig = {
         region: region,
         endpoint: customURL,
-        forcePathStyle: forcePathStyle,
-        credentials: credentials
+        forcePathStyle: forcePathStyle
+    }
+
+    if (accessKeyId && secretAccessKey) {
+        s3Config.credentials = {
+            accessKeyId: accessKeyId,
+            secretAccessKey: secretAccessKey
+        }
     }
 
     s3ServerStream = new S3StreamLogger({
@@ -140,7 +138,7 @@ const logger = createLogger({
 })
 
 export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
-    const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/']
+    const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
     if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
         const fileLogger = createLogger({
             format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json(), errors({ stack: true })),

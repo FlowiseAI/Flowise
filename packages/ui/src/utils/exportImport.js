@@ -57,7 +57,8 @@ const sanitizeAssistant = (Assistant) => {
                 id: assistant.id,
                 details: assistant.details,
                 credential: assistant.credential,
-                iconSrc: assistant.iconSrc
+                iconSrc: assistant.iconSrc,
+                type: assistant.type
             }
         })
     } catch (error) {
@@ -76,11 +77,17 @@ export const stringify = (object) => {
 export const exportData = (exportAllData) => {
     try {
         return {
-            Tool: sanitizeTool(exportAllData.Tool),
-            ChatFlow: sanitizeChatflow(exportAllData.ChatFlow),
             AgentFlow: sanitizeChatflow(exportAllData.AgentFlow),
-            Variable: sanitizeVariable(exportAllData.Variable),
-            Assistant: sanitizeAssistant(exportAllData.Assistant)
+            AssistantFlow: sanitizeChatflow(exportAllData.AssistantFlow),
+            Assistant: sanitizeAssistant(exportAllData.Assistant),
+            ChatFlow: sanitizeChatflow(exportAllData.ChatFlow),
+            ChatMessage: exportAllData.ChatMessage,
+            ChatMessageFeedback: exportAllData.ChatMessageFeedback,
+            CustomTemplate: exportAllData.CustomTemplate,
+            DocumentStore: exportAllData.DocumentStore,
+            DocumentStoreFileChunk: exportAllData.DocumentStoreFileChunk,
+            Tool: sanitizeTool(exportAllData.Tool),
+            Variable: sanitizeVariable(exportAllData.Variable)
         }
     } catch (error) {
         throw new Error(`exportImport.exportData ${getErrorMessage(error)}`)
