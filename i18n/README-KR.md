@@ -178,6 +178,10 @@ Flowise는 인스턴스 구성을 위한 다양한 환경 변수를 지원합니
 
         [![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
 
+    -   [ClawCloud Run](https://template.run.claw.cloud/?referralCode=NHQHBCNFBJGI&openapp=system-fastdeploy%3FtemplateName%3Dflowise)
+
+        [![Run on ClawCloud](https://raw.githubusercontent.com/ClawCloud/Run-Template/refs/heads/main/Run-on-ClawCloud.svg)](https://template.run.claw.cloud/?referralCode=NHQHBCNFBJGI&openapp=system-fastdeploy%3FtemplateName%3Dflowise)
+
       </details>
 
 ## ☁️ 클라우드 호스팅 서비스
