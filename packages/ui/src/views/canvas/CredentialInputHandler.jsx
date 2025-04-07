@@ -12,6 +12,7 @@ import CredentialListDialog from '@/views/credentials/CredentialListDialog'
 
 // API
 import credentialsApi from '@/api/credentials'
+import _ from 'lodash'
 
 // ===========================|| CredentialInputHandler ||=========================== //
 
@@ -91,6 +92,29 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
     useEffect(() => {
         setCredentialId(data?.credential ?? '')
     }, [data])
+
+    useEffect(() => {
+        const fetchCredential = async () => {
+            if (!credentialId) return
+            try {
+                const parsed = JSON.parse(credentialId)
+                if (_.isObject(parsed)) return
+                const resp = await credentialsApi.getSpecificCredential(credentialId)
+                if (resp.data.credentialName === 'googleOAuth') onSelect(JSON.stringify(resp.data.plainDataObj))
+            } catch (error) {
+                if (!(error instanceof SyntaxError)) {
+                    console.error(error)
+                }
+                try {
+                    const resp = await credentialsApi.getSpecificCredential(credentialId)
+                    if (resp.data.credentialName === 'googleOAuth') onSelect(JSON.stringify(resp.data.plainDataObj))
+                } catch (fetchError) {
+                    console.error(fetchError)
+                }
+            }
+        }
+        fetchCredential()
+    }, [credentialId])
 
     return (
         <div ref={ref}>

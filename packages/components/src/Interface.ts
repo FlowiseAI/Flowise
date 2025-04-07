@@ -98,6 +98,7 @@ export interface INodeParams {
     refresh?: boolean
     freeSolo?: boolean
     loadPreviousNodes?: boolean
+    loadOptionsOnOpen?: boolean
 }
 
 export interface INodeExecutionData {
