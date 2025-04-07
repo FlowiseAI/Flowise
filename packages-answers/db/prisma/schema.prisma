@@ -66,6 +66,7 @@ model User {
   activeUserPlan     ActiveUserPlan?
   userPlanHistories  UserPlanHistory[]
   appConfigs         AppConfig[]
+  csvParseRuns       AppCsvParseRuns[]
 }
 
 enum ApiKeyType {
@@ -99,6 +100,7 @@ model Organization {
   appSettings         Json?
   apiKeys             ApiKey[]
   sidekicks           Sidekick[]
+  csvParseRuns        AppCsvParseRuns[]
 }
 
 model ContextField {
@@ -469,4 +471,54 @@ model AppConfig {
   appType String
   config Json
   user   User     @relation(fields: [userId], references: [id])
+}
+
+enum AppCsvParseRunstatus {
+  pending
+  inProgress
+  completeWithErrors
+  complete
+  generatingCsv
+  ready
+}
+
+model AppCsvParseRuns {
+  id     String   @id @default(uuid())
+  userId String
+  orgId  String
+  startedAt DateTime @default(now())
+  completedAt DateTime?
+  rowsRequested Int
+  rowsProcessed Int?
+  name   String
+  configuration Json
+  originalCsvUrl String
+  processedCsvUrl String?
+  chatflowChatId String
+  includeOriginalColumns Boolean @default(true)
+  status AppCsvParseRunstatus @default(pending)
+  errorMessages String[] @default([])
+  user   User     @relation(fields: [userId], references: [id])
+  org    Organization     @relation(fields: [orgId], references: [id])
+  rows AppCsvParseRows[]
+}
+
+enum AppCsvParseRowStatus {
+  pending
+  inProgress
+  completeWithError
+  complete
+}
+
+model AppCsvParseRows {
+  id String @id @default(uuid())
+  csvParseRunId String
+  rowNumber Int
+  rowData Json
+  generatedData Json?
+  status AppCsvParseRowStatus @default(pending)
+  errorMessage String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  csvParseRun AppCsvParseRuns @relation(fields: [csvParseRunId], references: [id])
 }

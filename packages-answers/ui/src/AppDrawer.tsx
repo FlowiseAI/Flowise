@@ -29,6 +29,7 @@ import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/Integration
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
 import AdminOutlinedIcon from '@mui/icons-material/AdminPanelSettings'
+import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
@@ -90,7 +91,8 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
     const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores', 'billing']
-    const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin']
+    const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin',
+        'apps']
 
     const filterMenuItems = (items: MenuConfig[]) => {
         return items.map((item) => {
@@ -161,6 +163,12 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                               text: 'Billing',
                               link: '/billing',
                               icon: <StarIcon color='primary' />
+                          },
+                          {
+                              id: 'apps',
+                              text: 'Apps',
+                              link: '/sidekick-studio/apps',
+                              icon: <AppsOutlinedIcon color='primary' />
                           }
                       ]
                   }

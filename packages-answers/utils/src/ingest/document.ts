@@ -14,10 +14,10 @@ import getAxiosErrorMessage from '../utilities/getAxiosErrorMessage'
 
 import type { DocumentRecord } from 'types'
 
-const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID
-const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY
-const AWS_S3_BUCKET = process.env.AWS_S3_BUCKET
-const AWS_S3_REGION = process.env.AWS_S3_REGION
+const S3_STORAGE_ACCESS_KEY_ID = process.env.S3_STORAGE_ACCESS_KEY_ID
+const S3_STORAGE_SECRET_ACCESS_KEY = process.env.S3_STORAGE_SECRET_ACCESS_KEY
+const S3_STORAGE_BUCKET_NAME = process.env.S3_STORAGE_BUCKET_NAME
+const AWS_S3_REGION = process.env.S3_STORAGE_REGION
 
 const PINECONE_VECTORS_BATCH_SIZE = 50
 
@@ -296,7 +296,7 @@ export const processDocument: EventVersionHandler<{
 
         if (!user?.id) throw new Error('No user found')
 
-        if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_S3_BUCKET) {
+        if (!S3_STORAGE_ACCESS_KEY_ID || !S3_STORAGE_SECRET_ACCESS_KEY || !S3_STORAGE_BUCKET_NAME) {
             console.error('You must use valid keys to perform this action.')
             return null
         }
@@ -321,13 +321,13 @@ export const processDocument: EventVersionHandler<{
         const s3Client = new S3Client({
             region: AWS_S3_REGION,
             credentials: {
-                accessKeyId: AWS_ACCESS_KEY_ID,
-                secretAccessKey: AWS_SECRET_ACCESS_KEY
+                accessKeyId: S3_STORAGE_ACCESS_KEY_ID,
+                secretAccessKey: S3_STORAGE_SECRET_ACCESS_KEY
             }
         })
 
         const command = new GetObjectCommand({
-            Bucket: AWS_S3_BUCKET,
+            Bucket: S3_STORAGE_BUCKET_NAME,
             Key: document.url
         })
 
