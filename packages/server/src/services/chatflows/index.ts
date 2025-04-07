@@ -1,6 +1,8 @@
-import { removeFolderFromStorage } from 'flowise-components'
+import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
+import { QueryRunner } from 'typeorm'
 import { ChatflowType, IReactFlowObject } from '../../Interface'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
@@ -13,7 +15,7 @@ import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fil
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
-import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
+import { validate } from 'uuid'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -25,6 +27,15 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
         })
         if (!chatflow) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+        }
+
+        /* Check for post-processing settings, if available isStreamValid is always false */
+        let chatflowConfig: ICommonObject = {}
+        if (chatflow.chatbotConfig) {
+            chatflowConfig = JSON.parse(chatflow.chatbotConfig)
+            if (chatflowConfig?.postProcessing?.enabled === true) {
+                return { isStreaming: false }
+            }
         }
 
         /*** Get Ending Node with Directed Graph  ***/
@@ -110,6 +121,8 @@ const getAllChatflows = async (type?: ChatflowType): Promise<ChatFlow[]> => {
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
         if (type === 'MULTIAGENT') {
             return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
+        } else if (type === 'ASSISTANT') {
+            return dbResponse.filter((chatflow) => chatflow.type === 'ASSISTANT')
         } else if (type === 'CHATFLOW') {
             // fetch all chatflows that are not agentflow
             return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
@@ -206,9 +219,16 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     }
 }
 
-const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> => {
+const importChatflows = async (newChatflows: Partial<ChatFlow>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
+        for (const data of newChatflows) {
+            if (data.id && !validate(data.id)) {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: importChatflows - invalid id!`)
+            }
+        }
+
         const appServer = getRunningExpressApp()
+        const repository = queryRunner ? queryRunner.manager.getRepository(ChatFlow) : appServer.AppDataSource.getRepository(ChatFlow)
 
         // step 1 - check whether file chatflows array is zero
         if (newChatflows.length == 0) return
@@ -224,11 +244,7 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
             count += 1
         })
 
-        const selectResponse = await appServer.AppDataSource.getRepository(ChatFlow)
-            .createQueryBuilder('cf')
-            .select('cf.id')
-            .where(`cf.id IN ${ids}`)
-            .getMany()
+        const selectResponse = await repository.createQueryBuilder('cf').select('cf.id').where(`cf.id IN ${ids}`).getMany()
         const foundIds = selectResponse.map((response) => {
             return response.id
         })
@@ -248,7 +264,7 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[]): Promise<any> 
         })
 
         // step 4 - transactional insert array of entities
-        const insertResponse = await appServer.AppDataSource.getRepository(ChatFlow).insert(prepChatflows)
+        const insertResponse = await repository.insert(prepChatflows)
 
         return insertResponse
     } catch (error) {
@@ -269,12 +285,6 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
 
-        // chatFlowPool is initialized only when a flow is opened
-        // if the user attempts to rename/update category without opening any flow, chatFlowPool will be undefined
-        if (appServer.chatflowPool) {
-            // Update chatflowpool inSync to false, to build flow from scratch again because data has been changed
-            appServer.chatflowPool.updateInSync(chatflow.id, false)
-        }
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(

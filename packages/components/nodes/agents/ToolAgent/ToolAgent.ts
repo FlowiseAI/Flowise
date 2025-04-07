@@ -7,7 +7,13 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ChatPromptTemplate, MessagesPlaceholder, HumanMessagePromptTemplate, PromptTemplate } from '@langchain/core/prompts'
 import { formatToOpenAIToolMessages } from 'langchain/agents/format_scratchpad/openai_tools'
 import { type ToolsAgentStep } from 'langchain/agents/openai/output_parser'
-import { getBaseClasses, handleEscapeCharacters, removeInvalidImageMarkdown } from '../../../src/utils'
+import {
+    extractOutputFromArray,
+    getBaseClasses,
+    handleEscapeCharacters,
+    removeInvalidImageMarkdown,
+    transformBracesWithColon
+} from '../../../src/utils'
 import {
     FlowiseMemory,
     ICommonObject,
@@ -18,7 +24,7 @@ import {
     IUsedTool,
     IVisionChatModal
 } from '../../../src/Interface'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, CustomStreamingHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
@@ -35,7 +41,6 @@ class ToolAgent_Agents implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
-    badge?: string
 
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Tool Agent'
@@ -96,6 +101,15 @@ class ToolAgent_Agents implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Enable Detailed Streaming',
+                name: 'enableDetailedStreaming',
+                type: 'boolean',
+                default: false,
+                description: 'Stream detailed intermediate steps during agent execution',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -108,6 +122,7 @@ class ToolAgent_Agents implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const enableDetailedStreaming = nodeData.inputs?.enableDetailedStreaming as boolean
 
         const shouldStreamResponse = options.shouldStreamResponse
         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
@@ -131,6 +146,13 @@ class ToolAgent_Agents implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
+        // Add custom streaming handler if detailed streaming is enabled
+        let customStreamingHandler = null
+
+        if (enableDetailedStreaming && shouldStreamResponse) {
+            customStreamingHandler = new CustomStreamingHandler(sseStreamer, chatId)
+        }
+
         let res: ChainValues = {}
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
@@ -138,7 +160,14 @@ class ToolAgent_Agents implements INode {
 
         if (shouldStreamResponse) {
             const handler = new CustomChainHandler(sseStreamer, chatId)
-            res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
+            const allCallbacks = [loggerHandler, handler, ...callbacks]
+
+            // Add detailed streaming handler if enabled
+            if (enableDetailedStreaming && customStreamingHandler) {
+                allCallbacks.push(customStreamingHandler)
+            }
+
+            res = await executor.invoke({ input }, { callbacks: allCallbacks })
             if (res.sourceDocuments) {
                 if (sseStreamer) {
                     sseStreamer.streamSourceDocumentsEvent(chatId, flatten(res.sourceDocuments))
@@ -169,7 +198,14 @@ class ToolAgent_Agents implements INode {
                 }
             }
         } else {
-            res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+            const allCallbacks = [loggerHandler, ...callbacks]
+
+            // Add detailed streaming handler if enabled
+            if (enableDetailedStreaming && customStreamingHandler) {
+                allCallbacks.push(customStreamingHandler)
+            }
+
+            res = await executor.invoke({ input }, { callbacks: allCallbacks })
             if (res.sourceDocuments) {
                 sourceDocuments = res.sourceDocuments
             }
@@ -182,15 +218,11 @@ class ToolAgent_Agents implements INode {
         }
 
         let output = res?.output
-        if (Array.isArray(output)) {
-            output = output[0]?.text || ''
-        } else if (typeof output === 'object') {
-            output = output?.text || ''
-        }
-
+        output = extractOutputFromArray(res?.output)
         output = removeInvalidImageMarkdown(output)
 
         // Claude 3 Opus tends to spit out <thinking>..</thinking> as well, discard that in final output
+        // https://docs.anthropic.com/en/docs/build-with-claude/tool-use#chain-of-thought
         const regexPattern: RegExp = /<thinking>[\s\S]*?<\/thinking>/
         const matches: RegExpMatchArray | null = output.match(regexPattern)
         if (matches) {
@@ -241,12 +273,14 @@ const prepareAgent = async (
     const model = nodeData.inputs?.model as BaseChatModel
     const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
-    const systemMessage = nodeData.inputs?.systemMessage as string
+    let systemMessage = nodeData.inputs?.systemMessage as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
     const inputKey = memory.inputKey ? memory.inputKey : 'input'
     const prependMessages = options?.prependMessages
+
+    systemMessage = transformBracesWithColon(systemMessage)
 
     let prompt = ChatPromptTemplate.fromMessages([
         ['system', systemMessage],
@@ -336,7 +370,7 @@ const prepareAgent = async (
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
-        verbose: process.env.DEBUG === 'true' ? true : false,
+        verbose: process.env.DEBUG === 'true',
         maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
 

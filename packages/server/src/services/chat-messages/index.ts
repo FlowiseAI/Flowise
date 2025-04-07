@@ -1,15 +1,15 @@
-import { DeleteResult, FindOptionsWhere } from 'typeorm'
-import { StatusCodes } from 'http-status-codes'
-import { ChatMessageRatingType, ChatType, IChatMessage } from '../../Interface'
-import { utilGetChatMessage } from '../../utils/getChatMessage'
-import { utilAddChatMessage } from '../../utils/addChatMesage'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { removeFilesFromStorage } from 'flowise-components'
-import logger from '../../utils/logger'
+import { StatusCodes } from 'http-status-codes'
+import { DeleteResult, FindOptionsWhere } from 'typeorm'
 import { ChatMessage } from '../../database/entities/ChatMessage'
+import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { ChatMessageRatingType, ChatType, IChatMessage, MODE } from '../../Interface'
+import { utilAddChatMessage } from '../../utils/addChatMesage'
+import { utilGetChatMessage } from '../../utils/getChatMessage'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
 
 // Add chatmessages for chatflowid
 const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
@@ -27,7 +27,7 @@ const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
 // Get all chatmessages from chatflowid
 const getAllChatMessages = async (
     chatflowId: string,
-    chatTypeFilter: ChatType | undefined,
+    chatTypes: ChatType[] | undefined,
     sortOrder: string = 'ASC',
     chatId?: string,
     memoryType?: string,
@@ -39,9 +39,9 @@ const getAllChatMessages = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<ChatMessage[]> => {
     try {
-        const dbResponse = await utilGetChatMessage(
-            chatflowId,
-            chatTypeFilter,
+        const dbResponse = await utilGetChatMessage({
+            chatflowid: chatflowId,
+            chatTypes,
             sortOrder,
             chatId,
             memoryType,
@@ -51,7 +51,7 @@ const getAllChatMessages = async (
             messageId,
             feedback,
             feedbackTypes
-        )
+        })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -64,7 +64,7 @@ const getAllChatMessages = async (
 // Get internal chatmessages from chatflowid
 const getAllInternalChatMessages = async (
     chatflowId: string,
-    chatTypeFilter: ChatType | undefined,
+    chatTypes: ChatType[] | undefined,
     sortOrder: string = 'ASC',
     chatId?: string,
     memoryType?: string,
@@ -76,9 +76,9 @@ const getAllInternalChatMessages = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<ChatMessage[]> => {
     try {
-        const dbResponse = await utilGetChatMessage(
-            chatflowId,
-            chatTypeFilter,
+        const dbResponse = await utilGetChatMessage({
+            chatflowid: chatflowId,
+            chatTypes,
             sortOrder,
             chatId,
             memoryType,
@@ -88,7 +88,7 @@ const getAllInternalChatMessages = async (
             messageId,
             feedback,
             feedbackTypes
-        )
+        })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -160,16 +160,15 @@ const removeChatMessagesByMessageIds = async (
 const abortChatMessage = async (chatId: string, chatflowid: string) => {
     try {
         const appServer = getRunningExpressApp()
+        const id = `${chatflowid}_${chatId}`
 
-        const endingNodeData = appServer.chatflowPool.activeChatflows[`${chatflowid}_${chatId}`]?.endingNodeData as any
-
-        if (endingNodeData && endingNodeData.signal) {
-            try {
-                endingNodeData.signal.abort()
-                await appServer.chatflowPool.remove(`${chatflowid}_${chatId}`)
-            } catch (e) {
-                logger.error(`[server]: Error aborting chat message for ${chatflowid}, chatId ${chatId}: ${e}`)
-            }
+        if (process.env.MODE === MODE.QUEUE) {
+            await appServer.queueManager.getPredictionQueueEventsProducer().publishEvent({
+                eventName: 'abort',
+                id
+            })
+        } else {
+            appServer.abortControllerPool.abort(id)
         }
     } catch (error) {
         throw new InternalFlowiseError(
@@ -179,11 +178,23 @@ const abortChatMessage = async (chatId: string, chatflowid: string) => {
     }
 }
 
+async function getAllMessages(): Promise<ChatMessage[]> {
+    const appServer = getRunningExpressApp()
+    return await appServer.AppDataSource.getRepository(ChatMessage).find()
+}
+
+async function getAllMessagesFeedback(): Promise<ChatMessageFeedback[]> {
+    const appServer = getRunningExpressApp()
+    return await appServer.AppDataSource.getRepository(ChatMessageFeedback).find()
+}
+
 export default {
     createChatMessage,
     getAllChatMessages,
     getAllInternalChatMessages,
     removeAllChatMessages,
     removeChatMessagesByMessageIds,
-    abortChatMessage
+    abortChatMessage,
+    getAllMessages,
+    getAllMessagesFeedback
 }

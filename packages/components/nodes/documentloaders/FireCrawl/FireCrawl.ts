@@ -1,8 +1,8 @@
 import { TextSplitter } from 'langchain/text_splitter'
 import { Document, DocumentInterface } from '@langchain/core/documents'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
-import { INode, INodeData, INodeParams, ICommonObject } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from '../../../src/Interface'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import axios, { AxiosResponse, AxiosRequestHeaders } from 'axios'
 import { z } from 'zod'
 import { zodToJsonSchema } from 'zod-to-json-schema'
@@ -259,16 +259,23 @@ class FireCrawl_DocumentLoaders implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'FireCrawl'
         this.name = 'fireCrawl'
         this.type = 'Document'
         this.icon = 'firecrawl.png'
-        this.version = 1.0
+        this.version = 2.1
         this.category = 'Document Loaders'
         this.description = 'Load data from URL using FireCrawl'
         this.baseClasses = [this.type]
+        this.credential = {
+            label: 'FireCrawl API',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['fireCrawlApi']
+        }
         this.inputs = [
             {
                 label: 'Text Splitter',
@@ -300,15 +307,59 @@ class FireCrawl_DocumentLoaders implements INode {
                     }
                 ],
                 default: 'crawl'
+            },
+            {
+                // maxCrawlPages
+                label: 'Max Crawl Pages',
+                name: 'maxCrawlPages',
+                type: 'string',
+                description: 'Maximum number of pages to crawl',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                // generateImgAltText
+                label: 'Generate Image Alt Text',
+                name: 'generateImgAltText',
+                type: 'boolean',
+                description: 'Generate alt text for images',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                // returnOnlyUrls
+                label: 'Return Only URLs',
+                name: 'returnOnlyUrls',
+                type: 'boolean',
+                description: 'Return only URLs of the crawled pages',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                // onlyMainContent
+                label: 'Only Main Content',
+                name: 'onlyMainContent',
+                type: 'boolean',
+                description: 'Extract only the main content of the page',
+                optional: true,
+                additionalParams: true
             }
             // ... (other input parameters)
         ]
-        this.credential = {
-            label: 'FireCrawl API',
-            name: 'credential',
-            type: 'credential',
-            credentialNames: ['fireCrawlApi']
-        }
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -323,6 +374,7 @@ class FireCrawl_DocumentLoaders implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const firecrawlApiToken = getCredentialParam('firecrawlApiToken', credentialData, nodeData)
         const firecrawlApiUrl = getCredentialParam('firecrawlApiUrl', credentialData, nodeData, 'https://api.firecrawl.dev')
+        const output = nodeData.outputs?.output as string
 
         const urlPatternsExcludes = nodeData.inputs?.urlPatternsExcludes
             ? (nodeData.inputs.urlPatternsExcludes.split(',') as string[])
@@ -375,7 +427,15 @@ class FireCrawl_DocumentLoaders implements INode {
             return finaldocs
         }
 
-        return docs
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 

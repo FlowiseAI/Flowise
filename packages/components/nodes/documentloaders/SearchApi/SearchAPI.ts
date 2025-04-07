@@ -2,7 +2,7 @@ import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { SearchApiLoader } from '@langchain/community/document_loaders/web/searchapi'
-import { getCredentialData, getCredentialParam } from '../../../src'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters, INodeOutputsValue } from '../../../src'
 
 // Provides access to multiple search engines using the SearchApi.
 // For available parameters & engines, refer to: https://www.searchapi.io/docs/google
@@ -17,11 +17,12 @@ class SearchAPI_DocumentLoaders implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'SearchApi For Web Search'
         this.name = 'searchApi'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'searchapi.svg'
         this.category = 'Document Loaders'
@@ -74,6 +75,20 @@ class SearchAPI_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -82,6 +97,7 @@ class SearchAPI_DocumentLoaders implements INode {
         const customParameters = nodeData.inputs?.customParameters
         const metadata = nodeData.inputs?.metadata
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const output = nodeData.outputs?.output as string
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -146,7 +162,15 @@ class SearchAPI_DocumentLoaders implements INode {
             }))
         }
 
-        return docs
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 

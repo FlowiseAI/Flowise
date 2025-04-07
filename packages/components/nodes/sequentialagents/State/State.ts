@@ -107,13 +107,15 @@ class State_SeqAgents implements INode {
 
         if (stateMemory && stateMemory !== 'stateMemoryUI' && stateMemory !== 'stateMemoryCode') {
             try {
+                const parsedSchemaFromUI = typeof stateMemoryUI === 'string' ? JSON.parse(stateMemoryUI) : stateMemoryUI
                 const parsedSchema = typeof stateMemory === 'string' ? JSON.parse(stateMemory) : stateMemory
+                const combinedMemorySchema = [...parsedSchemaFromUI, ...parsedSchema]
                 const obj: ICommonObject = {}
-                for (const sch of parsedSchema) {
-                    const key = sch.Key
+                for (const sch of combinedMemorySchema) {
+                    const key = sch.Key ?? sch.key
                     if (!key) throw new Error(`Key is required`)
-                    const type = sch.Operation
-                    const defaultValue = sch['Default Value']
+                    const type = sch.Operation ?? sch.type
+                    const defaultValue = sch['Default Value'] ?? sch.defaultValue
 
                     if (type === 'Append') {
                         obj[key] = {
@@ -196,7 +198,13 @@ class State_SeqAgents implements INode {
                 input
             }
 
-            let sandbox: any = {}
+            let sandbox: any = {
+                util: undefined,
+                Symbol: undefined,
+                child_process: undefined,
+                fs: undefined,
+                process: undefined
+            }
             sandbox['$vars'] = prepareSandboxVars(variables)
             sandbox['$flow'] = flow
 
@@ -212,7 +220,10 @@ class State_SeqAgents implements INode {
                 require: {
                     external: { modules: deps },
                     builtin: builtinDeps
-                }
+                },
+                eval: false,
+                wasm: false,
+                timeout: 10000
             } as any
 
             const vm = new NodeVM(nodeVMOptions)

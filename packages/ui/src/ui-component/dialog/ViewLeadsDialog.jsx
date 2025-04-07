@@ -75,7 +75,9 @@ const ViewLeadsDialog = ({ show, dialogProps, onCancel }) => {
             leads
         }
         const dataStr = JSON.stringify(exportData, null, 2)
-        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+        //const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr)
+        const blob = new Blob([dataStr], { type: 'application/json' })
+        const dataUri = URL.createObjectURL(blob)
 
         const exportFileDefaultName = `${dialogProps.chatflow.id}-leads.json`
 

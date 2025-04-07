@@ -29,11 +29,17 @@ export class TypeORMDriver extends VectorStoreDriver {
                 type: 'postgres',
                 host: this.getHost(),
                 port: this.getPort(),
+                ssl: this.getSSL(),
                 username: user, // Required by TypeORMVectorStore
                 user: user, // Required by Pool in similaritySearchVectorWithScore
                 password: password,
                 database: this.getDatabase()
             } as DataSourceOptions
+
+            // Prevent using default MySQL port, otherwise will throw uncaught error and crashing the app
+            if (this.getHost() === '3006') {
+                throw new Error('Invalid port number')
+            }
         }
         return this._postgresConnectionOptions
     }
