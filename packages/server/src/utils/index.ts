@@ -59,7 +59,6 @@ import { StatusCodes } from 'http-status-codes'
 import {
     CreateSecretCommand,
     GetSecretValueCommand,
-    PutSecretValueCommand,
     SecretsManagerClient,
     SecretsManagerClientConfig
 } from '@aws-sdk/client-secrets-manager'
