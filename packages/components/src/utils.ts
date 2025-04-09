@@ -543,6 +543,15 @@ const getEncryptionKey = async (): Promise<string> => {
         return process.env.FLOWISE_SECRETKEY_OVERWRITE
     }
     try {
+        if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
+            const secretId = process.env.SECRETKEY_AWS_NAME || 'FlowiseEncryptionKey'
+            const command = new GetSecretValueCommand({ SecretId: secretId })
+            const response = await secretsManagerClient.send(command)
+
+            if (response.SecretString) {
+                return response.SecretString
+            }
+        }
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
     } catch (error) {
         throw new Error(error)
@@ -561,18 +570,24 @@ const decryptCredentialData = async (encryptedData: string): Promise<ICommonObje
 
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
         try {
-            const command = new GetSecretValueCommand({ SecretId: encryptedData })
-            const response = await secretsManagerClient.send(command)
+            if (encryptedData.startsWith('FlowiseCredential_')) {
+                const command = new GetSecretValueCommand({ SecretId: encryptedData })
+                const response = await secretsManagerClient.send(command)
 
-            if (response.SecretString) {
-                const secretObj = JSON.parse(response.SecretString)
-                decryptedDataStr = JSON.stringify(secretObj)
+                if (response.SecretString) {
+                    const secretObj = JSON.parse(response.SecretString)
+                    decryptedDataStr = JSON.stringify(secretObj)
+                } else {
+                    throw new Error('Failed to retrieve secret value.')
+                }
             } else {
-                throw new Error('Failed to retrieve secret value.')
+                const encryptKey = await getEncryptionKey()
+                const decryptedData = AES.decrypt(encryptedData, encryptKey)
+                decryptedDataStr = decryptedData.toString(enc.Utf8)
             }
         } catch (error) {
             console.error(error)
-            throw new Error('Credentials could not be decrypted.')
+            throw new Error('Failed to decrypt credential data.')
         }
     } else {
         // Fallback to existing code
