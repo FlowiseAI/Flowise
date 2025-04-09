@@ -79,7 +79,9 @@ export const exportData = (exportAllData) => {
         return {
             AgentFlow: sanitizeChatflow(exportAllData.AgentFlow),
             AssistantFlow: sanitizeChatflow(exportAllData.AssistantFlow),
-            Assistant: sanitizeAssistant(exportAllData.Assistant),
+            AssistantCustom: sanitizeAssistant(exportAllData.AssistantCustom),
+            AssistantOpenAI: sanitizeAssistant(exportAllData.AssistantOpenAI),
+            AssistantAzure: sanitizeAssistant(exportAllData.AssistantAzure),
             ChatFlow: sanitizeChatflow(exportAllData.ChatFlow),
             ChatMessage: exportAllData.ChatMessage,
             ChatMessageFeedback: exportAllData.ChatMessageFeedback,
