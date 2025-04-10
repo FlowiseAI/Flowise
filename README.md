@@ -21,9 +21,11 @@ English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.
 Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 
 1. Install Flowise
+
     ```bash
     npm install -g flowise
     ```
+
 2. Start Flowise
 
     ```bash
@@ -52,9 +54,11 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 ### Docker Image
 
 1. Build the image locally:
+
     ```bash
     docker build --no-cache -t flowise .
     ```
+
 2. Run image:
 
     ```bash
@@ -62,6 +66,7 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
     ```
 
 3. Stop image:
+
     ```bash
     docker stop flowise
     ```
@@ -75,41 +80,65 @@ Flowise has 3 different modules in a single mono repository.
 -   `components`: Third-party nodes integrations
 -   `api-documentation`: Auto-generated swagger-ui API docs from express
 
-### Prerequisite
+You can develop Flowise either directly on your local machine or using Dev Containers for a more isolated and consistent development environment.
 
--   Install [PNPM](https://pnpm.io/installation)
+### Option 1: Setup on local machine
+
+1. Install [PNPM](https://pnpm.io/installation)
+
     ```bash
     npm i -g pnpm
     ```
 
-### Setup
-
-1.  Clone the repository
+2.  Clone the repository
 
     ```bash
     git clone https://github.com/FlowiseAI/Flowise.git
     ```
 
-2.  Go into repository folder
+3.  Go into repository folder
 
     ```bash
     cd Flowise
     ```
 
-3.  Install all dependencies of all modules:
+4.  Install all dependencies of all modules:
 
     ```bash
     pnpm install
     ```
 
-4.  Build all the code:
+### Option 2: Setup with Dev Containers
+
+Using [Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers) provides a consistent development environment for all contributors without worrying about local dependencies.
+
+1. Install the prerequisites:
+
+   - [Visual Studio Code](https://code.visualstudio.com/)
+   - [Docker](https://www.docker.com/products/docker-desktop/)
+   - [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+2. Clone the repository and open it in VS Code
+
+   ```bash
+   git clone https://github.com/FlowiseAI/Flowise.git
+   code Flowise
+   ```
+
+3. When prompted "Reopen in Container", click it, or run the command "Dev Containers: Reopen in Container" from the command palette (F1)
+
+4. The container will install dependencies automatically. This process may take a few minutes for the first time.
+
+### Build and start
+
+1.  Build all the code:
 
     ```bash
     pnpm build
     ```
 
     <details>
-    <summary>Exit code 134 (JavaScript heap out of memory)</summary>  
+    <summary>Exit code 134 (JavaScript heap out of memory)</summary>
       If you get this error when running the above `build` script, try increasing the Node.js heap size and run the script again:
 
         export NODE_OPTIONS="--max-old-space-size=4096"
@@ -117,7 +146,7 @@ Flowise has 3 different modules in a single mono repository.
 
     </details>
 
-5.  Start the app:
+2.  Start the app:
 
     ```bash
     pnpm start
@@ -125,7 +154,7 @@ Flowise has 3 different modules in a single mono repository.
 
     You can now access the app on [http://localhost:3000](http://localhost:3000)
 
-6.  For development build:
+3.  For development build:
 
     -   Create `.env` file and specify the `VITE_PORT` (refer to `.env.example`) in `packages/ui`
     -   Create `.env` file and specify the `PORT` (refer to `.env.example`) in `packages/server`
