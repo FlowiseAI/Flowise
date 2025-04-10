@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState, useEffect, memo } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
@@ -284,4 +284,4 @@ CanvasNode.propTypes = {
     data: PropTypes.object
 }
 
-export default CanvasNode
+export default memo(CanvasNode)

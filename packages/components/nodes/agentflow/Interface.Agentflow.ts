@@ -5,9 +5,10 @@ export interface ILLMMessage {
 
 export interface IStructuredOutput {
     key: string
-    type: string
+    type: 'string' | 'stringArray' | 'number' | 'boolean' | 'enum' | 'jsonArray'
     enumValues?: string
     description?: string
+    jsonSchema?: string
 }
 
 export interface IFlowState {

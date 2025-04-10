@@ -48,6 +48,34 @@ const getAllExecutions = async (req: Request, res: Response, next: NextFunction)
     }
 }
 
+/**
+ * Delete multiple executions by their IDs
+ * If a single ID is provided in the URL params, it will delete that execution
+ * If an array of IDs is provided in the request body, it will delete all those executions
+ */
+const deleteExecutions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        let executionIds: string[] = []
+
+        // Check if we're deleting a single execution from URL param
+        if (req.params.id) {
+            executionIds = [req.params.id]
+        }
+        // Check if we're deleting multiple executions from request body
+        else if (req.body.executionIds && Array.isArray(req.body.executionIds)) {
+            executionIds = req.body.executionIds
+        } else {
+            return res.status(400).json({ success: false, message: 'No execution IDs provided' })
+        }
+
+        const result = await executionsService.deleteExecutions(executionIds)
+        return res.json(result)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
-    getAllExecutions
+    getAllExecutions,
+    deleteExecutions
 }

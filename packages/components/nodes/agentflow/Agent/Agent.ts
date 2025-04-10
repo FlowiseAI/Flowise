@@ -870,19 +870,10 @@ class Agent_Agentflow implements INode {
         chatId: string,
         abortController: AbortController
     ): Promise<AIMessageChunk> {
-        console.log('=== HANDLE STREAMING RESPONSE START ===')
-        console.log('Initiating streaming response')
-
         let response = new AIMessageChunk('')
-        let tokenCount = 0
 
         try {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
-                tokenCount++
-                if (tokenCount % 20 === 0) {
-                    console.log(`Streamed ${tokenCount} tokens so far`)
-                }
-
                 if (sseStreamer) {
                     sseStreamer.streamTokenEvent(chatId, chunk.content.toString())
                 }
@@ -893,10 +884,6 @@ class Agent_Agentflow implements INode {
             console.error('Error during streaming:', error)
             throw error
         }
-
-        console.log(`Streaming complete, total tokens: ${tokenCount}`)
-        console.log('Final streaming response:', response)
-        console.log('=== HANDLE STREAMING RESPONSE END ===')
         return response
     }
 
@@ -936,16 +923,12 @@ class Agent_Agentflow implements INode {
                 total_tokens: originalTokens + additionalTokens,
                 tool_call_tokens: additionalTokens
             }
-            console.log(
-                `Final token usage: ${output.usageMetadata.total_tokens} (original: ${originalTokens}, tool calls: ${additionalTokens})`
-            )
         } else if (additionalTokens > 0) {
             // If no original usage metadata but we have tool tokens
             output.usageMetadata = {
                 total_tokens: additionalTokens,
                 tool_call_tokens: additionalTokens
             }
-            console.log(`Final token usage (from tools only): ${additionalTokens}`)
         }
 
         // Add used tools, source documents and artifacts to output
@@ -1019,28 +1002,19 @@ class Agent_Agentflow implements INode {
         artifacts: any[]
         totalTokens: number
     }> {
-        console.log('=== HANDLE TOOL CALLS START ===')
-        console.log(`Tool calls detected: ${response.tool_calls?.length || 0}`)
-
         // Track total tokens used throughout this process
         let totalTokens = response.usage_metadata?.total_tokens || 0
-        console.log(`Initial token usage: ${totalTokens}`)
 
         if (!response.tool_calls || response.tool_calls.length === 0) {
-            console.log('No tool calls to process')
             return { response, usedTools: [], sourceDocuments: [], artifacts: [], totalTokens }
         }
 
-        console.log('Tool calls:', JSON.stringify(response.tool_calls, null, 2))
-
         // Stream tool calls if available
         if (sseStreamer) {
-            console.log('Streaming tool calls to client')
             sseStreamer.streamCalledToolsEvent(chatId, JSON.stringify(response.tool_calls))
         }
 
         // Add LLM response with tool calls to messages
-        console.log('Adding LLM response with tool calls to messages')
         messages.push({
             id: response.id,
             role: 'assistant',
@@ -1056,13 +1030,9 @@ class Agent_Agentflow implements INode {
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
             const toolCall = response.tool_calls[i]
-            console.log(`Processing tool call ${i + 1}/${response.tool_calls.length}: ${toolCall.name}`)
 
             const selectedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
             if (selectedTool) {
-                console.log(`Found tool: ${selectedTool.name}`)
-                console.log(`Tool args: ${JSON.stringify(toolCall.args, null, 2)}`)
-
                 let parsedDocs
                 let parsedArtifacts
 
@@ -1073,22 +1043,16 @@ class Agent_Agentflow implements INode {
                     state: options.agentflowRuntime?.state
                 }
 
-                console.log('Invoking tool...')
-
                 try {
                     //@ts-ignore
                     let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
-                    console.log('Tool execution complete')
-                    console.log('Tool response:', toolOutput)
 
                     // Extract source documents if present
                     if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
-                        console.log('Source documents detected in tool output')
                         const [output, docs] = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)
                         toolOutput = output
                         try {
                             parsedDocs = JSON.parse(docs)
-                            console.log(`Parsed ${Array.isArray(parsedDocs) ? parsedDocs.length : 'unknown'} source documents`)
                             sourceDocuments.push(parsedDocs)
                         } catch (e) {
                             console.error('Error parsing source documents from tool:', e)
@@ -1097,23 +1061,17 @@ class Agent_Agentflow implements INode {
 
                     // Extract artifacts if present
                     if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
-                        console.log('Artifacts detected in tool output')
                         const [output, artifact] = toolOutput.split(ARTIFACTS_PREFIX)
                         toolOutput = output
                         try {
                             parsedArtifacts = JSON.parse(artifact)
-                            console.log('Parsed artifacts:', parsedArtifacts)
                             artifacts.push(parsedArtifacts)
                         } catch (e) {
                             console.error('Error parsing artifacts from tool:', e)
                         }
                     }
 
-                    // Update tool message content with processed output
-                    console.log('Updated tool output:', toolOutput)
-
                     // Add tool message to conversation
-                    console.log('Adding tool response to messages')
                     messages.push({
                         role: 'tool',
                         content: toolOutput,
@@ -1140,28 +1098,20 @@ class Agent_Agentflow implements INode {
                         error: getErrorMessage(e)
                     })
                 }
-                console.log(`Tool returnDirect setting: ${selectedTool.returnDirect}`)
-            } else {
-                console.log(`Tool not found: ${toolCall.name}`)
             }
         }
 
         // Return direct tool output if there's exactly one tool with returnDirect
-        console.log(`Checking returnDirect conditions: toolCalls.length = ${response.tool_calls.length}`)
         if (response.tool_calls.length === 1) {
             const selectedTool = toolsInstance.find((tool) => tool.name === response.tool_calls?.[0]?.name)
             if (selectedTool && selectedTool.returnDirect) {
-                console.log('Single tool with returnDirect detected, returning direct output')
-
                 const lastToolOutput = usedTools[0]?.toolOutput || ''
                 const lastToolOutputString = typeof lastToolOutput === 'string' ? lastToolOutput : JSON.stringify(lastToolOutput, null, 2)
 
                 if (sseStreamer) {
-                    console.log('Streaming direct tool output to client')
                     sseStreamer.streamTokenEvent(chatId, lastToolOutputString)
                 }
 
-                console.log('=== HANDLE TOOL CALLS END (DIRECT RETURN) ===')
                 return {
                     response: new AIMessageChunk(lastToolOutputString),
                     usedTools,
@@ -1169,28 +1119,19 @@ class Agent_Agentflow implements INode {
                     artifacts,
                     totalTokens
                 }
-            } else {
-                console.log('Single tool does not have returnDirect, continuing normal flow')
             }
-        } else {
-            console.log('Multiple tools detected, ignoring returnDirect setting')
         }
 
         // Get LLM response after tool calls
-        console.log('Getting LLM response after tool calls')
         let newResponse: AIMessageChunk
 
         if (isStreamable) {
-            console.log('Using streaming response')
             newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
         } else {
-            console.log('Using non-streaming response')
             newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
-            console.log('LLM response received:', newResponse)
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer) {
-                console.log('Streaming non-streaming response to client')
                 sseStreamer.streamTokenEvent(chatId, JSON.stringify(newResponse, null, 2))
             }
         }
@@ -1198,14 +1139,10 @@ class Agent_Agentflow implements INode {
         // Add tokens from this response
         if (newResponse.usage_metadata?.total_tokens) {
             totalTokens += newResponse.usage_metadata.total_tokens
-            console.log(`Updated token usage after LLM response: ${totalTokens}`)
         }
 
         // Check for recursive tool calls and handle them
         if (newResponse.tool_calls && newResponse.tool_calls.length > 0) {
-            console.log(`Detected recursive tool calls: ${newResponse.tool_calls.length}`)
-            console.log('Making recursive call to handleToolCalls')
-
             const {
                 response: recursiveResponse,
                 usedTools: recursiveUsedTools,
@@ -1227,23 +1164,13 @@ class Agent_Agentflow implements INode {
             })
 
             // Merge results from recursive tool calls
-            console.log('Merging results from recursive tool calls')
-            console.log(`Adding ${recursiveUsedTools.length} more used tools`)
-            console.log(`Adding ${recursiveSourceDocuments.length} more source documents`)
-            console.log(`Adding ${recursiveArtifacts.length} more artifacts`)
-            console.log(`Adding ${recursiveTokens} more tokens from recursive calls`)
-
             newResponse = recursiveResponse
             usedTools.push(...recursiveUsedTools)
             sourceDocuments = [...sourceDocuments, ...recursiveSourceDocuments]
             artifacts = [...artifacts, ...recursiveArtifacts]
             totalTokens += recursiveTokens
-        } else {
-            console.log('No recursive tool calls detected')
         }
 
-        console.log(`Final token usage in this tool call chain: ${totalTokens}`)
-        console.log('=== HANDLE TOOL CALLS END ===')
         return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens }
     }
 }

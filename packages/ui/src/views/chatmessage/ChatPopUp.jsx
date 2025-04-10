@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useContext } from 'react'
+import { memo, useState, useRef, useEffect, useContext } from 'react'
 import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
@@ -10,7 +10,7 @@ import { IconMessage, IconX, IconEraser, IconArrowsMaximize } from '@tabler/icon
 import { StyledFab } from '@/ui-component/button/StyledFab'
 import MainCard from '@/ui-component/cards/MainCard'
 import Transitions from '@/ui-component/extended/Transitions'
-import { ChatMessage } from './ChatMessage'
+import ChatMessage from './ChatMessage'
 import ChatExpandDialog from './ChatExpandDialog'
 
 // api
@@ -27,7 +27,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 // Utils
 import { getLocalStorageChatflow, removeLocalStorageChatHistory } from '@/utils/genericHelper'
 
-export const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
+const ChatPopUp = ({ chatflowid, isAgentCanvas, onOpenChange }) => {
     const theme = useTheme()
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
@@ -240,3 +240,5 @@ ChatPopUp.propTypes = {
     isAgentCanvas: PropTypes.bool,
     onOpenChange: PropTypes.func
 }
+
+export default memo(ChatPopUp)

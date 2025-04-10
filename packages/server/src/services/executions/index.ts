@@ -4,7 +4,7 @@ import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Execution } from '../../database/entities/Execution'
 import { ExecutionState } from '../../Interface'
-import { Between, MoreThanOrEqual, LessThanOrEqual } from 'typeorm'
+import { Between, MoreThanOrEqual, LessThanOrEqual, In } from 'typeorm'
 
 interface ExecutionFilters {
     id?: string
@@ -67,6 +67,34 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
     }
 }
 
+/**
+ * Delete multiple executions by their IDs
+ * @param executionIds Array of execution IDs to delete
+ * @returns Object with success status and count of deleted executions
+ */
+const deleteExecutions = async (executionIds: string[]): Promise<{ success: boolean; deletedCount: number }> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const executionRepository = appServer.AppDataSource.getRepository(Execution)
+
+        // Delete executions where id is in the provided array
+        const result = await executionRepository.delete({
+            id: In(executionIds)
+        })
+
+        return {
+            success: true,
+            deletedCount: result.affected || 0
+        }
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: executionsService.deleteExecutions - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
-    getAllExecutions
+    getAllExecutions,
+    deleteExecutions
 }

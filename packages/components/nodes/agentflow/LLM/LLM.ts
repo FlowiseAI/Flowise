@@ -190,6 +190,10 @@ class LLM_Agentflow implements INode {
                             {
                                 label: 'Enum',
                                 name: 'enum'
+                            },
+                            {
+                                label: 'JSON Array',
+                                name: 'jsonArray'
                             }
                         ]
                     },
@@ -202,6 +206,44 @@ class LLM_Agentflow implements INode {
                         optional: true,
                         show: {
                             'llmStructuredOutput[$index].type': 'enum'
+                        }
+                    },
+                    {
+                        label: 'JSON Schema',
+                        name: 'jsonSchema',
+                        type: 'code',
+                        placeholder: `{
+    "answer": {
+        "type": "string",
+        "description": "Value of the answer"
+    },
+    "reason": {
+        "type": "string",
+        "description": "Reason for the answer"
+    },
+    "optional": {
+        "type": "boolean"
+    },
+    "count": {
+        "type": "number"
+    },
+    "children": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "type": "string",
+                    "description": "Value of the children's answer"
+                }
+            }
+        }
+    }
+}`,
+                        description: 'JSON schema for the structured output',
+                        optional: true,
+                        show: {
+                            'llmStructuredOutput[$index].type': 'jsonArray'
                         }
                     },
                     {
@@ -666,6 +708,27 @@ class LLM_Agentflow implements INode {
                     zodObj[sch.key] = z
                         .enum(enumValues.length ? (enumValues as [string, ...string[]]) : ['default'])
                         .describe(sch.description || '')
+                } else if (sch.type === 'jsonArray') {
+                    const jsonSchema = sch.jsonSchema
+                    if (jsonSchema) {
+                        try {
+                            // Parse the JSON schema
+                            const schemaObj = JSON.parse(jsonSchema)
+
+                            // Create a Zod schema from the JSON schema
+                            const itemSchema = this.createZodSchemaFromJSON(schemaObj)
+
+                            // Create an array schema of the item schema
+                            zodObj[sch.key] = z.array(itemSchema).describe(sch.description || '')
+                        } catch (err) {
+                            console.error(`Error parsing JSON schema for ${sch.key}:`, err)
+                            // Fallback to generic array of records
+                            zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
+                        }
+                    } else {
+                        // If no schema provided, use generic array of records
+                        zodObj[sch.key] = z.array(z.record(z.any())).describe(sch.description || '')
+                    }
                 }
             }
             const structuredOutput = z.object(zodObj)
@@ -743,6 +806,107 @@ class LLM_Agentflow implements INode {
         }
 
         sseStreamer.streamEndEvent(chatId)
+    }
+
+    /**
+     * Creates a Zod schema from a JSON schema object
+     * @param jsonSchema The JSON schema object
+     * @returns A Zod schema
+     */
+    private createZodSchemaFromJSON(jsonSchema: any): z.ZodTypeAny {
+        // If the schema is an object with properties, create an object schema
+        if (typeof jsonSchema === 'object' && jsonSchema !== null) {
+            const schemaObj: Record<string, z.ZodTypeAny> = {}
+
+            // Process each property in the schema
+            for (const [key, value] of Object.entries(jsonSchema)) {
+                if (value === null) {
+                    // Handle null values
+                    schemaObj[key] = z.null()
+                } else if (typeof value === 'object' && !Array.isArray(value)) {
+                    // Check if the property has a type definition
+                    if ('type' in value) {
+                        const type = value.type as string
+                        const description = ('description' in value ? (value.description as string) : '') || ''
+
+                        // Create the appropriate Zod type based on the type property
+                        if (type === 'string') {
+                            schemaObj[key] = z.string().describe(description)
+                        } else if (type === 'number') {
+                            schemaObj[key] = z.number().describe(description)
+                        } else if (type === 'boolean') {
+                            schemaObj[key] = z.boolean().describe(description)
+                        } else if (type === 'array') {
+                            // If it's an array type, check if items is defined
+                            if ('items' in value && value.items) {
+                                const itemSchema = this.createZodSchemaFromJSON(value.items)
+                                schemaObj[key] = z.array(itemSchema).describe(description)
+                            } else {
+                                // Default to array of any if items not specified
+                                schemaObj[key] = z.array(z.any()).describe(description)
+                            }
+                        } else if (type === 'object') {
+                            // If it's an object type, check if properties is defined
+                            if ('properties' in value && value.properties) {
+                                const nestedSchema = this.createZodSchemaFromJSON(value.properties)
+                                schemaObj[key] = nestedSchema.describe(description)
+                            } else {
+                                // Default to record of any if properties not specified
+                                schemaObj[key] = z.record(z.any()).describe(description)
+                            }
+                        } else {
+                            // Default to any for unknown types
+                            schemaObj[key] = z.any().describe(description)
+                        }
+
+                        // Check if the property is optional
+                        if ('optional' in value && value.optional === true) {
+                            schemaObj[key] = schemaObj[key].optional()
+                        }
+                    } else if (Array.isArray(value)) {
+                        // Array values without a type property
+                        if (value.length > 0) {
+                            // If the array has items, recursively create a schema for the first item
+                            const itemSchema = this.createZodSchemaFromJSON(value[0])
+                            schemaObj[key] = z.array(itemSchema)
+                        } else {
+                            // Empty array, allow any array
+                            schemaObj[key] = z.array(z.any())
+                        }
+                    } else {
+                        // It's a nested object without a type property, recursively create schema
+                        schemaObj[key] = this.createZodSchemaFromJSON(value)
+                    }
+                } else if (Array.isArray(value)) {
+                    // Array values
+                    if (value.length > 0) {
+                        // If the array has items, recursively create a schema for the first item
+                        const itemSchema = this.createZodSchemaFromJSON(value[0])
+                        schemaObj[key] = z.array(itemSchema)
+                    } else {
+                        // Empty array, allow any array
+                        schemaObj[key] = z.array(z.any())
+                    }
+                } else {
+                    // For primitive values (which shouldn't be in the schema directly)
+                    // Use the corresponding Zod type
+                    if (typeof value === 'string') {
+                        schemaObj[key] = z.string()
+                    } else if (typeof value === 'number') {
+                        schemaObj[key] = z.number()
+                    } else if (typeof value === 'boolean') {
+                        schemaObj[key] = z.boolean()
+                    } else {
+                        schemaObj[key] = z.any()
+                    }
+                }
+            }
+
+            return z.object(schemaObj)
+        }
+
+        // Fallback to any for unknown types
+        return z.any()
     }
 }
 

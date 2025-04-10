@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
-import { useContext, memo, useRef, useState, useEffect } from 'react'
+import { useContext, memo, useRef, useState, useEffect, useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import { Handle, Position, useUpdateNodeInternals, NodeToolbar } from 'reactflow'
+import { Background, Handle, Position, useUpdateNodeInternals, NodeToolbar, NodeResizer } from 'reactflow'
 
 // material-ui
 import { styled, useTheme, alpha, darken, lighten } from '@mui/material/styles'
@@ -46,19 +46,29 @@ const StyledNodeToolbar = styled(NodeToolbar)(({ theme }) => ({
     boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)'
 }))
 
-// ===========================|| CANVAS NODE ||=========================== //
+// ===========================|| ITERATION NODE ||=========================== //
 
-const AgentFlowNode = ({ data }) => {
+const IterationNode = ({ data }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const ref = useRef(null)
+    const reactFlowWrapper = useRef(null)
+
     const updateNodeInternals = useUpdateNodeInternals()
     // eslint-disable-next-line
     const [position, setPosition] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
-    const { deleteNode, duplicateNode } = useContext(flowContext)
+    const { deleteNode, duplicateNode, reactFlowInstance } = useContext(flowContext)
     const [showInfoDialog, setShowInfoDialog] = useState(false)
     const [infoDialogProps, setInfoDialogProps] = useState({})
+
+    const nodeWidth = reactFlowInstance.getNodes().find((node) => node.id === data.id).width
+    const nodeHeight = reactFlowInstance.getNodes().find((node) => node.id === data.id).height
+
+    const [cardDimensions, setCardDimensions] = useState({
+        width: nodeWidth ? `${nodeWidth}px` : '300px',
+        height: nodeHeight ? `${nodeHeight}px` : '250px'
+    })
 
     const defaultColor = '#666666' // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor
@@ -132,9 +142,68 @@ const AgentFlowNode = ({ data }) => {
         }
     }, [data, ref, updateNodeInternals])
 
+    const onResizeEnd = useCallback(
+        (e, params) => {
+            if (!ref.current) return
+
+            // Set the card dimensions directly from resize params
+            setCardDimensions({
+                width: `${params.width}px`,
+                height: `${params.height}px`
+            })
+        },
+        [ref, setCardDimensions]
+    )
+
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-            <StyledNodeToolbar>
+            <NodeToolbar align='start' isVisible={true}>
+                <Box style={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
+                    {data.color && !data.icon ? (
+                        <div
+                            style={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.largeAvatar,
+                                borderRadius: '15px',
+                                backgroundColor: data.color,
+                                cursor: 'grab',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                background: data.color
+                            }}
+                        >
+                            {renderIcon(data)}
+                        </div>
+                    ) : (
+                        <div
+                            style={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.largeAvatar,
+                                borderRadius: '50%',
+                                backgroundColor: 'white',
+                                cursor: 'grab'
+                            }}
+                        >
+                            <img
+                                style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
+                                src={`${baseURL}/api/v1/node-icon/${data.name}`}
+                                alt={data.name}
+                            />
+                        </div>
+                    )}
+                    <Typography
+                        sx={{
+                            fontSize: '0.85rem',
+                            fontWeight: 500,
+                            ml: 1
+                        }}
+                    >
+                        {data.label}
+                    </Typography>
+                </Box>
+            </NodeToolbar>
+            <StyledNodeToolbar align='end'>
                 <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Basic button group'>
                     <IconButton
                         size={'small'}
@@ -184,17 +253,19 @@ const AgentFlowNode = ({ data }) => {
                     </IconButton>
                 </ButtonGroup>
             </StyledNodeToolbar>
+            <NodeResizer minWidth={300} minHeight={Math.max(getMinimumHeight(), 250)} onResizeEnd={onResizeEnd} />
             <CardWrapper
                 content={false}
                 sx={{
                     borderColor: getStateColor(),
                     borderWidth: '1px',
                     boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none',
-                    minHeight: getMinimumHeight(),
-                    height: 'auto',
+                    minHeight: Math.max(getMinimumHeight(), 250),
+                    minWidth: 300,
+                    width: cardDimensions.width,
+                    height: cardDimensions.height,
                     backgroundColor: getBackgroundColor(),
                     display: 'flex',
-                    alignItems: 'center',
                     '&:hover': {
                         boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none'
                     }
@@ -262,139 +333,31 @@ const AgentFlowNode = ({ data }) => {
                             />
                         </Handle>
                     )}
-
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <Box item style={{ width: 50 }}>
-                            {data.color && !data.icon ? (
-                                <div
-                                    style={{
-                                        ...theme.typography.commonAvatar,
-                                        ...theme.typography.largeAvatar,
-                                        borderRadius: '15px',
-                                        backgroundColor: data.color,
-                                        cursor: 'grab',
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        background: data.color
-                                    }}
-                                >
-                                    {renderIcon(data)}
-                                </div>
-                            ) : (
-                                <div
-                                    style={{
-                                        ...theme.typography.commonAvatar,
-                                        ...theme.typography.largeAvatar,
-                                        borderRadius: '50%',
-                                        backgroundColor: 'white',
-                                        cursor: 'grab'
-                                    }}
-                                >
-                                    <img
-                                        style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
-                                        src={`${baseURL}/api/v1/node-icon/${data.name}`}
-                                        alt={data.name}
-                                    />
-                                </div>
-                            )}
-                        </Box>
-                        <Box>
-                            <Typography
-                                sx={{
-                                    fontSize: '0.85rem',
-                                    fontWeight: 500
+                        <Box
+                            sx={{
+                                height: `calc(${cardDimensions.height} - 20px)`,
+                                width: `${cardDimensions.width}`,
+                                overflow: 'hidden',
+                                position: 'relative',
+                                borderRadius: '10px'
+                            }}
+                        >
+                            <div
+                                ref={reactFlowWrapper}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    backgroundColor: theme.palette.background.default
                                 }}
                             >
-                                {data.label}
-                            </Typography>
-
-                            {(() => {
-                                // Array of model configs to check and render
-                                const modelConfigs = [
-                                    { model: data.inputs?.llmModel, config: data.inputs?.llmModelConfig },
-                                    { model: data.inputs?.agentModel, config: data.inputs?.agentModelConfig },
-                                    { model: data.inputs?.conditionAgentModel, config: data.inputs?.conditionAgentModelConfig }
-                                ]
-
-                                // Filter out undefined models and render each valid one
-                                return modelConfigs
-                                    .filter((item) => item.model && item.config)
-                                    .map((item, index) => (
-                                        <Box key={`model-${index}`} sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                                            <Box
-                                                sx={{
-                                                    backgroundColor: customization.isDarkMode
-                                                        ? 'rgba(255, 255, 255, 0.2)'
-                                                        : 'rgba(255, 255, 255, 0.9)',
-                                                    borderRadius: '16px',
-                                                    width: 'max-content',
-                                                    height: 24,
-                                                    pl: 1,
-                                                    pr: 1,
-                                                    display: 'flex',
-                                                    justifyContent: 'center',
-                                                    alignItems: 'center'
-                                                }}
-                                            >
-                                                <img
-                                                    style={{ width: 20, height: 20, objectFit: 'contain' }}
-                                                    src={`${baseURL}/api/v1/node-icon/${item.model}`}
-                                                    alt={item.model}
-                                                />
-                                                <Typography sx={{ fontSize: '0.7rem', ml: 0.5 }}>
-                                                    {item.config.modelName || item.config.model}
-                                                </Typography>
-                                            </Box>
-                                        </Box>
-                                    ))
-                            })()}
-
-                            {(() => {
-                                // Array of tool configurations to check and render
-                                const toolConfigs = [
-                                    { tools: data.inputs?.llmTools, toolProperty: 'llmSelectedTool' },
-                                    { tools: data.inputs?.agentTools, toolProperty: 'agentSelectedTool' },
-                                    {
-                                        tools: data.inputs?.selectedTool ? [{ selectedTool: data.inputs?.selectedTool }] : [],
-                                        toolProperty: 'selectedTool'
-                                    }
-                                ]
-
-                                // Filter out undefined tools and render each valid collection
-                                return toolConfigs
-                                    .filter((config) => config.tools && config.tools.length > 0)
-                                    .map((config, configIndex) => (
-                                        <Box key={`tools-${configIndex}`} sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                                            {config.tools.map((tool, toolIndex) => {
-                                                const toolName = tool[config.toolProperty]
-                                                if (!toolName) return null
-
-                                                return (
-                                                    <Box
-                                                        key={`tool-${configIndex}-${toolIndex}`}
-                                                        sx={{
-                                                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                                            borderRadius: '50%',
-                                                            width: 24,
-                                                            height: 24,
-                                                            display: 'flex',
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                            padding: '4px'
-                                                        }}
-                                                    >
-                                                        <img
-                                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                            src={`${baseURL}/api/v1/node-icon/${toolName}`}
-                                                            alt={toolName}
-                                                        />
-                                                    </Box>
-                                                )
-                                            })}
-                                        </Box>
-                                    ))
-                            })()}
+                                <Background color='#aaa' gap={16} />
+                            </div>
                         </Box>
                     </div>
                     {getOutputAnchors().map((outputAnchor, index) => {
@@ -445,8 +408,8 @@ const AgentFlowNode = ({ data }) => {
     )
 }
 
-AgentFlowNode.propTypes = {
+IterationNode.propTypes = {
     data: PropTypes.object
 }
 
-export default memo(AgentFlowNode)
+export default memo(IterationNode)

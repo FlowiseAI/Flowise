@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, forwardRef } from 'react'
+import { useEffect, useState, useCallback, forwardRef, memo } from 'react'
 import PropTypes from 'prop-types'
 
 // MUI
@@ -33,7 +33,7 @@ import StopCircleIcon from '@mui/icons-material/StopCircle'
 import ErrorIcon from '@mui/icons-material/Error'
 import { IconButton } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { IconArrowsMaximize, IconLoader, IconCircleXFilled } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconLoader, IconCircleXFilled, IconRelationOneToManyFilled } from '@tabler/icons-react'
 
 // Project imports
 import { useTheme } from '@mui/material/styles'
@@ -119,6 +119,9 @@ function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, meta
 
     const handleCloseDialog = () => setOpenDialog(false)
 
+    // Check if this is an iteration node
+    const isIterationNode = name === 'iterationAgentflow'
+
     return (
         <TreeItem2Label
             {...other}
@@ -130,6 +133,23 @@ function CustomLabel({ icon: Icon, itemStatus, children, name, label, data, meta
         >
             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                 {(() => {
+                    // Display iteration icon for iteration nodes
+                    if (isIterationNode) {
+                        return (
+                            <Box
+                                sx={{
+                                    mr: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                <IconRelationOneToManyFilled size={20} color={'#9C89B8'} />
+                            </Box>
+                        )
+                    }
+
+                    // Otherwise display the node icon
                     const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === name)
                     if (foundIcon) {
                         return (
@@ -297,7 +317,7 @@ CustomTreeItem.propTypes = {
 
 CustomTreeItem.displayName = 'CustomTreeItem'
 
-export const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) => {
+const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionId }) => {
     const [executionTree, setExecution] = useState([])
     const [expandedItems, setExpandedItems] = useState([])
     const [selectedItem, setSelectedItem] = useState(null)
@@ -339,39 +359,228 @@ export const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionI
             nodeMap.set(uniqueNodeId, { ...node, uniqueNodeId, children: [], executionIndex: index })
         })
 
+        // Identify iteration nodes and their children
+        const iterationGroups = new Map() // parentId -> Map of iterationIndex -> nodes
+
+        // Group iteration child nodes by their parent and iteration index
+        nodes.forEach((node, index) => {
+            if (node.data?.parentNodeId && node.data?.iterationIndex !== undefined) {
+                const parentId = node.data.parentNodeId
+                const iterationIndex = node.data.iterationIndex
+
+                if (!iterationGroups.has(parentId)) {
+                    iterationGroups.set(parentId, new Map())
+                }
+
+                const iterationMap = iterationGroups.get(parentId)
+                if (!iterationMap.has(iterationIndex)) {
+                    iterationMap.set(iterationIndex, [])
+                }
+
+                iterationMap.get(iterationIndex).push(`${node.nodeId}_${index}`)
+            }
+        })
+
+        // Create virtual iteration container nodes
+        iterationGroups.forEach((iterationMap, parentId) => {
+            iterationMap.forEach((nodeIds, iterationIndex) => {
+                // Find the parent iteration node
+                let parentNode = null
+                for (let i = 0; i < nodes.length; i++) {
+                    if (nodes[i].nodeId === parentId) {
+                        parentNode = nodes[i]
+                        break
+                    }
+                }
+
+                if (!parentNode) return
+
+                // Get iteration context from first child node
+                const firstChildId = nodeIds[0]
+                const firstChild = nodeMap.get(firstChildId)
+                const iterationContext = firstChild?.data?.iterationContext || { index: iterationIndex }
+
+                // Create a virtual node for this iteration
+                const iterationNodeId = `${parentId}_${iterationIndex}`
+                const iterationLabel = `Iteration #${iterationIndex}`
+
+                // Determine status based on child nodes
+                const childNodes = nodeIds.map((id) => nodeMap.get(id))
+                const iterationStatus = childNodes.some((n) => n.status === 'ERROR')
+                    ? 'ERROR'
+                    : childNodes.some((n) => n.status === 'INPROGRESS')
+                    ? 'INPROGRESS'
+                    : childNodes.every((n) => n.status === 'FINISHED')
+                    ? 'FINISHED'
+                    : 'UNKNOWN'
+
+                // Create the virtual node and add to nodeMap
+                const virtualNode = {
+                    nodeId: iterationNodeId,
+                    nodeLabel: iterationLabel,
+                    data: {
+                        name: 'iterationAgentflow',
+                        iterationIndex,
+                        iterationContext,
+                        isVirtualNode: true,
+                        parentIterationId: parentId
+                    },
+                    previousNodeIds: [], // Will be handled in the main tree building
+                    status: iterationStatus,
+                    uniqueNodeId: iterationNodeId,
+                    children: [],
+                    executionIndex: -1 // Flag as a virtual node
+                }
+
+                nodeMap.set(iterationNodeId, virtualNode)
+
+                // Set this virtual node as the parent for all nodes in this iteration
+                nodeIds.forEach((childId) => {
+                    const childNode = nodeMap.get(childId)
+                    if (childNode) {
+                        childNode.virtualParentId = iterationNodeId
+                    }
+                })
+            })
+        })
+
         // Root nodes have no previous nodes
         const rootNodes = []
+        const processedNodes = new Set()
 
-        // Build the tree structure
+        // First pass: Build the main tree structure (excluding iteration children)
         nodes.forEach((node, index) => {
             const uniqueNodeId = `${node.nodeId}_${index}`
             const treeNode = nodeMap.get(uniqueNodeId)
 
+            // Skip nodes that belong to an iteration (they'll be added to their virtual parent)
+            if (node.data?.parentNodeId && node.data?.iterationIndex !== undefined) {
+                return
+            }
+
             if (node.previousNodeIds.length === 0) {
                 rootNodes.push(treeNode)
             } else {
-                // Find the most recent previous node instances
-                // For each previous node ID, find the most recent instance that occurred before this node
+                // Find the most recent (latest) parent node among all previous nodes
+                let mostRecentParentIndex = -1
+                let mostRecentParentId = null
+
                 node.previousNodeIds.forEach((parentId) => {
-                    let mostRecentParentIndex = -1
-
-                    // Find the most recent instance of the parent node that occurred before this node
+                    // Find the most recent instance of this parent node
                     for (let i = 0; i < index; i++) {
-                        if (nodes[i].nodeId === parentId) {
+                        if (nodes[i].nodeId === parentId && i > mostRecentParentIndex) {
                             mostRecentParentIndex = i
-                        }
-                    }
-
-                    if (mostRecentParentIndex !== -1) {
-                        const parentUniqueId = `${parentId}_${mostRecentParentIndex}`
-                        const parentNode = nodeMap.get(parentUniqueId)
-                        if (parentNode) {
-                            parentNode.children.push(treeNode)
+                            mostRecentParentId = parentId
                         }
                     }
                 })
+
+                // Only add to the most recent parent
+                if (mostRecentParentIndex !== -1) {
+                    const parentUniqueId = `${mostRecentParentId}_${mostRecentParentIndex}`
+                    const parentNode = nodeMap.get(parentUniqueId)
+                    if (parentNode) {
+                        parentNode.children.push(treeNode)
+                        processedNodes.add(uniqueNodeId)
+                    }
+                }
             }
         })
+
+        // Second pass: Build the iteration sub-trees
+        iterationGroups.forEach((iterationMap, parentId) => {
+            // Find all instances of the parent node
+            const parentInstances = []
+            nodes.forEach((node, index) => {
+                if (node.nodeId === parentId) {
+                    parentInstances.push(`${node.nodeId}_${index}`)
+                }
+            })
+
+            // Find the latest instance of the parent node that exists in the tree
+            let latestParent = null
+            for (let i = parentInstances.length - 1; i >= 0; i--) {
+                const parentId = parentInstances[i]
+                const parent = nodeMap.get(parentId)
+                if (parent) {
+                    latestParent = parent
+                    break
+                }
+            }
+
+            if (!latestParent) return
+
+            // Add all virtual iteration nodes to the parent
+            iterationMap.forEach((nodeIds, iterationIndex) => {
+                const iterationNodeId = `${parentId}_${iterationIndex}`
+                const virtualNode = nodeMap.get(iterationNodeId)
+                if (virtualNode) {
+                    latestParent.children.push(virtualNode)
+                }
+            })
+        })
+
+        // Third pass: Build the structure inside each virtual iteration node
+        nodeMap.forEach((node) => {
+            if (node.virtualParentId) {
+                const virtualParent = nodeMap.get(node.virtualParentId)
+                if (virtualParent) {
+                    if (node.previousNodeIds.length === 0) {
+                        // This is a root node within the iteration
+                        virtualParent.children.push(node)
+                    } else {
+                        // Find its parent within the same iteration
+                        let parentFound = false
+                        for (const prevNodeId of node.previousNodeIds) {
+                            // Look for nodes with the same previous node ID in the same iteration
+                            nodeMap.forEach((potentialParent) => {
+                                if (
+                                    potentialParent.nodeId === prevNodeId &&
+                                    potentialParent.data?.iterationIndex === node.data?.iterationIndex &&
+                                    potentialParent.data?.parentNodeId === node.data?.parentNodeId &&
+                                    !parentFound
+                                ) {
+                                    potentialParent.children.push(node)
+                                    parentFound = true
+                                }
+                            })
+                        }
+
+                        // If no parent was found within the iteration, add directly to virtual parent
+                        if (!parentFound) {
+                            virtualParent.children.push(node)
+                        }
+                    }
+                }
+            }
+        })
+
+        // Final pass: Sort all children arrays to ensure iteration nodes appear first
+        const sortChildrenNodes = (node) => {
+            if (node.children && node.children.length > 0) {
+                // Sort children: iteration nodes first, then others by their original execution order
+                node.children.sort((a, b) => {
+                    // Check if a is an iteration node
+                    const aIsIteration = a.data?.name === 'iterationAgentflow' || a.data?.isVirtualNode
+                    // Check if b is an iteration node
+                    const bIsIteration = b.data?.name === 'iterationAgentflow' || b.data?.isVirtualNode
+
+                    // If both are iterations or both are not iterations, preserve original order
+                    if (aIsIteration === bIsIteration) {
+                        return a.executionIndex - b.executionIndex
+                    }
+
+                    // Otherwise, put iterations first
+                    return aIsIteration ? -1 : 1
+                })
+
+                // Recursively sort children's children
+                node.children.forEach(sortChildrenNodes)
+            }
+        }
+
+        // Apply sorting to all root nodes and their children
+        rootNodes.forEach(sortChildrenNodes)
 
         // Transform to the required format
         const transformNode = (node) => ({
@@ -393,6 +602,7 @@ export const AgentExecutedDataCard = ({ status, execution, agentflowId, sessionI
     useEffect(() => {
         if (execution) {
             const newTree = buildTreeData(execution)
+
             setExecution(newTree)
             setExpandedItems(getAllNodeIds(newTree))
             // Set the first item as default selected item
@@ -497,3 +707,5 @@ AgentExecutedDataCard.propTypes = {
     agentflowId: PropTypes.string,
     sessionId: PropTypes.string
 }
+
+export default memo(AgentExecutedDataCard)

@@ -3,7 +3,27 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 
 // material-ui
-import { Pagination, Box, Stack, TextField, MenuItem, Button, Grid, FormControl, InputLabel, Select } from '@mui/material'
+import {
+    Pagination,
+    Box,
+    Stack,
+    TextField,
+    MenuItem,
+    Button,
+    Grid,
+    FormControl,
+    InputLabel,
+    Select,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogContentText,
+    DialogTitle,
+    IconButton,
+    Tooltip,
+    Typography
+} from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -26,6 +46,7 @@ import { omit } from 'lodash'
 
 const AgentExecutions = () => {
     const getAllExecutions = useApi(executionsApi.getAllExecutions)
+    const deleteExecutionsApi = useApi(executionsApi.deleteExecutions)
 
     const [error, setError] = useState(null)
     const [isLoading, setLoading] = useState(true)
@@ -33,6 +54,8 @@ const AgentExecutions = () => {
     const [openDrawer, setOpenDrawer] = useState(false)
     const [selectedExecutionData, setSelectedExecutionData] = useState([])
     const [selectedMetadata, setSelectedMetadata] = useState({})
+    const [selectedExecutionIds, setSelectedExecutionIds] = useState([])
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false)
     const [filters, setFilters] = useState({
         state: '',
         startDate: null,
@@ -57,6 +80,14 @@ const AgentExecutions = () => {
         setPagination({
             ...pagination,
             page: newPage
+        })
+    }
+
+    const handleLimitChange = (event) => {
+        setPagination({
+            ...pagination,
+            page: 1, // Reset to first page when changing items per page
+            limit: parseInt(event.target.value, 10)
         })
     }
 
@@ -85,6 +116,25 @@ const AgentExecutions = () => {
             sessionId: ''
         })
         getAllExecutions.request()
+    }
+
+    const handleExecutionSelectionChange = (selectedIds) => {
+        setSelectedExecutionIds(selectedIds)
+    }
+
+    const handleDeleteDialogOpen = () => {
+        if (selectedExecutionIds.length > 0) {
+            setOpenDeleteDialog(true)
+        }
+    }
+
+    const handleDeleteDialogClose = () => {
+        setOpenDeleteDialog(false)
+    }
+
+    const handleDeleteExecutions = () => {
+        deleteExecutionsApi.request(selectedExecutionIds)
+        setOpenDeleteDialog(false)
     }
 
     useEffect(() => {
@@ -117,7 +167,20 @@ const AgentExecutions = () => {
     useEffect(() => {
         applyFilters()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pagination.page])
+    }, [pagination.page, pagination.limit])
+
+    useEffect(() => {
+        if (deleteExecutionsApi.data) {
+            // Refresh the executions list
+            getAllExecutions.request({
+                page: pagination.page,
+                limit: pagination.limit
+            })
+            setSelectedExecutionIds([])
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [deleteExecutionsApi.data])
 
     return (
         <MainCard>
@@ -182,7 +245,7 @@ const AgentExecutions = () => {
                                     size='small'
                                 />
                             </Grid>
-                            <Grid item xs={12} md={2}>
+                            <Grid item xs={12} md={4}>
                                 <Stack direction='row' spacing={1}>
                                     <Button variant='contained' color='primary' onClick={applyFilters} size='small'>
                                         Apply
@@ -190,6 +253,17 @@ const AgentExecutions = () => {
                                     <Button variant='outlined' onClick={resetFilters} size='small'>
                                         Reset
                                     </Button>
+                                    <Tooltip title='Delete selected executions'>
+                                        <span>
+                                            <IconButton
+                                                color='error'
+                                                onClick={handleDeleteDialogOpen}
+                                                disabled={selectedExecutionIds.length === 0}
+                                            >
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </span>
+                                    </Tooltip>
                                 </Stack>
                             </Grid>
                         </Grid>
@@ -198,6 +272,7 @@ const AgentExecutions = () => {
                     <ExecutionsListTable
                         data={executions}
                         isLoading={isLoading}
+                        onSelectionChange={handleExecutionSelectionChange}
                         onExecutionRowClick={(execution) => {
                             setOpenDrawer(true)
                             const executionDetails =
@@ -207,8 +282,19 @@ const AgentExecutions = () => {
                         }}
                     />
 
-                    {/* Pagination */}
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    {/* Pagination and Page Size Controls */}
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Typography variant='body2'>Items per page:</Typography>
+                            <FormControl variant='outlined' size='small' sx={{ minWidth: 80 }}>
+                                <Select value={pagination.limit} onChange={handleLimitChange} displayEmpty>
+                                    <MenuItem value={10}>10</MenuItem>
+                                    <MenuItem value={50}>50</MenuItem>
+                                    <MenuItem value={100}>100</MenuItem>
+                                    <MenuItem value={1000}>1000</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Box>
                         <Pagination
                             count={Math.ceil(pagination.total / pagination.limit)}
                             page={pagination.page}
@@ -227,6 +313,30 @@ const AgentExecutions = () => {
                             getAllExecutions.request()
                         }}
                     />
+
+                    {/* Delete Confirmation Dialog */}
+                    <Dialog
+                        open={openDeleteDialog}
+                        onClose={handleDeleteDialogClose}
+                        aria-labelledby='alert-dialog-title'
+                        aria-describedby='alert-dialog-description'
+                    >
+                        <DialogTitle id='alert-dialog-title'>Confirm Deletion</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText id='alert-dialog-description'>
+                                Are you sure you want to delete {selectedExecutionIds.length} execution
+                                {selectedExecutionIds.length !== 1 ? 's' : ''}? This action cannot be undone.
+                            </DialogContentText>
+                        </DialogContent>
+                        <DialogActions>
+                            <Button onClick={handleDeleteDialogClose} color='primary'>
+                                Cancel
+                            </Button>
+                            <Button onClick={handleDeleteExecutions} color='error'>
+                                Delete
+                            </Button>
+                        </DialogActions>
+                    </Dialog>
 
                     {!isLoading && (!executions || executions.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>

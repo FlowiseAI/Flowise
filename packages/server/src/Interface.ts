@@ -204,6 +204,8 @@ export interface IReactFlowNode {
     height: number
     selected: boolean
     dragging: boolean
+    parentNode?: string
+    extent?: string
 }
 
 export interface IReactFlowEdge {
@@ -369,6 +371,10 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     fileUploads?: IFileUpload[]
     uploadedFilesContent?: string
     isUpsert?: boolean
+    isRecursive?: boolean
+    parentExecutionId?: string
+    iterationContext?: ICommonObject
+    isTool?: boolean
 }
 
 export interface INodeOverrides {

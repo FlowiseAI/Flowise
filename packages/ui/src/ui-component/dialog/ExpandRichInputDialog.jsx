@@ -64,7 +64,7 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows }) => ({
 }))
 
 // define your extension array
-const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes) => [
+const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
     StarterKit,
     Mention.configure({
         HTMLAttributes: {
@@ -77,7 +77,14 @@ const extensions = (availableNodesForVariable, availableState, acceptNodeOutputA
                 `${options.suggestion.char} ${node.attrs.label ?? node.attrs.id} }}`
             ]
         },
-        suggestion: suggestionOptions(availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes),
+        suggestion: suggestionOptions(
+            availableNodesForVariable,
+            availableState,
+            acceptNodeOutputAsVariable,
+            nodes,
+            nodeData,
+            isNodeInsideInteration
+        ),
         deleteTriggerWithBackspace: true
     })
 ]
@@ -91,6 +98,8 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
     const [inputParam, setInputParam] = useState(null)
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
     const [availableState, setAvailableState] = useState([])
+    const [nodeData, setNodeData] = useState({})
+    const [isNodeInsideInteration, setIsNodeInsideInteration] = useState(false)
 
     useEffect(() => {
         if (dialogProps.value) {
@@ -122,13 +131,25 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
             const startAgentflowNode = dialogProps.nodes.find((node) => node.data.name === 'startAgentflow')
             const state = startAgentflowNode?.data?.inputs?.startState
             setAvailableState(state)
+
+            const agentflowNode = dialogProps.nodes.find((node) => node.data.id === dialogProps.nodeId)
+            setNodeData(agentflowNode?.data)
+
+            setIsNodeInsideInteration(dialogProps.nodes.find((node) => node.data.id === dialogProps.nodeId)?.extent === 'parent')
         }
     }, [dialogProps.disabled, inputParam, dialogProps.nodes, dialogProps.edges, dialogProps.nodeId])
 
     const editor = useEditor(
         {
             extensions: [
-                ...extensions(availableNodesForVariable, availableState, inputParam?.acceptNodeOutputAsVariable, dialogProps.nodes),
+                ...extensions(
+                    availableNodesForVariable,
+                    availableState,
+                    inputParam?.acceptNodeOutputAsVariable,
+                    dialogProps.nodes,
+                    nodeData,
+                    isNodeInsideInteration
+                ),
                 Placeholder.configure({ placeholder: inputParam?.placeholder })
             ],
             content: inputValue,
@@ -137,7 +158,7 @@ const ExpandRichInputDialog = ({ show, dialogProps, onCancel, onInputHintDialogC
             },
             editable: !dialogProps.disabled
         },
-        [availableNodesForVariable, availableState, inputParam, dialogProps.disabled]
+        [availableNodesForVariable]
     )
 
     // Focus the editor when dialog opens

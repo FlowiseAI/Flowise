@@ -11,7 +11,7 @@ import { suggestionOptions } from './suggestionOption'
 import { getAvailableNodesForVariable } from '@/utils/genericHelper'
 
 // define your extension array
-const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData) => [
+const extensions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData, isNodeInsideInteration) => [
     StarterKit,
     Mention.configure({
         HTMLAttributes: {
@@ -24,7 +24,14 @@ const extensions = (availableNodesForVariable, availableState, acceptNodeOutputA
                 `${options.suggestion.char} ${node.attrs.label ?? node.attrs.id} }}`
             ]
         },
-        suggestion: suggestionOptions(availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData),
+        suggestion: suggestionOptions(
+            availableNodesForVariable,
+            availableState,
+            acceptNodeOutputAsVariable,
+            nodes,
+            nodeData,
+            isNodeInsideInteration
+        ),
         deleteTriggerWithBackspace: true
     })
 ]
@@ -73,6 +80,7 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
     const [availableState, setAvailableState] = useState([])
     const [nodeData, setNodeData] = useState({})
+    const [isNodeInsideInteration, setIsNodeInsideInteration] = useState(false)
 
     useEffect(() => {
         if (!disabled && nodes && edges && nodeId && inputParam) {
@@ -85,13 +93,22 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
 
             const agentflowNode = nodes.find((node) => node.data.id === nodeId)
             setNodeData(agentflowNode?.data)
+
+            setIsNodeInsideInteration(nodes.find((node) => node.data.id === nodeId)?.extent === 'parent')
         }
     }, [disabled, inputParam, nodes, edges, nodeId])
 
     const editor = useEditor(
         {
             extensions: [
-                ...extensions(availableNodesForVariable, availableState, inputParam?.acceptNodeOutputAsVariable, nodes, nodeData),
+                ...extensions(
+                    availableNodesForVariable,
+                    availableState,
+                    inputParam?.acceptNodeOutputAsVariable,
+                    nodes,
+                    nodeData,
+                    isNodeInsideInteration
+                ),
                 Placeholder.configure({ placeholder: inputParam?.placeholder })
             ],
             content: value,

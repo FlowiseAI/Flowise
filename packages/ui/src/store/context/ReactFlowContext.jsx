@@ -93,8 +93,40 @@ export const ReactFlowContext = ({ children }) => {
 
     const deleteNode = (nodeid) => {
         deleteConnectedInput(nodeid, 'node')
-        reactFlowInstance.setNodes(reactFlowInstance.getNodes().filter((n) => n.id !== nodeid))
-        reactFlowInstance.setEdges(reactFlowInstance.getEdges().filter((ns) => ns.source !== nodeid && ns.target !== nodeid))
+
+        // Gather all nodes to be deleted (parent and all descendants)
+        const nodesToDelete = new Set()
+
+        // Helper function to collect all descendant nodes recursively
+        const collectDescendants = (parentId) => {
+            const childNodes = reactFlowInstance.getNodes().filter((node) => node.parentNode === parentId)
+
+            childNodes.forEach((childNode) => {
+                nodesToDelete.add(childNode.id)
+                collectDescendants(childNode.id)
+            })
+        }
+
+        // Collect all descendants first
+        collectDescendants(nodeid)
+
+        // Add the parent node itself last
+        nodesToDelete.add(nodeid)
+
+        // Clean up inputs for all nodes to be deleted
+        nodesToDelete.forEach((id) => {
+            if (id !== nodeid) {
+                // Skip parent node as it's already processed at the beginning
+                deleteConnectedInput(id, 'node')
+            }
+        })
+
+        // Filter out all nodes and edges in a single operation
+        reactFlowInstance.setNodes((nodes) => nodes.filter((node) => !nodesToDelete.has(node.id)))
+
+        // Remove all edges connected to any of the deleted nodes
+        reactFlowInstance.setEdges((edges) => edges.filter((edge) => !nodesToDelete.has(edge.source) && !nodesToDelete.has(edge.target)))
+
         dispatch({ type: SET_DIRTY })
     }
 

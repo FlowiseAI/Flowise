@@ -1,11 +1,6 @@
 import { Box, Card, CardContent, Chip, Stack } from '@mui/material'
 import { IconTool, IconDeviceSdCard } from '@tabler/icons-react'
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
-import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import rehypeMathjax from 'rehype-mathjax'
-import rehypeRaw from 'rehype-raw'
 import nextAgentGIF from '@/assets/images/next-agent.gif'
 import PropTypes from 'prop-types'
 
@@ -137,32 +132,7 @@ const AgentReasoningCard = ({
                     </div>
                 )}
                 {agent.messages.length > 0 && (
-                    <MemoizedReactMarkdown
-                        remarkPlugins={[remarkGfm, remarkMath]}
-                        rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                        components={{
-                            code({ inline, className, children, ...props }) {
-                                const match = /language-(\w+)/.exec(className || '')
-                                return !inline ? (
-                                    <CodeBlock
-                                        key={Math.random()}
-                                        chatflowid={chatflowid}
-                                        isDialog={isDialog}
-                                        language={(match && match[1]) || ''}
-                                        value={String(children).replace(/\n$/, '')}
-                                        {...props}
-                                    />
-                                ) : (
-                                    <code className={className} {...props}>
-                                        {children}
-                                    </code>
-                                )
-                            },
-                            p({ children }) {
-                                return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                            }
-                        }}
-                    >
+                    <MemoizedReactMarkdown chatflowid={chatflowid} isFullWidth={isDialog}>
                         {agent.messages.length > 1 ? agent.messages.join('\\n') : agent.messages[0]}
                     </MemoizedReactMarkdown>
                 )}

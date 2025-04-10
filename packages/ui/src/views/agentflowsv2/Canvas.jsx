@@ -20,6 +20,7 @@ import { useTheme } from '@mui/material/styles'
 
 // project imports
 import CanvasNode from './AgentFlowNode'
+import IterationNode from './IterationNode'
 import AgentFlowEdge from './AgentFlowEdge'
 import ConnectionLine from './ConnectionLine'
 import StickyNote from './StickyNote'
@@ -27,8 +28,8 @@ import CanvasHeader from '@/views/canvas/CanvasHeader'
 import AddNodes from '@/views/canvas/AddNodes'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
-import { ChatPopUp } from '@/views/chatmessage/ChatPopUp'
-import { ValidationPopUp } from '@/views/chatmessage/ValidationPopUp'
+import ChatPopUp from '@/views/chatmessage/ChatPopUp'
+import ValidationPopUp from '@/views/chatmessage/ValidationPopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
 // API
@@ -50,7 +51,7 @@ import { usePrompt } from '@/utils/usePrompt'
 // const
 import { FLOWISE_CREDENTIAL_ID, AGENTFLOW_ICONS } from '@/store/constant'
 
-const nodeTypes = { agentFlow: CanvasNode, stickyNote: StickyNote }
+const nodeTypes = { agentFlow: CanvasNode, stickyNote: StickyNote, iteration: IterationNode }
 const edgeTypes = { agentFlow: AgentFlowEdge }
 
 // ==============================|| CANVAS ||============================== //
@@ -119,6 +120,11 @@ const AgentflowCanvas = () => {
             edgeLabel = edgeLabel === '0' ? 'proceed' : 'reject'
         }
 
+        // Check if both source and target nodes are within the same iteration node
+        const sourceNode = reactFlowInstance.getNodes().find((node) => node.id === params.source)
+        const targetNode = reactFlowInstance.getNodes().find((node) => node.id === params.target)
+        const isWithinIterationNode = sourceNode?.parentNode && targetNode?.parentNode && sourceNode.parentNode === targetNode.parentNode
+
         const newEdge = {
             ...params,
             data: {
@@ -128,6 +134,7 @@ const AgentflowCanvas = () => {
                 edgeLabel,
                 isHumanInput: nodeName === 'humanInputAgentflow'
             },
+            ...(isWithinIterationNode && { zIndex: 9999 }),
             type: 'agentFlow',
             id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
         }
@@ -303,8 +310,84 @@ const AgentflowCanvas = () => {
             const newNode = {
                 id: newNodeId,
                 position,
-                type: nodeData.type !== 'StickyNote' ? 'agentFlow' : 'stickyNote',
                 data: { ...initNode(nodeData, newNodeId, true), label: newNodeLabel }
+            }
+
+            if (nodeData.type === 'Iteration') {
+                newNode.type = 'iteration'
+            } else if (nodeData.type === 'StickyNote') {
+                newNode.type = 'stickyNote'
+            } else {
+                newNode.type = 'agentFlow'
+            }
+
+            // Check if the dropped node is within any Iteration node's flowContainerSize
+            const iterationNodes = nodes.filter((node) => node.type === 'iteration')
+            let parentNode = null
+
+            for (const iterationNode of iterationNodes) {
+                // Get the iteration node's position and dimensions
+                const nodeWidth = iterationNode.width || 300
+                const nodeHeight = iterationNode.height || 250
+
+                // Calculate the boundaries of the iteration node
+                const nodeLeft = iterationNode.position.x
+                const nodeRight = nodeLeft + nodeWidth
+                const nodeTop = iterationNode.position.y
+                const nodeBottom = nodeTop + nodeHeight
+
+                // Check if the dropped position is within these boundaries
+                if (position.x >= nodeLeft && position.x <= nodeRight && position.y >= nodeTop && position.y <= nodeBottom) {
+                    parentNode = iterationNode
+
+                    // We can't have nested iteration nodes
+                    if (nodeData.name === 'iterationAgentflow') {
+                        enqueueSnackbar({
+                            message: 'Nested iteration node is not supported yet',
+                            options: {
+                                key: new Date().getTime() + Math.random(),
+                                variant: 'error',
+                                persist: true,
+                                action: (key) => (
+                                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                        <IconX />
+                                    </Button>
+                                )
+                            }
+                        })
+                        return
+                    }
+
+                    // We can't have human input node inside iteration node
+                    if (nodeData.name === 'humanInputAgentflow') {
+                        enqueueSnackbar({
+                            message: 'Human input node is not supported inside Iteration node',
+                            options: {
+                                key: new Date().getTime() + Math.random(),
+                                variant: 'error',
+                                persist: true,
+                                action: (key) => (
+                                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                        <IconX />
+                                    </Button>
+                                )
+                            }
+                        })
+                        return
+                    }
+                    break
+                }
+            }
+
+            // If the node is dropped inside an iteration node, set its parent
+            if (parentNode) {
+                newNode.parentNode = parentNode.id
+                newNode.extent = 'parent'
+                // Adjust position to be relative to the parent
+                newNode.position = {
+                    x: position.x - parentNode.position.x,
+                    y: position.y - parentNode.position.y
+                }
             }
 
             setSelectedNode(newNode)

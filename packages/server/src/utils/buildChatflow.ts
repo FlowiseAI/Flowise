@@ -237,7 +237,8 @@ export const executeFlow = async ({
     baseURL,
     isInternal,
     files,
-    signal
+    signal,
+    isTool
 }: IExecuteFlowParams) => {
     // Ensure incomingInput has all required properties with default values
     incomingInput = {
@@ -388,7 +389,8 @@ export const executeFlow = async ({
             isInternal,
             uploadedFilesContent,
             fileUploads,
-            signal
+            signal,
+            isTool
         })
     }
 
@@ -839,6 +841,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const files = (req.files as Express.Multer.File[]) || []
     const abortControllerId = `${chatflow.id}_${chatId}`
+    const isTool = req.get('flowise-tool') === 'true'
 
     try {
         // Validate API Key if its external API request
@@ -860,7 +863,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             sseStreamer: appServer.sseStreamer,
             telemetry: appServer.telemetry,
             cachePool: appServer.cachePool,
-            componentNodes: appServer.nodesPool.componentNodes
+            componentNodes: appServer.nodesPool.componentNodes,
+            isTool // used to disable streaming if incoming request its from ChatflowTool
         }
 
         if (process.env.MODE === MODE.QUEUE) {

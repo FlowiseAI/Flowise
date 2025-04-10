@@ -1,9 +1,5 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import rehypeMathjax from 'rehype-mathjax'
-import rehypeRaw from 'rehype-raw'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
 import PropTypes from 'prop-types'
 
 // MUI
@@ -32,7 +28,6 @@ import { IconCoins, IconClock, IconChevronDown } from '@tabler/icons-react'
 import toolSVG from '@/assets/images/tool.svg'
 
 // Project imports
-import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
 import { AGENTFLOW_ICONS, baseURL } from '@/store/constant'
 import { JSONViewer } from '@/ui-component/json/JsonViewer'
@@ -656,33 +651,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                                                 backgroundColor: theme.palette.background.paper
                                                             }}
                                                         >
-                                                            <MemoizedReactMarkdown
-                                                                remarkPlugins={[remarkGfm, remarkMath]}
-                                                                rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                                                components={{
-                                                                    code({ inline, className, children, ...props }) {
-                                                                        const match = /language-(\w+)/.exec(className || '')
-                                                                        return !inline ? (
-                                                                            <CodeBlock
-                                                                                isDialog={true}
-                                                                                key={Math.random()}
-                                                                                language={(match && match[1]) || ''}
-                                                                                value={String(children).replace(/\n$/, '')}
-                                                                                {...props}
-                                                                            />
-                                                                        ) : (
-                                                                            <code className={className} {...props}>
-                                                                                {children}
-                                                                            </code>
-                                                                        )
-                                                                    },
-                                                                    p({ children }) {
-                                                                        return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                                                                    }
-                                                                }}
-                                                            >
-                                                                {artifact.data}
-                                                            </MemoizedReactMarkdown>
+                                                            <MemoizedReactMarkdown>{artifact.data}</MemoizedReactMarkdown>
                                                         </Box>
                                                     )
                                                 }
@@ -748,66 +717,10 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                             )
                                         } catch (e) {
                                             // Not valid JSON, render as markdown
-                                            return (
-                                                <MemoizedReactMarkdown
-                                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                                    components={{
-                                                        code({ inline, className, children, ...props }) {
-                                                            const match = /language-(\w+)/.exec(className || '')
-                                                            return !inline ? (
-                                                                <CodeBlock
-                                                                    isDialog={true}
-                                                                    key={Math.random()}
-                                                                    language={(match && match[1]) || ''}
-                                                                    value={String(children).replace(/\n$/, '')}
-                                                                    {...props}
-                                                                />
-                                                            ) : (
-                                                                <code className={className} {...props}>
-                                                                    {children}
-                                                                </code>
-                                                            )
-                                                        },
-                                                        p({ children }) {
-                                                            return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                                                        }
-                                                    }}
-                                                >
-                                                    {message.content}
-                                                </MemoizedReactMarkdown>
-                                            )
+                                            return <MemoizedReactMarkdown>{message.content}</MemoizedReactMarkdown>
                                         }
                                     } else {
-                                        return (
-                                            <MemoizedReactMarkdown
-                                                remarkPlugins={[remarkGfm, remarkMath]}
-                                                rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                                components={{
-                                                    code({ inline, className, children, ...props }) {
-                                                        const match = /language-(\w+)/.exec(className || '')
-                                                        return !inline ? (
-                                                            <CodeBlock
-                                                                isDialog={true}
-                                                                key={Math.random()}
-                                                                language={(match && match[1]) || ''}
-                                                                value={String(children).replace(/\n$/, '')}
-                                                                {...props}
-                                                            />
-                                                        ) : (
-                                                            <code className={className} {...props}>
-                                                                {children}
-                                                            </code>
-                                                        )
-                                                    },
-                                                    p({ children }) {
-                                                        return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                                                    }
-                                                }}
-                                            >
-                                                {`*No data*`}
-                                            </MemoizedReactMarkdown>
-                                        )
+                                        return <MemoizedReactMarkdown>{`*No data*`}</MemoizedReactMarkdown>
                                     }
                                 })()}
                             </Box>
@@ -852,33 +765,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                 backgroundColor: theme.palette.background.default
                             }}
                         >
-                            <MemoizedReactMarkdown
-                                remarkPlugins={[remarkGfm, remarkMath]}
-                                rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                components={{
-                                    code({ inline, className, children, ...props }) {
-                                        const match = /language-(\w+)/.exec(className || '')
-                                        return !inline ? (
-                                            <CodeBlock
-                                                isDialog={true}
-                                                key={Math.random()}
-                                                language={(match && match[1]) || ''}
-                                                value={String(children).replace(/\n$/, '')}
-                                                {...props}
-                                            />
-                                        ) : (
-                                            <code className={className} {...props}>
-                                                {children}
-                                            </code>
-                                        )
-                                    },
-                                    p({ children }) {
-                                        return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                                    }
-                                }}
-                            >
-                                {data?.input?.question || `*No data*`}
-                            </MemoizedReactMarkdown>
+                            <MemoizedReactMarkdown>{data?.input?.question || `*No data*`}</MemoizedReactMarkdown>
                         </Box>
                     )}
                     <Typography sx={{ mt: 2 }} variant='h5' gutterBottom>
@@ -913,66 +800,10 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                         )
                                     } catch (e) {
                                         // Not valid JSON, render as markdown
-                                        return (
-                                            <MemoizedReactMarkdown
-                                                remarkPlugins={[remarkGfm, remarkMath]}
-                                                rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                                components={{
-                                                    code({ inline, className, children, ...props }) {
-                                                        const match = /language-(\w+)/.exec(className || '')
-                                                        return !inline ? (
-                                                            <CodeBlock
-                                                                isDialog={true}
-                                                                key={Math.random()}
-                                                                language={(match && match[1]) || ''}
-                                                                value={String(children).replace(/\n$/, '')}
-                                                                {...props}
-                                                            />
-                                                        ) : (
-                                                            <code className={className} {...props}>
-                                                                {children}
-                                                            </code>
-                                                        )
-                                                    },
-                                                    p({ children }) {
-                                                        return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                                                    }
-                                                }}
-                                            >
-                                                {data?.output?.content || `*No data*`}
-                                            </MemoizedReactMarkdown>
-                                        )
+                                        return <MemoizedReactMarkdown>{data?.output?.content || `*No data*`}</MemoizedReactMarkdown>
                                     }
                                 } else {
-                                    return (
-                                        <MemoizedReactMarkdown
-                                            remarkPlugins={[remarkGfm, remarkMath]}
-                                            rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                            components={{
-                                                code({ inline, className, children, ...props }) {
-                                                    const match = /language-(\w+)/.exec(className || '')
-                                                    return !inline ? (
-                                                        <CodeBlock
-                                                            isDialog={true}
-                                                            key={Math.random()}
-                                                            language={(match && match[1]) || ''}
-                                                            value={String(children).replace(/\n$/, '')}
-                                                            {...props}
-                                                        />
-                                                    ) : (
-                                                        <code className={className} {...props}>
-                                                            {children}
-                                                        </code>
-                                                    )
-                                                },
-                                                p({ children }) {
-                                                    return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                                                }
-                                            }}
-                                        >
-                                            {`*No data*`}
-                                        </MemoizedReactMarkdown>
-                                    )
+                                    return <MemoizedReactMarkdown>{`*No data*`}</MemoizedReactMarkdown>
                                 }
                             })()}
                         </Box>
@@ -994,31 +825,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                     backgroundColor: theme.palette.background.default
                                 }}
                             >
-                                <MemoizedReactMarkdown
-                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                    components={{
-                                        code({ inline, className, children, ...props }) {
-                                            const match = /language-(\w+)/.exec(className || '')
-                                            return !inline ? (
-                                                <CodeBlock
-                                                    isDialog={true}
-                                                    key={Math.random()}
-                                                    language={(match && match[1]) || ''}
-                                                    value={String(children).replace(/\n$/, '')}
-                                                    {...props}
-                                                />
-                                            ) : (
-                                                <code className={className} {...props}>
-                                                    {children}
-                                                </code>
-                                            )
-                                        },
-                                        p({ children }) {
-                                            return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                                        }
-                                    }}
-                                >
+                                <MemoizedReactMarkdown>
                                     {typeof data?.error === 'object'
                                         ? JSON.stringify(data.error, null, 2)
                                         : data?.error || `*No error details*`}

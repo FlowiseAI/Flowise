@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 
@@ -24,7 +24,7 @@ import { AGENTFLOW_ICONS } from '@/store/constant'
 
 // Utils
 
-export const ValidationPopUp = ({ chatflowid, hidden }) => {
+const ValidationPopUp = ({ chatflowid, hidden }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const customization = useSelector((state) => state.customization)
@@ -297,3 +297,5 @@ ValidationPopUp.propTypes = {
     chatflowid: PropTypes.string,
     hidden: PropTypes.bool
 }
+
+export default memo(ValidationPopUp)

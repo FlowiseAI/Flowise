@@ -1,11 +1,7 @@
-import { useState, useRef, useEffect, useCallback, Fragment, useContext } from 'react'
+import { useState, useRef, useEffect, useCallback, Fragment, useContext, memo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 import { cloneDeep } from 'lodash'
-import rehypeMathjax from 'rehype-mathjax'
-import rehypeRaw from 'rehype-raw'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
@@ -52,13 +48,12 @@ import audioUploadSVG from '@/assets/images/wave-sound.jpg'
 
 // project import
 import NodeInputHandler from '@/views/canvas/NodeInputHandler'
-import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
 import SourceDocDialog from '@/ui-component/dialog/SourceDocDialog'
 import ChatFeedbackContentDialog from '@/ui-component/dialog/ChatFeedbackContentDialog'
 import StarterPromptsCard from '@/ui-component/cards/StarterPromptsCard'
 import AgentReasoningCard from './AgentReasoningCard'
-import { AgentExecutedDataCard } from './AgentExecutedDataCard'
+import AgentExecutedDataCard from './AgentExecutedDataCard'
 import { ImageButton, ImageSrc, ImageBackdrop, ImageMarked } from '@/ui-component/button/ImageButton'
 import CopyToClipboardButton from '@/ui-component/button/CopyToClipboardButton'
 import ThumbsUpButton from '@/ui-component/button/ThumbsUpButton'
@@ -166,7 +161,7 @@ CardWithDeleteOverlay.propTypes = {
     onDelete: PropTypes.func
 }
 
-export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews }) => {
+const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setPreviews }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -1647,32 +1642,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
             )
         } else {
             return (
-                <MemoizedReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                    components={{
-                        code({ inline, className, children, ...props }) {
-                            const match = /language-(\w+)/.exec(className || '')
-                            return !inline ? (
-                                <CodeBlock
-                                    key={Math.random()}
-                                    chatflowid={chatflowid}
-                                    isDialog={isDialog}
-                                    language={(match && match[1]) || ''}
-                                    value={String(children).replace(/\n$/, '')}
-                                    {...props}
-                                />
-                            ) : (
-                                <code className={className} {...props}>
-                                    {children}
-                                </code>
-                            )
-                        },
-                        p({ children }) {
-                            return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                        }
-                    }}
-                >
+                <MemoizedReactMarkdown chatflowid={chatflowid} isFullWidth={isDialog}>
                     {item.data}
                 </MemoizedReactMarkdown>
             )
@@ -2031,33 +2001,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                 </Box>
                                             ) : (
                                                 <>
-                                                    {/* Messages are being rendered in Markdown format */}
-                                                    <MemoizedReactMarkdown
-                                                        remarkPlugins={[remarkGfm, remarkMath]}
-                                                        rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                                                        components={{
-                                                            code({ inline, className, children, ...props }) {
-                                                                const match = /language-(\w+)/.exec(className || '')
-                                                                return !inline ? (
-                                                                    <CodeBlock
-                                                                        key={Math.random()}
-                                                                        chatflowid={chatflowid}
-                                                                        isDialog={isDialog}
-                                                                        language={(match && match[1]) || ''}
-                                                                        value={String(children).replace(/\n$/, '')}
-                                                                        {...props}
-                                                                    />
-                                                                ) : (
-                                                                    <code className={className} {...props}>
-                                                                        {children}
-                                                                    </code>
-                                                                )
-                                                            },
-                                                            p({ children }) {
-                                                                return <p style={{ whiteSpace: 'pre-line' }}>{children}</p>
-                                                            }
-                                                        }}
-                                                    >
+                                                    <MemoizedReactMarkdown chatflowid={chatflowid} isFullWidth={isDialog}>
                                                         {message.message}
                                                     </MemoizedReactMarkdown>
                                                 </>
@@ -2541,3 +2485,5 @@ ChatMessage.propTypes = {
     previews: PropTypes.array,
     setPreviews: PropTypes.func
 }
+
+export default memo(ChatMessage)

@@ -41,7 +41,14 @@ const fetchVariables = async () => {
     }
 }
 
-export const suggestionOptions = (availableNodesForVariable, availableState, acceptNodeOutputAsVariable, nodes, nodeData) => ({
+export const suggestionOptions = (
+    availableNodesForVariable,
+    availableState,
+    acceptNodeOutputAsVariable,
+    nodes,
+    nodeData,
+    isNodeInsideInteration
+) => ({
     char: '{{',
     items: async ({ query }) => {
         const defaultItems = [
@@ -68,6 +75,15 @@ export const suggestionOptions = (availableNodesForVariable, availableState, acc
             mentionLabel: `$flow.state.${state.key}`,
             category: 'Flow State'
         }))
+
+        if (isNodeInsideInteration) {
+            defaultItems.unshift({
+                id: '$iteration',
+                mentionLabel: '$iteration',
+                description: 'Iteration item. For JSON, use dot notation: $iteration.name',
+                category: 'Iteration'
+            })
+        }
 
         // Add output option if acceptNodeOutputAsVariable is true
         if (acceptNodeOutputAsVariable) {

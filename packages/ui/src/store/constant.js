@@ -12,7 +12,8 @@ import {
     IconRepeat,
     IconSubtask,
     IconNote,
-    IconWorld
+    IconWorld,
+    IconRelationOneToManyFilled
 } from '@tabler/icons-react'
 
 export const gridSpacing = 3
@@ -89,5 +90,10 @@ export const AGENTFLOW_ICONS = [
         name: 'httpAgentflow',
         icon: IconWorld,
         color: '#FF7F7F'
+    },
+    {
+        name: 'iterationAgentflow',
+        icon: IconRelationOneToManyFilled,
+        color: '#9C89B8'
     }
 ]
