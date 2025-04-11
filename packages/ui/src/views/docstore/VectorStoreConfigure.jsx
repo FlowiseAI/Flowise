@@ -213,73 +213,40 @@ const VectorStoreConfigure = () => {
         return canSubmit
     }
 
-    const prepareConfigData = () => {
-        const data = {
-            storeId: storeId,
-            docId: docId
-        }
-        // Set embedding config
-        if (selectedEmbeddingsProvider.inputs) {
-            data.embeddingConfig = {}
-            data.embeddingName = selectedEmbeddingsProvider.name
-            Object.keys(selectedEmbeddingsProvider.inputs).map((key) => {
-                if (key === 'FLOWISE_CREDENTIAL_ID') {
-                    data.embeddingConfig['credential'] = selectedEmbeddingsProvider.inputs[key]
-                } else {
-                    data.embeddingConfig[key] = selectedEmbeddingsProvider.inputs[key]
-                }
-            })
-        } else {
-            data.embeddingConfig = null
-            data.embeddingName = ''
-        }
-
-        // Set vector store config
-        if (selectedVectorStoreProvider.inputs) {
-            data.vectorStoreConfig = {}
-            data.vectorStoreName = selectedVectorStoreProvider.name
-            Object.keys(selectedVectorStoreProvider.inputs).map((key) => {
-                if (key === 'FLOWISE_CREDENTIAL_ID') {
-                    data.vectorStoreConfig['credential'] = selectedVectorStoreProvider.inputs[key]
-                } else {
-                    data.vectorStoreConfig[key] = selectedVectorStoreProvider.inputs[key]
-                }
-            })
-        } else {
-            data.vectorStoreConfig = null
-            data.vectorStoreName = ''
-        }
-
-        // Set record manager config
-        if (selectedRecordManagerProvider.inputs) {
-            data.recordManagerConfig = {}
-            data.recordManagerName = selectedRecordManagerProvider.name
-            Object.keys(selectedRecordManagerProvider.inputs).map((key) => {
-                if (key === 'FLOWISE_CREDENTIAL_ID') {
-                    data.recordManagerConfig['credential'] = selectedRecordManagerProvider.inputs[key]
-                } else {
-                    data.recordManagerConfig[key] = selectedRecordManagerProvider.inputs[key]
-                }
-            })
-        } else {
-            data.recordManagerConfig = null
-            data.recordManagerName = ''
-        }
-
-        return data
-    }
-
-    const tryAndInsertIntoStore = () => {
-        if (checkMandatoryFields()) {
-            setLoading(true)
-            const data = prepareConfigData()
-            insertIntoVectorStoreApi.request(data)
-        }
-    }
-
     const saveVectorStoreConfig = () => {
+        if (!checkMandatoryFields()) {
+            return
+        }
         setLoading(true)
-        const data = prepareConfigData()
+        const data = {
+            id: storeId,
+            embeddingConfig: {
+                name: selectedEmbeddingsProvider.name,
+                config: {
+                    ...selectedEmbeddingsProvider.inputs,
+                    credential: selectedEmbeddingsProvider.credential
+                }
+            },
+            vectorStoreConfig: {
+                name: selectedVectorStoreProvider.name,
+                config: {
+                    ...selectedVectorStoreProvider.inputs,
+                    credential: selectedVectorStoreProvider.credential
+                }
+            }
+        }
+
+        // Only add record manager if it's selected and available
+        if (selectedRecordManagerProvider && Object.keys(selectedRecordManagerProvider).length > 0 && !isRecordManagerUnavailable) {
+            data.recordManagerConfig = {
+                name: selectedRecordManagerProvider.name,
+                config: {
+                    ...selectedRecordManagerProvider.inputs,
+                    credential: selectedRecordManagerProvider.credential
+                }
+            }
+        }
+
         saveVectorStoreConfigApi.request(data)
     }
 
@@ -326,21 +293,33 @@ const VectorStoreConfigure = () => {
 
     useEffect(() => {
         if (saveVectorStoreConfigApi.data) {
-            setLoading(false)
-            enqueueSnackbar({
-                message: 'Configuration saved successfully',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'success',
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
+            try {
+                const savedConfig = saveVectorStoreConfigApi.data
+
+                // First update local state
+                setDocumentStore(savedConfig)
+
+                // Then trigger a refresh
+                getSpecificDocumentStoreApi.request(storeId)
+
+                setLoading(false)
+                enqueueSnackbar({
+                    message: 'Configuration saved successfully',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            } catch (error) {
+                setError('Failed to process saved configuration')
+                setLoading(false)
+            }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [saveVectorStoreConfigApi.data])
 
     useEffect(() => {
@@ -370,55 +349,146 @@ const VectorStoreConfigure = () => {
 
     useEffect(() => {
         getSpecificDocumentStoreApi.request(storeId)
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
         if (getSpecificDocumentStoreApi.data) {
-            const docStore = getSpecificDocumentStoreApi.data
-            setDocumentStore(docStore)
-            if (docStore.embeddingConfig) {
-                getEmbeddingNodeDetailsApi.request(docStore.embeddingConfig.name)
-            }
-            if (docStore.vectorStoreConfig) {
-                getVectorStoreNodeDetailsApi.request(docStore.vectorStoreConfig.name)
-            }
-            if (docStore.recordManagerConfig) {
-                getRecordManagerNodeDetailsApi.request(docStore.recordManagerConfig.name)
-            }
-            setLoading(false)
-        }
+            try {
+                const docStore = getSpecificDocumentStoreApi.data
+                setDocumentStore(docStore)
+                setLoading(false)
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+                // Handle embedding config
+                if (docStore.embeddingConfig) {
+                    const embeddingData =
+                        typeof docStore.embeddingConfig === 'string' ? JSON.parse(docStore.embeddingConfig) : docStore.embeddingConfig
+
+                    if (embeddingData?.name) {
+                        getEmbeddingNodeDetailsApi.request(embeddingData.name)
+                    }
+                }
+
+                // Handle vector store config
+                if (docStore.vectorStoreConfig) {
+                    const vectorStoreData =
+                        typeof docStore.vectorStoreConfig === 'string' ? JSON.parse(docStore.vectorStoreConfig) : docStore.vectorStoreConfig
+
+                    if (vectorStoreData?.name) {
+                        getVectorStoreNodeDetailsApi.request(vectorStoreData.name)
+                    }
+                }
+
+                // Handle record manager config
+                if (docStore.recordManagerConfig) {
+                    const recordManagerData =
+                        typeof docStore.recordManagerConfig === 'string'
+                            ? JSON.parse(docStore.recordManagerConfig)
+                            : docStore.recordManagerConfig
+
+                    if (recordManagerData?.name) {
+                        getRecordManagerNodeDetailsApi.request(recordManagerData.name)
+                    }
+                }
+            } catch (error) {
+       
+                setError('Failed to load configurations')
+                setLoading(false)
+            }
+        }
     }, [getSpecificDocumentStoreApi.data])
 
     useEffect(() => {
         if (getEmbeddingNodeDetailsApi.data) {
             const node = getEmbeddingNodeDetailsApi.data
-            onEmbeddingsSelected(node)
-        }
+            try {
+                if (documentStore?.embeddingConfig) {
+                    try {
+                        const embeddingData =
+                            typeof documentStore.embeddingConfig === 'string'
+                                ? JSON.parse(documentStore.embeddingConfig)
+                                : documentStore.embeddingConfig
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getEmbeddingNodeDetailsApi.data])
+                        if (embeddingData?.config) {
+                            node.inputs = { ...embeddingData.config }
+                            if (embeddingData.config.credential) {
+                                node.credential = embeddingData.config.credential
+                            }
+                        }
+                    } catch (parseError) {
+                        console.error('Error parsing embedding configuration:', parseError)
+                    }
+                }
+                setSelectedEmbeddingsProvider(node)
+            } catch (error) {
+                console.error('Error setting embedding configuration:', error)
+            }
+        }
+    }, [getEmbeddingNodeDetailsApi.data, documentStore])
 
     useEffect(() => {
         if (getVectorStoreNodeDetailsApi.data) {
             const node = getVectorStoreNodeDetailsApi.data
-            onVectorStoreSelected(node)
-        }
+            try {
+                if (documentStore?.vectorStoreConfig) {
+                    try {
+                        const vectorStoreData =
+                            typeof documentStore.vectorStoreConfig === 'string'
+                                ? JSON.parse(documentStore.vectorStoreConfig)
+                                : documentStore.vectorStoreConfig
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getVectorStoreNodeDetailsApi.data])
+                        if (vectorStoreData?.config) {
+                            node.inputs = { ...vectorStoreData.config }
+                            if (vectorStoreData.config.credential) {
+                                node.credential = vectorStoreData.config.credential
+                            }
+                        }
+                    } catch (parseError) {
+                        console.error('Error parsing vector store configuration:', parseError)
+                    }
+                }
+                setSelectedVectorStoreProvider(node)
+
+                // Check if record manager is available for this vector store
+                if (!node.inputAnchors.find((anchor) => anchor.name === 'recordManager')) {
+                    setRecordManagerUnavailable(true)
+                    setSelectedRecordManagerProvider({})
+                } else {
+                    setRecordManagerUnavailable(false)
+                }
+            } catch (error) {
+                console.error('Error setting vector store configuration:', error)
+            }
+        }
+    }, [getVectorStoreNodeDetailsApi.data, documentStore])
 
     useEffect(() => {
         if (getRecordManagerNodeDetailsApi.data) {
             const node = getRecordManagerNodeDetailsApi.data
-            onRecordManagerSelected(node)
-        }
+            try {
+                if (documentStore?.recordManagerConfig) {
+                    try {
+                        const recordManagerData =
+                            typeof documentStore.recordManagerConfig === 'string'
+                                ? JSON.parse(documentStore.recordManagerConfig)
+                                : documentStore.recordManagerConfig
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getRecordManagerNodeDetailsApi.data])
+                        if (recordManagerData?.config) {
+                            node.inputs = { ...recordManagerData.config }
+                            if (recordManagerData.config.credential) {
+                                node.credential = recordManagerData.config.credential
+                            }
+                        }
+                    } catch (parseError) {
+                        console.error('Error parsing record manager configuration:', parseError)
+                    }
+                }
+                setSelectedRecordManagerProvider(node)
+            } catch (error) {
+                console.error('Error setting record manager configuration:', error)
+            }
+        }
+    }, [getRecordManagerNodeDetailsApi.data, documentStore])
 
     useEffect(() => {
         if (getSpecificDocumentStoreApi.error) {

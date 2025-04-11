@@ -249,31 +249,68 @@ export class DocumentStoreDTO {
         documentStoreDTO.totalChunks = 0
 
         if (entity.whereUsed) {
-            documentStoreDTO.whereUsed = JSON.parse(entity.whereUsed)
+            try {
+                documentStoreDTO.whereUsed = JSON.parse(entity.whereUsed)
+            } catch (e) {
+                documentStoreDTO.whereUsed = []
+            }
         } else {
             documentStoreDTO.whereUsed = []
         }
 
         if (entity.vectorStoreConfig) {
-            documentStoreDTO.vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)
+            try {
+                documentStoreDTO.vectorStoreConfig = JSON.parse(entity.vectorStoreConfig)
+            } catch (e) {
+                // If it's already an object, use it directly
+                if (typeof entity.vectorStoreConfig === 'object') {
+                    documentStoreDTO.vectorStoreConfig = entity.vectorStoreConfig
+                } else {
+                    documentStoreDTO.vectorStoreConfig = null
+                }
+            }
         }
+
         if (entity.embeddingConfig) {
-            documentStoreDTO.embeddingConfig = JSON.parse(entity.embeddingConfig)
+            try {
+                documentStoreDTO.embeddingConfig = JSON.parse(entity.embeddingConfig)
+            } catch (e) {
+                // If it's already an object, use it directly
+                if (typeof entity.embeddingConfig === 'object') {
+                    documentStoreDTO.embeddingConfig = entity.embeddingConfig
+                } else {
+                    documentStoreDTO.embeddingConfig = null
+                }
+            }
         }
+
         if (entity.recordManagerConfig) {
-            documentStoreDTO.recordManagerConfig = JSON.parse(entity.recordManagerConfig)
+            try {
+                documentStoreDTO.recordManagerConfig = JSON.parse(entity.recordManagerConfig)
+            } catch (e) {
+                // If it's already an object, use it directly
+                if (typeof entity.recordManagerConfig === 'object') {
+                    documentStoreDTO.recordManagerConfig = entity.recordManagerConfig
+                } else {
+                    documentStoreDTO.recordManagerConfig = null
+                }
+            }
         }
 
         if (entity.loaders) {
-            documentStoreDTO.loaders = JSON.parse(entity.loaders)
-            documentStoreDTO.loaders.map((loader) => {
-                documentStoreDTO.totalChars += loader.totalChars || 0
-                documentStoreDTO.totalChunks += loader.totalChunks || 0
-                loader.source = addLoaderSource(loader)
-                if (loader.status !== 'SYNC') {
-                    documentStoreDTO.status = DocumentStoreStatus.STALE
-                }
-            })
+            try {
+                documentStoreDTO.loaders = JSON.parse(entity.loaders)
+                documentStoreDTO.loaders.map((loader) => {
+                    documentStoreDTO.totalChars += loader.totalChars || 0
+                    documentStoreDTO.totalChunks += loader.totalChunks || 0
+                    loader.source = addLoaderSource(loader)
+                    if (loader.status !== 'SYNC') {
+                        documentStoreDTO.status = DocumentStoreStatus.STALE
+                    }
+                })
+            } catch (e) {
+                documentStoreDTO.loaders = []
+            }
         }
 
         return documentStoreDTO

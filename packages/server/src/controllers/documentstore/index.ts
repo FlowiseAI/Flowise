@@ -334,8 +334,7 @@ const saveVectorStoreConfig = async (req: Request, res: Response, next: NextFunc
         }
         const body = req.body
         const appDataSource = getRunningExpressApp().AppDataSource
-        const componentNodes = getRunningExpressApp().nodesPool.componentNodes
-        const apiResponse = await documentStoreService.saveVectorStoreConfig(appDataSource, componentNodes, body)
+        const apiResponse = await documentStoreService.saveVectorStoreConfig(appDataSource, body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
