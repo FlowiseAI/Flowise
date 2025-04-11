@@ -5,7 +5,7 @@ import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
-import { ICommonObject, IDatabaseEntity, IDocument, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
+import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { omit } from 'lodash'
 import { AIMessage, HumanMessage, BaseMessage } from '@langchain/core/messages'
@@ -718,10 +718,10 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                 // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
                 try {
                     let messageWithFileUploads = ''
-                    const uploads = JSON.parse(message.fileUploads)
+                    const uploads: IFileUpload[] = JSON.parse(message.fileUploads)
                     const imageContents: MessageContentImageUrl[] = []
                     for (const upload of uploads) {
-                        if (upload.type === 'stored-file' && upload.mime.startsWith('image')) {
+                        if (upload.type === 'stored-file' && upload.mime.startsWith('image/')) {
                             const fileData = await getFileFromStorage(upload.name, message.chatflowid, message.chatId)
                             // as the image is stored in the server, read the file and convert it to base64
                             const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
@@ -732,7 +732,7 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                                     url: bf
                                 }
                             })
-                        } else if (upload.type === 'url' && upload.mime.startsWith('image')) {
+                        } else if (upload.type === 'url' && upload.mime.startsWith('image') && upload.data) {
                             imageContents.push({
                                 type: 'image_url',
                                 image_url: {
@@ -748,14 +748,15 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                                 chatflowid: message.chatflowid,
                                 chatId: message.chatId
                             }
+                            let fileInputFieldFromMimeType = 'txtFile'
+                            fileInputFieldFromMimeType = mapMimeTypeToInputField(upload.mime)
                             const nodeData = {
                                 inputs: {
-                                    txtFile: `FILE-STORAGE::${JSON.stringify([upload.name])}`
+                                    [fileInputFieldFromMimeType]: `FILE-STORAGE::${JSON.stringify([upload.name])}`
                                 }
                             }
-                            const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
-                            const pageContents = documents.map((doc) => doc.pageContent).join('\n')
-                            messageWithFileUploads += `<doc name='${upload.name}'>${pageContents}</doc>\n\n`
+                            const documents: string = await fileLoaderNodeInstance.init(nodeData, '', options)
+                            messageWithFileUploads += `<doc name='${upload.name}'>${documents}</doc>\n\n`
                         }
                     }
                     const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
