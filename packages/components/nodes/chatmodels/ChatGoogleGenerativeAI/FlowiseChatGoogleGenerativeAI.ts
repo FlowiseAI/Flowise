@@ -210,14 +210,14 @@ class LangchainChatGoogleGenerativeAI
     }
 
     async _generateNonStreaming(
-        prompt: Content[],
+        prompt: Content[], // Accepts processed prompt
         options: this['ParsedCallOptions'],
         _runManager?: CallbackManagerForLLMRun
     ): Promise<ChatResult> {
         //@ts-ignore
         const tools = options.tools ?? []
 
-        this.convertFunctionResponse(prompt)
+        this.convertFunctionResponse(prompt) // Apply function response conversion before API call
 
         if (tools.length > 0) {
             this.getClient(tools as Tool[])
@@ -227,6 +227,7 @@ class LangchainChatGoogleGenerativeAI
         const res = await this.caller.callWithOptions({ signal: options?.signal }, async () => {
             let output
             try {
+                // The prompt passed here has already been processed by convertBaseMessagesToContent
                 output = await this.client.generateContent({
                     contents: prompt
                 })
@@ -244,17 +245,17 @@ class LangchainChatGoogleGenerativeAI
     }
 
     async _generate(
-        messages: BaseMessage[],
+        messages: BaseMessage[], // Accepts original messages
         options: this['ParsedCallOptions'],
         runManager?: CallbackManagerForLLMRun
     ): Promise<ChatResult> {
+        // Process messages including merging logic
         let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
-        // Removed the potentially problematic checkIfEmptyContentAndSameRole call here
-        // The logic is now handled within the updated convertBaseMessagesToContent
 
         // Handle streaming
         if (this.streaming) {
             const tokenUsage: TokenUsage = {}
+            // Pass the original messages to the streaming function
             const stream = this._streamResponseChunks(messages, options, runManager)
             const finalChunks: Record<number, ChatGenerationChunk> = {}
 
@@ -272,22 +273,23 @@ class LangchainChatGoogleGenerativeAI
 
             return { generations, llmOutput: { estimatedTokenUsage: tokenUsage } }
         }
+        // Pass the processed prompt for non-streaming
         return this._generateNonStreaming(prompt, options, runManager)
     }
 
+    // Corrected signature to accept BaseMessage[]
     async *_streamResponseChunks(
-        messages: BaseMessage[],
+        messages: BaseMessage[], // Accepts original messages
         options: this['ParsedCallOptions'],
         runManager?: CallbackManagerForLLMRun
     ): AsyncGenerator<ChatGenerationChunk> {
+        // Process messages including merging logic *inside* the method
         let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
-        // Removed the potentially problematic checkIfEmptyContentAndSameRole call here
-        // The logic is now handled within the updated convertBaseMessagesToContent
 
         const parameters = this.invocationParams(options)
         const request = {
             ...parameters,
-            contents: prompt
+            contents: prompt // Use the processed prompt for the request
         }
 
         const tools = options.tools ?? []
@@ -495,29 +497,6 @@ function convertMessageContentToParts(message: BaseMessage, isMultimodalModel: b
     return [...messageParts, ...functionCalls, ...functionResponses]
 }
 
-/*
- * This is a dedicated logic for Multi Agent Supervisor to handle the case where the content is empty, and the role is the same
- */
-
-function checkIfEmptyContentAndSameRole(contents: Content[]) {
-    let prevRole = ''
-    const removedContents: Content[] = []
-    for (const content of contents) {
-        const role = content.role
-        // Remove if parts array is empty OR the first part is empty text, AND roles match
-        if (
-            (!content.parts.length ||
-                (content.parts.length === 1 && typeof content.parts[0].text === 'string' && content.parts[0].text.trim() === '')) &&
-            role === prevRole
-        ) {
-            removedContents.push(content)
-        } else {
-            prevRole = role // Only update prevRole if the current message is kept
-        }
-    }
-    return contents.filter((content) => !removedContents.includes(content))
-}
-
 // Updated convertBaseMessagesToContent function
 function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel: boolean) {
     const reducedContent = messages.reduce<{
@@ -570,6 +549,10 @@ function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel
 
     // Post-processing: Merge consecutive identical roles if they are simple text
     if (reducedContent.length < 2) {
+        // Before returning, ensure it doesn't end in 'model' if not empty
+        if (reducedContent.length === 1 && reducedContent[0].role === 'model') {
+            reducedContent.push({ role: 'user', parts: [{ text: '...' }] })
+        }
         return reducedContent // No merging needed for 0 or 1 messages
     }
 
