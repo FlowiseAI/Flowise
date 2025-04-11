@@ -249,7 +249,8 @@ class LangchainChatGoogleGenerativeAI
         runManager?: CallbackManagerForLLMRun
     ): Promise<ChatResult> {
         let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
-        prompt = checkIfEmptyContentAndSameRole(prompt)
+        // Removed the potentially problematic checkIfEmptyContentAndSameRole call here
+        // The logic is now handled within the updated convertBaseMessagesToContent
 
         // Handle streaming
         if (this.streaming) {
@@ -280,7 +281,8 @@ class LangchainChatGoogleGenerativeAI
         runManager?: CallbackManagerForLLMRun
     ): AsyncGenerator<ChatGenerationChunk> {
         let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
-        prompt = checkIfEmptyContentAndSameRole(prompt)
+        // Removed the potentially problematic checkIfEmptyContentAndSameRole call here
+        // The logic is now handled within the updated convertBaseMessagesToContent
 
         const parameters = this.invocationParams(options)
         const request = {
@@ -502,18 +504,23 @@ function checkIfEmptyContentAndSameRole(contents: Content[]) {
     const removedContents: Content[] = []
     for (const content of contents) {
         const role = content.role
-        if (content.parts.length && content.parts[0].text === '' && role === prevRole) {
+        // Remove if parts array is empty OR the first part is empty text, AND roles match
+        if (
+            (!content.parts.length ||
+                (content.parts.length === 1 && typeof content.parts[0].text === 'string' && content.parts[0].text.trim() === '')) &&
+            role === prevRole
+        ) {
             removedContents.push(content)
+        } else {
+            prevRole = role // Only update prevRole if the current message is kept
         }
-
-        prevRole = role
     }
-
     return contents.filter((content) => !removedContents.includes(content))
 }
 
+// Updated convertBaseMessagesToContent function
 function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel: boolean) {
-    return messages.reduce<{
+    const reducedContent = messages.reduce<{
         content: Content[]
         mergeWithPreviousContent: boolean
     }>(
@@ -526,42 +533,75 @@ function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel
                 throw new Error('System message should be the first one')
             }
             const role = convertAuthorToRole(author)
-
-            const prevContent = acc.content[acc.content.length]
-            if (!acc.mergeWithPreviousContent && prevContent && prevContent.role === role) {
-                throw new Error('Google Generative AI requires alternate messages between authors')
-            }
-
             const parts = convertMessageContentToParts(message, isMultimodalModel)
 
+            // Handle system message merging
             if (acc.mergeWithPreviousContent) {
                 const prevContent = acc.content[acc.content.length - 1]
                 if (!prevContent) {
                     throw new Error('There was a problem parsing your system message. Please try a prompt without one.')
                 }
+                // Append parts from the current message (which should be the first user message)
+                // to the previous one (which was the system message converted to user role)
                 prevContent.parts.push(...parts)
-
                 return {
-                    mergeWithPreviousContent: false,
+                    mergeWithPreviousContent: false, // Reset flag after merging
                     content: acc.content
                 }
             }
+
             let actualRole = role
             if (actualRole === 'function') {
-                // GenerativeAI API will throw an error if the role is not "user" or "model."
-                actualRole = 'user'
+                actualRole = 'user' // Map function role to user for API
             }
+
             const content: Content = {
                 role: actualRole,
                 parts
             }
             return {
+                // Set flag if current message is a system message
                 mergeWithPreviousContent: author === 'system',
                 content: [...acc.content, content]
             }
         },
         { content: [], mergeWithPreviousContent: false }
     ).content
+
+    // Post-processing: Merge consecutive identical roles if they are simple text
+    if (reducedContent.length < 2) {
+        return reducedContent // No merging needed for 0 or 1 messages
+    }
+
+    const finalMergedContent: Content[] = [reducedContent[0]] // Start with the first message
+
+    for (let i = 1; i < reducedContent.length; i++) {
+        const currentMsg = reducedContent[i]
+        const prevFinalMsg = finalMergedContent[finalMergedContent.length - 1]
+
+        // Check if roles are the same AND both parts are simple text for merging
+        if (
+            currentMsg.role === prevFinalMsg.role &&
+            currentMsg.parts.length === 1 &&
+            typeof currentMsg.parts[0].text === 'string' &&
+            prevFinalMsg.parts.length === 1 &&
+            typeof prevFinalMsg.parts[0].text === 'string'
+        ) {
+            // Merge text content, adding a newline for clarity
+            prevFinalMsg.parts = [{ text: (prevFinalMsg.parts[0].text ?? '') + '\n' + (currentMsg.parts[0].text ?? '') }]
+        } else {
+            // Otherwise, just add the current message
+            finalMergedContent.push(currentMsg)
+        }
+    }
+
+    // Final check: Ensure the result doesn't end with 'model' if it's not empty
+    if (finalMergedContent.length > 0 && finalMergedContent[finalMergedContent.length - 1].role === 'model') {
+        // Append a minimal user message if needed to satisfy API requirement
+        finalMergedContent.push({ role: 'user', parts: [{ text: '...' }] }) // Use '...' or '.' as the minimal text
+    }
+
+    return finalMergedContent
 }
 
 function mapGenerateContentResultToChatResult(
