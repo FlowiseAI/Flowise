@@ -178,6 +178,10 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 
         [![部署到 RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploy.png)](https://repocloud.io/details/?app_id=29)
 
+    -   [ClawCloud Run](https://template.run.claw.cloud/?referralCode=NHQHBCNFBJGI&openapp=system-fastdeploy%3FtemplateName%3Dflowise)
+
+        [![部署到 ClawCloud](https://raw.githubusercontent.com/ClawCloud/Run-Template/refs/heads/main/Run-on-ClawCloud.svg)](https://template.run.claw.cloud/?referralCode=NHQHBCNFBJGI&openapp=system-fastdeploy%3FtemplateName%3Dflowise)
+
       </details>
 
 ## ☁️ 云托管
