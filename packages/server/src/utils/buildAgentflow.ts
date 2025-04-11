@@ -389,7 +389,7 @@ function getNodeInputConnections(edges: IReactFlowEdge[], nodeId: string): IReac
  * Analyzes node dependencies and sets up expected inputs
  */
 function setupNodeDependencies(nodeId: string, edges: IReactFlowEdge[], nodes: IReactFlowNode[]): IWaitingNode {
-    console.log(`\n🔍 Analyzing dependencies for node: ${nodeId}`)
+    logger.debug(`\n🔍 Analyzing dependencies for node: ${nodeId}`)
     const inputConnections = getNodeInputConnections(edges, nodeId)
     const waitingNode: IWaitingNode = {
         nodeId,
@@ -410,13 +410,13 @@ function setupNodeDependencies(nodeId: string, edges: IReactFlowEdge[], nodes: I
         const conditionParent = findConditionParent(connection.source, edges, nodes)
 
         if (conditionParent) {
-            console.log(`  📌 Found conditional input from ${connection.source} (condition: ${conditionParent})`)
+            logger.debug(`  📌 Found conditional input from ${connection.source} (condition: ${conditionParent})`)
             waitingNode.isConditional = true
             const group = inputsByCondition.get(conditionParent) || []
             group.push(connection.source)
             inputsByCondition.set(conditionParent, group)
         } else {
-            console.log(`  📌 Found required input from ${connection.source}`)
+            logger.debug(`  📌 Found required input from ${connection.source}`)
             waitingNode.expectedInputs.add(connection.source)
         }
     }
@@ -424,7 +424,7 @@ function setupNodeDependencies(nodeId: string, edges: IReactFlowEdge[], nodes: I
     // Set up conditional groups
     inputsByCondition.forEach((sources, conditionId) => {
         if (conditionId) {
-            console.log(`  📋 Conditional group ${conditionId}: [${sources.join(', ')}]`)
+            logger.debug(`  📋 Conditional group ${conditionId}: [${sources.join(', ')}]`)
             waitingNode.conditionalGroups.set(conditionId, sources)
         }
     })
@@ -487,12 +487,12 @@ function findConditionParent(nodeId: string, edges: IReactFlowEdge[], nodes: IRe
  * Checks if a node has received all required inputs
  */
 function hasReceivedRequiredInputs(waitingNode: IWaitingNode): boolean {
-    console.log(`\n✨ Checking inputs for node: ${waitingNode.nodeId}`)
+    logger.debug(`\n✨ Checking inputs for node: ${waitingNode.nodeId}`)
 
     // Check non-conditional required inputs
     for (const required of waitingNode.expectedInputs) {
         const hasInput = waitingNode.receivedInputs.has(required)
-        console.log(`  📊 Required input ${required}: ${hasInput ? '✅' : '❌'}`)
+        logger.debug(`  📊 Required input ${required}: ${hasInput ? '✅' : '❌'}`)
         if (!hasInput) return false
     }
 
@@ -500,7 +500,7 @@ function hasReceivedRequiredInputs(waitingNode: IWaitingNode): boolean {
     for (const [groupId, possibleSources] of waitingNode.conditionalGroups) {
         // Need at least one input from each conditional group
         const hasInputFromGroup = possibleSources.some((source) => waitingNode.receivedInputs.has(source))
-        console.log(`  📊 Conditional group ${groupId}: ${hasInputFromGroup ? '✅' : '❌'}`)
+        logger.debug(`  📊 Conditional group ${groupId}: ${hasInputFromGroup ? '✅' : '❌'}`)
         if (!hasInputFromGroup) return false
     }
 
@@ -568,12 +568,12 @@ async function processNodeOutputs({
     waitingNodes,
     loopCounts
 }: IProcessNodeOutputsParams): Promise<{ humanInput?: IHumanInput }> {
-    console.log(`\n🔄 Processing outputs from node: ${nodeId}`)
+    logger.debug(`\n🔄 Processing outputs from node: ${nodeId}`)
 
     let updatedHumanInput = humanInput
 
     const childNodeIds = graph[nodeId] || []
-    console.log(`  👉 Child nodes: [${childNodeIds.join(', ')}]`)
+    logger.debug(`  👉 Child nodes: [${childNodeIds.join(', ')}]`)
 
     const currentNode = nodes.find((n) => n.id === nodeId)
     if (!currentNode) return { humanInput: updatedHumanInput }
@@ -581,7 +581,7 @@ async function processNodeOutputs({
     // Get nodes to ignore based on conditions
     const ignoreNodeIds = await determineNodesToIgnore(currentNode, result, humanInput, edges, nodeId)
     if (ignoreNodeIds.length) {
-        console.log(`  ⏭️  Skipping nodes: [${ignoreNodeIds.join(', ')}]`)
+        logger.debug(`  ⏭️  Skipping nodes: [${ignoreNodeIds.join(', ')}]`)
     }
 
     for (const childId of childNodeIds) {
@@ -590,22 +590,22 @@ async function processNodeOutputs({
         const childNode = nodes.find((n) => n.id === childId)
         if (!childNode) continue
 
-        console.log(`  📝 Processing child node: ${childId}`)
+        logger.debug(`  📝 Processing child node: ${childId}`)
 
         let waitingNode = waitingNodes.get(childId)
 
         if (!waitingNode) {
-            console.log(`    🆕 First time seeing node ${childId} - analyzing dependencies`)
+            logger.debug(`    🆕 First time seeing node ${childId} - analyzing dependencies`)
             waitingNode = setupNodeDependencies(childId, edges, nodes)
             waitingNodes.set(childId, waitingNode)
         }
 
         waitingNode.receivedInputs.set(nodeId, result)
-        console.log(`    ➕ Added input from ${nodeId}`)
+        logger.debug(`    ➕ Added input from ${nodeId}`)
 
         // Check if node is ready to execute
         if (hasReceivedRequiredInputs(waitingNode)) {
-            console.log(`    ✅ Node ${childId} ready for execution!`)
+            logger.debug(`    ✅ Node ${childId} ready for execution!`)
             waitingNodes.delete(childId)
             nodeExecutionQueue.push({
                 nodeId: childId,
@@ -613,26 +613,26 @@ async function processNodeOutputs({
                 inputs: Object.fromEntries(waitingNode.receivedInputs)
             })
         } else {
-            console.log(`    ⏳ Node ${childId} still waiting for inputs`)
-            console.log(`      Has: [${Array.from(waitingNode.receivedInputs.keys()).join(', ')}]`)
-            console.log(`      Needs: [${Array.from(waitingNode.expectedInputs).join(', ')}]`)
+            logger.debug(`    ⏳ Node ${childId} still waiting for inputs`)
+            logger.debug(`      Has: [${Array.from(waitingNode.receivedInputs.keys()).join(', ')}]`)
+            logger.debug(`      Needs: [${Array.from(waitingNode.expectedInputs).join(', ')}]`)
             if (waitingNode.conditionalGroups.size > 0) {
-                console.log('      Conditional groups:')
+                logger.debug('      Conditional groups:')
                 waitingNode.conditionalGroups.forEach((sources, groupId) => {
-                    console.log(`        ${groupId}: [${sources.join(', ')}]`)
+                    logger.debug(`        ${groupId}: [${sources.join(', ')}]`)
                 })
             }
         }
     }
 
     if (nodeName === 'loopAgentflow' && result.output?.nodeID) {
-        console.log(`  🔄 Looping back to node: ${result.output.nodeID}`)
+        logger.debug(`  🔄 Looping back to node: ${result.output.nodeID}`)
 
         const loopCount = (loopCounts.get(nodeId) || 0) + 1
         const maxLoop = result.output.maxLoopCount || MAX_LOOP_COUNT
 
         if (loopCount < maxLoop) {
-            console.log(`    Loop count: ${loopCount}/${maxLoop}`)
+            logger.debug(`    Loop count: ${loopCount}/${maxLoop}`)
             loopCounts.set(nodeId, loopCount)
             nodeExecutionQueue.push({
                 nodeId: result.output.nodeID,
@@ -642,11 +642,11 @@ async function processNodeOutputs({
 
             // Clear humanInput when looping to prevent it from being reused
             if (updatedHumanInput) {
-                console.log(`    🧹 Clearing humanInput for loop iteration`)
+                logger.debug(`    🧹 Clearing humanInput for loop iteration`)
                 updatedHumanInput = undefined
             }
         } else {
-            console.log(`    ⚠️ Maximum loop count (${maxLoop}) reached, stopping loop`)
+            logger.debug(`    ⚠️ Maximum loop count (${maxLoop}) reached, stopping loop`)
         }
     }
 
@@ -902,13 +902,13 @@ const executeNode = async ({
             results?.input?.iterationInput &&
             Array.isArray(results.input.iterationInput)
         ) {
-            console.log(`  🔄 Processing iteration node with ${results.input.iterationInput.length} items using recursive execution`)
+            logger.debug(`  🔄 Processing iteration node with ${results.input.iterationInput.length} items using recursive execution`)
 
             // Get child nodes for this iteration
             const childNodes = nodes.filter((node) => node.parentNode === nodeId)
 
             if (childNodes.length > 0) {
-                console.log(`  📦 Found ${childNodes.length} child nodes for iteration`)
+                logger.debug(`  📦 Found ${childNodes.length} child nodes for iteration`)
 
                 // Create a new flow object containing only the nodes in this iteration block
                 const iterationFlowData: IReactFlowObject = {
@@ -933,7 +933,7 @@ const executeNode = async ({
                 // Execute sub-flow for each item in the iteration array
                 for (let i = 0; i < results.input.iterationInput.length; i++) {
                     const item = results.input.iterationInput[i]
-                    console.log(`  🔄 Processing iteration ${i + 1}/${results.input.iterationInput.length} recursively`)
+                    logger.debug(`  🔄 Processing iteration ${i + 1}/${results.input.iterationInput.length} recursively`)
 
                     // Create iteration context
                     const iterationContext = {
@@ -987,7 +987,7 @@ const executeNode = async ({
                             // Update parent execution record with combined data if we have a parent execution ID
                             if (parentExecutionId) {
                                 try {
-                                    console.log(`  📝 Updating parent execution ${parentExecutionId} with iteration ${i + 1} data`)
+                                    logger.debug(`  📝 Updating parent execution ${parentExecutionId} with iteration ${i + 1} data`)
                                     await updateExecution(appDataSource, parentExecutionId, {
                                         executionData: JSON.stringify(agentFlowExecutedData)
                                     })
@@ -1009,7 +1009,7 @@ const executeNode = async ({
                     content: iterationResults.join('\n')
                 }
 
-                console.log(`  📊 Completed all iterations. Total results: ${iterationResults.length}`)
+                logger.debug(`  📊 Completed all iterations. Total results: ${iterationResults.length}`)
             }
         }
 
@@ -1104,7 +1104,7 @@ export const executeAgentFlow = async ({
     iterationContext,
     isTool = false
 }: IExecuteAgentFlowParams) => {
-    console.log('\n🚀 Starting flow execution')
+    logger.debug('\n🚀 Starting flow execution')
 
     const question = incomingInput.question
     const form = incomingInput.form
@@ -1259,7 +1259,7 @@ export const executeAgentFlow = async ({
         })
 
         if (parentExecution) {
-            console.log(`   📝 Using parent execution ID: ${parentExecutionId} for recursive call`)
+            logger.debug(`   📝 Using parent execution ID: ${parentExecutionId} for recursive call`)
             newExecution = parentExecution
         } else {
             console.warn(`   ⚠️ Parent execution ID ${parentExecutionId} not found, will create new execution`)
@@ -1332,8 +1332,8 @@ export const executeAgentFlow = async ({
     }
 
     while (nodeExecutionQueue.length > 0 && status === 'INPROGRESS') {
-        console.log(`\n▶️  Iteration ${iterations + 1}:`)
-        console.log(`   Queue: [${nodeExecutionQueue.map((n) => n.nodeId).join(', ')}]`)
+        logger.debug(`\n▶️  Iteration ${iterations + 1}:`)
+        logger.debug(`   Queue: [${nodeExecutionQueue.map((n) => n.nodeId).join(', ')}]`)
 
         if (iterations === 0 && !isRecursive) {
             sseStreamer?.streamAgentFlowEvent(chatId, 'INPROGRESS')
@@ -1356,7 +1356,7 @@ export const executeAgentFlow = async ({
                 throw new Error('Aborted')
             }
 
-            console.log(`   🎯 Executing node: ${reactFlowNode?.data.label}`)
+            logger.debug(`   🎯 Executing node: ${reactFlowNode?.data.label}`)
 
             // Execute current node
             const executionResult = await executeNode({
@@ -1503,7 +1503,7 @@ export const executeAgentFlow = async ({
             throw new Error(errorMessage)
         }
 
-        console.log(`/////////////////////////////////////////////////////////////////////////////`)
+        logger.debug(`/////////////////////////////////////////////////////////////////////////////`)
     }
 
     // check if there is any status stopped from agentFlowExecutedData
@@ -1531,8 +1531,8 @@ export const executeAgentFlow = async ({
         sseStreamer?.streamAgentFlowEvent(chatId, status)
     }
 
-    console.log(`\n🏁 Flow execution completed`)
-    console.log(`   Status: ${status}`)
+    logger.debug(`\n🏁 Flow execution completed`)
+    logger.debug(`   Status: ${status}`)
 
     // check if last agentFlowExecutedData.data.output contains the key "content"
     const lastNodeOutput = agentFlowExecutedData[agentFlowExecutedData.length - 1].data?.output as ICommonObject | undefined
