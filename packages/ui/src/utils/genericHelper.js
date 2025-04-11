@@ -346,8 +346,12 @@ export const getFileName = (fileBase64) => {
         return fileNames.join(', ')
     } else {
         const splitDataURI = fileBase64.split(',')
-        const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
-        return filename
+        var name = ''
+        for (let i = 2; i < splitDataURI.length - 1; i++) {
+            name = name + splitDataURI[i] + ','
+        }
+        name += splitDataURI[splitDataURI.length - 1]
+        return name.substring(9)
     }
 }
 
