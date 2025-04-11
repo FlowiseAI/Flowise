@@ -23,7 +23,9 @@ import variableService from '../variables'
 
 type ExportInput = {
     agentflow: boolean
-    assistant: boolean
+    assistantCustom: boolean
+    assistantOpenAI: boolean
+    assistantAzure: boolean
     chatflow: boolean
     chat_message: boolean
     chat_feedback: boolean
@@ -35,8 +37,10 @@ type ExportInput = {
 
 type ExportData = {
     AgentFlow: ChatFlow[]
+    AssistantCustom: Assistant[]
     AssistantFlow: ChatFlow[]
-    Assistant: Assistant[]
+    AssistantOpenAI: Assistant[]
+    AssistantAzure: Assistant[]
     ChatFlow: ChatFlow[]
     ChatMessage: ChatMessage[]
     ChatMessageFeedback: ChatMessageFeedback[]
@@ -77,9 +81,12 @@ const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: 
     try {
         let AgentFlow: ChatFlow[] = exportInput.agentflow === true ? await chatflowService.getAllChatflows('MULTIAGENT') : []
 
-        let Assistant: Assistant[] = exportInput.assistant === true ? await assistantService.getAllAssistants() : []
+        let AssistantCustom: Assistant[] = exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM') : []
+        let AssistantFlow: ChatFlow[] = exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT') : []
 
-        let AssistantFlow: ChatFlow[] = exportInput.assistant === true ? await chatflowService.getAllChatflows('ASSISTANT') : []
+        let AssistantOpenAI: Assistant[] = exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI') : []
+
+        let AssistantAzure: Assistant[] = exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE') : []
 
         let ChatFlow: ChatFlow[] = exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW') : []
 
@@ -103,8 +110,10 @@ const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: 
         return {
             FileDefaultName,
             AgentFlow,
+            AssistantCustom,
             AssistantFlow,
-            Assistant,
+            AssistantOpenAI,
+            AssistantAzure,
             ChatFlow,
             ChatMessage,
             ChatMessageFeedback,
@@ -412,12 +421,16 @@ const importData = async (importData: ExportData) => {
                 importData.AgentFlow = reduceSpaceForChatflowFlowData(importData.AgentFlow)
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AgentFlow)
             }
+            if (importData.AssistantCustom.length > 0)
+                importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantCustom)
             if (importData.AssistantFlow.length > 0) {
                 importData.AssistantFlow = reduceSpaceForChatflowFlowData(importData.AssistantFlow)
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AssistantFlow)
             }
-            if (importData.Assistant.length > 0)
-                importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.Assistant)
+            if (importData.AssistantOpenAI.length > 0)
+                importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantOpenAI)
+            if (importData.AssistantAzure.length > 0)
+                importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantAzure)
             if (importData.ChatFlow.length > 0) {
                 importData.ChatFlow = reduceSpaceForChatflowFlowData(importData.ChatFlow)
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.ChatFlow)
@@ -440,7 +453,9 @@ const importData = async (importData: ExportData) => {
 
             if (importData.AgentFlow.length > 0) await queryRunner.manager.save(ChatFlow, importData.AgentFlow)
             if (importData.AssistantFlow.length > 0) await queryRunner.manager.save(ChatFlow, importData.AssistantFlow)
-            if (importData.Assistant.length > 0) await queryRunner.manager.save(Assistant, importData.Assistant)
+            if (importData.AssistantCustom.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantCustom)
+            if (importData.AssistantOpenAI.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantOpenAI)
+            if (importData.AssistantAzure.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantAzure)
             if (importData.ChatFlow.length > 0) await queryRunner.manager.save(ChatFlow, importData.ChatFlow)
             if (importData.ChatMessage.length > 0) await queryRunner.manager.save(ChatMessage, importData.ChatMessage)
             if (importData.ChatMessageFeedback.length > 0)
