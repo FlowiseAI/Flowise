@@ -420,12 +420,16 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
-                    "label": "gemini-2.0-flash-001",
-                    "name": "gemini-2.0-flash-001"
+                    "label": "gemini-2.5-pro-preview-03-25",
+                    "name": "gemini-2.5-pro-preview-03-25"
                 },
                 {
-                    "label": "gemini-2.0-flash-lite-001",
-                    "name": "gemini-2.0-flash-lite-001"
+                    "label": "gemini-2.0-flash",
+                    "name": "gemini-2.0-flash"
+                },
+                {
+                    "label": "gemini-2.0-flash-lite",
+                    "name": "gemini-2.0-flash-lite"
                 },
                 {
                     "label": "gemini-1.5-flash",
@@ -1336,6 +1340,10 @@
                 {
                     "label": "text-embedding-004",
                     "name": "text-embedding-004"
+                },
+                {
+                    "label": "gemini-embedding-exp-03-07",
+                    "name": "gemini-embedding-exp-03-07"
                 }
             ]
         },
