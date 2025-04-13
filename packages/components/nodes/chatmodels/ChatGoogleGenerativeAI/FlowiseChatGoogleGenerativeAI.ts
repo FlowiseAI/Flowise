@@ -394,24 +394,19 @@ function getMessageAuthor(message: BaseMessage) {
 }
 
 function convertAuthorToRole(author: string) {
-    switch (author) {
-        /**
-         *  Note: Gemini currently is not supporting system messages
-         *  we will convert them to human messages and merge with following
-         * */
+    switch (author.toLowerCase()) {
         case 'ai':
-        case 'model': // getMessageAuthor returns message.name. code ex.: return message.name ?? type;
+        case 'assistant':
+        case 'model':
             return 'model'
-        case 'system':
-        case 'human':
-            return 'user'
         case 'function':
         case 'tool':
-            return 'function'
+            // Keep function/tool messages separate from model messages
+            return 'user'
+        case 'system':
+        case 'human':
         default:
-            // Instead of throwing, we return model (Needed for Multi Agent)
-            // throw new Error(`Unknown / unsupported author: ${author}`)
-            return 'model'
+            return 'user'
     }
 }
 
@@ -499,17 +494,29 @@ function convertMessageContentToParts(message: BaseMessage, isMultimodalModel: b
 
 function checkIfEmptyContentAndSameRole(contents: Content[]) {
     let prevRole = ''
-    const removedContents: Content[] = []
+    const validContents: Content[] = []
+
     for (const content of contents) {
-        const role = content.role
-        if (content.parts.length && content.parts[0].text === '' && role === prevRole) {
-            removedContents.push(content)
+        // Skip only if completely empty
+        if (!content.parts || !content.parts.length) {
+            continue
         }
 
-        prevRole = role
+        // Ensure role is always either 'user' or 'model'
+        content.role = content.role === 'model' ? 'model' : 'user'
+
+        // Handle consecutive messages
+        if (content.role === prevRole && validContents.length > 0) {
+            // Merge with previous content if same role
+            validContents[validContents.length - 1].parts.push(...content.parts)
+            continue
+        }
+
+        validContents.push(content)
+        prevRole = content.role
     }
 
-    return contents.filter((content) => !removedContents.includes(content))
+    return validContents
 }
 
 function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel: boolean) {
