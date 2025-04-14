@@ -76,6 +76,16 @@ const AgentExecutions = () => {
         })
     }
 
+    const onDateChange = (field, date) => {
+        const updatedDate = new Date(date)
+        updatedDate.setHours(0, 0, 0, 0)
+
+        setFilters({
+            ...filters,
+            [field]: updatedDate
+        })
+    }
+
     const handlePageChange = (event, newPage) => {
         setPagination({
             ...pagination,
@@ -99,8 +109,27 @@ const AgentExecutions = () => {
         }
 
         if (filters.state) params.state = filters.state
-        if (filters.startDate) params.startDate = filters.startDate.toISOString()
-        if (filters.endDate) params.endDate = filters.endDate.toISOString()
+
+        // Create date strings that preserve the exact date values
+        if (filters.startDate) {
+            const date = new Date(filters.startDate)
+            // Format date as YYYY-MM-DD and set to start of day in UTC
+            // This ensures the server sees the same date we've selected regardless of timezone
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            params.startDate = `${year}-${month}-${day}T00:00:00.000Z`
+        }
+
+        if (filters.endDate) {
+            const date = new Date(filters.endDate)
+            // Format date as YYYY-MM-DD and set to end of day in UTC
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const day = String(date.getDate()).padStart(2, '0')
+            params.endDate = `${year}-${month}-${day}T23:59:59.999Z`
+        }
+
         if (filters.agentflowId) params.agentflowId = filters.agentflowId
         if (filters.sessionId) params.sessionId = filters.sessionId
 
@@ -216,8 +245,9 @@ const AgentExecutions = () => {
                             <Grid item xs={12} md={2}>
                                 <DatePicker
                                     selected={filters.startDate}
-                                    onChange={(date) => handleFilterChange('startDate', date)}
-                                    dateFormat='yyyy-MM-dd'
+                                    onChange={(date) => onDateChange('startDate', date)}
+                                    selectsStart
+                                    startDate={filters.startDate}
                                     className='form-control'
                                     wrapperClassName='datePicker'
                                     maxDate={new Date()}
@@ -227,8 +257,9 @@ const AgentExecutions = () => {
                             <Grid sx={{ ml: -1 }} item xs={12} md={2}>
                                 <DatePicker
                                     selected={filters.endDate}
-                                    onChange={(date) => handleFilterChange('endDate', date)}
-                                    dateFormat='yyyy-MM-dd'
+                                    onChange={(date) => onDateChange('endDate', date)}
+                                    selectsEnd
+                                    endDate={filters.endDate}
                                     className='form-control'
                                     wrapperClassName='datePicker'
                                     minDate={filters.startDate}

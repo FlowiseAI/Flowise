@@ -806,7 +806,7 @@ const executeNode = async ({
         })
 
         // Get node implementation
-        const nodeInstanceFilePath = reactFlowNode.data.filePath as string
+        const nodeInstanceFilePath = componentNodes[reactFlowNode.data.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const newNodeInstance = new nodeModule.nodeClass()
 

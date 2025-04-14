@@ -4,7 +4,7 @@ import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Execution } from '../../database/entities/Execution'
 import { ExecutionState } from '../../Interface'
-import { Between, MoreThanOrEqual, LessThanOrEqual, In } from 'typeorm'
+import { In } from 'typeorm'
 
 interface ExecutionFilters {
     id?: string
@@ -22,41 +22,30 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
         const appServer = getRunningExpressApp()
         const { id, agentflowId, sessionId, state, startDate, endDate, page = 1, limit = 10 } = filters
 
-        // Build where conditions
-        const whereConditions: any = {}
+        // Handle UUID fields properly using raw parameters to avoid type conversion issues
+        // This uses the query builder instead of direct objects for compatibility with UUID fields
+        const queryBuilder = appServer.AppDataSource.getRepository(Execution)
+            .createQueryBuilder('execution')
+            .leftJoinAndSelect('execution.agentflow', 'agentflow')
+            .orderBy('execution.createdDate', 'DESC')
+            .skip((page - 1) * limit)
+            .take(limit)
 
-        if (id) whereConditions.id = id
-        if (agentflowId) whereConditions.agentflowId = agentflowId
-        if (sessionId) whereConditions.sessionId = sessionId
-        if (state) whereConditions.state = state
+        if (id) queryBuilder.andWhere('execution.id = :id', { id })
+        if (agentflowId) queryBuilder.andWhere('execution.agentflowId = :agentflowId', { agentflowId })
+        if (sessionId) queryBuilder.andWhere('execution.sessionId = :sessionId', { sessionId })
+        if (state) queryBuilder.andWhere('execution.state = :state', { state })
 
-        // Date range conditions using TypeORM operators
-        let createdDateQuery
-        if (startDate || endDate) {
-            if (startDate && endDate) {
-                createdDateQuery = Between(startDate, endDate)
-            } else if (startDate) {
-                createdDateQuery = MoreThanOrEqual(startDate)
-            } else if (endDate) {
-                createdDateQuery = LessThanOrEqual(endDate)
-            }
-
-            whereConditions.createdDate = createdDateQuery
+        // Date range conditions
+        if (startDate && endDate) {
+            queryBuilder.andWhere('execution.createdDate BETWEEN :startDate AND :endDate', { startDate, endDate })
+        } else if (startDate) {
+            queryBuilder.andWhere('execution.createdDate >= :startDate', { startDate })
+        } else if (endDate) {
+            queryBuilder.andWhere('execution.createdDate <= :endDate', { endDate })
         }
 
-        const skip = (page - 1) * limit
-
-        const [data, total] = await appServer.AppDataSource.getRepository(Execution).findAndCount({
-            where: whereConditions,
-            relations: {
-                agentflow: true
-            },
-            order: {
-                createdDate: 'DESC'
-            },
-            skip,
-            take: limit
-        })
+        const [data, total] = await queryBuilder.getManyAndCount()
 
         return { data, total }
     } catch (error) {
