@@ -12,12 +12,13 @@ import { useTheme } from '@mui/material/styles'
 // project imports
 import AgentFlowNode from './AgentFlowNode'
 import AgentFlowEdge from './AgentFlowEdge'
+import IterationNode from './IterationNode'
 import MarketplaceCanvasHeader from '@/views/marketplaces/MarketplaceCanvasHeader'
 import StickyNote from './StickyNote'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
-const nodeTypes = { agentFlow: AgentFlowNode, stickyNote: StickyNote }
+const nodeTypes = { agentFlow: AgentFlowNode, stickyNote: StickyNote, iteration: IterationNode }
 const edgeTypes = { agentFlow: AgentFlowEdge }
 
 // ==============================|| CANVAS ||============================== //

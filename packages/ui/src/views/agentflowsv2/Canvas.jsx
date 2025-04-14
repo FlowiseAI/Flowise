@@ -692,7 +692,7 @@ const AgentflowCanvas = () => {
                                     }}
                                 />
                                 <Background color='#aaa' gap={16} />
-                                <AddNodes isAgentCanvas={true} nodesData={getNodesApi.data} node={selectedNode} />
+                                <AddNodes isAgentCanvas={true} isAgentflowv2={true} nodesData={getNodesApi.data} node={selectedNode} />
                                 <EditNodeDialog
                                     show={editNodeDialogOpen}
                                     dialogProps={editNodeDialogProps}

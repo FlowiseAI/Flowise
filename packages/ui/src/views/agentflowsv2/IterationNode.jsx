@@ -62,13 +62,23 @@ const IterationNode = ({ data }) => {
     const [showInfoDialog, setShowInfoDialog] = useState(false)
     const [infoDialogProps, setInfoDialogProps] = useState({})
 
-    const nodeWidth = reactFlowInstance.getNodes().find((node) => node.id === data.id).width
-    const nodeHeight = reactFlowInstance.getNodes().find((node) => node.id === data.id).height
-
     const [cardDimensions, setCardDimensions] = useState({
-        width: nodeWidth ? `${nodeWidth}px` : '300px',
-        height: nodeHeight ? `${nodeHeight}px` : '250px'
+        width: '300px',
+        height: '250px'
     })
+
+    // Add useEffect to update dimensions when reactFlowInstance becomes available
+    useEffect(() => {
+        if (reactFlowInstance) {
+            const node = reactFlowInstance.getNodes().find((node) => node.id === data.id)
+            if (node && node.width && node.height) {
+                setCardDimensions({
+                    width: `${node.width}px`,
+                    height: `${node.height}px`
+                })
+            }
+        }
+    }, [reactFlowInstance, data.id])
 
     const defaultColor = '#666666' // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor

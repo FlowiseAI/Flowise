@@ -1,0 +1,528 @@
+import { ICommonObject } from './Interface'
+import { z } from 'zod'
+import { StructuredOutputParser } from '@langchain/core/output_parsers'
+import { isEqual, get, cloneDeep } from 'lodash'
+import { BaseChatModel } from '@langchain/core/language_models/chat_models'
+
+const ToolType = z.array(z.string()).describe('List of tools')
+
+// Define a more specific NodePosition schema
+const NodePositionType = z.object({
+    x: z.number().describe('X coordinate of the node position'),
+    y: z.number().describe('Y coordinate of the node position')
+})
+
+// Define a more specific EdgeData schema
+const EdgeDataType = z.object({
+    sourceColor: z.string().optional().describe('Color of the source handle'),
+    targetColor: z.string().optional().describe('Color of the target handle'),
+    edgeLabel: z.string().optional().describe('Label for the edge'),
+    isHumanInput: z.boolean().optional().describe('Whether this edge represents human input')
+})
+
+// Define a basic NodeData schema to avoid using .passthrough() which might cause issues
+const NodeDataType = z
+    .object({
+        label: z.string().optional().describe('Label for the node'),
+        name: z.string().optional().describe('Name of the node')
+    })
+    .optional()
+
+const NodeType = z.object({
+    id: z.string().describe('Unique identifier for the node'),
+    type: z.enum(['agentFlow']).describe('Type of the node'),
+    position: NodePositionType.describe('Position of the node in the UI'),
+    width: z.number().describe('Width of the node'),
+    height: z.number().describe('Height of the node'),
+    selected: z.boolean().optional().describe('Whether the node is selected'),
+    positionAbsolute: NodePositionType.optional().describe('Absolute position of the node'),
+    data: NodeDataType
+})
+
+const EdgeType = z.object({
+    id: z.string().describe('Unique identifier for the edge'),
+    type: z.enum(['agentFlow']).describe('Type of the node'),
+    source: z.string().describe('ID of the source node'),
+    sourceHandle: z.string().describe('ID of the source handle'),
+    target: z.string().describe('ID of the target node'),
+    targetHandle: z.string().describe('ID of the target handle'),
+    data: EdgeDataType.optional().describe('Data associated with the edge')
+})
+
+const NodesEdgesType = z
+    .object({
+        description: z.string().optional().describe('Description of the workflow'),
+        usecases: z.array(z.string()).optional().describe('Use cases for this workflow'),
+        nodes: z.array(NodeType).describe('Array of nodes in the workflow'),
+        edges: z.array(EdgeType).describe('Array of edges connecting the nodes')
+    })
+    .describe('Generate Agentflowv2 nodes and edges')
+
+export const generateAgentflowv2 = async (config: Record<string, any>, question: string, options: ICommonObject) => {
+    try {
+        const result = await generateNodesEdges(config, question, options)
+
+        const { nodes, edges } = generateNodesData(result, config)
+
+        const updatedNodes = await generateSelectedTools(nodes, config, question, options)
+
+        const updatedEdges = updateEdges(edges)
+
+        return { nodes: updatedNodes, edges: updatedEdges }
+    } catch (error) {
+        console.error('Error generating AgentflowV2:', error)
+        return { error: error.message || 'Unknown error occurred' }
+    }
+}
+
+const updateEdges = (edges: any) => {
+    const updatedEdges = edges.map((edge: any) => {
+        return {
+            ...edge,
+            data: {
+                ...edge.data,
+                isHumanInput: edge.source.includes('humanInputAgentflow') ? true : false
+            },
+            type: 'agentFlow',
+            id: `${edge.source}-${edge.sourceHandle}-${edge.target}-${edge.targetHandle}`
+        }
+    })
+
+    if (updatedEdges.length > 0) {
+        updatedEdges.forEach((edge: any) => {
+            if (edge.source.includes('conditionAgentflow') || edge.source.includes('humanInputAgentflow')) {
+                if (edge.sourceHandle.includes('true')) {
+                    edge.sourceHandle = edge.sourceHandle.replace('true', '0')
+                } else if (edge.sourceHandle.includes('false')) {
+                    edge.sourceHandle = edge.sourceHandle.replace('false', '1')
+                }
+            }
+        })
+    }
+
+    return updatedEdges
+}
+
+const generateSelectedTools = async (nodes: any, config: Record<string, any>, question: string, options: ICommonObject) => {
+    const selectedTools: any = []
+
+    for (let i = 0; i < nodes.length; i += 1) {
+        const node = nodes[i]
+        if (node.data.name === 'agentAgentflow') {
+            const sysPrompt = `You are a workflow orchestrator that is designed to make agent coordination and execution easy. Your goal is to select the tools that are needed to achieve the given task.
+
+Here are the tools to choose from:
+${config.toolNodes}
+
+Here's the selected tools:
+${JSON.stringify(selectedTools, null, 2)}
+
+Output Format should be a list of tool names:
+For example:["googleCustomSearch", "slackMCP"]
+
+Now, select the tools that are needed to achieve the given task. You must only select tools that are in the list of tools above. You must NOT select the tools that are already in the list of selected tools.
+`
+            const tools = await _generateSelectedTools({ ...config, prompt: sysPrompt }, question, options)
+            if (Array.isArray(tools) && tools.length > 0) {
+                selectedTools.push(...tools)
+
+                let existingTools = []
+                if (nodes[i].data.inputs.agentTools && nodes[i].data.inputs.agentTools.length > 0) {
+                    existingTools = nodes[i].data.inputs.agentTools
+                }
+                nodes[i].data.inputs.agentTools = [
+                    ...existingTools,
+                    ...tools.map((tool) => ({
+                        agentSelectedTool: tool,
+                        agentSelectedToolConfig: {
+                            agentSelectedTool: tool
+                        }
+                    }))
+                ]
+            }
+        } else if (node.data.name === 'toolAgentflow') {
+            const sysPrompt = `You are a workflow orchestrator that is designed to make agent coordination and execution easy. Your goal is to select ONE tool that is needed to achieve the given task.
+
+Here are the tools to choose from:
+${config.toolNodes}
+
+Here's the selected tools:
+${JSON.stringify(selectedTools, null, 2)}
+
+Output Format should ONLY one tool name inside of a list:
+For example:["googleCustomSearch"]
+
+Now, select the ONLY tool that is needed to achieve the given task. You must only select tool that is in the list of tools above. You must NOT select the tool that is already in the list of selected tools.
+`
+            const tools = await _generateSelectedTools({ ...config, prompt: sysPrompt }, question, options)
+            if (Array.isArray(tools) && tools.length > 0) {
+                selectedTools.push(...tools)
+
+                nodes[i].data.inputs.selectedTool = tools[0]
+                nodes[i].data.inputs.toolInputArgs = []
+                nodes[i].data.inputs.selectedToolConfig = {
+                    selectedTool: tools[0]
+                }
+            }
+        }
+    }
+
+    return nodes
+}
+
+const _generateSelectedTools = async (config: Record<string, any>, question: string, options: ICommonObject) => {
+    try {
+        const chatModelComponent = config.componentNodes[config.selectedChatModel?.name]
+        if (!chatModelComponent) {
+            throw new Error('Chat model component not found')
+        }
+        const nodeInstanceFilePath = chatModelComponent.filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const newToolNodeInstance = new nodeModule.nodeClass()
+        const model = (await newToolNodeInstance.init(config.selectedChatModel, '', options)) as BaseChatModel
+
+        // Create a parser to validate the output
+        const parser = StructuredOutputParser.fromZodSchema(ToolType)
+
+        // Generate JSON schema from our Zod schema
+        const formatInstructions = parser.getFormatInstructions()
+
+        // Full conversation with system prompt and instructions
+        const messages = [
+            {
+                role: 'system',
+                content: `${config.prompt}\n\n${formatInstructions}\n\nMake sure to follow the exact JSON schema structure.`
+            },
+            {
+                role: 'user',
+                content: question
+            }
+        ]
+
+        // Standard completion without structured output
+        const response = await model.invoke(messages)
+
+        // Try to extract JSON from the response
+        const responseContent = response.content.toString()
+        const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/) || responseContent.match(/{[\s\S]*?}/)
+
+        if (jsonMatch) {
+            const jsonStr = jsonMatch[1] || jsonMatch[0]
+            try {
+                const parsedJSON = JSON.parse(jsonStr)
+                // Validate with our schema
+                return ToolType.parse(parsedJSON)
+            } catch (parseError) {
+                console.error('Error parsing JSON from response:', parseError)
+                return { error: 'Failed to parse JSON from response', content: responseContent }
+            }
+        } else {
+            console.error('No JSON found in response:', responseContent)
+            return { error: 'No JSON found in response', content: responseContent }
+        }
+    } catch (error) {
+        console.error('Error generating AgentflowV2:', error)
+        return { error: error.message || 'Unknown error occurred' }
+    }
+}
+
+const generateNodesEdges = async (config: Record<string, any>, question: string, options?: ICommonObject) => {
+    try {
+        const chatModelComponent = config.componentNodes[config.selectedChatModel?.name]
+        if (!chatModelComponent) {
+            throw new Error('Chat model component not found')
+        }
+        const nodeInstanceFilePath = chatModelComponent.filePath as string
+        const nodeModule = await import(nodeInstanceFilePath)
+        const newToolNodeInstance = new nodeModule.nodeClass()
+        const model = (await newToolNodeInstance.init(config.selectedChatModel, '', options)) as BaseChatModel
+
+        // Create a parser to validate the output
+        const parser = StructuredOutputParser.fromZodSchema(NodesEdgesType)
+
+        // Generate JSON schema from our Zod schema
+        const formatInstructions = parser.getFormatInstructions()
+
+        // Full conversation with system prompt and instructions
+        const messages = [
+            {
+                role: 'system',
+                content: `${config.prompt}\n\n${formatInstructions}\n\nMake sure to follow the exact JSON schema structure.`
+            },
+            {
+                role: 'user',
+                content: question
+            }
+        ]
+
+        // Standard completion without structured output
+        const response = await model.invoke(messages)
+
+        // Try to extract JSON from the response
+        const responseContent = response.content.toString()
+        const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/) || responseContent.match(/{[\s\S]*?}/)
+
+        if (jsonMatch) {
+            const jsonStr = jsonMatch[1] || jsonMatch[0]
+            try {
+                const parsedJSON = JSON.parse(jsonStr)
+                // Validate with our schema
+                return NodesEdgesType.parse(parsedJSON)
+            } catch (parseError) {
+                console.error('Error parsing JSON from response:', parseError)
+                return { error: 'Failed to parse JSON from response', content: responseContent }
+            }
+        } else {
+            console.error('No JSON found in response:', responseContent)
+            return { error: 'No JSON found in response', content: responseContent }
+        }
+    } catch (error) {
+        console.error('Error generating AgentflowV2:', error)
+        return { error: error.message || 'Unknown error occurred' }
+    }
+}
+
+const generateNodesData = (result: Record<string, any>, config: Record<string, any>) => {
+    try {
+        if (result.error) {
+            return result
+        }
+
+        const nodes = result.nodes
+
+        for (let i = 0; i < nodes.length; i += 1) {
+            const node = nodes[i]
+            let nodeName = node.data?.name
+
+            // If nodeName is not found in data.name, try extracting from node.id
+            if (!nodeName || !config.componentNodes[nodeName]) {
+                nodeName = node.id.split('_')[0]
+            }
+
+            const componentNode = config.componentNodes[nodeName]
+
+            if (componentNode) {
+                const initializedNodeData = initNode(cloneDeep(componentNode), node.id)
+                nodes[i].data = {
+                    ...initializedNodeData,
+                    label: node.data?.label
+                }
+            }
+
+            if (nodes[i].data.name === 'iterationAgentflow') {
+                nodes[i].type = 'iteration'
+            }
+
+            if (nodes[i].parentNode) {
+                nodes[i].extent = 'parent'
+            }
+        }
+
+        return { nodes, edges: result.edges }
+    } catch (error) {
+        console.error('Error generating AgentflowV2:', error)
+        return { error: error.message || 'Unknown error occurred' }
+    }
+}
+
+const initNode = (nodeData: Record<string, any>, newNodeId: string) => {
+    const inputParams = []
+    const incoming = nodeData.inputs ? nodeData.inputs.length : 0
+
+    // Inputs
+    for (let i = 0; i < incoming; i += 1) {
+        const newInput = {
+            ...nodeData.inputs[i],
+            id: `${newNodeId}-input-${nodeData.inputs[i].name}-${nodeData.inputs[i].type}`
+        }
+        inputParams.push(newInput)
+    }
+
+    // Credential
+    if (nodeData.credential) {
+        const newInput = {
+            ...nodeData.credential,
+            id: `${newNodeId}-input-${nodeData.credential.name}-${nodeData.credential.type}`
+        }
+        inputParams.unshift(newInput)
+    }
+
+    // Outputs
+    let outputAnchors = initializeOutputAnchors(nodeData, newNodeId)
+
+    /* Initial
+    inputs = [
+        {
+            label: 'field_label_1',
+            name: 'string'
+        },
+        {
+            label: 'field_label_2',
+            name: 'CustomType'
+        }
+    ]
+
+    =>  Convert to inputs, inputParams, inputAnchors
+
+    =>  inputs = { 'field': 'defaultvalue' } // Turn into inputs object with default values
+    
+    =>  // For inputs that are part of whitelistTypes
+        inputParams = [
+            {
+                label: 'field_label_1',
+                name: 'string'
+            }
+        ]
+
+    =>  // For inputs that are not part of whitelistTypes
+        inputAnchors = [
+            {
+                label: 'field_label_2',
+                name: 'CustomType'
+            }
+        ]
+    */
+
+    // Inputs
+    if (nodeData.inputs) {
+        const defaultInputs = initializeDefaultNodeData(nodeData.inputs)
+        nodeData.inputAnchors = showHideInputAnchors({ ...nodeData, inputAnchors: [], inputs: defaultInputs })
+        nodeData.inputParams = showHideInputParams({ ...nodeData, inputParams, inputs: defaultInputs })
+        nodeData.inputs = defaultInputs
+    } else {
+        nodeData.inputAnchors = []
+        nodeData.inputParams = []
+        nodeData.inputs = {}
+    }
+
+    // Outputs
+    if (nodeData.outputs) {
+        nodeData.outputs = initializeDefaultNodeData(outputAnchors)
+    } else {
+        nodeData.outputs = {}
+    }
+    nodeData.outputAnchors = outputAnchors
+
+    // Credential
+    if (nodeData.credential) nodeData.credential = ''
+
+    nodeData.id = newNodeId
+
+    return nodeData
+}
+
+const initializeDefaultNodeData = (nodeParams: Record<string, any>[]) => {
+    const initialValues: Record<string, any> = {}
+
+    for (let i = 0; i < nodeParams.length; i += 1) {
+        const input = nodeParams[i]
+        initialValues[input.name] = input.default || ''
+    }
+
+    return initialValues
+}
+
+const createAgentFlowOutputs = (nodeData: Record<string, any>, newNodeId: string) => {
+    if (nodeData.hideOutput) return []
+
+    if (nodeData.outputs?.length) {
+        return nodeData.outputs.map((_: any, index: number) => ({
+            id: `${newNodeId}-output-${index}`,
+            label: nodeData.label,
+            name: nodeData.name
+        }))
+    }
+
+    return [
+        {
+            id: `${newNodeId}-output-${nodeData.name}`,
+            label: nodeData.label,
+            name: nodeData.name
+        }
+    ]
+}
+
+const initializeOutputAnchors = (nodeData: Record<string, any>, newNodeId: string) => {
+    return createAgentFlowOutputs(nodeData, newNodeId)
+}
+
+const _showHideOperation = (nodeData: Record<string, any>, inputParam: Record<string, any>, displayType: string, index?: number) => {
+    const displayOptions = inputParam[displayType]
+    /* For example:
+    show: {
+        enableMemory: true
+    }
+    */
+    Object.keys(displayOptions).forEach((path) => {
+        const comparisonValue = displayOptions[path]
+        if (path.includes('$index') && index) {
+            path = path.replace('$index', index.toString())
+        }
+        const groundValue = get(nodeData.inputs, path, '')
+
+        if (Array.isArray(comparisonValue)) {
+            if (displayType === 'show' && !comparisonValue.includes(groundValue)) {
+                inputParam.display = false
+            }
+            if (displayType === 'hide' && comparisonValue.includes(groundValue)) {
+                inputParam.display = false
+            }
+        } else if (typeof comparisonValue === 'string') {
+            if (displayType === 'show' && !(comparisonValue === groundValue || new RegExp(comparisonValue).test(groundValue))) {
+                inputParam.display = false
+            }
+            if (displayType === 'hide' && (comparisonValue === groundValue || new RegExp(comparisonValue).test(groundValue))) {
+                inputParam.display = false
+            }
+        } else if (typeof comparisonValue === 'boolean') {
+            if (displayType === 'show' && comparisonValue !== groundValue) {
+                inputParam.display = false
+            }
+            if (displayType === 'hide' && comparisonValue === groundValue) {
+                inputParam.display = false
+            }
+        } else if (typeof comparisonValue === 'object') {
+            if (displayType === 'show' && !isEqual(comparisonValue, groundValue)) {
+                inputParam.display = false
+            }
+            if (displayType === 'hide' && isEqual(comparisonValue, groundValue)) {
+                inputParam.display = false
+            }
+        } else if (typeof comparisonValue === 'number') {
+            if (displayType === 'show' && comparisonValue !== groundValue) {
+                inputParam.display = false
+            }
+            if (displayType === 'hide' && comparisonValue === groundValue) {
+                inputParam.display = false
+            }
+        }
+    })
+}
+
+const showHideInputs = (nodeData: Record<string, any>, inputType: string, overrideParams?: Record<string, any>, arrayIndex?: number) => {
+    const params = overrideParams ?? nodeData[inputType] ?? []
+
+    for (let i = 0; i < params.length; i += 1) {
+        const inputParam = params[i]
+
+        // Reset display flag to false for each inputParam
+        inputParam.display = true
+
+        if (inputParam.show) {
+            _showHideOperation(nodeData, inputParam, 'show', arrayIndex)
+        }
+        if (inputParam.hide) {
+            _showHideOperation(nodeData, inputParam, 'hide', arrayIndex)
+        }
+    }
+
+    return params
+}
+
+const showHideInputParams = (nodeData: Record<string, any>) => {
+    return showHideInputs(nodeData, 'inputParams')
+}
+
+const showHideInputAnchors = (nodeData: Record<string, any>) => {
+    return showHideInputs(nodeData, 'inputAnchors')
+}

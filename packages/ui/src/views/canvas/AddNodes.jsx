@@ -35,9 +35,10 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import MainCard from '@/ui-component/cards/MainCard'
 import Transitions from '@/ui-component/extended/Transitions'
 import { StyledFab } from '@/ui-component/button/StyledFab'
+import AgentflowGeneratorDialog from '@/ui-component/dialog/AgentflowGeneratorDialog'
 
 // icons
-import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons-react'
+import { IconPlus, IconSearch, IconMinus, IconX, IconSparkles } from '@tabler/icons-react'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 import LangChainPNG from '@/assets/images/langchain.png'
 import utilNodesPNG from '@/assets/images/utilNodes.png'
@@ -69,7 +70,7 @@ const blacklistForChatflowCanvas = {
     Memory: agentMemoryNodes
 }
 
-const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
+const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2 }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -79,6 +80,9 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const [open, setOpen] = useState(false)
     const [categoryExpanded, setCategoryExpanded] = useState({})
     const [tabValue, setTabValue] = useState(0)
+
+    const [openDialog, setOpenDialog] = useState(false)
+    const [dialogProps, setDialogProps] = useState(false)
 
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
@@ -297,6 +301,24 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodesData, dispatch])
 
+    // Handle dialog open/close
+    const handleOpenDialog = () => {
+        setOpenDialog(true)
+        setDialogProps({
+            title: 'What would you like to build?',
+            description:
+                'Enter your prompt to generate an agentflow. This is experimental and may not work as expected with different models.'
+        })
+    }
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false)
+    }
+
+    const handleConfirmDialog = () => {
+        setOpenDialog(false)
+    }
+
     return (
         <>
             <StyledFab
@@ -310,6 +332,33 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             >
                 {open ? <IconMinus /> : <IconPlus />}
             </StyledFab>
+            {isAgentflowv2 && (
+                <StyledFab
+                    sx={{
+                        left: 40,
+                        top: 20,
+                        background: 'linear-gradient(45deg, #FF6B6B 30%, #FF8E53 90%)',
+                        '&:hover': {
+                            background: 'linear-gradient(45deg, #FF8E53 30%, #FF6B6B 90%)'
+                        }
+                    }}
+                    onClick={handleOpenDialog}
+                    size='small'
+                    color='primary'
+                    aria-label='generate'
+                    title='Generate Agentflow'
+                >
+                    <IconSparkles />
+                </StyledFab>
+            )}
+
+            <AgentflowGeneratorDialog
+                show={openDialog}
+                dialogProps={dialogProps}
+                onCancel={handleCloseDialog}
+                onConfirm={handleConfirmDialog}
+            />
+
             <Popper
                 placement='bottom-end'
                 open={open}
@@ -620,7 +669,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 AddNodes.propTypes = {
     nodesData: PropTypes.array,
     node: PropTypes.object,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isAgentflowv2: PropTypes.bool
 }
 
 export default memo(AddNodes)
