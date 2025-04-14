@@ -26,7 +26,7 @@ export class GoogleAICacheManager extends GoogleAICacheManagerBase {
             return this.cachedContents.get(hashKey)
         }
         const { cachedContents } = await this.list()
-        const cachedContent = cachedContents.find((cache) => cache.displayName === hashKey)
+        const cachedContent = (cachedContents ?? []).find((cache) => cache.displayName === hashKey)
         if (cachedContent) {
             this.cachedContents.set(hashKey, cachedContent)
             return cachedContent
