@@ -1,6 +1,8 @@
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
+import { QueryRunner } from 'typeorm'
 import { ChatflowType, IReactFlowObject } from '../../Interface'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
@@ -13,8 +15,7 @@ import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fil
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
-import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
-import { QueryRunner } from 'typeorm'
+import { validate } from 'uuid'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -126,6 +127,8 @@ const getAllChatflows = async (type?: ChatflowType): Promise<ChatFlow[]> => {
             return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
         } else if (type === 'AGENTFLOW') {
             return dbResponse.filter((chatflow) => chatflow.type === 'AGENTFLOW')
+        } else if (type === 'ASSISTANT') {
+            return dbResponse.filter((chatflow) => chatflow.type === 'ASSISTANT')
         } else if (type === 'CHATFLOW') {
             // fetch all chatflows that are not agentflow
             return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
@@ -224,6 +227,12 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
 
 const importChatflows = async (newChatflows: Partial<ChatFlow>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
+        for (const data of newChatflows) {
+            if (data.id && !validate(data.id)) {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: importChatflows - invalid id!`)
+            }
+        }
+
         const appServer = getRunningExpressApp()
         const repository = queryRunner ? queryRunner.manager.getRepository(ChatFlow) : appServer.AppDataSource.getRepository(ChatFlow)
 

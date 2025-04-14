@@ -247,7 +247,7 @@ export const executeFlow = async ({
         ...incomingInput
     }
 
-    const question = incomingInput.question || '' // Ensure question is never undefined
+    let question = incomingInput.question || '' // Ensure question is never undefined
     let overrideConfig = incomingInput.overrideConfig ?? {}
     const uploads = incomingInput.uploads
     const prependMessages = incomingInput.history ?? []
@@ -311,6 +311,7 @@ export const executeFlow = async ({
                     logger.debug(`Speech to text result: ${speechToTextResult}`)
                     if (speechToTextResult) {
                         incomingInput.question = speechToTextResult
+                        question = speechToTextResult
                     }
                 }
             }
