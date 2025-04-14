@@ -1,5 +1,6 @@
 import express from 'express'
 import billingController from '../../controllers/billing'
+import enforceAbility from '../../middlewares/authentication/enforceAbility'
 
 const router = express.Router()
 
@@ -9,7 +10,8 @@ router.get('/customer/status', billingController.getCustomerStatus)
 // Usage Tracking
 // TODO: Remove this route
 // router.post('/usage/track', billingController.trackUsage)
-router.get('/usage/summary', billingController.getUsageSummary)
+router.get('/usage/summary', enforceAbility('Billing'), billingController.getUsageSummary)
+router.get('/usage/events', enforceAbility('Billing'), billingController.getUsageEvents)
 
 // Subscription Management
 router.get('/subscription/status', billingController.getSubscriptionWithUsage)
