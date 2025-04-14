@@ -644,6 +644,8 @@ function convertResponseContentToChatGenerationChunk(
 }
 
 function zodToGeminiParameters(zodObj: any) {
+    // Gemini doesn't accept either the $schema or additionalProperties
+    // attributes, so we need to explicitly remove them.
     const jsonSchema: any = zodToJsonSchema(zodObj)
     // eslint-disable-next-line unused-imports/no-unused-vars
     const { $schema, additionalProperties, ...rest } = jsonSchema
