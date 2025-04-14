@@ -9,7 +9,7 @@ import chatflowsService from '../../services/chatflows'
 import checkOwnership from '../../utils/checkOwnership'
 // import billingService from '../../services/billing'
 import logger from '../../utils/logger'
-import { billingService } from '../../services/billing'
+// import { billingService } from '../../services/billing'
 import { CustomerStatus, UsageStats } from '../../aai-utils/billing/core/types'
 import { BILLING_CONFIG } from '../../aai-utils/billing/config'
 import { UsageSummary } from '../../aai-utils/billing/core/types'
@@ -18,6 +18,7 @@ import { ChatMessage } from '../../database/entities/ChatMessage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Chat } from '../../database/entities/Chat'
 import { In, IsNull } from 'typeorm'
+import { BillingService } from '../../aai-utils/billing'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -263,15 +264,16 @@ const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: N
 const getUsageSummary = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const customerId = req.user?.stripeCustomerId
-        if (!customerId) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User has no associated Stripe customer')
-        }
+        // if (!customerId) {
+        //     throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User has no associated Stripe customer')
+        // }
         let subscription: Stripe.Subscription | null = null
         let usage: UsageStats | null = null
         try {
+            const billingService = new BillingService()
             ;[subscription, usage] = await Promise.all([
-                billingService.getActiveSubscription(customerId),
-                billingService.getUsageSummary(customerId)
+                customerId ? billingService.getActiveSubscription(customerId) : Promise.resolve(null),
+                customerId ? billingService.getUsageSummary(customerId) : Promise.resolve(null)
             ])
         } catch (error: any) {
             console.error('Error getting usage stats:', error.message)
@@ -451,6 +453,8 @@ const getUsageSummary = async (req: Request, res: Response, next: NextFunction) 
 const usageSyncHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const traceId = req.body.trace_id
+
+        const billingService = new BillingService()
         const result = await billingService.syncUsageToStripe(traceId)
         return res.json({
             status: 'success',
@@ -464,6 +468,7 @@ const usageSyncHandler = async (req: Request, res: Response, next: NextFunction)
 
 const attachPaymentMethod = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         const paymentMethod = await billingService.attachPaymentMethod(req.body)
         return res.json(paymentMethod)
     } catch (error) {
@@ -473,6 +478,7 @@ const attachPaymentMethod = async (req: Request, res: Response, next: NextFuncti
 
 const createCheckoutSession = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         const session = await billingService.createCheckoutSession({
             priceId: BILLING_CONFIG.PRICE_IDS.PAID_MONTHLY,
             customerId: req.user?.stripeCustomerId!,
@@ -490,6 +496,7 @@ const createCheckoutSession = async (req: Request, res: Response, next: NextFunc
 
 const updateSubscription = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         const subscription = await billingService.updateSubscription({
             subscriptionId: req.params.id,
             ...req.body
@@ -502,6 +509,7 @@ const updateSubscription = async (req: Request, res: Response, next: NextFunctio
 
 const cancelSubscription = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         // Check if user is authenticated
         if (!req.user) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User not authenticated')
@@ -533,6 +541,7 @@ const cancelSubscription = async (req: Request, res: Response, next: NextFunctio
 
 const getUpcomingInvoice = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         const invoice = await billingService.getUpcomingInvoice(req.body)
         return res.json(invoice)
     } catch (error) {
@@ -542,6 +551,7 @@ const getUpcomingInvoice = async (req: Request, res: Response, next: NextFunctio
 
 const createBillingPortalSession = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         const session = await billingService.createBillingPortalSession({
             customerId: req.body.customerId,
             returnUrl: req.body.returnUrl
@@ -554,6 +564,7 @@ const createBillingPortalSession = async (req: Request, res: Response, next: Nex
 
 const getSubscriptionWithUsage = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         // Check if user is authenticated
         if (!req.user) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User not authenticated')
@@ -585,6 +596,7 @@ const getSubscriptionWithUsage = async (req: Request, res: Response, next: NextF
 
 const handleWebhook = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         const sig = req.headers['stripe-signature']
         if (!sig || Array.isArray(sig)) {
             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid Stripe signature')
@@ -618,6 +630,7 @@ const handleWebhook = async (req: Request, res: Response, next: NextFunction) =>
 
 export const getCustomerStatus = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         const customerId = req.user?.stripeCustomerId
 
         if (!customerId) {
@@ -690,10 +703,11 @@ export const getCustomerStatus = async (req: Request, res: Response, next: NextF
  */
 const getUsageEvents = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const billingService = new BillingService()
         const customerId = req.user?.stripeCustomerId
-        if (!customerId) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User has no associated Stripe customer')
-        }
+        // if (!customerId) {
+        //     throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User has no associated Stripe customer')
+        // }
 
         // Parse pagination parameters
         const page = parseInt(req.query.page as string) || 1

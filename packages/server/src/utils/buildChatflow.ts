@@ -64,11 +64,11 @@ import { getErrorMessage } from '../errors/utils'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
 import PlansService from '../services/plans'
-import { billingService } from '../services/billing'
 import { BILLING_CONFIG } from '../aai-utils/billing/config'
 import { Chat } from '../database/entities/Chat'
 import { User } from '../database/entities/User'
 import checkOwnership from './checkOwnership'
+import { BillingService } from '../aai-utils/billing'
 
 /*
  * Initialize the ending node to be executed
@@ -982,6 +982,7 @@ const validateAndSaveChat = async (
     } else {
         // Use the new BillingService to check usage limits
         // Get usage summary for the customer
+        const billingService = new BillingService()
         const usage = await billingService.getUsageSummary(user.stripeCustomerId)
         const subscription = await billingService.getActiveSubscription(user.stripeCustomerId)
 

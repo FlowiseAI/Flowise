@@ -6,7 +6,7 @@
             "type": "node",
             "request": "launch",
             "runtimeExecutable": "pnpm",
-            "runtimeVersion": "21",
+            "runtimeVersion": "20",
             "runtimeArgs": ["dev"],
             "timeout": 30000,
             "stopOnEntry": false,
@@ -22,9 +22,7 @@
             "request": "launch",
             "name": "Debug Toolbox",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": [
-                "start"
-            ],
+            "runtimeArgs": ["start"],
             "cwd": "${workspaceFolder}/packages/flowise-configs",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
@@ -34,9 +32,7 @@
             "request": "launch",
             "name": "Debug Journey",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": [
-                "journey"
-            ],
+            "runtimeArgs": ["journey"],
             "cwd": "${workspaceFolder}/packages/flowise-configs",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
@@ -46,9 +42,7 @@
             "request": "launch",
             "name": "Debug bulkProcessRunner Flowise Configs",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": [
-                "bulkProcessRunner"
-            ],
+            "runtimeArgs": ["bulkProcessRunner"],
             "cwd": "${workspaceFolder}/packages/flowise-configs",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
@@ -58,9 +52,7 @@
             "request": "launch",
             "name": "Debug localFileImporter",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": [
-                "localFileImporter"
-            ],
+            "runtimeArgs": ["localFileImporter"],
             "cwd": "${workspaceFolder}/packages/flowise-configs",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
@@ -70,9 +62,7 @@
             "request": "launch",
             "name": "Debug migrationRunner",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": [
-                "migration"
-            ],
+            "runtimeArgs": ["migration"],
             "cwd": "${workspaceFolder}/packages/flowise-configs",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
@@ -82,9 +72,7 @@
             "request": "launch",
             "name": "Debug Toolbox",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": [
-                "start"
-            ],
+            "runtimeArgs": ["start"],
             "cwd": "${workspaceFolder}/packages/flowise-configs",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
@@ -94,9 +82,7 @@
             "request": "launch",
             "name": "Debug Journey",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": [
-                "journey"
-            ],
+            "runtimeArgs": ["journey"],
             "cwd": "${workspaceFolder}/packages/flowise-configs",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
@@ -106,9 +92,7 @@
             "request": "launch",
             "name": "Debug Question Extraction",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": [
-                "questionExtraction"
-            ],
+            "runtimeArgs": ["questionExtraction"],
             "cwd": "${workspaceFolder}/packages/flowise-configs",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"
@@ -118,9 +102,7 @@
             "request": "launch",
             "name": "Debug localFileImporter",
             "runtimeExecutable": "pnpm",
-            "runtimeArgs": [
-                "localFileImporter"
-            ],
+            "runtimeArgs": ["localFileImporter"],
             "cwd": "${workspaceFolder}/packages/flowise-configs",
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen"

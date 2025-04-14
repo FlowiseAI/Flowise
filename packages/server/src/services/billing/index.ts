@@ -15,13 +15,9 @@ import { Subscription } from '../../database/entities/Subscription'
 // import { UserCredits } from '../../database/entities/UserCredits'
 import Stripe from 'stripe'
 
-// Initialize billing service with Stripe provider
-export const billingService = new BillingService()
-
-
-
 async function syncUsageToStripe(traceId?: string) {
     try {
+        const billingService = new BillingService()
         return await billingService.syncUsageToStripe(traceId || '')
     } catch (error) {
         logger.error('Error syncing usage:', error)
@@ -32,9 +28,9 @@ async function syncUsageToStripe(traceId?: string) {
     }
 }
 
-
 async function attachPaymentMethod(params: AttachPaymentMethodParams) {
     try {
+        const billingService = new BillingService()
         return await billingService.attachPaymentMethod(params)
     } catch (error) {
         logger.error('Error attaching payment method:', error)
@@ -47,6 +43,7 @@ async function attachPaymentMethod(params: AttachPaymentMethodParams) {
 
 async function createCheckoutSession(params: CreateCheckoutSessionParams) {
     try {
+        const billingService = new BillingService()
         return await billingService.createCheckoutSession(params)
     } catch (error) {
         logger.error('Error creating checkout session:', error)
@@ -59,6 +56,7 @@ async function createCheckoutSession(params: CreateCheckoutSessionParams) {
 
 async function updateSubscription(params: UpdateSubscriptionParams) {
     try {
+        const billingService = new BillingService()
         return await billingService.updateSubscription(params)
     } catch (error) {
         logger.error('Error updating subscription:', error)
@@ -71,6 +69,7 @@ async function updateSubscription(params: UpdateSubscriptionParams) {
 
 async function cancelSubscription(subscriptionId: string) {
     try {
+        const billingService = new BillingService()
         return await billingService.cancelSubscription(subscriptionId)
     } catch (error) {
         logger.error('Error canceling subscription:', error)
@@ -83,6 +82,7 @@ async function cancelSubscription(subscriptionId: string) {
 
 async function getUpcomingInvoice(params: GetUpcomingInvoiceParams) {
     try {
+        const billingService = new BillingService()
         return await billingService.getUpcomingInvoice(params)
     } catch (error) {
         logger.error('Error getting upcoming invoice:', error)
@@ -95,6 +95,7 @@ async function getUpcomingInvoice(params: GetUpcomingInvoiceParams) {
 
 async function createBillingPortalSession(params: CreateBillingPortalSessionParams) {
     try {
+        const billingService = new BillingService()
         return await billingService.createBillingPortalSession(params)
     } catch (error) {
         logger.error('Error creating billing portal session:', error)
@@ -107,6 +108,7 @@ async function createBillingPortalSession(params: CreateBillingPortalSessionPara
 
 async function getSubscriptionWithUsage(subscriptionId: string) {
     try {
+        const billingService = new BillingService()
         return await billingService.getSubscriptionWithUsage(subscriptionId)
     } catch (error) {
         logger.error('Error getting subscription with usage:', error)
@@ -119,6 +121,7 @@ async function getSubscriptionWithUsage(subscriptionId: string) {
 
 async function handleWebhook(payload: any, signature: string) {
     try {
+        const billingService = new BillingService()
         const event = billingService.stripeClient.webhooks.constructEvent(payload, signature, process.env.BILLING_STRIPE_WEBHOOK_SECRET!)
 
         const appServer = getRunningExpressApp()
@@ -196,7 +199,6 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     await subscriptionRepo.update({ stripeSubscriptionId: subscription.id }, { status: 'canceled' })
 }
 
-
 export default {
     syncUsageToStripe,
     attachPaymentMethod,
@@ -207,5 +209,4 @@ export default {
     createBillingPortalSession,
     getSubscriptionWithUsage,
     handleWebhook
-   
 }

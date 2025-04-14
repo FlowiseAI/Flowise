@@ -353,7 +353,7 @@ export const MessageCard = ({
                     (other as any).agentReasoning.map((agentObject: any) => {
                         return (
                             <CustomAccordion
-                                defaultExpanded={true}
+                                defaultExpanded={agentObject?.messages?.length > 1}
                                 key={agentObject.agentName}
                                 sx={{
                                     p: 0,
