@@ -12,6 +12,9 @@ export interface UsageDashboard {
     aiTokens: UsageMetric
     compute: UsageMetric
     storage: UsageMetric
+    chatsCreated: number
+    messagesSent: number
+    messagesGenerated: number
 }
 
 export interface CurrentPlan {

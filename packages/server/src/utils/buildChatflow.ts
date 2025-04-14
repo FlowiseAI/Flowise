@@ -514,7 +514,8 @@ export const executeFlow = async ({
                 createdDate: userMessageDateTime,
                 fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
                 leadEmail: incomingInput.leadEmail,
-                userId: user?.id ?? agentflow.userId
+                userId: user?.id ?? agentflow.userId,
+                organizationId: user?.organizationId ?? agentflow.organizationId
             }
             await utilAddChatMessage(userMessage, appDataSource)
 
@@ -527,7 +528,8 @@ export const executeFlow = async ({
                 chatId,
                 memoryType,
                 sessionId,
-                userId: user?.id ?? agentflow.userId
+                userId: user?.id ?? agentflow.userId,
+                organizationId: user?.organizationId ?? agentflow.organizationId
             }
 
             if (sourceDocuments?.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
@@ -675,7 +677,8 @@ export const executeFlow = async ({
             createdDate: userMessageDateTime,
             fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
             leadEmail: incomingInput.leadEmail,
-            userId: user?.id
+            userId: user?.id,
+            organizationId: user?.organizationId
         }
         await utilAddChatMessage(userMessage, appDataSource)
 
@@ -723,7 +726,8 @@ export const executeFlow = async ({
             chatId,
             memoryType,
             sessionId,
-            userId: user?.id
+            userId: user?.id,
+            organizationId: user?.organizationId
         }
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)

@@ -1,8 +1,3 @@
-import Stripe from 'stripe'
-
-// Initialize Stripe client
-export const stripe = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY!)
-
 // Stripe-specific billing configuration
 export const STRIPE_CONFIG = {
     CREDIT_TO_USD: 0.0001, // Cost per credit in USD

@@ -1,9 +1,5 @@
-import Stripe from 'stripe'
 import { Logger } from 'winston'
 import { Langfuse } from 'langfuse'
-
-// Initialize Stripe client
-export const stripe = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY || '')
 
 // Initialize logger
 export const log = console as unknown as Logger

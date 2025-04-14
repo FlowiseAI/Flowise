@@ -21,5 +21,14 @@ declare global {
                 token: string
             }
         }
+        
+        interface Response {
+            locals: {
+                filter?: {
+                    userId?: string
+                    organizationId: string
+                }
+            }
+        }
     }
 }

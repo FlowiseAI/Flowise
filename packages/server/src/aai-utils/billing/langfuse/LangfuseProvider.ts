@@ -1,66 +1,13 @@
-import { CreditsData, TraceMetadata, SyncUsageResponse } from '../core/types'
+import { CreditsData, TraceMetadata, SyncUsageResponse, UsageEvent, UsageEventsResponse, GetUsageEventsParams } from '../core/types'
 import { langfuse, log, DEFAULT_CUSTOMER_ID, BILLING_CONFIG } from '../config'
 import type { GetLangfuseTraceResponse, GetLangfuseTracesResponse } from 'langfuse-core'
 import { StripeProvider } from '../stripe/StripeProvider'
-import { stripe as stripeClient } from '../config'
 import Stripe from 'stripe'
 
 type Trace = GetLangfuseTracesResponse['data'][number]
 type FullTrace = GetLangfuseTraceResponse
 
 export class LangfuseProvider {
-    // async getUsageSummary(customerId: string): Promise<UsageStats> {
-    //     try {
-    //         const traces = await this.fetchUsageData()
-    //         const creditsData = await this.convertUsageToCredits(traces)
-
-    //         // Calculate totals
-    //         const totalCredits = creditsData.reduce((acc, data) => acc + data.credits.total, 0)
-    //         const totalCost = creditsData.reduce((acc, data) => acc + data.usage.totalCost, 0)
-
-    //         // Get billing period
-    //         const now = new Date()
-    //         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-    //         const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-
-    //         return {
-    //             // ai_tokens: {
-    //             //     used: Math.round(totalCredits * BILLING_CONFIG.AI_TOKENS.TOKENS_PER_CREDIT),
-    //             //     total: 1000000, // Default limit
-    //             //     credits: totalCredits,
-    //             //     cost: totalCredits * BILLING_CONFIG.CREDIT_TO_USD,
-    //             //     rate: BILLING_CONFIG.AI_TOKENS.TOKENS_PER_CREDIT
-    //             // },
-    //             // compute: {
-    //             //     used: 0,
-    //             //     total: 10000,
-    //             //     credits: 0,
-    //             //     cost: 0,
-    //             //     rate: BILLING_CONFIG.COMPUTE.MINUTES_PER_CREDIT
-    //             // },
-    //             // storage: {
-    //             //     used: 0,
-    //             //     total: 100,
-    //             //     credits: 0,
-    //             //     cost: 0,
-    //             //     rate: BILLING_CONFIG.STORAGE.GB_PER_CREDIT
-    //             // },
-    //             total_credits: totalCredits,
-    //             dailyUsageByMeter: {},
-    //             usageByMeter: {},
-    //             lastUpdated: new Date(),
-    //             // total_cost: totalCost,
-    //             // billing_period: {
-    //             //     start: startOfMonth.toISOString(),
-    //             //     end: endOfMonth.toISOString()
-    //             // }
-    //         }
-    //     } catch (error: any) {
-    //         log.error('Failed to get Langfuse usage stats', { error, customerId })
-    //         throw error
-    //     }
-    // }
-
     async syncUsageToStripe(traceId?: string): Promise<SyncUsageResponse> {
         let traces: Trace[] = []
         let creditsDataWithTraces: Array<{ creditsData: CreditsData; fullTrace: any }> = []
@@ -88,7 +35,7 @@ export class LangfuseProvider {
             creditsDataWithTraces = await this.convertUsageToCredits(traces)
 
             // Create meter events in Stripe
-            const stripeProvider = new StripeProvider(stripeClient)
+            const stripeProvider = new StripeProvider()
             const stripeResponse = await stripeProvider.syncUsageToStripe(
                 creditsDataWithTraces.map((item) => ({
                     ...item.creditsData,
@@ -346,6 +293,103 @@ export class LangfuseProvider {
                     marginMultiplier: BILLING_CONFIG.MARGIN_MULTIPLIER
                 }
             }
+        }
+    }
+
+    /**
+     * Get usage events from Langfuse traces
+     */
+    async getUsageEvents(params: GetUsageEventsParams): Promise<UsageEventsResponse> {
+        const { userId, customerId, page = 1, limit = 10, sortBy = 'timestamp', sortOrder = 'desc' } = params
+        // TODO: Admins should be able to see all events
+        try {
+            // Determine time range - default to last 30 days
+            const endDate = new Date()
+            const startDate = new Date()
+            startDate.setDate(startDate.getDate() - 30)
+
+            // Fetch traces from Langfuse with pagination
+            const langfuseResponse = await langfuse.fetchTraces({
+                fromTimestamp: startDate,
+                toTimestamp: endDate,
+                limit,
+                page,
+                userId,
+                orderBy: sortBy === 'timestamp' ? (sortOrder === 'desc' ? 'timestamp.DESC' : 'timestamp.ASC') : undefined
+                // Note: We can't directly filter by customerId in the API call
+                // We'll filter the results after fetching
+            })
+
+            // Filter traces by customerId
+            const filteredTraces = (langfuseResponse?.data || []).filter((trace) => {
+                const metadata = trace.metadata as TraceMetadata
+                return (
+                    trace.userId === userId ||
+                    trace.userId === params.user.id ||
+                    params.user.roles?.includes('Admin') ||
+                    (metadata && metadata.stripeCustomerId === customerId)
+                )
+            })
+
+            // Transform traces to UsageEvent format
+            const events: UsageEvent[] = filteredTraces.map((trace) => {
+                const metadata = (trace.metadata as TraceMetadata) || {}
+
+                // Extract billing details
+                const billingDetails = metadata.billing_details || {}
+                const totalCredits = billingDetails.total_credits || 0
+
+                // Extract credit breakdown
+                const breakdown = {
+                    ai_tokens: billingDetails.breakdown?.ai_tokens?.base_credits || 0,
+
+                    compute: billingDetails.breakdown?.compute?.base_credits || 0,
+                    storage: billingDetails.breakdown?.storage?.base_credits || 0
+                }
+
+                // Determine sync status
+                let syncStatus: 'processed' | 'pending' | 'error' = 'pending'
+                let error: string | undefined
+
+                if (metadata.billing_status === 'processed') {
+                    syncStatus = 'processed'
+                } else if (metadata.stripeError) {
+                    syncStatus = 'error'
+                    error = metadata.stripeError
+                }
+
+                return {
+                    id: trace.id,
+                    userId: trace.userId || undefined,
+                    timestamp: trace.timestamp,
+                    chatflowName: metadata.chatflowName,
+                    chatflowId: metadata.chatflowid,
+                    totalCredits,
+                    tokensIn: 0,
+                    tokensOut: 0,
+                    breakdown,
+                    syncStatus,
+                    error,
+                    metadata
+                }
+            })
+
+            // Calculate proper pagination values
+            const totalItems = langfuseResponse.meta.totalItems
+            const totalPages = langfuseResponse.meta.totalPages
+
+            return {
+                events,
+                pagination: {
+                    page,
+                    limit,
+                    totalItems,
+                    totalPages
+                }
+            }
+        } catch (error) {
+            log.error('Error fetching usage events:', { error, customerId })
+            throw error
         }
     }
 }

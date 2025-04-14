@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Box, Typography, LinearProgress, Alert, Tooltip, IconButton, Stack, Skeleton, Divider } from '@mui/material'
-import { Info as InfoIcon, Receipt as ReceiptIcon } from '@mui/icons-material'
+import { Box, Typography, LinearProgress, Alert, Tooltip, IconButton, Stack, Skeleton, Divider, Grid } from '@mui/material'
+import { Info as InfoIcon, Receipt as ReceiptIcon, Business as BusinessIcon } from '@mui/icons-material'
 import { UsageSummary } from './hooks/useBillingData'
 
 interface TotalCreditsProgressProps {
@@ -76,6 +76,13 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
         hasUpcomingInvoice && usageSummary?.upcomingInvoice?.dueDate
             ? new Date(usageSummary.upcomingInvoice.dueDate).toLocaleDateString()
             : 'N/A'
+            
+    // Check if organization data exists (admin users will have this data)
+    const hasOrgData = 
+        !isLoading && 
+        usageSummary?.usageDashboard && 
+        (usageSummary.usageDashboard.organizationTotalChats > 0 || 
+         usageSummary.usageDashboard.organizationTotalMessages > 0);
 
     return (
         <Box
@@ -147,37 +154,135 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
                     </>
                 )}
             </Stack>
+            
+            {/* Usage Statistics */}
+            <Box sx={{ mt: 3 }}>
+                {hasOrgData && (
+                    <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem', mb: 1 }}>Personal Usage</Typography>
+                )}
+                <Grid container spacing={2}>
+                    <Grid item xs={6} sm={3}>
+                        <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 2, borderRadius: '8px' }}>
+                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>Total Chats</Typography>
+                            <Typography sx={{ color: '#fff', fontWeight: 600 }}>{usageSummary?.usageDashboard?.totalChats || 0}</Typography>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                        <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 2, borderRadius: '8px' }}>
+                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>Total Messages</Typography>
+                            <Typography sx={{ color: '#fff', fontWeight: 600 }}>
+                                {usageSummary?.usageDashboard?.totalMessages || 0}
+                            </Typography>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                        <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 2, borderRadius: '8px' }}>
+                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>Messages Sent</Typography>
+                            <Typography sx={{ color: '#fff', fontWeight: 600 }}>
+                                {usageSummary?.usageDashboard?.totalMessagesSent || 0}
+                            </Typography>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6} sm={3}>
+                        <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 2, borderRadius: '8px' }}>
+                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>Answers</Typography>
+                            <Typography sx={{ color: '#fff', fontWeight: 600 }}>
+                                {usageSummary?.usageDashboard?.totalMessagesGenerated || 0}
+                            </Typography>
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Box>
 
+            {/* Organization Statistics (Admin Only) */}
+            {hasOrgData && (
+                <Box sx={{ mt: 3 }}>
+                    <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 1 }}>
+                        <BusinessIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem' }} />
+                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
+                            Organization Usage
+                        </Typography>
+                        <Tooltip
+                            title='Usage statistics for your entire organization. Only visible to admin users.'
+                            arrow
+                            placement='top'
+                        >
+                            <IconButton size='small' sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                                <InfoIcon fontSize='small' />
+                            </IconButton>
+                        </Tooltip>
+                    </Stack>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6} sm={3}>
+                            <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 2, borderRadius: '8px' }}>
+                                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>Total Chats</Typography>
+                                <Typography sx={{ color: '#fff', fontWeight: 600 }}>
+                                    {usageSummary?.usageDashboard?.organizationTotalChats || 0}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                        <Grid item xs={6} sm={3}>
+                            <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 2, borderRadius: '8px' }}>
+                                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>Total Messages</Typography>
+                                <Typography sx={{ color: '#fff', fontWeight: 600 }}>
+                                    {usageSummary?.usageDashboard?.organizationTotalMessages || 0}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                        <Grid item xs={6} sm={3}>
+                            <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 2, borderRadius: '8px' }}>
+                                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>Messages Sent</Typography>
+                                <Typography sx={{ color: '#fff', fontWeight: 600 }}>
+                                    {usageSummary?.usageDashboard?.organizationTotalMessagesSent || 0}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                        <Grid item xs={6} sm={3}>
+                            <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.05)', p: 2, borderRadius: '8px' }}>
+                                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>Answers</Typography>
+                                <Typography sx={{ color: '#fff', fontWeight: 600 }}>
+                                    {usageSummary?.usageDashboard?.organizationTotalMessagesGenerated || 0}
+                                </Typography>
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </Box>
+            )}
+            
             {/* Resource distribution section */}
             {!isLoading && totalUsed > 0 && (
-                <Box sx={{ mt: 3 }}>
-                    <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem', mb: 1 }}>Resource Distribution</Typography>
-                    <Box sx={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', mb: 1 }}>
-                        <Box sx={{ width: `${aiTokensPercentage}%`, bgcolor: '#3f51b5' }} />
-                        <Box sx={{ width: `${computePercentage}%`, bgcolor: '#4caf50' }} />
-                        <Box sx={{ width: `${storagePercentage}%`, bgcolor: '#ff9800' }} />
+                <>
+                    <Box sx={{ mt: 3 }}>
+                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem', mb: 1 }}>
+                            Resource Distribution
+                        </Typography>
+                        <Box sx={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', mb: 1 }}>
+                            <Box sx={{ width: `${aiTokensPercentage}%`, bgcolor: '#3f51b5' }} />
+                            <Box sx={{ width: `${computePercentage}%`, bgcolor: '#4caf50' }} />
+                            <Box sx={{ width: `${storagePercentage}%`, bgcolor: '#ff9800' }} />
+                        </Box>
+                        <Stack direction='row' spacing={2} sx={{ mt: 1 }}>
+                            <Stack direction='row' spacing={0.5} alignItems='center'>
+                                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#3f51b5' }} />
+                                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
+                                    AI Tokens ({aiTokensPercentage.toFixed(1)}%)
+                                </Typography>
+                            </Stack>
+                            <Stack direction='row' spacing={0.5} alignItems='center'>
+                                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#4caf50' }} />
+                                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
+                                    Compute ({computePercentage.toFixed(1)}%)
+                                </Typography>
+                            </Stack>
+                            <Stack direction='row' spacing={0.5} alignItems='center'>
+                                <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#ff9800' }} />
+                                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
+                                    Storage ({storagePercentage.toFixed(1)}%)
+                                </Typography>
+                            </Stack>
+                        </Stack>
                     </Box>
-                    <Stack direction='row' spacing={2} sx={{ mt: 1 }}>
-                        <Stack direction='row' spacing={0.5} alignItems='center'>
-                            <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#3f51b5' }} />
-                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
-                                AI Tokens ({aiTokensPercentage.toFixed(1)}%)
-                            </Typography>
-                        </Stack>
-                        <Stack direction='row' spacing={0.5} alignItems='center'>
-                            <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#4caf50' }} />
-                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
-                                Compute ({computePercentage.toFixed(1)}%)
-                            </Typography>
-                        </Stack>
-                        <Stack direction='row' spacing={0.5} alignItems='center'>
-                            <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#ff9800' }} />
-                            <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
-                                Storage ({storagePercentage.toFixed(1)}%)
-                            </Typography>
-                        </Stack>
-                    </Stack>
-                </Box>
+                </>
             )}
 
             {/* Upcoming Invoice Section */}
