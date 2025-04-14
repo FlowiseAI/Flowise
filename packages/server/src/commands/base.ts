@@ -49,6 +49,10 @@ export abstract class BaseCommand extends Command {
         S3_STORAGE_REGION: Flags.string(),
         S3_ENDPOINT_URL: Flags.string(),
         S3_FORCE_PATH_STYLE: Flags.string(),
+        GOOGLE_CLOUD_STORAGE_CREDENTIAL: Flags.string(),
+        GOOGLE_CLOUD_STORAGE_PROJ_ID: Flags.string(),
+        GOOGLE_CLOUD_STORAGE_BUCKET_NAME: Flags.string(),
+        GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS: Flags.string(),
         SHOW_COMMUNITY_NODES: Flags.string(),
         SECRETKEY_STORAGE_TYPE: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
@@ -184,6 +188,11 @@ export abstract class BaseCommand extends Command {
         if (flags.S3_STORAGE_REGION) process.env.S3_STORAGE_REGION = flags.S3_STORAGE_REGION
         if (flags.S3_ENDPOINT_URL) process.env.S3_ENDPOINT_URL = flags.S3_ENDPOINT_URL
         if (flags.S3_FORCE_PATH_STYLE) process.env.S3_FORCE_PATH_STYLE = flags.S3_FORCE_PATH_STYLE
+        if (flags.GOOGLE_CLOUD_STORAGE_CREDENTIAL) process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL = flags.GOOGLE_CLOUD_STORAGE_CREDENTIAL
+        if (flags.GOOGLE_CLOUD_STORAGE_PROJ_ID) process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID = flags.GOOGLE_CLOUD_STORAGE_PROJ_ID
+        if (flags.GOOGLE_CLOUD_STORAGE_BUCKET_NAME) process.env.GOOGLE_CLOUD_STORAGE_BUCKET_NAME = flags.GOOGLE_CLOUD_STORAGE_BUCKET_NAME
+        if (flags.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS)
+            process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS = flags.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS
 
         // Queue
         if (flags.MODE) process.env.MODE = flags.MODE
