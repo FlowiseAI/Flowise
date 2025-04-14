@@ -156,9 +156,9 @@ const getChatHistory = async ({
 
     if (isAgentFlow) {
         const startNode = nodes.find((node) => node.data.name === 'seqStart')
-        if (!startNode?.data?.inputs?.memory) return []
+        if (!startNode?.data?.inputs?.agentMemory) return prependMessages
 
-        const memoryNodeId = startNode.data.inputs.memory.split('.')[0].replace('{{', '')
+        const memoryNodeId = startNode.data.inputs.agentMemory.split('.')[0].replace('{{', '')
         const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
 
         if (memoryNode) {
@@ -244,7 +244,7 @@ export const executeFlow = async ({
         ...incomingInput
     }
 
-    const question = incomingInput.question || '' // Ensure question is never undefined
+    let question = incomingInput.question || '' // Ensure question is never undefined
     let overrideConfig = incomingInput.overrideConfig ?? {}
     const uploads = incomingInput.uploads
     const prependMessages = incomingInput.history ?? []
@@ -308,6 +308,7 @@ export const executeFlow = async ({
                     logger.debug(`Speech to text result: ${speechToTextResult}`)
                     if (speechToTextResult) {
                         incomingInput.question = speechToTextResult
+                        question = speechToTextResult
                     }
                 }
             }
