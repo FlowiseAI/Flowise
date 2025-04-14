@@ -1,16 +1,16 @@
 {
-  "compilerOptions": {
-    "lib": ["es2021"],
-    "module": "ES2020",
-    "target": "es2021",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true
-  },
+    "compilerOptions": {
+        "lib": ["es2021"],
+        "module": "ES2020",
+        "target": "es2021",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true
+    },
 
-  "extends": "./base.json",
-  "exclude": ["node_modules"]
+    "extends": "./base.json",
+    "exclude": ["node_modules"]
 }

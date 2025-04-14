@@ -15,6 +15,7 @@ interface ChatRoomProps {
     sidekicks: Sidekick[]
     scrollRef: React.RefObject<HTMLDivElement>
     selectedSidekick?: Sidekick
+    setPreviewCode: (code: string) => void
 }
 
 export const ChatRoom: React.FC<ChatRoomProps> = ({

@@ -16,7 +16,7 @@
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
-## ⚡快速開始
+## ⚡ 快速開始
 
 下載並安裝 [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 

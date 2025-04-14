@@ -1,8 +1,6 @@
 'use client'
 import React from 'react'
 
-import SidekickStudioDrawer from '../SidekickStudioDrawer'
-
 import { Sidekick, AppSettings } from 'types'
 
 const SidekickFormLayout = ({

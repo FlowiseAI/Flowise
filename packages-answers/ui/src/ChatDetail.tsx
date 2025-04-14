@@ -16,6 +16,7 @@ import Drawer from './Drawer'
 import { ChatRoom } from './ChatRoom'
 import { FileUpload } from './AnswersContext'
 import AppBar from '@mui/material/AppBar'
+import { Button, Tooltip } from '@mui/material'
 import { CodePreview } from './Message/CodePreview'
 
 const DISPLAY_MODES = {

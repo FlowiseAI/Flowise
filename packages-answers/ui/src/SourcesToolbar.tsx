@@ -55,7 +55,7 @@ export default function SourcesToolbar({ appSettings }: { appSettings: AppSettin
                         borderBottom: '1px solid rgba(255,255,255,0.12)',
                         borderRadius: 0,
                         py: 1,
-                        display: !!Object.keys(filters)?.length ? 'block' : 'none'
+                        display: Object.keys(filters)?.length ? 'block' : 'none'
                     }
                 }}
             >

@@ -17,7 +17,7 @@ import Stripe from 'stripe'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Chat } from '../../database/entities/Chat'
-import { In, IsNull } from 'typeorm'
+import { IsNull } from 'typeorm'
 import { BillingService } from '../../aai-utils/billing'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {

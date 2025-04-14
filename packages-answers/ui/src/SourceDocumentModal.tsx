@@ -1,13 +1,6 @@
 'use client'
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Controller, useForm } from 'react-hook-form'
-import axios from 'axios'
-import { Rating } from 'db/generated/prisma-client'
-import Autocomplete from '@mui/material/Autocomplete'
-import Button from '@mui/material/Button'
-import TextField from '@mui/material/TextField'
-import Modal from '@mui/material/Modal'
 import Box from '@mui/material/Box'
 import LinearProgress from '@mui/material/LinearProgress'
 import Typography from '@mui/material/Typography'
@@ -16,12 +9,8 @@ import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { duotoneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import ContentCopy from '@mui/icons-material/ContentCopy'
 
-import { useAnswers } from './AnswersContext'
-
-import { MessageFeedback, User, Document } from 'types'
-import { FormControlLabel, Checkbox } from '@mui/material'
+import { MessageFeedback, Document } from 'types'
 import ReactMarkdown from 'react-markdown'
 import Image from 'next/image'
 
@@ -119,7 +108,7 @@ const SourceDocumentModal: React.FC<ModalProps> = ({ documents, onClose }) => {
                             {doc.metadata.url && (
                                 <Typography variant='body2' component='p'>
                                     Link:
-                                    <a href={doc.metadata.url} target='_blank'>
+                                    <a href={doc.metadata.url} target='_blank' rel='noreferrer'>
                                         {doc.metadata.url}
                                     </a>
                                 </Typography>

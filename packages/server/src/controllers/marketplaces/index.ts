@@ -85,9 +85,9 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
 }
 
 export default {
-        getAllTemplates,
-        getAllCustomTemplates,
-        saveCustomTemplate,
-        deleteCustomTemplate,
-        getMarketplaceTemplate,
+    getAllTemplates,
+    getAllCustomTemplates,
+    saveCustomTemplate,
+    deleteCustomTemplate,
+    getMarketplaceTemplate
 }

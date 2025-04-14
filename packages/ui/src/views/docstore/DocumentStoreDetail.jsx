@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import * as PropTypes from 'prop-types'
-import { useNavigate, usePathname, useParams } from '@/utils/navigation'
+import { useNavigate, useParams } from '@/utils/navigation'
 
 // material-ui
 import {

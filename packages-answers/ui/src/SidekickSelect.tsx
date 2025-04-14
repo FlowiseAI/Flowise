@@ -31,12 +31,10 @@ import {
     MoreHoriz as MoreHorizIcon,
     Visibility as VisibilityIcon,
     Edit as EditIcon,
-    Cancel as CancelIcon,
-    Share as ShareIcon
+    Cancel as CancelIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
 import useSWR from 'swr'
-import { useRouter } from 'next/navigation'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import marketplacesApi from '@/api/marketplaces'
 import { Sidekick } from './types/sidekick'
@@ -49,6 +47,7 @@ import { useTheme } from '@mui/material/styles'
 import useScrollTrigger from '@mui/material/useScrollTrigger'
 import { alpha } from '@mui/material/styles'
 import dynamic from 'next/dynamic'
+import { debounce } from '@utils/debounce'
 const MarketplaceLandingDialog = dynamic(() => import('@/views/chatflows/MarketplaceLandingDialog'), { ssr: false })
 
 // Create a theme that matches shadcn/ui styling
@@ -180,22 +179,18 @@ const WhiteIconButton = styled(IconButton)(({ theme }) => ({
 
 const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
     const { chat, setSidekick, sidekick: selectedSidekick, setSidekick: setSelectedSidekick } = useAnswers()
-    const router = useRouter()
     const { user } = useUser()
     const searchbarRef = useRef<HTMLInputElement>(null)
 
-    const [searchTerm, setSearchTerm] = useState('')
+    const [searchInputValue, setSearchInputValue] = useState('')
     const [activeTab, setActiveTab] = useState<string>('all')
     const [previousActiveTab, setPreviousActiveTab] = useState<string>('all')
     const [open, setOpen] = useState(false || noDialog)
-    // const [selectedSidekick, setSelectedSidekick] = useState<Sidekick | null>(null)
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
     const [favorites, setFavorites] = useState<Set<string>>(new Set())
 
     const [fuse, setFuse] = useState<Fuse<Sidekick> | null>(null)
-
-    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
 
     const navigate = useNavigate()
     const [, setNavigationState] = useNavigationState()
@@ -212,7 +207,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         // backgroundColor: theme.palette.background.default,
         zIndex: 1,
         padding: theme.spacing(1, 0),
-        transition: theme.transitions.create(['box-shadow']),
+        transition: theme.transitions && theme.transitions.create ? theme.transitions.create(['box-shadow']) : 'box-shadow 0.3s ease',
         ...(trigger && {
             boxShadow: `0 1px 0 ${theme.palette.divider}`
         })
@@ -225,13 +220,31 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     const [showCopyMessage, setShowCopyMessage] = useState(false)
 
+    // Replace multiple state variables and optimize debouncing
+    const [searchTerm, setSearchTerm] = useState('')
+    const debouncedSetSearchTerm = useCallback(
+        debounce((value: string) => {
+            setSearchTerm(value)
+            if (value) {
+                setPreviousActiveTab(tabValue)
+                setTabValue('search')
+            }
+        }, 600),
+        [tabValue]
+    )
+
     useEffect(() => {
         const storedFavorites = localStorage.getItem('favoriteSidekicks')
         if (storedFavorites) {
-            const parsedFavorites = new Set(JSON.parse(storedFavorites))
-            setFavorites(parsedFavorites)
+            try {
+                const parsedFavorites = new Set(JSON.parse(storedFavorites) as string[])
+                setFavorites(parsedFavorites)
 
-            if (parsedFavorites.size === 0) {
+                if (parsedFavorites.size === 0) {
+                    setTabValue('all')
+                }
+            } catch (e) {
+                console.error('Error parsing favorites:', e)
                 setTabValue('all')
             }
         } else {
@@ -239,10 +252,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         }
     }, [])
 
-    useEffect(() => {
-        const timer = setTimeout(() => setSearchTerm(debouncedSearchTerm), 300)
-        return () => clearTimeout(timer)
-    }, [debouncedSearchTerm])
     const toggleFavorite = useCallback((sidekick: Sidekick, event: React.MouseEvent) => {
         event.stopPropagation()
         setFavorites((prev) => {
@@ -301,16 +310,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     })
 
     const { sidekicks: allSidekicks = [], categories: chatflowCategories = { top: [], more: [] } } = data
+
+    // Optimize the combined sidekicks calculation
     const combinedSidekicks = useMemo(() => {
         const sidekickMap = new Map<string, Sidekick>()
 
         // First, add all sidekicks from allSidekicks
-        allSidekicks.forEach((sidekick) => {
+        allSidekicks.forEach((sidekick: any) => {
             sidekickMap.set(sidekick.id, sidekick)
         })
 
         // Then, add or update with marketplace sidekicks, prioritizing executable ones
-        marketplaceSidekicks.forEach((sidekick) => {
+        marketplaceSidekicks.forEach((sidekick: any) => {
             const existingSidekick = sidekickMap.get(sidekick.id)
             if (!existingSidekick || (!existingSidekick.isExecutable && sidekick.isExecutable)) {
                 sidekickMap.set(sidekick.id, sidekick)
@@ -320,6 +331,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         return Array.from(sidekickMap.values())
     }, [allSidekicks, marketplaceSidekicks])
 
+    // Optimize Fuse.js initialization - only create when combinedSidekicks changes
     useEffect(() => {
         if (combinedSidekicks.length > 0) {
             const fuseOptions = {
@@ -330,6 +342,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             setFuse(new Fuse(combinedSidekicks, fuseOptions))
         }
     }, [combinedSidekicks])
+
     const allCategories = useMemo(() => {
         const allCats = [
             ...chatflowCategories.top,
@@ -356,6 +369,63 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         })
         return counts
     }, [combinedSidekicks, favorites, allCategories])
+
+    // Consolidated filtering and sorting for performance
+    const { userSidekicks, orgSidekicks } = useMemo(() => {
+        // Filter function based on active tab
+        const matchesTab = (sidekick: Sidekick) => {
+            switch (tabValue) {
+                case 'favorites':
+                    return favorites.has(sidekick.id)
+                case 'recent':
+                    return sidekick.isRecent
+                case 'all':
+                    return true
+                case 'search':
+                    return true
+                default:
+                    return (
+                        sidekick.chatflow.categories?.includes(tabValue) ||
+                        sidekick.chatflow.category === tabValue ||
+                        sidekick.categories?.includes(tabValue)
+                    )
+            }
+        }
+
+        // Get initial filtered list based on search or tab
+        let filtered: Sidekick[]
+        if (searchTerm && fuse) {
+            filtered = fuse
+                .search(searchTerm)
+                .map((result) => result.item)
+                .filter(matchesTab)
+        } else {
+            filtered = combinedSidekicks.filter(matchesTab)
+        }
+
+        // Sort function to prioritize executable sidekicks
+        const sortFn = (a: Sidekick, b: Sidekick) => {
+            // First sort by executable status
+            if (a.isExecutable !== b.isExecutable) return a.isExecutable ? -1 : 1
+            // Then sort alphabetically
+            return a.chatflow.name.localeCompare(b.chatflow.name)
+        }
+
+        // Separate user and org sidekicks in a single pass
+        const userSidekicks: Sidekick[] = []
+        const orgSidekicks: Sidekick[] = []
+
+        filtered.forEach((sidekick) => {
+            if (sidekick.chatflow.isOwner) userSidekicks.push(sidekick)
+            else orgSidekicks.push(sidekick)
+        })
+
+        // Sort both arrays
+        userSidekicks.sort(sortFn)
+        orgSidekicks.sort(sortFn)
+
+        return { userSidekicks, orgSidekicks }
+    }, [combinedSidekicks, searchTerm, tabValue, favorites, fuse])
 
     const handleSidekickSelect = (sidekick: Sidekick) => {
         if (!chat?.id) {
@@ -448,41 +518,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         window.open(url, '_blank')
     }, [])
 
-    const filteredSidekicks = useMemo(() => {
-        const filterByTab = (sidekick: Sidekick) => {
-            switch (tabValue) {
-                case 'favorites':
-                    return favorites.has(sidekick.id)
-                case 'recent':
-                    return sidekick.isRecent
-                case 'all':
-                    return true
-                case 'search':
-                    return true
-                default:
-                    return (
-                        sidekick.chatflow.categories?.includes(tabValue) ||
-                        sidekick.chatflow.category === tabValue ||
-                        sidekick.categories?.includes(tabValue)
-                    )
-            }
-        }
-
-        let filtered = combinedSidekicks.filter(filterByTab)
-
-        if (searchTerm && fuse) {
-            const searchResults = fuse.search(searchTerm)
-            filtered = searchResults
-                .sort((a, b) => (a.score || 0) - (b.score || 0))
-                .map((result) => result.item)
-                .filter(filterByTab)
-        } else {
-            filtered.sort((a, b) => a.chatflow.name.localeCompare(b.chatflow.name))
-        }
-
-        return filtered
-    }, [combinedSidekicks, searchTerm, tabValue, favorites, fuse])
-
     const handleCardClick = (sidekick: Sidekick) => {
         handleSidekickSelect(sidekick)
     }
@@ -494,27 +529,13 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     }
 
     const clearSearchField = () => {
-        if (searchbarRef.current) {
-            const inputElement = searchbarRef.current.querySelector('input')
-            if (inputElement) {
-                inputElement.value = ''
-                setDebouncedSearchTerm('')
-                setSearchTerm('')
-                setTabValue(previousActiveTab)
-            }
-        }
+        setSearchInputValue('')
+        setSearchTerm('')
+        setTabValue(previousActiveTab)
     }
 
+    // Optimize rendering by using the pre-computed filtered sidekicks
     const renderSidekickGrid = useCallback(() => {
-        // Sort function to prioritize executable chatflows
-        const sortSidekicks = (sidekicks: Sidekick[]) => {
-            return sidekicks.sort((a, b) => {
-                if (a.isExecutable && !b.isExecutable) return -1
-                if (!a.isExecutable && b.isExecutable) return 1
-                return a.chatflow.name.localeCompare(b.chatflow.name)
-            })
-        }
-
         const renderSidekicks = (sidekicks: Sidekick[]) => (
             <Grid container spacing={2}>
                 {sidekicks.map((sidekick) => (
@@ -661,13 +682,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             </Grid>
         )
 
-        // Apply sorting to all filtered sidekicks
-        const sortedFilteredSidekicks = sortSidekicks(filteredSidekicks)
-
-        // Split filtered and sorted sidekicks into user and organization sidekicks
-        const userSidekicks = sortedFilteredSidekicks.filter((sidekick) => sidekick.chatflow.isOwner)
-        const orgSidekicks = sortedFilteredSidekicks.filter((sidekick) => !sidekick.chatflow.isOwner)
-
         return (
             <>
                 {userSidekicks.length > 0 && renderSidekicks(userSidekicks)}
@@ -683,7 +697,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 )}
             </>
         )
-    }, [filteredSidekicks, tabValue, favorites, handleSidekickSelect, handleClone, toggleFavorite, trigger, handleEdit])
+    }, [userSidekicks, orgSidekicks, tabValue, favorites, handleSidekickSelect, handleClone, toggleFavorite, handleEdit, theme])
 
     const content = (
         <>
@@ -695,18 +709,15 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     variant='outlined'
                     style={{ position: 'relative' }}
                     placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
-                    // value={debouncedSearchTerm}
+                    // value={searchInputValue}
                     onChange={(e) => {
-                        // if (debouncedSearchTerm.length > 0) setTabValue('search')
-                        setDebouncedSearchTerm(e.target.value)
-                    }}
-                    onFocus={() => {
-                        setTabValue('search')
-                        setPreviousActiveTab(tabValue)
+                        const value = e.target.value
+                        setSearchInputValue(value)
+                        debouncedSetSearchTerm(value)
                     }}
                     InputProps={{
                         startAdornment: <SearchIcon color='action' />,
-                        endAdornment: debouncedSearchTerm.length > 0 && (
+                        endAdornment: searchInputValue.length > 0 && (
                             <Button onClick={clearSearchField} style={{ position: 'absolute', right: 10, padding: 0, minWidth: 'auto' }}>
                                 <CancelIcon color='action' />
                             </Button>
@@ -789,32 +800,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     window.history.pushState(null, '', window.location.pathname)
                 }}
                 templateId={selectedTemplateId}
-                onUse={handleSidekickSelect}
+                onUse={(sidekick) => handleSidekickSelect(sidekick)}
             />
         </>
     )
-
-    if (noDialog) {
-        return <ContentWrapper>{content}</ContentWrapper>
-    }
 
     const handleCreateNewSidekick = () => {
         navigate('/canvas')
     }
 
-    const handleShare = useCallback((sidekick: Sidekick, e: React.MouseEvent) => {
-        e.stopPropagation()
-        if (!sidekick) return
-
-        // Create the share URL
-        const shareUrl = `${window.location.origin}/sidekick/${sidekick.id}`
-
-        // Copy to clipboard
-        navigator.clipboard.writeText(shareUrl).then(() => {
-            setShowCopyMessage(true)
-        })
-    }, [])
-
+    if (noDialog) {
+        return <ContentWrapper>{content}</ContentWrapper>
+    }
     return (
         <Box>
             <Button variant='outlined' onClick={() => setOpen(true)} endIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'space-between' }}>
@@ -834,9 +831,22 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                             fullWidth
                             variant='outlined'
                             placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
-                            onChange={(e) => setDebouncedSearchTerm(e.target.value)}
+                            value={searchInputValue}
+                            onChange={(e) => {
+                                const value = e.target.value
+                                setSearchInputValue(value)
+                                debouncedSetSearchTerm(value)
+                            }}
                             InputProps={{
-                                startAdornment: <SearchIcon color='action' />
+                                startAdornment: <SearchIcon color='action' />,
+                                endAdornment: searchInputValue.length > 0 && (
+                                    <Button
+                                        onClick={clearSearchField}
+                                        style={{ position: 'absolute', right: 10, padding: 0, minWidth: 'auto' }}
+                                    >
+                                        <CancelIcon color='action' />
+                                    </Button>
+                                )
                             }}
                         />
                     </Box>

@@ -1,4 +1,4 @@
-import React, { Suspense } from 'react'
+import React from 'react'
 
 export default async function ChatUILayout({
     // This will be populated with nested layouts or pages

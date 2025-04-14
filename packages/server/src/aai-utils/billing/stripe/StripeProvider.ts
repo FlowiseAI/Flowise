@@ -22,10 +22,6 @@ import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
 import { StripeEvent } from '../../../database/entities/StripeEvent'
 import { Subscription as SubscriptionEntity } from '../../../database/entities/Subscription'
 // import { UserCredits } from '../../../database/entities/UserCredits'
-import { MeterEventSummary } from './types'
-import { Chat } from '../../../database/entities/Chat'
-import { ChatMessage } from '../../../database/entities/ChatMessage'
-import { ChatType } from '../../../Interface'
 
 export class StripeProvider {
     stripeClient: Stripe

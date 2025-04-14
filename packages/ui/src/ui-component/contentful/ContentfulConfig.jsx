@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Box, Button, Typography, Chip } from '@mui/material'
 import ContentfulConfigDialog from '../dialog/ContentfulConfigDialog'

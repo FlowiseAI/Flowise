@@ -1,7 +1,6 @@
 import React from 'react'
 import {
     Box,
-    Card,
     Typography,
     Table,
     TableBody,
@@ -11,19 +10,15 @@ import {
     TableRow,
     TablePagination,
     TableSortLabel,
-    CircularProgress,
     Chip,
-    Tooltip,
-    IconButton,
     Skeleton
 } from '@mui/material'
-import InfoIcon from '@mui/icons-material/Info'
 import { useUsageEvents } from './hooks/useUsageEvents'
 import { format } from 'date-fns'
 import { useUser } from '@auth0/nextjs-auth0/client'
 
 // Skeleton row component for loading state
-const SkeletonRow = ({ isAdmin = false }) => {
+const SkeletonRow = ({ isAdmin = false }: { isAdmin?: boolean }) => {
     const columns = isAdmin ? 5 : 4 // Adjust number of cells based on admin status
 
     return (

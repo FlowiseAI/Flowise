@@ -149,7 +149,12 @@ const ResizePanel = ({ direction, containerClass, handleClass, borderClass, sx, 
     )
 
     // Insert the handle at the beginning of the content if our directio is west or north
-    const content = [handle, <ResizeContent {...contentProps}>{children}</ResizeContent>]
+    const content = [
+        handle,
+        <ResizeContent key={'resize-content'} {...contentProps}>
+            {children}
+        </ResizeContent>
+    ]
     if (direction === 'e' || direction === 's') {
         content.reverse()
     }

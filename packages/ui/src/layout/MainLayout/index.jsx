@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 // material-ui
 import { styled, useTheme } from '@mui/material/styles'
@@ -8,9 +8,9 @@ import { AppBar, Box, CssBaseline, Toolbar, useMediaQuery } from '@mui/material'
 
 // project imports
 import Header from './Header'
-import Sidebar from './Sidebar'
-import { drawerWidth, headerHeight } from '@/store/constant'
+import { drawerWidth } from '@/store/constant'
 import { SET_MENU } from '@/store/actions'
+import PropTypes from 'prop-types'
 
 // styles
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' && prop !== 'isInIframe' })(({ theme, open, isInIframe }) => ({
@@ -106,6 +106,10 @@ const MainLayout = ({ children }) => {
             </Main>
         </Box>
     )
+}
+
+MainLayout.propTypes = {
+    children: PropTypes.node.isRequired
 }
 
 export default MainLayout

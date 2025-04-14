@@ -3,11 +3,16 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 
 import { setBaseURL } from '../store/constant'
 import { Auth0Context } from '@auth0/auth0-react'
-
+import PropTypes from 'prop-types'
 export const Auth0Setup = ({ children, apiHost, accessToken }) => {
     const { isAuth0Ready, user } = useAuth0Setup(apiHost, accessToken)
 
     return <Auth0Context.Provider value={{ isAuth0Ready, user }}>{children}</Auth0Context.Provider>
+}
+Auth0Setup.propTypes = {
+    children: PropTypes.node.isRequired,
+    apiHost: PropTypes.string.isRequired,
+    accessToken: PropTypes.string.isRequired
 }
 
 export const useAuth0Setup = (apiHost, accessToken) => {

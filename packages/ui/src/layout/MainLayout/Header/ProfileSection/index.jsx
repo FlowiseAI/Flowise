@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic'
-import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, MENU_OPEN, REMOVE_DIRTY } from '@/store/actions'
+import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, REMOVE_DIRTY } from '@/store/actions'
 import { exportData, stringify } from '@/utils/exportImport'
 import useNotifier from '@/utils/useNotifier'
 import PropTypes from 'prop-types'
