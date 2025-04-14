@@ -121,7 +121,7 @@ Flowise has 3 different modules in a single mono repository.
 Flowise support different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://docs.flowiseai.com/environment-variables)
 
 | Variable                           | Description                                                                      | Type                                             | Default                             |
-|------------------------------------|----------------------------------------------------------------------------------|--------------------------------------------------|-------------------------------------|
+| ---------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------ | ----------------------------------- |
 | PORT                               | The HTTP port Flowise runs on                                                    | Number                                           | 3000                                |
 | CORS_ORIGINS                       | The allowed origins for all cross-origin HTTP calls                              | String                                           |                                     |
 | IFRAME_ORIGINS                     | The allowed origins for iframe src embedding                                     | String                                           |                                     |
