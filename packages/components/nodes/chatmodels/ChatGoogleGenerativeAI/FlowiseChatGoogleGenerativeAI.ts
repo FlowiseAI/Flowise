@@ -415,7 +415,6 @@ function getMessageAuthor(message: BaseMessage) {
 }
 
 function convertAuthorToRole(author: string) {
-    // role must be either user or model as from the docs: https://ai.google.dev/api/caching#Content
     switch (author.toLowerCase()) {
         case 'ai':
         case 'assistant':
