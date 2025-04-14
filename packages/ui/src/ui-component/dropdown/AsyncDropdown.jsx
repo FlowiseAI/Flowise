@@ -61,9 +61,9 @@ export const AsyncDropdown = ({
     const [options, setOptions] = useState([])
     const [loading, setLoading] = useState(false)
 
-    const inputParam = nodeData.inputParams.find((param) => param.name === name)
+    const inputParam = nodeData?.inputParams?.find((param) => param.name === name)
     const isLazyLoad = inputParam?.loadOptionsOnOpen
-    const credential = nodeData.credential
+    const credential = nodeData?.credential
 
     const findMatchingOptions = (options = [], value) => {
         if (multiple) {
