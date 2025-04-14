@@ -14,7 +14,18 @@ module.exports = {
         }
     },
     parser: '@typescript-eslint/parser',
-    ignorePatterns: ['**/node_modules', '**/dist', '**/build', '**/package-lock.json', '**/pnpm-lock.yaml', '**/.gitbook/assets/*.json'],
+    ignorePatterns: [
+        '**/node_modules',
+        '**/.next',
+        '**/dist',
+        '**/build',
+        '**/package-lock.json',
+        '**/pnpm-lock.yaml',
+        '**/.gitbook/assets/*.json',
+        '**/generated/**',
+        '**/.turbo/**',
+        '**/coverage/**'
+    ],
     plugins: ['unused-imports'],
     rules: {
         '@typescript-eslint/explicit-module-boundary-types': 'off',

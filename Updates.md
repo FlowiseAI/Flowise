@@ -63,11 +63,12 @@ The frontend implementation displays usage events in a table with:
 # Updates Log
 
 ## 2024-08-15 - BillingService Optimization
-- Changed BillingService from singleton to per-request instantiation to fix memory issues
-- Made customerId optional in GetUsageEventsParams to handle unauthenticated users
-- Added UsageEventsTable component to billing UI
-- Updated UI layouts and imports for better performance
-- Fixed code style issues and linting errors
+
+-   Changed BillingService from singleton to per-request instantiation to fix memory issues
+-   Made customerId optional in GetUsageEventsParams to handle unauthenticated users
+-   Added UsageEventsTable component to billing UI
+-   Updated UI layouts and imports for better performance
+-   Fixed code style issues and linting errors
 
 ## (updated)
 
