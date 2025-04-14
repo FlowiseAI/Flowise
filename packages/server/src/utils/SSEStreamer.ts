@@ -166,6 +166,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     streamErrorEvent(chatId: string, msg: string) {
+        if (msg.includes('401 Incorrect API key provided')) msg = '401 Invalid model key or Incorrect local model configuration.'
         const client = this.clients[chatId]
         if (client) {
             const clientResponse = {

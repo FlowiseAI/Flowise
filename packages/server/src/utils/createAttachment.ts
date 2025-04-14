@@ -6,10 +6,15 @@ import {
     IDocument,
     mapExtToInputField,
     mapMimeTypeToInputField,
-    removeSpecificFileFromUpload
+    removeSpecificFileFromUpload,
+    isValidUUID,
+    isPathTraversal
 } from 'flowise-components'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { getErrorMessage } from '../errors/utils'
+import { InternalFlowiseError } from '../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
+import { ChatFlow } from '../database/entities/ChatFlow'
 
 /**
  * Create attachment
@@ -19,17 +24,26 @@ export const createFileAttachment = async (req: Request) => {
     const appServer = getRunningExpressApp()
 
     const chatflowid = req.params.chatflowId
-    if (!chatflowid) {
-        throw new Error(
-            'Params chatflowId is required! Please provide chatflowId and chatId in the URL: /api/v1/attachments/:chatflowId/:chatId'
-        )
+    if (!chatflowid || !isValidUUID(chatflowid)) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatflowId format - must be a valid UUID')
     }
 
     const chatId = req.params.chatId
-    if (!chatId) {
-        throw new Error(
-            'Params chatId is required! Please provide chatflowId and chatId in the URL: /api/v1/attachments/:chatflowId/:chatId'
-        )
+    if (!chatId || !isValidUUID(chatId)) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatId format - must be a valid UUID')
+    }
+
+    // Check for path traversal attempts
+    if (isPathTraversal(chatflowid) || isPathTraversal(chatId)) {
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid path characters detected')
+    }
+
+    // Validate chatflow exists and check API key
+    const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
+        id: chatflowid
+    })
+    if (!chatflow) {
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
 
     // Find FileLoader node
