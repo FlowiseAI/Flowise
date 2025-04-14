@@ -91,6 +91,7 @@ export const buildAgentGraph = async ({
         const uploads = incomingInput.uploads
 
         const options = {
+            user,
             chatId,
             sessionId,
             chatflowid,

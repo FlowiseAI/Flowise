@@ -107,6 +107,9 @@
             "set-value": "4.1.0",
             "unset-value": "2.0.1",
             "webpack-dev-middleware": "7.4.2"
+        },
+        "patchedDependencies": {
+            "langfuse-langchain": "patches/langfuse-langchain.patch"
         }
     },
     "engines": {

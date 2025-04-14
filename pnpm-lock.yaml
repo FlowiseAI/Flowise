@@ -26,6 +26,11 @@ overrides:
     unset-value: 2.0.1
     webpack-dev-middleware: 7.4.2
 
+patchedDependencies:
+    langfuse-langchain:
+        hash: jzyriheobwdholz6eejh65gosy
+        path: patches/langfuse-langchain.patch
+
 importers:
     .:
         dependencies:
@@ -1063,7 +1068,7 @@ importers:
                 version: 3.32.0
             langfuse-langchain:
                 specifier: 3.32.0
-                version: 3.32.0(langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy))
+                version: 3.32.0(patch_hash=jzyriheobwdholz6eejh65gosy)(langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy))
             langsmith:
                 specifier: 0.1.6
                 version: 0.1.6
@@ -41748,7 +41753,7 @@ snapshots:
         dependencies:
             mustache: 4.2.0
 
-    langfuse-langchain@3.32.0(langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy)):
+    langfuse-langchain@3.32.0(patch_hash=jzyriheobwdholz6eejh65gosy)(langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy)):
         dependencies:
             langchain: 0.2.20(dwimkbyi5m6j5oazbfdf5o45iy)
             langfuse: 3.32.0
