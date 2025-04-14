@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import * as path from 'path'
-import { DataSource, IsNull, Not } from 'typeorm'
+import { DataSource, IsNull } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
 import { omit } from 'lodash'
 import {
@@ -649,6 +649,8 @@ export const executeFlow = async ({
             analytic: chatflow.analytic,
             uploads,
             prependMessages,
+            user,
+            sessionId,
             ...(isStreamValid && { sseStreamer, shouldStreamResponse: isStreamValid })
         }
 
