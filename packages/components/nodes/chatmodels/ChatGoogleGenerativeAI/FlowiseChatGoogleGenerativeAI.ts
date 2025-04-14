@@ -676,13 +676,39 @@ function zodToGeminiParameters(zodObj: any) {
     const jsonSchema: any = zodToJsonSchema(zodObj)
     // eslint-disable-next-line unused-imports/no-unused-vars
     const { $schema, additionalProperties, ...rest } = jsonSchema
+
+    // Ensure all properties have type specified
     if (rest.properties) {
         Object.keys(rest.properties).forEach((key) => {
-            if (rest.properties[key].enum?.length) {
-                rest.properties[key] = { type: 'string', format: 'enum', enum: rest.properties[key].enum }
+            const prop = rest.properties[key]
+
+            // Handle enum types
+            if (prop.enum?.length) {
+                rest.properties[key] = {
+                    type: 'string',
+                    format: 'enum',
+                    enum: prop.enum
+                }
+            }
+            // Handle missing type
+            else if (!prop.type && !prop.oneOf && !prop.anyOf && !prop.allOf) {
+                // Infer type from other properties
+                if (prop.minimum !== undefined || prop.maximum !== undefined) {
+                    prop.type = 'number'
+                } else if (prop.format === 'date-time') {
+                    prop.type = 'string'
+                } else if (prop.items) {
+                    prop.type = 'array'
+                } else if (prop.properties) {
+                    prop.type = 'object'
+                } else {
+                    // Default to string if type can't be inferred
+                    prop.type = 'string'
+                }
             }
         })
     }
+
     return rest
 }
 
