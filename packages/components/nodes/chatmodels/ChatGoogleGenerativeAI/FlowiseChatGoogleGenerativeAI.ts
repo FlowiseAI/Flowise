@@ -415,6 +415,7 @@ function getMessageAuthor(message: BaseMessage) {
 }
 
 function convertAuthorToRole(author: string) {
+    // role must be either user or model as from the docs: https://ai.google.dev/api/caching#Content
     switch (author.toLowerCase()) {
         case 'ai':
         case 'assistant':
@@ -422,8 +423,7 @@ function convertAuthorToRole(author: string) {
             return 'model'
         case 'function':
         case 'tool':
-            // Keep function/tool messages separate from model messages
-            return 'user'
+            return 'function'
         case 'system':
         case 'human':
         default:
@@ -575,7 +575,7 @@ function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel
                 }
             }
             let actualRole = role
-            if (actualRole === 'function') {
+            if (actualRole === 'function' || actualRole === 'tool') {
                 // GenerativeAI API will throw an error if the role is not "user" or "model."
                 actualRole = 'user'
             }
