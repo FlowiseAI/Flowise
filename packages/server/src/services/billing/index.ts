@@ -1,4 +1,4 @@
-import { BillingService, LangfuseProvider, StripeProvider, stripe as stripeClient } from '../../aai-utils/billing'
+import { BillingService } from '../../aai-utils/billing'
 import type {
     AttachPaymentMethodParams,
     CreateCheckoutSessionParams,
@@ -16,23 +16,9 @@ import { Subscription } from '../../database/entities/Subscription'
 import Stripe from 'stripe'
 
 // Initialize billing service with Stripe provider
-export const billingService = new BillingService(new StripeProvider(stripeClient), new LangfuseProvider())
+export const billingService = new BillingService()
 
-async function getUsageSummary(customerId?: string) {
-    logger.info('Getting usage stats', { customerId })
-    try {
-        if (!customerId) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User has no associated Stripe customer')
-        }
-        return await billingService.getUsageSummary(customerId)
-    } catch (error) {
-        logger.error('Error getting usage stats:', { error, customerId })
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Failed to get usage statistics: ${error instanceof Error ? error.message : String(error)}`
-        )
-    }
-}
+
 
 async function syncUsageToStripe(traceId?: string) {
     try {
@@ -46,25 +32,6 @@ async function syncUsageToStripe(traceId?: string) {
     }
 }
 
-// async function createCustomer(params: CreateCustomerParams) {
-//     try {
-//         // Check if customer already exists with this email
-//         const existingCustomer = await billingService.getCustomerByEmail(params.email)
-//         if (existingCustomer) {
-//             throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Customer already exists')
-//         }
-//         return await billingService.createCustomer(params)
-//     } catch (error) {
-//         if (error instanceof InternalFlowiseError) {
-//             throw error
-//         }
-//         logger.error('Error creating customer:', error)
-//         throw new InternalFlowiseError(
-//             StatusCodes.INTERNAL_SERVER_ERROR,
-//             `Failed to create customer: ${error instanceof Error ? error.message : String(error)}`
-//         )
-//     }
-// }
 
 async function attachPaymentMethod(params: AttachPaymentMethodParams) {
     try {
@@ -152,7 +119,7 @@ async function getSubscriptionWithUsage(subscriptionId: string) {
 
 async function handleWebhook(payload: any, signature: string) {
     try {
-        const event = stripeClient.webhooks.constructEvent(payload, signature, process.env.BILLING_STRIPE_WEBHOOK_SECRET!)
+        const event = billingService.stripeClient.webhooks.constructEvent(payload, signature, process.env.BILLING_STRIPE_WEBHOOK_SECRET!)
 
         const appServer = getRunningExpressApp()
         const stripeEventRepo = appServer.AppDataSource.getRepository(StripeEvent)
@@ -229,118 +196,9 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     await subscriptionRepo.update({ stripeSubscriptionId: subscription.id }, { status: 'canceled' })
 }
 
-// async function handleInvoicePaid(invoice: Stripe.Invoice) {
-//     // Update credit balance
-//     const appServer = getRunningExpressApp()
-//     const userCreditsRepo = appServer.AppDataSource.getRepository(UserCredits)
-
-//     const userCredits = await userCreditsRepo.findOne({
-//         where: { stripeCustomerId: invoice.customer as string }
-//     })
-
-//     if (userCredits) {
-//         userCredits.lastInvoiceAt = new Date()
-//         await userCreditsRepo.save(userCredits)
-//     }
-// }
-
-// async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
-//     // Handle failed payment - maybe send notification or update status
-//     const appServer = getRunningExpressApp()
-//     const userCreditsRepo = appServer.AppDataSource.getRepository(UserCredits)
-
-//     const userCredits = await userCreditsRepo.findOne({
-//         where: { stripeCustomerId: invoice.customer as string }
-//     })
-
-//     if (userCredits) {
-//         userCredits.isBlocked = true
-//         userCredits.blockReason = 'Payment failed'
-//         await userCreditsRepo.save(userCredits)
-//     }
-// }
-
-// async function trackUsage(userId: string, type: string, amount: number) {
-//     try {
-//         logger.info('Tracking usage event', { userId, type, amount })
-//         const appServer = getRunningExpressApp()
-//         const userRepo = appServer.AppDataSource.getRepository('User')
-
-//         // Get user's Stripe customer ID
-//         const user = await userRepo.findOne({ where: { id: userId } })
-//         if (!user?.stripeCustomerId) {
-//             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User has no associated Stripe customer')
-//         }
-
-//         // Create a meter event
-//         const meterEvent = {
-//             customerId: user.stripeCustomerId,
-//             type,
-//             amount,
-//             timestamp: new Date()
-//         }
-
-//         // Get usage stats before the event
-//         const beforeStats = await billingService.getUsageSummary(user.stripeCustomerId)
-//         const beforeTotal = beforeStats.total_credits || 0
-
-//         // Record the event
-//         await billingService.syncUsageToStripe([
-//             {
-//                 traceId: `manual-${Date.now()}`,
-//                 stripeCustomerId: user.stripeCustomerId,
-//                 subscriptionTier: 'free',
-//                 timestamp: new Date().toISOString(),
-//                 timestampEpoch: Math.floor(Date.now() / 1000),
-//                 credits: {
-//                     ai_tokens: type === 'token' ? amount : 0,
-//                     compute: type === 'compute' ? amount : 0,
-//                     storage: type === 'storage' ? amount : 0,
-//                     total: amount
-//                 },
-//                 metadata: {},
-//                 usage: {
-//                     tokens: type === 'token' ? amount : 0,
-//                     computeMinutes: type === 'compute' ? amount : 0,
-//                     storageGB: type === 'storage' ? amount : 0,
-//                     totalCost: 0,
-//                     models: []
-//                 },
-//                 costs: {
-//                     base: {
-//                         ai: type === 'token' ? amount * 0.001 : 0,
-//                         compute: type === 'compute' ? amount * 0.001 : 0,
-//                         storage: type === 'storage' ? amount * 0.001 : 0,
-//                         total: amount * 0.001
-//                     },
-//                     withMargin: {
-//                         total: amount * 0.001,
-//                         marginMultiplier: 1
-//                     }
-//                 }
-//             }
-//         ])
-
-//         // Get usage stats after the event
-//         const afterStats = await billingService.getUsageSummary(user.stripeCustomerId)
-//         const afterTotal = afterStats.total_credits || 0
-
-//         return {
-//             remainingCredits: Math.max(0, beforeTotal - (afterTotal - beforeTotal))
-//         }
-//     } catch (error) {
-//         logger.error('Error tracking usage:', error)
-//         throw new InternalFlowiseError(
-//             StatusCodes.INTERNAL_SERVER_ERROR,
-//             `Failed to track usage: ${error instanceof Error ? error.message : String(error)}`
-//         )
-//     }
-// }
 
 export default {
-    getUsageSummary,
     syncUsageToStripe,
-    // createCustomer,
     attachPaymentMethod,
     createCheckoutSession,
     updateSubscription,
@@ -349,5 +207,5 @@ export default {
     createBillingPortalSession,
     getSubscriptionWithUsage,
     handleWebhook
-    // trackUsage
+   
 }
