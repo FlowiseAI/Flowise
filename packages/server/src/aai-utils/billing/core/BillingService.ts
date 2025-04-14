@@ -14,7 +14,9 @@ import {
     Invoice,
     UsageStats,
     SubscriptionWithUsage,
-    UsageSummary
+    UsageSummary,
+    GetUsageEventsParams,
+    UsageEventsResponse
 } from './types'
 import { LangfuseProvider } from '../langfuse/LangfuseProvider'
 import { StripeProvider } from '../stripe/StripeProvider'
@@ -23,16 +25,20 @@ import Stripe from 'stripe'
 import { MeterEventSummary } from '../stripe/types'
 
 export class BillingService implements BillingProvider {
-    private stripeClient: Stripe
+    public stripeClient: Stripe
     private paymentProvider: StripeProvider
     private usageProvider: LangfuseProvider
 
-    constructor(stripeProvider: StripeProvider, langfuseProvider: LangfuseProvider) {
-        this.paymentProvider = stripeProvider
-        this.usageProvider = langfuseProvider
-        this.stripeClient = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY!, {
-            apiVersion: '2025-02-24.acacia'
-        })
+    constructor() {
+        this.usageProvider = new LangfuseProvider()
+        try {
+            this.paymentProvider = new StripeProvider()
+            this.stripeClient = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY! ?? '', {
+                apiVersion: '2025-02-24.acacia'
+            })
+        } catch (error) {
+            log.error('Failed to initialize Stripe client', { error })
+        }
     }
 
     // Payment and subscription methods delegated to Stripe
@@ -347,5 +353,17 @@ export class BillingService implements BillingProvider {
             customer: customerId,
             type: 'card'
         })
+    }
+
+    /**
+     * Get detailed usage events from Langfuse
+     */
+    async getUsageEvents(params: GetUsageEventsParams): Promise<UsageEventsResponse> {
+        try {
+            return this.usageProvider.getUsageEvents(params)
+        } catch (error) {
+            log.error('Error getting usage events:', { error, customerId: params.customerId })
+            throw error
+        }
     }
 }
