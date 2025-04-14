@@ -277,7 +277,7 @@ export const authenticationHandlerMiddleware =
                         } else {
                             try {
                                 const stripe = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY ?? '')
-
+ 
                                 const customer = await stripe.customers.create({
                                     email,
                                     name,
@@ -293,9 +293,9 @@ export const authenticationHandlerMiddleware =
                                 console.error('Error creating/updating Stripe customers:', error)
                                 return res.status(500).send('Internal Server Error')
                             }
-                            user.stripeCustomerId = stripeCustomerId
                             await AppDataSource.getRepository(User).save(user)
                         }
+                        user.stripeCustomerId = stripeCustomerId
                     }
                     req.user = { ...authUser, ...user, roles }
                 } catch (error) {

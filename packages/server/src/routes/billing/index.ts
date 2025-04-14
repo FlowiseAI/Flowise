@@ -14,20 +14,20 @@ router.get('/usage/summary', enforceAbility('Billing'), billingController.getUsa
 router.get('/usage/events', enforceAbility('Billing'), billingController.getUsageEvents)
 
 // Subscription Management
-router.get('/subscription/status', billingController.getSubscriptionWithUsage)
-router.post('/subscriptions', billingController.createCheckoutSession)
-router.put('/subscriptions/:id', billingController.updateSubscription)
-router.delete('/subscriptions/:id', billingController.cancelSubscription)
+router.get('/subscription/status', enforceAbility('Billing'), billingController.getSubscriptionWithUsage)
+router.post('/subscriptions', enforceAbility('Billing'), billingController.createCheckoutSession)
+router.put('/subscriptions/:id', enforceAbility('Billing'), billingController.updateSubscription)
+router.delete('/subscriptions/:id', enforceAbility('Billing'), billingController.cancelSubscription)
 
 // Payment Methods
-router.post('/payment-methods', billingController.attachPaymentMethod)
+router.post('/payment-methods', enforceAbility('Billing'), billingController.attachPaymentMethod)
 
 // Billing Portal
-router.post('/portal-sessions', billingController.createBillingPortalSession)
+router.post('/portal-sessions', enforceAbility('Billing'), billingController.createBillingPortalSession)
 
 // Invoices
-router.get('/invoice/upcoming', billingController.getUpcomingInvoice)
-router.post('/invoices/upcoming', billingController.getUpcomingInvoice)
+router.get('/invoice/upcoming', enforceAbility('Billing'), billingController.getUpcomingInvoice)
+router.post('/invoices/upcoming', enforceAbility('Billing'), billingController.getUpcomingInvoice)
 
 // Usage Sync (Internal)
 router.get('/usage/sync', billingController.usageSyncHandler)

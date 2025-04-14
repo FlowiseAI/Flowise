@@ -23,9 +23,15 @@ import { StripeEvent } from '../../../database/entities/StripeEvent'
 import { Subscription as SubscriptionEntity } from '../../../database/entities/Subscription'
 // import { UserCredits } from '../../../database/entities/UserCredits'
 import { MeterEventSummary } from './types'
+import { Chat } from '../../../database/entities/Chat'
+import { ChatMessage } from '../../../database/entities/ChatMessage'
+import { ChatType } from '../../../Interface'
 
 export class StripeProvider {
-    constructor(private stripeClient: Stripe) {}
+    stripeClient: Stripe
+    constructor() {
+        this.stripeClient = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY! ?? '')
+    }
 
     async getInvoices(params: Stripe.InvoiceListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
         log.info('Getting invoices', { params })
@@ -331,7 +337,12 @@ export class StripeProvider {
                         const totalCredits = aiTokens + data.credits.compute + data.credits.storage
                         const totalCreditsWithMargin = Math.floor(totalCredits * BILLING_CONFIG.MARGIN_MULTIPLIER)
                         const meterId = metersMap.get('credits')
+                        const ai_tokens_cost = (data.costs.base.ai + (data.costs.base.unknown || 0)) * BILLING_CONFIG.MARGIN_MULTIPLIER
+                        const compute_cost = data.costs.base.compute * BILLING_CONFIG.MARGIN_MULTIPLIER
+                        const storage_cost = data.costs.base.storage * BILLING_CONFIG.MARGIN_MULTIPLIER
+                        const total_cost_with_margin = ai_tokens_cost + compute_cost + storage_cost
 
+                        const total_credits_with_margin = totalCreditsWithMargin + (data.costs.base.unknown || 0)
                         if (!meterId) {
                             throw new Error('No meter found for type: credits')
                         }
@@ -715,175 +726,6 @@ export class StripeProvider {
                 cancelAtPeriodEnd: false,
                 usage: []
             }
-        }
-    }
-
-    async getUsageSummary(customerId: string): Promise<UsageSummary> {
-        try {
-            // First get the active subscription to determine billing period
-            const subscriptions = await this.stripeClient.subscriptions.list({
-                customer: customerId,
-                status: 'active',
-                limit: 1
-            })
-            const subscription = subscriptions.data[0]
-
-            // Get billing period from subscription or default to current month
-            const now = new Date()
-            const billingStart = subscription
-                ? new Date(subscription.current_period_start * 1000)
-                : new Date(now.getFullYear(), now.getMonth(), 1)
-            const billingEnd = subscription
-                ? new Date(subscription.current_period_end * 1000)
-                : new Date(now.getFullYear(), now.getMonth() + 1, 0)
-
-            // Get meter events for the billing period
-            const startTime = Math.floor(billingStart.getTime() / 1000)
-            const endTime = Math.floor(billingEnd.getTime() / 1000)
-
-            const meters = await this.stripeClient.billing.meters.list()
-            const summariesPromises = meters.data.map((meter) =>
-                this.stripeClient.billing.meters.listEventSummaries(meter.id, {
-                    customer: customerId,
-                    start_time: startTime,
-                    end_time: endTime
-                })
-            )
-
-            // Fetch upcoming invoice data in parallel with usage data
-            const [summaries, upcomingInvoiceData] = await Promise.all([
-                Promise.all(summariesPromises),
-                this.fetchUpcomingInvoiceData(customerId, subscription?.id)
-            ])
-
-            // Initialize usage tracking
-            const dailyUsage: Record<
-                string,
-                {
-                    date: string
-                    aiTokens: number
-                    compute: number
-                    storage: number
-                    total: number
-                }
-            > = {}
-
-            let totalAiTokens = 0
-            let totalCompute = 0
-            let totalStorage = 0
-
-            // Process all summaries
-            summaries.forEach((summary) => {
-                summary.data.forEach((rawEvent) => {
-                    const event = rawEvent as MeterEventSummary
-                    const value = Number(event.aggregated_value || 0)
-                    const date = new Date(event.start_time * 1000).toISOString().split('T')[0]
-
-                    // Get credit type from metadata or payload
-                    let creditType = 'ai_tokens' // Default to AI tokens
-                    try {
-                        if (event.metadata) {
-                            const metadata = JSON.parse(event.metadata)
-                            if (metadata.credit_type) {
-                                creditType = metadata.credit_type
-                            }
-                        }
-                        if (event.payload?.credit_type) {
-                            creditType = event.payload.credit_type
-                        }
-                    } catch (e) {
-                        log.warn('Failed to parse event metadata', { error: e, event })
-                    }
-
-                    // Initialize daily record if not exists
-                    if (!dailyUsage[date]) {
-                        dailyUsage[date] = {
-                            date,
-                            aiTokens: 0,
-                            compute: 0,
-                            storage: 0,
-                            total: 0
-                        }
-                    }
-
-                    // Update totals and daily usage based on credit type
-                    switch (creditType) {
-                        case 'compute':
-                            totalCompute += value
-                            dailyUsage[date].compute += value
-                            break
-                        case 'storage':
-                            totalStorage += value
-                            dailyUsage[date].storage += value
-                            break
-                        default:
-                            // Default to AI tokens for unknown types
-                            totalAiTokens += value
-                            dailyUsage[date].aiTokens += value
-                    }
-                    dailyUsage[date].total += value
-                })
-            })
-
-            // Calculate plan limits
-            const planLimits = subscription ? BILLING_CONFIG.PLAN_LIMITS.PRO : BILLING_CONFIG.PLAN_LIMITS.FREE
-            const aiTokensLimit = Math.floor(planLimits * 0.5) // 50% allocation for AI tokens
-            const computeLimit = Math.floor(planLimits * 0.3) // 30% allocation for compute
-            const storageLimit = Math.floor(planLimits * 0.2) // 20% allocation for storage
-
-            // Calculate total usage
-            const totalUsage = totalAiTokens + totalCompute + totalStorage
-
-            // Check if over limit
-            const isOverLimit = totalUsage > planLimits
-
-            // Format daily usage array sorted by date
-            const dailyUsageArray = Object.values(dailyUsage).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-
-            return {
-                currentPlan: {
-                    name: subscription ? 'Pro' : 'Free',
-                    status: subscription?.status === 'active' ? 'active' : 'inactive',
-                    creditsIncluded: planLimits
-                },
-                usageDashboard: {
-                    aiTokens: {
-                        used: totalAiTokens,
-                        total: aiTokensLimit,
-                        rate: 0.01,
-                        cost: totalAiTokens * 0.01
-                    },
-                    compute: {
-                        used: totalCompute,
-                        total: computeLimit,
-                        rate: 0.02,
-                        cost: totalCompute * 0.02
-                    },
-                    storage: {
-                        used: totalStorage,
-                        total: storageLimit,
-                        rate: 0.001,
-                        cost: totalStorage * 0.001
-                    }
-                },
-                billingPeriod: {
-                    start: billingStart,
-                    end: billingEnd,
-                    current: now
-                },
-                pricing: {
-                    aiTokensRate: '1,000 tokens = 100 Credits ($0.1)',
-                    computeRate: '1 minute = 50 credits ($0.05)',
-                    storageRate: '1 GB/month = 500 credits ($0.5)',
-                    creditRate: '1 Credit = $0.001 USD'
-                },
-                dailyUsage: dailyUsageArray,
-                isOverLimit,
-                upcomingInvoice: upcomingInvoiceData
-            }
-        } catch (error) {
-            log.error('Error getting usage summary:', error)
-            throw error
         }
     }
 

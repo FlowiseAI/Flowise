@@ -1,8 +1,4 @@
-import Stripe from 'stripe'
 import { BILLING_CONFIG } from '../config'
-
-// Initialize Stripe client
-export const stripe = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY!)
 
 // Load environment variables with defaults
 const BILLING_CREDIT_PRICE_USD = BILLING_CONFIG.CREDIT_TO_USD // Use the same value from billing config
