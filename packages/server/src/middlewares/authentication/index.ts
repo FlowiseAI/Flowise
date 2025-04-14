@@ -268,7 +268,7 @@ export const authenticationHandlerMiddleware =
 
                     // Upsert customer on Stripe if no customerId is attached
                     let stripeCustomerId = user.stripeCustomerId
-                    if (!stripeCustomerId) {
+                    if (!stripeCustomerId && process.env.BILLING_STRIPE_SECRET_KEY) {
                         if (
                             process.env.BILLING_STRIPE_ORGANIZATION_CUSTOMER_ID ||
                             (organization.stripeCustomerId && organization.billingPoolEnabled == true)
@@ -277,7 +277,7 @@ export const authenticationHandlerMiddleware =
                         } else {
                             try {
                                 const stripe = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY ?? '')
- 
+
                                 const customer = await stripe.customers.create({
                                     email,
                                     name,

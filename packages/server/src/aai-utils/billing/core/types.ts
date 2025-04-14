@@ -384,7 +384,7 @@ export interface UsageEventsResponse {
 export interface GetUsageEventsParams {
     user: IUser
     userId: string
-    customerId: string
+    customerId?: string
     page?: number
     limit?: number
     sortBy?: string
