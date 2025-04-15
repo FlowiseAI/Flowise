@@ -121,6 +121,50 @@ function getPhoenixTracer(options: PhoenixTracerOptions): Tracer | undefined {
     }
 }
 
+interface OpikTracerOptions {
+    apiKey: string
+    baseUrl: string
+    projectName: string
+    workspace: string
+    sdkIntegration?: string
+    sessionId?: string
+    enableCallback?: boolean
+}
+
+function getOpikTracer(options: OpikTracerOptions): Tracer | undefined {
+    const SEMRESATTRS_PROJECT_NAME = 'openinference.project.name'
+    try {
+        const traceExporter = new ProtoOTLPTraceExporter({
+            url: `${options.baseUrl}/v1/private/otel/v1/traces`,
+            headers: {
+                Authorization: options.apiKey,
+                projectName: options.projectName,
+                'Comet-Workspace': options.workspace
+            }
+        })
+        const tracerProvider = new NodeTracerProvider({
+            resource: new Resource({
+                [ATTR_SERVICE_NAME]: options.projectName,
+                [ATTR_SERVICE_VERSION]: '1.0.0',
+                [SEMRESATTRS_PROJECT_NAME]: options.projectName
+            })
+        })
+        tracerProvider.addSpanProcessor(new SimpleSpanProcessor(traceExporter))
+        if (options.enableCallback) {
+            registerInstrumentations({
+                instrumentations: []
+            })
+            const lcInstrumentation = new LangChainInstrumentation()
+            lcInstrumentation.manuallyInstrument(CallbackManagerModule)
+            tracerProvider.register()
+        }
+        return tracerProvider.getTracer(`opik-tracer-${uuidv4().toString()}`)
+    } catch (err) {
+        if (process.env.DEBUG === 'true') console.error(`Error setting up Opik tracer: ${err.message}`)
+        return undefined
+    }
+}
+
 function tryGetJsonSpaces() {
     try {
         return parseInt(getEnvironmentVariable('LOG_JSON_SPACES') ?? '2')
@@ -559,6 +603,28 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
 
                     const tracer: Tracer | undefined = getPhoenixTracer(phoenixOptions)
                     callbacks.push(tracer)
+                } else if (provider === 'opik') {
+                    const opikApiKey = getCredentialParam('opikApiKey', credentialData, nodeData)
+                    const opikEndpoint = getCredentialParam('opikUrl', credentialData, nodeData)
+                    const opikWorkspace = getCredentialParam('opikWorkspace', credentialData, nodeData)
+                    const opikProject = analytic[provider].opikProjectName as string
+
+                    let opikOptions: OpikTracerOptions = {
+                        apiKey: opikApiKey,
+                        baseUrl: opikEndpoint ?? 'https://www.comet.com/opik/api',
+                        projectName: opikProject ?? 'default',
+                        workspace: opikWorkspace ?? 'default',
+                        sdkIntegration: 'Flowise',
+                        enableCallback: true
+                    }
+
+                    if (options.chatId) opikOptions.sessionId = options.chatId
+                    if (nodeData?.inputs?.analytics?.opik) {
+                        opikOptions = { ...opikOptions, ...nodeData?.inputs?.analytics?.opik }
+                    }
+
+                    const tracer: Tracer | undefined = getOpikTracer(opikOptions)
+                    callbacks.push(tracer)
                 }
             }
         }
@@ -673,6 +739,25 @@ export class AnalyticHandler {
                         const rootSpan: Span | undefined = undefined
 
                         this.handlers['phoenix'] = { client: phoenix, phoenixProject, rootSpan }
+                    } else if (provider === 'opik') {
+                        const opikApiKey = getCredentialParam('opikApiKey', credentialData, this.nodeData)
+                        const opikEndpoint = getCredentialParam('opikUrl', credentialData, this.nodeData)
+                        const opikWorkspace = getCredentialParam('opikWorkspace', credentialData, this.nodeData)
+                        const opikProject = analytic[provider].opikProjectName as string
+
+                        let opikOptions: OpikTracerOptions = {
+                            apiKey: opikApiKey,
+                            baseUrl: opikEndpoint ?? 'https://www.comet.com/opik/api',
+                            projectName: opikProject ?? 'default',
+                            workspace: opikWorkspace ?? 'default',
+                            sdkIntegration: 'Flowise',
+                            enableCallback: false
+                        }
+
+                        const opik: Tracer | undefined = getOpikTracer(opikOptions)
+                        const rootSpan: Span | undefined = undefined
+
+                        this.handlers['opik'] = { client: opik, opikProject, rootSpan }
                     }
                 }
             }
@@ -688,7 +773,8 @@ export class AnalyticHandler {
             lunary: {},
             langWatch: {},
             arize: {},
-            phoenix: {}
+            phoenix: {},
+            opik: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -870,6 +956,40 @@ export class AnalyticHandler {
             returnIds['phoenix'].chainSpan = chainSpanId
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
+            const tracer: Tracer | undefined = this.handlers['opik'].client
+            let rootSpan: Span | undefined = this.handlers['opik'].rootSpan
+
+            if (!parentIds || !Object.keys(parentIds).length) {
+                rootSpan = tracer ? tracer.startSpan('Flowise') : undefined
+                if (rootSpan) {
+                    rootSpan.setAttribute('session.id', this.options.chatId)
+                    rootSpan.setAttribute('openinference.span.kind', 'CHAIN')
+                    rootSpan.setAttribute('input.value', input)
+                    rootSpan.setAttribute('input.mime_type', 'text/plain')
+                    rootSpan.setAttribute('output.value', '[Object]')
+                    rootSpan.setAttribute('output.mime_type', 'text/plain')
+                    rootSpan.setStatus({ code: SpanStatusCode.OK })
+                    rootSpan.end()
+                }
+                this.handlers['opik'].rootSpan = rootSpan
+            }
+
+            const rootSpanContext = rootSpan
+                ? opentelemetry.trace.setSpan(opentelemetry.context.active(), rootSpan as Span)
+                : opentelemetry.context.active()
+            const chainSpan = tracer?.startSpan(name, undefined, rootSpanContext)
+            if (chainSpan) {
+                chainSpan.setAttribute('openinference.span.kind', 'CHAIN')
+                chainSpan.setAttribute('input.value', JSON.stringify(input))
+                chainSpan.setAttribute('input.mime_type', 'application/json')
+            }
+            const chainSpanId: any = chainSpan?.spanContext().spanId
+
+            this.handlers['opik'].chainSpan = { [chainSpanId]: chainSpan }
+            returnIds['opik'].chainSpan = chainSpanId
+        }
+
         return returnIds
     }
 
@@ -940,6 +1060,16 @@ export class AnalyticHandler {
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'phoenix')) {
             const chainSpan: Span | undefined = this.handlers['phoenix'].chainSpan[returnIds['phoenix'].chainSpan]
+            if (chainSpan) {
+                chainSpan.setAttribute('output.value', JSON.stringify(output))
+                chainSpan.setAttribute('output.mime_type', 'application/json')
+                chainSpan.setStatus({ code: SpanStatusCode.OK })
+                chainSpan.end()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
+            const chainSpan: Span | undefined = this.handlers['opik'].chainSpan[returnIds['opik'].chainSpan]
             if (chainSpan) {
                 chainSpan.setAttribute('output.value', JSON.stringify(output))
                 chainSpan.setAttribute('output.mime_type', 'application/json')
@@ -1132,6 +1262,25 @@ export class AnalyticHandler {
             returnIds['phoenix'].llmSpan = llmSpanId
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
+            const tracer: Tracer | undefined = this.handlers['opik'].client
+            const rootSpan: Span | undefined = this.handlers['opik'].rootSpan
+
+            const rootSpanContext = rootSpan
+                ? opentelemetry.trace.setSpan(opentelemetry.context.active(), rootSpan as Span)
+                : opentelemetry.context.active()
+            const llmSpan = tracer?.startSpan(name, undefined, rootSpanContext)
+            if (llmSpan) {
+                llmSpan.setAttribute('openinference.span.kind', 'LLM')
+                llmSpan.setAttribute('input.value', JSON.stringify(input))
+                llmSpan.setAttribute('input.mime_type', 'application/json')
+            }
+            const llmSpanId: any = llmSpan?.spanContext().spanId
+
+            this.handlers['opik'].llmSpan = { [llmSpanId]: llmSpan }
+            returnIds['opik'].llmSpan = llmSpanId
+        }
+
         return returnIds
     }
 
@@ -1190,6 +1339,16 @@ export class AnalyticHandler {
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'phoenix')) {
             const llmSpan: Span | undefined = this.handlers['phoenix'].llmSpan[returnIds['phoenix'].llmSpan]
+            if (llmSpan) {
+                llmSpan.setAttribute('output.value', JSON.stringify(output))
+                llmSpan.setAttribute('output.mime_type', 'application/json')
+                llmSpan.setStatus({ code: SpanStatusCode.OK })
+                llmSpan.end()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
+            const llmSpan: Span | undefined = this.handlers['opik'].llmSpan[returnIds['opik'].llmSpan]
             if (llmSpan) {
                 llmSpan.setAttribute('output.value', JSON.stringify(output))
                 llmSpan.setAttribute('output.mime_type', 'application/json')
@@ -1261,6 +1420,16 @@ export class AnalyticHandler {
                 llmSpan.end()
             }
         }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
+            const llmSpan: Span | undefined = this.handlers['opik'].llmSpan[returnIds['opik'].llmSpan]
+            if (llmSpan) {
+                llmSpan.setAttribute('error.value', JSON.stringify(error))
+                llmSpan.setAttribute('error.mime_type', 'application/json')
+                llmSpan.setStatus({ code: SpanStatusCode.ERROR, message: error.toString() })
+                llmSpan.end()
+            }
+        }
     }
 
     async onToolStart(name: string, input: string | object, parentIds: ICommonObject) {
@@ -1270,7 +1439,8 @@ export class AnalyticHandler {
             lunary: {},
             langWatch: {},
             arize: {},
-            phoenix: {}
+            phoenix: {},
+            opik: {}
         }
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'langSmith')) {
@@ -1369,6 +1539,25 @@ export class AnalyticHandler {
             returnIds['phoenix'].toolSpan = toolSpanId
         }
 
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
+            const tracer: Tracer | undefined = this.handlers['opik'].client
+            const rootSpan: Span | undefined = this.handlers['opik'].rootSpan
+
+            const rootSpanContext = rootSpan
+                ? opentelemetry.trace.setSpan(opentelemetry.context.active(), rootSpan as Span)
+                : opentelemetry.context.active()
+            const toolSpan = tracer?.startSpan(name, undefined, rootSpanContext)
+            if (toolSpan) {
+                toolSpan.setAttribute('openinference.span.kind', 'TOOL')
+                toolSpan.setAttribute('input.value', JSON.stringify(input))
+                toolSpan.setAttribute('input.mime_type', 'application/json')
+            }
+            const toolSpanId: any = toolSpan?.spanContext().spanId
+
+            this.handlers['opik'].toolSpan = { [toolSpanId]: toolSpan }
+            returnIds['opik'].toolSpan = toolSpanId
+        }
+
         return returnIds
     }
 
@@ -1434,6 +1623,16 @@ export class AnalyticHandler {
                 toolSpan.end()
             }
         }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
+            const toolSpan: Span | undefined = this.handlers['opik'].toolSpan[returnIds['opik'].toolSpan]
+            if (toolSpan) {
+                toolSpan.setAttribute('output.value', JSON.stringify(output))
+                toolSpan.setAttribute('output.mime_type', 'application/json')
+                toolSpan.setStatus({ code: SpanStatusCode.OK })
+                toolSpan.end()
+            }
+        }
     }
 
     async onToolError(returnIds: ICommonObject, error: string | object) {
@@ -1491,6 +1690,16 @@ export class AnalyticHandler {
 
         if (Object.prototype.hasOwnProperty.call(this.handlers, 'phoenix')) {
             const toolSpan: Span | undefined = this.handlers['phoenix'].toolSpan[returnIds['phoenix'].toolSpan]
+            if (toolSpan) {
+                toolSpan.setAttribute('error.value', JSON.stringify(error))
+                toolSpan.setAttribute('error.mime_type', 'application/json')
+                toolSpan.setStatus({ code: SpanStatusCode.ERROR, message: error.toString() })
+                toolSpan.end()
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(this.handlers, 'opik')) {
+            const toolSpan: Span | undefined = this.handlers['opik'].toolSpan[returnIds['opik'].toolSpan]
             if (toolSpan) {
                 toolSpan.setAttribute('error.value', JSON.stringify(error))
                 toolSpan.setAttribute('error.mime_type', 'application/json')
