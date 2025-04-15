@@ -563,9 +563,12 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         userId: options?.user?.id,
                         sessionId: options.sessionId,
                         tags: [`Name:${chatflow.name}`],
-                        version: chatflow.updatedDate,
-                        root: trace,
-                        updateRoot: true
+                        version: chatflow.updatedDate
+                        // TODO: This is still causing an error
+                        // This works to keep the root trace name and have everything else update on the root trace
+                        // BUT Everything gets updatedon the root trace so the attributes and metadata are inconsistent
+                        // root: trace,
+                        // updateRoot: true
                     })
 
                     callbacks.push(handler)
