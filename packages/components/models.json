@@ -236,6 +236,10 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-4.1",
+                    "name": "gpt-4.1"
+                },
+                {
                     "label": "o3-mini",
                     "name": "o3-mini"
                 },
