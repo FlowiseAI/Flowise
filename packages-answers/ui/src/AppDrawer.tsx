@@ -28,7 +28,6 @@ import PasswordIcon from '@mui/icons-material/Password'
 import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/IntegrationInstructionsOutlined'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
-import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import AssessmentIcon from '@mui/icons-material/Assessment'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 import Dialog from '@mui/material/Dialog'
@@ -161,13 +160,13 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                               text: 'Billing',
                               link: '/billing',
                               icon: <AssessmentIcon color='primary' />
-                          },
-                          {
-                              id: 'apps',
-                              text: 'Apps',
-                              link: '/sidekick-studio/apps',
-                              icon: <AppsOutlinedIcon color='primary' />
                           }
+                          //   {
+                          //       id: 'apps',
+                          //       text: 'Apps',
+                          //       link: '/sidekick-studio/apps',
+                          //       icon: <AppsOutlinedIcon color='primary' />
+                          //   }
                       ]
                   }
                 : {})
