@@ -12,7 +12,6 @@ import credentialsApi from '@/api/credentials'
 
 // const
 import { baseURL } from '@/store/constant'
-
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
     borderRadius: '10px',
@@ -28,11 +27,13 @@ const StyledPopper = styled(Popper)({
 const fetchList = async ({ name, nodeData }) => {
     const loadMethod = nodeData.inputParams.find((param) => param.name === name)?.loadMethod
 
+    if (loadMethod === 'listCalendars') {
+        const resp = await credentialsApi.getSpecificCredential(nodeData.credential)
+        if (resp.data.credentialName === 'googleOAuth') nodeData.credential = JSON.stringify(resp.data.plainDataObj)
+    }
+
     let lists = await client
-        .post(
-            `${baseURL}/api/v1/node-load-method/${nodeData.name}`,
-            { ...nodeData, loadMethod }
-        )
+        .post(`${baseURL}/api/v1/node-load-method/${nodeData.name}`, { ...nodeData, loadMethod })
         .then(async function (response) {
             return response.data
         })
@@ -56,10 +57,14 @@ export const AsyncDropdown = ({
     multiple = false
 }) => {
     const customization = useSelector((state) => state.customization)
-
     const [open, setOpen] = useState(false)
     const [options, setOptions] = useState([])
     const [loading, setLoading] = useState(false)
+
+    const inputParam = nodeData.inputParams.find((param) => param.name === name)
+    const isLazyLoad = inputParam?.loadOptionsOnOpen
+    const credential = nodeData.credential
+
     const findMatchingOptions = (options = [], value) => {
         if (multiple) {
             let values = []
@@ -101,20 +106,34 @@ export const AsyncDropdown = ({
         }
     }
 
-    useEffect(() => {
+    const loadOptions = async () => {
+        if (loading) return
         setLoading(true)
-        ;(async () => {
-            const fetchData = async () => {
-                let response = credentialNames.length ? await fetchCredentialList() : await fetchList({ name, nodeData })
-                if (isCreateNewOption) setOptions([...response, ...addNewOption])
-                else setOptions([...response])
-                setLoading(false)
+        try {
+            let response
+            if (credentialNames.length) {
+                response = await fetchCredentialList()
+            } else {
+                response = await fetchList({ name, nodeData })
             }
-            fetchData()
-        })()
+            if (isCreateNewOption) {
+                setOptions([...response, ...addNewOption])
+            } else {
+                setOptions([...response])
+            }
+        } catch (error) {
+            console.error('Error loading options:', error)
+            setOptions([])
+        } finally {
+            setLoading(false)
+        }
+    }
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    useEffect(() => {
+        if (!isLazyLoad || credential) {
+            loadOptions()
+        }
+    }, [credential])
 
     return (
         <>

@@ -1,0 +1,24 @@
+diff --git a/lib/index.cjs.js b/lib/index.cjs.js
+index 81cfadc8292ed174cc5d11f5b69c5b561ffd8529..603602fbf0082e2a5a8db7c8812962fa2585e6a3 100644
+--- a/lib/index.cjs.js
++++ b/lib/index.cjs.js
+@@ -218,16 +218,17 @@ class CallbackHandler extends base.BaseCallbackHandler {
+       this.traceId = runId;
+     }
+     if (this.rootProvided && this.updateRoot) {
++      const {name, ...updateParams} = params;
+       if (this.rootObservationId) {
+         this.langfuse._updateSpan({
+           id: this.rootObservationId,
+           traceId: this.traceId,
+-          ...params
++          ...updateParams
+         });
+       } else {
+         this.langfuse.trace({
+           id: this.traceId,
+-          ...params
++          ...updateParams
+         });
+       }
+     }

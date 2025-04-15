@@ -54,11 +54,11 @@ const exportData = async (exportInput: ExportInput, user: IUser): Promise<{ File
 
         // step 2 - get all ChatFlow
         let allChatflow: ChatFlow[] = []
-        if (exportInput.chatflow === true) allChatflow = await chatflowService.getAllChatflows('CHATFLOW')
+        if (exportInput.chatflow === true) allChatflow = await chatflowService.getAllChatflows('CHATFLOW', {}, user)
 
         // step 3 - get all MultiAgent
         let allMultiAgent: ChatFlow[] = []
-        if (exportInput.agentflow === true) allMultiAgent = await chatflowService.getAllChatflows('MULTIAGENT')
+        if (exportInput.agentflow === true) allMultiAgent = await chatflowService.getAllChatflows('MULTIAGENT', {}, user)
 
         let allVars: Variable[] = []
         if (exportInput.variable === true) allVars = await variableService.getAllVariables(user)

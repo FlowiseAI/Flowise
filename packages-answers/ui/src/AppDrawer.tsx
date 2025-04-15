@@ -28,13 +28,12 @@ import PasswordIcon from '@mui/icons-material/Password'
 import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/IntegrationInstructionsOutlined'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
-import AdminOutlinedIcon from '@mui/icons-material/AdminPanelSettings'
+import AssessmentIcon from '@mui/icons-material/Assessment'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 import Dialog from '@mui/material/Dialog'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
 import PurchaseSubscription from './billing/PurchaseSubscription'
-import StarIcon from '@mui/icons-material/Star'
 
 const drawerWidth = 240
 
@@ -90,7 +89,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
     const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores', 'billing']
-    const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin']
+    const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin', 'apps']
 
     const filterMenuItems = (items: MenuConfig[]) => {
         return items.map((item) => {
@@ -160,8 +159,14 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                               id: 'billing',
                               text: 'Billing',
                               link: '/billing',
-                              icon: <StarIcon color='primary' />
+                              icon: <AssessmentIcon color='primary' />
                           }
+                          //   {
+                          //       id: 'apps',
+                          //       text: 'Apps',
+                          //       link: '/sidekick-studio/apps',
+                          //       icon: <AppsOutlinedIcon color='primary' />
+                          //   }
                       ]
                   }
                 : {})
@@ -450,6 +455,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                                     </Typography>
                                 </MenuItem>
                                 <MenuItem onClick={handleSubscriptionOpen}>Upgrade Plan</MenuItem>
+
                                 <MenuItem
                                     onClick={() => {
                                         handleClose()

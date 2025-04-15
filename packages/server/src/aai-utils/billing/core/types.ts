@@ -1,4 +1,5 @@
 import type Stripe from 'stripe'
+import { IUser } from '../../../Interface'
 
 export interface BillingCustomer {
     id: string
@@ -77,7 +78,7 @@ export interface BillingProvider {
     updateSubscription(params: UpdateSubscriptionParams): Promise<Subscription>
     cancelSubscription(subscriptionId: string): Promise<Subscription>
     getUpcomingInvoice(params: GetUpcomingInvoiceParams): Promise<Invoice>
-    getUsageSummary(customerId: string): Promise<UsageStats>
+
     syncUsageToStripe(traceId?: string): Promise<{ processedTraces: string[]; failedTraces: Array<{ traceId: string; error: string }> }>
     listSubscriptions(params: Stripe.SubscriptionListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.Subscription>>>
     getSubscriptionWithUsage(subscriptionId: string): Promise<SubscriptionWithUsage>
@@ -240,6 +241,14 @@ export interface UsageSummary {
         creditsIncluded: number
     }
     usageDashboard: {
+        totalMessages: number
+        totalMessagesSent: number
+        totalMessagesGenerated: number
+        totalChats: number
+        organizationTotalMessages: number
+        organizationTotalMessagesSent: number
+        organizationTotalMessagesGenerated: number
+        organizationTotalChats: number
         aiTokens: {
             used: number
             total: number
@@ -332,4 +341,53 @@ export interface CustomerStatus {
         isBlocked: boolean
         blockReason?: string
     }
+}
+
+/**
+ * Represents a single usage event from Langfuse trace data
+ */
+export interface UsageEvent {
+    id: string
+    userId?: string
+    timestamp: string
+    chatflowName?: string
+    chatflowId?: string
+    totalCredits: number
+    tokensIn: number
+    tokensOut: number
+    breakdown: {
+        ai_tokens: number
+        compute: number
+        storage: number
+    }
+    syncStatus: 'processed' | 'pending' | 'error'
+    error?: string
+    metadata?: any
+}
+
+/**
+ * Response structure for the usage events endpoint
+ */
+export interface UsageEventsResponse {
+    events: UsageEvent[]
+    pagination: {
+        page: number
+        limit: number
+        totalItems: number
+        totalPages: number
+    }
+}
+
+/**
+ * Parameters for fetching usage events
+ */
+export interface GetUsageEventsParams {
+    user: IUser
+    userId: string
+    customerId?: string
+    page?: number
+    limit?: number
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
+    filter?: Record<string, any>
 }

@@ -1,8 +1,9 @@
 import React, { Suspense } from 'react'
-import { Box, Button } from '@mui/material'
+import { Box, Button, IconButton } from '@mui/material'
 import type { Message, Sidekick } from 'types'
 import { MessageCard } from './Message'
 import AssistantInfoCard from './AssistantInfoCard'
+import RefreshIcon from '@mui/icons-material/Refresh'
 
 interface ChatRoomProps {
     messages: Message[] | null | undefined
@@ -78,10 +79,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                     ) : null}
 
                     {!isLoading && !error && messages?.length ? (
-                        <Box sx={{ py: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
-                            <Button onClick={regenerateAnswer} variant='outlined' color='primary'>
-                                Regenerate answer
-                            </Button>
+                        <Box sx={{ mt: -4, width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
+                            <IconButton onClick={regenerateAnswer} size='small'>
+                                <RefreshIcon fontSize='inherit' />
+                            </IconButton>
                         </Box>
                     ) : null}
                 </Box>

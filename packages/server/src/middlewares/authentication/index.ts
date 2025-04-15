@@ -268,7 +268,7 @@ export const authenticationHandlerMiddleware =
 
                     // Upsert customer on Stripe if no customerId is attached
                     let stripeCustomerId = user.stripeCustomerId
-                    if (!stripeCustomerId) {
+                    if (!stripeCustomerId && process.env.BILLING_STRIPE_SECRET_KEY) {
                         if (
                             process.env.BILLING_STRIPE_ORGANIZATION_CUSTOMER_ID ||
                             (organization.stripeCustomerId && organization.billingPoolEnabled == true)
@@ -293,9 +293,9 @@ export const authenticationHandlerMiddleware =
                                 console.error('Error creating/updating Stripe customers:', error)
                                 return res.status(500).send('Internal Server Error')
                             }
-                            user.stripeCustomerId = stripeCustomerId
                             await AppDataSource.getRepository(User).save(user)
                         }
+                        user.stripeCustomerId = stripeCustomerId
                     }
                     req.user = { ...authUser, ...user, roles }
                 } catch (error) {

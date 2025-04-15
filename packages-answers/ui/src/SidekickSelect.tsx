@@ -359,7 +359,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     const handleSidekickSelect = (sidekick: Sidekick) => {
         if (!chat?.id) {
-            router.push(`/chat/${sidekick.id}`)
+            // Update local storage first
+            const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
+            sidekickHistory.lastUsed = sidekick
+            localStorage.setItem('sidekickHistory', JSON.stringify(sidekickHistory))
+
+            // Update URL without navigation using history API
+            const newUrl = `/chat/${sidekick.id}`
+            window.history.pushState({ sidekick, isClientNavigation: true }, '', newUrl)
+
+            // Directly initialize the chat with the sidekick data
+            setSelectedSidekick(sidekick)
+            setSidekick(sidekick)
         } else {
             setSelectedSidekick(sidekick)
             setSidekick(sidekick)

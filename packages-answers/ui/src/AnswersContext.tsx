@@ -25,6 +25,7 @@ interface PredictionParams {
     audio?: File | null
     socketIOClientId?: string
     streaming?: boolean
+    action?: any
 }
 
 interface AnswersContextType {
@@ -45,6 +46,7 @@ interface AnswersContextType {
         gptModel?: string
         files?: string[]
         audio?: File | null
+        action?: any
     }) => void
     clearMessages: () => void
     regenerateAnswer: () => void
@@ -166,8 +168,6 @@ export function AnswersProvider({
     const messageIdx = useRef(0)
 
     const [chatId, setChatId] = useState<string | undefined>(chat?.id ?? uuidv4())
-
-    // false to disable for now
 
     const [sidekick, setSidekick] = useState<SidekickListItem | undefined>(
         sidekicks?.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid || s.id === chat?.chatflowId)
@@ -309,6 +309,15 @@ export function AnswersProvider({
         })
     }
 
+    const updateLastMessageArtifacts = (artifacts: any) => {
+        setMessages((prevMessages) => {
+            let allMessages = [...cloneDeep(prevMessages)]
+            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            allMessages[allMessages.length - 1].artifacts = artifacts
+            return allMessages
+        })
+    }
+
     const abortMessage = () => {
         setIsMessageStopping(false)
         setMessages((prevMessages) => {
@@ -343,7 +352,8 @@ export function AnswersProvider({
             gptModel,
             retry,
             files,
-            audio
+            audio,
+            action
         }: {
             content: string
             sidekick?: SidekickListItem
@@ -351,6 +361,7 @@ export function AnswersProvider({
             retry?: boolean
             files?: string[]
             audio?: File | null
+            action?: any
         }) => {
             if (!retry) {
                 const fileUploads = files
@@ -370,7 +381,8 @@ export function AnswersProvider({
                     // })),
                     uploads: files,
                     audio,
-                    chatType: 'ANSWERAI'
+                    chatType: 'ANSWERAI',
+                    action
                 }
 
                 if (isChatFlowAvailableToStream) {
@@ -490,6 +502,9 @@ export function AnswersProvider({
                             break
                         case 'nextAgent':
                             updateLastMessageNextAgent(payload.data)
+                            break
+                        case 'artifacts':
+                            updateLastMessageArtifacts(payload.data)
                             break
                         case 'metadata':
                             if (payload.data.chatId) {

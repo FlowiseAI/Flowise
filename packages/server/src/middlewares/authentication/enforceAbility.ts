@@ -43,13 +43,13 @@ const enforceAbility = (resourceName: string) => {
 
         const user = req.user as UserInfo
         const isAdmin = Boolean(user.roles?.includes('Admin'))
-        
+
         // Set up filter based on user role
         const filter = createAccessFilter(user, isAdmin)
-        
+
         // Store the filter for use in subsequent middleware or controllers
         res.locals.filter = filter
-
+        console.log('User res.locals.filter', res.locals.filter)
         try {
             // Only check resource access for requests with an ID parameter
             if (isResourceIdRequest(req)) {
@@ -75,9 +75,7 @@ function isResourceIdRequest(req: Request): boolean {
  */
 function createAccessFilter(user: UserInfo, isAdmin: boolean): ResourceFilter {
     const filter: ResourceFilter = { organizationId: user.organizationId }
-    if (!isAdmin) {
-        filter.userId = user.id
-    }
+    filter.userId = user.id
     return filter
 }
 
@@ -88,13 +86,13 @@ async function verifyResourceAccess(resourceName: string, resourceId: string, fi
     if (!resourceId) {
         throw new Error('Resource ID not provided')
     }
-    
+
     // Early exit for admin with organization-only filter
     if (isAdmin && Object.keys(filter).length === 1 && filter.organizationId) {
         // Admin only needs to check organization, which will be done in checkResourceAccess
         // No need for additional checks here
     }
-    
+
     await checkResourceAccess(resourceName, resourceId, filter, isAdmin)
 }
 
@@ -108,7 +106,7 @@ async function checkResourceAccess(resourceName: string, resourceId: string, fil
     const repository = appServer.AppDataSource.getRepository(Entity)
 
     let hasAccess = false
-    
+
     if (isAdmin) {
         // Admin can access any resource within their organization
         hasAccess = await adminHasAccess(repository, resourceId, filter.organizationId)
@@ -127,25 +125,26 @@ async function checkResourceAccess(resourceName: string, resourceId: string, fil
  */
 async function regularUserHasAccess(repository: any, resourceId: string, filter: ResourceFilter): Promise<boolean> {
     // First check if resource exists at all (for correct error behavior)
-    const resource = await repository.findOne({ 
+    const resource = await repository.findOne({
         where: { id: resourceId },
         select: ['id', 'userId', 'organizationId', 'visibility']
     })
-    
+
     if (!resource) {
         throw new Error('Resource not found')
     }
 
     // Direct ownership check (original behavior)
-    const hasDirectAccess = await repository.findOne({ 
-        where: { id: resourceId, ...filter } 
-    }) !== null
-    
+    const hasDirectAccess =
+        (await repository.findOne({
+            where: { id: resourceId, ...filter }
+        })) !== null
+
     // If has direct access or resource doesn't have visibility field
     if (hasDirectAccess || !('visibility' in resource)) {
         return hasDirectAccess
     }
-    
+
     // Check organization-level visibility
     return checkOrganizationVisibility(resource, filter.organizationId)
 }
@@ -158,7 +157,7 @@ function checkOrganizationVisibility(resource: ResourceWithVisibility, organizat
     const visibilityValues = Array.isArray(resource.visibility)
         ? resource.visibility
         : resource.visibility.split(',').map((v: string) => v.trim())
-    
+
     // Original check (organization visibility + same organization)
     return visibilityValues.includes('Organization') && resource.organizationId === organizationId
 }
@@ -168,13 +167,15 @@ function checkOrganizationVisibility(resource: ResourceWithVisibility, organizat
  */
 async function adminHasAccess(repository: any, resourceId: string, organizationId: string): Promise<boolean> {
     // Use more efficient query but maintain original behavior
-    return await repository.findOne({
-        where: {
-            id: resourceId,
-            organizationId
-        },
-        select: ['id'] // Only need to check existence
-    }) !== null
+    return (
+        (await repository.findOne({
+            where: {
+                id: resourceId,
+                organizationId
+            },
+            select: ['id'] // Only need to check existence
+        })) !== null
+    )
 }
 
 /**
@@ -190,7 +191,7 @@ async function getEntityFromCache(resourceName: string): Promise<EntityTarget<an
     try {
         // Use path.resolve for better cross-platform compatibility
         const modulePath = path.resolve(__dirname, '..', '..', 'database', 'entities', `${resourceName}.js`)
-        
+
         // Dynamic import with error handling
         const module = await import(modulePath)
         const Entity = module[resourceName]
@@ -214,7 +215,7 @@ async function getEntityFromCache(resourceName: string): Promise<EntityTarget<an
  */
 function handleResourceAccessError(error: any, res: Response): Response {
     console.error('Error checking resource access:', error)
-    
+
     if (error instanceof Error) {
         if (error.message.includes('Resource ID not provided')) {
             return res.status(400).json({ error: error.message })
@@ -229,7 +230,7 @@ function handleResourceAccessError(error: any, res: Response): Response {
             return res.status(404).json({ error: error.message })
         }
     }
-    
+
     return res.status(500).json({ error: 'Internal server error' })
 }
 

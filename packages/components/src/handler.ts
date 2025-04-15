@@ -535,8 +535,8 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         langFuseOptions = { ...langFuseOptions, ...nodeData?.inputs?.analytics?.langFuse }
                         console.debug('LangFuse Options updated with nodeData inputs:', langFuseOptions)
                     }
-                    // console.log('ChatOptions', options)
                     const metadata: TraceMetadata = {
+                        name: `${chatflow.id}`,
                         chatflowName: chatflow.name,
                         chatId: options.chatId,
                         chatflowid: options.chatflowid,
@@ -545,17 +545,17 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         stripeCustomerId: options.user?.stripeCustomerId,
                         organizationId: options.user?.organizationId,
                         aiCredentialsOwnership: aiCredentialsOwnership,
-                        messageId: options.messageId
+                        messageId: options.messageId,
+                        sessionId: options.sessionId
                     }
-                    console.debug('Creating trace with metadata:', metadata)
-                    // const trace = langfuse.trace({
-                    //     tags: [`Name:${chatflow.name}`],
-                    //     name: `${chatflow.id}`,
-                    //     version: chatflow.updatedDate,
-                    //     userId: options?.user?.id,
-                    //     sessionId: options.sessionId,
-                    //     metadata: metadata
-                    // })
+                    const trace = langfuse.trace({
+                        tags: [`Name:${chatflow.name}`],
+                        name: `${chatflow.id}`,
+                        version: chatflow.updatedDate,
+                        userId: options?.user?.id,
+                        sessionId: options.sessionId,
+                        metadata: metadata
+                    })
 
                     const handler = new CallbackHandler({
                         ...langFuseOptions,
@@ -563,11 +563,10 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         userId: options?.user?.id,
                         sessionId: options.sessionId,
                         tags: [`Name:${chatflow.name}`],
-                        version: chatflow.updatedDate
-                        // root: trace
+                        version: chatflow.updatedDate,
+                        root: trace,
+                        updateRoot: true
                     })
-
-                    console.debug('CallbackHandler created with LangFuse options and trace.')
 
                     callbacks.push(handler)
                     console.debug('Handler added to callbacks.')

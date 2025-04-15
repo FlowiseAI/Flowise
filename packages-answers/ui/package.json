@@ -58,6 +58,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-draggable": "^4.4.5",
+        "react-dropzone": "^14.3.5",
         "react-hook-form": "^7.45.2",
         "react-markdown": "^8.0.7",
         "react-syntax-highlighter": "^15.5.0",

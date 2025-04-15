@@ -1198,6 +1198,8 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                                                                         height: '25px',
                                                                                                         width: 'auto'
                                                                                                     }}
+                                                                                                    height={25}
+                                                                                                    width={25}
                                                                                                     src={
                                                                                                         agent.instructions
                                                                                                             ? multiagent_supervisorPNG

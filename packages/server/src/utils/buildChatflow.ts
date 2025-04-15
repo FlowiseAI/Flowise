@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import * as path from 'path'
-import { DataSource, IsNull, Not } from 'typeorm'
+import { DataSource, IsNull } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
 import { omit } from 'lodash'
 import {
@@ -64,11 +64,11 @@ import { getErrorMessage } from '../errors/utils'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
 import PlansService from '../services/plans'
-import { billingService } from '../services/billing'
 import { BILLING_CONFIG } from '../aai-utils/billing/config'
 import { Chat } from '../database/entities/Chat'
 import { User } from '../database/entities/User'
 import checkOwnership from './checkOwnership'
+import { BillingService } from '../aai-utils/billing'
 
 /*
  * Initialize the ending node to be executed
@@ -514,7 +514,8 @@ export const executeFlow = async ({
                 createdDate: userMessageDateTime,
                 fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
                 leadEmail: incomingInput.leadEmail,
-                userId: user?.id ?? agentflow.userId
+                userId: user?.id ?? agentflow.userId,
+                organizationId: user?.organizationId ?? agentflow.organizationId
             }
             await utilAddChatMessage(userMessage, appDataSource)
 
@@ -527,7 +528,8 @@ export const executeFlow = async ({
                 chatId,
                 memoryType,
                 sessionId,
-                userId: user?.id ?? agentflow.userId
+                userId: user?.id ?? agentflow.userId,
+                organizationId: user?.organizationId ?? agentflow.organizationId
             }
 
             if (sourceDocuments?.length) apiMessage.sourceDocuments = JSON.stringify(sourceDocuments)
@@ -649,6 +651,8 @@ export const executeFlow = async ({
             analytic: chatflow.analytic,
             uploads,
             prependMessages,
+            user,
+            sessionId,
             ...(isStreamValid && { sseStreamer, shouldStreamResponse: isStreamValid })
         }
 
@@ -673,7 +677,8 @@ export const executeFlow = async ({
             createdDate: userMessageDateTime,
             fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
             leadEmail: incomingInput.leadEmail,
-            userId: user?.id
+            userId: user?.id,
+            organizationId: user?.organizationId
         }
         await utilAddChatMessage(userMessage, appDataSource)
 
@@ -721,7 +726,8 @@ export const executeFlow = async ({
             chatId,
             memoryType,
             sessionId,
-            userId: user?.id
+            userId: user?.id,
+            organizationId: user?.organizationId
         }
         if (result?.sourceDocuments) apiMessage.sourceDocuments = JSON.stringify(result.sourceDocuments)
         if (result?.usedTools) apiMessage.usedTools = JSON.stringify(result.usedTools)
@@ -976,6 +982,7 @@ const validateAndSaveChat = async (
     } else {
         // Use the new BillingService to check usage limits
         // Get usage summary for the customer
+        const billingService = new BillingService()
         const usage = await billingService.getUsageSummary(user.stripeCustomerId)
         const subscription = await billingService.getActiveSubscription(user.stripeCustomerId)
 
