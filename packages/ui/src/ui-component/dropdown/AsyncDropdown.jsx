@@ -27,10 +27,10 @@ const StyledPopper = styled(Popper)({
 const fetchList = async ({ name, nodeData }) => {
     const loadMethod = nodeData.inputParams.find((param) => param.name === name)?.loadMethod
 
-    if (loadMethod === 'listCalendars') {
-        const resp = await credentialsApi.getSpecificCredential(nodeData.credential)
-        if (resp.data.credentialName === 'googleOAuth') nodeData.credential = JSON.stringify(resp.data.plainDataObj)
-    }
+    // if (loadMethod === 'listCalendars') {
+    //     const resp = await credentialsApi.getSpecificCredential(nodeData.credential)
+    //     if (resp.data.credentialName === 'googleOAuth') nodeData.credential = JSON.stringify(resp.data.plainDataObj)
+    // }
 
     let lists = await client
         .post(`${baseURL}/api/v1/node-load-method/${nodeData.name}`, { ...nodeData, loadMethod })

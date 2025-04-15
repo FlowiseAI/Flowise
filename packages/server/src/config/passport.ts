@@ -36,6 +36,6 @@ export default function (passport: any) {
     })
 
     passport.deserializeUser((user: any, done: any) => {
-        done(null, user)
+        done(null, false)
     })
 }
