@@ -354,3 +354,15 @@ export interface IVariableOverride {
 
 // DocumentStore related
 export * from './Interface.DocumentStore'
+
+export enum RedactionRuleType {
+    REMOVE = 'remove',
+    REPLACE = 'replace',
+    ASTERISK = 'asterisk'
+}
+export interface RedactionRule {
+    phrase: string
+    isRegexp: boolean
+    type: RedactionRuleType
+    replacement: string
+}

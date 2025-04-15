@@ -32,7 +32,9 @@ import {
     IVariable,
     INodeOverrides,
     IVariableOverride,
-    MODE
+    MODE,
+    RedactionRule,
+    RedactionRuleType
 } from '../Interface'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { databaseEntities } from '.'
@@ -661,26 +663,62 @@ export const executeFlow = async ({
             resultText = result.text
             /* Check for post-processing settings */
             if (chatflowConfig?.postProcessing?.enabled === true) {
+                let moderatedResponse = resultText
                 try {
-                    const postProcessingFunction = JSON.parse(chatflowConfig?.postProcessing?.customFunction)
-                    const nodeInstanceFilePath = componentNodes['customFunction'].filePath as string
-                    const nodeModule = await import(nodeInstanceFilePath)
-                    const nodeData = {
-                        inputs: { javascriptFunction: postProcessingFunction },
-                        outputs: { output: 'output' }
+                    //first run redaction rules
+                    if (chatflowConfig.postProcessing.redactionRules) {
+                        const redactionRules: RedactionRule[] = JSON.parse(chatflowConfig.postProcessing.redactionRules)
+                        for (const rule of redactionRules) {
+                            switch (rule.type) {
+                                case RedactionRuleType.REMOVE:
+                                    if (rule.isRegexp) {
+                                        const regex = new RegExp(rule.phrase, 'g')
+                                        moderatedResponse = moderatedResponse.replace(regex, '')
+                                    } else {
+                                        moderatedResponse = moderatedResponse.replace(rule.phrase, '')
+                                    }
+                                    break
+                                case RedactionRuleType.REPLACE:
+                                    if (rule.isRegexp) {
+                                        const regex = new RegExp(rule.phrase, 'g')
+                                        moderatedResponse = moderatedResponse.replace(regex, rule.replacement)
+                                    } else {
+                                        moderatedResponse = moderatedResponse.replace(rule.phrase, rule.replacement)
+                                    }
+                                    break
+                                case RedactionRuleType.ASTERISK:
+                                    if (rule.isRegexp) {
+                                        const regex = new RegExp(rule.phrase, 'g')
+                                        moderatedResponse = moderatedResponse.replace(regex, '***')
+                                    } else {
+                                        moderatedResponse = moderatedResponse.replace(rule.phrase, '***')
+                                    }
+                                    break
+                            }
+                        }
                     }
-                    const options: ICommonObject = {
-                        chatflowid: chatflow.id,
-                        sessionId,
-                        chatId,
-                        input: question,
-                        rawOutput: resultText,
-                        appDataSource,
-                        databaseEntities,
-                        logger
+                    //second - apply custom function
+                    if (chatflowConfig?.postProcessing?.customFunction) {
+                        const postProcessingFunction = JSON.parse(chatflowConfig?.postProcessing?.customFunction)
+                        const nodeInstanceFilePath = componentNodes['customFunction'].filePath as string
+                        const nodeModule = await import(nodeInstanceFilePath)
+                        const nodeData = {
+                            inputs: { javascriptFunction: postProcessingFunction },
+                            outputs: { output: 'output' }
+                        }
+                        const options: ICommonObject = {
+                            chatflowid: chatflow.id,
+                            sessionId,
+                            chatId,
+                            input: question,
+                            rawOutput: moderatedResponse,
+                            appDataSource,
+                            databaseEntities,
+                            logger
+                        }
+                        const customFuncNodeInstance = new nodeModule.nodeClass()
+                        moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
                     }
-                    const customFuncNodeInstance = new nodeModule.nodeClass()
-                    let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
                     result.text = moderatedResponse
                     resultText = result.text
                 } catch (e) {
