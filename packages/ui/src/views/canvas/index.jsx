@@ -265,43 +265,57 @@ const Canvas = ({ chatflowid: chatflowId }) => {
         }
     }
 
-    const handleSaveFlow = (chatflowName) => {
-        if (reactFlowInstance) {
-            const nodes = reactFlowInstance.getNodes().map((node) => {
-                const nodeData = cloneDeep(node.data)
-                if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
-                    nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
-                    nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID])
-                }
-                node.data = {
-                    ...nodeData,
-                    selected: false
-                }
-                return node
-            })
-
-            const rfInstanceObject = reactFlowInstance.toObject()
-            rfInstanceObject.nodes = nodes
-            const flowData = JSON.stringify(rfInstanceObject)
-
-            if (!chatflow.id) {
-                const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
-                let newChatflowBody
-                if (duplicatedFlowData) {
-                    const parsedData = JSON.parse(duplicatedFlowData)
-                    newChatflowBody = {
-                        ...parsedData,
-                        name: chatflowName,
-                        flowData,
-                        deployed: false,
-                        isPublic: false,
-                        chatbotConfig: JSON.stringify({
-                            chatLinksInNewTab: { status: true }
-                        })
+    const handleSaveFlow = (chatflowName, configs = {}) => {
+        try {
+            if (reactFlowInstance) {
+                const nodes = reactFlowInstance.getNodes().map((node) => {
+                    const nodeData = cloneDeep(node.data)
+                    if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
+                        nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
+                        nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID])
                     }
-                    localStorage.removeItem('duplicatedFlowData')
+                    node.data = {
+                        ...nodeData,
+                        selected: false
+                    }
+                    return node
+                })
+
+                const rfInstanceObject = reactFlowInstance.toObject()
+                rfInstanceObject.nodes = nodes
+                const flowData = JSON.stringify(rfInstanceObject)
+
+                if (!chatflow.id) {
+                    const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
+                    let newChatflowBody
+                    if (duplicatedFlowData) {
+                        const parsedData = JSON.parse(duplicatedFlowData)
+                        newChatflowBody = {
+                            ...parsedData,
+                            name: chatflowName,
+                            flowData,
+                            deployed: false,
+                            isPublic: false
+                        }
+                        localStorage.removeItem('duplicatedFlowData')
+                    } else {
+                        newChatflowBody = {
+                            ...configs,
+                            name: chatflowName,
+                            parentChatflowId,
+                            deployed: false,
+                            isPublic: false,
+                            flowData,
+                            type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW',
+                            description: chatflow.description || configs.description || '',
+                            visibility: chatflow.visibility || configs.visibility || [],
+                            category: chatflow.category || configs.category || '',
+                            chatbotConfig: chatflow.chatbotConfig || configs.chatbotConfig || ''
+                        }
+                    }
+                    createNewChatflowApi.request(newChatflowBody)
                 } else {
-                    newChatflowBody = {
+                    const updateBody = {
                         name: chatflowName,
                         parentChatflowId: parentChatflowId && parentChatflowId.startsWith('cf_') ? null : parentChatflowId,
                         deployed: false,
@@ -317,19 +331,17 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                                   chatLinksInNewTab: { status: true }
                               })
                     }
+                    updateChatflowApi.request(chatflow.id, updateBody)
                 }
-                createNewChatflowApi.request(newChatflowBody)
-            } else {
-                const updateBody = {
-                    name: chatflowName,
-                    flowData,
-                    description: chatflow.description,
-                    visibility: chatflow.visibility,
-                    category: chatflow.category,
-                    chatbotConfig: chatflow.chatbotConfig
-                }
-                updateChatflowApi.request(chatflow.id, updateBody)
             }
+        } catch (error) {
+            console.error('handleSaveFlow - Error:', error)
+            dispatch(
+                enqueueSnackbarAction({
+                    message: 'Failed to update chatflow settings',
+                    options: { variant: 'error' }
+                })
+            )
         }
     }
 

@@ -45,6 +45,14 @@ const GeneralSettings = ({ dialogProps }) => {
                 embeddedUrl
             }
 
+            if (!dialogProps.chatflow.id && dialogProps.handleSaveFlow) {
+                return dialogProps.handleSaveFlow(title || dialogProps.chatflow.name, {
+                    description,
+                    category: categories.join(';'),
+                    chatbotConfig: JSON.stringify(chatbotConfig)
+                })
+            }
+
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 name: title,
                 description: description,
@@ -127,7 +135,8 @@ GeneralSettings.propTypes = {
             description: PropTypes.string,
             category: PropTypes.string,
             chatbotConfig: PropTypes.string
-        }).isRequired
+        }).isRequired,
+        handleSaveFlow: PropTypes.func
     }).isRequired
 }
 

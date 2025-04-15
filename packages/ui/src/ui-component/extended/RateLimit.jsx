@@ -73,6 +73,12 @@ const RateLimit = ({ dialogProps }) => {
 
     const onSave = async () => {
         try {
+            if (!dialogProps.chatflow.id && dialogProps.handleSaveFlow) {
+                return dialogProps.handleSaveFlow(dialogProps.chatflow.name, {
+                    apiConfig: JSON.stringify(formatObj())
+                })
+            }
+
             const saveResp = await chatflowsApi.updateChatflow(chatflowid, {
                 apiConfig: JSON.stringify(formatObj())
             })
