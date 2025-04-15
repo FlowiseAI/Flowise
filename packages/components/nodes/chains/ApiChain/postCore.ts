@@ -92,6 +92,21 @@ export class APIChain extends BaseChain implements APIChainInput {
 
             const { url, data } = JSON.parse(api_url_body)
 
+            // Validate request is not to internal/private networks
+            const urlObj = new URL(url)
+            const hostname = urlObj.hostname
+
+            if (
+                hostname === 'localhost' ||
+                hostname === '127.0.0.1' ||
+                hostname.startsWith('192.168.') ||
+                hostname.startsWith('10.') ||
+                hostname.startsWith('172.16.') ||
+                hostname.includes('internal')
+            ) {
+                throw new Error('Access to internal networks is not allowed')
+            }
+
             const res = await fetch(url, {
                 method: 'POST',
                 headers: this.headers,

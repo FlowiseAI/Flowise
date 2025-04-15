@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.2.6-hotfix.1",
+    "version": "2.2.7-patch.1",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -13,7 +13,7 @@
     "scripts": {
         "build": "turbo run build",
         "build-force": "pnpm clean && turbo run build --force",
-        "dev": "turbo run dev --parallel",
+        "dev": "turbo run dev --parallel --no-cache",
         "start": "run-script-os",
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
@@ -83,7 +83,7 @@
         "pnpm": ">=9"
     },
     "resolutions": {
-        "@google/generative-ai": "^0.22.0",
+        "@google/generative-ai": "^0.24.0",
         "@grpc/grpc-js": "^1.10.10",
         "@langchain/core": "0.3.37",
         "@qdrant/openapi-typescript-fetch": "1.2.6",

@@ -5,6 +5,7 @@ import config from './config' // should be replaced by node-config or similar
 import { createLogger, transports, format } from 'winston'
 import { NextFunction, Request, Response } from 'express'
 import { S3ClientConfig } from '@aws-sdk/client-s3'
+import { LoggingWinston } from '@google-cloud/logging-winston'
 
 const { S3StreamLogger } = require('s3-streamlogger')
 
@@ -13,6 +14,11 @@ const { combine, timestamp, printf, errors } = format
 let s3ServerStream: any
 let s3ErrorStream: any
 let s3ServerReqStream: any
+
+let gcsServerStream: any
+let gcsErrorStream: any
+let gcsServerReqStream: any
+
 if (process.env.STORAGE_TYPE === 's3') {
     const accessKeyId = process.env.S3_STORAGE_ACCESS_KEY_ID
     const secretAccessKey = process.env.S3_STORAGE_SECRET_ACCESS_KEY
@@ -21,13 +27,20 @@ if (process.env.STORAGE_TYPE === 's3') {
     const customURL = process.env.S3_ENDPOINT_URL
     const forcePathStyle = process.env.S3_FORCE_PATH_STYLE === 'true'
 
+    if (!region || !s3Bucket) {
+        throw new Error('S3 storage configuration is missing')
+    }
+
     const s3Config: S3ClientConfig = {
         region: region,
         endpoint: customURL,
-        forcePathStyle: forcePathStyle,
-        credentials: {
-            accessKeyId: accessKeyId as string,
-            secretAccessKey: secretAccessKey as string
+        forcePathStyle: forcePathStyle
+    }
+
+    if (accessKeyId && secretAccessKey) {
+        s3Config.credentials = {
+            accessKeyId: accessKeyId,
+            secretAccessKey: secretAccessKey
         }
     }
 
@@ -53,6 +66,29 @@ if (process.env.STORAGE_TYPE === 's3') {
     })
 }
 
+if (process.env.STORAGE_TYPE === 'gcs') {
+    const config = {
+        projectId: process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID,
+        keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
+        defaultCallback: (err: any) => {
+            if (err) {
+                console.error('Error logging to GCS: ' + err)
+            }
+        }
+    }
+    gcsServerStream = new LoggingWinston({
+        ...config,
+        logName: 'server'
+    })
+    gcsErrorStream = new LoggingWinston({
+        ...config,
+        logName: 'error'
+    })
+    gcsServerReqStream = new LoggingWinston({
+        ...config,
+        logName: 'requests'
+    })
+}
 // expect the log dir be relative to the projects root
 const logDir = config.logging.dir
 
@@ -94,7 +130,8 @@ const logger = createLogger({
                       stream: s3ServerStream
                   })
               ]
-            : [])
+            : []),
+        ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsServerStream] : [])
     ],
     exceptionHandlers: [
         ...(!process.env.STORAGE_TYPE || process.env.STORAGE_TYPE === 'local'
@@ -110,7 +147,8 @@ const logger = createLogger({
                       stream: s3ErrorStream
                   })
               ]
-            : [])
+            : []),
+        ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsErrorStream] : [])
     ],
     rejectionHandlers: [
         ...(!process.env.STORAGE_TYPE || process.env.STORAGE_TYPE === 'local'
@@ -126,12 +164,13 @@ const logger = createLogger({
                       stream: s3ErrorStream
                   })
               ]
-            : [])
+            : []),
+        ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsErrorStream] : [])
     ]
 })
 
 export function expressRequestLogger(req: Request, res: Response, next: NextFunction): void {
-    const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/']
+    const unwantedLogURLs = ['/api/v1/node-icon/', '/api/v1/components-credentials-icon/', '/api/v1/ping']
     if (/\/api\/v1\//i.test(req.url) && !unwantedLogURLs.some((url) => new RegExp(url, 'i').test(req.url))) {
         const fileLogger = createLogger({
             format: combine(timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }), format.json(), errors({ stack: true })),
@@ -161,7 +200,8 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
                               stream: s3ServerReqStream
                           })
                       ]
-                    : [])
+                    : []),
+                ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsServerReqStream] : [])
             ]
         })
 
