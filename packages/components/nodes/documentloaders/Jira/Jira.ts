@@ -24,14 +24,13 @@ class Jira_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 'jira.svg'
         this.category = 'Document Loaders'
-        this.description = `This covers how to load document objects from issues in a Jira projects`
+        this.description = `Load issues from Jira`
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             description: 'Jira API Credential',
-            optional: false,
             credentialNames: ['jiraApi']
         }
         this.inputs = [
@@ -52,12 +51,14 @@ class Jira_DocumentLoaders implements INode {
                 name: 'limitPerRequest',
                 type: 'number',
                 step: 1,
+                optional: true,
                 placeholder: '100'
             },
             {
                 label: 'Created after',
                 name: 'createdAfter',
                 type: 'string',
+                optional: true,
                 placeholder: '2024-01-01'
             },
             {
@@ -103,10 +104,9 @@ class Jira_DocumentLoaders implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        console.log('Jira Document Loaders')
         const host = nodeData.inputs?.host as string
         const projectKey = nodeData.inputs?.projectKey as string
-        const limitPerRequest = nodeData.inputs?.limitPerRequest as number
+        const limitPerRequest = nodeData.inputs?.limitPerRequest as string
         const createdAfter = nodeData.inputs?.createdAfter as string
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
@@ -126,10 +126,17 @@ class Jira_DocumentLoaders implements INode {
             projectKey,
             host,
             username,
-            accessToken,
-            limitPerRequest,
-            createdAfter: new Date(createdAfter)
+            accessToken
         }
+
+        if (limitPerRequest) {
+            jiraOptions.limitPerRequest = parseInt(limitPerRequest)
+        }
+
+        if (createdAfter) {
+            jiraOptions.createdAfter = new Date(createdAfter)
+        }
+
         const loader = new JiraProjectLoader(jiraOptions)
         let docs: IDocument[] = []
 
