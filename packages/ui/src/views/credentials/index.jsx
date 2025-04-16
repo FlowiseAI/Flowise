@@ -352,10 +352,10 @@ const Credentials = () => {
                                                             </Box>
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            {moment(credential.updatedDate).format('MMMM Do, YYYY')}
+                                                            {moment(credential.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            {moment(credential.createdDate).format('MMMM Do, YYYY')}
+                                                            {moment(credential.createdDate).format('MMMM Do, YYYY HH:mm:ss')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
                                                             <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
