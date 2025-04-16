@@ -10,7 +10,7 @@
 [![GitHub星图](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub分支](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](../README.md) | 簡體中文 | [日本語](./README-JA.md) | [한국어](./README-KR.md)
+[English](../README.md) | [繁體中文](./README-TW.md) | 简体中文 | [日本語](./README-JA.md) | [한국어](./README-KR.md)
 
 <h3>拖放界面构建定制化的LLM流程</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
@@ -170,9 +170,9 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 
         [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
 
-    -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+    -   [Sealos](https://template.sealos.io/deploy?templateName=flowise)
 
-        [![部署到 Sealos](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3FtemplateName%3Dflowise)
+        [![部署到 Sealos](https://sealos.io/Deploy-on-Sealos.svg)](https://template.sealos.io/deploy?templateName=flowise)
 
     -   [RepoCloud](https://repocloud.io/details/?app_id=29)
 

@@ -340,10 +340,10 @@ const Variables = () => {
                                                             />
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            {moment(variable.updatedDate).format('MMMM Do, YYYY')}
+                                                            {moment(variable.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
-                                                            {moment(variable.createdDate).format('MMMM Do, YYYY')}
+                                                            {moment(variable.createdDate).format('MMMM Do, YYYY HH:mm:ss')}
                                                         </StyledTableCell>
                                                         <StyledTableCell>
                                                             <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
