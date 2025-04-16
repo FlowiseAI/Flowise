@@ -24,7 +24,7 @@ import {
     IUsedTool,
     IVisionChatModal
 } from '../../../src/Interface'
-import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
+import { ConsoleCallbackHandler, CustomChainHandler, CustomStreamingHandler, additionalCallbacks } from '../../../src/handler'
 import { AgentExecutor, ToolCallingAgentOutputParser } from '../../../src/agents'
 import { Moderation, checkInputs, streamResponse } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
@@ -101,6 +101,15 @@ class ToolAgent_Agents implements INode {
                 type: 'number',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Enable Detailed Streaming',
+                name: 'enableDetailedStreaming',
+                type: 'boolean',
+                default: false,
+                description: 'Stream detailed intermediate steps during agent execution',
+                optional: true,
+                additionalParams: true
             }
         ]
         this.sessionId = fields?.sessionId
@@ -113,6 +122,7 @@ class ToolAgent_Agents implements INode {
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
+        const enableDetailedStreaming = nodeData.inputs?.enableDetailedStreaming as boolean
 
         const shouldStreamResponse = options.shouldStreamResponse
         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
@@ -136,6 +146,13 @@ class ToolAgent_Agents implements INode {
         const loggerHandler = new ConsoleCallbackHandler(options.logger)
         const callbacks = await additionalCallbacks(nodeData, options)
 
+        // Add custom streaming handler if detailed streaming is enabled
+        let customStreamingHandler = null
+
+        if (enableDetailedStreaming && shouldStreamResponse) {
+            customStreamingHandler = new CustomStreamingHandler(sseStreamer, chatId)
+        }
+
         let res: ChainValues = {}
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
@@ -143,7 +160,14 @@ class ToolAgent_Agents implements INode {
 
         if (shouldStreamResponse) {
             const handler = new CustomChainHandler(sseStreamer, chatId)
-            res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
+            const allCallbacks = [loggerHandler, handler, ...callbacks]
+
+            // Add detailed streaming handler if enabled
+            if (enableDetailedStreaming && customStreamingHandler) {
+                allCallbacks.push(customStreamingHandler)
+            }
+
+            res = await executor.invoke({ input }, { callbacks: allCallbacks })
             if (res.sourceDocuments) {
                 if (sseStreamer) {
                     sseStreamer.streamSourceDocumentsEvent(chatId, flatten(res.sourceDocuments))
@@ -174,7 +198,14 @@ class ToolAgent_Agents implements INode {
                 }
             }
         } else {
-            res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
+            const allCallbacks = [loggerHandler, ...callbacks]
+
+            // Add detailed streaming handler if enabled
+            if (enableDetailedStreaming && customStreamingHandler) {
+                allCallbacks.push(customStreamingHandler)
+            }
+
+            res = await executor.invoke({ input }, { callbacks: allCallbacks })
             if (res.sourceDocuments) {
                 sourceDocuments = res.sourceDocuments
             }
@@ -290,30 +321,23 @@ const prepareAgent = async (
         if (messageContent?.length) {
             visionChatModel.setVisionModel()
 
-            const agentScratchpad = prompt.promptMessages.pop() as MessagesPlaceholder
-
+            // Pop the `agent_scratchpad` MessagePlaceHolder
+            let messagePlaceholder = prompt.promptMessages.pop() as MessagesPlaceholder
             if (prompt.promptMessages.at(-1) instanceof HumanMessagePromptTemplate) {
                 const lastMessage = prompt.promptMessages.pop() as HumanMessagePromptTemplate
                 const template = (lastMessage.prompt as PromptTemplate).template as string
                 const msg = HumanMessagePromptTemplate.fromTemplate([
                     ...messageContent,
                     {
-                        text: typeof template === 'string' ? template : `{${inputKey}}`
+                        text: template
                     }
                 ])
                 msg.inputVariables = lastMessage.inputVariables
                 prompt.promptMessages.push(msg)
-            } else {
-                const msg = HumanMessagePromptTemplate.fromTemplate([
-                    ...messageContent,
-                    {
-                        text: `{${inputKey}}`
-                    }
-                ])
-                prompt.promptMessages.push(msg)
             }
 
-            prompt.promptMessages.push(agentScratchpad)
+            // Add the `agent_scratchpad` MessagePlaceHolder back
+            prompt.promptMessages.push(messagePlaceholder)
         } else {
             visionChatModel.revertToOriginalModel()
         }
@@ -322,6 +346,7 @@ const prepareAgent = async (
     if (model.bindTools === undefined) {
         throw new Error(`This agent requires that the "bindTools()" method be implemented on the input model.`)
     }
+
     // Filter tools from tools with duplicate names, make sure the logs clearly show what happened
     // Check for duplicate tool names and filter them out
     // TODO: WE ABSOLUTELY NEED TO FIX THIS
@@ -343,7 +368,7 @@ const prepareAgent = async (
         if (isDuplicate) {
             console.log(`[ToolAgent] Filtering out duplicate tool: ${tool.name}`)
         }
-        return firstIndex === index 
+        return firstIndex === index
     })
 
     console.log(`[ToolAgent] Binding ${tools.length} tools to model: ${tools.map((t: Tool) => t.name).join(', ')}`)

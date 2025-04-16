@@ -3,7 +3,7 @@ import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from 
 import { getCredentialData, getCredentialParam, getNodeModulesPackagePath } from '../../../../src/utils'
 import { MCPToolkit } from '../core'
 
-class Github_MCP implements INode {
+class Contentful_MCP implements INode {
     label: string
     name: string
     version: number
@@ -17,21 +17,31 @@ class Github_MCP implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Github MCP'
-        this.name = 'githubMCP'
+        this.label = 'Contentful MCP'
+        this.name = 'contentfulMCP'
         this.version = 1.0
-        this.type = 'Github MCP Tool'
-        this.icon = 'github.svg'
+        this.type = 'Contentful MCP Tool'
+        this.icon = 'contentful.svg'
         this.category = 'Tools (MCP)'
-        this.description = 'MCP Server for the GitHub API'
-        this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/github'
+        this.description = 'MCP Server for the Contentful API'
+        this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/contentful'
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['githubApi']
+            credentialNames: ['contentfulManagementApi']
         }
         this.inputs = [
+            {
+                label: 'Space ID',
+                name: 'spaceId',
+                type: 'string'
+            },
+            {
+                label: 'Environment ID',
+                name: 'environmentId',
+                type: 'string'
+            },
             {
                 label: 'Available Actions',
                 name: 'mcpActions',
@@ -61,7 +71,7 @@ class Github_MCP implements INode {
                     {
                         label: 'No Available Actions',
                         name: 'error',
-                        description: 'No available actions, please check your Github Access Token and refresh'
+                        description: 'No available actions, please check your Contentful Bot Token and refresh'
                     }
                 ]
             }
@@ -86,20 +96,20 @@ class Github_MCP implements INode {
 
     async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const accessToken = getCredentialParam('accessToken', credentialData, nodeData)
+        const managementToken = getCredentialParam('managementToken', credentialData, nodeData)
+        const spaceId = getCredentialParam('spaceId', credentialData, nodeData)
 
-        if (!accessToken) {
-            throw new Error('Missing Github Access Token')
+        const environmentId = nodeData.inputs?.environmentId
+
+        if (!managementToken || !spaceId || !environmentId) {
+            throw new Error('Missing Credentials')
         }
 
-        const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-github/dist/index.js')
-
+        const packagePath = getNodeModulesPackagePath('@last-rev/contentful-mcp-server/bin/mcp-server.js')
+        // Use process.execPath to ensure we use the correct Node.js executable regardless of environment
         const serverParams = {
             command: process.execPath,
-            args: [packagePath],
-            env: {
-                GITHUB_PERSONAL_ACCESS_TOKEN: accessToken
-            }
+            args: [packagePath, '--management-token', managementToken, '--space-id', spaceId, '--environment-id', environmentId]
         }
 
         const toolkit = new MCPToolkit(serverParams, 'stdio')
@@ -111,4 +121,4 @@ class Github_MCP implements INode {
     }
 }
 
-module.exports = { nodeClass: Github_MCP }
+module.exports = { nodeClass: Contentful_MCP }
