@@ -1300,10 +1300,23 @@ export const executeAgentFlow = async ({
             }
         })
         .then((messages) =>
-            messages.map((message) => ({
-                content: message.content,
-                role: message.role === 'userMessage' ? 'user' : 'assistant'
-            }))
+            messages.map((message) => {
+                const mappedMessage: any = {
+                    content: message.content,
+                    role: message.role === 'userMessage' ? 'user' : 'assistant'
+                }
+
+                // Only add additional_kwargs when fileUploads or artifacts exists and is not empty
+                if ((message.fileUploads && message.fileUploads !== '') || (message.artifacts && message.artifacts !== '')) {
+                    mappedMessage.additional_kwargs = {}
+
+                    if (message.fileUploads && message.fileUploads !== '') {
+                        mappedMessage.additional_kwargs.fileUploads = message.fileUploads
+                    }
+                }
+
+                return mappedMessage
+            })
         )) as IMessage[]
 
     let iterations = 0

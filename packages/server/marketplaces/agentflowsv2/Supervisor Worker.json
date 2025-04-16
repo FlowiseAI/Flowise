@@ -6,8 +6,8 @@
             "id": "startAgentflow_0",
             "type": "agentFlow",
             "position": {
-                "x": -243.1824791356493,
-                "y": 55.73533501848695
+                "x": -234.25083179589828,
+                "y": 89.8928676312403
             },
             "data": {
                 "id": "startAgentflow_0",
@@ -180,342 +180,20 @@
                 "selected": false
             },
             "width": 101,
-            "height": 66,
+            "height": 65,
             "selected": false,
             "positionAbsolute": {
-                "x": -243.1824791356493,
-                "y": 55.73533501848695
-            },
-            "dragging": false
-        },
-        {
-            "id": "llmAgentflow_0",
-            "position": {
-                "x": -104.73630561889219,
-                "y": 52.6377267115531
-            },
-            "type": "agentFlow",
-            "data": {
-                "id": "llmAgentflow_0",
-                "label": "Supervisor",
-                "version": 1,
-                "name": "llmAgentflow",
-                "type": "LLM",
-                "color": "#64B5F6",
-                "baseClasses": ["LLM"],
-                "category": "Agent Flows",
-                "description": "Large language models to analyze user-provided inputs and generate responses",
-                "inputParams": [
-                    {
-                        "label": "Model",
-                        "name": "llmModel",
-                        "type": "asyncOptions",
-                        "loadMethod": "listModels",
-                        "loadConfig": true,
-                        "id": "llmAgentflow_0-input-llmModel-asyncOptions",
-                        "display": true
-                    },
-                    {
-                        "label": "Messages",
-                        "name": "llmMessages",
-                        "type": "array",
-                        "optional": true,
-                        "acceptVariable": true,
-                        "array": [
-                            {
-                                "label": "Role",
-                                "name": "role",
-                                "type": "options",
-                                "options": [
-                                    {
-                                        "label": "System",
-                                        "name": "system"
-                                    },
-                                    {
-                                        "label": "Assistant",
-                                        "name": "assistant"
-                                    },
-                                    {
-                                        "label": "Developer",
-                                        "name": "developer"
-                                    },
-                                    {
-                                        "label": "User",
-                                        "name": "user"
-                                    }
-                                ]
-                            },
-                            {
-                                "label": "Content",
-                                "name": "content",
-                                "type": "string",
-                                "acceptVariable": true,
-                                "generateInstruction": true,
-                                "rows": 4
-                            }
-                        ],
-                        "id": "llmAgentflow_0-input-llmMessages-array",
-                        "display": true
-                    },
-                    {
-                        "label": "Enable Memory",
-                        "name": "llmEnableMemory",
-                        "type": "boolean",
-                        "description": "Enable memory for the conversation thread",
-                        "default": true,
-                        "optional": true,
-                        "id": "llmAgentflow_0-input-llmEnableMemory-boolean",
-                        "display": true
-                    },
-                    {
-                        "label": "Memory Type",
-                        "name": "llmMemoryType",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "All Messages",
-                                "name": "allMessages",
-                                "description": "Retrieve all messages from the conversation"
-                            },
-                            {
-                                "label": "Window Size",
-                                "name": "windowSize",
-                                "description": "Uses a fixed window size to surface the last N messages"
-                            },
-                            {
-                                "label": "Conversation Summary",
-                                "name": "conversationSummary",
-                                "description": "Summarizes the whole conversation"
-                            },
-                            {
-                                "label": "Conversation Summary Buffer",
-                                "name": "conversationSummaryBuffer",
-                                "description": "Summarize conversations once token limit is reached. Default to 2000"
-                            }
-                        ],
-                        "optional": true,
-                        "default": "allMessages",
-                        "show": {
-                            "llmEnableMemory": true
-                        },
-                        "id": "llmAgentflow_0-input-llmMemoryType-options",
-                        "display": true
-                    },
-                    {
-                        "label": "Window Size",
-                        "name": "llmMemoryWindowSize",
-                        "type": "number",
-                        "default": "20",
-                        "description": "Uses a fixed window size to surface the last N messages",
-                        "show": {
-                            "llmMemoryType": "windowSize"
-                        },
-                        "id": "llmAgentflow_0-input-llmMemoryWindowSize-number",
-                        "display": false
-                    },
-                    {
-                        "label": "Max Token Limit",
-                        "name": "llmMemoryMaxTokenLimit",
-                        "type": "number",
-                        "default": "2000",
-                        "description": "Summarize conversations once token limit is reached. Default to 2000",
-                        "show": {
-                            "llmMemoryType": "conversationSummaryBuffer"
-                        },
-                        "id": "llmAgentflow_0-input-llmMemoryMaxTokenLimit-number",
-                        "display": false
-                    },
-                    {
-                        "label": "User Message",
-                        "name": "llmUserMessage",
-                        "type": "string",
-                        "description": "User message will be insert at the end of the messages",
-                        "rows": 4,
-                        "optional": true,
-                        "acceptVariable": true,
-                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
-                        "show": {
-                            "llmEnableMemory": true
-                        },
-                        "id": "llmAgentflow_0-input-llmUserMessage-string",
-                        "display": true
-                    },
-                    {
-                        "label": "JSON Structured Output",
-                        "name": "llmStructuredOutput",
-                        "description": "Instruct the LLM to give output in a JSON structured schema",
-                        "type": "array",
-                        "optional": true,
-                        "acceptVariable": true,
-                        "array": [
-                            {
-                                "label": "Key",
-                                "name": "key",
-                                "type": "string"
-                            },
-                            {
-                                "label": "Type",
-                                "name": "type",
-                                "type": "options",
-                                "options": [
-                                    {
-                                        "label": "String",
-                                        "name": "string"
-                                    },
-                                    {
-                                        "label": "String Array",
-                                        "name": "stringArray"
-                                    },
-                                    {
-                                        "label": "Number",
-                                        "name": "number"
-                                    },
-                                    {
-                                        "label": "Boolean",
-                                        "name": "boolean"
-                                    },
-                                    {
-                                        "label": "Enum",
-                                        "name": "enum"
-                                    }
-                                ]
-                            },
-                            {
-                                "label": "Enum Values",
-                                "name": "enumValues",
-                                "type": "string",
-                                "placeholder": "value1, value2, value3",
-                                "description": "Enum values. Separated by comma",
-                                "show": {
-                                    "llmStructuredOutput[$index].type": "enum"
-                                }
-                            },
-                            {
-                                "label": "Description",
-                                "name": "description",
-                                "type": "string",
-                                "placeholder": "Description of the key"
-                            }
-                        ],
-                        "id": "llmAgentflow_0-input-llmStructuredOutput-array",
-                        "display": true
-                    },
-                    {
-                        "label": "Update Flow State",
-                        "name": "llmUpdateState",
-                        "description": "Update runtime state during the execution of the workflow",
-                        "type": "array",
-                        "optional": true,
-                        "acceptVariable": true,
-                        "array": [
-                            {
-                                "label": "Key",
-                                "name": "key",
-                                "type": "asyncOptions",
-                                "loadMethod": "listRuntimeStateKeys",
-                                "freeSolo": true
-                            },
-                            {
-                                "label": "Value",
-                                "name": "value",
-                                "type": "string",
-                                "acceptVariable": true,
-                                "acceptNodeOutputAsVariable": true
-                            }
-                        ],
-                        "id": "llmAgentflow_0-input-llmUpdateState-array",
-                        "display": true
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "llmModel": "chatOpenAI",
-                    "llmMessages": [
-                        {
-                            "role": "system",
-                            "content": "<p>You are a supervisor tasked with managing a conversation between the following workers:</p><p>- Software Engineer</p><p>- Code Reviewer</p><p>Given the following user request, respond with the worker to act next.</p><p>Each worker will perform a task and respond with their results and status.</p><p>When finished, respond with FINISH.</p><p>Select strategically to minimize the number of steps taken.</p>"
-                        }
-                    ],
-                    "llmEnableMemory": true,
-                    "llmMemoryType": "allMessages",
-                    "llmUserMessage": "<p>Given the conversation above, who should act next? Or should we FINISH? Select one of: SOFTWARE, REVIEWER</p>",
-                    "llmStructuredOutput": [
-                        {
-                            "key": "next",
-                            "type": "enum",
-                            "enumValues": "FINISH, SOFTWARE, REVIEWER",
-                            "description": "next worker to act"
-                        },
-                        {
-                            "key": "instructions",
-                            "type": "string",
-                            "enumValues": "",
-                            "description": "The specific instructions of the sub-task the next worker should accomplish."
-                        },
-                        {
-                            "key": "reasoning",
-                            "type": "string",
-                            "enumValues": "",
-                            "description": "The reason why next worker is tasked to do the job"
-                        }
-                    ],
-                    "llmUpdateState": [
-                        {
-                            "key": "next",
-                            "value": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"output.next\" data-label=\"output.next\">{{ output.next }}</span> </p>"
-                        },
-                        {
-                            "key": "instruction",
-                            "value": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"output.instructions\" data-label=\"output.instructions\">{{ output.instructions }}</span> </p>"
-                        }
-                    ],
-                    "llmModelConfig": {
-                        "cache": "",
-                        "modelName": "gpt-4o-mini",
-                        "temperature": 0.9,
-                        "streaming": true,
-                        "maxTokens": "",
-                        "topP": "",
-                        "frequencyPenalty": "",
-                        "presencePenalty": "",
-                        "timeout": "",
-                        "strictToolCalling": "",
-                        "stopSequence": "",
-                        "basepath": "",
-                        "proxyUrl": "",
-                        "baseOptions": "",
-                        "allowImageUploads": true,
-                        "imageResolution": "low",
-                        "reasoningEffort": "medium",
-                        "llmModel": "chatOpenAI"
-                    }
-                },
-                "outputAnchors": [
-                    {
-                        "id": "llmAgentflow_0-output-llmAgentflow",
-                        "label": "LLM",
-                        "name": "llmAgentflow"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "width": 168,
-            "height": 72,
-            "selected": false,
-            "positionAbsolute": {
-                "x": -104.73630561889219,
-                "y": 52.6377267115531
+                "x": -234.25083179589828,
+                "y": 89.8928676312403
             },
             "dragging": false
         },
         {
             "id": "conditionAgentflow_0",
             "position": {
-                "x": 95.84645140763763,
-                "y": 38.03865498384084
+                "x": 128.47781848153903,
+                "y": 73.36847122134466
             },
-            "type": "agentFlow",
             "data": {
                 "id": "conditionAgentflow_0",
                 "label": "Check next worker",
@@ -536,9 +214,9 @@
                         "default": [
                             {
                                 "type": "string",
-                                "value1": "",
+                                "value1": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.next\" data-label=\"$flow.state.next\">{{ $flow.state.next }}</span> </p>",
                                 "operation": "equal",
-                                "value2": ""
+                                "value2": "<p>SOFTWARE</p>"
                             }
                         ],
                         "array": [
@@ -788,307 +466,25 @@
                 },
                 "selected": false
             },
+            "type": "agentFlow",
             "width": 184,
             "height": 100,
             "selected": false,
             "positionAbsolute": {
-                "x": 95.84645140763763,
-                "y": 38.03865498384084
-            },
-            "dragging": false
-        },
-        {
-            "id": "agentAgentflow_0",
-            "position": {
-                "x": 322.3198476823835,
-                "y": -42.96212891073783
-            },
-            "type": "agentFlow",
-            "data": {
-                "id": "agentAgentflow_0",
-                "label": "Software Engineer",
-                "version": 1,
-                "name": "agentAgentflow",
-                "type": "Agent",
-                "color": "#4DD0E1",
-                "baseClasses": ["Agent"],
-                "category": "Agent Flows",
-                "description": "Dynamically choose and utilize tools during runtime, enabling multi-step reasoning",
-                "inputParams": [
-                    {
-                        "label": "Model",
-                        "name": "agentModel",
-                        "type": "asyncOptions",
-                        "loadMethod": "listModels",
-                        "loadConfig": true,
-                        "id": "agentAgentflow_0-input-agentModel-asyncOptions",
-                        "display": true
-                    },
-                    {
-                        "label": "Messages",
-                        "name": "agentMessages",
-                        "type": "array",
-                        "optional": true,
-                        "acceptVariable": true,
-                        "array": [
-                            {
-                                "label": "Role",
-                                "name": "role",
-                                "type": "options",
-                                "options": [
-                                    {
-                                        "label": "System",
-                                        "name": "system"
-                                    },
-                                    {
-                                        "label": "Assistant",
-                                        "name": "assistant"
-                                    },
-                                    {
-                                        "label": "Developer",
-                                        "name": "developer"
-                                    },
-                                    {
-                                        "label": "User",
-                                        "name": "user"
-                                    }
-                                ]
-                            },
-                            {
-                                "label": "Content",
-                                "name": "content",
-                                "type": "string",
-                                "acceptVariable": true,
-                                "generateInstruction": true,
-                                "rows": 4
-                            }
-                        ],
-                        "id": "agentAgentflow_0-input-agentMessages-array",
-                        "display": true
-                    },
-                    {
-                        "label": "Tools",
-                        "name": "agentTools",
-                        "type": "array",
-                        "optional": true,
-                        "array": [
-                            {
-                                "label": "Tool",
-                                "name": "agentSelectedTool",
-                                "type": "asyncOptions",
-                                "loadMethod": "listTools",
-                                "loadConfig": true
-                            }
-                        ],
-                        "id": "agentAgentflow_0-input-agentTools-array",
-                        "display": true
-                    },
-                    {
-                        "label": "Knowledge (Document Stores)",
-                        "name": "agentKnowledgeDocumentStores",
-                        "type": "array",
-                        "description": "Give your agent context about different document sources. Document stores must be upserted in advance.",
-                        "array": [
-                            {
-                                "label": "Document Store",
-                                "name": "documentStore",
-                                "type": "asyncOptions",
-                                "loadMethod": "listStores"
-                            },
-                            {
-                                "label": "Describe Knowledge",
-                                "name": "docStoreDescription",
-                                "type": "string",
-                                "generateDocStoreDescription": true,
-                                "placeholder": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information",
-                                "rows": 4
-                            },
-                            {
-                                "label": "Return Source Documents",
-                                "name": "returnSourceDocuments",
-                                "type": "boolean",
-                                "optional": true
-                            }
-                        ],
-                        "optional": true,
-                        "id": "agentAgentflow_0-input-agentKnowledgeDocumentStores-array",
-                        "display": true
-                    },
-                    {
-                        "label": "Enable Memory",
-                        "name": "agentEnableMemory",
-                        "type": "boolean",
-                        "description": "Enable memory for the conversation thread",
-                        "default": true,
-                        "optional": true,
-                        "id": "agentAgentflow_0-input-agentEnableMemory-boolean",
-                        "display": true
-                    },
-                    {
-                        "label": "Memory Type",
-                        "name": "agentMemoryType",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "All Messages",
-                                "name": "allMessages",
-                                "description": "Retrieve all messages from the conversation"
-                            },
-                            {
-                                "label": "Window Size",
-                                "name": "windowSize",
-                                "description": "Uses a fixed window size to surface the last N messages"
-                            },
-                            {
-                                "label": "Conversation Summary",
-                                "name": "conversationSummary",
-                                "description": "Summarizes the whole conversation"
-                            },
-                            {
-                                "label": "Conversation Summary Buffer",
-                                "name": "conversationSummaryBuffer",
-                                "description": "Summarize conversations once token limit is reached. Default to 2000"
-                            }
-                        ],
-                        "optional": true,
-                        "default": "allMessages",
-                        "show": {
-                            "agentEnableMemory": true
-                        },
-                        "id": "agentAgentflow_0-input-agentMemoryType-options",
-                        "display": true
-                    },
-                    {
-                        "label": "Window Size",
-                        "name": "agentMemoryWindowSize",
-                        "type": "number",
-                        "default": "20",
-                        "description": "Uses a fixed window size to surface the last N messages",
-                        "show": {
-                            "agentMemoryType": "windowSize"
-                        },
-                        "id": "agentAgentflow_0-input-agentMemoryWindowSize-number",
-                        "display": false
-                    },
-                    {
-                        "label": "Max Token Limit",
-                        "name": "agentMemoryMaxTokenLimit",
-                        "type": "number",
-                        "default": "2000",
-                        "description": "Summarize conversations once token limit is reached. Default to 2000",
-                        "show": {
-                            "agentMemoryType": "conversationSummaryBuffer"
-                        },
-                        "id": "agentAgentflow_0-input-agentMemoryMaxTokenLimit-number",
-                        "display": false
-                    },
-                    {
-                        "label": "User Message",
-                        "name": "agentUserMessage",
-                        "type": "string",
-                        "description": "User message will be insert at the end of the messages",
-                        "rows": 4,
-                        "optional": true,
-                        "acceptVariable": true,
-                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
-                        "show": {
-                            "agentEnableMemory": true
-                        },
-                        "id": "agentAgentflow_0-input-agentUserMessage-string",
-                        "display": true
-                    },
-                    {
-                        "label": "Update Flow State",
-                        "name": "agentUpdateState",
-                        "description": "Update runtime state during the execution of the workflow",
-                        "type": "array",
-                        "optional": true,
-                        "acceptVariable": true,
-                        "array": [
-                            {
-                                "label": "Key",
-                                "name": "key",
-                                "type": "asyncOptions",
-                                "loadMethod": "listRuntimeStateKeys",
-                                "freeSolo": true
-                            },
-                            {
-                                "label": "Value",
-                                "name": "value",
-                                "type": "string",
-                                "acceptVariable": true,
-                                "acceptNodeOutputAsVariable": true
-                            }
-                        ],
-                        "id": "agentAgentflow_0-input-agentUpdateState-array",
-                        "display": true
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "agentModel": "chatOpenAI",
-                    "agentMessages": [
-                        {
-                            "role": "system",
-                            "content": "<p>As a Senior Software Engineer, you are a pivotal part of our innovative development team. Your expertise and leadership drive the creation of robust, scalable software solutions that meet the needs of our diverse clientele. By applying best practices in software development, you ensure that our products are reliable, efficient, and maintainable.</p><p>Your goal is to lead the development of high-quality software solutions.</p><p>Utilize your deep technical knowledge and experience to architect, design, and implement software systems that address complex problems. Collaborate closely with other engineers, reviewers to ensure that the solutions you develop align with business objectives and user needs.</p><p>Design and implement new feature for the given task, ensuring it integrates seamlessly with existing systems and meets performance requirements. Use your understanding of {technology} to build this feature. Make sure to adhere to our coding standards and follow best practices.</p><p>The output should be a fully functional, well-documented feature that enhances our product's capabilities. Include detailed comments in the code. Pass the code to Quality Assurance Engineer for review if neccessary. Once ther review is good enough, produce a finalized version of the code.</p>"
-                        }
-                    ],
-                    "agentTools": "",
-                    "agentKnowledgeDocumentStores": "",
-                    "agentEnableMemory": true,
-                    "agentMemoryType": "allMessages",
-                    "agentUserMessage": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.instruction\" data-label=\"$flow.state.instruction\">{{ $flow.state.instruction }}</span> </p>",
-                    "agentUpdateState": "",
-                    "agentModelConfig": {
-                        "cache": "",
-                        "modelName": "gpt-4o-mini",
-                        "temperature": 0.9,
-                        "streaming": true,
-                        "maxTokens": "",
-                        "topP": "",
-                        "frequencyPenalty": "",
-                        "presencePenalty": "",
-                        "timeout": "",
-                        "strictToolCalling": "",
-                        "stopSequence": "",
-                        "basepath": "",
-                        "proxyUrl": "",
-                        "baseOptions": "",
-                        "allowImageUploads": "",
-                        "imageResolution": "low",
-                        "reasoningEffort": "medium",
-                        "agentModel": "chatOpenAI"
-                    }
-                },
-                "outputAnchors": [
-                    {
-                        "id": "agentAgentflow_0-output-agentAgentflow",
-                        "label": "Agent",
-                        "name": "agentAgentflow"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "width": 183,
-            "height": 72,
-            "selected": false,
-            "positionAbsolute": {
-                "x": 322.3198476823835,
-                "y": -42.96212891073783
+                "x": 128.47781848153903,
+                "y": 73.36847122134466
             },
             "dragging": false
         },
         {
             "id": "agentAgentflow_1",
             "position": {
-                "x": 325.71555541825927,
-                "y": 54.589965222184844
+                "x": 352.5679347768288,
+                "y": -23.510778245391947
             },
-            "type": "agentFlow",
             "data": {
                 "id": "agentAgentflow_1",
-                "label": "Code Reviewer",
+                "label": "Software Engineer",
                 "version": 1,
                 "name": "agentAgentflow",
                 "type": "Agent",
@@ -1265,18 +661,35 @@
                         "display": false
                     },
                     {
-                        "label": "User Message",
+                        "label": "Input Message",
                         "name": "agentUserMessage",
                         "type": "string",
-                        "description": "User message will be insert at the end of the messages",
+                        "description": "Add an input message as user message at the end of the conversation",
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
                         "show": {
                             "agentEnableMemory": true
                         },
                         "id": "agentAgentflow_1-input-agentUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "agentAgentflow_1-input-agentReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -1308,38 +721,36 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatOpenAI",
+                    "agentModel": "azureChatOpenAI",
                     "agentMessages": [
                         {
                             "role": "system",
-                            "content": "<p>As a Quality Assurance Engineer, you are an integral part of our development team, ensuring that our software products are of the highest quality. Your meticulous attention to detail and expertise in testing methodologies are crucial in identifying defects and ensuring that our code meets the highest standards.</p><p>Your goal is to ensure the delivery of high-quality software through thorough code review and testing.</p><p>Review the codebase for the new feature designed and implemented by the Senior Software Engineer. Your expertise goes beyond mere code inspection; you are adept at ensuring that developments not only function as intended but also adhere to the team's coding standards, enhance maintainability, and seamlessly integrate with existing systems.</p><p>With a deep appreciation for collaborative development, you provide constructive feedback, guiding contributors towards best practices and fostering a culture of continuous improvement. Your meticulous approach to reviewing code, coupled with your ability to foresee potential issues and recommend proactive solutions, ensures the delivery of high-quality software that is robust, scalable, and aligned with the team's strategic goals.</p><p>Always pass back the review and feedback to Senior Software Engineer.</p>"
+                            "content": "<p>As a Senior Software Engineer, you are a pivotal part of our innovative development team. Your expertise and leadership drive the creation of robust, scalable software solutions that meet the needs of our diverse clientele. By applying best practices in software development, you ensure that our products are reliable, efficient, and maintainable.</p><p>Your goal is to lead the development of high-quality software solutions.</p><p>Utilize your deep technical knowledge and experience to architect, design, and implement software systems that address complex problems. Collaborate closely with other engineers, reviewers to ensure that the solutions you develop align with business objectives and user needs.</p><p>Design and implement new feature for the given task, ensuring it integrates seamlessly with existing systems and meets performance requirements. Use your understanding of {technology} to build this feature. Make sure to adhere to our coding standards and follow best practices.</p><p>The output should be a fully functional, well-documented feature that enhances our product's capabilities. Include detailed comments in the code. Pass the code to Quality Assurance Engineer for review if neccessary. Once ther review is good enough, produce a finalized version of the code.</p>"
                         }
                     ],
                     "agentTools": "",
                     "agentKnowledgeDocumentStores": "",
                     "agentEnableMemory": true,
                     "agentMemoryType": "allMessages",
-                    "agentUserMessage": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.instruction\" data-label=\"$flow.state.instruction\">{{ $flow.state.instruction }}</span> </p>",
+                    "agentUserMessage": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.instruction\" data-label=\"$flow.state.instruction\">{{ $flow.state.instruction }}</span></p>",
+                    "agentReturnResponseAs": "userMessage",
                     "agentUpdateState": "",
                     "agentModelConfig": {
                         "credential": "",
-                        "modelName": "gpt-4o-mini",
+                        "modelName": "gpt-4.1",
                         "temperature": 0.9,
-                        "streaming": true,
                         "maxTokens": "",
+                        "streaming": true,
                         "topP": "",
                         "frequencyPenalty": "",
                         "presencePenalty": "",
                         "timeout": "",
-                        "strictToolCalling": "",
-                        "stopSequence": "",
                         "basepath": "",
-                        "proxyUrl": "",
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "medium",
-                        "agentModel": "chatOpenAI"
+                        "agentModel": "azureChatOpenAI"
                     }
                 },
                 "outputAnchors": [
@@ -1352,25 +763,25 @@
                 "outputs": {},
                 "selected": false
             },
-            "width": 168,
-            "height": 72,
+            "type": "agentFlow",
+            "width": 183,
+            "height": 71,
             "selected": false,
             "positionAbsolute": {
-                "x": 325.71555541825927,
-                "y": 54.589965222184844
+                "x": 352.5679347768288,
+                "y": -23.510778245391947
             },
             "dragging": false
         },
         {
             "id": "agentAgentflow_2",
             "position": {
-                "x": 328.3948174269658,
-                "y": 150.21115887905054
+                "x": 358.5981605238689,
+                "y": 87.38558154725587
             },
-            "type": "agentFlow",
             "data": {
                 "id": "agentAgentflow_2",
-                "label": "Generate Final Answer",
+                "label": "Code Reviewer",
                 "version": 1,
                 "name": "agentAgentflow",
                 "type": "Agent",
@@ -1547,18 +958,35 @@
                         "display": false
                     },
                     {
-                        "label": "User Message",
+                        "label": "Input Message",
                         "name": "agentUserMessage",
                         "type": "string",
-                        "description": "User message will be insert at the end of the messages",
+                        "description": "Add an input message as user message at the end of the conversation",
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
                         "show": {
                             "agentEnableMemory": true
                         },
                         "id": "agentAgentflow_2-input-agentUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "agentAgentflow_2-input-agentReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -1590,32 +1018,33 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatOpenAI",
-                    "agentMessages": [],
+                    "agentModel": "chatDeepseek",
+                    "agentMessages": [
+                        {
+                            "role": "system",
+                            "content": "<p>As a Quality Assurance Engineer, you are an integral part of our development team, ensuring that our software products are of the highest quality. Your meticulous attention to detail and expertise in testing methodologies are crucial in identifying defects and ensuring that our code meets the highest standards.</p><p>Your goal is to ensure the delivery of high-quality software through thorough code review and testing.</p><p>Review the codebase for the new feature designed and implemented by the Senior Software Engineer. Your expertise goes beyond mere code inspection; you are adept at ensuring that developments not only function as intended but also adhere to the team's coding standards, enhance maintainability, and seamlessly integrate with existing systems.</p><p>With a deep appreciation for collaborative development, you provide constructive feedback, guiding contributors towards best practices and fostering a culture of continuous improvement. Your meticulous approach to reviewing code, coupled with your ability to foresee potential issues and recommend proactive solutions, ensures the delivery of high-quality software that is robust, scalable, and aligned with the team's strategic goals.</p><p>Always pass back the review and feedback to Senior Software Engineer.</p>"
+                        }
+                    ],
                     "agentTools": "",
                     "agentKnowledgeDocumentStores": "",
                     "agentEnableMemory": true,
                     "agentMemoryType": "allMessages",
-                    "agentUserMessage": "<p>Given the above conversations, generate a final detail answers.</p><p>Answer:</p><p></p>",
+                    "agentUserMessage": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.instruction\" data-label=\"$flow.state.instruction\">{{ $flow.state.instruction }}</span></p>",
+                    "agentReturnResponseAs": "userMessage",
                     "agentUpdateState": "",
                     "agentModelConfig": {
-                        "cache": "",
-                        "modelName": "gpt-4o",
-                        "temperature": 0.9,
+                        "credential": "",
+                        "modelName": "deepseek-reasoner",
+                        "temperature": 0.7,
                         "streaming": true,
                         "maxTokens": "",
                         "topP": "",
                         "frequencyPenalty": "",
                         "presencePenalty": "",
                         "timeout": "",
-                        "strictToolCalling": "",
                         "stopSequence": "",
-                        "basepath": "",
-                        "proxyUrl": "",
                         "baseOptions": "",
-                        "allowImageUploads": "",
-                        "reasoningEffort": "medium",
-                        "agentModel": "chatOpenAI"
+                        "agentModel": "chatDeepseek"
                     }
                 },
                 "outputAnchors": [
@@ -1628,22 +1057,310 @@
                 "outputs": {},
                 "selected": false
             },
-            "width": 208,
-            "height": 72,
+            "type": "agentFlow",
+            "width": 206,
+            "height": 71,
             "selected": false,
             "positionAbsolute": {
-                "x": 328.3948174269658,
-                "y": 150.21115887905054
+                "x": 358.5981605238689,
+                "y": 87.38558154725587
+            },
+            "dragging": false
+        },
+        {
+            "id": "agentAgentflow_3",
+            "position": {
+                "x": 357.60470406099364,
+                "y": 192.61532204982643
+            },
+            "data": {
+                "id": "agentAgentflow_3",
+                "label": "Generate Final Answer",
+                "version": 1,
+                "name": "agentAgentflow",
+                "type": "Agent",
+                "color": "#4DD0E1",
+                "baseClasses": ["Agent"],
+                "category": "Agent Flows",
+                "description": "Dynamically choose and utilize tools during runtime, enabling multi-step reasoning",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "agentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "agentAgentflow_3-input-agentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "agentMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 4
+                            }
+                        ],
+                        "id": "agentAgentflow_3-input-agentMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Tools",
+                        "name": "agentTools",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            {
+                                "label": "Tool",
+                                "name": "agentSelectedTool",
+                                "type": "asyncOptions",
+                                "loadMethod": "listTools",
+                                "loadConfig": true
+                            }
+                        ],
+                        "id": "agentAgentflow_3-input-agentTools-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Knowledge (Document Stores)",
+                        "name": "agentKnowledgeDocumentStores",
+                        "type": "array",
+                        "description": "Give your agent context about different document sources. Document stores must be upserted in advance.",
+                        "array": [
+                            {
+                                "label": "Document Store",
+                                "name": "documentStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listStores"
+                            },
+                            {
+                                "label": "Describe Knowledge",
+                                "name": "docStoreDescription",
+                                "type": "string",
+                                "generateDocStoreDescription": true,
+                                "placeholder": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information",
+                                "rows": 4
+                            },
+                            {
+                                "label": "Return Source Documents",
+                                "name": "returnSourceDocuments",
+                                "type": "boolean",
+                                "optional": true
+                            }
+                        ],
+                        "optional": true,
+                        "id": "agentAgentflow_3-input-agentKnowledgeDocumentStores-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "agentEnableMemory",
+                        "type": "boolean",
+                        "description": "Enable memory for the conversation thread",
+                        "default": true,
+                        "optional": true,
+                        "id": "agentAgentflow_3-input-agentEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory Type",
+                        "name": "agentMemoryType",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "All Messages",
+                                "name": "allMessages",
+                                "description": "Retrieve all messages from the conversation"
+                            },
+                            {
+                                "label": "Window Size",
+                                "name": "windowSize",
+                                "description": "Uses a fixed window size to surface the last N messages"
+                            },
+                            {
+                                "label": "Conversation Summary",
+                                "name": "conversationSummary",
+                                "description": "Summarizes the whole conversation"
+                            },
+                            {
+                                "label": "Conversation Summary Buffer",
+                                "name": "conversationSummaryBuffer",
+                                "description": "Summarize conversations once token limit is reached. Default to 2000"
+                            }
+                        ],
+                        "optional": true,
+                        "default": "allMessages",
+                        "show": {
+                            "agentEnableMemory": true
+                        },
+                        "id": "agentAgentflow_3-input-agentMemoryType-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "agentMemoryWindowSize",
+                        "type": "number",
+                        "default": "20",
+                        "description": "Uses a fixed window size to surface the last N messages",
+                        "show": {
+                            "agentMemoryType": "windowSize"
+                        },
+                        "id": "agentAgentflow_3-input-agentMemoryWindowSize-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Max Token Limit",
+                        "name": "agentMemoryMaxTokenLimit",
+                        "type": "number",
+                        "default": "2000",
+                        "description": "Summarize conversations once token limit is reached. Default to 2000",
+                        "show": {
+                            "agentMemoryType": "conversationSummaryBuffer"
+                        },
+                        "id": "agentAgentflow_3-input-agentMemoryMaxTokenLimit-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Input Message",
+                        "name": "agentUserMessage",
+                        "type": "string",
+                        "description": "Add an input message as user message at the end of the conversation",
+                        "rows": 4,
+                        "optional": true,
+                        "acceptVariable": true,
+                        "show": {
+                            "agentEnableMemory": true
+                        },
+                        "id": "agentAgentflow_3-input-agentUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "agentAgentflow_3-input-agentReturnResponseAs-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "agentUpdateState",
+                        "description": "Update runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "agentAgentflow_3-input-agentUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "agentModel": "chatAnthropic",
+                    "agentMessages": "",
+                    "agentTools": "",
+                    "agentKnowledgeDocumentStores": "",
+                    "agentEnableMemory": true,
+                    "agentMemoryType": "allMessages",
+                    "agentUserMessage": "<p>Given the above conversations, generate a detail solution developed by the software engineer and code reviewer. Include full code, improvements and review.</p>",
+                    "agentReturnResponseAs": "userMessage",
+                    "agentUpdateState": "",
+                    "agentModelConfig": {
+                        "credential": "",
+                        "modelName": "claude-3-7-sonnet-latest",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokensToSample": "",
+                        "topP": "",
+                        "topK": "",
+                        "extendedThinking": "",
+                        "budgetTokens": 1024,
+                        "allowImageUploads": "",
+                        "agentModel": "chatAnthropic"
+                    }
+                },
+                "outputAnchors": [
+                    {
+                        "id": "agentAgentflow_3-output-agentAgentflow",
+                        "label": "Agent",
+                        "name": "agentAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "width": 231,
+            "height": 71,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 357.60470406099364,
+                "y": 192.61532204982643
             },
             "dragging": false
         },
         {
             "id": "loopAgentflow_0",
             "position": {
-                "x": 544.3140781236542,
-                "y": -39.97197142271097
+                "x": 574.050701666824,
+                "y": -20.0960840521807
             },
-            "type": "agentFlow",
             "data": {
                 "id": "loopAgentflow_0",
                 "label": "Loop to Supervisor",
@@ -1683,22 +1400,22 @@
                 "outputs": {},
                 "selected": false
             },
+            "type": "agentFlow",
             "width": 186,
-            "height": 66,
+            "height": 65,
             "selected": false,
+            "dragging": false,
             "positionAbsolute": {
-                "x": 544.3140781236542,
-                "y": -39.97197142271097
-            },
-            "dragging": false
+                "x": 574.050701666824,
+                "y": -20.0960840521807
+            }
         },
         {
             "id": "loopAgentflow_1",
             "position": {
-                "x": 542.2038083729062,
-                "y": 57.24685214424784
+                "x": 600.379151793432,
+                "y": 90.25732743474846
             },
-            "type": "agentFlow",
             "data": {
                 "id": "loopAgentflow_1",
                 "label": "Loop to Supervisor",
@@ -1738,43 +1455,376 @@
                 "outputs": {},
                 "selected": false
             },
+            "type": "agentFlow",
             "width": 186,
-            "height": 66,
+            "height": 65,
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 600.379151793432,
+                "y": 90.25732743474846
+            }
+        },
+        {
+            "id": "llmAgentflow_0",
+            "position": {
+                "x": -78.28788541792727,
+                "y": 87.1528514813091
+            },
+            "data": {
+                "id": "llmAgentflow_0",
+                "label": "Supervisor",
+                "version": 1,
+                "name": "llmAgentflow",
+                "type": "LLM",
+                "color": "#64B5F6",
+                "baseClasses": ["LLM"],
+                "category": "Agent Flows",
+                "description": "Large language models to analyze user-provided inputs and generate responses",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "llmModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "llmAgentflow_0-input-llmModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "llmMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 4
+                            }
+                        ],
+                        "id": "llmAgentflow_0-input-llmMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "llmEnableMemory",
+                        "type": "boolean",
+                        "description": "Enable memory for the conversation thread",
+                        "default": true,
+                        "optional": true,
+                        "id": "llmAgentflow_0-input-llmEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory Type",
+                        "name": "llmMemoryType",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "All Messages",
+                                "name": "allMessages",
+                                "description": "Retrieve all messages from the conversation"
+                            },
+                            {
+                                "label": "Window Size",
+                                "name": "windowSize",
+                                "description": "Uses a fixed window size to surface the last N messages"
+                            },
+                            {
+                                "label": "Conversation Summary",
+                                "name": "conversationSummary",
+                                "description": "Summarizes the whole conversation"
+                            },
+                            {
+                                "label": "Conversation Summary Buffer",
+                                "name": "conversationSummaryBuffer",
+                                "description": "Summarize conversations once token limit is reached. Default to 2000"
+                            }
+                        ],
+                        "optional": true,
+                        "default": "allMessages",
+                        "show": {
+                            "llmEnableMemory": true
+                        },
+                        "id": "llmAgentflow_0-input-llmMemoryType-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "llmMemoryWindowSize",
+                        "type": "number",
+                        "default": "20",
+                        "description": "Uses a fixed window size to surface the last N messages",
+                        "show": {
+                            "llmMemoryType": "windowSize"
+                        },
+                        "id": "llmAgentflow_0-input-llmMemoryWindowSize-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Max Token Limit",
+                        "name": "llmMemoryMaxTokenLimit",
+                        "type": "number",
+                        "default": "2000",
+                        "description": "Summarize conversations once token limit is reached. Default to 2000",
+                        "show": {
+                            "llmMemoryType": "conversationSummaryBuffer"
+                        },
+                        "id": "llmAgentflow_0-input-llmMemoryMaxTokenLimit-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Input Message",
+                        "name": "llmUserMessage",
+                        "type": "string",
+                        "description": "Add an input message as user message at the end of the conversation",
+                        "rows": 4,
+                        "optional": true,
+                        "acceptVariable": true,
+                        "show": {
+                            "llmEnableMemory": true
+                        },
+                        "id": "llmAgentflow_0-input-llmUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "llmAgentflow_0-input-agentReturnResponseAs-options",
+                        "display": true
+                    },
+                    {
+                        "label": "JSON Structured Output",
+                        "name": "llmStructuredOutput",
+                        "description": "Instruct the LLM to give output in a JSON structured schema",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "string"
+                            },
+                            {
+                                "label": "Type",
+                                "name": "type",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "String",
+                                        "name": "string"
+                                    },
+                                    {
+                                        "label": "String Array",
+                                        "name": "stringArray"
+                                    },
+                                    {
+                                        "label": "Number",
+                                        "name": "number"
+                                    },
+                                    {
+                                        "label": "Boolean",
+                                        "name": "boolean"
+                                    },
+                                    {
+                                        "label": "Enum",
+                                        "name": "enum"
+                                    },
+                                    {
+                                        "label": "JSON Array",
+                                        "name": "jsonArray"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Enum Values",
+                                "name": "enumValues",
+                                "type": "string",
+                                "placeholder": "value1, value2, value3",
+                                "description": "Enum values. Separated by comma",
+                                "optional": true,
+                                "show": {
+                                    "llmStructuredOutput[$index].type": "enum"
+                                }
+                            },
+                            {
+                                "label": "JSON Schema",
+                                "name": "jsonSchema",
+                                "type": "code",
+                                "placeholder": "{\n    \"answer\": {\n        \"type\": \"string\",\n        \"description\": \"Value of the answer\"\n    },\n    \"reason\": {\n        \"type\": \"string\",\n        \"description\": \"Reason for the answer\"\n    },\n    \"optional\": {\n        \"type\": \"boolean\"\n    },\n    \"count\": {\n        \"type\": \"number\"\n    },\n    \"children\": {\n        \"type\": \"array\",\n        \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"value\": {\n                    \"type\": \"string\",\n                    \"description\": \"Value of the children's answer\"\n                }\n            }\n        }\n    }\n}",
+                                "description": "JSON schema for the structured output",
+                                "optional": true,
+                                "show": {
+                                    "llmStructuredOutput[$index].type": "jsonArray"
+                                }
+                            },
+                            {
+                                "label": "Description",
+                                "name": "description",
+                                "type": "string",
+                                "placeholder": "Description of the key"
+                            }
+                        ],
+                        "id": "llmAgentflow_0-input-llmStructuredOutput-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "llmUpdateState",
+                        "description": "Update runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "llmAgentflow_0-input-llmUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "llmModel": "chatOpenAI",
+                    "llmMessages": [
+                        {
+                            "role": "system",
+                            "content": "<p>You are a supervisor tasked with managing a conversation between the following workers:</p><p>- Software Engineer</p><p>- Code Reviewer</p><p>Given the following user request, respond with the worker to act next.</p><p>Each worker will perform a task and respond with their results and status.</p><p>When finished, respond with FINISH.</p><p>Select strategically to minimize the number of steps taken.</p>"
+                        }
+                    ],
+                    "llmEnableMemory": true,
+                    "llmMemoryType": "allMessages",
+                    "llmUserMessage": "<p>Given the conversation above, who should act next? Or should we FINISH? Select one of: SOFTWARE, REVIEWER</p>",
+                    "agentReturnResponseAs": "userMessage",
+                    "llmStructuredOutput": [
+                        {
+                            "key": "next",
+                            "type": "enum",
+                            "enumValues": "FINISH, SOFTWARE, REVIEWER",
+                            "jsonSchema": "",
+                            "description": "next worker to act"
+                        },
+                        {
+                            "key": "instructions",
+                            "type": "string",
+                            "enumValues": "",
+                            "jsonSchema": "",
+                            "description": "The specific instructions of the sub-task the next worker should accomplish."
+                        },
+                        {
+                            "key": "reasoning",
+                            "type": "string",
+                            "enumValues": "",
+                            "jsonSchema": "",
+                            "description": "The reason why next worker is tasked to do the job"
+                        }
+                    ],
+                    "llmUpdateState": [
+                        {
+                            "key": "next",
+                            "value": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"output.next\" data-label=\"output.next\">{{ output.next }}</span> </p>"
+                        },
+                        {
+                            "key": "instruction",
+                            "value": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"output.instructions\" data-label=\"output.instructions\">{{ output.instructions }}</span> </p>"
+                        }
+                    ],
+                    "llmModelConfig": {
+                        "cache": "",
+                        "modelName": "gpt-4o-mini",
+                        "temperature": 0.9,
+                        "streaming": true,
+                        "maxTokens": "",
+                        "topP": "",
+                        "frequencyPenalty": "",
+                        "presencePenalty": "",
+                        "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
+                        "baseOptions": "",
+                        "allowImageUploads": "",
+                        "imageResolution": "low",
+                        "reasoningEffort": "medium",
+                        "llmModel": "chatOpenAI"
+                    }
+                },
+                "outputAnchors": [
+                    {
+                        "id": "llmAgentflow_0-output-llmAgentflow",
+                        "label": "LLM",
+                        "name": "llmAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "width": 168,
+            "height": 71,
             "selected": false,
             "positionAbsolute": {
-                "x": 542.2038083729062,
-                "y": 57.24685214424784
+                "x": -78.28788541792727,
+                "y": 87.1528514813091
             },
             "dragging": false
         }
     ],
     "edges": [
-        {
-            "source": "agentAgentflow_0",
-            "sourceHandle": "agentAgentflow_0-output-agentAgentflow",
-            "target": "loopAgentflow_0",
-            "targetHandle": "loopAgentflow_0",
-            "data": {
-                "sourceColor": "#4DD0E1",
-                "targetColor": "#4DD0E1",
-                "isHumanInput": false
-            },
-            "type": "agentFlow",
-            "id": "agentAgentflow_0-agentAgentflow_0-output-agentAgentflow-loopAgentflow_0-loopAgentflow_0"
-        },
-        {
-            "source": "agentAgentflow_1",
-            "sourceHandle": "agentAgentflow_1-output-agentAgentflow",
-            "target": "loopAgentflow_1",
-            "targetHandle": "loopAgentflow_1",
-            "data": {
-                "sourceColor": "#4DD0E1",
-                "targetColor": "#4DD0E1",
-                "isHumanInput": false
-            },
-            "type": "agentFlow",
-            "id": "agentAgentflow_1-agentAgentflow_1-output-agentAgentflow-loopAgentflow_1-loopAgentflow_1"
-        },
         {
             "source": "startAgentflow_0",
             "sourceHandle": "startAgentflow_0-output-startAgentflow",
@@ -1804,8 +1854,8 @@
         {
             "source": "conditionAgentflow_0",
             "sourceHandle": "conditionAgentflow_0-output-0",
-            "target": "agentAgentflow_0",
-            "targetHandle": "agentAgentflow_0",
+            "target": "agentAgentflow_1",
+            "targetHandle": "agentAgentflow_1",
             "data": {
                 "sourceColor": "#FFB938",
                 "targetColor": "#FFB938",
@@ -1813,13 +1863,13 @@
                 "isHumanInput": false
             },
             "type": "agentFlow",
-            "id": "conditionAgentflow_0-conditionAgentflow_0-output-0-agentAgentflow_0-agentAgentflow_0"
+            "id": "conditionAgentflow_0-conditionAgentflow_0-output-0-agentAgentflow_1-agentAgentflow_1"
         },
         {
             "source": "conditionAgentflow_0",
             "sourceHandle": "conditionAgentflow_0-output-1",
-            "target": "agentAgentflow_1",
-            "targetHandle": "agentAgentflow_1",
+            "target": "agentAgentflow_2",
+            "targetHandle": "agentAgentflow_2",
             "data": {
                 "sourceColor": "#FFB938",
                 "targetColor": "#FFB938",
@@ -1827,13 +1877,13 @@
                 "isHumanInput": false
             },
             "type": "agentFlow",
-            "id": "conditionAgentflow_0-conditionAgentflow_0-output-1-agentAgentflow_1-agentAgentflow_1"
+            "id": "conditionAgentflow_0-conditionAgentflow_0-output-1-agentAgentflow_2-agentAgentflow_2"
         },
         {
             "source": "conditionAgentflow_0",
             "sourceHandle": "conditionAgentflow_0-output-2",
-            "target": "agentAgentflow_2",
-            "targetHandle": "agentAgentflow_2",
+            "target": "agentAgentflow_3",
+            "targetHandle": "agentAgentflow_3",
             "data": {
                 "sourceColor": "#FFB938",
                 "targetColor": "#FFB938",
@@ -1841,7 +1891,33 @@
                 "isHumanInput": false
             },
             "type": "agentFlow",
-            "id": "conditionAgentflow_0-conditionAgentflow_0-output-2-agentAgentflow_2-agentAgentflow_2"
+            "id": "conditionAgentflow_0-conditionAgentflow_0-output-2-agentAgentflow_3-agentAgentflow_3"
+        },
+        {
+            "source": "agentAgentflow_1",
+            "sourceHandle": "agentAgentflow_1-output-agentAgentflow",
+            "target": "loopAgentflow_0",
+            "targetHandle": "loopAgentflow_0",
+            "data": {
+                "sourceColor": "#4DD0E1",
+                "targetColor": "#4DD0E1",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "agentAgentflow_1-agentAgentflow_1-output-agentAgentflow-loopAgentflow_0-loopAgentflow_0"
+        },
+        {
+            "source": "agentAgentflow_2",
+            "sourceHandle": "agentAgentflow_2-output-agentAgentflow",
+            "target": "loopAgentflow_1",
+            "targetHandle": "loopAgentflow_1",
+            "data": {
+                "sourceColor": "#4DD0E1",
+                "targetColor": "#4DD0E1",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "agentAgentflow_2-agentAgentflow_2-output-agentAgentflow-loopAgentflow_1-loopAgentflow_1"
         }
     ]
 }

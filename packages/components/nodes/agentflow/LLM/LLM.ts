@@ -5,7 +5,13 @@ import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { z } from 'zod'
 import { AnalyticHandler } from '../../../src/handler'
 import { ILLMMessage, IStructuredOutput } from '../Interface.Agentflow'
-import { getUniqueImageMessages, processMessagesWithImages, replaceBase64ImagesWithFileReferences, updateFlowState } from '../utils'
+import {
+    getPastChatHistoryImageMessages,
+    getUniqueImageMessages,
+    processMessagesWithImages,
+    replaceBase64ImagesWithFileReferences,
+    updateFlowState
+} from '../utils'
 import { get } from 'lodash'
 
 class LLM_Agentflow implements INode {
@@ -140,18 +146,32 @@ class LLM_Agentflow implements INode {
                 }
             },
             {
-                label: 'User Message',
+                label: 'Input Message',
                 name: 'llmUserMessage',
                 type: 'string',
-                description: 'User message will be insert at the end of the messages',
+                description: 'Add an input message as user message at the end of the conversation',
                 rows: 4,
                 optional: true,
                 acceptVariable: true,
-                default:
-                    '<p><span class="variable" data-type="mention" data-id="question" data-label="question">{{ question }}</span> </p>',
                 show: {
                     llmEnableMemory: true
                 }
+            },
+            {
+                label: 'Return Response As',
+                name: 'agentReturnResponseAs',
+                type: 'options',
+                options: [
+                    {
+                        label: 'User Message',
+                        name: 'userMessage'
+                    },
+                    {
+                        label: 'Assistant Message',
+                        name: 'assistantMessage'
+                    }
+                ],
+                default: 'userMessage'
             },
             {
                 label: 'JSON Structured Output',
@@ -356,8 +376,10 @@ class LLM_Agentflow implements INode {
 
             // Prepare messages array
             const messages: BaseMessageLike[] = []
-            let uniqueImageMessages: BaseMessageLike[] = []
-            let pastImageMessages: BaseMessageLike[] = []
+            // Use to store messages with image file references as we do not want to store the base64 data into database
+            let runtimeImageMessagesWithFileRef: BaseMessageLike[] = []
+            // Use to keep track of past messages with image file references
+            let pastImageMessagesWithFileRef: BaseMessageLike[] = []
 
             for (const msg of llmMessages) {
                 const role = msg.role
@@ -381,24 +403,30 @@ class LLM_Agentflow implements INode {
                     abortController,
                     options,
                     modelConfig,
-                    uniqueImageMessages,
-                    pastImageMessages
+                    runtimeImageMessagesWithFileRef,
+                    pastImageMessagesWithFileRef
                 })
-            } else if (input && typeof input === 'string') {
-                // If memory is disabled, just add the current question
-                // Add images to messages if exist
+            } else if (!runtimeChatHistory.length) {
+                /*
+                 * If this is the first node:
+                 * - Add images to messages if exist
+                 * - Add user message
+                 */
                 if (options.uploads) {
                     const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
                     if (imageContents) {
-                        const { llmMessages, storeMessages } = imageContents
-                        messages.push(llmMessages)
-                        uniqueImageMessages.push(storeMessages)
+                        const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
+                        messages.push(imageMessageWithBase64)
+                        runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
                     }
                 }
-                messages.push({
-                    role: 'user',
-                    content: input
-                })
+
+                if (input && typeof input === 'string') {
+                    messages.push({
+                        role: 'user',
+                        content: input
+                    })
+                }
             }
             delete nodeData.inputs?.llmMessages
 
@@ -497,16 +525,29 @@ class LLM_Agentflow implements INode {
                 }
             }
 
-            // Final input
-            let finalChatHistoryInput = ''
-            if (input && typeof input === 'string') {
-                finalChatHistoryInput = input
-            } else if (userMessage) {
-                finalChatHistoryInput = userMessage
+            // Replace the actual messages array with one that includes the file references for images instead of base64 data
+            const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
+                messages,
+                runtimeImageMessagesWithFileRef,
+                pastImageMessagesWithFileRef
+            )
+
+            // Only add to runtime chat history if this is the first node
+            const inputMessages = []
+            if (!runtimeChatHistory.length) {
+                if (runtimeImageMessagesWithFileRef.length) {
+                    inputMessages.push(...runtimeImageMessagesWithFileRef)
+                }
+                if (input && typeof input === 'string') {
+                    inputMessages.push({ role: 'user', content: input })
+                }
             }
 
-            // Replace the actual messages array with one that includes the file references for images instead of base64 data
-            const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(messages, uniqueImageMessages, pastImageMessages)
+            const returnResponseAs = nodeData.inputs?.agentReturnResponseAs as string
+            let returnRole = 'user'
+            if (returnResponseAs === 'assistantMessage') {
+                returnRole = 'assistant'
+            }
 
             // Prepare and return the final output
             return {
@@ -519,14 +560,14 @@ class LLM_Agentflow implements INode {
                 output,
                 state: newState,
                 chatHistory: [
-                    // Start with any new unique image messages
-                    ...uniqueImageMessages,
-
-                    // User input
-                    ...(finalChatHistoryInput ? [{ role: 'user', content: finalChatHistoryInput }] : []),
+                    ...inputMessages,
 
                     // LLM response
-                    { role: 'assistant', content: finalResponse }
+                    {
+                        role: returnRole,
+                        content: finalResponse,
+                        name: nodeData?.label ? nodeData?.label.toLowerCase().replace(/\s/g, '_').trim() : nodeData?.id
+                    }
                 ]
             }
         } catch (error) {
@@ -556,8 +597,8 @@ class LLM_Agentflow implements INode {
         abortController,
         options,
         modelConfig,
-        uniqueImageMessages,
-        pastImageMessages
+        runtimeImageMessagesWithFileRef,
+        pastImageMessagesWithFileRef
     }: {
         messages: BaseMessageLike[]
         memoryType: string
@@ -570,13 +611,36 @@ class LLM_Agentflow implements INode {
         abortController: AbortController
         options: ICommonObject
         modelConfig: ICommonObject
-        uniqueImageMessages: BaseMessageLike[]
-        pastImageMessages: BaseMessageLike[]
+        runtimeImageMessagesWithFileRef: BaseMessageLike[]
+        pastImageMessagesWithFileRef: BaseMessageLike[]
     }): Promise<void> {
+        const { updatedPastMessages, transformedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
+        pastChatHistory = updatedPastMessages
+        pastImageMessagesWithFileRef.push(...transformedPastMessages)
+
         let pastMessages = [...pastChatHistory, ...runtimeChatHistory]
+        if (!runtimeChatHistory.length && input && typeof input === 'string') {
+            /*
+             * If this is the first node:
+             * - Add images to messages if exist
+             * - Add user message
+             */
+            if (options.uploads) {
+                const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
+                if (imageContents) {
+                    const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
+                    pastMessages.push(imageMessageWithBase64)
+                    runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
+                }
+            }
+            pastMessages.push({
+                role: 'user',
+                content: input
+            })
+        }
         const { updatedMessages, transformedMessages } = await processMessagesWithImages(pastMessages, options)
         pastMessages = updatedMessages
-        pastImageMessages.push(...transformedMessages)
+        pastImageMessagesWithFileRef.push(...transformedMessages)
 
         if (pastMessages.length > 0) {
             if (memoryType === 'windowSize') {
@@ -608,27 +672,11 @@ class LLM_Agentflow implements INode {
             }
         }
 
-        // Add images to messages
-        if (options.uploads) {
-            // Get unique image messages
-            const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
-            if (imageContents) {
-                const { llmMessages, storeMessages } = imageContents
-                messages.push(llmMessages)
-                uniqueImageMessages.push(storeMessages)
-            }
-        }
-
         // Add user message
         if (userMessage) {
             messages.push({
                 role: 'user',
                 content: userMessage
-            })
-        } else if (input && typeof input === 'string') {
-            messages.push({
-                role: 'user',
-                content: input
             })
         }
     }

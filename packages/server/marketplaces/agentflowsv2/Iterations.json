@@ -6,8 +6,8 @@
             "id": "startAgentflow_0",
             "type": "agentFlow",
             "position": {
-                "x": 156.6572772017981,
-                "y": 0.7269541455553536
+                "x": -157.7434917749852,
+                "y": 100.77695246750446
             },
             "data": {
                 "id": "startAgentflow_0",
@@ -173,17 +173,17 @@
             "width": 101,
             "height": 65,
             "selected": false,
-            "dragging": false,
             "positionAbsolute": {
-                "x": 156.6572772017981,
-                "y": 0.7269541455553536
-            }
+                "x": -157.7434917749852,
+                "y": 100.77695246750446
+            },
+            "dragging": false
         },
         {
             "id": "iterationAgentflow_0",
             "position": {
-                "x": 314.4120724397386,
-                "y": -126.39249497021484
+                "x": -13.75,
+                "y": 8.5
             },
             "data": {
                 "id": "iterationAgentflow_0",
@@ -209,8 +209,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "iterationInput": "<p>[{\"item\": \"abc\"}, {\"item\": \"def\"}]</p>",
-                    "undefined": ""
+                    "iterationInput": "<p>[{\"item\": \"abc\"}, {\"item\": \"def\"}]</p>"
                 },
                 "outputAnchors": [
                     {
@@ -223,305 +222,29 @@
                 "selected": false
             },
             "type": "iteration",
-            "width": 503,
-            "height": 321,
+            "width": 481,
+            "height": 250,
             "selected": false,
             "positionAbsolute": {
-                "x": 314.4120724397386,
-                "y": -126.39249497021484
+                "x": -13.75,
+                "y": 8.5
             },
             "dragging": false,
             "style": {
-                "width": 503,
-                "height": 321
+                "width": 481,
+                "height": 250
             },
             "resizing": false
         },
         {
-            "id": "agentAgentflow_2",
-            "position": {
-                "x": 862.502118674654,
-                "y": -1.898107904388496
-            },
-            "data": {
-                "id": "agentAgentflow_2",
-                "label": "Agent",
-                "version": 1,
-                "name": "agentAgentflow",
-                "type": "Agent",
-                "color": "#4DD0E1",
-                "baseClasses": ["Agent"],
-                "category": "Agent Flows",
-                "description": "Dynamically choose and utilize tools during runtime, enabling multi-step reasoning",
-                "inputParams": [
-                    {
-                        "label": "Model",
-                        "name": "agentModel",
-                        "type": "asyncOptions",
-                        "loadMethod": "listModels",
-                        "loadConfig": true,
-                        "id": "agentAgentflow_2-input-agentModel-asyncOptions",
-                        "display": true
-                    },
-                    {
-                        "label": "Messages",
-                        "name": "agentMessages",
-                        "type": "array",
-                        "optional": true,
-                        "acceptVariable": true,
-                        "array": [
-                            {
-                                "label": "Role",
-                                "name": "role",
-                                "type": "options",
-                                "options": [
-                                    {
-                                        "label": "System",
-                                        "name": "system"
-                                    },
-                                    {
-                                        "label": "Assistant",
-                                        "name": "assistant"
-                                    },
-                                    {
-                                        "label": "Developer",
-                                        "name": "developer"
-                                    },
-                                    {
-                                        "label": "User",
-                                        "name": "user"
-                                    }
-                                ]
-                            },
-                            {
-                                "label": "Content",
-                                "name": "content",
-                                "type": "string",
-                                "acceptVariable": true,
-                                "generateInstruction": true,
-                                "rows": 4
-                            }
-                        ],
-                        "id": "agentAgentflow_2-input-agentMessages-array",
-                        "display": true
-                    },
-                    {
-                        "label": "Tools",
-                        "name": "agentTools",
-                        "type": "array",
-                        "optional": true,
-                        "array": [
-                            {
-                                "label": "Tool",
-                                "name": "agentSelectedTool",
-                                "type": "asyncOptions",
-                                "loadMethod": "listTools",
-                                "loadConfig": true
-                            }
-                        ],
-                        "id": "agentAgentflow_2-input-agentTools-array",
-                        "display": true
-                    },
-                    {
-                        "label": "Knowledge (Document Stores)",
-                        "name": "agentKnowledgeDocumentStores",
-                        "type": "array",
-                        "description": "Give your agent context about different document sources. Document stores must be upserted in advance.",
-                        "array": [
-                            {
-                                "label": "Document Store",
-                                "name": "documentStore",
-                                "type": "asyncOptions",
-                                "loadMethod": "listStores"
-                            },
-                            {
-                                "label": "Describe Knowledge",
-                                "name": "docStoreDescription",
-                                "type": "string",
-                                "generateDocStoreDescription": true,
-                                "placeholder": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information",
-                                "rows": 4
-                            },
-                            {
-                                "label": "Return Source Documents",
-                                "name": "returnSourceDocuments",
-                                "type": "boolean",
-                                "optional": true
-                            }
-                        ],
-                        "optional": true,
-                        "id": "agentAgentflow_2-input-agentKnowledgeDocumentStores-array",
-                        "display": true
-                    },
-                    {
-                        "label": "Enable Memory",
-                        "name": "agentEnableMemory",
-                        "type": "boolean",
-                        "description": "Enable memory for the conversation thread",
-                        "default": true,
-                        "optional": true,
-                        "id": "agentAgentflow_2-input-agentEnableMemory-boolean",
-                        "display": true
-                    },
-                    {
-                        "label": "Memory Type",
-                        "name": "agentMemoryType",
-                        "type": "options",
-                        "options": [
-                            {
-                                "label": "All Messages",
-                                "name": "allMessages",
-                                "description": "Retrieve all messages from the conversation"
-                            },
-                            {
-                                "label": "Window Size",
-                                "name": "windowSize",
-                                "description": "Uses a fixed window size to surface the last N messages"
-                            },
-                            {
-                                "label": "Conversation Summary",
-                                "name": "conversationSummary",
-                                "description": "Summarizes the whole conversation"
-                            },
-                            {
-                                "label": "Conversation Summary Buffer",
-                                "name": "conversationSummaryBuffer",
-                                "description": "Summarize conversations once token limit is reached. Default to 2000"
-                            }
-                        ],
-                        "optional": true,
-                        "default": "allMessages",
-                        "show": {
-                            "agentEnableMemory": true
-                        },
-                        "id": "agentAgentflow_2-input-agentMemoryType-options",
-                        "display": false
-                    },
-                    {
-                        "label": "Window Size",
-                        "name": "agentMemoryWindowSize",
-                        "type": "number",
-                        "default": "20",
-                        "description": "Uses a fixed window size to surface the last N messages",
-                        "show": {
-                            "agentMemoryType": "windowSize"
-                        },
-                        "id": "agentAgentflow_2-input-agentMemoryWindowSize-number",
-                        "display": false
-                    },
-                    {
-                        "label": "Max Token Limit",
-                        "name": "agentMemoryMaxTokenLimit",
-                        "type": "number",
-                        "default": "2000",
-                        "description": "Summarize conversations once token limit is reached. Default to 2000",
-                        "show": {
-                            "agentMemoryType": "conversationSummaryBuffer"
-                        },
-                        "id": "agentAgentflow_2-input-agentMemoryMaxTokenLimit-number",
-                        "display": false
-                    },
-                    {
-                        "label": "User Message",
-                        "name": "agentUserMessage",
-                        "type": "string",
-                        "description": "User message will be insert at the end of the messages",
-                        "rows": 4,
-                        "optional": true,
-                        "acceptVariable": true,
-                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
-                        "show": {
-                            "agentEnableMemory": true
-                        },
-                        "id": "agentAgentflow_2-input-agentUserMessage-string",
-                        "display": false
-                    },
-                    {
-                        "label": "Update Flow State",
-                        "name": "agentUpdateState",
-                        "description": "Update runtime state during the execution of the workflow",
-                        "type": "array",
-                        "optional": true,
-                        "acceptVariable": true,
-                        "array": [
-                            {
-                                "label": "Key",
-                                "name": "key",
-                                "type": "asyncOptions",
-                                "loadMethod": "listRuntimeStateKeys",
-                                "freeSolo": true
-                            },
-                            {
-                                "label": "Value",
-                                "name": "value",
-                                "type": "string",
-                                "acceptVariable": true,
-                                "acceptNodeOutputAsVariable": true
-                            }
-                        ],
-                        "id": "agentAgentflow_2-input-agentUpdateState-array",
-                        "display": true
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "agentModel": "chatOpenAI",
-                    "agentMessages": "",
-                    "agentTools": "",
-                    "agentKnowledgeDocumentStores": "",
-                    "agentEnableMemory": false,
-                    "agentUpdateState": "",
-                    "agentModelConfig": {
-                        "cache": "",
-                        "modelName": "gpt-4o-mini",
-                        "temperature": 0.9,
-                        "streaming": true,
-                        "maxTokens": "",
-                        "topP": "",
-                        "frequencyPenalty": "",
-                        "presencePenalty": "",
-                        "timeout": "",
-                        "strictToolCalling": "",
-                        "stopSequence": "",
-                        "basepath": "",
-                        "proxyUrl": "",
-                        "baseOptions": "",
-                        "allowImageUploads": "",
-                        "imageResolution": "low",
-                        "reasoningEffort": "medium",
-                        "agentModel": "chatOpenAI"
-                    },
-                    "undefined": ""
-                },
-                "outputAnchors": [
-                    {
-                        "id": "agentAgentflow_2-output-agentAgentflow",
-                        "label": "Agent",
-                        "name": "agentAgentflow"
-                    }
-                ],
-                "outputs": {},
-                "selected": false
-            },
-            "type": "agentFlow",
-            "width": 168,
-            "height": 71,
-            "selected": false,
-            "positionAbsolute": {
-                "x": 862.502118674654,
-                "y": -1.898107904388496
-            },
-            "dragging": false
-        },
-        {
             "id": "llmAgentflow_0",
             "position": {
-                "x": 62.71241189217784,
-                "y": 127.74935081376444
+                "x": 56,
+                "y": 92
             },
             "data": {
                 "id": "llmAgentflow_0",
-                "label": "LLM 0",
+                "label": "Gemini Agent",
                 "version": 1,
                 "name": "llmAgentflow",
                 "type": "LLM",
@@ -650,18 +373,35 @@
                         "display": false
                     },
                     {
-                        "label": "User Message",
+                        "label": "Input Message",
                         "name": "llmUserMessage",
                         "type": "string",
-                        "description": "User message will be insert at the end of the messages",
+                        "description": "Add an input message as user message at the end of the conversation",
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
                         "show": {
                             "llmEnableMemory": true
                         },
                         "id": "llmAgentflow_0-input-llmUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "llmAgentflow_0-input-agentReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -701,6 +441,10 @@
                                     {
                                         "label": "Enum",
                                         "name": "enum"
+                                    },
+                                    {
+                                        "label": "JSON Array",
+                                        "name": "jsonArray"
                                     }
                                 ]
                             },
@@ -713,6 +457,17 @@
                                 "optional": true,
                                 "show": {
                                     "llmStructuredOutput[$index].type": "enum"
+                                }
+                            },
+                            {
+                                "label": "JSON Schema",
+                                "name": "jsonSchema",
+                                "type": "code",
+                                "placeholder": "{\n    \"answer\": {\n        \"type\": \"string\",\n        \"description\": \"Value of the answer\"\n    },\n    \"reason\": {\n        \"type\": \"string\",\n        \"description\": \"Reason for the answer\"\n    },\n    \"optional\": {\n        \"type\": \"boolean\"\n    },\n    \"count\": {\n        \"type\": \"number\"\n    },\n    \"children\": {\n        \"type\": \"array\",\n        \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"value\": {\n                    \"type\": \"string\",\n                    \"description\": \"Value of the children's answer\"\n                }\n            }\n        }\n    }\n}",
+                                "description": "JSON schema for the structured output",
+                                "optional": true,
+                                "show": {
+                                    "llmStructuredOutput[$index].type": "jsonArray"
                                 }
                             },
                             {
@@ -754,34 +509,28 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatOpenAI",
+                    "llmModel": "chatGoogleGenerativeAI",
                     "llmMessages": "",
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
                     "llmUserMessage": "<p>Reply only:</p><p>{{$iteration.item}}</p>",
+                    "agentReturnResponseAs": "userMessage",
                     "llmStructuredOutput": "",
                     "llmUpdateState": "",
                     "llmModelConfig": {
-                        "cache": "",
-                        "modelName": "gpt-4o-mini",
+                        "credential": "",
+                        "modelName": "gemini-2.0-flash",
+                        "customModelName": "",
                         "temperature": 0.9,
                         "streaming": true,
-                        "maxTokens": "",
+                        "maxOutputTokens": "",
                         "topP": "",
-                        "frequencyPenalty": "",
-                        "presencePenalty": "",
-                        "timeout": "",
-                        "strictToolCalling": "",
-                        "stopSequence": "",
-                        "basepath": "",
-                        "proxyUrl": "",
-                        "baseOptions": "",
+                        "topK": "",
+                        "harmCategory": "",
+                        "harmBlockThreshold": "",
                         "allowImageUploads": "",
-                        "imageResolution": "low",
-                        "reasoningEffort": "medium",
-                        "llmModel": "chatOpenAI"
-                    },
-                    "undefined": ""
+                        "llmModel": "chatGoogleGenerativeAI"
+                    }
                 },
                 "outputAnchors": [
                     {
@@ -796,24 +545,24 @@
             "type": "agentFlow",
             "parentNode": "iterationAgentflow_0",
             "extent": "parent",
-            "width": 168,
+            "width": 191,
             "height": 71,
             "selected": false,
             "positionAbsolute": {
-                "x": 377.12448433191645,
-                "y": 1.3568558435495959
+                "x": 42.25,
+                "y": 100.5
             },
             "dragging": false
         },
         {
             "id": "llmAgentflow_1",
             "position": {
-                "x": 268.47817313739915,
-                "y": 126.89634010771337
+                "x": 287.9621736478904,
+                "y": 92.25785828325522
             },
             "data": {
                 "id": "llmAgentflow_1",
-                "label": "LLM 1",
+                "label": "Ollama Agent",
                 "version": 1,
                 "name": "llmAgentflow",
                 "type": "LLM",
@@ -942,18 +691,35 @@
                         "display": false
                     },
                     {
-                        "label": "User Message",
+                        "label": "Input Message",
                         "name": "llmUserMessage",
                         "type": "string",
-                        "description": "User message will be insert at the end of the messages",
+                        "description": "Add an input message as user message at the end of the conversation",
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
                         "show": {
                             "llmEnableMemory": true
                         },
                         "id": "llmAgentflow_1-input-llmUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "llmAgentflow_1-input-agentReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -993,6 +759,10 @@
                                     {
                                         "label": "Enum",
                                         "name": "enum"
+                                    },
+                                    {
+                                        "label": "JSON Array",
+                                        "name": "jsonArray"
                                     }
                                 ]
                             },
@@ -1005,6 +775,17 @@
                                 "optional": true,
                                 "show": {
                                     "llmStructuredOutput[$index].type": "enum"
+                                }
+                            },
+                            {
+                                "label": "JSON Schema",
+                                "name": "jsonSchema",
+                                "type": "code",
+                                "placeholder": "{\n    \"answer\": {\n        \"type\": \"string\",\n        \"description\": \"Value of the answer\"\n    },\n    \"reason\": {\n        \"type\": \"string\",\n        \"description\": \"Reason for the answer\"\n    },\n    \"optional\": {\n        \"type\": \"boolean\"\n    },\n    \"count\": {\n        \"type\": \"number\"\n    },\n    \"children\": {\n        \"type\": \"array\",\n        \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n                \"value\": {\n                    \"type\": \"string\",\n                    \"description\": \"Value of the children's answer\"\n                }\n            }\n        }\n    }\n}",
+                                "description": "JSON schema for the structured output",
+                                "optional": true,
+                                "show": {
+                                    "llmStructuredOutput[$index].type": "jsonArray"
                                 }
                             },
                             {
@@ -1046,14 +827,314 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "llmModel": "chatOpenAI",
+                    "llmModel": "chatOllama",
                     "llmMessages": "",
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
                     "llmUserMessage": "<p>Reply only:</p><p>{{$iteration.item}}</p>",
+                    "agentReturnResponseAs": "userMessage",
                     "llmStructuredOutput": "",
                     "llmUpdateState": "",
                     "llmModelConfig": {
+                        "baseUrl": "http://localhost:11434",
+                        "modelName": "llama3.2",
+                        "temperature": 0.9,
+                        "allowImageUploads": "",
+                        "streaming": true,
+                        "jsonMode": "",
+                        "keepAlive": "5m",
+                        "topP": "",
+                        "topK": "",
+                        "mirostat": "",
+                        "mirostatEta": "",
+                        "mirostatTau": "",
+                        "numCtx": "",
+                        "numGpu": "",
+                        "numThread": "",
+                        "repeatLastN": "",
+                        "repeatPenalty": "",
+                        "stop": "",
+                        "tfsZ": "",
+                        "llmModel": "chatOllama"
+                    }
+                },
+                "outputAnchors": [
+                    {
+                        "id": "llmAgentflow_1-output-llmAgentflow",
+                        "label": "LLM",
+                        "name": "llmAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "parentNode": "iterationAgentflow_0",
+            "extent": "parent",
+            "width": 154,
+            "height": 71,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 274.2121736478904,
+                "y": 100.75785828325522
+            },
+            "dragging": false
+        },
+        {
+            "id": "agentAgentflow_0",
+            "position": {
+                "x": 509.27738295829977,
+                "y": 97.28505776122253
+            },
+            "data": {
+                "id": "agentAgentflow_0",
+                "label": "Agent",
+                "version": 1,
+                "name": "agentAgentflow",
+                "type": "Agent",
+                "color": "#4DD0E1",
+                "baseClasses": ["Agent"],
+                "category": "Agent Flows",
+                "description": "Dynamically choose and utilize tools during runtime, enabling multi-step reasoning",
+                "inputParams": [
+                    {
+                        "label": "Model",
+                        "name": "agentModel",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "loadConfig": true,
+                        "id": "agentAgentflow_0-input-agentModel-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages",
+                        "name": "agentMessages",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Role",
+                                "name": "role",
+                                "type": "options",
+                                "options": [
+                                    {
+                                        "label": "System",
+                                        "name": "system"
+                                    },
+                                    {
+                                        "label": "Assistant",
+                                        "name": "assistant"
+                                    },
+                                    {
+                                        "label": "Developer",
+                                        "name": "developer"
+                                    },
+                                    {
+                                        "label": "User",
+                                        "name": "user"
+                                    }
+                                ]
+                            },
+                            {
+                                "label": "Content",
+                                "name": "content",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "generateInstruction": true,
+                                "rows": 4
+                            }
+                        ],
+                        "id": "agentAgentflow_0-input-agentMessages-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Tools",
+                        "name": "agentTools",
+                        "type": "array",
+                        "optional": true,
+                        "array": [
+                            {
+                                "label": "Tool",
+                                "name": "agentSelectedTool",
+                                "type": "asyncOptions",
+                                "loadMethod": "listTools",
+                                "loadConfig": true
+                            }
+                        ],
+                        "id": "agentAgentflow_0-input-agentTools-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Knowledge (Document Stores)",
+                        "name": "agentKnowledgeDocumentStores",
+                        "type": "array",
+                        "description": "Give your agent context about different document sources. Document stores must be upserted in advance.",
+                        "array": [
+                            {
+                                "label": "Document Store",
+                                "name": "documentStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listStores"
+                            },
+                            {
+                                "label": "Describe Knowledge",
+                                "name": "docStoreDescription",
+                                "type": "string",
+                                "generateDocStoreDescription": true,
+                                "placeholder": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information",
+                                "rows": 4
+                            },
+                            {
+                                "label": "Return Source Documents",
+                                "name": "returnSourceDocuments",
+                                "type": "boolean",
+                                "optional": true
+                            }
+                        ],
+                        "optional": true,
+                        "id": "agentAgentflow_0-input-agentKnowledgeDocumentStores-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Memory",
+                        "name": "agentEnableMemory",
+                        "type": "boolean",
+                        "description": "Enable memory for the conversation thread",
+                        "default": true,
+                        "optional": true,
+                        "id": "agentAgentflow_0-input-agentEnableMemory-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory Type",
+                        "name": "agentMemoryType",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "All Messages",
+                                "name": "allMessages",
+                                "description": "Retrieve all messages from the conversation"
+                            },
+                            {
+                                "label": "Window Size",
+                                "name": "windowSize",
+                                "description": "Uses a fixed window size to surface the last N messages"
+                            },
+                            {
+                                "label": "Conversation Summary",
+                                "name": "conversationSummary",
+                                "description": "Summarizes the whole conversation"
+                            },
+                            {
+                                "label": "Conversation Summary Buffer",
+                                "name": "conversationSummaryBuffer",
+                                "description": "Summarize conversations once token limit is reached. Default to 2000"
+                            }
+                        ],
+                        "optional": true,
+                        "default": "allMessages",
+                        "show": {
+                            "agentEnableMemory": true
+                        },
+                        "id": "agentAgentflow_0-input-agentMemoryType-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "agentMemoryWindowSize",
+                        "type": "number",
+                        "default": "20",
+                        "description": "Uses a fixed window size to surface the last N messages",
+                        "show": {
+                            "agentMemoryType": "windowSize"
+                        },
+                        "id": "agentAgentflow_0-input-agentMemoryWindowSize-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Max Token Limit",
+                        "name": "agentMemoryMaxTokenLimit",
+                        "type": "number",
+                        "default": "2000",
+                        "description": "Summarize conversations once token limit is reached. Default to 2000",
+                        "show": {
+                            "agentMemoryType": "conversationSummaryBuffer"
+                        },
+                        "id": "agentAgentflow_0-input-agentMemoryMaxTokenLimit-number",
+                        "display": false
+                    },
+                    {
+                        "label": "Input Message",
+                        "name": "agentUserMessage",
+                        "type": "string",
+                        "description": "Add an input message as user message at the end of the conversation",
+                        "rows": 4,
+                        "optional": true,
+                        "acceptVariable": true,
+                        "show": {
+                            "agentEnableMemory": true
+                        },
+                        "id": "agentAgentflow_0-input-agentUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "agentAgentflow_0-input-agentReturnResponseAs-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "agentUpdateState",
+                        "description": "Update runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "agentAgentflow_0-input-agentUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "agentModel": "chatOpenAI",
+                    "agentMessages": "",
+                    "agentTools": "",
+                    "agentKnowledgeDocumentStores": "",
+                    "agentEnableMemory": true,
+                    "agentMemoryType": "allMessages",
+                    "agentUserMessage": "",
+                    "agentReturnResponseAs": "userMessage",
+                    "agentUpdateState": "",
+                    "agentModelConfig": {
                         "cache": "",
                         "modelName": "gpt-4o-mini",
                         "temperature": 0.9,
@@ -1071,47 +1152,31 @@
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "medium",
-                        "llmModel": "chatOpenAI"
-                    },
-                    "undefined": ""
+                        "agentModel": "chatOpenAI"
+                    }
                 },
                 "outputAnchors": [
                     {
-                        "id": "llmAgentflow_1-output-llmAgentflow",
-                        "label": "LLM",
-                        "name": "llmAgentflow"
+                        "id": "agentAgentflow_0-output-agentAgentflow",
+                        "label": "Agent",
+                        "name": "agentAgentflow"
                     }
                 ],
                 "outputs": {},
                 "selected": false
             },
             "type": "agentFlow",
-            "parentNode": "iterationAgentflow_0",
-            "extent": "parent",
             "width": 168,
             "height": 71,
             "selected": false,
             "positionAbsolute": {
-                "x": 582.8902455771378,
-                "y": 0.50384513749853
+                "x": 509.27738295829977,
+                "y": 97.28505776122253
             },
             "dragging": false
         }
     ],
     "edges": [
-        {
-            "source": "iterationAgentflow_0",
-            "sourceHandle": "iterationAgentflow_0-output-iterationAgentflow",
-            "target": "agentAgentflow_2",
-            "targetHandle": "agentAgentflow_2",
-            "data": {
-                "sourceColor": "#9C89B8",
-                "targetColor": "#9C89B8",
-                "isHumanInput": false
-            },
-            "type": "agentFlow",
-            "id": "iterationAgentflow_0-iterationAgentflow_0-output-iterationAgentflow-agentAgentflow_2-agentAgentflow_2"
-        },
         {
             "source": "startAgentflow_0",
             "sourceHandle": "startAgentflow_0-output-startAgentflow",
@@ -1138,6 +1203,19 @@
             "zIndex": 9999,
             "type": "agentFlow",
             "id": "llmAgentflow_0-llmAgentflow_0-output-llmAgentflow-llmAgentflow_1-llmAgentflow_1"
+        },
+        {
+            "source": "iterationAgentflow_0",
+            "sourceHandle": "iterationAgentflow_0-output-iterationAgentflow",
+            "target": "agentAgentflow_0",
+            "targetHandle": "agentAgentflow_0",
+            "data": {
+                "sourceColor": "#9C89B8",
+                "targetColor": "#9C89B8",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "iterationAgentflow_0-iterationAgentflow_0-output-iterationAgentflow-agentAgentflow_0-agentAgentflow_0"
         }
     ]
 }

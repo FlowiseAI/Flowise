@@ -410,6 +410,20 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                     variant='outlined'
                                     size='small'
                                 />
+                                {message.name && (
+                                    <Chip
+                                        sx={{
+                                            mt: 1,
+                                            ml: 1,
+                                            backgroundColor: getRoleColors(message.role).bg,
+                                            color: getRoleColors(message.role).color,
+                                            borderColor: getRoleColors(message.role).border
+                                        }}
+                                        label={message.name}
+                                        variant='outlined'
+                                        size='small'
+                                    />
+                                )}
                                 {message.tool_calls &&
                                     (Array.isArray(message.tool_calls) ? (
                                         message.tool_calls.map((toolCall, idx) => (

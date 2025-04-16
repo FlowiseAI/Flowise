@@ -6,8 +6,8 @@
             "id": "startAgentflow_0",
             "type": "agentFlow",
             "position": {
-                "x": -118.23047532495553,
-                "y": 88.47955575751035
+                "x": -212.0817769699585,
+                "y": 95.2304753249555
             },
             "data": {
                 "id": "startAgentflow_0",
@@ -50,7 +50,7 @@
                             "startInputType": "formInput"
                         },
                         "id": "startAgentflow_0-input-formTitle-string",
-                        "display": true
+                        "display": false
                     },
                     {
                         "label": "Form Description",
@@ -61,7 +61,7 @@
                             "startInputType": "formInput"
                         },
                         "id": "startAgentflow_0-input-formDescription-string",
-                        "display": true
+                        "display": false
                     },
                     {
                         "label": "Form Input Types",
@@ -126,7 +126,7 @@
                             }
                         ],
                         "id": "startAgentflow_0-input-formInputTypes-array",
-                        "display": true
+                        "display": false
                     },
                     {
                         "label": "Flow State",
@@ -154,30 +154,11 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "startInputType": "formInput",
-                    "formTitle": "Email Template",
-                    "formDescription": "This is an example of received email",
-                    "formInputTypes": [
-                        {
-                            "type": "string",
-                            "label": "From",
-                            "name": "from",
-                            "addOptions": ""
-                        },
-                        {
-                            "type": "string",
-                            "label": "Subject",
-                            "name": "subject",
-                            "addOptions": ""
-                        },
-                        {
-                            "type": "string",
-                            "label": "Body",
-                            "name": "body",
-                            "addOptions": ""
-                        }
-                    ],
-                    "startState": []
+                    "startInputType": "chatInput",
+                    "formTitle": "",
+                    "formDescription": "",
+                    "formInputTypes": "",
+                    "startState": ""
                 },
                 "outputAnchors": [
                     {
@@ -193,21 +174,20 @@
             "height": 65,
             "selected": false,
             "positionAbsolute": {
-                "x": -118.23047532495553,
-                "y": 88.47955575751035
+                "x": -212.0817769699585,
+                "y": 95.2304753249555
             },
             "dragging": false
         },
         {
             "id": "agentAgentflow_0",
             "position": {
-                "x": 32.282612377972924,
-                "y": 69.80857402513341
+                "x": -62.25,
+                "y": 76
             },
-            "type": "agentFlow",
             "data": {
                 "id": "agentAgentflow_0",
-                "label": "Agent 0",
+                "label": "Email Reply Agent",
                 "version": 1,
                 "name": "agentAgentflow",
                 "type": "Agent",
@@ -384,18 +364,35 @@
                         "display": false
                     },
                     {
-                        "label": "User Message",
+                        "label": "Input Message",
                         "name": "agentUserMessage",
                         "type": "string",
-                        "description": "User message will be insert at the end of the messages",
+                        "description": "Add an input message as user message at the end of the conversation",
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
                         "show": {
                             "agentEnableMemory": true
                         },
                         "id": "agentAgentflow_0-input-agentUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "agentAgentflow_0-input-agentReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -431,7 +428,7 @@
                     "agentMessages": [
                         {
                             "role": "system",
-                            "content": "Reply to the user's email by researching their background context and crafting a detailed response.\n\n- Understand the specific context of the user's request, including their previous interactions, any relevant history, and any specific details they have provided. \n- Consider the tone and purpose of your response, aiming to address the user's needs clearly and professionally.\n\n# Steps\n\n1. **Research the User's Background**: Gather relevant information about the user, including previous emails, inquiries, and any context that could inform your response.\n2. **Analyze the User's Request**: Identify the specific questions or issues the user has raised in their email.\n3. **Draft Your Response**: Formulate a well-structured email that answers the user's questions, provides necessary information, and maintains a friendly yet professional tone.\n4. **Review and Edit**: Check for clarity, coherence, and tone, ensuring that your response is appropriate for the user's context and needs.\n5. **Final Touches**: Add a closing statement that encourages further communication if needed.\n\n# Output Format\n\nThe email response should be a well-structured paragraph, ideally 150-250 words, formatted in standard email style (greeting, body, closing).\n\n# Examples\n\n**Example 1:**\n- **Input**: User asks about the status of their recent purchase and expresses concern about shipping delays.\n- **Output**: \n  ```\n  Subject: Re: Inquiry About Purchase Status\n\n  Dear [User's Name],\n\n  Thank you for reaching out about your recent purchase. I understand that shipping delays can be frustrating, and I appreciate your patience. Currently, your order is scheduled to ship on [insert estimated shipping date]. We are actively working to resolve any delays and ensure your package arrives as soon as possible. Please let me know if you have any further questions or concerns.\n\n  Best regards,\n  [Your Name]\n  ```\n\n**Example 2:**\n- **Input**: User requests information on a new product launch.\n- **Output**: \n  ```\n  Subject: Re: Inquiry About New Product Launch\n\n  Hi [User's Name],\n\n  I appreciate your interest in our upcoming product launch! We are excited to introduce [Product Name] on [Launch Date]. This new product features [Key Features/Benefits]. For more details, you can visit our website or feel free to ask if you have any specific questions.\n\n  Looking forward to your response!\n\n  Sincerely,\n  [Your Name]\n  ```\n\n# Notes\n\n- Ensure to maintain a professional tone and customize the email according to the user's familiarity and previous interactions.\n- Pay attention to any specific requests or preferences stated by the user in previous communications.\n- Always provide a way for the user to continue the conversation if they have further questions or need additional assistance."
+                            "content": "<p>You are a customer support agent working in Flowise Inc. Write a professional email reply to user's query. Use the web search tools to get more details about the prospect.</p>"
                         }
                     ],
                     "agentTools": [
@@ -451,8 +448,9 @@
                     "agentKnowledgeDocumentStores": "",
                     "agentEnableMemory": true,
                     "agentMemoryType": "allMessages",
-                    "agentUserMessage": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"$form.body\" data-label=\"$form.body\">{{ $form.body }}</span> </p>",
-                    "agentUpdateState": [],
+                    "agentUserMessage": "",
+                    "agentReturnResponseAs": "userMessage",
+                    "agentUpdateState": "",
                     "agentModelConfig": {
                         "cache": "",
                         "modelName": "gpt-4o-mini",
@@ -484,78 +482,22 @@
                 "outputs": {},
                 "selected": false
             },
-            "width": 168,
+            "type": "agentFlow",
+            "width": 182,
             "height": 103,
             "selected": false,
             "positionAbsolute": {
-                "x": 32.282612377972924,
-                "y": 69.80857402513341
+                "x": -62.25,
+                "y": 76
             },
-            "dragging": false
-        },
-        {
-            "id": "loopAgentflow_0",
-            "position": {
-                "x": 461.32144796936547,
-                "y": 144.4739670999407
-            },
-            "type": "agentFlow",
-            "data": {
-                "id": "loopAgentflow_0",
-                "label": "Loop 0",
-                "version": 1,
-                "name": "loopAgentflow",
-                "type": "Loop",
-                "color": "#FFA07A",
-                "hideOutput": true,
-                "baseClasses": ["Loop"],
-                "category": "Agent Flows",
-                "description": "Loop back to a previous node",
-                "inputParams": [
-                    {
-                        "label": "Loop Back To",
-                        "name": "loopBackToNode",
-                        "type": "asyncOptions",
-                        "loadMethod": "listPreviousNodes",
-                        "freeSolo": true,
-                        "id": "loopAgentflow_0-input-loopBackToNode-asyncOptions",
-                        "display": true
-                    },
-                    {
-                        "label": "Max Loop Count",
-                        "name": "maxLoopCount",
-                        "type": "number",
-                        "default": 10,
-                        "id": "loopAgentflow_0-input-maxLoopCount-number",
-                        "display": true
-                    }
-                ],
-                "inputAnchors": [],
-                "inputs": {
-                    "loopBackToNode": "agentAgentflow_0-Agent 0",
-                    "maxLoopCount": 10,
-                    "undefined": ""
-                },
-                "outputAnchors": [],
-                "outputs": {},
-                "selected": false
-            },
-            "width": 113,
-            "height": 65,
-            "positionAbsolute": {
-                "x": 461.32144796936547,
-                "y": 144.4739670999407
-            },
-            "selected": false,
             "dragging": false
         },
         {
             "id": "humanInputAgentflow_0",
             "position": {
-                "x": 243.2954863222049,
-                "y": 83.47492229383522
+                "x": 156.05666363734434,
+                "y": 86.62266545493773
             },
-            "type": "agentFlow",
             "data": {
                 "id": "humanInputAgentflow_0",
                 "label": "Human Input 0",
@@ -597,7 +539,7 @@
                             "humanInputDescriptionType": "fixed"
                         },
                         "id": "humanInputAgentflow_0-input-humanInputDescription-string",
-                        "display": false
+                        "display": true
                     },
                     {
                         "label": "Model",
@@ -609,13 +551,13 @@
                             "humanInputDescriptionType": "dynamic"
                         },
                         "id": "humanInputAgentflow_0-input-humanInputModel-asyncOptions",
-                        "display": true
+                        "display": false
                     },
                     {
                         "label": "Prompt",
                         "name": "humanInputModelPrompt",
                         "type": "string",
-                        "default": "<p>Summarize the conversation, reiterate the last message from the assistant, and ask if user would like to proceed or if they have any feedback. </p>\n<ul>\n<li>Begin by capturing the key points of the conversation, ensuring that you reflect the main ideas and themes discussed.</li>\n<li>Then, clearly reproduce the last message sent by the assistant to maintain continuity. Make sure the whole message is reproduced.</li>\n<li>Finally, ask the user if they would like to proceed, or provide any feedback on the last assistant message</li>\n</ul>\n<h2 id=\"output-format-the-output-should-be-structured-in-three-parts-\">Output Format The output should be structured in three parts in text:</h2>\n<ul>\n<li>A summary of the conversation (1-3 sentences).</li>\n<li>The last assistant message (exactly as it appeared).</li>\n<li>Ask the user if they would like to proceed, or provide any feedback on last assistant message. No other explanation and elaboration is needed.</li>\n</ul>\n",
+                        "default": "<p>Summarize the conversation between the user and the assistant, reiterate the last message from the assistant, and ask if user would like to proceed or if they have any feedback. </p>\n<ul>\n<li>Begin by capturing the key points of the conversation, ensuring that you reflect the main ideas and themes discussed.</li>\n<li>Then, clearly reproduce the last message sent by the assistant to maintain continuity. Make sure the whole message is reproduced.</li>\n<li>Finally, ask the user if they would like to proceed, or provide any feedback on the last assistant message</li>\n</ul>\n<h2 id=\"output-format-the-output-should-be-structured-in-three-parts-\">Output Format The output should be structured in three parts in text:</h2>\n<ul>\n<li>A summary of the conversation (1-3 sentences).</li>\n<li>The last assistant message (exactly as it appeared).</li>\n<li>Ask the user if they would like to proceed, or provide any feedback on last assistant message. No other explanation and elaboration is needed.</li>\n</ul>\n",
                         "acceptVariable": true,
                         "generateInstruction": true,
                         "rows": 4,
@@ -623,7 +565,7 @@
                             "humanInputDescriptionType": "dynamic"
                         },
                         "id": "humanInputAgentflow_0-input-humanInputModelPrompt-string",
-                        "display": true
+                        "display": false
                     },
                     {
                         "label": "Enable Feedback",
@@ -636,9 +578,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "humanInputDescriptionType": "dynamic",
-                    "humanInputModel": "chatOpenAI",
-                    "humanInputModelPrompt": "<p>Summarize the conversation, reiterate the last message from the assistant, and ask if user would like to proceed or if they have any feedback. </p>\n<ul>\n<li>Begin by capturing the key points of the conversation, ensuring that you reflect the main ideas and themes discussed.</li>\n<li>Then, clearly reproduce the last message sent by the assistant to maintain continuity. Make sure the whole message is reproduced.</li>\n<li>Finally, ask the user if they would like to proceed, or provide any feedback on the last assistant message</li>\n</ul>\n<h2 id=\"output-format-the-output-should-be-structured-in-three-parts-\">Output Format The output should be structured in three parts in text:</h2>\n<ul>\n<li>A summary of the conversation (1-3 sentences).</li>\n<li>The last assistant message (exactly as it appeared).</li>\n<li>Ask the user if they would like to proceed, or provide any feedback on last assistant message. No other explanation and elaboration is needed.</li>\n</ul>\n",
+                    "humanInputDescriptionType": "fixed",
                     "humanInputEnableFeedback": true,
                     "humanInputModelConfig": {
                         "cache": "",
@@ -659,7 +599,8 @@
                         "imageResolution": "low",
                         "reasoningEffort": "medium",
                         "humanInputModel": "chatOpenAI"
-                    }
+                    },
+                    "humanInputDescription": "<p>Are you sure you want to proceed?</p>"
                 },
                 "outputAnchors": [
                     {
@@ -678,22 +619,22 @@
                 },
                 "selected": false
             },
+            "type": "agentFlow",
             "width": 161,
             "height": 80,
             "selected": false,
             "positionAbsolute": {
-                "x": 243.2954863222049,
-                "y": 83.47492229383522
+                "x": 156.05666363734434,
+                "y": 86.62266545493773
             },
             "dragging": false
         },
         {
             "id": "directReplyAgentflow_0",
             "position": {
-                "x": 465.29548632220485,
-                "y": 30.474922293835235
+                "x": 363.0101864947954,
+                "y": 35.15053748988734
             },
-            "type": "agentFlow",
             "data": {
                 "id": "directReplyAgentflow_0",
                 "label": "Direct Reply 0",
@@ -724,12 +665,68 @@
                 "outputs": {},
                 "selected": false
             },
+            "type": "agentFlow",
             "width": 155,
             "height": 65,
             "selected": false,
             "positionAbsolute": {
-                "x": 465.29548632220485,
-                "y": 30.474922293835235
+                "x": 363.0101864947954,
+                "y": 35.15053748988734
+            },
+            "dragging": false
+        },
+        {
+            "id": "loopAgentflow_0",
+            "position": {
+                "x": 366.5975521223236,
+                "y": 130.12266545493773
+            },
+            "data": {
+                "id": "loopAgentflow_0",
+                "label": "Loop 0",
+                "version": 1,
+                "name": "loopAgentflow",
+                "type": "Loop",
+                "color": "#FFA07A",
+                "hideOutput": true,
+                "baseClasses": ["Loop"],
+                "category": "Agent Flows",
+                "description": "Loop back to a previous node",
+                "inputParams": [
+                    {
+                        "label": "Loop Back To",
+                        "name": "loopBackToNode",
+                        "type": "asyncOptions",
+                        "loadMethod": "listPreviousNodes",
+                        "freeSolo": true,
+                        "id": "loopAgentflow_0-input-loopBackToNode-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Max Loop Count",
+                        "name": "maxLoopCount",
+                        "type": "number",
+                        "default": 10,
+                        "id": "loopAgentflow_0-input-maxLoopCount-number",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "loopBackToNode": "agentAgentflow_0-Email Reply Agent",
+                    "maxLoopCount": 10
+                },
+                "outputAnchors": [],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "width": 113,
+            "height": 65,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 366.5975521223236,
+                "y": 130.12266545493773
             },
             "dragging": false
         }
@@ -763,20 +760,6 @@
         },
         {
             "source": "humanInputAgentflow_0",
-            "sourceHandle": "humanInputAgentflow_0-output-1",
-            "target": "loopAgentflow_0",
-            "targetHandle": "loopAgentflow_0",
-            "data": {
-                "sourceColor": "#6E6EFD",
-                "targetColor": "#6E6EFD",
-                "edgeLabel": "reject",
-                "isHumanInput": true
-            },
-            "type": "agentFlow",
-            "id": "humanInputAgentflow_0-humanInputAgentflow_0-output-1-loopAgentflow_0-loopAgentflow_0"
-        },
-        {
-            "source": "humanInputAgentflow_0",
             "sourceHandle": "humanInputAgentflow_0-output-0",
             "target": "directReplyAgentflow_0",
             "targetHandle": "directReplyAgentflow_0",
@@ -788,6 +771,20 @@
             },
             "type": "agentFlow",
             "id": "humanInputAgentflow_0-humanInputAgentflow_0-output-0-directReplyAgentflow_0-directReplyAgentflow_0"
+        },
+        {
+            "source": "humanInputAgentflow_0",
+            "sourceHandle": "humanInputAgentflow_0-output-1",
+            "target": "loopAgentflow_0",
+            "targetHandle": "loopAgentflow_0",
+            "data": {
+                "sourceColor": "#6E6EFD",
+                "targetColor": "#6E6EFD",
+                "edgeLabel": "reject",
+                "isHumanInput": true
+            },
+            "type": "agentFlow",
+            "id": "humanInputAgentflow_0-humanInputAgentflow_0-output-1-loopAgentflow_0-loopAgentflow_0"
         }
     ]
 }

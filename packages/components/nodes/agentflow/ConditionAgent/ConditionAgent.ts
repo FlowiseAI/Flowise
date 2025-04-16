@@ -1,7 +1,12 @@
 import { AnalyticHandler } from '../../../src/handler'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
-import { getUniqueImageMessages, processMessagesWithImages } from '../utils'
+import {
+    getPastChatHistoryImageMessages,
+    getUniqueImageMessages,
+    processMessagesWithImages,
+    replaceBase64ImagesWithFileReferences
+} from '../utils'
 import { CONDITION_AGENT_SYSTEM_PROMPT, DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 
@@ -299,6 +304,10 @@ class ConditionAgent_Agentflow implements INode {
                     content: `\`\`\`json\n{"output": "user is interested in AI topics"}\n\`\`\``
                 }
             ]
+            // Use to store messages with image file references as we do not want to store the base64 data into database
+            let runtimeImageMessagesWithFileRef: BaseMessageLike[] = []
+            // Use to keep track of past messages with image file references
+            let pastImageMessagesWithFileRef: BaseMessageLike[] = []
 
             input = `{"input": ${input}, "scenarios": ${JSON.stringify(
                 _conditionAgentScenarios.map((scenario) => scenario.scenario)
@@ -316,16 +325,21 @@ class ConditionAgent_Agentflow implements INode {
                     input,
                     abortController,
                     options,
-                    modelConfig
+                    modelConfig,
+                    runtimeImageMessagesWithFileRef,
+                    pastImageMessagesWithFileRef
                 })
-            } else if (input && typeof input === 'string') {
-                // If memory is disabled, just add the current question
-                // Add images to messages if exist
-                if (options.uploads) {
+            } else {
+                /*
+                 * If this is the first node:
+                 * - Add images to messages if exist
+                 */
+                if (!runtimeChatHistory.length && options.uploads) {
                     const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
                     if (imageContents) {
-                        const { llmMessages } = imageContents
-                        messages.push(llmMessages)
+                        const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
+                        messages.push(imageMessageWithBase64)
+                        runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
                     }
                 }
                 messages.push({
@@ -390,10 +404,28 @@ class ConditionAgent_Agentflow implements INode {
                 }
             })
 
+            // Replace the actual messages array with one that includes the file references for images instead of base64 data
+            const messagesWithFileReferences = replaceBase64ImagesWithFileReferences(
+                messages,
+                runtimeImageMessagesWithFileRef,
+                pastImageMessagesWithFileRef
+            )
+
+            // Only add to runtime chat history if this is the first node
+            const inputMessages = []
+            if (!runtimeChatHistory.length) {
+                if (runtimeImageMessagesWithFileRef.length) {
+                    inputMessages.push(...runtimeImageMessagesWithFileRef)
+                }
+                if (input && typeof input === 'string') {
+                    inputMessages.push({ role: 'user', content: question })
+                }
+            }
+
             const returnOutput = {
                 id: nodeData.id,
                 name: this.name,
-                input: { messages },
+                input: { messages: messagesWithFileReferences },
                 output: {
                     conditions,
                     content: typeof response.content === 'string' ? response.content : JSON.stringify(response.content),
@@ -403,7 +435,8 @@ class ConditionAgent_Agentflow implements INode {
                         delta: timeDelta
                     }
                 },
-                state
+                state,
+                chatHistory: [...inputMessages]
             }
 
             return returnOutput
@@ -432,7 +465,9 @@ class ConditionAgent_Agentflow implements INode {
         input,
         abortController,
         options,
-        modelConfig
+        modelConfig,
+        runtimeImageMessagesWithFileRef,
+        pastImageMessagesWithFileRef
     }: {
         messages: BaseMessageLike[]
         memoryType: string
@@ -444,10 +479,31 @@ class ConditionAgent_Agentflow implements INode {
         abortController: AbortController
         options: ICommonObject
         modelConfig: ICommonObject
+        runtimeImageMessagesWithFileRef: BaseMessageLike[]
+        pastImageMessagesWithFileRef: BaseMessageLike[]
     }): Promise<void> {
+        const { updatedPastMessages, transformedPastMessages } = await getPastChatHistoryImageMessages(pastChatHistory, options)
+        pastChatHistory = updatedPastMessages
+        pastImageMessagesWithFileRef.push(...transformedPastMessages)
+
         let pastMessages = [...pastChatHistory, ...runtimeChatHistory]
-        const { updatedMessages } = await processMessagesWithImages(pastMessages, options)
+        if (!runtimeChatHistory.length) {
+            /*
+             * If this is the first node:
+             * - Add images to messages if exist
+             */
+            if (options.uploads) {
+                const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
+                if (imageContents) {
+                    const { imageMessageWithBase64, imageMessageWithFileRef } = imageContents
+                    pastMessages.push(imageMessageWithBase64)
+                    runtimeImageMessagesWithFileRef.push(imageMessageWithFileRef)
+                }
+            }
+        }
+        const { updatedMessages, transformedMessages } = await processMessagesWithImages(pastMessages, options)
         pastMessages = updatedMessages
+        pastImageMessagesWithFileRef.push(...transformedMessages)
 
         if (pastMessages.length > 0) {
             if (memoryType === 'windowSize') {
@@ -476,16 +532,6 @@ class ConditionAgent_Agentflow implements INode {
             } else {
                 // Default: Use all messages
                 messages.push(...pastMessages)
-            }
-        }
-
-        // Add images to messages
-        if (options.uploads) {
-            // Get unique image messages
-            const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
-            if (imageContents) {
-                const { llmMessages } = imageContents
-                messages.push(llmMessages)
             }
         }
 

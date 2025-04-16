@@ -712,7 +712,7 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
     for (const message of chatmessages) {
         if (message.role === 'apiMessage' || message.type === 'apiMessage') {
             chatHistory.push(new AIMessage(message.content || ''))
-        } else if (message.role === 'userMessage' || message.role === 'userMessage') {
+        } else if (message.role === 'userMessage' || message.type === 'userMessage') {
             // check for image/files uploads
             if (message.fileUploads) {
                 // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]

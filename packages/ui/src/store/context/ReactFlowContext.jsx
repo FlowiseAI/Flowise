@@ -196,7 +196,8 @@ export const ReactFlowContext = ({ children }) => {
                 },
                 data: {
                     ...clonedNode.data,
-                    id: newNodeId
+                    id: newNodeId,
+                    label: clonedNode.data.label + ` (${newNodeId.split('_').pop()})`
                 },
                 selected: false
             }

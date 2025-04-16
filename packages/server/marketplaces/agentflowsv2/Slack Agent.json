@@ -6,8 +6,8 @@
             "id": "startAgentflow_0",
             "type": "agentFlow",
             "position": {
-                "x": 122.97396709994072,
-                "y": 103.44609506499114
+                "x": -192.5,
+                "y": 68
             },
             "data": {
                 "id": "startAgentflow_0",
@@ -172,18 +172,18 @@
             },
             "width": 101,
             "height": 65,
-            "positionAbsolute": {
-                "x": 122.97396709994072,
-                "y": 103.44609506499114
-            },
             "selected": false,
+            "positionAbsolute": {
+                "x": -192.5,
+                "y": 68
+            },
             "dragging": false
         },
         {
             "id": "llmAgentflow_0",
             "position": {
-                "x": 260.60872943746296,
-                "y": 100.35130164500296
+                "x": -31.25,
+                "y": 64.5
             },
             "data": {
                 "id": "llmAgentflow_0",
@@ -316,18 +316,35 @@
                         "display": false
                     },
                     {
-                        "label": "User Message",
+                        "label": "Input Message",
                         "name": "llmUserMessage",
                         "type": "string",
-                        "description": "User message will be insert at the end of the messages",
+                        "description": "Add an input message as user message at the end of the conversation",
                         "rows": 4,
                         "optional": true,
                         "acceptVariable": true,
-                        "default": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
                         "show": {
                             "llmEnableMemory": true
                         },
                         "id": "llmAgentflow_0-input-llmUserMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Return Response As",
+                        "name": "agentReturnResponseAs",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "User Message",
+                                "name": "userMessage"
+                            },
+                            {
+                                "label": "Assistant Message",
+                                "name": "assistantMessage"
+                            }
+                        ],
+                        "default": "userMessage",
+                        "id": "llmAgentflow_0-input-agentReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -439,11 +456,12 @@
                     "llmMessages": "",
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
-                    "llmUserMessage": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span> </p>",
+                    "llmUserMessage": "",
+                    "agentReturnResponseAs": "userMessage",
                     "llmStructuredOutput": "",
                     "llmUpdateState": "",
                     "llmModelConfig": {
-                        "cache": "",
+                        "credential": "",
                         "modelName": "gpt-4o-mini",
                         "temperature": 0.9,
                         "streaming": true,
@@ -478,16 +496,16 @@
             "height": 71,
             "selected": false,
             "positionAbsolute": {
-                "x": 260.60872943746296,
-                "y": 100.35130164500296
+                "x": -31.25,
+                "y": 64.5
             },
             "dragging": false
         },
         {
             "id": "toolAgentflow_0",
             "position": {
-                "x": 470.2439378425172,
-                "y": 100.23772350885338
+                "x": 182.75,
+                "y": 64.5
             },
             "data": {
                 "id": "toolAgentflow_0",
@@ -569,7 +587,7 @@
                     "toolInputArgs": [
                         {
                             "inputArgName": "channel_id",
-                            "inputArgValue": "<p>C05FUDF49FA</p>"
+                            "inputArgValue": "<p>ABCDEFG</p>"
                         },
                         {
                             "inputArgName": "text",
@@ -597,20 +615,20 @@
             "height": 71,
             "selected": false,
             "positionAbsolute": {
-                "x": 470.2439378425172,
-                "y": 100.23772350885338
+                "x": 182.75,
+                "y": 64.5
             },
             "dragging": false
         },
         {
             "id": "directReplyAgentflow_0",
             "position": {
-                "x": 645.6929354141397,
-                "y": 103.22769331398851
+                "x": 366.75,
+                "y": 67.5
             },
             "data": {
                 "id": "directReplyAgentflow_0",
-                "label": "Direct Reply",
+                "label": "Direct Reply To Chat",
                 "version": 1,
                 "name": "directReplyAgentflow",
                 "type": "DirectReply",
@@ -639,12 +657,12 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 144,
+            "width": 194,
             "height": 65,
             "selected": false,
             "positionAbsolute": {
-                "x": 645.6929354141397,
-                "y": 103.22769331398851
+                "x": 366.75,
+                "y": 67.5
             },
             "dragging": false
         }

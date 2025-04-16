@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
-import { Box, Button, IconButton } from '@mui/material'
+import { Chip, Box, Button, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconTrash, IconPlus } from '@tabler/icons-react'
 import NodeInputHandler from '@/views/canvas/NodeInputHandler'
@@ -167,6 +167,8 @@ export const ArrayRenderer = ({ inputParam, data, disabled }) => {
         updateOutputAnchors(updatedArrayItems, 'DELETE', indexToDelete)
     }
 
+    const isDeleteButtonVisible = (data.name !== 'conditionAgentflow' && data.name !== 'conditionAgentAgentflow') || arrayItems.length > 1
+
     return (
         <>
             {/* Render each array item */}
@@ -192,7 +194,7 @@ export const ArrayRenderer = ({ inputParam, data, disabled }) => {
                         key={index}
                     >
                         {/* Delete button for array item */}
-                        {((data.name !== 'conditionAgentflow' && data.name !== 'conditionAgentAgentflow') || arrayItems.length > 1) && (
+                        {isDeleteButtonVisible && (
                             <IconButton
                                 title='Delete'
                                 onClick={() => handleDeleteItem(index)}
@@ -209,6 +211,12 @@ export const ArrayRenderer = ({ inputParam, data, disabled }) => {
                                 <IconTrash />
                             </IconButton>
                         )}
+
+                        <Chip
+                            label={`${index}`}
+                            size='small'
+                            sx={{ position: 'absolute', right: isDeleteButtonVisible ? 45 : 10, top: 16 }}
+                        />
 
                         {/* Render input fields for array item */}
                         {itemParameters[index]

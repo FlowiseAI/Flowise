@@ -4,6 +4,7 @@ import { getFileFromStorage } from '../../src/storageUtils'
 import { ICommonObject, IFileUpload } from '../../src/Interface'
 import { BaseMessageLike } from '@langchain/core/messages'
 import { IFlowState } from './Interface.Agentflow'
+import { mapMimeTypeToInputField } from '../../src/utils'
 
 export const addImagesToMessages = async (
     options: ICommonObject,
@@ -85,7 +86,7 @@ export const processMessagesWithImages = async (
             // Process each content item
             for (const item of message.content) {
                 // Look for stored-file type items
-                if (item.type === 'stored-file' && item.name && item.mime) {
+                if (item.type === 'stored-file' && item.name && item.mime.startsWith('image/')) {
                     hasImageReferences = true
                     try {
                         // Get file contents from storage
@@ -172,13 +173,13 @@ export const replaceBase64ImagesWithFileReferences = (
  * @param options Common options object containing uploads
  * @param messages Array of messages to check for existing images
  * @param modelConfig Model configuration object containing allowImageUploads and imageResolution
- * @returns Object containing storeMessages and llmMessages
+ * @returns Object containing imageMessageWithFileRef and imageMessageWithBase64
  */
 export const getUniqueImageMessages = async (
     options: ICommonObject,
     messages: BaseMessageLike[],
     modelConfig?: ICommonObject
-): Promise<{ storeMessages: BaseMessageLike; llmMessages: BaseMessageLike } | undefined> => {
+): Promise<{ imageMessageWithFileRef: BaseMessageLike; imageMessageWithBase64: BaseMessageLike } | undefined> => {
     if (!options.uploads) return undefined
 
     // Get images from uploads
@@ -206,7 +207,7 @@ export const getUniqueImageMessages = async (
     }
 
     // Create messages with the original file references for storage/display
-    const storeMessages = {
+    const imageMessageWithFileRef = {
         role: 'user',
         content: options.uploads.map((upload: IFileUpload) => ({
             type: upload.type,
@@ -217,14 +218,110 @@ export const getUniqueImageMessages = async (
     }
 
     // Create messages with base64 data for the LLM
-    const llmMessages = {
+    const imageMessageWithBase64 = {
         role: 'user',
         content: uniqueImages
     }
 
     return {
-        storeMessages,
-        llmMessages
+        imageMessageWithFileRef,
+        imageMessageWithBase64
+    }
+}
+
+/**
+ * Get past chat history image messages
+ * @param pastChatHistory Array of past chat history messages
+ * @param options Common options object
+ * @returns Object containing updatedPastMessages and transformedPastMessages
+ */
+export const getPastChatHistoryImageMessages = async (
+    pastChatHistory: BaseMessageLike[],
+    options: ICommonObject
+): Promise<{ updatedPastMessages: BaseMessageLike[]; transformedPastMessages: BaseMessageLike[] }> => {
+    const chatHistory = []
+    const transformedPastMessages = []
+
+    for (let i = 0; i < pastChatHistory.length; i++) {
+        const message = pastChatHistory[i] as BaseMessage
+        if (message.additional_kwargs && message.additional_kwargs.fileUploads) {
+            // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
+            const fileUploads = message.additional_kwargs.fileUploads
+            try {
+                let messageWithFileUploads = ''
+                const uploads: IFileUpload[] = typeof fileUploads === 'string' ? JSON.parse(fileUploads) : fileUploads
+                const imageContents: MessageContentImageUrl[] = []
+                for (const upload of uploads) {
+                    if (upload.type === 'stored-file' && upload.mime.startsWith('image/')) {
+                        const fileData = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
+                        // as the image is stored in the server, read the file and convert it to base64
+                        const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
+
+                        imageContents.push({
+                            type: 'image_url',
+                            image_url: {
+                                url: bf
+                            }
+                        })
+                    } else if (upload.type === 'url' && upload.mime.startsWith('image') && upload.data) {
+                        imageContents.push({
+                            type: 'image_url',
+                            image_url: {
+                                url: upload.data
+                            }
+                        })
+                    } else if (upload.type === 'stored-file:full') {
+                        const fileLoaderNodeModule = await import('../../nodes/documentloaders/File/File')
+                        // @ts-ignore
+                        const fileLoaderNodeInstance = new fileLoaderNodeModule.nodeClass()
+                        const nodeOptions = {
+                            retrieveAttachmentChatId: true,
+                            chatflowid: options.chatflowid,
+                            chatId: options.chatId
+                        }
+                        let fileInputFieldFromMimeType = 'txtFile'
+                        fileInputFieldFromMimeType = mapMimeTypeToInputField(upload.mime)
+                        const nodeData = {
+                            inputs: {
+                                [fileInputFieldFromMimeType]: `FILE-STORAGE::${JSON.stringify([upload.name])}`
+                            }
+                        }
+                        const documents: string = await fileLoaderNodeInstance.init(nodeData, '', nodeOptions)
+                        messageWithFileUploads += `<doc name='${upload.name}'>${documents}</doc>\n\n`
+                    }
+                }
+                const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
+                if (imageContents.length > 0) {
+                    chatHistory.push({
+                        role: 'user',
+                        content: imageContents
+                    })
+                    transformedPastMessages.push({
+                        role: 'user',
+                        content: [...JSON.parse((pastChatHistory[i] as any).additional_kwargs.fileUploads)]
+                    })
+                }
+                chatHistory.push({
+                    role: 'user',
+                    content: messageContent
+                })
+            } catch (e) {
+                // failed to parse fileUploads, continue with text only
+                chatHistory.push({
+                    role: 'user',
+                    content: message.content
+                })
+            }
+        } else {
+            chatHistory.push({
+                role: 'user',
+                content: message.content
+            })
+        }
+    }
+    return {
+        updatedPastMessages: chatHistory,
+        transformedPastMessages
     }
 }
 
