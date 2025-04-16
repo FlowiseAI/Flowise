@@ -171,6 +171,33 @@ class GoogleGenerativeAI_ChatModels implements INode {
                     'Allow image input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#image" target="_blank">docs</a> for more details.',
                 default: false,
                 optional: true
+            },
+            {
+                label: 'Allow PDF Uploads',
+                name: 'allowPdfUploads',
+                type: 'boolean',
+                description:
+                    'Allow PDF input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#pdf" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'Allow Audio Uploads',
+                name: 'allowAudioUploads',
+                type: 'boolean',
+                description:
+                    'Allow audio input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#audio" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'Allow Video Uploads',
+                name: 'allowVideoUploads',
+                type: 'boolean',
+                description:
+                    'Allow video input. Refer to the <a href="https://docs.flowiseai.com/using-flowise/uploads#video" target="_blank">docs</a> for more details.',
+                default: false,
+                optional: true
             }
         ]
     }
@@ -199,6 +226,9 @@ class GoogleGenerativeAI_ChatModels implements INode {
         const streaming = nodeData.inputs?.streaming as boolean
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
+        const allowPdfUploads = nodeData.inputs?.allowPdfUploads as boolean
+        const allowAudioUploads = nodeData.inputs?.allowAudioUploads as boolean
+        const allowVideoUploads = nodeData.inputs?.allowVideoUploads as boolean
 
         const obj: Partial<GoogleGenerativeAIChatInput> = {
             apiKey: apiKey,
@@ -228,6 +258,15 @@ class GoogleGenerativeAI_ChatModels implements INode {
         const multiModalOption: IMultiModalOption = {
             image: {
                 allowImageUploads: allowImageUploads ?? false
+            },
+            pdf: {
+                allowPdfUploads: allowPdfUploads ?? false
+            },
+            audio: {
+                allowAudioUploads: allowAudioUploads ?? false
+            },
+            video: {
+                allowVideoUploads: allowVideoUploads ?? false
             }
         }
 
