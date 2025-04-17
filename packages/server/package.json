@@ -91,6 +91,7 @@
         "contentful-management": "^11.7.3",
         "cors": "^2.8.5",
         "crypto-js": "^4.1.1",
+        "csv-parse": "^5.6.0",
         "langfuse": "3.32.0",
         "langfuse-core": "3.32.0",
         "dotenv": "^16.0.0",

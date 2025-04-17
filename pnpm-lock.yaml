@@ -1586,6 +1586,9 @@ importers:
             crypto-js:
                 specifier: ^4.1.1
                 version: 4.2.0
+            csv-parse:
+                specifier: ^5.6.0
+                version: 5.6.0
             dotenv:
                 specifier: ^16.0.0
                 version: 16.4.7
