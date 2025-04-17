@@ -190,7 +190,7 @@ importers:
                 version: 1.7.9(debug@4.4.0)
             chromadb:
                 specifier: ^1.5.5
-                version: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2))
+                version: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             cohere-ai:
                 specifier: ^6.2.2
                 version: 6.2.2
@@ -229,7 +229,7 @@ importers:
                 version: 3.0.5
             langchain:
                 specifier: ^0.0.116
-                version: 0.0.116(iivuttr355pah5s6ksk5arzbra)
+                version: 0.0.116(5suukz2kcriwjfh5ud7y6zqsle)
             next:
                 specifier: ^14.2.5
                 version: 14.2.24(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.51.0)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)(sass@1.85.1)
@@ -238,7 +238,7 @@ importers:
                 version: 4.24.11(next@14.2.24(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.51.0)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)(sass@1.85.1))(nodemailer@6.9.16)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)
             openai:
                 specifier: 4.82.0
-                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
+                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
             react:
                 specifier: ^18.2.0
                 version: 18.2.0
@@ -682,7 +682,7 @@ importers:
                 version: 22.1.0(bufferutil@4.0.9)(canvas@2.11.2(encoding@0.1.13))(utf-8-validate@6.0.5)
             langchain:
                 specifier: ^0.0.116
-                version: 0.0.116(rizdvp72vz3v3udbn5mmuawvfu)
+                version: 0.0.116(rmsgxtkmqmi5hmutb5dbcho4o4)
             mammoth:
                 specifier: ^1.6.0
                 version: 1.9.0
@@ -700,7 +700,7 @@ importers:
                 version: 1.3.0
             openai:
                 specifier: 4.82.0
-                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
+                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
             openapi-typescript:
                 specifier: ^6.3.7
                 version: 6.7.6
@@ -1607,9 +1607,6 @@ importers:
             flowise-components:
                 specifier: workspace:*
                 version: link:../components
-            flowise-ui:
-                specifier: workspace:*
-                version: link:../ui
             global-agent:
                 specifier: ^3.0.0
                 version: 3.0.0
@@ -34728,7 +34725,7 @@ snapshots:
 
     chownr@2.0.0: {}
 
-    chromadb@1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)):
+    chromadb@1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)):
         dependencies:
             cliui: 8.0.1
             isomorphic-fetch: 3.0.0(encoding@0.1.13)
@@ -34736,7 +34733,7 @@ snapshots:
             '@google/generative-ai': 0.22.0
             cohere-ai: 6.2.2
             ollama: 0.5.14
-            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
+            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
 
@@ -34751,6 +34748,19 @@ snapshots:
             openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
+
+    chromadb@1.10.5(@google/generative-ai@0.22.0)(cohere-ai@7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13))(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)):
+        dependencies:
+            cliui: 8.0.1
+            isomorphic-fetch: 3.0.0(encoding@0.1.13)
+        optionalDependencies:
+            '@google/generative-ai': 0.22.0
+            cohere-ai: 7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13)
+            ollama: 0.5.14
+            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
+        transitivePeerDependencies:
+            - encoding
+        optional: true
 
     chromadb@1.8.1(@google/generative-ai@0.22.0)(cohere-ai@7.9.5(encoding@0.1.13))(encoding@0.1.13)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)):
         dependencies:
@@ -41580,7 +41590,7 @@ snapshots:
 
     kuler@2.0.0: {}
 
-    langchain@0.0.116(iivuttr355pah5s6ksk5arzbra):
+    langchain@0.0.116(5suukz2kcriwjfh5ud7y6zqsle):
         dependencies:
             '@anthropic-ai/sdk': 0.5.10(encoding@0.1.13)
             ansi-styles: 5.2.0
@@ -41621,7 +41631,7 @@ snapshots:
             apify-client: 2.12.1
             axios: 1.7.9(debug@4.4.0)
             cheerio: 1.0.0
-            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2))
+            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             cohere-ai: 6.2.2
             d3-dsv: 2.0.0
             epub2: 3.0.2(ts-toolbelt@9.6.0)
@@ -41643,7 +41653,7 @@ snapshots:
             - encoding
             - ws
 
-    langchain@0.0.116(rizdvp72vz3v3udbn5mmuawvfu):
+    langchain@0.0.116(rmsgxtkmqmi5hmutb5dbcho4o4):
         dependencies:
             '@anthropic-ai/sdk': 0.5.10(encoding@0.1.13)
             ansi-styles: 5.2.0
@@ -41684,7 +41694,7 @@ snapshots:
             apify-client: 2.12.1
             axios: 1.7.9(debug@4.4.0)
             cheerio: 1.0.0
-            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13))(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
+            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13))(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2))
             cohere-ai: 7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13)
             d3-dsv: 2.0.0
             epub2: 3.0.2(ts-toolbelt@9.6.0)
