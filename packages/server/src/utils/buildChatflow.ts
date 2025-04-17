@@ -665,13 +665,15 @@ export const executeFlow = async ({
                     const postProcessingFunction = JSON.parse(chatflowConfig?.postProcessing?.customFunction)
                     const nodeInstanceFilePath = componentNodes['customFunction'].filePath as string
                     const nodeModule = await import(nodeInstanceFilePath)
+                    //set the outputs.output to EndingNode to prevent json escaping of content...
                     const nodeData = {
                         inputs: { javascriptFunction: postProcessingFunction },
-                        outputs: { output: 'output' }
+                        outputs: { output: 'EndingNode' }
                     }
                     const options: ICommonObject = {
                         chatflowid: chatflow.id,
                         sessionId,
+                        isRun: true,
                         chatId,
                         input: question,
                         rawOutput: resultText,
