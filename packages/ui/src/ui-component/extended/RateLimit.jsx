@@ -19,7 +19,7 @@ import chatflowsApi from '@/api/chatflows'
 // utils
 import useNotifier from '@/utils/useNotifier'
 
-const RateLimit = () => {
+const RateLimit = ({ dialogProps }) => {
     const dispatch = useDispatch()
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const chatflowid = chatflow.id
@@ -36,9 +36,11 @@ const RateLimit = () => {
     const [limitMsg, setLimitMsg] = useState(apiConfig?.rateLimit?.limitMsg ?? '')
 
     const formatObj = () => {
-        const obj = {
-            rateLimit: { status: rateLimitStatus }
+        let apiConfig = JSON.parse(dialogProps.chatflow.apiConfig)
+        if (apiConfig === null || apiConfig === undefined) {
+            apiConfig = {}
         }
+        let obj = { status: rateLimitStatus }
 
         if (rateLimitStatus) {
             const rateLimitValuesBoolean = [!limitMax, !limitDuration, !limitMsg]
@@ -46,16 +48,16 @@ const RateLimit = () => {
             if (rateLimitFilledValues.length >= 1 && rateLimitFilledValues.length <= 2) {
                 throw new Error('Need to fill all rate limit input fields')
             } else if (rateLimitFilledValues.length === 3) {
-                obj.rateLimit = {
-                    ...obj.rateLimit,
+                obj = {
+                    ...obj,
                     limitMax,
                     limitDuration,
                     limitMsg
                 }
             }
         }
-
-        return obj
+        apiConfig.rateLimit = obj
+        return apiConfig
     }
 
     const handleChange = (value) => {
@@ -173,7 +175,8 @@ const RateLimit = () => {
 }
 
 RateLimit.propTypes = {
-    isSessionMemory: PropTypes.bool
+    isSessionMemory: PropTypes.bool,
+    dialogProps: PropTypes.object
 }
 
 export default RateLimit
