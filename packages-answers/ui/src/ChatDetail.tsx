@@ -8,10 +8,7 @@ import SourceDocumentModal from '@ui/SourceDocumentModal'
 import { useAnswers } from './AnswersContext'
 import ChatInput from './ChatInput'
 import DrawerFilters from './DrawerFilters/DrawerFilters'
-import NextLink from 'next/link'
 import Toolbar from '@mui/material/Toolbar'
-
-import ShareIcon from '@mui/icons-material/IosShare'
 
 import type { AppSettings, Document, Sidekick } from 'types'
 import SidekickSelect from './SidekickSelect'
@@ -19,7 +16,6 @@ import Drawer from './Drawer'
 import { ChatRoom } from './ChatRoom'
 import { FileUpload } from './AnswersContext'
 import AppBar from '@mui/material/AppBar'
-import { Button, Ic, Tooltip, TooltiponButton } from '@mui/material'
 import { CodePreview } from './Message/CodePreview'
 
 const DISPLAY_MODES = {
@@ -91,9 +87,9 @@ export const ChatDetail = ({
                         {selectedSidekick || chat ? (
                             <AppBar
                                 position='static'
-                                sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.12)' }}
+                                sx={{ borderBottom: '1px solid rgba(255, 255, 255, 0.12)', zIndex: 1000 }}
                                 color={'transparent'}
-                                elevation={0}
+                                elevation={1}
                             >
                                 <Toolbar sx={{ px: '16px!important', gap: 1 }}>
                                     <SidekickSelect sidekicks={sidekicks} />
@@ -118,17 +114,6 @@ export const ChatDetail = ({
                                     </Box>
 
                                     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                                        <Tooltip title='Start new chat'>
-                                            <Button
-                                                variant='outlined'
-                                                color='primary'
-                                                onClick={startNewChat}
-                                                data-test-id='new-chat-button'
-                                            >
-                                                Start New Chat
-                                            </Button>
-                                        </Tooltip>
-
                                         {/* {chat ? (
                                             <IconButton
                                                 size='large'
@@ -226,7 +211,15 @@ export const ChatDetail = ({
                                 </Box>
                             </Box>
                         ) : (
-                            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                            <Box
+                                sx={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    overflow: 'hidden',
+                                    width: '100%'
+                                }}
+                            >
                                 <iframe src={embeddedUrl} style={{ flex: 1, border: 'none' }} title='Embedded Form' allowFullScreen />
                             </Box>
                         )}

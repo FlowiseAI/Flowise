@@ -49,6 +49,12 @@ const VisibilitySettings = ({ dialogProps }) => {
 
     const onSave = async () => {
         try {
+            if (!dialogProps.chatflow.id && dialogProps.handleSaveFlow) {
+                return dialogProps.handleSaveFlow(dialogProps.chatflow.name, {
+                    visibility
+                })
+            }
+
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 visibility: visibility
             })

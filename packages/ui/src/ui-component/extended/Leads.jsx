@@ -47,6 +47,13 @@ const Leads = ({ dialogProps }) => {
                 leads: leadsConfig
             }
             chatbotConfig.leads = value.leads
+
+            if (!dialogProps.chatflow.id && dialogProps.handleSaveFlow) {
+                return dialogProps.handleSaveFlow(dialogProps.chatflow.name, {
+                    chatbotConfig: JSON.stringify(chatbotConfig)
+                })
+            }
+
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 chatbotConfig: JSON.stringify(chatbotConfig)
             })
