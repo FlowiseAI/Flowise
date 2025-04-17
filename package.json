@@ -56,6 +56,7 @@
         "turbo": "1.10.16",
         "typescript": "^5.4.5"
     },
+    "packageManager": "pnpm@9.6.0",
     "pnpm": {
         "onlyBuiltDependencies": [
             "faiss-node",
