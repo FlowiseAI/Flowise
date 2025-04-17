@@ -43,6 +43,7 @@ import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
 import multer from 'multer'
 import multerS3 from 'multer-s3'
+import MulterGoogleCloudStorage from 'multer-cloud-storage'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
@@ -1799,6 +1800,16 @@ export const getMulterStorage = () => {
             })
         })
         return upload
+    } else if (storageType === 'gcs') {
+        return multer({
+            storage: new MulterGoogleCloudStorage({
+                projectId: process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID,
+                bucket: process.env.GOOGLE_CLOUD_STORAGE_BUCKET_NAME,
+                keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
+                uniformBucketLevelAccess: Boolean(process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS) ?? true,
+                destination: `uploads/${getOrgId()}`
+            })
+        })
     } else {
         return multer({ dest: getUploadPath() })
     }

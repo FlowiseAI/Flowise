@@ -176,7 +176,10 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
 
         if (input) {
             const newInputMessage = new HumanMessage(input.text)
-            const messageToAdd = [newInputMessage].map((msg) => msg.toDict())
+            const messageToAdd = [newInputMessage].map((msg) => ({
+                ...msg.toDict(),
+                timestamp: new Date() // Add timestamp to the message
+            }))
             await collection.updateOne(
                 { sessionId: id },
                 {
@@ -189,7 +192,10 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
 
         if (output) {
             const newOutputMessage = new AIMessage(output.text)
-            const messageToAdd = [newOutputMessage].map((msg) => msg.toDict())
+            const messageToAdd = [newOutputMessage].map((msg) => ({
+                ...msg.toDict(),
+                timestamp: new Date() // Add timestamp to the message
+            }))
             await collection.updateOne(
                 { sessionId: id },
                 {
