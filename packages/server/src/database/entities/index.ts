@@ -20,6 +20,8 @@ import { UsageEvent } from './UsageEvent'
 import { BlockingStatus } from './BlockingStatus'
 import { StripeEvent } from './StripeEvent'
 import { CustomTemplate } from './CustomTemplate'
+import { AppCsvParseRuns } from './AppCsvParseRuns'
+import { AppCsvParseRows } from './AppCsvParseRows'
 
 export const entities = {
     ChatFlow,
@@ -43,7 +45,9 @@ export const entities = {
     UsageEvent,
     BlockingStatus,
     StripeEvent,
-    CustomTemplate
+    CustomTemplate,
+    AppCsvParseRuns,
+    AppCsvParseRows
 }
 
 export * from './Subscription'
