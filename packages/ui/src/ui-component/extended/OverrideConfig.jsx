@@ -116,25 +116,22 @@ const OverrideConfig = ({ dialogProps }) => {
     }
 
     const formatObj = () => {
-        const obj = {
-            overrideConfig: { status: overrideConfigStatus }
+        let apiConfig = JSON.parse(dialogProps.chatflow.apiConfig)
+        if (apiConfig === null || apiConfig === undefined) {
+            apiConfig = {}
         }
 
+        let overrideConfig = { status: overrideConfigStatus }
         if (overrideConfigStatus) {
-            // loop through each key in nodeOverrides and filter out the enabled ones
-            const filteredNodeOverrides = {}
-            for (const key in nodeOverrides) {
-                filteredNodeOverrides[key] = nodeOverrides[key].filter((node) => node.enabled)
-            }
-
-            obj.overrideConfig = {
-                ...obj.overrideConfig,
-                nodes: filteredNodeOverrides,
-                variables: variableOverrides.filter((node) => node.enabled)
+            overrideConfig = {
+                ...overrideConfig,
+                nodes: nodeOverrides,
+                variables: variableOverrides
             }
         }
+        apiConfig.overrideConfig = overrideConfig
 
-        return obj
+        return apiConfig
     }
 
     const onNodeOverrideToggle = (node, property, status) => {

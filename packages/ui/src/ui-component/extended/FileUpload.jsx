@@ -5,7 +5,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import parser from 'html-react-parser'
 
 // material-ui
-import { Button, Box } from '@mui/material'
+import { Button, Box, Typography } from '@mui/material'
 import { IconX, IconBulb } from '@tabler/icons-react'
 
 // Project import
@@ -22,6 +22,18 @@ const message = `Uploaded files will be parsed as strings and sent to the LLM. I
 <br />
 Refer <a href='https://docs.flowiseai.com/using-flowise/uploads#files' target='_blank'>docs</a> for more details.`
 
+const availableFileTypes = [
+    { name: 'CSS', ext: 'text/css' },
+    { name: 'CSV', ext: 'text/csv' },
+    { name: 'HTML', ext: 'text/html' },
+    { name: 'JSON', ext: 'application/json' },
+    { name: 'Markdown', ext: 'text/markdown' },
+    { name: 'PDF', ext: 'application/pdf' },
+    { name: 'SQL', ext: 'application/sql' },
+    { name: 'Text File', ext: 'text/plain' },
+    { name: 'XML', ext: 'application/xml' }
+]
+
 const FileUpload = ({ dialogProps }) => {
     const dispatch = useDispatch()
 
@@ -31,16 +43,27 @@ const FileUpload = ({ dialogProps }) => {
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [fullFileUpload, setFullFileUpload] = useState(false)
+    const [allowedFileTypes, setAllowedFileTypes] = useState([])
     const [chatbotConfig, setChatbotConfig] = useState({})
 
     const handleChange = (value) => {
         setFullFileUpload(value)
     }
 
+    const handleAllowedFileTypesChange = (event) => {
+        const { checked, value } = event.target
+        if (checked) {
+            setAllowedFileTypes((prev) => [...prev, value])
+        } else {
+            setAllowedFileTypes((prev) => prev.filter((item) => item !== value))
+        }
+    }
+
     const onSave = async () => {
         try {
             const value = {
-                status: fullFileUpload
+                status: fullFileUpload,
+                allowedUploadFileTypes: allowedFileTypes.join(',')
             }
             chatbotConfig.fullFileUpload = value
 
@@ -82,6 +105,9 @@ const FileUpload = ({ dialogProps }) => {
     }
 
     useEffect(() => {
+        /* backward compatibility - by default, allow all */
+        const allowedFileTypes = availableFileTypes.map((fileType) => fileType.ext)
+        setAllowedFileTypes(allowedFileTypes)
         if (dialogProps.chatflow) {
             if (dialogProps.chatflow.chatbotConfig) {
                 try {
@@ -89,6 +115,10 @@ const FileUpload = ({ dialogProps }) => {
                     setChatbotConfig(chatbotConfig || {})
                     if (chatbotConfig.fullFileUpload) {
                         setFullFileUpload(chatbotConfig.fullFileUpload.status)
+                    }
+                    if (chatbotConfig.fullFileUpload?.allowedUploadFileTypes) {
+                        const allowedFileTypes = chatbotConfig.fullFileUpload.allowedUploadFileTypes.split(',')
+                        setAllowedFileTypes(allowedFileTypes)
                     }
                 } catch (e) {
                     setChatbotConfig({})
@@ -135,8 +165,44 @@ const FileUpload = ({ dialogProps }) => {
                 </div>
                 <SwitchInput label='Enable Full File Upload' onChange={handleChange} value={fullFileUpload} />
             </Box>
-            {/* TODO: Allow selection of allowed file types*/}
-            <StyledButton style={{ marginBottom: 10, marginTop: 10 }} variant='contained' onClick={onSave}>
+
+            <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>Allow Uploads of Type</Typography>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                    gap: 15,
+                    padding: 10,
+                    width: '100%',
+                    marginBottom: '10px'
+                }}
+            >
+                {availableFileTypes.map((fileType) => (
+                    <div
+                        key={fileType.ext}
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            justifyContent: 'start'
+                        }}
+                    >
+                        <input
+                            type='checkbox'
+                            id={fileType.ext}
+                            name={fileType.ext}
+                            checked={allowedFileTypes.indexOf(fileType.ext) !== -1}
+                            value={fileType.ext}
+                            disabled={!fullFileUpload}
+                            onChange={handleAllowedFileTypesChange}
+                        />
+                        <label htmlFor={fileType.ext} style={{ marginLeft: 10 }}>
+                            {fileType.name} ({fileType.ext})
+                        </label>
+                    </div>
+                ))}
+            </div>
+            <StyledButton style={{ marginBottom: 10, marginTop: 20 }} variant='contained' onClick={onSave}>
                 Save
             </StyledButton>
         </>
