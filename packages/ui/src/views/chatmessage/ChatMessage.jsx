@@ -200,6 +200,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
     // full file upload
     const [fullFileUpload, setFullFileUpload] = useState(false)
+    const [fullFileUploadAllowedTypes, setFullFileUploadAllowedTypes] = useState("*")
 
     // feedback
     const [chatFeedbackStatus, setChatFeedbackStatus] = useState(false)
@@ -985,7 +986,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     }
 
     const getFileUploadAllowedTypes = () => {
-        if (fullFileUpload) return '*'
+        if (fullFileUpload) {
+            console.log(fullFileUploadAllowedTypes === '' ? '*' : fullFileUploadAllowedTypes)
+            console.log(fullFileUploadAllowedTypes)
+            return fullFileUploadAllowedTypes === '' ? '*' : fullFileUploadAllowedTypes
+        }
         return fileUploadAllowedTypes.includes('*') ? '*' : fileUploadAllowedTypes || '*'
     }
 
@@ -1122,6 +1127,9 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
                 if (config.fullFileUpload) {
                     setFullFileUpload(config.fullFileUpload.status)
+                    if (config.fullFileUpload?.allowedUploadFileTypes) {
+                        setFullFileUploadAllowedTypes(config.fullFileUpload?.allowedUploadFileTypes)
+                    }
                 }
             }
         }
