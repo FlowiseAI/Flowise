@@ -336,7 +336,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             ...chatflowCategories.more,
             ...new Set(marketplaceSidekicks.flatMap((s: Sidekick) => s.categories))
         ].filter(Boolean)
-        const uniqueCats = [...new Set(allCats)]
+        const uniqueCats = [...new Set(allCats)].sort((a, b) => a.localeCompare(b))
         return {
             top: uniqueCats.slice(0, 4),
             more: uniqueCats.slice(4)
