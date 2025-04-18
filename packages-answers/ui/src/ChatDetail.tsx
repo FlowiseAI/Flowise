@@ -3,21 +3,23 @@ import React, { Suspense, useRef } from 'react'
 
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-import SourceDocumentModal from '@ui/SourceDocumentModal'
 
 import { useAnswers } from './AnswersContext'
-import ChatInput from './ChatInput'
-import DrawerFilters from './DrawerFilters/DrawerFilters'
 import Toolbar from '@mui/material/Toolbar'
 
 import type { AppSettings, Document, Sidekick } from 'types'
-import SidekickSelect from './SidekickSelect'
 import Drawer from './Drawer'
 import { ChatRoom } from './ChatRoom'
-import { FileUpload } from './AnswersContext'
+
 import AppBar from '@mui/material/AppBar'
-import { Button, Tooltip } from '@mui/material'
-import { CodePreview } from './Message/CodePreview'
+
+import dynamic from 'next/dynamic'
+
+const SourceDocumentModal = dynamic(() => import('@ui/SourceDocumentModal'), { ssr: false })
+const CodePreview = dynamic(() => import('./Message/CodePreview').then((mod) => ({ default: mod.CodePreview })), { ssr: false })
+const DrawerFilters = dynamic(() => import('./DrawerFilters/DrawerFilters'), { ssr: false })
+const ChatInput = dynamic(() => import('./ChatInput'), { ssr: true })
+const SidekickSelect = dynamic(() => import('./SidekickSelect'), { ssr: false })
 
 const DISPLAY_MODES = {
     CHATBOT: 'chatbot',
@@ -250,9 +252,13 @@ export const ChatDetail = ({
                     open={!!showFilters || !!selectedDocuments || !!previewCode}
                 >
                     {selectedDocuments ? (
-                        <SourceDocumentModal documents={selectedDocuments} onClose={() => setSelectedDocuments(undefined)} />
+                        <Suspense fallback={<div>Loading...</div>}>
+                            <SourceDocumentModal documents={selectedDocuments} onClose={() => setSelectedDocuments(undefined)} />
+                        </Suspense>
                     ) : previewCode ? (
-                        <CodePreview {...previewCode} onClose={() => setPreviewCode(null)} />
+                        <Suspense fallback={<div>Loading...</div>}>
+                            <CodePreview {...previewCode} onClose={() => setPreviewCode(null)} />
+                        </Suspense>
                     ) : showFilters ? (
                         <Suspense fallback={<div>Loading...</div>}>
                             <DrawerFilters appSettings={appSettings} />

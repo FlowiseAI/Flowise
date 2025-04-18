@@ -11,11 +11,14 @@ import { darkModeTheme } from '../theme'
 import GlobalStyles from '../GlobalStyles'
 
 import { AppSettings } from 'types'
-import HelpChatDrawer from '../HelpChatDrawer'
-import { HelpChatProvider } from '../HelpChatContext'
 import { UserProvider } from '@auth0/nextjs-auth0/client'
-
 import { Auth0Setup } from '@/hooks/useAuth0Setup'
+import dynamic from 'next/dynamic'
+const HelpChatDrawer = dynamic(() => import('../HelpChatDrawer'), { ssr: false })
+const HelpChatProvider = dynamic(() => import('../HelpChatContext').then((mod) => mod.HelpChatProvider), {
+    ssr: false
+})
+
 import React from 'react'
 
 export default function AppLayout({
@@ -59,22 +62,24 @@ export default function AppLayout({
                         authorizationParams={authorizationParams}
                     > */}
                     <ThemeProvider theme={darkModeTheme}>
-                        <HelpChatProvider>
-                            <CssBaseline enableColorScheme />
-                            <GlobalStyles />
-                            <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
-                                {!noDrawer && (
-                                    <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
-                                )}
-                                <div style={{ flex: 1, position: 'relative' }}>
-                                    <div style={{ width: '100%', height: '100%', position: 'relative' }}>{children}</div>
-                                </div>
-                                <HelpChatDrawer
-                                    apiHost='https://lastrev.flowise.theanswer.ai'
-                                    chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d'
-                                />
+                        <CssBaseline enableColorScheme />
+                        <GlobalStyles />
+                        <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
+                            {!noDrawer && (
+                                <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
+                            )}
+                            <div style={{ flex: 1, position: 'relative' }}>
+                                <div style={{ width: '100%', height: '100%', position: 'relative' }}>{children}</div>
                             </div>
-                        </HelpChatProvider>
+                            <React.Suspense fallback={<div>Loading...</div>}>
+                                <HelpChatProvider>
+                                    <HelpChatDrawer
+                                        apiHost='https://lastrev.flowise.theanswer.ai'
+                                        chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d'
+                                    />
+                                </HelpChatProvider>
+                            </React.Suspense>
+                        </div>
                     </ThemeProvider>
                     {/* </Auth0Provider> */}
                 </FlagsmithProvider>

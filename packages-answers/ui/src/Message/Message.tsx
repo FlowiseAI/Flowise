@@ -5,11 +5,10 @@ import { useFlags } from 'flagsmith/react'
 import ReactMarkdown from 'react-markdown'
 import Image from 'next/image'
 import { JsonViewer } from '@textea/json-viewer'
-import { Box, Typography,  Avatar, Chip, Button, Divider } from '@mui/material'
+import { Box, Typography, Avatar, Chip, Button, Divider } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
 
-import { countTokens } from '@utils/utilities/countTokens'
 import { useAnswers } from '../AnswersContext'
 import {
     Accordion as CustomAccordion,
@@ -287,6 +286,13 @@ export const MessageCard = ({
             }
         }
     }, [content, isUserMessage, setPreviewCode, isLastMessage])
+
+    // Simple lightweight token counter function (approximate)
+    const countTokensLite = (text: string): number => {
+        if (!text) return 0
+        // Simple approximation: count words and add 20% for special tokens/punctuation
+        return Math.ceil(text.split(/\s+/).length * 1.2)
+    }
 
     return (
         <Box
@@ -907,7 +913,7 @@ export const MessageCard = ({
                         <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
                             <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>
-                                    Source Documents ({countTokens(sourceDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
+                                    Source Documents ({countTokensLite(sourceDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
                                 </Typography>
                             </CustomAccordionSummary>
                             <CustomAccordionDetails>

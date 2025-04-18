@@ -1,9 +1,12 @@
 import React, { Suspense } from 'react'
 import { Box, Button, IconButton } from '@mui/material'
 import type { Message, Sidekick } from 'types'
-import { MessageCard } from './Message'
-import AssistantInfoCard from './AssistantInfoCard'
 import RefreshIcon from '@mui/icons-material/Refresh'
+
+import dynamic from 'next/dynamic'
+
+const MessageCard = dynamic(() => import('./Message/Message').then((mod) => ({ default: mod.MessageCard })), { ssr: false })
+const AssistantInfoCard = dynamic(() => import('./AssistantInfoCard'), { ssr: false })
 
 interface ChatRoomProps {
     messages: Message[] | null | undefined
