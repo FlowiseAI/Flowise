@@ -527,6 +527,10 @@ export const getAvailableNodesForVariable = (nodes, edges, target, targetHandle,
         return uniq(parentNodes)
     } else if (isAgentFlowV2) {
         collectAgentFlowV2ParentNodes(target, nodes, edges)
+        const parentNodeId = nodes.find((nd) => nd.id === target)?.parentNode
+        if (parentNodeId) {
+            collectAgentFlowV2ParentNodes(parentNodeId, nodes, edges)
+        }
         return uniq(parentNodes)
     } else {
         const inputEdges = edges.filter((edg) => edg.target === target && edg.targetHandle === targetHandle)
