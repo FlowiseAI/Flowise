@@ -27,7 +27,7 @@ export class BedrockChat extends LCBedrockChat implements IVisionChatModal {
     }
 
     setVisionModel(): void {
-        if (!this.model.startsWith('claude-3')) {
+        if (!this.model.includes('claude-3')) {
             this.model = DEFAULT_IMAGE_MODEL
             this.maxTokens = this.configuredMaxToken ? this.configuredMaxToken : DEFAULT_IMAGE_MAX_TOKEN
         }
