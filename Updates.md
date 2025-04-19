@@ -100,3 +100,16 @@ The frontend implementation displays usage events in a table with:
 -   `packages/server/src/routes/billing/index.ts`: Added route for usage events
 -   `packages/server/src/Interface.ts`: Added organizationId to IChatMessage interface
 -   `packages/server/src/middlewares/authentication/enforceAbility.ts`: Fixed linter errors and improved error handling
+
+# Updates
+
+## Chatbot Configuration Fix - 2023-08-03
+
+### Changes:
+- Fixed an issue in the Canvas component where chatbotConfig handling was inconsistent
+- Added proper serialization of chatbotConfig object before saving
+- Added debug logging to help trace configuration values
+- Simplified config handling when updating existing chatflows
+
+### Files Changed:
+- `packages/ui/src/views/canvas/index.jsx`

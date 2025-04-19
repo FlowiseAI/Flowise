@@ -284,6 +284,8 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                 const rfInstanceObject = reactFlowInstance.toObject()
                 rfInstanceObject.nodes = nodes
                 const flowData = JSON.stringify(rfInstanceObject)
+                const chatbotConfig =
+                    typeof chatflow.chatbotConfig === 'object' ? JSON.stringify(chatflow.chatbotConfig) : chatflow.chatbotConfig
 
                 if (!chatflow.id) {
                     const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
@@ -310,7 +312,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                             description: chatflow.description || configs.description || '',
                             visibility: chatflow.visibility || configs.visibility || [],
                             category: chatflow.category || configs.category || '',
-                            chatbotConfig: chatflow.chatbotConfig || configs.chatbotConfig || ''
+                            chatbotConfig: chatbotConfig || configs.chatbotConfig || ''
                         }
                     }
                     createNewChatflowApi.request(newChatflowBody)
@@ -318,18 +320,12 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                     const updateBody = {
                         name: chatflowName,
                         parentChatflowId: parentChatflowId && parentChatflowId.startsWith('cf_') ? null : parentChatflowId,
-                        deployed: false,
-                        isPublic: false,
                         flowData,
                         type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW',
                         description: chatflow.description || '',
                         visibility: chatflow.visibility || [],
                         category: chatflow.category || '',
-                        chatbotConfig: chatflow.chatbotConfig
-                            ? JSON.stringify(chatflow.chatbotConfig)
-                            : JSON.stringify({
-                                  chatLinksInNewTab: { status: true }
-                              })
+                        chatbotConfig
                     }
                     updateChatflowApi.request(chatflow.id, updateBody)
                 }

@@ -1,6 +1,9 @@
 import cron from 'node-cron'
 import axios from 'axios'
 import logger from './logger'
+import initCsvRun from '../jobs/initCsvRun'
+import processCsvRows from '../jobs/processCsvRows'
+import generateCsv from '../jobs/generateCsv'
 
 /**
  * Cron job schedule for billing usage sync
@@ -46,4 +49,8 @@ export function initCronJobs() {
     } else {
         logger.info('📅 [cron]: Billing usage sync cron job is disabled')
     }
+
+    initCsvRun()
+    processCsvRows()
+    generateCsv()
 }
