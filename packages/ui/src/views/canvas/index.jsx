@@ -286,7 +286,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                 const flowData = JSON.stringify(rfInstanceObject)
                 const chatbotConfig =
                     typeof chatflow.chatbotConfig === 'object' ? JSON.stringify(chatflow.chatbotConfig) : chatflow.chatbotConfig
-                console.log('[Canvas] chatflow', { chatflow, chatbotConfig })
+
                 if (!chatflow.id) {
                     const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
                     let newChatflowBody
@@ -320,8 +320,6 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                     const updateBody = {
                         name: chatflowName,
                         parentChatflowId: parentChatflowId && parentChatflowId.startsWith('cf_') ? null : parentChatflowId,
-                        deployed: false,
-                        isPublic: false,
                         flowData,
                         type: isAgentCanvas ? 'MULTIAGENT' : 'CHATFLOW',
                         description: chatflow.description || '',
