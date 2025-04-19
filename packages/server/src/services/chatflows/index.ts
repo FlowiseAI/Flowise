@@ -38,6 +38,10 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
             }
         }
 
+        if (chatflow.type === 'AGENTFLOW') {
+            return { isStreaming: true }
+        }
+
         /*** Get Ending Node with Directed Graph  ***/
         const flowData = chatflow.flowData
         const parsedFlowData: IReactFlowObject = JSON.parse(flowData)
@@ -121,6 +125,8 @@ const getAllChatflows = async (type?: ChatflowType): Promise<ChatFlow[]> => {
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).find()
         if (type === 'MULTIAGENT') {
             return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
+        } else if (type === 'AGENTFLOW') {
+            return dbResponse.filter((chatflow) => chatflow.type === 'AGENTFLOW')
         } else if (type === 'ASSISTANT') {
             return dbResponse.filter((chatflow) => chatflow.type === 'ASSISTANT')
         } else if (type === 'CHATFLOW') {
@@ -336,7 +342,7 @@ const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> =>
         if (dbResponse.chatbotConfig || uploadsConfig) {
             try {
                 const parsedConfig = dbResponse.chatbotConfig ? JSON.parse(dbResponse.chatbotConfig) : {}
-                return { ...parsedConfig, uploads: uploadsConfig }
+                return { ...parsedConfig, uploads: uploadsConfig, flowData: dbResponse.flowData }
             } catch (e) {
                 throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error parsing Chatbot Config for Chatflow ${chatflowId}`)
             }

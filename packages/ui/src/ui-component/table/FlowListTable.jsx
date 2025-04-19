@@ -66,6 +66,14 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
         localStorage.setItem(localStorageKeyOrderBy, property)
     }
 
+    const onFlowClick = (row) => {
+        if (!isAgentCanvas) {
+            return `/canvas/${row.id}`
+        } else {
+            return localStorage.getItem('agentFlowVersion') === 'v2' ? `/v2/agentcanvas/${row.id}` : `/agentcanvas/${row.id}`
+        }
+    }
+
     const sortedData = data
         ? [...data].sort((a, b) => {
               if (orderBy === 'name') {
@@ -170,10 +178,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                         overflow: 'hidden'
                                                     }}
                                                 >
-                                                    <Link
-                                                        to={`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${row.id}`}
-                                                        style={{ color: '#2196f3', textDecoration: 'none' }}
-                                                    >
+                                                    <Link to={onFlowClick(row)} style={{ color: '#2196f3', textDecoration: 'none' }}>
                                                         {row.templateName || row.name}
                                                     </Link>
                                                 </Typography>

@@ -6,7 +6,6 @@
     "types": "dist/src/index.d.ts",
     "scripts": {
         "build": "tsc && gulp",
-        "dev:gulp": "gulp",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "clean": "rimraf dist",
         "nuke": "rimraf dist node_modules .turbo"

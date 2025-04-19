@@ -29,7 +29,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ===========================|| CONTRACT CARD ||=========================== //
 
-const ItemCard = ({ data, images, onClick }) => {
+const ItemCard = ({ data, images, icons, onClick }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -106,7 +106,7 @@ const ItemCard = ({ data, images, onClick }) => {
                             </span>
                         )}
                     </Box>
-                    {images && (
+                    {(images?.length > 0 || icons?.length > 0) && (
                         <Box
                             sx={{
                                 display: 'flex',
@@ -115,24 +115,48 @@ const ItemCard = ({ data, images, onClick }) => {
                                 gap: 1
                             }}
                         >
-                            {images.slice(0, images.length > 3 ? 3 : images.length).map((img) => (
-                                <Box
-                                    key={img}
-                                    sx={{
-                                        width: 30,
-                                        height: 30,
-                                        borderRadius: '50%',
-                                        backgroundColor: customization.isDarkMode
-                                            ? theme.palette.common.white
-                                            : theme.palette.grey[300] + 75
-                                    }}
-                                >
-                                    <img style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }} alt='' src={img} />
-                                </Box>
-                            ))}
-                            {images.length > 3 && (
+                            {[
+                                ...(images || []).map((img) => ({ type: 'image', src: img })),
+                                ...(icons || []).map((ic) => ({ type: 'icon', icon: ic.icon, color: ic.color }))
+                            ]
+                                .slice(0, 3)
+                                .map((item, index) =>
+                                    item.type === 'image' ? (
+                                        <Box
+                                            key={item.src}
+                                            sx={{
+                                                width: 30,
+                                                height: 30,
+                                                borderRadius: '50%',
+                                                backgroundColor: customization.isDarkMode
+                                                    ? theme.palette.common.white
+                                                    : theme.palette.grey[300] + 75
+                                            }}
+                                        >
+                                            <img
+                                                style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
+                                                alt=''
+                                                src={item.src}
+                                            />
+                                        </Box>
+                                    ) : (
+                                        <div
+                                            key={index}
+                                            style={{
+                                                width: 30,
+                                                height: 30,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <item.icon size={25} color={item.color} />
+                                        </div>
+                                    )
+                                )}
+                            {images?.length + (icons?.length || 0) > 3 && (
                                 <Typography sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}>
-                                    + {images.length - 3} More
+                                    + {images?.length + (icons?.length || 0) - 3} More
                                 </Typography>
                             )}
                         </Box>
@@ -146,6 +170,7 @@ const ItemCard = ({ data, images, onClick }) => {
 ItemCard.propTypes = {
     data: PropTypes.object,
     images: PropTypes.array,
+    icons: PropTypes.array,
     onClick: PropTypes.func
 }
 

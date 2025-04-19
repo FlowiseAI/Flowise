@@ -181,7 +181,16 @@ const ExpandedChunkDialog = ({ show, dialogProps, onCancel, onChunkEdit, onDelet
                                 onValueChange={(text) => setContentValue(text)}
                             />
                         )}
-                        <div style={{ marginTop: '20px', marginBottom: '15px' }}>
+                        <div
+                            onClick={(e) => e.stopPropagation()}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.stopPropagation()
+                                }
+                            }}
+                            role='presentation'
+                            style={{ marginTop: '20px', marginBottom: '15px' }}
+                        >
                             {!isEdit && (
                                 <ReactJson
                                     theme={customization.isDarkMode ? 'ocean' : 'rjv-default'}

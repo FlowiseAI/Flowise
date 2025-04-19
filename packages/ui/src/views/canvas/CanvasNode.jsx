@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState, useEffect, memo } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
@@ -218,6 +218,7 @@ const CanvasNode = ({ data }) => {
                         ))}
                         {data.inputParams
                             .filter((inputParam) => !inputParam.hidden)
+                            .filter((inputParam) => inputParam.display !== false)
                             .map((inputParam, index) => (
                                 <NodeInputHandler
                                     key={index}
@@ -283,4 +284,4 @@ CanvasNode.propTypes = {
     data: PropTypes.object
 }
 
-export default CanvasNode
+export default memo(CanvasNode)

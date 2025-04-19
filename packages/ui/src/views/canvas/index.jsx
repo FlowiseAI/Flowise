@@ -24,8 +24,8 @@ import StickyNote from './StickyNote'
 import CanvasHeader from './CanvasHeader'
 import AddNodes from './AddNodes'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import { ChatPopUp } from '@/views/chatmessage/ChatPopUp'
-import { VectorStorePopUp } from '@/views/vectorstore/VectorStorePopUp'
+import ChatPopUp from '@/views/chatmessage/ChatPopUp'
+import VectorStorePopUp from '@/views/vectorstore/VectorStorePopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
 // API

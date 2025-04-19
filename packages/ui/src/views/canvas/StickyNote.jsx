@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import { useContext, useState } from 'react'
+import { useContext, useState, memo } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
@@ -100,4 +100,4 @@ StickyNote.propTypes = {
     data: PropTypes.object
 }
 
-export default StickyNote
+export default memo(StickyNote)
