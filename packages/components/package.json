@@ -57,6 +57,7 @@
         "@langchain/qdrant": "^0.0.5",
         "@langchain/weaviate": "^0.0.1",
         "@langchain/xai": "^0.0.1",
+        "@latitude-data/supergateway": "^2.1.4",
         "@mem0/community": "^0.0.1",
         "@mendable/firecrawl-js": "^0.0.28",
         "@mistralai/mistralai": "0.1.3",
