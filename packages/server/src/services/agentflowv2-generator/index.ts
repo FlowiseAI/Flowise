@@ -174,7 +174,10 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
         const toolNodes = await getAllToolNodes()
         const marketplaceTemplates = await getAllAgentflowv2Marketplaces()
 
-        const prompt = sysPrompt.replace('{agentFlow2Nodes}', agentFlow2Nodes).replace('{marketplaceTemplates}', marketplaceTemplates)
+        const prompt = sysPrompt
+            .replace('{agentFlow2Nodes}', agentFlow2Nodes)
+            .replace('{marketplaceTemplates}', marketplaceTemplates)
+            .replace('{userRequest}', question)
         const options: Record<string, any> = {
             appDataSource: getRunningExpressApp().AppDataSource,
             databaseEntities: databaseEntities,

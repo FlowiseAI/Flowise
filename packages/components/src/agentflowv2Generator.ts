@@ -76,11 +76,15 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
 }
 
 const updateEdges = (edges: any) => {
+    const isMultiOutput = (source: string) => {
+        return source.includes('conditionAgentflow') || source.includes('conditionAgentAgentflow') || source.includes('humanInputAgentflow')
+    }
     const updatedEdges = edges.map((edge: any) => {
         return {
             ...edge,
             data: {
                 ...edge.data,
+                edgeLabel: isMultiOutput(edge.source) && edge.label && edge.label.trim() !== '' ? edge.label.trim() : undefined,
                 isHumanInput: edge.source.includes('humanInputAgentflow') ? true : false
             },
             type: 'agentFlow',
@@ -90,7 +94,7 @@ const updateEdges = (edges: any) => {
 
     if (updatedEdges.length > 0) {
         updatedEdges.forEach((edge: any) => {
-            if (edge.source.includes('conditionAgentflow') || edge.source.includes('humanInputAgentflow')) {
+            if (isMultiOutput(edge.source)) {
                 if (edge.sourceHandle.includes('true')) {
                     edge.sourceHandle = edge.sourceHandle.replace('true', '0')
                 } else if (edge.sourceHandle.includes('false')) {
