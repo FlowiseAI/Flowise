@@ -43,6 +43,7 @@ import { randomBytes } from 'crypto'
 import { AES, enc } from 'crypto-js'
 import multer from 'multer'
 import multerS3 from 'multer-s3'
+import MulterGoogleCloudStorage from 'multer-cloud-storage'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Credential } from '../database/entities/Credential'
@@ -59,7 +60,6 @@ import { StatusCodes } from 'http-status-codes'
 import {
     CreateSecretCommand,
     GetSecretValueCommand,
-    PutSecretValueCommand,
     SecretsManagerClient,
     SecretsManagerClientConfig
 } from '@aws-sdk/client-secrets-manager'
@@ -1394,6 +1394,29 @@ export const getEncryptionKey = async (): Promise<string> => {
     if (process.env.FLOWISE_SECRETKEY_OVERWRITE !== undefined && process.env.FLOWISE_SECRETKEY_OVERWRITE !== '') {
         return process.env.FLOWISE_SECRETKEY_OVERWRITE
     }
+    if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
+        const secretId = process.env.SECRETKEY_AWS_NAME || 'FlowiseEncryptionKey'
+        try {
+            const command = new GetSecretValueCommand({ SecretId: secretId })
+            const response = await secretsManagerClient.send(command)
+
+            if (response.SecretString) {
+                return response.SecretString
+            }
+        } catch (error: any) {
+            if (error.name === 'ResourceNotFoundException') {
+                // Secret doesn't exist, create it
+                const newKey = generateEncryptKey()
+                const createCommand = new CreateSecretCommand({
+                    Name: secretId,
+                    SecretString: newKey
+                })
+                await secretsManagerClient.send(createCommand)
+                return newKey
+            }
+            throw error
+        }
+    }
     try {
         return await fs.promises.readFile(getEncryptionKeyPath(), 'utf8')
     } catch (error) {
@@ -1412,39 +1435,7 @@ export const getEncryptionKey = async (): Promise<string> => {
  * @returns {Promise<string>}
  */
 export const encryptCredentialData = async (plainDataObj: ICredentialDataDecrypted): Promise<string> => {
-    if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
-        const secretName = `FlowiseCredential_${randomBytes(12).toString('hex')}`
-
-        logger.info(`[server]: Upserting AWS Secret: ${secretName}`)
-
-        const secretString = JSON.stringify({ ...plainDataObj })
-
-        try {
-            // Try to update the secret if it exists
-            const putCommand = new PutSecretValueCommand({
-                SecretId: secretName,
-                SecretString: secretString
-            })
-            await secretsManagerClient.send(putCommand)
-        } catch (error: any) {
-            if (error.name === 'ResourceNotFoundException') {
-                // Secret doesn't exist, so create it
-                const createCommand = new CreateSecretCommand({
-                    Name: secretName,
-                    SecretString: secretString
-                })
-                await secretsManagerClient.send(createCommand)
-            } else {
-                // Rethrow any other errors
-                throw error
-            }
-        }
-        return secretName
-    }
-
     const encryptKey = await getEncryptionKey()
-
-    // Fallback to existing code
     return AES.encrypt(JSON.stringify(plainDataObj), encryptKey).toString()
 }
 
@@ -1465,14 +1456,20 @@ export const decryptCredentialData = async (
     if (USE_AWS_SECRETS_MANAGER && secretsManagerClient) {
         try {
             logger.info(`[server]: Reading AWS Secret: ${encryptedData}`)
-            const command = new GetSecretValueCommand({ SecretId: encryptedData })
-            const response = await secretsManagerClient.send(command)
+            if (encryptedData.startsWith('FlowiseCredential_')) {
+                const command = new GetSecretValueCommand({ SecretId: encryptedData })
+                const response = await secretsManagerClient.send(command)
 
-            if (response.SecretString) {
-                const secretObj = JSON.parse(response.SecretString)
-                decryptedDataStr = JSON.stringify(secretObj)
+                if (response.SecretString) {
+                    const secretObj = JSON.parse(response.SecretString)
+                    decryptedDataStr = JSON.stringify(secretObj)
+                } else {
+                    throw new Error('Failed to retrieve secret value.')
+                }
             } else {
-                throw new Error('Failed to retrieve secret value.')
+                const encryptKey = await getEncryptionKey()
+                const decryptedData = AES.decrypt(encryptedData, encryptKey)
+                decryptedDataStr = decryptedData.toString(enc.Utf8)
             }
         } catch (error) {
             console.error(error)
@@ -1803,6 +1800,16 @@ export const getMulterStorage = () => {
             })
         })
         return upload
+    } else if (storageType === 'gcs') {
+        return multer({
+            storage: new MulterGoogleCloudStorage({
+                projectId: process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID,
+                bucket: process.env.GOOGLE_CLOUD_STORAGE_BUCKET_NAME,
+                keyFilename: process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL,
+                uniformBucketLevelAccess: Boolean(process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS) ?? true,
+                destination: `uploads/${getOrgId()}`
+            })
+        })
     } else {
         return multer({ dest: getUploadPath() })
     }

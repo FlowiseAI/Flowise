@@ -38,6 +38,8 @@ services:
             - WORKER_CONCURRENCY=${WORKER_CONCURRENCY}
             - QUEUE_NAME=${QUEUE_NAME}
             - QUEUE_REDIS_EVENT_STREAM_MAX_LEN=${QUEUE_REDIS_EVENT_STREAM_MAX_LEN}
+            - REMOVE_ON_AGE=${REMOVE_ON_AGE}
+            - REMOVE_ON_COUNT=${REMOVE_ON_COUNT}
             - REDIS_URL=${REDIS_URL}
             - REDIS_HOST=${REDIS_HOST}
             - REDIS_PORT=${REDIS_PORT}
@@ -50,11 +52,11 @@ services:
         ports:
             - '${PORT}:${PORT}'
         healthcheck:
-          test: ["CMD", "curl", "-f", "http://localhost:${PORT}/api/v1/ping"]
-          interval: 10s
-          timeout: 5s
-          retries: 5
-          start_period: 30s
+            test: ['CMD', 'curl', '-f', 'http://localhost:${PORT}/api/v1/ping']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s
         volumes:
             - ~/.flowise:/root/.flowise
         entrypoint: /bin/sh -c "sleep 3; flowise start"

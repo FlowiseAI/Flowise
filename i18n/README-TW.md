@@ -10,13 +10,13 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](../README.md) | 繁體中文 | [簡體中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
+[English](../README.md) | 繁體中文 | [简体中文](./README-ZH.md) | [日本語](./README-JA.md) | [한국어](./README-KR.md)
 
 <h3>拖放 UI 以構建自定義的 LLM 流程</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
 
-## ⚡快速開始
+## ⚡ 快速開始
 
 下載並安裝 [NodeJS](https://nodejs.org/en/download) >= 18.15.0
 

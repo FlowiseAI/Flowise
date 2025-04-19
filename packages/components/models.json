@@ -236,6 +236,10 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-4.1",
+                    "name": "gpt-4.1"
+                },
+                {
                     "label": "o3-mini",
                     "name": "o3-mini"
                 },
@@ -420,12 +424,16 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
-                    "label": "gemini-2.0-flash-001",
-                    "name": "gemini-2.0-flash-001"
+                    "label": "gemini-2.5-pro-preview-03-25",
+                    "name": "gemini-2.5-pro-preview-03-25"
                 },
                 {
-                    "label": "gemini-2.0-flash-lite-001",
-                    "name": "gemini-2.0-flash-lite-001"
+                    "label": "gemini-2.0-flash",
+                    "name": "gemini-2.0-flash"
+                },
+                {
+                    "label": "gemini-2.0-flash-lite",
+                    "name": "gemini-2.0-flash-lite"
                 },
                 {
                     "label": "gemini-1.5-flash",
@@ -575,6 +583,14 @@
                 {
                     "label": "mixtral-8x7b-32768",
                     "name": "mixtral-8x7b-32768"
+                },
+                {
+                    "label": "meta-llama/llama-4-maverick-17b-128e-instruct",
+                    "name": "meta-llama/llama-4-maverick-17b-128e-instruct"
+                },
+                {
+                    "label": "meta-llama/llama-4-scout-17b-16e-instruct",
+                    "name": "meta-llama/llama-4-scout-17b-16e-instruct"
                 }
             ]
         },
@@ -607,6 +623,18 @@
         {
             "name": "chatOpenAI",
             "models": [
+                {
+                    "label": "gpt-4.1",
+                    "name": "gpt-4.1"
+                },
+                {
+                    "label": "gpt-4.1-mini",
+                    "name": "gpt-4.1-mini"
+                },
+                {
+                    "label": "gpt-4.1-nano",
+                    "name": "gpt-4.1-nano"
+                },
                 {
                     "label": "gpt-4.5-preview",
                     "name": "gpt-4.5-preview"
@@ -1328,6 +1356,10 @@
                 {
                     "label": "text-embedding-004",
                     "name": "text-embedding-004"
+                },
+                {
+                    "label": "gemini-embedding-exp-03-07",
+                    "name": "gemini-embedding-exp-03-07"
                 }
             ]
         },
