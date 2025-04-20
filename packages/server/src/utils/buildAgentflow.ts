@@ -822,14 +822,27 @@ const executeNode = async ({
         const availableVariables = await appDataSource.getRepository(Variable).find()
 
         // Prepare flow config
+        let updatedState = cloneDeep(agentflowRuntime.state)
         const flowConfig: IFlowConfig = {
             chatflowid: chatflow.id,
             chatId,
             sessionId,
             apiMessageId,
             chatHistory: pastChatHistory,
-            state: agentflowRuntime.state,
+            state: updatedState,
             ...overrideConfig
+        }
+        if (
+            iterationContext &&
+            iterationContext.agentflowRuntime &&
+            iterationContext.agentflowRuntime.state &&
+            Object.keys(iterationContext.agentflowRuntime.state).length > 0
+        ) {
+            updatedState = {
+                ...updatedState,
+                ...iterationContext.agentflowRuntime.state
+            }
+            flowConfig.state = updatedState
         }
 
         // Resolve variables in node data
@@ -961,7 +974,10 @@ const executeNode = async ({
                             signal: abortController,
                             isRecursive: true,
                             parentExecutionId,
-                            iterationContext
+                            iterationContext: {
+                                ...iterationContext,
+                                agentflowRuntime
+                            }
                         })
 
                         // Store the result
@@ -995,6 +1011,26 @@ const executeNode = async ({
                                     console.error(`  ❌ Error updating parent execution: ${getErrorMessage(error)}`)
                                 }
                             }
+                        }
+
+                        // Merge the child iteration's runtime state back to parent
+                        if (
+                            subFlowResult?.agentflowRuntime &&
+                            subFlowResult.agentflowRuntime.state &&
+                            Object.keys(subFlowResult.agentflowRuntime.state).length > 0
+                        ) {
+                            logger.debug(`  🔄 Merging iteration ${i + 1} runtime state back to parent`)
+
+                            updatedState = {
+                                ...updatedState,
+                                ...subFlowResult.agentflowRuntime.state
+                            }
+
+                            // Update next iteration's runtime state
+                            agentflowRuntime.state = updatedState
+
+                            // Update parent execution's runtime state
+                            results.state = updatedState
                         }
                     } catch (error) {
                         console.error(`  ❌ Error in iteration ${i + 1}: ${getErrorMessage(error)}`)
@@ -1561,6 +1597,7 @@ export const executeAgentFlow = async ({
     if (isRecursive) {
         return {
             agentFlowExecutedData,
+            agentflowRuntime,
             status,
             text: content
         }
