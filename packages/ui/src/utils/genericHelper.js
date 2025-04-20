@@ -338,19 +338,19 @@ export const getFileName = (fileBase64) => {
     }
     if (fileBase64.startsWith('[') && fileBase64.endsWith(']')) {
         const files = JSON.parse(fileBase64)
+        let name = ''
         for (const file of files) {
-            const splitDataURI = file.split(',')
-            const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
-            fileNames.push(filename)
+            let ind = file.lastIndexOf(',filename:')
+            name = file.substring(ind + 10)
+            fileNames.push(name)
         }
         return fileNames.join(', ')
     } else {
         const splitDataURI = fileBase64.split(',')
-        var name = ''
-        for (let i = 2; i < splitDataURI.length - 1; i++) {
+        let name = ''
+        for (let i = 2; i <= splitDataURI.length - 1; i++) {
             name = name + splitDataURI[i] + ','
         }
-        name += splitDataURI[splitDataURI.length - 1]
         return name.substring(9)
     }
 }
