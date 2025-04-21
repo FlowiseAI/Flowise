@@ -1129,10 +1129,11 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 </Box>
 
                 {searchTerm && fuse ? (
-                    // Search results section - Always shown as expanded grid
+                    // Search results section
                     <CategorySection>
                         <CategoryTitle variant='h6'>Search Results</CategoryTitle>
-                        {/* Always show category filter pills for search results */}
+
+                        {/* Add category filter pills for search results */}
                         <CategoryFilter
                             parentCategory='search'
                             availableCategories={['all'].concat(allCategories.top).concat(allCategories.more)}

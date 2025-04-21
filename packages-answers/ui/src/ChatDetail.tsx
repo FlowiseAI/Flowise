@@ -149,8 +149,8 @@ export const ChatDetail = ({
                                     maxWidth: 1200,
 
                                     px: { xs: 2, sm: 3 },
-                                    // overflowY: 'auto'
-                                    margin: 'auto'
+                                    overflowY: 'auto',
+                                    margin: '0 auto'
                                 }}
                             >
                                 <Image
