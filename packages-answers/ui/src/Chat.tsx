@@ -1,13 +1,13 @@
 import { Suspense } from 'react'
 
 import { getAppSettings } from './getAppSettings'
-import { ChatDetail } from './ChatDetail'
 import { AnswersProvider } from './AnswersContext'
-import Modal from './Modal'
 import getCachedSession from './getCachedSession'
-
+import dynamic from 'next/dynamic'
 import type { Sidekick, Chat as ChatType, Journey } from 'types'
 
+const ChatDetail = dynamic(() => import('./ChatDetail').then((mod) => ({ default: mod.ChatDetail })))
+const Modal = dynamic(() => import('./Modal'))
 export interface Params {
     chat?: ChatType
     journey?: Journey

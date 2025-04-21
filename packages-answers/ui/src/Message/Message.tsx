@@ -2,7 +2,6 @@
 import React, { useState } from 'react'
 import { AxiosError } from 'axios'
 import { useFlags } from 'flagsmith/react'
-import ReactMarkdown from 'react-markdown'
 import Image from 'next/image'
 import { JsonViewer } from '@textea/json-viewer'
 import { Box, Typography, Avatar, Chip, Button, Divider } from '@mui/material'
@@ -18,16 +17,17 @@ import {
 import { AppService, Document, Message } from 'types'
 import { Rating } from 'db/generated/prisma-client'
 import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
-import { CodeCard } from './CodeCard'
-import remarkGfm from 'remark-gfm'
 import dynamic from 'next/dynamic'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
+import { FileUpload } from '../types'
 import isArray from 'lodash/isArray'
 
-import { FileUpload } from '../types'
+const ReactMarkdown = dynamic(() => import('react-markdown'))
+const remarkGfm = dynamic(() => import('remark-gfm'))
+const CodeCard = dynamic(() => import('./CodeCard').then((mod) => ({ default: mod.CodeCard })))
+const Dialog = dynamic(() => import('@mui/material/Dialog'))
+const DialogActions = dynamic(() => import('@mui/material/DialogActions'))
+const DialogContent = dynamic(() => import('@mui/material/DialogContent'))
+const DialogTitle = dynamic(() => import('@mui/material/DialogTitle'))
 interface MessageExtra {
     prompt?: string
     extra?: object

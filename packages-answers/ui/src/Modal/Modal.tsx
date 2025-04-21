@@ -1,6 +1,8 @@
 'use client'
-import ShareModal from '../ShareModal'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
+
+const ShareModal = dynamic(() => import('../ShareModal'), { ssr: false })
 
 const Modal = () => {
     const router = useRouter()

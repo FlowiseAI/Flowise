@@ -6,7 +6,6 @@ import { Session } from '@auth0/nextjs-auth0'
 import CssBaseline from '@mui/material/CssBaseline'
 import ThemeProvider from '@mui/material/styles/ThemeProvider'
 
-import { AppDrawer } from '../AppDrawer'
 import { darkModeTheme } from '../theme'
 import GlobalStyles from '../GlobalStyles'
 
@@ -18,6 +17,7 @@ const HelpChatDrawer = dynamic(() => import('../HelpChatDrawer'), { ssr: false }
 const HelpChatProvider = dynamic(() => import('../HelpChatContext').then((mod) => mod.HelpChatProvider), {
     ssr: false
 })
+const AppDrawer = dynamic(() => import('../AppDrawer'))
 
 import React from 'react'
 

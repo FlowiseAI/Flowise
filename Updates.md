@@ -62,7 +62,7 @@ The frontend implementation displays usage events in a table with:
 
 # Updates Log
 
-## 2024-08-15 - BillingService Optimization
+## BillingService Optimization
 
 -   Changed BillingService from singleton to per-request instantiation to fix memory issues
 -   Made customerId optional in GetUsageEventsParams to handle unauthenticated users
@@ -104,13 +104,73 @@ The frontend implementation displays usage events in a table with:
 
 # Updates
 
-## Chatbot Configuration Fix - 2023-08-03
+## Replaced tinycolor2 with Lightweight Native Implementation
 
 ### Changes:
-- Fixed an issue in the Canvas component where chatbotConfig handling was inconsistent
-- Added proper serialization of chatbotConfig object before saving
-- Added debug logging to help trace configuration values
-- Simplified config handling when updating existing chatflows
+
+-   Replaced the tinycolor2 dependency with a custom lightweight color utility
+-   Created a new colorUtils.js module that provides the same functionality
+-   Removed tinycolor2 from package.json dependencies
+-   Updated generateThemeColors.js to use the new implementation
+-   Reduced bundle size by eliminating an external dependency
+
+### Benefits:
+
+-   Smaller bundle size with no external dependency
+-   Native JavaScript implementation with no runtime dependencies
+-   Same functionality as the original library for our use cases
+-   Simplified color manipulation with focused implementation
 
 ### Files Changed:
-- `packages/ui/src/views/canvas/index.jsx`
+
+-   Added `packages/ui/src/utils/colorUtils.js`: New lightweight color utility
+-   Modified `packages/ui/src/utils/generateThemeColors.js`: Updated imports and usage
+-   Modified `packages/ui/package.json`: Removed tinycolor2 dependency
+
+## Chatbot Configuration Fix
+
+### Changes:
+
+-   Fixed an issue in the Canvas component where chatbotConfig handling was inconsistent
+-   Added proper serialization of chatbotConfig object before saving
+-   Added debug logging to help trace configuration values
+-   Simplified config handling when updating existing chatflows
+
+### Files Changed:
+
+-   `packages/ui/src/views/canvas/index.jsx`
+
+## ProfileSection Component Refactoring
+
+### Overview
+
+Refactored the ProfileSection component by extracting components and dynamic pieces to improve maintainability and enable code splitting.
+
+### Changes Made
+
+1. **Created New Components:**
+
+    - `ExportDialog.jsx` - Extracted to a separate component in `packages/ui/src/ui-component/dialog/ExportDialog.jsx`
+    - `ProfileAvatar.jsx` - Created as a separate component for the avatar button
+    - `ProfileMenu.jsx` - Created as a separate component for the dropdown menu
+    - `profileUtils.js` - Created a utility file for import/export functionality
+
+2. **Updated ProfileSection Component:**
+
+    - Replaced inline components with dynamic imports
+    - Simplified component by extracting logic to utility functions
+    - Improved code organization and readability
+
+3. **Benefits:**
+    - Better separation of concerns
+    - Reduced main component complexity
+    - Enabled lazy loading for better performance
+    - Improved maintainability
+
+### Files Changed
+
+-   `packages/ui/src/layout/MainLayout/Header/ProfileSection/index.jsx`
+-   `packages/ui/src/ui-component/dialog/ExportDialog.jsx` (new)
+-   `packages/ui/src/layout/MainLayout/Header/ProfileSection/ProfileAvatar.jsx` (new)
+-   `packages/ui/src/layout/MainLayout/Header/ProfileSection/ProfileMenu.jsx` (new)
+-   `packages/ui/src/utils/profileUtils.js` (new)

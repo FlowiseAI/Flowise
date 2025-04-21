@@ -1971,9 +1971,6 @@ importers:
             swr:
                 specifier: ^2.2.0
                 version: 2.3.3(react@18.2.0)
-            tinycolor2:
-                specifier: ^1.6.0
-                version: 1.6.0
             uuid:
                 specifier: ^9.0.1
                 version: 9.0.1
