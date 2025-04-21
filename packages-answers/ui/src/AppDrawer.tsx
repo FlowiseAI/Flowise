@@ -32,6 +32,7 @@ import AssessmentIcon from '@mui/icons-material/Assessment'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 
 import dynamic from 'next/dynamic'
+import ChatDrawer from './ChatDrawer'
 
 const PurchaseSubscription = dynamic(() => import('./billing/PurchaseSubscription'), { ssr: false })
 const Dialog = dynamic(() => import('@mui/material/Dialog'), { ssr: false })
@@ -82,7 +83,7 @@ interface MenuConfig {
     subMenu?: MenuConfig[]
 }
 
-export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
+export const AppDrawer = ({ session, flagsmithState }: any) => {
     const { helpChatOpen, setHelpChatOpen } = useHelpChatContext()
     const user = session?.user
     const [drawerOpen, setDrawerOpen] = useState(false)
@@ -289,7 +290,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                         }
                     }}
                 >
-                    {chatList}
+                    <ChatDrawer />
                 </Box>
 
                 <List sx={{ display: 'flex', flexDirection: 'column' }} disablePadding>

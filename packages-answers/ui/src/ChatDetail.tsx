@@ -1,5 +1,5 @@
 'use client'
-import React, { Suspense, useRef } from 'react'
+import React, { useRef } from 'react'
 
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
@@ -8,13 +8,12 @@ import { useAnswers } from './AnswersContext'
 import Toolbar from '@mui/material/Toolbar'
 
 import type { AppSettings, Document, Sidekick } from 'types'
-import Drawer from './Drawer'
-import { ChatRoom } from './ChatRoom'
-
-import AppBar from '@mui/material/AppBar'
 
 import dynamic from 'next/dynamic'
 
+const AppBar = dynamic(() => import('@mui/material/AppBar'))
+const ChatRoom = dynamic(() => import('./ChatRoom').then((mod) => ({ default: mod.ChatRoom })))
+const Drawer = dynamic(() => import('./Drawer'), { ssr: false })
 const SourceDocumentModal = dynamic(() => import('@ui/SourceDocumentModal'), { ssr: false })
 const CodePreview = dynamic(() => import('./Message/CodePreview').then((mod) => ({ default: mod.CodePreview })), { ssr: false })
 const DrawerFilters = dynamic(() => import('./DrawerFilters/DrawerFilters'), { ssr: false })
@@ -252,17 +251,11 @@ export const ChatDetail = ({
                     open={!!showFilters || !!selectedDocuments || !!previewCode}
                 >
                     {selectedDocuments ? (
-                        <Suspense fallback={<div>Loading...</div>}>
-                            <SourceDocumentModal documents={selectedDocuments} onClose={() => setSelectedDocuments(undefined)} />
-                        </Suspense>
+                        <SourceDocumentModal documents={selectedDocuments} onClose={() => setSelectedDocuments(undefined)} />
                     ) : previewCode ? (
-                        <Suspense fallback={<div>Loading...</div>}>
-                            <CodePreview {...previewCode} onClose={() => setPreviewCode(null)} />
-                        </Suspense>
+                        <CodePreview {...previewCode} onClose={() => setPreviewCode(null)} />
                     ) : showFilters ? (
-                        <Suspense fallback={<div>Loading...</div>}>
-                            <DrawerFilters appSettings={appSettings} />
-                        </Suspense>
+                        <DrawerFilters appSettings={appSettings} />
                     ) : null}
                 </Drawer>
             </Box>

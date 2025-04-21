@@ -23,7 +23,7 @@ import React from 'react'
 
 export default function AppLayout({
     session,
-    chatList,
+
     params,
     children,
     flagsmithState,
@@ -32,7 +32,7 @@ export default function AppLayout({
     session?: Session
     appSettings?: AppSettings
     children: React.ReactNode
-    chatList?: any
+
     params?: {
         slug: string
     }
@@ -65,9 +65,7 @@ export default function AppLayout({
                         <CssBaseline enableColorScheme />
                         <GlobalStyles />
                         <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
-                            {!noDrawer && (
-                                <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
-                            )}
+                            {!noDrawer && <AppDrawer params={params} session={session} flagsmithState={flagsmithState} />}
                             <div style={{ flex: 1, position: 'relative' }}>
                                 <div style={{ width: '100%', height: '100%', position: 'relative' }}>{children}</div>
                             </div>
