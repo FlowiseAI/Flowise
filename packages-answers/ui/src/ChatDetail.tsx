@@ -10,6 +10,7 @@ import Toolbar from '@mui/material/Toolbar'
 import type { AppSettings, Document, Sidekick } from 'types'
 
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 
 const AppBar = dynamic(() => import('@mui/material/AppBar'))
 const ChatRoom = dynamic(() => import('./ChatRoom').then((mod) => ({ default: mod.ChatRoom })))
@@ -70,7 +71,7 @@ export const ChatDetail = ({
                         display: 'flex',
                         flexDirection: 'column',
                         width: '100%',
-                        height: '100%',
+                        height: '100vh',
                         overflow: 'hidden'
                     }}
                 >
@@ -80,7 +81,7 @@ export const ChatDetail = ({
                             flexDirection: 'column',
                             overflow: 'hidden',
                             width: '100%',
-                            height: '100%',
+                            height: 'calc(100vh - 67px)',
                             flex: 1,
                             justifyContent: 'space-between',
                             alignItems: 'flex-start'
@@ -136,17 +137,30 @@ export const ChatDetail = ({
                         {!selectedSidekick && !chat ? (
                             <Box
                                 sx={{
+                                    // border: '1px solid red',
                                     display: 'flex',
-                                    justifyContent: 'center',
+                                    // justifyContent: 'flex-start',
                                     alignItems: 'center',
-                                    height: '100%',
+                                    // height: '100%',
                                     width: '100%',
-                                    maxWidth: 1200,
                                     flexDirection: 'column',
+                                    paddingTop: 10,
+                                    gap: 10,
+                                    maxWidth: 1200,
+
+                                    px: { xs: 2, sm: 3 },
+                                    // overflowY: 'auto'
                                     margin: 'auto'
                                 }}
                             >
-                                <Typography variant='h4'>What do you want today?</Typography>
+                                <Image
+                                    src='/static/images/logos/answerai-logo-600-wide-white.png'
+                                    alt='Answers Logo'
+                                    width={600}
+                                    height={120}
+                                    priority
+                                    style={{ width: '100%', maxWidth: '400px', height: 'auto' }}
+                                />
                                 <SidekickSelect noDialog sidekicks={sidekicks} />
                             </Box>
                         ) : displayMode === DISPLAY_MODES.CHATBOT ? (

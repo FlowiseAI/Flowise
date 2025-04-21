@@ -64,10 +64,10 @@ export default function AppLayout({
                     <ThemeProvider theme={darkModeTheme}>
                         <CssBaseline enableColorScheme />
                         <GlobalStyles />
-                        <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
+                        <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', overflowY: 'auto' }}>
                             {!noDrawer && <AppDrawer params={params} session={session} flagsmithState={flagsmithState} />}
-                            <div style={{ flex: 1, position: 'relative' }}>
-                                <div style={{ width: '100%', height: '100%', position: 'relative' }}>{children}</div>
+                            <div style={{ flex: 1, position: 'relative', overflow: 'auto' }}>
+                                <div style={{ width: '100%', position: 'relative' }}>{children}</div>
                             </div>
                             <React.Suspense fallback={<div>Loading...</div>}>
                                 <HelpChatProvider>

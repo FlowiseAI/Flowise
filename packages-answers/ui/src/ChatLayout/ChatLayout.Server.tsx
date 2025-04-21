@@ -7,5 +7,5 @@ export default async function ChatUILayout({
 }: {
     children: React.ReactNode
 }) {
-    return <main style={{ display: 'flex', width: '100%', height: '100%' }}>{children}</main>
+    return <main style={{ display: 'flex', width: '100%', height: '100%', minHeight: '100vh' }}>{children}</main>
 }
