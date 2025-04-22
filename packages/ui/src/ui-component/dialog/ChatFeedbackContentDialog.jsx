@@ -12,12 +12,6 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 // store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 
-ChatFeedbackContentDialog.propTypes = {
-    show: PropTypes.bool.isRequired,
-    onCancel: PropTypes.func.isRequired,
-    onConfirm: PropTypes.func.isRequired
-}
-
 const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
     const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
     const dispatch = useDispatch()
@@ -79,4 +73,9 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
     return portalElement ? createPortal(component, portalElement) : null
 }
 
+ChatFeedbackContentDialog.propTypes = {
+    show: PropTypes.bool.isRequired,
+    onCancel: PropTypes.func.isRequired,
+    onConfirm: PropTypes.func.isRequired
+}
 export default ChatFeedbackContentDialog
