@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation'
 import { Controller, useForm } from 'react-hook-form'
 import axios from 'axios'
 import { Rating } from 'db/generated/prisma-client'
-import Autocomplete from '@mui/material/Autocomplete'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import Modal from '@mui/material/Modal'
@@ -15,9 +14,7 @@ import Paper from '@mui/material/Paper'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 
-import { useAnswers } from './AnswersContext'
-
-import { MessageFeedback, User } from 'types'
+import { MessageFeedback } from 'types'
 import { FormControlLabel, Checkbox } from '@mui/material'
 
 interface IFormInput extends Partial<MessageFeedback> {}
@@ -68,6 +65,8 @@ const ShareModal: React.FC<ModalProps> = ({ messageId, rating, onSave, onClose }
             reset()
             if (onClose) onClose()
         } catch (err: any) {
+            console.error(err)
+            // Display error to user or handle it appropriately
         } finally {
             setLoading(false)
         }

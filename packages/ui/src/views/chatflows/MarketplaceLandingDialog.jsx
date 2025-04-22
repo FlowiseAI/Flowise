@@ -1,5 +1,4 @@
 'use client'
-import React from 'react'
 import PropTypes from 'prop-types'
 import { Dialog, DialogContent, IconButton } from '@mui/material'
 import { IconX } from '@tabler/icons-react'

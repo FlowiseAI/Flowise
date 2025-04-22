@@ -7,9 +7,9 @@ import Box from '@mui/material/Box'
 import Autocomplete from './AutocompleteSelect'
 import { useAnswers } from './AnswersContext'
 
-import { Document, DocumentFilter } from 'types'
+import { DocumentFilter } from 'types'
 
-const SourcesCodebase: React.FC<{}> = ({}) => {
+const SourcesCodebase: React.FC<{}> = () => {
     const { filters, updateFilter } = useAnswers()
     const { data: sources, mutate } = useSWR<DocumentFilter[]>(
         `/api/sources/codebase`,

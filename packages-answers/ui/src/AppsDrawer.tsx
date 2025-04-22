@@ -56,7 +56,7 @@ export const AppsDrawer = ({ appSettings, activeApp }: { appSettings: AppSetting
                 ))}
             </Box>
             <AnimatePresence>
-                {!!selected ? (
+                {selected ? (
                     <Box
                         // open={!!expanded}
                         // onClose={() => setExpanded(null)}

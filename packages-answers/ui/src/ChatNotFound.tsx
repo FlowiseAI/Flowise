@@ -5,7 +5,7 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 
-export const ChatNotFound = ({}) => {
+export const ChatNotFound = () => {
     return (
         <Box
             sx={{

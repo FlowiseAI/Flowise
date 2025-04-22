@@ -1,54 +1,34 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState } from 'react'
 import { AxiosError } from 'axios'
 import { useFlags } from 'flagsmith/react'
-import ReactMarkdown from 'react-markdown'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { duotoneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import Image from 'next/image'
 import { JsonViewer } from '@textea/json-viewer'
-import { Box, Typography, Link, Avatar, Chip, Button, Accordion, AccordionSummary, AccordionDetails, Divider } from '@mui/material'
-import IconButton from '@mui/material/IconButton'
+import { Box, Typography, Avatar, Chip, Button, Divider } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ThumbUpIcon from '@mui/icons-material/ThumbUp'
-import ThumbDownIcon from '@mui/icons-material/ThumbDown'
-import ContentCopy from '@mui/icons-material/ContentCopy'
-import LinkIcon from '@mui/icons-material/Link'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import OpenInFullIcon from '@mui/icons-material/OpenInFull'
-import CloseIcon from '@mui/icons-material/Close'
 
-import { countTokens } from '@utils/utilities/countTokens'
 import { useAnswers } from '../AnswersContext'
 import {
     Accordion as CustomAccordion,
     AccordionSummary as CustomAccordionSummary,
     AccordionDetails as CustomAccordionDetails
 } from '../Accordion'
-import FeedbackModal from '@ui/FeedbackModal'
-import { AppService, Document, Message, FileUpload } from 'types'
+import { AppService, Document, Message } from 'types'
 import { Rating } from 'db/generated/prisma-client'
-import { Card, CircularProgress, Stack, Tooltip } from '@mui/material'
-import { CodePreview } from './CodePreview'
-import { PreviewDialog } from './PreviewDialog'
 import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
-import { CodeCard } from './CodeCard'
-import remarkGfm from 'remark-gfm'
-import nextAgentGIF from './../../../../packages/ui/src/assets/images/next-agent.gif'
-import multiagent_supervisorPNG from './../../../../packages/ui/src/assets/images/multiagent_supervisor.png'
-import multiagent_workerPNG from './../../../../packages/ui/src/assets/images/multiagent_worker.png'
-import { isValidURL, removeDuplicateURL } from '../../../../packages/ui/src/utils/genericHelper.js'
 import dynamic from 'next/dynamic'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
+import { FileUpload } from '../types'
 import isArray from 'lodash/isArray'
-import parse from 'html-react-parser'
-import { AnswersContext } from '../AnswersContext'
 
-const SourceDocDialog = dynamic(() => import('../../../../packages/ui/src/ui-component/dialog/SourceDocDialog'))
+const ReactMarkdown = dynamic(() => import('react-markdown'))
+const remarkGfm = dynamic(() => import('remark-gfm'))
+const CodeCard = dynamic(() => import('./CodeCard').then((mod) => ({ default: mod.CodeCard })))
+const Dialog = dynamic(() => import('@mui/material/Dialog'))
+const DialogActions = dynamic(() => import('@mui/material/DialogActions'))
+const DialogContent = dynamic(() => import('@mui/material/DialogContent'))
+const DialogTitle = dynamic(() => import('@mui/material/DialogTitle'))
+const Tooltip = dynamic(() => import('@mui/material/Tooltip'))
 
 interface MessageExtra {
     prompt?: string
@@ -308,6 +288,13 @@ export const MessageCard = ({
             }
         }
     }, [content, isUserMessage, setPreviewCode, isLastMessage])
+
+    // Simple lightweight token counter function (approximate)
+    const countTokensLite = (text: string): number => {
+        if (!text) return 0
+        // Simple approximation: count words and add 20% for special tokens/punctuation
+        return Math.ceil(text.split(/\s+/).length * 1.2)
+    }
 
     return (
         <Box
@@ -624,7 +611,9 @@ export const MessageCard = ({
                                     </Box>
                                 ) : file.mime?.startsWith('audio/') ? (
                                     <Box sx={{ width: '100%' }}>
-                                        <audio controls src={file.data} style={{ width: '100%' }} />
+                                        <audio controls src={file.data} style={{ width: '100%' }}>
+                                            <track kind='captions' src={file.data} />
+                                        </audio>
                                     </Box>
                                 ) : (
                                     <Box
@@ -926,7 +915,7 @@ export const MessageCard = ({
                         <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
                             <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>
-                                    Source Documents ({countTokens(sourceDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
+                                    Source Documents ({countTokensLite(sourceDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
                                 </Typography>
                             </CustomAccordionSummary>
                             <CustomAccordionDetails>

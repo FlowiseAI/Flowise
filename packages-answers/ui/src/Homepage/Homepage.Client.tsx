@@ -1,5 +1,4 @@
 'use client'
-import React from 'react'
 import Image from 'next/image'
 import NextLink from 'next/link'
 
@@ -13,7 +12,7 @@ import AddIcon from '@mui/icons-material/EditRoad'
 
 import JourneyCard from '../JourneyLayout/JourneyCard'
 import { Journey, User, AppSettings } from 'types'
-import { AnswersProvider, useAnswers } from '../AnswersContext'
+import { AnswersProvider } from '../AnswersContext'
 
 const HomepageClientWrapped = ({
     appSettings,

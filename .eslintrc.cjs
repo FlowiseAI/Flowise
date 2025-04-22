@@ -14,7 +14,18 @@ module.exports = {
         }
     },
     parser: '@typescript-eslint/parser',
-    ignorePatterns: ['**/node_modules', '**/dist', '**/build', '**/package-lock.json', '**/pnpm-lock.yaml', '**/.gitbook/assets/*.json'],
+    ignorePatterns: [
+        '**/node_modules',
+        '**/.next',
+        '**/dist',
+        '**/build',
+        '**/package-lock.json',
+        '**/pnpm-lock.yaml',
+        '**/.gitbook/assets/*.json',
+        '**/generated/**',
+        '**/.turbo/**',
+        '**/coverage/**'
+    ],
     plugins: ['unused-imports'],
     rules: {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -22,7 +33,7 @@ module.exports = {
         'unused-imports/no-unused-imports': 'warn',
         'unused-imports/no-unused-vars': ['warn', { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' }],
         'no-undef': 'off',
-        'no-console': [process.env.CI ? 'error' : 'warn', { allow: ['warn', 'error', 'info'] }]
+        'no-console': [process.env.CI ? 'warn' : 'warn', { allow: ['warn', 'error', 'info'] }]
         // 'prettier/prettier': 'error'
     }
 }

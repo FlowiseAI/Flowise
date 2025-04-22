@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { ThemeProvider } from '@emotion/react'
 import flagsmith from 'flagsmith'
 import { FlagsmithProvider } from 'flagsmith/react'

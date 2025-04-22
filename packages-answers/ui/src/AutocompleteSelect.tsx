@@ -5,8 +5,6 @@ import Checkbox from '@mui/material/Checkbox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import Box from '@mui/material/Box'
-import { Document, DocumentFilter } from 'types'
-import { getDocumentSourceKey } from '../../utils/src/getDocumentSourceKey'
 
 const icon = <CheckBoxOutlineBlankIcon fontSize='small' />
 const checkedIcon = <CheckBoxIcon fontSize='small' />

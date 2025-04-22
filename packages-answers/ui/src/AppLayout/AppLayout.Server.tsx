@@ -2,7 +2,7 @@ import { Session } from '@auth0/nextjs-auth0'
 import AppLayoutClient from './AppLayout.Client'
 import { AppSettings } from 'types'
 import { Suspense } from 'react'
-import ChatDrawerServer from '@ui/ChatDrawer.Server'
+import ChatDrawer from '@ui/ChatDrawer'
 
 const AppLayoutServer = (props: {
     session?: Session
@@ -21,7 +21,7 @@ const AppLayoutServer = (props: {
             chatList={
                 <Suspense fallback=''>
                     {/* @ts-expect-error Server Component */}
-                    <ChatDrawerServer />
+                    <ChatDrawer />
                 </Suspense>
             }
         />

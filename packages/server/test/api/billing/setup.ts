@@ -1,5 +1,5 @@
 import { TEST_CONFIG } from '../setup'
-import { UsageStats, Subscription, BillingPortalSession, Invoice, SubscriptionWithUsage } from '../../../src/aai-utils/billing/core/types'
+import { Subscription } from '../../../src/aai-utils/billing/core/types'
 import axios from 'axios'
 
 // Test API key for authentication

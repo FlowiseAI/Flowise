@@ -18,7 +18,6 @@ import CardHeader from '@mui/material/CardHeader'
 import Avatar from '@mui/material/Avatar'
 
 import { useAnswers } from './AnswersContext'
-import IntegrationSetting from './IntegrationSetting'
 
 import { AppService, AppSettings } from 'types'
 

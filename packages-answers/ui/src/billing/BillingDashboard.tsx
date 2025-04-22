@@ -1,9 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Box, Stack, Typography, Card, CircularProgress } from '@mui/material'
-import BillingOverview from './BillingOverview'
-import UsageStats from './UsageStats'
+import { Box, Stack, Typography, CircularProgress } from '@mui/material'
 import TotalCreditsProgress from './TotalCreditsProgress'
 import { useBillingData } from './hooks/useBillingData'
 

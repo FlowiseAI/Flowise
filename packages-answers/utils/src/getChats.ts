@@ -50,8 +50,8 @@ export async function getChats(user: User) {
               }
           })
               .then((res) => (res.ok ? res.json() : []))
-              .catch((err) => {
-                  console.error('Error fetching chatflow chats:', err)
+              .catch((err: any) => {
+                  console.error('Error fetching chatflow chats:', err.message)
                   return []
               })
         : Promise.resolve([])

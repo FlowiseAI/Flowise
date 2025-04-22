@@ -12,9 +12,9 @@ import { useAnswers } from './AnswersContext'
 import AutocompleteSelect from './AutocompleteSelect'
 import SnackMessage from './SnackMessage'
 
-import { Document, DocumentFilter } from 'types'
+import { DocumentFilter } from 'types'
 
-const SourcesDocument: React.FC<{}> = ({}) => {
+const SourcesDocument: React.FC<{}> = () => {
     const source = 'document'
     const { filters, updateFilter } = useAnswers()
     const { data: sources, mutate } = useSWR<DocumentFilter[]>(

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { Box, Button, Card, Container, Grid, Typography, Slider, TextField } from '@mui/material'
 import { BILLING_CONFIG } from '../config/billing'
 
