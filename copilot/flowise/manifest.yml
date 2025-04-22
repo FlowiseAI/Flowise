@@ -45,13 +45,15 @@ storage:
 
 # Optional fields for more advanced use-cases.
 #
-#variables:                    # Pass environment variables as key value pairs.
-#  LOG_LEVEL: info
+variables: # Pass environment variables as key value pairs.
+    S3_STORAGE_BUCKET_NAME:
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorageBucketName
 
 env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
 secrets:
     DATABASE_SECRET:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterAuroraSecret
+
 # You can override any of the values defined above by environment.flowiseSecurityGroup
 environments:
     ${COPILOT_ENVIRONMENT_NAME}:
