@@ -787,40 +787,6 @@ export const MessageCard = ({
                 ) : null}
             </Box>
 
-            {/* {(other as any).usedTools && (other as any).usedTools.length > 0 && (
-                <Box sx={{ mt: 2, width: '100%' }}>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {(other as any).usedTools.map((tool: any, index: number) => {
-                            if (tool && typeof tool === 'object') {
-                                return (
-                                    <Chip
-                                        size='small'
-                                        key={index}
-                                        label={typeof tool.tool === 'string' ? tool.tool : 'Tool'}
-                                        component='a'
-                                        sx={{
-                                            borderColor: tool.error ? 'error.main' : 'primary.light',
-                                            color: tool.error ? 'error.main' : 'primary.light',
-                                            '&:hover': {
-                                                bgcolor: 'rgba(25, 118, 210, 0.08)'
-                                            }
-                                        }}
-                                        variant='outlined'
-                                        clickable
-                                        onClick={() =>
-                                            tool.output &&
-                                            onSourceDialogClick(tool.output, `${typeof tool.tool === 'string' ? tool.tool : 'Tool'} Output`)
-                                        }
-                                    />
-                                )
-                            }
-                            return null
-                        })}
-                    </Box>
-                </Box>
-            )} */}
-
-            {/* Action Buttons - Improved UI */}
             {(other as any).action && (
                 <Box sx={{ mt: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     {(other as any).action.text && (
@@ -1021,44 +987,43 @@ export const MessageCard = ({
                             display: 'flex',
                             alignItems: 'center',
                             flexWrap: 'wrap',
-                            gap: 1
+                            gap: 1.8
                         }}
                     >
-                        <Typography variant='body2'>References:</Typography>
                         {Object.entries(contextDocumentsBySource)?.map(([source, documents]) => {
                             const doc = documents?.[0]
                             return (
                                 <Tooltip key={`references-${doc.metadata.url ?? doc.metadata.source}`} title={'Click to view details'}>
-                                    <Button
+                                    <Box
                                         onClick={() => setSelectedDocuments?.(documents)}
-                                        size='small'
-                                        variant='outlined'
-                                        color='inherit'
                                         sx={{
                                             textTransform: 'none',
                                             borderRadius: 20,
                                             color: 'text.secondary',
+                                            border: '1px solid',
                                             borderColor: 'text.secondary',
-                                            '&:hover': { textDecoration: 'none' }
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            padding: '4px 10px',
+                                            gap: 1,
+                                            fontSize: '0.8125rem',
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(255, 255, 255, 0.08)'
+                                            }
                                         }}
-                                        startIcon={
-                                            services[doc.source ?? doc.metadata?.source]?.imageURL ? (
-                                                <Avatar
-                                                    variant='source'
-                                                    src={services[doc.source ?? doc.metadata?.source]?.imageURL}
-                                                    sx={{ width: 20, height: 20 }}
-                                                />
-                                            ) : (
-                                                <Avatar
-                                                    variant='source'
-                                                    src={services['document']?.imageURL}
-                                                    sx={{ width: 20, height: 20 }}
-                                                />
-                                            )
-                                        }
                                     >
+                                        {services[doc.source ?? doc.metadata?.source]?.imageURL ? (
+                                            <Avatar
+                                                variant='source'
+                                                src={services[doc.source ?? doc.metadata?.source]?.imageURL}
+                                                sx={{ width: 20, height: 20 }}
+                                            />
+                                        ) : (
+                                            <Avatar variant='source' src={services['document']?.imageURL} sx={{ width: 20, height: 20 }} />
+                                        )}
                                         {getDocumentLabel(doc)}
-                                    </Button>
+                                    </Box>
                                 </Tooltip>
                             )
                         })}
