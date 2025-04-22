@@ -123,10 +123,15 @@ const OverrideConfig = ({ dialogProps }) => {
 
         let overrideConfig = { status: overrideConfigStatus }
         if (overrideConfigStatus) {
+            const filteredNodeOverrides = {}
+            for (const key in nodeOverrides) {
+                filteredNodeOverrides[key] = nodeOverrides[key].filter((node) => node.enabled)
+            }
+
             overrideConfig = {
                 ...overrideConfig,
-                nodes: nodeOverrides,
-                variables: variableOverrides
+                nodes: filteredNodeOverrides,
+                variables: variableOverrides.filter((node) => node.enabled)
             }
         }
         apiConfig.overrideConfig = overrideConfig
@@ -203,7 +208,7 @@ const OverrideConfig = ({ dialogProps }) => {
         if (!overrideConfigStatus) {
             setNodeOverrides(newNodeOverrides)
         } else {
-            const updatedNodeOverrides = { ...nodeOverrides }
+            const updatedNodeOverrides = { ...newNodeOverrides }
 
             Object.keys(updatedNodeOverrides).forEach((node) => {
                 if (!seenNodes.has(node)) {
