@@ -32,11 +32,17 @@ export function createRedisClient() {
     })
 }
 
-export const redisClient = createRedisClient()
-redisClient.on('error', (err) => logger.error('Redis Client Error', err))
-redisClient.on('connect', () => logger.info('✨ Redis Client Connected'))
+export const createRedisStore = () => {
+    console.log('🔑 [server]: Creating Redis Store')
+    if (!process.env.REDIS_URL) {
+        throw new Error('REDIS_URL is not set')
+    }
+    const redisClient = createRedisClient()
+    redisClient.on('error', (err) => logger.error('Redis Client Error', err))
+    redisClient.on('connect', () => logger.info('✨ Redis Client Connected'))
 
-export const redisStore = new RedisStore({
-    client: redisClient,
-    prefix: process.env.REDIS_SESSION_PREFIX || 'theanswer:'
-})
+    return new RedisStore({
+        client: redisClient,
+        prefix: process.env.REDIS_SESSION_PREFIX || 'theanswer:'
+    })
+}
