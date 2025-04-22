@@ -282,7 +282,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                     }
                                 }}
                                 color='inherit'
-                                onClick={() => navigate(-1)}
+                                onClick={() => {
+                                    try {
+                                        navigate(-1)
+                                        setTimeout(() => {
+                                            navigate('/chatflows')
+                                        }, 100)
+                                    } catch (error) {
+                                        navigate('/chatflows')
+                                    }
+                                }}
                             >
                                 <IconChevronLeft stroke={1.5} size='1.3rem' />
                             </Avatar>
