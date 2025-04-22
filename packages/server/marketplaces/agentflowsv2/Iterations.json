@@ -1184,7 +1184,7 @@
             "targetHandle": "iterationAgentflow_0",
             "data": {
                 "sourceColor": "#7EE787",
-                "targetColor": "#7EE787",
+                "targetColor": "#9C89B8",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -1211,7 +1211,7 @@
             "targetHandle": "agentAgentflow_0",
             "data": {
                 "sourceColor": "#9C89B8",
-                "targetColor": "#9C89B8",
+                "targetColor": "#4DD0E1",
                 "isHumanInput": false
             },
             "type": "agentFlow",

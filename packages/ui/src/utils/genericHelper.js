@@ -356,6 +356,63 @@ export const isValidConnection = (connection, reactFlowInstance) => {
     return false
 }
 
+export const isValidConnectionAgentflowV2 = (connection, reactFlowInstance) => {
+    const source = connection.source
+    const target = connection.target
+
+    // Prevent self connections
+    if (source === target) {
+        return false
+    }
+
+    // Check if this connection would create a cycle in the graph
+    if (wouldCreateCycle(source, target, reactFlowInstance)) {
+        return false
+    }
+
+    return true
+}
+
+// Function to check if a new connection would create a cycle
+const wouldCreateCycle = (sourceId, targetId, reactFlowInstance) => {
+    // The most direct cycle check: if target connects back to source
+    if (sourceId === targetId) {
+        return true
+    }
+
+    // Build directed graph from existing edges
+    const graph = {}
+    const edges = reactFlowInstance.getEdges()
+
+    // Initialize graph
+    edges.forEach((edge) => {
+        if (!graph[edge.source]) graph[edge.source] = []
+        graph[edge.source].push(edge.target)
+    })
+
+    // Check if there's a path from target to source (which would create a cycle when we add source → target)
+    const visited = new Set()
+
+    function hasPath(current, destination) {
+        if (current === destination) return true
+        if (visited.has(current)) return false
+
+        visited.add(current)
+
+        const neighbors = graph[current] || []
+        for (const neighbor of neighbors) {
+            if (hasPath(neighbor, destination)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    // If there's a path from target to source, adding an edge from source to target will create a cycle
+    return hasPath(targetId, sourceId)
+}
+
 export const convertDateStringToDateObject = (dateString) => {
     if (dateString === undefined || !dateString) return undefined
 

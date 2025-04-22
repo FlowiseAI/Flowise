@@ -44,7 +44,14 @@ import useConfirm from '@/hooks/useConfirm'
 import { IconX, IconRefreshAlert } from '@tabler/icons-react'
 
 // utils
-import { getUniqueNodeLabel, getUniqueNodeId, initNode, updateOutdatedNodeData, updateOutdatedNodeEdge } from '@/utils/genericHelper'
+import {
+    getUniqueNodeLabel,
+    getUniqueNodeId,
+    initNode,
+    updateOutdatedNodeData,
+    updateOutdatedNodeEdge,
+    isValidConnectionAgentflowV2
+} from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import { usePrompt } from '@/utils/usePrompt'
 
@@ -105,8 +112,14 @@ const AgentflowCanvas = () => {
     // ==============================|| Events & Actions ||============================== //
 
     const onConnect = (params) => {
+        if (!isValidConnectionAgentflowV2(params, reactFlowInstance)) {
+            return
+        }
+
         const nodeName = params.sourceHandle.split('_')[0]
-        const targetColor = AGENTFLOW_ICONS.find((icon) => icon.name === nodeName)?.color ?? theme.palette.primary.main
+        const targetNodeName = params.targetHandle.split('_')[0]
+
+        const targetColor = AGENTFLOW_ICONS.find((icon) => icon.name === targetNodeName)?.color ?? theme.palette.primary.main
         const sourceColor = AGENTFLOW_ICONS.find((icon) => icon.name === nodeName)?.color ?? theme.palette.primary.main
 
         let edgeLabel = undefined

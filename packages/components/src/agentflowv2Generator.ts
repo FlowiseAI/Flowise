@@ -14,10 +14,7 @@ const NodePositionType = z.object({
 
 // Define a more specific EdgeData schema
 const EdgeDataType = z.object({
-    sourceColor: z.string().optional().describe('Color of the source handle'),
-    targetColor: z.string().optional().describe('Color of the target handle'),
-    edgeLabel: z.string().optional().describe('Label for the edge'),
-    isHumanInput: z.boolean().optional().describe('Whether this edge represents human input')
+    edgeLabel: z.string().optional().describe('Label for the edge')
 })
 
 // Define a basic NodeData schema to avoid using .passthrough() which might cause issues
@@ -66,7 +63,7 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
 
         const updatedNodes = await generateSelectedTools(nodes, config, question, options)
 
-        const updatedEdges = updateEdges(edges)
+        const updatedEdges = updateEdges(edges, nodes)
 
         return { nodes: updatedNodes, edges: updatedEdges }
     } catch (error) {
@@ -75,15 +72,27 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
     }
 }
 
-const updateEdges = (edges: any) => {
+const updateEdges = (edges: any, nodes: any) => {
     const isMultiOutput = (source: string) => {
         return source.includes('conditionAgentflow') || source.includes('conditionAgentAgentflow') || source.includes('humanInputAgentflow')
     }
+    const findNodeColor = (nodeId: string) => {
+        const node = nodes.find((node: any) => node.id === nodeId)
+        return node?.data?.color
+    }
+
+    // filter out edges that do not exist in nodes
+    edges = edges.filter((edge: any) => {
+        return nodes.some((node: any) => node.id === edge.source || node.id === edge.target)
+    })
+
     const updatedEdges = edges.map((edge: any) => {
         return {
             ...edge,
             data: {
                 ...edge.data,
+                sourceColor: findNodeColor(edge.source),
+                targetColor: findNodeColor(edge.target),
                 edgeLabel: isMultiOutput(edge.source) && edge.label && edge.label.trim() !== '' ? edge.label.trim() : undefined,
                 isHumanInput: edge.source.includes('humanInputAgentflow') ? true : false
             },
@@ -292,11 +301,14 @@ const generateNodesData = (result: Record<string, any>, config: Record<string, a
             return result
         }
 
-        const nodes = result.nodes
+        let nodes = result.nodes
+
+        // filter out nodes that do not exist in config.componentNodes
+        nodes = nodes.filter((node: any) => node.data && node.data.name && config.componentNodes[node.data.name])
 
         for (let i = 0; i < nodes.length; i += 1) {
             const node = nodes[i]
-            let nodeName = node.data?.name
+            let nodeName = node.data.name
 
             // If nodeName is not found in data.name, try extracting from node.id
             if (!nodeName || !config.componentNodes[nodeName]) {

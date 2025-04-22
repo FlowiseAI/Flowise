@@ -2047,7 +2047,7 @@
             "targetHandle": "llmAgentflow_0",
             "data": {
                 "sourceColor": "#ff8fab",
-                "targetColor": "#ff8fab",
+                "targetColor": "#64B5F6",
                 "edgeLabel": "0",
                 "isHumanInput": false
             },
@@ -2061,7 +2061,7 @@
             "targetHandle": "llmAgentflow_1",
             "data": {
                 "sourceColor": "#ff8fab",
-                "targetColor": "#ff8fab",
+                "targetColor": "#64B5F6",
                 "edgeLabel": "1",
                 "isHumanInput": false
             },
@@ -2075,7 +2075,7 @@
             "targetHandle": "conditionAgentAgentflow_0",
             "data": {
                 "sourceColor": "#7EE787",
-                "targetColor": "#7EE787",
+                "targetColor": "#ff8fab",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -2088,7 +2088,7 @@
             "targetHandle": "retrieverAgentflow_0",
             "data": {
                 "sourceColor": "#64B5F6",
-                "targetColor": "#64B5F6",
+                "targetColor": "#b8bedd",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -2101,7 +2101,7 @@
             "targetHandle": "conditionAgentAgentflow_1",
             "data": {
                 "sourceColor": "#b8bedd",
-                "targetColor": "#b8bedd",
+                "targetColor": "#ff8fab",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -2114,7 +2114,7 @@
             "targetHandle": "loopAgentflow_0",
             "data": {
                 "sourceColor": "#64B5F6",
-                "targetColor": "#64B5F6",
+                "targetColor": "#FFA07A",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -2127,7 +2127,7 @@
             "targetHandle": "llmAgentflow_3",
             "data": {
                 "sourceColor": "#ff8fab",
-                "targetColor": "#ff8fab",
+                "targetColor": "#64B5F6",
                 "edgeLabel": "1",
                 "isHumanInput": false
             },
@@ -2141,7 +2141,7 @@
             "targetHandle": "llmAgentflow_2",
             "data": {
                 "sourceColor": "#ff8fab",
-                "targetColor": "#ff8fab",
+                "targetColor": "#64B5F6",
                 "edgeLabel": "0",
                 "isHumanInput": false
             },

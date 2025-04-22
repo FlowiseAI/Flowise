@@ -82,7 +82,9 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2 }) => {
     const [tabValue, setTabValue] = useState(0)
 
     const [openDialog, setOpenDialog] = useState(false)
-    const [dialogProps, setDialogProps] = useState(false)
+    const [dialogProps, setDialogProps] = useState({})
+
+    const isAgentCanvasV2 = window.location.pathname.includes('/v2/agentcanvas')
 
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
@@ -180,12 +182,8 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2 }) => {
             }, Object.create(null))
 
             const filteredResult = {}
-            let isAgentflowV2 = true
-            if (localStorage.getItem('agentFlowVersion') === 'v1') {
-                isAgentflowV2 = false
-            }
             for (const category in result) {
-                if (isAgentflowV2) {
+                if (isAgentCanvasV2) {
                     if (category !== 'Agent Flows') {
                         continue
                     }

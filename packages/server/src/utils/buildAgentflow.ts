@@ -823,12 +823,13 @@ const executeNode = async ({
 
         // Prepare flow config
         let updatedState = cloneDeep(agentflowRuntime.state)
+        const chatHistory = [...pastChatHistory, ...(agentflowRuntime.chatHistory || [])]
         const flowConfig: IFlowConfig = {
             chatflowid: chatflow.id,
             chatId,
             sessionId,
             apiMessageId,
-            chatHistory: pastChatHistory,
+            chatHistory,
             state: updatedState,
             ...overrideConfig
         }
@@ -854,7 +855,7 @@ const executeNode = async ({
             availableVariables,
             variableOverrides,
             uploadedFilesContent,
-            pastChatHistory,
+            chatHistory,
             agentFlowExecutedData,
             iterationContext
         )

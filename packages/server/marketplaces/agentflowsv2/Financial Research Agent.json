@@ -1360,7 +1360,7 @@
             "targetHandle": "llmAgentflow_0",
             "data": {
                 "sourceColor": "#7EE787",
-                "targetColor": "#7EE787",
+                "targetColor": "#64B5F6",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -1373,7 +1373,7 @@
             "targetHandle": "iterationAgentflow_0",
             "data": {
                 "sourceColor": "#64B5F6",
-                "targetColor": "#64B5F6",
+                "targetColor": "#9C89B8",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -1386,7 +1386,7 @@
             "targetHandle": "agentAgentflow_1",
             "data": {
                 "sourceColor": "#9C89B8",
-                "targetColor": "#9C89B8",
+                "targetColor": "#4DD0E1",
                 "isHumanInput": false
             },
             "type": "agentFlow",

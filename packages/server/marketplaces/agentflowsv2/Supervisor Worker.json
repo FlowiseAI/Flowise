@@ -1832,7 +1832,7 @@
             "targetHandle": "llmAgentflow_0",
             "data": {
                 "sourceColor": "#7EE787",
-                "targetColor": "#7EE787",
+                "targetColor": "#64B5F6",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -1845,7 +1845,7 @@
             "targetHandle": "conditionAgentflow_0",
             "data": {
                 "sourceColor": "#64B5F6",
-                "targetColor": "#64B5F6",
+                "targetColor": "#FFB938",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -1858,7 +1858,7 @@
             "targetHandle": "agentAgentflow_1",
             "data": {
                 "sourceColor": "#FFB938",
-                "targetColor": "#FFB938",
+                "targetColor": "#4DD0E1",
                 "edgeLabel": "0",
                 "isHumanInput": false
             },
@@ -1872,7 +1872,7 @@
             "targetHandle": "agentAgentflow_2",
             "data": {
                 "sourceColor": "#FFB938",
-                "targetColor": "#FFB938",
+                "targetColor": "#4DD0E1",
                 "edgeLabel": "1",
                 "isHumanInput": false
             },
@@ -1886,7 +1886,7 @@
             "targetHandle": "agentAgentflow_3",
             "data": {
                 "sourceColor": "#FFB938",
-                "targetColor": "#FFB938",
+                "targetColor": "#4DD0E1",
                 "edgeLabel": "2",
                 "isHumanInput": false
             },
@@ -1900,7 +1900,7 @@
             "targetHandle": "loopAgentflow_0",
             "data": {
                 "sourceColor": "#4DD0E1",
-                "targetColor": "#4DD0E1",
+                "targetColor": "#FFA07A",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -1913,7 +1913,7 @@
             "targetHandle": "loopAgentflow_1",
             "data": {
                 "sourceColor": "#4DD0E1",
-                "targetColor": "#4DD0E1",
+                "targetColor": "#FFA07A",
                 "isHumanInput": false
             },
             "type": "agentFlow",

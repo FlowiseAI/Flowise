@@ -136,21 +136,23 @@ const AgentFlowNode = ({ data }) => {
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <StyledNodeToolbar>
                 <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Basic button group'>
-                    <IconButton
-                        size={'small'}
-                        title='Duplicate'
-                        onClick={() => {
-                            duplicateNode(data.id)
-                        }}
-                        sx={{
-                            color: customization.isDarkMode ? 'white' : 'inherit',
-                            '&:hover': {
-                                color: theme.palette.primary.main
-                            }
-                        }}
-                    >
-                        <IconCopy size={20} />
-                    </IconButton>
+                    {data.name !== 'startAgentflow' && (
+                        <IconButton
+                            size={'small'}
+                            title='Duplicate'
+                            onClick={() => {
+                                duplicateNode(data.id)
+                            }}
+                            sx={{
+                                color: customization.isDarkMode ? 'white' : 'inherit',
+                                '&:hover': {
+                                    color: theme.palette.primary.main
+                                }
+                            }}
+                        >
+                            <IconCopy size={20} />
+                        </IconButton>
+                    )}
                     <IconButton
                         size={'small'}
                         title='Delete'

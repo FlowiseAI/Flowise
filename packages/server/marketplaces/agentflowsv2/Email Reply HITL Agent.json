@@ -739,7 +739,7 @@
             "targetHandle": "agentAgentflow_0",
             "data": {
                 "sourceColor": "#7EE787",
-                "targetColor": "#7EE787",
+                "targetColor": "#4DD0E1",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -752,7 +752,7 @@
             "targetHandle": "humanInputAgentflow_0",
             "data": {
                 "sourceColor": "#4DD0E1",
-                "targetColor": "#4DD0E1",
+                "targetColor": "#6E6EFD",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -765,7 +765,7 @@
             "targetHandle": "directReplyAgentflow_0",
             "data": {
                 "sourceColor": "#6E6EFD",
-                "targetColor": "#6E6EFD",
+                "targetColor": "#4DDBBB",
                 "edgeLabel": "proceed",
                 "isHumanInput": true
             },
@@ -779,7 +779,7 @@
             "targetHandle": "loopAgentflow_0",
             "data": {
                 "sourceColor": "#6E6EFD",
-                "targetColor": "#6E6EFD",
+                "targetColor": "#FFA07A",
                 "edgeLabel": "reject",
                 "isHumanInput": true
             },

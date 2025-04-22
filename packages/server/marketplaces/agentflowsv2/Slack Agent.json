@@ -675,7 +675,7 @@
             "targetHandle": "llmAgentflow_0",
             "data": {
                 "sourceColor": "#7EE787",
-                "targetColor": "#7EE787",
+                "targetColor": "#64B5F6",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -688,7 +688,7 @@
             "targetHandle": "toolAgentflow_0",
             "data": {
                 "sourceColor": "#64B5F6",
-                "targetColor": "#64B5F6",
+                "targetColor": "#d4a373",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -701,7 +701,7 @@
             "targetHandle": "directReplyAgentflow_0",
             "data": {
                 "sourceColor": "#d4a373",
-                "targetColor": "#d4a373",
+                "targetColor": "#4DDBBB",
                 "isHumanInput": false
             },
             "type": "agentFlow",

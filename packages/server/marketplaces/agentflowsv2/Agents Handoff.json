@@ -1265,7 +1265,7 @@
             "targetHandle": "conditionAgentAgentflow_0",
             "data": {
                 "sourceColor": "#7EE787",
-                "targetColor": "#7EE787",
+                "targetColor": "#ff8fab",
                 "isHumanInput": false
             },
             "type": "agentFlow",
@@ -1278,7 +1278,7 @@
             "targetHandle": "agentAgentflow_0",
             "data": {
                 "sourceColor": "#ff8fab",
-                "targetColor": "#ff8fab",
+                "targetColor": "#4DD0E1",
                 "edgeLabel": "0",
                 "isHumanInput": false
             },
@@ -1292,7 +1292,7 @@
             "targetHandle": "agentAgentflow_1",
             "data": {
                 "sourceColor": "#ff8fab",
-                "targetColor": "#ff8fab",
+                "targetColor": "#4DD0E1",
                 "edgeLabel": "1",
                 "isHumanInput": false
             },
@@ -1306,7 +1306,7 @@
             "targetHandle": "agentAgentflow_2",
             "data": {
                 "sourceColor": "#ff8fab",
-                "targetColor": "#ff8fab",
+                "targetColor": "#4DD0E1",
                 "edgeLabel": "2",
                 "isHumanInput": false
             },
