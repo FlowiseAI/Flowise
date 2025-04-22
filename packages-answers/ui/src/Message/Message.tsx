@@ -987,7 +987,8 @@ export const MessageCard = ({
                             display: 'flex',
                             alignItems: 'center',
                             flexWrap: 'wrap',
-                            gap: 1.8
+                            gap: 1.8,
+                            mt: 1.5
                         }}
                     >
                         {Object.entries(contextDocumentsBySource)?.map(([source, documents]) => {
