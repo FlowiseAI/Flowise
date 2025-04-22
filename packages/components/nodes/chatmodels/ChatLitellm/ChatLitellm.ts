@@ -107,13 +107,14 @@ class ChatLitellm_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const apiKey = getCredentialParam('litellmApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAIChatInput> & BaseLLMParams & { openAIApiKey?: string } & { configuration?: { baseURL?: string; defaultHeaders?: ICommonObject } } = {
+        const obj: Partial<OpenAIChatInput> &
+            BaseLLMParams & { openAIApiKey?: string } & { configuration?: { baseURL?: string; defaultHeaders?: ICommonObject } } = {
             temperature: parseFloat(temperature),
             modelName,
             streaming: streaming ?? true
         }
 
-        if (basePath ) {
+        if (basePath) {
             obj.configuration = {
                 baseURL: basePath
             }
