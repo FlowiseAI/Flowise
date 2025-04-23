@@ -1167,7 +1167,7 @@
                     "label": "cohere.command-text-v14",
                     "name": "cohere.command-text-v14",
                     "input_cost": 0.0015,
-                    "output_cost": 0.0020
+                    "output_cost": 0.002
                 },
                 {
                     "label": "cohere.command-light-text-v14",
