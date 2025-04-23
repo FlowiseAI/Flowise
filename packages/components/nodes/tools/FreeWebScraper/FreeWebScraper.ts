@@ -1,0 +1,294 @@
+import { INode, INodeParams, INodeData, ICommonObject } from '../../../src/Interface'
+import { getBaseClasses } from '../../../src/utils'
+import { Tool } from '@langchain/core/tools'
+import fetch from 'node-fetch'
+import * as cheerio from 'cheerio'
+import { URL } from 'url'
+
+interface ScrapedPageData {
+    url: string
+    title: string
+    description: string
+    body_text: string
+    error?: string
+}
+
+class WebScraperRecursiveTool extends Tool {
+    name = 'free_web_scraper'
+    description = `Recursively scrapes web pages starting from a given URL up to a specified maximum depth and maximum number of pages. Extracts title, description, and paragraph text from each page. Input should be a single URL string. Returns a JSON string containing an array of scraped page data objects.`
+
+    private maxDepth: number
+    private maxPages: number | null
+    private visitedUrls: Set<string>
+    private scrapedPagesCount: number
+
+    constructor(maxDepth: number = 1, maxPages: number | null = 10) {
+        super()
+
+        this.maxDepth = Math.max(1, maxDepth)
+        this.maxPages = maxPages !== null && maxPages > 0 ? maxPages : null
+        this.visitedUrls = new Set<string>()
+        this.scrapedPagesCount = 0
+
+        let desc = `Recursively scrapes web pages starting from a given URL`
+        if (this.maxDepth > 0) {
+            desc += ` up to ${this.maxDepth} level(s) deep`
+        }
+        if (this.maxPages !== null) {
+            desc += ` or until ${this.maxPages} pages are scraped, whichever comes first.`
+        } else {
+            desc += `.`
+        }
+        desc += ` Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data.`
+        this.description = desc
+    }
+
+    private async scrapeSingleUrl(url: string): Promise<Omit<ScrapedPageData, 'url'> & { foundLinks: string[] }> {
+        try {
+            const response = await fetch(url, { timeout: 60000, redirect: 'follow', follow: 5 })
+            if (!response.ok) {
+                const errorText = await response.text()
+
+                return {
+                    title: '',
+                    description: '',
+                    body_text: '',
+                    foundLinks: [],
+                    error: `HTTP Error: ${response.status} ${response.statusText}. ${errorText}`
+                }
+            }
+
+            const contentType = response.headers.get('content-type')
+            if (!contentType || !contentType.includes('text/html')) {
+                return {
+                    title: '',
+                    description: '',
+                    body_text: '',
+                    foundLinks: [],
+                    error: `Skipped non-HTML content (Content-Type: ${contentType})`
+                }
+            }
+
+            const html = await response.text()
+            const $ = cheerio.load(html)
+
+            const title = $('title').first().text() || 'No title found'
+            let description =
+                $('meta[name="description"]').attr('content') ||
+                $('meta[property="og:description"]').attr('content') ||
+                $('meta[name="twitter:description"]').attr('content') ||
+                'No description found'
+
+            const paragraphs: string[] = []
+            $('p').each((_i, elem) => {
+                const paragraphText = $(elem).text()
+                if (paragraphText) {
+                    paragraphs.push(paragraphText.trim())
+                }
+            })
+            const body_text = paragraphs.join(' ').replace(/\s\s+/g, ' ').trim()
+
+            const foundLinks: string[] = []
+            $('a').each((_i, elem) => {
+                const href = $(elem).attr('href')
+                if (href) {
+                    try {
+                        const absoluteUrl = new URL(href, url).toString()
+                        if (absoluteUrl.startsWith('http') && !absoluteUrl.includes('#')) {
+                            foundLinks.push(absoluteUrl)
+                        }
+                    } catch (e) {
+                        /* empty */
+                    }
+                }
+            })
+
+            return {
+                title: title.trim(),
+                description: description.trim(),
+                body_text: body_text,
+                foundLinks: [...new Set(foundLinks)]
+            }
+        } catch (error: any) {
+            return {
+                title: '',
+                description: '',
+                body_text: '',
+                foundLinks: [],
+                error: `Scraping Error: ${error?.message || 'Unknown error'}`
+            }
+        }
+    }
+
+    private async scrapeRecursive(url: string, currentDepth: number): Promise<ScrapedPageData[]> {
+        if (this.maxPages !== null && this.scrapedPagesCount >= this.maxPages) {
+            return []
+        }
+        if (currentDepth > this.maxDepth) {
+            return []
+        }
+        if (this.visitedUrls.has(url)) {
+            return []
+        }
+        try {
+            new URL(url)
+            if (!url.startsWith('http')) throw new Error('Invalid protocol')
+        } catch (e) {
+            if (this.maxPages !== null) {
+                this.scrapedPagesCount++
+            }
+            return [{ url, title: '', description: '', body_text: '', error: `Invalid URL format or protocol` }]
+        }
+
+        this.visitedUrls.add(url)
+
+        if (this.maxPages !== null) {
+            this.scrapedPagesCount++
+        }
+
+        const { foundLinks, ...scrapedContent } = await this.scrapeSingleUrl(url)
+        const currentPageData: ScrapedPageData = { url, ...scrapedContent }
+        let results: ScrapedPageData[] = [currentPageData]
+
+        if (
+            !currentPageData.error?.startsWith('HTTP Error') &&
+            !currentPageData.error?.startsWith('Invalid URL') &&
+            currentDepth < this.maxDepth &&
+            (this.maxPages === null || this.scrapedPagesCount < this.maxPages)
+        ) {
+            const recursivePromises: Promise<ScrapedPageData[]>[] = []
+            for (const link of foundLinks) {
+                if (this.maxPages !== null && this.scrapedPagesCount >= this.maxPages) {
+                    break
+                }
+                if (!this.visitedUrls.has(link)) {
+                    recursivePromises.push(this.scrapeRecursive(link, currentDepth + 1))
+                }
+            }
+
+            if (recursivePromises.length > 0) {
+                const nestedResults = await Promise.all(recursivePromises)
+                results = results.concat(...nestedResults)
+            }
+        } else if (currentPageData.error) {
+            /* empty */
+        }
+
+        return results
+    }
+
+    async _call(initialUrl: string): Promise<string> {
+        this.visitedUrls = new Set<string>()
+        this.scrapedPagesCount = 0
+
+        if (!initialUrl || typeof initialUrl !== 'string') {
+            return JSON.stringify({ error: 'Input must be a single URL string.' })
+        }
+
+        try {
+            const allScrapedData = await this.scrapeRecursive(initialUrl, 1)
+            const finalCount = allScrapedData.length
+
+            if (this.maxPages !== null && this.scrapedPagesCount >= this.maxPages) {
+                /* empty */
+            }
+            return JSON.stringify(allScrapedData)
+        } catch (error: any) {
+            return JSON.stringify({ error: `Failed recursive scrape: ${error?.message || 'Unknown error'}` })
+        }
+    }
+}
+
+class WebScraperRecursive_Tools implements INode {
+    label: string
+    name: string
+    version: number
+    description: string
+    type: string
+    icon: string
+    category: string
+    baseClasses: string[]
+    inputs: INodeParams[]
+
+    constructor() {
+        this.label = 'Free Web Scraper'
+        this.name = 'freeWebScraper'
+        this.version = 1.0
+        this.type = 'Tool'
+        this.icon = 'freewebscraper.svg'
+        this.category = 'Tools'
+        this.description = 'Recursively scrapes web pages starting from a URL, following links up to a specified depth or page count limit.'
+        this.baseClasses = [this.type, ...getBaseClasses(WebScraperRecursiveTool)]
+        this.inputs = [
+            {
+                label: 'Max Depth',
+                name: 'maxDepth',
+                type: 'number',
+                description:
+                    'Maximum levels of links to follow (e.g., 1 = only the initial URL, 2 = initial URL + links found on it). Default 1.',
+                placeholder: '1',
+                default: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Max Pages',
+                name: 'maxPages',
+                type: 'number',
+                description:
+                    'Maximum number of pages to attempt scraping. Stops when reached, regardless of depth. Leave empty for no limit.',
+                placeholder: '10',
+                default: 10,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Tool Description',
+                name: 'description',
+                type: 'string',
+                description:
+                    'Custom description of what the tool does. This is for LLM to determine when to use this tool. Overrides the default description.',
+                rows: 4,
+                additionalParams: true,
+                optional: true,
+                placeholder: `Recursively scrapes web pages starting from a given URL up to the specified maximum depth and page count. Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data.`
+            }
+        ]
+    }
+
+    async init(nodeData: INodeData, _: string, _options: ICommonObject): Promise<any> {
+        const maxDepthInput = nodeData.inputs?.maxDepth as string | number | undefined
+        let maxDepth = 1
+        if (maxDepthInput !== undefined && maxDepthInput !== '') {
+            const parsedDepth = parseInt(String(maxDepthInput), 10)
+            if (!isNaN(parsedDepth) && parsedDepth > 0) {
+                maxDepth = parsedDepth
+            }
+        }
+
+        const maxPagesInput = nodeData.inputs?.maxPages as string | number | undefined
+        let maxPages: number | null = 10
+        if (maxPagesInput === undefined || maxPagesInput === '') {
+            maxPages = null
+        } else {
+            const parsedPages = parseInt(String(maxPagesInput), 10)
+            if (!isNaN(parsedPages) && parsedPages > 0) {
+                maxPages = parsedPages
+            } else if (parsedPages <= 0) {
+                maxPages = null
+            }
+        }
+
+        const customDescription = nodeData.inputs?.description as string
+
+        const tool = new WebScraperRecursiveTool(maxDepth, maxPages)
+
+        if (customDescription) {
+            tool.description = customDescription
+        }
+
+        return tool
+    }
+}
+
+module.exports = { nodeClass: WebScraperRecursive_Tools }
