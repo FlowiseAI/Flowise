@@ -187,7 +187,6 @@ class WebScraperRecursiveTool extends Tool {
 
         try {
             const allScrapedData = await this.scrapeRecursive(initialUrl, 1)
-            const finalCount = allScrapedData.length
 
             if (this.maxPages !== null && this.scrapedPagesCount >= this.maxPages) {
                 /* empty */
