@@ -17,6 +17,7 @@ import nodesApi from '@/api/nodes'
 // const
 import { initNode, showHideInputParams, initializeDefaultNodeData } from '@/utils/genericHelper'
 import { flowContext } from '@/store/context/ReactFlowContext'
+import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
 export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = null, parentParamForArray = null }) => {
     const theme = useTheme()
@@ -48,10 +49,13 @@ export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = n
             }
         })
 
+        const credential = updatedInputs.credential || updatedInputs[FLOWISE_CREDENTIAL_ID]
+
         nodeData = {
             ...nodeData,
             inputParams: updatedInputParams,
-            inputs: updatedInputs
+            inputs: updatedInputs,
+            credential: credential ? credential : undefined
         }
 
         setSelectedComponentNodeData(nodeData)
@@ -124,6 +128,9 @@ export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = n
                 ...componentNodeData,
                 inputs: componentNodeData.inputs
             })
+
+            const credential = componentNodeData.inputs.credential || componentNodeData.inputs[FLOWISE_CREDENTIAL_ID]
+            componentNodeData.credential = credential ? credential : undefined
 
             setSelectedComponentNodeData(componentNodeData)
         }

@@ -841,10 +841,10 @@ importers:
                 version: 16.4.5
             flowise-embed:
                 specifier: latest
-                version: 2.1.0
+                version: 3.0.0
             flowise-embed-react:
                 specifier: latest
-                version: 1.0.7(@types/node@22.13.9)(flowise-embed@2.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+                version: 3.0.0(@types/node@22.13.9)(flowise-embed@3.0.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
             flowise-react-json-view:
                 specifier: '*'
                 version: 1.21.7(@types/react@18.2.65)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -10467,14 +10467,14 @@ packages:
     flatted@3.3.1:
         resolution: { integrity: sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw== }
 
-    flowise-embed-react@1.0.7:
-        resolution: { integrity: sha512-KzGKboal9DQGEC7OobHerbH83JxyglwHQAVAG5jAlRczwlI/Dv9MJppwHbzalT1VidCBOOUJdgu6v7rPUqpudA== }
+    flowise-embed-react@3.0.0:
+        resolution: { integrity: sha512-ewFywnJmgi2ryTdXxKOcdvpy2tEfLPlYbjDC0pIqiWkoe+PnEe97cPMSgnt3VLJEAwCFTHLXpWmlJEyqN5EE8Q== }
         peerDependencies:
             flowise-embed: '*'
             react: 18.x
 
-    flowise-embed@2.1.0:
-        resolution: { integrity: sha512-a6A4gnYUCOXxiSQtIZciAQe9vyN7geM5CIv5fVTOpCEkjK13j2tSRjKe+XZqm8hb/nYe5me+5qCsrioqXjl3Kw== }
+    flowise-embed@3.0.0:
+        resolution: { integrity: sha512-Zxo+47Fk15VdGHUGjr+vb93UUurtepKAlHWb7A2cFC2TUk4bo4x+fQFJXICI4P/Ms/XadoBt+lOFO/lcdmjwtA== }
 
     flowise-nim-container-manager@1.0.11:
         resolution: { integrity: sha512-Er/leiIzJZ691kWqXkjCWv29g0G5qWA4juBOcGZ1P5kBLnkKFxbWc5x8JsSPcHuJQIiGNX/dYEzp2ZrOV3YYMg== }
@@ -13321,6 +13321,7 @@ packages:
     node-domexception@1.0.0:
         resolution: { integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ== }
         engines: { node: '>=10.5.0' }
+        deprecated: Use your platform's native DOMException instead
 
     node-ensure@0.0.0:
         resolution: { integrity: sha512-DRI60hzo2oKN1ma0ckc6nQWlHU69RH6xN0sjQTjMpChPfTYvKZdcQFfdYK2RWbJcKyUizSIy/l8OTGxMAM1QDw== }
@@ -19846,7 +19847,7 @@ snapshots:
         dependencies:
             '@babel/helper-validator-identifier': 7.25.9
             js-tokens: 4.0.0
-            picocolors: 1.0.1
+            picocolors: 1.1.1
 
     '@babel/compat-data@7.23.5': {}
 
@@ -27461,7 +27462,7 @@ snapshots:
             caniuse-lite: 1.0.30001597
             fraction.js: 4.3.7
             normalize-range: 0.1.2
-            picocolors: 1.0.1
+            picocolors: 1.1.1
             postcss: 8.4.35
             postcss-value-parser: 4.2.0
 
@@ -30636,10 +30637,10 @@ snapshots:
 
     flatted@3.3.1: {}
 
-    flowise-embed-react@1.0.7(@types/node@22.13.9)(flowise-embed@2.1.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+    flowise-embed-react@3.0.0(@types/node@22.13.9)(flowise-embed@3.0.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
         dependencies:
             '@ladle/react': 2.5.1(@types/node@22.13.9)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-            flowise-embed: 2.1.0
+            flowise-embed: 3.0.0
             react: 18.2.0
         transitivePeerDependencies:
             - '@types/node'
@@ -30653,7 +30654,7 @@ snapshots:
             - terser
             - typescript
 
-    flowise-embed@2.1.0:
+    flowise-embed@3.0.0:
         dependencies:
             '@babel/core': 7.24.0
             '@microsoft/fetch-event-source': 2.0.1
@@ -33088,7 +33089,7 @@ snapshots:
 
     launch-editor@2.6.1:
         dependencies:
-            picocolors: 1.0.1
+            picocolors: 1.1.1
             shell-quote: 1.8.1
 
     lazy-ass@1.6.0: {}
@@ -35865,7 +35866,7 @@ snapshots:
     postcss@8.4.39:
         dependencies:
             nanoid: 3.3.7
-            picocolors: 1.0.1
+            picocolors: 1.1.1
             source-map-js: 1.2.0
 
     postcss@8.4.49:
@@ -38176,7 +38177,7 @@ snapshots:
             css-select: 4.3.0
             css-tree: 1.1.3
             csso: 4.2.0
-            picocolors: 1.0.1
+            picocolors: 1.1.1
             stable: 0.1.8
 
     swagger-jsdoc@6.2.8(openapi-types@12.1.3):
@@ -38966,7 +38967,7 @@ snapshots:
         dependencies:
             browserslist: 4.23.0
             escalade: 3.1.2
-            picocolors: 1.0.1
+            picocolors: 1.1.1
 
     uri-js@4.4.1:
         dependencies:
@@ -39206,7 +39207,7 @@ snapshots:
     vite@4.5.2(@types/node@22.13.9)(sass@1.71.1)(terser@5.29.1):
         dependencies:
             esbuild: 0.18.20
-            postcss: 8.4.39
+            postcss: 8.4.49
             rollup: 3.29.4
         optionalDependencies:
             '@types/node': 22.13.9
