@@ -881,7 +881,9 @@ const executeNode = async ({
             // Prepare final question with uploaded content if any
             finalInput = uploadedFilesContent ? `${uploadedFilesContent}\n\n${incomingInput.question}` : incomingInput.question
         } else if (incomingInput.form) {
-            finalInput = incomingInput.form
+            finalInput = Object.entries(incomingInput.form || {})
+                .map(([key, value]) => `${key}: ${value}`)
+                .join('\n')
         }
 
         // Prepare run parameters
