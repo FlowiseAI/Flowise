@@ -38,7 +38,7 @@ const Settings = ({ chatflow, isSettingsOpen, isCustomAssistant, anchorEl, isAge
                 return
             }
             const { result } = evt.target
-            onUploadFile(result)
+            onUploadFile(result, file.name)
         }
         reader.readAsText(file)
     }

@@ -159,9 +159,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
         }
     }
 
-    const onUploadFile = (file) => {
+    const onUploadFile = (file, fileName) => {
         setSettingsOpen(false)
-        handleLoadFlow(file)
+        handleLoadFlow(file, fileName)
     }
 
     const submitFlowName = () => {
