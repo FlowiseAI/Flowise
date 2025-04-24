@@ -38,7 +38,7 @@ packages/server/.env
 packages/ui/.env
 **/.sst
 **/copilot
-copilot
+copilot/** 
 
 docker
 node_modules

@@ -6,7 +6,7 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { AppCsvParseRunsStatus, AppCsvParseRowStatus, IAppCsvParseRuns } from '../Interface'
 import { AppCsvParseRuns } from '../database/entities/AppCsvParseRuns'
 import { AppCsvParseRows } from '../database/entities/AppCsvParseRows'
-
+import { getS3Config } from 'flowise-components'
 /**
  * Cron job schedule for initiliasing csv run
  * Default: Every 15 minutes ('0/15 * * * *')
@@ -19,13 +19,7 @@ const INIT_CSV_RUN_CRON_SCHEDULE = process.env.INIT_CSV_RUN_CRON_SCHEDULE || '*/
  */
 const ENABLE_INIT_CSV_RUN_CRON = process.env.ENABLE_INIT_CSV_RUN_CRON !== 'false'
 
-const s3 = new S3({
-    region: process.env.S3_STORAGE_REGION ?? '',
-    credentials: {
-        accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID ?? '',
-        secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY ?? ''
-    }
-})
+const s3 = new S3(getS3Config())
 
 const initCsvRun = async (csvParseRun: IAppCsvParseRuns) => {
     try {

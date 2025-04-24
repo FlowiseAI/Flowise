@@ -6,6 +6,7 @@ import { getRunningExpressApp } from '../utils/getRunningExpressApp'
 import { AppCsvParseRunsStatus } from '../Interface'
 import { AppCsvParseRuns } from '../database/entities/AppCsvParseRuns'
 import { AppCsvParseRows } from '../database/entities/AppCsvParseRows'
+import { getS3Config } from 'flowise-components'
 
 /**
  * Cron job schedule for generating csv
@@ -19,13 +20,7 @@ const GENERATE_CSV_CRON_SCHEDULE = process.env.GENERATE_CSV_CRON_SCHEDULE || '*/
  */
 const ENABLE_GENERATE_CSV_CRON = process.env.ENABLE_GENERATE_CSV_CRON !== 'false'
 
-const s3 = new S3({
-    region: process.env.S3_STORAGE_REGION ?? '',
-    credentials: {
-        accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID ?? '',
-        secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY ?? ''
-    }
-})
+const s3 = new S3(getS3Config())
 
 function convertToCSV<T extends object>(data: T[]): string {
     if (data.length === 0) {
