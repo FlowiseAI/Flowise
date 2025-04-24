@@ -159,55 +159,55 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
 
-    async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
-        const client = new MongoClient(this.mongoConnection.mongoDBConnectUrl, { driverInfo: this.mongoConnection.driverInfo })
-        const collection = client.db(this.mongoConnection.databaseName).collection(this.mongoConnection.collectionName)
+async addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId = ''): Promise<void> {
+    const client = new MongoClient(this.mongoConnection.mongoDBConnectUrl, { driverInfo: this.mongoConnection.driverInfo })
+    const collection = client.db(this.mongoConnection.databaseName).collection(this.mongoConnection.collectionName)
 
-        const id = overrideSessionId ? overrideSessionId : this.sessionId
-        // Prepare common fields to update: lastUpdated and username (if provided)
-        const commonUpdateFields = {
-            lastUpdated: new Date(),
-            username: "TestUser"
-        }
-        console.log("Updating chat document with:", commonUpdateFields)
-
-        const input = msgArray.find((msg) => msg.type === 'userMessage')
-        const output = msgArray.find((msg) => msg.type === 'apiMessage')
-
-        if (input) {
-            const newInputMessage = new HumanMessage(input.text)
-            const messageToAdd = [newInputMessage].map((msg) => ({
-                ...msg.toDict(),
-                timestamp: new Date() // Add timestamp to the message
-            }))
-            await collection.updateOne(
-                { sessionId: id },
-                {
-                    $set: commonUpdateFields,
-                    $push: { messages: { $each: messageToAdd } }
-                },
-                { upsert: true }
-            )
-        }
-
-        if (output) {
-            const newOutputMessage = new AIMessage(output.text)
-            const messageToAdd = [newOutputMessage].map((msg) => ({
-                ...msg.toDict(),
-                timestamp: new Date() // Add timestamp to the message
-            }))
-            await collection.updateOne(
-                { sessionId: id },
-                {
-                    $set: commonUpdateFields,
-                    $push: { messages: { $each: messageToAdd } }
-                },
-                { upsert: true }
-            )
-        }
-
-        await client.close()
+    const id = overrideSessionId ? overrideSessionId : this.sessionId
+    // Use the username from the instance state
+    const commonUpdateFields = {
+        lastUpdated: new Date(),
+        username: this.username || "Anonymous" // Default to "Anonymous" if username is not provided
     }
+    console.log("Updating chat document with:", commonUpdateFields)
+
+    const input = msgArray.find((msg) => msg.type === 'userMessage')
+    const output = msgArray.find((msg) => msg.type === 'apiMessage')
+
+    if (input) {
+        const newInputMessage = new HumanMessage(input.text)
+        const messageToAdd = [newInputMessage].map((msg) => ({
+            ...msg.toDict(),
+            timestamp: new Date() // Add timestamp to the message
+        }))
+        await collection.updateOne(
+            { sessionId: id },
+            {
+                $set: commonUpdateFields,
+                $push: { messages: { $each: messageToAdd } }
+            },
+            { upsert: true }
+        )
+    }
+
+    if (output) {
+        const newOutputMessage = new AIMessage(output.text)
+        const messageToAdd = [newOutputMessage].map((msg) => ({
+            ...msg.toDict(),
+            timestamp: new Date() // Add timestamp to the message
+        }))
+        await collection.updateOne(
+            { sessionId: id },
+            {
+                $set: commonUpdateFields,
+                $push: { messages: { $each: messageToAdd } }
+            },
+            { upsert: true }
+        )
+    }
+
+    await client.close()
+}
 
     async clearChatMessages(overrideSessionId = ''): Promise<void> {
         const client = new MongoClient(this.mongoConnection.mongoDBConnectUrl, { driverInfo: this.mongoConnection.driverInfo })
