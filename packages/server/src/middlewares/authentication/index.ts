@@ -289,6 +289,8 @@ export const authenticationHandlerMiddleware =
                                 })
                                 stripeCustomerId = customer.id
                                 // Optionally, update the user profile in your database with the new customerId
+                                user.stripeCustomerId = stripeCustomerId
+                                await AppDataSource.getRepository(User).save(user)
                             } catch (error) {
                                 console.error('Error creating/updating Stripe customers:', error)
                                 return res.status(500).send('Internal Server Error')
