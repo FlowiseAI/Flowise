@@ -25,10 +25,13 @@ if (process.env.STORAGE_TYPE === 's3') {
         region: region,
         endpoint: customURL,
         forcePathStyle: forcePathStyle,
-        credentials: {
-            accessKeyId: accessKeyId as string,
-            secretAccessKey: secretAccessKey as string
-        }
+        credentials:
+            accessKeyId && secretAccessKey
+                ? {
+                      accessKeyId: accessKeyId as string,
+                      secretAccessKey: secretAccessKey as string
+                  }
+                : undefined
     }
 
     s3ServerStream = new S3StreamLogger({

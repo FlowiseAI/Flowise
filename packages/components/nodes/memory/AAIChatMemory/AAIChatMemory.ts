@@ -115,6 +115,9 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const client = typeof this.redisOptions === 'string' ? new Redis(this.redisOptions) : new Redis(this.redisOptions)
         try {
             return await fn(client)
+        } catch (error) {
+            console.error('❌ [AAIChatMemory]: Error during Redis Client initialization:', error)
+            throw error
         } finally {
             await client.quit()
         }
