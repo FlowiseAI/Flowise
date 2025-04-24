@@ -935,17 +935,6 @@ const validateAndSaveChat = async (
         }
 
         chat = await chatRepository.save(chatData)
-
-        // if (socketIO && incomingInput.socketIOClientId) {
-        //     socketIO.to(incomingInput.socketIOClientId).emit('newChat', {
-        //         chat: {
-        //             id: chat.id,
-        //             title: chat.title,
-        //             chatflowChatId: chat.chatflowChatId,
-        //             createdDate: chat.createdDate
-        //         }
-        //     })
-        // }
     }
 
     if (!isInternal && !chatflow?.isPublic) {
@@ -969,17 +958,7 @@ const validateAndSaveChat = async (
         where: { id: billedUserId }
     })
 
-    if (!user || !user.stripeCustomerId) {
-        // Fall back to the old plan service if no Stripe customer ID exists
-        const canContinue = await PlansService.hasAvailableExecutions(billedUserId, chatflow.organizationId)
-
-        if (!canContinue) {
-            throw new InternalFlowiseError(
-                StatusCodes.PAYMENT_REQUIRED,
-                'Insufficient executions. Please purchase more to continue using this service.'
-            )
-        }
-    } else {
+    if (user && user.stripeCustomerId) {
         // Use the new BillingService to check usage limits
         // Get usage summary for the customer
         const billingService = new BillingService()
