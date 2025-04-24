@@ -55,15 +55,112 @@ const NodesEdgesType = z
     })
     .describe('Generate Agentflowv2 nodes and edges')
 
+interface NodePosition {
+    x: number
+    y: number
+}
+
+interface EdgeData {
+    edgeLabel?: string
+    sourceColor?: string
+    targetColor?: string
+    isHumanInput?: boolean
+}
+
+interface AgentToolConfig {
+    agentSelectedTool: string
+    agentSelectedToolConfig: {
+        agentSelectedTool: string
+    }
+}
+
+interface NodeInputs {
+    agentTools?: AgentToolConfig[]
+    selectedTool?: string
+    toolInputArgs?: any[]
+    selectedToolConfig?: {
+        selectedTool: string
+    }
+    [key: string]: any
+}
+
+interface NodeData {
+    label?: string
+    name?: string
+    id?: string
+    inputs?: NodeInputs
+    inputAnchors?: InputAnchor[]
+    inputParams?: InputParam[]
+    outputs?: Record<string, any>
+    outputAnchors?: OutputAnchor[]
+    credential?: string
+    color?: string
+    [key: string]: any
+}
+
+interface Node {
+    id: string
+    type: 'agentFlow' | 'iteration'
+    position: NodePosition
+    width: number
+    height: number
+    selected?: boolean
+    positionAbsolute?: NodePosition
+    data: NodeData
+    parentNode?: string
+    extent?: string
+}
+
+interface Edge {
+    id: string
+    type: 'agentFlow'
+    source: string
+    sourceHandle: string
+    target: string
+    targetHandle: string
+    data?: EdgeData
+    label?: string
+}
+
+interface InputAnchor {
+    id: string
+    label: string
+    name: string
+    type?: string
+    [key: string]: any
+}
+
+interface InputParam {
+    id: string
+    name: string
+    label?: string
+    type?: string
+    display?: boolean
+    show?: Record<string, any>
+    hide?: Record<string, any>
+    [key: string]: any
+}
+
+interface OutputAnchor {
+    id: string
+    label: string
+    name: string
+}
+
 export const generateAgentflowv2 = async (config: Record<string, any>, question: string, options: ICommonObject) => {
     try {
         const result = await generateNodesEdges(config, question, options)
+
+        console.log('result', result)
 
         const { nodes, edges } = generateNodesData(result, config)
 
         const updatedNodes = await generateSelectedTools(nodes, config, question, options)
 
         const updatedEdges = updateEdges(edges, nodes)
+
+        console.log('updatedNodes', updatedNodes)
+        console.log('updatedEdges', updatedEdges)
 
         return { nodes: updatedNodes, edges: updatedEdges }
     } catch (error) {
@@ -72,7 +169,7 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
     }
 }
 
-const updateEdges = (edges: any, nodes: any) => {
+const updateEdges = (edges: Edge[], nodes: Node[]): Edge[] => {
     const isMultiOutput = (source: string) => {
         return source.includes('conditionAgentflow') || source.includes('conditionAgentAgentflow') || source.includes('humanInputAgentflow')
     }
@@ -116,11 +213,15 @@ const updateEdges = (edges: any, nodes: any) => {
     return updatedEdges
 }
 
-const generateSelectedTools = async (nodes: any, config: Record<string, any>, question: string, options: ICommonObject) => {
-    const selectedTools: any = []
+const generateSelectedTools = async (nodes: Node[], config: Record<string, any>, question: string, options: ICommonObject) => {
+    const selectedTools: string[] = []
 
     for (let i = 0; i < nodes.length; i += 1) {
         const node = nodes[i]
+        if (!node.data.inputs) {
+            node.data.inputs = {}
+        }
+
         if (node.data.name === 'agentAgentflow') {
             const sysPrompt = `You are a workflow orchestrator that is designed to make agent coordination and execution easy. Your goal is to select the tools that are needed to achieve the given task.
 
@@ -139,11 +240,8 @@ Now, select the tools that are needed to achieve the given task. You must only s
             if (Array.isArray(tools) && tools.length > 0) {
                 selectedTools.push(...tools)
 
-                let existingTools = []
-                if (nodes[i].data.inputs.agentTools && nodes[i].data.inputs.agentTools.length > 0) {
-                    existingTools = nodes[i].data.inputs.agentTools
-                }
-                nodes[i].data.inputs.agentTools = [
+                const existingTools = node.data.inputs.agentTools || []
+                node.data.inputs.agentTools = [
                     ...existingTools,
                     ...tools.map((tool) => ({
                         agentSelectedTool: tool,
@@ -171,9 +269,9 @@ Now, select the ONLY tool that is needed to achieve the given task. You must onl
             if (Array.isArray(tools) && tools.length > 0) {
                 selectedTools.push(...tools)
 
-                nodes[i].data.inputs.selectedTool = tools[0]
-                nodes[i].data.inputs.toolInputArgs = []
-                nodes[i].data.inputs.selectedToolConfig = {
+                node.data.inputs.selectedTool = tools[0]
+                node.data.inputs.toolInputArgs = []
+                node.data.inputs.selectedToolConfig = {
                     selectedTool: tools[0]
                 }
             }
@@ -302,9 +400,7 @@ const generateNodesData = (result: Record<string, any>, config: Record<string, a
         }
 
         let nodes = result.nodes
-
-        // filter out nodes that do not exist in config.componentNodes
-        nodes = nodes.filter((node: any) => node.data && node.data.name && config.componentNodes[node.data.name])
+        console.log('nodes 1111', nodes)
 
         for (let i = 0; i < nodes.length; i += 1) {
             const node = nodes[i]
@@ -316,13 +412,14 @@ const generateNodesData = (result: Record<string, any>, config: Record<string, a
             }
 
             const componentNode = config.componentNodes[nodeName]
+            if (!componentNode) {
+                continue
+            }
 
-            if (componentNode) {
-                const initializedNodeData = initNode(cloneDeep(componentNode), node.id)
-                nodes[i].data = {
-                    ...initializedNodeData,
-                    label: node.data?.label
-                }
+            const initializedNodeData = initNode(cloneDeep(componentNode), node.id)
+            nodes[i].data = {
+                ...initializedNodeData,
+                label: node.data?.label
             }
 
             if (nodes[i].data.name === 'iterationAgentflow') {
@@ -341,7 +438,7 @@ const generateNodesData = (result: Record<string, any>, config: Record<string, a
     }
 }
 
-const initNode = (nodeData: Record<string, any>, newNodeId: string) => {
+const initNode = (nodeData: Record<string, any>, newNodeId: string): NodeData => {
     const inputParams = []
     const incoming = nodeData.inputs ? nodeData.inputs.length : 0
 
@@ -458,7 +555,7 @@ const createAgentFlowOutputs = (nodeData: Record<string, any>, newNodeId: string
     ]
 }
 
-const initializeOutputAnchors = (nodeData: Record<string, any>, newNodeId: string) => {
+const initializeOutputAnchors = (nodeData: Record<string, any>, newNodeId: string): OutputAnchor[] => {
     return createAgentFlowOutputs(nodeData, newNodeId)
 }
 
@@ -535,10 +632,10 @@ const showHideInputs = (nodeData: Record<string, any>, inputType: string, overri
     return params
 }
 
-const showHideInputParams = (nodeData: Record<string, any>) => {
+const showHideInputParams = (nodeData: Record<string, any>): InputParam[] => {
     return showHideInputs(nodeData, 'inputParams')
 }
 
-const showHideInputAnchors = (nodeData: Record<string, any>) => {
+const showHideInputAnchors = (nodeData: Record<string, any>): InputAnchor[] => {
     return showHideInputs(nodeData, 'inputAnchors')
 }

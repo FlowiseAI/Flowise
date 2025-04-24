@@ -110,6 +110,7 @@ const getAllAgentflowv2Marketplaces = async () => {
             })
 
             const template = {
+                title: file.split('.json')[0],
                 description: fileDataObj.description || `Template from ${file}`,
                 usecases: fileDataObj.usecases || [],
                 nodes: filteredNodes,
@@ -128,7 +129,7 @@ const getAllAgentflowv2Marketplaces = async () => {
     // Format templates into the requested string format
     let formattedTemplates = ''
     templates.forEach((template: AgentFlowV2Template, index: number) => {
-        formattedTemplates += `Example ${index + 1}: ${template.description}\n`
+        formattedTemplates += `Example ${index + 1}: <<${(template as any).title}>> - ${template.description}\n`
         formattedTemplates += `"nodes": [\n`
 
         // Format nodes with proper indentation

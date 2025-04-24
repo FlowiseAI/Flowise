@@ -58,6 +58,8 @@ To create this workflow, follow these steps and wrap your thought process in <wo
    - Use iteration node when you need to iterate over a set of data (must include at least one child node with a "parentNode" property).
    - Use httpAgentflow for API requests or webhooks.
    - Use conditionAgentAgentflow for dynamic choices or conditionAgentflow for defined conditions.
+   - Use humanInputAgentflow for human input and review.
+   - Use loopAgentflow for repetitive tasks, or when back and forth communication is needed such as hierarchical workflows.
 
 After your analysis, provide the final workflow as a JSON object with "nodes" and "edges" arrays.
 
