@@ -15,18 +15,20 @@ interface ScrapedPageData {
 
 class WebScraperRecursiveTool extends Tool {
     name = 'free_web_scraper'
-    description = `Recursively scrapes web pages starting from a given URL up to a specified maximum depth and maximum number of pages. Extracts title, description, and paragraph text from each page. Input should be a single URL string. Returns a JSON string containing an array of scraped page data objects.`
+    description = `Recursively scrapes web pages starting from a given URL up to specified limits (depth, pages, timeout). Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data objects.`
 
     private maxDepth: number
     private maxPages: number | null
+    private timeoutMs: number
     private visitedUrls: Set<string>
     private scrapedPagesCount: number
 
-    constructor(maxDepth: number = 1, maxPages: number | null = 10) {
+    constructor(maxDepth: number = 1, maxPages: number | null = 10, timeoutMs: number = 60000) {
         super()
 
         this.maxDepth = Math.max(1, maxDepth)
         this.maxPages = maxPages !== null && maxPages > 0 ? maxPages : null
+        this.timeoutMs = timeoutMs > 0 ? timeoutMs : 60000
         this.visitedUrls = new Set<string>()
         this.scrapedPagesCount = 0
 
@@ -35,17 +37,17 @@ class WebScraperRecursiveTool extends Tool {
             desc += ` up to ${this.maxDepth} level(s) deep`
         }
         if (this.maxPages !== null) {
-            desc += ` or until ${this.maxPages} pages are scraped, whichever comes first.`
-        } else {
-            desc += `.`
+            desc += ` or until ${this.maxPages} pages are scraped`
         }
+
+        desc += `, with a ${this.timeoutMs / 1000}-second timeout per page, whichever comes first.`
         desc += ` Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data.`
         this.description = desc
     }
 
     private async scrapeSingleUrl(url: string): Promise<Omit<ScrapedPageData, 'url'> & { foundLinks: string[] }> {
         try {
-            const response = await fetch(url, { timeout: 60000, redirect: 'follow', follow: 5 })
+            const response = await fetch(url, { timeout: this.timeoutMs, redirect: 'follow', follow: 5 })
             if (!response.ok) {
                 const errorText = await response.text()
 
@@ -110,6 +112,16 @@ class WebScraperRecursiveTool extends Tool {
                 foundLinks: [...new Set(foundLinks)]
             }
         } catch (error: any) {
+            if (error.type === 'request-timeout') {
+                return {
+                    title: '',
+                    description: '',
+                    body_text: '',
+                    foundLinks: [],
+
+                    error: `Scraping Error: Request Timeout after ${this.timeoutMs}ms`
+                }
+            }
             return {
                 title: '',
                 description: '',
@@ -153,6 +165,7 @@ class WebScraperRecursiveTool extends Tool {
         if (
             !currentPageData.error?.startsWith('HTTP Error') &&
             !currentPageData.error?.startsWith('Invalid URL') &&
+            !currentPageData.error?.startsWith('Scraping Error: Request Timeout') &&
             currentDepth < this.maxDepth &&
             (this.maxPages === null || this.scrapedPagesCount < this.maxPages)
         ) {
@@ -216,7 +229,8 @@ class WebScraperRecursive_Tools implements INode {
         this.type = 'Tool'
         this.icon = 'freewebscraper.svg'
         this.category = 'Tools'
-        this.description = 'Recursively scrapes web pages starting from a URL, following links up to a specified depth or page count limit.'
+        this.description =
+            'Recursively scrapes web pages starting from a URL, following links up to specified limits (depth, pages, timeout).'
         this.baseClasses = [this.type, ...getBaseClasses(WebScraperRecursiveTool)]
         this.inputs = [
             {
@@ -242,6 +256,16 @@ class WebScraperRecursive_Tools implements INode {
                 additionalParams: true
             },
             {
+                label: 'Timeout (s)',
+                name: 'timeoutS',
+                type: 'number',
+                description: 'Maximum time in seconds to wait for each page request to complete. Accepts decimals (e.g., 0.5). Default 60.',
+                placeholder: '60',
+                default: 60,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Tool Description',
                 name: 'description',
                 type: 'string',
@@ -250,7 +274,7 @@ class WebScraperRecursive_Tools implements INode {
                 rows: 4,
                 additionalParams: true,
                 optional: true,
-                placeholder: `Recursively scrapes web pages starting from a given URL up to the specified maximum depth and page count. Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data.`
+                placeholder: `Recursively scrapes web pages starting from a given URL up to the specified maximum depth, page count, and timeout. Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data.`
             }
         ]
     }
@@ -278,9 +302,19 @@ class WebScraperRecursive_Tools implements INode {
             }
         }
 
+        const timeoutInputS = nodeData.inputs?.timeoutS as string | number | undefined
+        let timeoutMs = 60000
+        if (timeoutInputS !== undefined && timeoutInputS !== '') {
+            const parsedTimeoutS = parseFloat(String(timeoutInputS))
+
+            if (!isNaN(parsedTimeoutS) && parsedTimeoutS > 0) {
+                timeoutMs = Math.round(parsedTimeoutS * 1000)
+            }
+        }
+
         const customDescription = nodeData.inputs?.description as string
 
-        const tool = new WebScraperRecursiveTool(maxDepth, maxPages)
+        const tool = new WebScraperRecursiveTool(maxDepth, maxPages, timeoutMs)
 
         if (customDescription) {
             tool.description = customDescription
