@@ -16,7 +16,6 @@ const getBaseUrl = () => {
     throw new Error('No valid baseURL found. Set either VERCEL_PREVIEW_URL, VERCEL_URL, or AUTH0_BASE_URL environment variable.')
 }
 const domain = process.env.AUTH0_BASE_URL?.replace('https://', '')?.replace('http://', '')?.split(':')[0]?.split('.')?.slice(-2)?.join('.')
-console.log('domain', domain)
 
 export default initAuth0({
     secret: process.env.AUTH0_SECRET,
