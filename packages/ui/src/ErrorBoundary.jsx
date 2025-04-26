@@ -27,7 +27,7 @@ const ErrorBoundary = ({ error }) => {
                         >
                             <IconCopy />
                         </IconButton>
-                        <pre style={{ margin: 0, textWrap: 'break-word', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
+                        <pre style={{ margin: 0, overflowWrap: 'break-word', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
                             <code>{`Status: ${error.response.status}`}</code>
                             <br />
                             <code>{error.response.data.message}</code>
