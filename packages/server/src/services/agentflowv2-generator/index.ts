@@ -9,6 +9,7 @@ import { z } from 'zod'
 import { sysPrompt } from './prompt'
 import { databaseEntities } from '../../utils'
 import logger from '../../utils/logger'
+import { MODE } from '../../Interface'
 
 // Define the Zod schema for Agentflowv2 data structure
 const NodeType = z.object({
@@ -81,8 +82,14 @@ const getAllToolNodes = async () => {
     const appServer = getRunningExpressApp()
     const nodes = appServer.nodesPool.componentNodes
     const toolNodes = []
+    const disabled_nodes = process.env.DISABLED_NODES ? process.env.DISABLED_NODES.split(',') : []
+    const removeTools = ['chainTool', 'retrieverTool', 'webBrowser', ...disabled_nodes]
+
     for (const node in nodes) {
         if (nodes[node].category.includes('Tools')) {
+            if (removeTools.includes(nodes[node].name)) {
+                continue
+            }
             toolNodes.push({
                 name: nodes[node].name,
                 description: nodes[node].description
@@ -184,11 +191,28 @@ const generateAgentflowv2 = async (question: string, selectedChatModel: Record<s
             databaseEntities: databaseEntities,
             logger: logger
         }
-        const response = await generateAgentflowv2_json(
-            { prompt, componentNodes: getRunningExpressApp().nodesPool.componentNodes, toolNodes, selectedChatModel },
-            question,
-            options
-        )
+
+        let response
+
+        if (process.env.MODE === MODE.QUEUE) {
+            const predictionQueue = getRunningExpressApp().queueManager.getQueue('prediction')
+            const job = await predictionQueue.addJob({
+                prompt,
+                question,
+                toolNodes,
+                selectedChatModel,
+                isAgentFlowGenerator: true
+            })
+            logger.debug(`[server]: Generated Agentflowv2 Job added to queue: ${job.id}`)
+            const queueEvents = predictionQueue.getQueueEvents()
+            response = await job.waitUntilFinished(queueEvents)
+        } else {
+            response = await generateAgentflowv2_json(
+                { prompt, componentNodes: getRunningExpressApp().nodesPool.componentNodes, toolNodes, selectedChatModel },
+                question,
+                options
+            )
+        }
 
         try {
             // Try to parse and validate the response if it's a string
