@@ -61,7 +61,10 @@ const createDocumentStore = async (newDocumentStore: DocumentStore) => {
         const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(documentStore)
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.createDocumentStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -71,7 +74,10 @@ const getAllDocumentStores = async () => {
         const entities = await appServer.AppDataSource.getRepository(DocumentStore).find()
         return entities
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getAllDocumentStores - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -81,7 +87,10 @@ const getAllDocumentFileChunks = async () => {
         const entities = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find()
         return entities
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getAllDocumentFileChunks - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -92,7 +101,10 @@ const deleteLoaderFromDocumentStore = async (storeId: string, docId: string) => 
             id: storeId
         })
         if (!entity) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: Document store ${storeId} not found`)
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.deleteLoaderFromDocumentStore - Document store ${storeId} not found`
+            )
         }
         const existingLoaders = JSON.parse(entity.loaders)
         const found = existingLoaders.find((loader: IDocumentStoreLoader) => loader.id === docId)
@@ -122,10 +134,10 @@ const deleteLoaderFromDocumentStore = async (storeId: string, docId: string) => 
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Unable to locate loader in Document Store ${entity.name}`)
         }
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.deleteLoaderFromDocumentStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -136,14 +148,17 @@ const getDocumentStoreById = async (storeId: string) => {
             id: storeId
         })
         if (!entity) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: Document store ${storeId} not found`)
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.getDocumentStoreById - Document store ${storeId} not found`
+            )
         }
         return entity
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getDocumentStoreById - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -169,10 +184,10 @@ const getUsedChatflowNames = async (entity: DocumentStore) => {
         }
         return []
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getUsedChatflowNames - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -183,7 +198,10 @@ const getDocumentStoreFileChunks = async (appDataSource: DataSource, storeId: st
             id: storeId
         })
         if (!entity) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: Document store ${storeId} not found`)
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.getDocumentStoreById - Document store ${storeId} not found`
+            )
         }
         const loaders = JSON.parse(entity.loaders)
 
@@ -191,7 +209,10 @@ const getDocumentStoreFileChunks = async (appDataSource: DataSource, storeId: st
         if (docId !== 'all') {
             found = loaders.find((loader: IDocumentStoreLoader) => loader.id === docId)
             if (!found) {
-                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: Document loader ${docId} not found`)
+                throw new InternalFlowiseError(
+                    StatusCodes.NOT_FOUND,
+                    `Error: documentStoreServices.getDocumentStoreById - Document loader ${docId} not found`
+                )
             }
         }
         if (found) {
@@ -243,10 +264,10 @@ const getDocumentStoreFileChunks = async (appDataSource: DataSource, storeId: st
         }
         return response
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getDocumentStoreFileChunks - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -278,10 +299,10 @@ const deleteDocumentStore = async (storeId: string) => {
 
         return { deleted: tbd.affected }
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.deleteDocumentStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -313,10 +334,10 @@ const deleteDocumentStoreFileChunk = async (storeId: string, docId: string, chun
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
         return getDocumentStoreFileChunks(appServer.AppDataSource, storeId, docId)
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.deleteDocumentStoreFileChunk - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -392,10 +413,10 @@ const deleteVectorStoreFromStore = async (storeId: string) => {
             await vectorStoreObj.vectorStoreMethods.delete(vStoreNodeData, idsToDelete, options)
         }
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.deleteVectorStoreFromStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -429,10 +450,10 @@ const editDocumentStoreFileChunk = async (storeId: string, docId: string, chunkI
         await appServer.AppDataSource.getRepository(DocumentStore).save(entity)
         return getDocumentStoreFileChunks(appServer.AppDataSource, storeId, docId)
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.editDocumentStoreFileChunk - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -443,7 +464,10 @@ const updateDocumentStore = async (documentStore: DocumentStore, updatedDocument
         const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(tmpUpdatedDocumentStore)
         return dbResponse
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.updateDocumentStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -499,10 +523,10 @@ const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComp
         let docs: IDocument[] = await docNodeInstance.init(nodeData, '', options)
         return docs
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.splitIntoChunks - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -583,10 +607,10 @@ const previewChunksMiddleware = async (data: IDocumentStoreLoaderForPreview) => 
 
         return await previewChunks(executeData)
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.previewChunksMiddleware - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -615,10 +639,10 @@ export const previewChunks = async ({ appDataSource, componentNodes, data }: IEx
 
         return { chunks: docs, totalChunks: totalChunks, previewChunkCount: data.previewChunkCount }
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.previewChunks - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -628,7 +652,10 @@ const saveProcessingLoader = async (appDataSource: DataSource, data: IDocumentSt
             id: data.storeId
         })
         if (!entity) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${data.storeId} not found`)
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.saveProcessingLoader - Document store ${data.storeId} not found`
+            )
         }
         const existingLoaders = JSON.parse(entity.loaders)
         const newDocLoaderId = data.id ?? uuidv4()
@@ -692,10 +719,10 @@ const saveProcessingLoader = async (appDataSource: DataSource, data: IDocumentSt
         newLoader.source = addLoaderSource(newLoader, true)
         return newLoader
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.saveProcessingLoader - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -751,10 +778,10 @@ const processLoaderMiddleware = async (data: IDocumentStoreLoaderForPreview, doc
 
         return await processLoader(executeData)
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.processLoader - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -881,10 +908,10 @@ const _saveChunksToStorage = async (
 
         return
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices._saveChunksToStorage - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -896,7 +923,10 @@ const getDocumentLoaders = async () => {
         const dbResponse = await nodesService.getAllNodesForCategory('Document Loaders')
         return dbResponse.filter((node) => !removeDocumentLoadersWithName.includes(node.name))
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getDocumentLoaders - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -939,10 +969,10 @@ const updateDocumentStoreUsage = async (chatId: string, storeId: string | undefi
             }
         })
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.updateDocumentStoreUsage - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -967,10 +997,10 @@ const updateVectorStoreConfigOnly = async (data: ICommonObject) => {
         }
         return {}
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.updateVectorStoreConfig - ${getErrorMessage(error)}`
+        )
     }
 }
 const saveVectorStoreConfig = async (appDataSource: DataSource, data: ICommonObject, isStrictSave = true) => {
@@ -1029,10 +1059,10 @@ const saveVectorStoreConfig = async (appDataSource: DataSource, data: ICommonObj
         await appDataSource.getRepository(DocumentStore).save(entity)
         return entity
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.saveVectorStoreConfig - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1051,10 +1081,10 @@ export const insertIntoVectorStore = async ({
         const indexResult = await _insertIntoVectorStoreWorkerThread(appDataSource, componentNodes, telemetry, data, isStrictSave)
         return indexResult
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.insertIntoVectorStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1090,10 +1120,10 @@ const insertIntoVectorStoreMiddleware = async (data: ICommonObject, isStrictSave
             return await insertIntoVectorStore(executeData)
         }
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.insertIntoVectorStoreMiddleware - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1175,10 +1205,10 @@ const _insertIntoVectorStoreWorkerThread = async (
 
         return indexResult ?? { result: 'Successfully Upserted' }
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices._insertIntoVectorStoreWorkerThread - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1188,7 +1218,10 @@ const getEmbeddingProviders = async () => {
         const dbResponse = await nodesService.getAllNodesForCategory('Embeddings')
         return dbResponse.filter((node) => !node.tags?.includes('LlamaIndex'))
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getEmbeddingProviders - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1200,7 +1233,10 @@ const getVectorStoreProviders = async () => {
             (node) => !node.tags?.includes('LlamaIndex') && node.name !== 'documentStoreVS' && node.name !== 'memoryVectorStore'
         )
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getVectorStoreProviders - ${getErrorMessage(error)}`
+        )
     }
 }
 // Get all component nodes - Vector Stores
@@ -1209,7 +1245,10 @@ const getRecordManagerProviders = async () => {
         const dbResponse = await nodesService.getAllNodesForCategory('Record Manager')
         return dbResponse.filter((node) => !node.tags?.includes('LlamaIndex'))
     } catch (error) {
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.getRecordManagerProviders - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1295,10 +1334,10 @@ const queryVectorStore = async (data: ICommonObject) => {
             docs: docs
         }
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.queryVectorStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1669,10 +1708,10 @@ const upsertDocStore = async (
 
         return res
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.upsertDocStore - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1726,10 +1765,10 @@ const upsertDocStoreMiddleware = async (storeId: string, data: IDocumentStoreUps
             return await executeDocStoreUpsert(executeData)
         }
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.upsertDocStoreMiddleware - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1784,10 +1823,10 @@ const refreshDocStoreMiddleware = async (storeId: string, data?: IDocumentStoreR
             return await executeDocStoreUpsert(executeData)
         }
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.refreshDocStoreMiddleware - ${getErrorMessage(error)}`
+        )
     }
 }
 
@@ -1836,12 +1875,15 @@ const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: I
             return response
         }
 
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error generating tool description`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.generateDocStoreToolDesc - Error generating tool description`
+        )
     } catch (error) {
-        if (error instanceof InternalFlowiseError) {
-            throw error
-        }
-        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `${getErrorMessage(error)}`)
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.generateDocStoreToolDesc - ${getErrorMessage(error)}`
+        )
     }
 }
 
