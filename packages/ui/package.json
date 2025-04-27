@@ -55,6 +55,7 @@
         "react-markdown": "^8.0.6",
         "react-perfect-scrollbar": "^1.5.8",
         "react-redux": "^8.0.5",
+        "react-rewards": "^2.1.0",
         "react-router": "~6.3.0",
         "react-router-dom": "~6.3.0",
         "react-syntax-highlighter": "^15.5.0",

@@ -70,7 +70,7 @@ const blacklistForChatflowCanvas = {
     Memory: agentMemoryNodes
 }
 
-const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2 }) => {
+const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerated }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -305,7 +305,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2 }) => {
         setDialogProps({
             title: 'What would you like to build?',
             description:
-                'Enter your prompt to generate an agentflow. This is experimental and may not work as expected with different models.'
+                'Enter your prompt to generate an agentflow. Performance may vary with different models. Only nodes and edges are generated, you will need to fill in the input fields for each node.'
         })
     }
 
@@ -315,6 +315,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2 }) => {
 
     const handleConfirmDialog = () => {
         setOpenDialog(false)
+        onFlowGenerated()
     }
 
     return (
@@ -667,6 +668,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2 }) => {
 AddNodes.propTypes = {
     nodesData: PropTypes.array,
     node: PropTypes.object,
+    onFlowGenerated: PropTypes.func,
     isAgentCanvas: PropTypes.bool,
     isAgentflowv2: PropTypes.bool
 }

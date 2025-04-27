@@ -1,7 +1,7 @@
 import { createPortal } from 'react-dom'
 import { cloneDeep } from 'lodash'
 import { useState, useEffect, useContext } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { Box, Typography, OutlinedInput, DialogActions, Button, Dialog, DialogContent, DialogTitle, LinearProgress } from '@mui/material'
 import chatflowsApi from '@/api/chatflows'
@@ -43,6 +43,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
     const [chatModelsComponents, setChatModelsComponents] = useState([])
     const [chatModelsOptions, setChatModelsOptions] = useState([])
     const [selectedChatModel, setSelectedChatModel] = useState({})
+    const customization = useSelector((state) => state.customization)
 
     const getChatModelsApi = useApi(assistantsApi.getChatModels)
     const { reactFlowInstance } = useContext(flowContext)
@@ -208,7 +209,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                     display: 'block',
                                     flexDirection: 'row',
                                     width: '100%',
-                                    marginTop: '15px'
+                                    marginTop: '25px'
                                 }}
                             >
                                 {defaultInstructions.map((instruction, index) => {
@@ -216,8 +217,22 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         <Button
                                             size='small'
                                             key={index}
-                                            sx={{ textTransform: 'none', mr: 1, mb: 1, borderRadius: '16px' }}
-                                            variant='outlined'
+                                            sx={{
+                                                textTransform: 'none',
+                                                mr: 1,
+                                                mb: 1,
+                                                borderRadius: '16px',
+                                                border: 'none',
+                                                backgroundColor: customization.isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                                '&:hover': {
+                                                    backgroundColor: customization.isDarkMode
+                                                        ? 'rgba(255,255,255,0.1)'
+                                                        : 'rgba(0,0,0,0.06)',
+                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
+                                                }
+                                            }}
+                                            variant='contained'
                                             color='inherit'
                                             onClick={() => {
                                                 setCustomAssistantInstruction(instruction.text)

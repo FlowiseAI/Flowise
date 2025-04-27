@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback, useContext } from 'react'
 import ReactFlow, { addEdge, Controls, MiniMap, Background, useNodesState, useEdgesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 import './index.css'
+import { useReward } from 'react-rewards'
 
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -451,6 +452,22 @@ const AgentflowCanvas = () => {
         setIsSyncNodesButtonEnabled(false)
     }
 
+    const { reward: confettiReward } = useReward('canvasConfetti', 'confetti', {
+        elementCount: 150,
+        spread: 80,
+        lifetime: 300,
+        startVelocity: 40,
+        zIndex: 10000,
+        decay: 0.92,
+        position: 'fixed'
+    })
+
+    const triggerConfetti = () => {
+        setTimeout(() => {
+            confettiReward()
+        }, 50)
+    }
+
     const saveChatflowSuccess = () => {
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
@@ -643,6 +660,21 @@ const AgentflowCanvas = () => {
 
     return (
         <>
+            <span
+                id='canvasConfetti'
+                style={{
+                    position: 'fixed',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '0',
+                    height: '0',
+                    zIndex: 9999,
+                    pointerEvents: 'none',
+                    background: 'transparent'
+                }}
+            />
+
             <Box>
                 <AppBar
                     enableColorOnDark
@@ -705,7 +737,13 @@ const AgentflowCanvas = () => {
                                     }}
                                 />
                                 <Background color='#aaa' gap={16} />
-                                <AddNodes isAgentCanvas={true} isAgentflowv2={true} nodesData={getNodesApi.data} node={selectedNode} />
+                                <AddNodes
+                                    isAgentCanvas={true}
+                                    isAgentflowv2={true}
+                                    nodesData={getNodesApi.data}
+                                    node={selectedNode}
+                                    onFlowGenerated={triggerConfetti}
+                                />
                                 <EditNodeDialog
                                     show={editNodeDialogOpen}
                                     dialogProps={editNodeDialogProps}

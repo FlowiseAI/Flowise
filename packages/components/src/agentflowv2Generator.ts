@@ -77,7 +77,7 @@ interface AgentToolConfig {
 interface NodeInputs {
     agentTools?: AgentToolConfig[]
     selectedTool?: string
-    toolInputArgs?: any[]
+    toolInputArgs?: Record<string, any>[]
     selectedToolConfig?: {
         selectedTool: string
     }
@@ -151,16 +151,11 @@ export const generateAgentflowv2 = async (config: Record<string, any>, question:
     try {
         const result = await generateNodesEdges(config, question, options)
 
-        console.log('result', result)
-
         const { nodes, edges } = generateNodesData(result, config)
 
         const updatedNodes = await generateSelectedTools(nodes, config, question, options)
 
         const updatedEdges = updateEdges(edges, nodes)
-
-        console.log('updatedNodes', updatedNodes)
-        console.log('updatedEdges', updatedEdges)
 
         return { nodes: updatedNodes, edges: updatedEdges }
     } catch (error) {
@@ -174,16 +169,36 @@ const updateEdges = (edges: Edge[], nodes: Node[]): Edge[] => {
         return source.includes('conditionAgentflow') || source.includes('conditionAgentAgentflow') || source.includes('humanInputAgentflow')
     }
     const findNodeColor = (nodeId: string) => {
-        const node = nodes.find((node: any) => node.id === nodeId)
+        const node = nodes.find((node) => node.id === nodeId)
         return node?.data?.color
     }
 
     // filter out edges that do not exist in nodes
-    edges = edges.filter((edge: any) => {
-        return nodes.some((node: any) => node.id === edge.source || node.id === edge.target)
+    edges = edges.filter((edge) => {
+        return nodes.some((node) => node.id === edge.source || node.id === edge.target)
     })
 
-    const updatedEdges = edges.map((edge: any) => {
+    // filter out the edge that has hideInput/hideOutput on the source/target node
+    const indexToDelete = []
+    for (let i = 0; i < edges.length; i += 1) {
+        const edge = edges[i]
+        const sourceNode = nodes.find((node) => node.id === edge.source)
+        if (sourceNode?.data?.hideOutput) {
+            indexToDelete.push(i)
+        }
+
+        const targetNode = nodes.find((node) => node.id === edge.target)
+        if (targetNode?.data?.hideInput) {
+            indexToDelete.push(i)
+        }
+    }
+
+    // delete the edges at the index in indexToDelete
+    for (let i = indexToDelete.length - 1; i >= 0; i -= 1) {
+        edges.splice(indexToDelete[i], 1)
+    }
+
+    const updatedEdges = edges.map((edge) => {
         return {
             ...edge,
             data: {
@@ -196,10 +211,10 @@ const updateEdges = (edges: Edge[], nodes: Node[]): Edge[] => {
             type: 'agentFlow',
             id: `${edge.source}-${edge.sourceHandle}-${edge.target}-${edge.targetHandle}`
         }
-    })
+    }) as Edge[]
 
     if (updatedEdges.length > 0) {
-        updatedEdges.forEach((edge: any) => {
+        updatedEdges.forEach((edge) => {
             if (isMultiOutput(edge.source)) {
                 if (edge.sourceHandle.includes('true')) {
                     edge.sourceHandle = edge.sourceHandle.replace('true', '0')
@@ -400,7 +415,6 @@ const generateNodesData = (result: Record<string, any>, config: Record<string, a
         }
 
         let nodes = result.nodes
-        console.log('nodes 1111', nodes)
 
         for (let i = 0; i < nodes.length; i += 1) {
             const node = nodes[i]
