@@ -6,87 +6,121 @@
                 {
                     "label": "anthropic.claude-3-7-sonnet-20250219-v1:0",
                     "name": "anthropic.claude-3-7-sonnet-20250219-v1:0",
-                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model"
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "anthropic.claude-3-5-haiku-20241022-v1:0",
                     "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
-                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model"
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model",
+                    "input_cost": 8e-7,
+                    "output_cost": 4e-6
                 },
                 {
                     "label": "anthropic.claude-3.5-sonnet-20241022-v2:0",
                     "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
-                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model"
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "anthropic.claude-3.5-sonnet-20240620-v1:0",
                     "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
-                    "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5 - most intelligent model"
+                    "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5 - most intelligent model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "anthropic.claude-3-opus",
                     "name": "anthropic.claude-3-opus-20240229-v1:0",
-                    "description": "Powerful model for highly complex tasks, reasoning and analysis"
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
                 },
                 {
                     "label": "anthropic.claude-3-sonnet",
                     "name": "anthropic.claude-3-sonnet-20240229-v1:0",
-                    "description": "Balance of intelligence and speed"
+                    "description": "Balance of intelligence and speed",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "anthropic.claude-3-haiku",
                     "name": "anthropic.claude-3-haiku-20240307-v1:0",
-                    "description": "Fastest and most compact model for near-instant responsiveness"
+                    "description": "Fastest and most compact model for near-instant responsiveness",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 1.25e-6
                 },
                 {
                     "label": "anthropic.claude-instant-v1",
                     "name": "anthropic.claude-instant-v1",
-                    "description": "Text generation, conversation"
+                    "description": "Text generation, conversation",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
                 },
                 {
                     "label": "anthropic.claude-v2:1",
                     "name": "anthropic.claude-v2:1",
-                    "description": "Text generation, conversation, complex reasoning and analysis"
+                    "description": "Text generation, conversation, complex reasoning and analysis",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
                 },
                 {
                     "label": "anthropic.claude-v2",
                     "name": "anthropic.claude-v2",
-                    "description": "Text generation, conversation, complex reasoning and analysis"
+                    "description": "Text generation, conversation, complex reasoning and analysis",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
                 },
                 {
                     "label": "meta.llama2-13b-chat-v1",
                     "name": "meta.llama2-13b-chat-v1",
-                    "description": "Text generation, conversation"
+                    "description": "Text generation, conversation",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.0006
                 },
                 {
                     "label": "meta.llama2-70b-chat-v1",
                     "name": "meta.llama2-70b-chat-v1",
-                    "description": "Text generation, conversation"
+                    "description": "Text generation, conversation",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.0006
                 },
                 {
                     "label": "meta.llama3-8b-instruct-v1:0",
                     "name": "meta.llama3-8b-instruct-v1:0",
-                    "description": "Text summarization, text classification, sentiment analysis"
+                    "description": "Text summarization, text classification, sentiment analysis",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.0006
                 },
                 {
                     "label": "meta.llama3-70b-instruct-v1:0",
                     "name": "meta.llama3-70b-instruct-v1:0",
-                    "description": "Language modeling, dialog systems, code generation, text summarization, text classification, sentiment analysis"
+                    "description": "Language modeling, dialog systems, code generation, text summarization, text classification, sentiment analysis",
+                    "input_cost": 0.00195,
+                    "output_cost": 0.00256
                 },
                 {
                     "label": "mistral.mistral-7b-instruct-v0:2",
                     "name": "mistral.mistral-7b-instruct-v0:2",
-                    "description": "Classification, text generation, code generation"
+                    "description": "Classification, text generation, code generation",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
                 },
                 {
                     "label": "mistral.mixtral-8x7b-instruct-v0:1",
                     "name": "mistral.mixtral-8x7b-instruct-v0:1",
-                    "description": "Complex reasoning and analysis, text generation, code generation"
+                    "description": "Complex reasoning and analysis, text generation, code generation",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
                 },
                 {
                     "label": "mistral.mistral-large-2402-v1:0",
                     "name": "mistral.mistral-large-2402-v1:0",
-                    "description": "Complex reasoning and analysis, text generation, code generation, RAG, agents"
+                    "description": "Complex reasoning and analysis, text generation, code generation, RAG, agents",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
                 }
             ],
             "regions": [
@@ -236,52 +270,82 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-4.1",
+                    "name": "gpt-4.1",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
                     "label": "o3-mini",
-                    "name": "o3-mini"
+                    "name": "o3-mini",
+                    "input_cost": 1.1e-6,
+                    "output_cost": 4.4e-6
                 },
                 {
                     "label": "o1",
-                    "name": "o1"
+                    "name": "o1",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "o1-preview",
-                    "name": "o1-preview"
+                    "name": "o1-preview",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "o1-mini",
-                    "name": "o1-mini"
+                    "name": "o1-mini",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000012
                 },
                 {
                     "label": "gpt-4o-mini",
-                    "name": "gpt-4o-mini"
+                    "name": "gpt-4o-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
                 },
                 {
                     "label": "gpt-4o",
-                    "name": "gpt-4o"
+                    "name": "gpt-4o",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
                 },
                 {
                     "label": "gpt-4",
-                    "name": "gpt-4"
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "gpt-4-32k",
-                    "name": "gpt-4-32k"
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
                 },
                 {
                     "label": "gpt-35-turbo",
-                    "name": "gpt-35-turbo"
+                    "name": "gpt-35-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
                 },
                 {
                     "label": "gpt-35-turbo-16k",
-                    "name": "gpt-35-turbo-16k"
+                    "name": "gpt-35-turbo-16k",
+                    "input_cost": 3e-6,
+                    "output_cost": 4e-6
                 },
                 {
                     "label": "gpt-4-vision-preview",
-                    "name": "gpt-4-vision-preview"
+                    "name": "gpt-4-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4.5-preview",
-                    "name": "gpt-4.5-preview"
+                    "name": "gpt-4.5-preview",
+                    "input_cost": 0.000075,
+                    "output_cost": 0.00015
                 }
             ]
         },
@@ -290,39 +354,57 @@
             "models": [
                 {
                     "label": "gpt-4o-mini",
-                    "name": "gpt-4o-mini"
+                    "name": "gpt-4o-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
                 },
                 {
                     "label": "gpt-4o",
-                    "name": "gpt-4o"
+                    "name": "gpt-4o",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
                 },
                 {
                     "label": "gpt-4",
-                    "name": "gpt-4"
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "gpt-4-turbo",
-                    "name": "gpt-4-turbo"
+                    "name": "gpt-4-turbo",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-32k",
-                    "name": "gpt-4-32k"
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
                 },
                 {
-                    "label": "gpt-3.5-turbo",
-                    "name": "gpt-3.5-turbo"
+                    "label": "gpt-35-turbo",
+                    "name": "gpt-35-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
                 },
                 {
-                    "label": "gpt-3.5-turbo-16k",
-                    "name": "gpt-3.5-turbo-16k"
+                    "label": "gpt-35-turbo-16k",
+                    "name": "gpt-35-turbo-16k",
+                    "input_cost": 5e-7,
+                    "output_cost": 0.0000015
                 },
                 {
                     "label": "gpt-4-vision-preview",
-                    "name": "gpt-4-vision-preview"
+                    "name": "gpt-4-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-1106-preview",
-                    "name": "gpt-4-1106-preview"
+                    "name": "gpt-4-1106-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 }
             ]
         },
@@ -332,57 +414,79 @@
                 {
                     "label": "claude-3-7-sonnet-latest",
                     "name": "claude-3-7-sonnet-latest",
-                    "description": "Most recent snapshot version of Claude Sonnet 3.7 model - hybrid reasoning model"
+                    "description": "Most recent snapshot version of Claude Sonnet 3.7 model - hybrid reasoning model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-5-haiku-latest",
                     "name": "claude-3-5-haiku-latest",
-                    "description": "Most recent snapshot version of Claude Haiku 3.5 - fastest model"
+                    "description": "Most recent snapshot version of Claude Haiku 3.5 - fastest model",
+                    "input_cost": 8e-7,
+                    "output_cost": 4e-6
                 },
                 {
                     "label": "claude-3.5-sonnet-latest",
                     "name": "claude-3-5-sonnet-latest",
-                    "description": "Most recent snapshot version of Claude Sonnet 3.5 model - most intelligent model"
+                    "description": "Most recent snapshot version of Claude Sonnet 3.5 model - most intelligent model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3.5-sonnet-20241022",
                     "name": "claude-3-5-sonnet-20241022",
-                    "description": "(20241022) specific version of Claude Sonnet 3.5 - most intelligent model"
+                    "description": "(20241022) specific version of Claude Sonnet 3.5 - most intelligent model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3.5-sonnet-20240620",
                     "name": "claude-3-5-sonnet-20240620",
-                    "description": "(20240620) specific version of Claude Sonnet 3.5 - most intelligent model"
+                    "description": "(20240620) specific version of Claude Sonnet 3.5 - most intelligent model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-opus",
                     "name": "claude-3-opus-20240229",
-                    "description": "Powerful model for highly complex tasks, reasoning and analysis"
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
                 },
                 {
                     "label": "claude-3-sonnet",
                     "name": "claude-3-sonnet-20240229",
-                    "description": "Ideal balance of intelligence and speed for enterprise workloads"
+                    "description": "Ideal balance of intelligence and speed for enterprise workloads",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-haiku",
                     "name": "claude-3-haiku-20240307",
-                    "description": "Fastest and most compact model, designed for near-instant responsiveness"
+                    "description": "Fastest and most compact model, designed for near-instant responsiveness",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 1.25e-6
                 },
                 {
                     "label": "claude-2.0 (legacy)",
                     "name": "claude-2.0",
-                    "description": "Claude 2 latest major version, automatically get updates to the model as they are released"
+                    "description": "Claude 2 latest major version, automatically get updates to the model as they are released",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
                 },
                 {
                     "label": "claude-2.1 (legacy)",
                     "name": "claude-2.1",
-                    "description": "Claude 2 latest full version"
+                    "description": "Claude 2 latest full version",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
                 },
                 {
                     "label": "claude-instant-1.2 (legacy)",
                     "name": "claude-instant-1.2",
-                    "description": "Claude Instant latest major version, automatically get updates to the model as they are released"
+                    "description": "Claude Instant latest major version, automatically get updates to the model as they are released",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
                 }
             ]
         },
@@ -392,27 +496,37 @@
                 {
                     "label": "claude-3-haiku",
                     "name": "claude-3-haiku",
-                    "description": "Fastest and most compact model, designed for near-instant responsiveness"
+                    "description": "Fastest and most compact model, designed for near-instant responsiveness",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 1.25e-6
                 },
                 {
                     "label": "claude-3-opus",
                     "name": "claude-3-opus",
-                    "description": "Most powerful model for highly complex tasks"
+                    "description": "Most powerful model for highly complex tasks",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
                 },
                 {
                     "label": "claude-3-sonnet",
                     "name": "claude-3-sonnet",
-                    "description": "Ideal balance of intelligence and speed for enterprise workloads"
+                    "description": "Ideal balance of intelligence and speed for enterprise workloads",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-2.1 (legacy)",
                     "name": "claude-2.1",
-                    "description": "Claude 2 latest major version, automatically get updates to the model as they are released"
+                    "description": "Claude 2 latest major version, automatically get updates to the model as they are released",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
                 },
                 {
                     "label": "claude-instant-1.2 (legacy)",
                     "name": "claude-instant-1.2",
-                    "description": "Claude Instant latest major version, automatically get updates to the model as they are released"
+                    "description": "Claude Instant latest major version, automatically get updates to the model as they are released",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
                 }
             ]
         },
@@ -420,24 +534,40 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
-                    "label": "gemini-2.0-flash-001",
-                    "name": "gemini-2.0-flash-001"
+                    "label": "gemini-2.5-pro-preview-03-25",
+                    "name": "gemini-2.5-pro-preview-03-25",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 0.00001
                 },
                 {
-                    "label": "gemini-2.0-flash-lite-001",
-                    "name": "gemini-2.0-flash-lite-001"
+                    "label": "gemini-2.0-flash",
+                    "name": "gemini-2.0-flash",
+                    "input_cost": 1e-7,
+                    "output_cost": 4e-7
+                },
+                {
+                    "label": "gemini-2.0-flash-lite",
+                    "name": "gemini-2.0-flash-lite",
+                    "input_cost": 7.5e-8,
+                    "output_cost": 3e-7
                 },
                 {
                     "label": "gemini-1.5-flash",
-                    "name": "gemini-1.5-flash"
+                    "name": "gemini-1.5-flash",
+                    "input_cost": 7.5e-8,
+                    "output_cost": 3e-7
                 },
                 {
                     "label": "gemini-1.5-flash-8b",
-                    "name": "gemini-1.5-flash-8b"
+                    "name": "gemini-1.5-flash-8b",
+                    "input_cost": 3.75e-8,
+                    "output_cost": 1.5e-7
                 },
                 {
                     "label": "gemini-1.5-pro",
-                    "name": "gemini-1.5-pro"
+                    "name": "gemini-1.5-pro",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 5e-6
                 }
             ]
         },
@@ -446,7 +576,9 @@
             "models": [
                 {
                     "label": "qwen-plus",
-                    "name": "qwen-plus"
+                    "name": "qwen-plus",
+                    "input_cost": 0.0016,
+                    "output_cost": 0.0064
                 }
             ]
         },
@@ -455,57 +587,81 @@
             "models": [
                 {
                     "label": "gemini-1.5-flash-002",
-                    "name": "gemini-1.5-flash-002"
+                    "name": "gemini-1.5-flash-002",
+                    "input_cost": 7.5e-8,
+                    "output_cost": 3e-7
                 },
                 {
                     "label": "gemini-1.5-flash-001",
-                    "name": "gemini-1.5-flash-001"
+                    "name": "gemini-1.5-flash-001",
+                    "input_cost": 7.5e-8,
+                    "output_cost": 3e-7
                 },
                 {
                     "label": "gemini-1.5-pro-002",
-                    "name": "gemini-1.5-pro-002"
+                    "name": "gemini-1.5-pro-002",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 5e-6
                 },
                 {
                     "label": "gemini-1.5-pro-001",
-                    "name": "gemini-1.5-pro-001"
+                    "name": "gemini-1.5-pro-001",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 5e-6
                 },
                 {
                     "label": "gemini-1.0-pro",
-                    "name": "gemini-1.0-pro"
+                    "name": "gemini-1.0-pro",
+                    "input_cost": 1.25e-7,
+                    "output_cost": 3.75e-7
                 },
                 {
                     "label": "gemini-1.0-pro-vision",
-                    "name": "gemini-1.0-pro-vision"
+                    "name": "gemini-1.0-pro-vision",
+                    "input_cost": 1.25e-7,
+                    "output_cost": 3.75e-7
                 },
                 {
                     "label": "claude-3-7-sonnet@20250219",
                     "name": "claude-3-7-sonnet@20250219",
-                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model"
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-5-haiku@20241022",
                     "name": "claude-3-5-haiku@20241022",
-                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model"
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model",
+                    "input_cost": 8e-7,
+                    "output_cost": 4e-6
                 },
                 {
                     "label": "claude-3-5-sonnet-v2@20241022",
                     "name": "claude-3-5-sonnet-v2@20241022",
-                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model"
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-opus@20240229",
                     "name": "claude-3-opus@20240229",
-                    "description": "Powerful model for highly complex tasks, reasoning and analysis"
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
                 },
                 {
                     "label": "claude-3-sonnet@20240229",
                     "name": "claude-3-sonnet@20240229",
-                    "description": "Balance of intelligence and speed"
+                    "description": "Balance of intelligence and speed",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-haiku@20240307",
                     "name": "claude-3-haiku@20240307",
-                    "description": "Fastest and most compact model for near-instant responsiveness"
+                    "description": "Fastest and most compact model for near-instant responsiveness",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 1.25e-6
                 }
             ]
         },
@@ -575,6 +731,14 @@
                 {
                     "label": "mixtral-8x7b-32768",
                     "name": "mixtral-8x7b-32768"
+                },
+                {
+                    "label": "meta-llama/llama-4-maverick-17b-128e-instruct",
+                    "name": "meta-llama/llama-4-maverick-17b-128e-instruct"
+                },
+                {
+                    "label": "meta-llama/llama-4-scout-17b-16e-instruct",
+                    "name": "meta-llama/llama-4-scout-17b-16e-instruct"
                 }
             ]
         },
@@ -582,12 +746,16 @@
             "name": "chatCohere",
             "models": [
                 {
-                    "label": "command-r",
-                    "name": "command-r"
+                    "label": "command-a",
+                    "name": "command-a",
+                    "input_cost": 0.0025,
+                    "output_cost": 0.01
                 },
                 {
                     "label": "command-r-plus",
-                    "name": "command-r-plus"
+                    "name": "command-r-plus",
+                    "input_cost": 0.0025,
+                    "output_cost": 0.01
                 }
             ]
         },
@@ -596,11 +764,15 @@
             "models": [
                 {
                     "label": "deepseek-chat",
-                    "name": "deepseek-chat"
+                    "name": "deepseek-chat",
+                    "input_cost": 0.00027,
+                    "output_cost": 0.0011
                 },
                 {
                     "label": "deepseek-reasoner",
-                    "name": "deepseek-reasoner"
+                    "name": "deepseek-reasoner",
+                    "input_cost": 0.00055,
+                    "output_cost": 0.00219
                 }
             ]
         },
@@ -608,120 +780,196 @@
             "name": "chatOpenAI",
             "models": [
                 {
+                    "label": "gpt-4.1",
+                    "name": "gpt-4.1",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "gpt-4.1-mini",
+                    "name": "gpt-4.1-mini",
+                    "input_cost": 4e-7,
+                    "output_cost": 1.6e-6
+                },
+                {
+                    "label": "gpt-4.1-nano",
+                    "name": "gpt-4.1-nano",
+                    "input_cost": 1e-7,
+                    "output_cost": 4e-7
+                },
+                {
                     "label": "gpt-4.5-preview",
-                    "name": "gpt-4.5-preview"
+                    "name": "gpt-4.5-preview",
+                    "input_cost": 0.000075,
+                    "output_cost": 0.00015
                 },
                 {
                     "label": "gpt-4o-mini (latest)",
-                    "name": "gpt-4o-mini"
+                    "name": "gpt-4o-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
                 },
                 {
                     "label": "gpt-4o-mini-2024-07-18",
-                    "name": "gpt-4o-mini-2024-07-18"
+                    "name": "gpt-4o-mini-2024-07-18",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
                 },
                 {
                     "label": "gpt-4o (latest)",
-                    "name": "gpt-4o"
+                    "name": "gpt-4o",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
                 },
                 {
                     "label": "gpt-4o-2024-11-20",
-                    "name": "gpt-4o-2024-11-20"
+                    "name": "gpt-4o-2024-11-20",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
                 },
                 {
                     "label": "gpt-4o-2024-08-06",
-                    "name": "gpt-4o-2024-08-06"
+                    "name": "gpt-4o-2024-08-06",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
                 },
                 {
                     "label": "gpt-4o-2024-05-13",
-                    "name": "gpt-4o-2024-05-13"
+                    "name": "gpt-4o-2024-05-13",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
                 },
                 {
                     "label": "o3-mini (latest)",
-                    "name": "o3-mini"
+                    "name": "o3-mini",
+                    "input_cost": 1.1e-6,
+                    "output_cost": 4.4e-6
                 },
                 {
                     "label": "o3-mini-2025-01-31",
-                    "name": "o3-mini-2025-01-31"
+                    "name": "o3-mini-2025-01-31",
+                    "input_cost": 1.1e-6,
+                    "output_cost": 4.4e-6
                 },
                 {
                     "label": "o1-preview (latest)",
-                    "name": "o1-preview"
+                    "name": "o1-preview",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "o1-preview-2024-09-12",
-                    "name": "o1-preview-2024-09-12"
+                    "name": "o1-preview-2024-09-12",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "o1-mini (latest)",
-                    "name": "o1-mini"
+                    "name": "o1-mini",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000012
                 },
                 {
                     "label": "o1-mini-2024-09-12",
-                    "name": "o1-mini-2024-09-12"
+                    "name": "o1-mini-2024-09-12",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000012
                 },
                 {
                     "label": "gpt-4 (latest)",
-                    "name": "gpt-4"
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "gpt-4-turbo (latest)",
-                    "name": "gpt-4-turbo"
+                    "name": "gpt-4-turbo",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-turbo-preview",
-                    "name": "gpt-4-turbo-preview"
+                    "name": "gpt-4-turbo-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-0125-preview",
-                    "name": "gpt-4-0125-preview"
+                    "name": "gpt-4-0125-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-1106-preview",
-                    "name": "gpt-4-1106-preview"
+                    "name": "gpt-4-1106-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-1106-vision-preview",
-                    "name": "gpt-4-1106-vision-preview"
+                    "name": "gpt-4-1106-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-vision-preview",
-                    "name": "gpt-4-vision-preview"
+                    "name": "gpt-4-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-0613",
-                    "name": "gpt-4-0613"
+                    "name": "gpt-4-0613",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "gpt-4-32k",
-                    "name": "gpt-4-32k"
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
                 },
                 {
                     "label": "gpt-4-32k-0613",
-                    "name": "gpt-4-32k-0613"
+                    "name": "gpt-4-32k-0613",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
                 },
                 {
                     "label": "gpt-3.5-turbo",
-                    "name": "gpt-3.5-turbo"
+                    "name": "gpt-3.5-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
                 },
                 {
                     "label": "gpt-3.5-turbo-0125",
-                    "name": "gpt-3.5-turbo-0125"
+                    "name": "gpt-3.5-turbo-0125",
+                    "input_cost": 5e-7,
+                    "output_cost": 0.0000015
                 },
                 {
                     "label": "gpt-3.5-turbo-1106",
-                    "name": "gpt-3.5-turbo-1106"
+                    "name": "gpt-3.5-turbo-1106",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "gpt-3.5-turbo-0613",
-                    "name": "gpt-3.5-turbo-0613"
+                    "name": "gpt-3.5-turbo-0613",
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "gpt-3.5-turbo-16k",
-                    "name": "gpt-3.5-turbo-16k"
+                    "name": "gpt-3.5-turbo-16k",
+                    "input_cost": 5e-7,
+                    "output_cost": 0.0000015
                 },
                 {
                     "label": "gpt-3.5-turbo-16k-0613",
-                    "name": "gpt-3.5-turbo-16k-0613"
+                    "name": "gpt-3.5-turbo-16k-0613",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000004
                 }
             ]
         },
@@ -730,63 +978,93 @@
             "models": [
                 {
                     "label": "gpt-4o",
-                    "name": "gpt-4o"
+                    "name": "gpt-4o",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
                 },
                 {
                     "label": "gpt-4",
-                    "name": "gpt-4"
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "gpt-4-turbo",
-                    "name": "gpt-4-turbo"
+                    "name": "gpt-4-turbo",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-turbo-preview",
-                    "name": "gpt-4-turbo-preview"
+                    "name": "gpt-4-turbo-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-0125-preview",
-                    "name": "gpt-4-0125-preview"
+                    "name": "gpt-4-0125-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-1106-preview",
-                    "name": "gpt-4-1106-preview"
+                    "name": "gpt-4-1106-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-vision-preview",
-                    "name": "gpt-4-vision-preview"
+                    "name": "gpt-4-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
                 },
                 {
                     "label": "gpt-4-0613",
-                    "name": "gpt-4-0613"
+                    "name": "gpt-4-0613",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "gpt-4-32k",
-                    "name": "gpt-4-32k"
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
                 },
                 {
                     "label": "gpt-4-32k-0613",
-                    "name": "gpt-4-32k-0613"
+                    "name": "gpt-4-32k-0613",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
                 },
                 {
                     "label": "gpt-3.5-turbo",
-                    "name": "gpt-3.5-turbo"
+                    "name": "gpt-3.5-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
                 },
                 {
                     "label": "gpt-3.5-turbo-1106",
-                    "name": "gpt-3.5-turbo-1106"
+                    "name": "gpt-3.5-turbo-1106",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "gpt-3.5-turbo-0613",
-                    "name": "gpt-3.5-turbo-0613"
+                    "name": "gpt-3.5-turbo-0613",
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "gpt-3.5-turbo-16k",
-                    "name": "gpt-3.5-turbo-16k"
+                    "name": "gpt-3.5-turbo-16k",
+                    "input_cost": 5e-7,
+                    "output_cost": 0.0000015
                 },
                 {
                     "label": "gpt-3.5-turbo-16k-0613",
-                    "name": "gpt-3.5-turbo-16k-0613"
+                    "name": "gpt-3.5-turbo-16k-0613",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000004
                 }
             ]
         },
@@ -795,63 +1073,93 @@
             "models": [
                 {
                     "label": "open-mistral-nemo",
-                    "name": "open-mistral-nemo"
+                    "name": "open-mistral-nemo",
+                    "input_cost": 0.00015,
+                    "output_cost": 0.00015
                 },
                 {
                     "label": "open-mistral-7b",
-                    "name": "open-mistral-7b"
+                    "name": "open-mistral-7b",
+                    "input_cost": 0.00025,
+                    "output_cost": 0.00025
                 },
                 {
                     "label": "mistral-tiny-2312",
-                    "name": "mistral-tiny-2312"
+                    "name": "mistral-tiny-2312",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "mistral-tiny",
-                    "name": "mistral-tiny"
+                    "name": "mistral-tiny",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "open-mixtral-8x7b",
-                    "name": "open-mixtral-8x7b"
+                    "name": "open-mixtral-8x7b",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "open-mixtral-8x22b",
-                    "name": "open-mixtral-8x22b"
+                    "name": "open-mixtral-8x22b",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
                 },
                 {
                     "label": "mistral-small-2312",
-                    "name": "mistral-small-2312"
+                    "name": "mistral-small-2312",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-small",
-                    "name": "mistral-small"
+                    "name": "mistral-small",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-small-2402",
-                    "name": "mistral-small-2402"
+                    "name": "mistral-small-2402",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-small-latest",
-                    "name": "mistral-small-latest"
+                    "name": "mistral-small-latest",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-medium-latest",
-                    "name": "mistral-medium-latest"
+                    "name": "mistral-medium-latest",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
                 },
                 {
                     "label": "mistral-medium-2312",
-                    "name": "mistral-medium-2312"
+                    "name": "mistral-medium-2312",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
                 },
                 {
                     "label": "mistral-medium",
-                    "name": "mistral-medium"
+                    "name": "mistral-medium",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
                 },
                 {
                     "label": "mistral-large-latest",
-                    "name": "mistral-large-latest"
+                    "name": "mistral-large-latest",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
                 },
                 {
                     "label": "mistral-large-2402",
-                    "name": "mistral-large-2402"
+                    "name": "mistral-large-2402",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
                 }
             ]
         },
@@ -860,15 +1168,21 @@
             "models": [
                 {
                     "label": "mistral-tiny",
-                    "name": "mistral-tiny"
+                    "name": "mistral-tiny",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "mistral-small",
-                    "name": "mistral-small"
+                    "name": "mistral-small",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-medium",
-                    "name": "mistral-medium"
+                    "name": "mistral-medium",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
                 }
             ]
         }
@@ -887,27 +1201,39 @@
                 },
                 {
                     "label": "cohere.command-text-v14",
-                    "name": "cohere.command-text-v14"
+                    "name": "cohere.command-text-v14",
+                    "input_cost": 0.0015,
+                    "output_cost": 0.002
                 },
                 {
                     "label": "cohere.command-light-text-v14",
-                    "name": "cohere.command-light-text-v14"
+                    "name": "cohere.command-light-text-v14",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.0006
                 },
                 {
                     "label": "ai21.j2-grande-instruct",
-                    "name": "ai21.j2-grande-instruct"
+                    "name": "ai21.j2-grande-instruct",
+                    "input_cost": 0.0005,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "ai21.j2-jumbo-instruct",
-                    "name": "ai21.j2-jumbo-instruct"
+                    "name": "ai21.j2-jumbo-instruct",
+                    "input_cost": 0.0005,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "ai21.j2-mid",
-                    "name": "ai21.j2-mid"
+                    "name": "ai21.j2-mid",
+                    "input_cost": 0.0125,
+                    "output_cost": 0.0125
                 },
                 {
                     "label": "ai21.j2-ultra",
-                    "name": "ai21.j2-ultra"
+                    "name": "ai21.j2-ultra",
+                    "input_cost": 0.0188,
+                    "output_cost": 0.0188
                 }
             ],
             "regions": [
@@ -1058,59 +1384,76 @@
             "models": [
                 {
                     "label": "text-davinci-003",
-                    "name": "text-davinci-003"
+                    "name": "text-davinci-003",
+                    "total_cost": 0.00002
                 },
                 {
                     "label": "ada",
-                    "name": "ada"
+                    "name": "ada",
+                    "total_cost": 0.00004
                 },
                 {
                     "label": "text-ada-001",
-                    "name": "text-ada-001"
+                    "name": "text-ada-001",
+                    "total_cost": 0.00004
                 },
                 {
                     "label": "babbage",
-                    "name": "babbage"
+                    "name": "babbage",
+                    "total_cost": 0.00005
                 },
                 {
                     "label": "text-babbage-001",
-                    "name": "text-babbage-001"
+                    "name": "text-babbage-001",
+                    "total_cost": 0.00005
                 },
                 {
                     "label": "curie",
-                    "name": "curie"
+                    "name": "curie",
+                    "total_cost": 0.00002
                 },
                 {
                     "label": "text-curie-001",
-                    "name": "text-curie-001"
+                    "name": "text-curie-001",
+                    "total_cost": 0.00002
                 },
                 {
                     "label": "davinci",
-                    "name": "davinci"
+                    "name": "davinci",
+                    "total_cost": 0.00002
                 },
                 {
                     "label": "text-davinci-001",
-                    "name": "text-davinci-001"
+                    "name": "text-davinci-001",
+                    "total_cost": 0.00002
                 },
                 {
                     "label": "text-davinci-002",
-                    "name": "text-davinci-002"
+                    "name": "text-davinci-002",
+                    "total_cost": 0.00002
                 },
                 {
                     "label": "text-davinci-fine-tune-002",
-                    "name": "text-davinci-fine-tune-002"
+                    "name": "text-davinci-fine-tune-002",
+                    "total_cost": 0.00002
                 },
                 {
                     "label": "gpt-35-turbo",
-                    "name": "gpt-35-turbo"
+                    "name": "gpt-35-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
                 },
                 {
                     "label": "gpt-4",
-                    "name": "gpt-4"
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
                 },
                 {
                     "label": "gpt-4-32k",
-                    "name": "gpt-4-32k"
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
                 }
             ]
         },
@@ -1148,27 +1491,39 @@
             "models": [
                 {
                     "label": "text-bison",
-                    "name": "text-bison"
+                    "name": "text-bison",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
                 },
                 {
                     "label": "code-bison",
-                    "name": "code-bison"
+                    "name": "code-bison",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
                 },
                 {
                     "label": "code-gecko",
-                    "name": "code-gecko"
+                    "name": "code-gecko",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
                 },
                 {
                     "label": "text-bison-32k",
-                    "name": "text-bison-32k"
+                    "name": "text-bison-32k",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
                 },
                 {
                     "label": "code-bison-32k",
-                    "name": "code-bison-32k"
+                    "name": "code-bison-32k",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
                 },
                 {
                     "label": "code-gecko-32k",
-                    "name": "code-gecko-32k"
+                    "name": "code-gecko-32k",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
                 }
             ]
         },
@@ -1177,15 +1532,21 @@
             "models": [
                 {
                     "label": "gpt-3.5-turbo-instruct",
-                    "name": "gpt-3.5-turbo-instruct"
+                    "name": "gpt-3.5-turbo-instruct",
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
                 },
                 {
                     "label": "babbage-002",
-                    "name": "babbage-002"
+                    "name": "babbage-002",
+                    "input_cost": 4e-7,
+                    "output_cost": 0.0000016
                 },
                 {
                     "label": "davinci-002",
-                    "name": "davinci-002"
+                    "name": "davinci-002",
+                    "input_cost": 0.000006,
+                    "output_cost": 0.000012
                 }
             ]
         }
@@ -1328,6 +1689,10 @@
                 {
                     "label": "text-embedding-004",
                     "name": "text-embedding-004"
+                },
+                {
+                    "label": "gemini-embedding-exp-03-07",
+                    "name": "gemini-embedding-exp-03-07"
                 }
             ]
         },

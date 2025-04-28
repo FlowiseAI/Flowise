@@ -14,7 +14,8 @@ import {
     mapMimeTypeToInputField,
     mapExtToInputField,
     getFileFromUpload,
-    removeSpecificFileFromUpload
+    removeSpecificFileFromUpload,
+    handleEscapeCharacters
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -244,7 +245,7 @@ export const executeFlow = async ({
         ...incomingInput
     }
 
-    const question = incomingInput.question || '' // Ensure question is never undefined
+    let question = incomingInput.question || '' // Ensure question is never undefined
     let overrideConfig = incomingInput.overrideConfig ?? {}
     const uploads = incomingInput.uploads
     const prependMessages = incomingInput.history ?? []
@@ -308,6 +309,7 @@ export const executeFlow = async ({
                     logger.debug(`Speech to text result: ${speechToTextResult}`)
                     if (speechToTextResult) {
                         incomingInput.question = speechToTextResult
+                        question = speechToTextResult
                     }
                 }
             }
@@ -664,6 +666,7 @@ export const executeFlow = async ({
                     const postProcessingFunction = JSON.parse(chatflowConfig?.postProcessing?.customFunction)
                     const nodeInstanceFilePath = componentNodes['customFunction'].filePath as string
                     const nodeModule = await import(nodeInstanceFilePath)
+                    //set the outputs.output to EndingNode to prevent json escaping of content...
                     const nodeData = {
                         inputs: { javascriptFunction: postProcessingFunction },
                         outputs: { output: 'output' }
@@ -680,7 +683,13 @@ export const executeFlow = async ({
                     }
                     const customFuncNodeInstance = new nodeModule.nodeClass()
                     let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
-                    result.text = moderatedResponse
+                    if (typeof moderatedResponse === 'string') {
+                        result.text = handleEscapeCharacters(moderatedResponse, true)
+                    } else if (typeof moderatedResponse === 'object') {
+                        result.text = '```json\n' + JSON.stringify(moderatedResponse, null, 2) + '\n```'
+                    } else {
+                        result.text = moderatedResponse
+                    }
                     resultText = result.text
                 } catch (e) {
                     logger.log('[server]: Post Processing Error:', e)
