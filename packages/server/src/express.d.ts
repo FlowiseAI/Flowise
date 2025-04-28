@@ -21,7 +21,7 @@ declare global {
                 token: string
             }
         }
-        
+
         interface Response {
             locals: {
                 filter?: {

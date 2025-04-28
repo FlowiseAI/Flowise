@@ -3,8 +3,6 @@ import React, { useState, useEffect, useRef, ChangeEvent } from 'react'
 
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
-import TextField from '@mui/material/TextField'
-import Tooltip from '@mui/material/Tooltip'
 import AttachFileIcon from '@mui/icons-material/PermMedia'
 import MicIcon from '@mui/icons-material/Mic'
 import IconButton from '@mui/material/IconButton'
@@ -15,8 +13,12 @@ import { throttle } from '@utils/throttle'
 import { useAnswers } from './AnswersContext'
 
 import type { Sidekick, StarterPrompt } from 'types'
-import { DefaultPrompts } from './DefaultPrompts'
-import { FileUpload } from './AnswersContext'
+
+import dynamic from 'next/dynamic'
+import { FileUpload } from './types'
+const DefaultPrompts = dynamic(() => import('./DefaultPrompts').then((mod) => mod.DefaultPrompts))
+const Tooltip = dynamic(() => import('@mui/material/Tooltip'))
+const TextField = dynamic(() => import('@mui/material/TextField'))
 
 interface ChatInputProps {
     scrollRef?: React.RefObject<HTMLDivElement>

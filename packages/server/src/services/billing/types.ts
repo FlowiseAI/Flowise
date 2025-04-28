@@ -1,5 +1,3 @@
-import type Stripe from 'stripe'
-
 // Interface definitions for billing service
 
 export type ObservationLevel = 'DEBUG' | 'DEFAULT' | 'WARNING' | 'ERROR'

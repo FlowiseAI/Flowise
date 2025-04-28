@@ -1,12 +1,11 @@
 'use client'
 import PropTypes from 'prop-types'
-import { useEffect, useState, useRef, useMemo } from 'react'
-import { Box, Stack, Tabs, Tab, FormControl, InputLabel, Select, MenuItem, Button, Skeleton } from '@mui/material'
+import { useEffect, useState, useRef } from 'react'
+import { Box, Stack, Button, Skeleton } from '@mui/material'
 import MainCard from '@/ui-component/cards/MainCard'
 import ToolDialog from './ToolDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
-import FlowListView from '@/ui-component/lists/FlowListView'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { useFlags } from 'flagsmith/react'
 
@@ -18,7 +17,7 @@ import marketplacesApi from '@/api/marketplaces'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconFileUpload } from '@tabler/icons-react'
+import { IconPlus } from '@tabler/icons-react'
 
 // project imports
 import ItemCard from '@/ui-component/cards/ItemCard'

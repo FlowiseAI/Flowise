@@ -16,16 +16,16 @@ The billing configuration is centralized in `config.ts` and uses environment var
 
 ### Environment Variables
 
-| Variable                    | Description                             | Default                        |
-| --------------------------- | --------------------------------------- | ------------------------------ |
-| `BILLING_CREDIT_PRICE_USD`          | Base price per Credit in USD            | 0.00004 ($20 for 500k Credits) |
-| `BILLING_MARGIN_MULTIPLIER` | Margin multiplier for billing           | 1.2 (20% margin)               |
-| `BILLING_PRO_PLAN_CREDITS`          | Number of Credits included in Pro plan  | 500000                         |
-| `BILLING_FREE_PLAN_CREDITS`         | Number of Credits included in Free plan | 10000                          |
-| `BILLING_STRIPE_SECRET_KEY`         | Stripe API secret key                   | -                              |
-| `STRIPE_CREDITS_METER_ID`   | Stripe meter ID for Credits             | -                              |
-| `STRIPE_FREE_PRICE_ID`      | Stripe price ID for Free plan           | -                              |
-| `BILLING_STRIPE_PAID_PRICE_ID`      | Stripe price ID for Paid plan           | -                              |
+| Variable                       | Description                             | Default                        |
+| ------------------------------ | --------------------------------------- | ------------------------------ |
+| `BILLING_CREDIT_PRICE_USD`     | Base price per Credit in USD            | 0.00004 ($20 for 500k Credits) |
+| `BILLING_MARGIN_MULTIPLIER`    | Margin multiplier for billing           | 1.2 (20% margin)               |
+| `BILLING_PRO_PLAN_CREDITS`     | Number of Credits included in Pro plan  | 500000                         |
+| `BILLING_FREE_PLAN_CREDITS`    | Number of Credits included in Free plan | 10000                          |
+| `BILLING_STRIPE_SECRET_KEY`    | Stripe API secret key                   | -                              |
+| `STRIPE_CREDITS_METER_ID`      | Stripe meter ID for Credits             | -                              |
+| `STRIPE_FREE_PRICE_ID`         | Stripe price ID for Free plan           | -                              |
+| `BILLING_STRIPE_PAID_PRICE_ID` | Stripe price ID for Paid plan           | -                              |
 
 ### Resource Allocation
 

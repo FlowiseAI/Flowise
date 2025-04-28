@@ -135,7 +135,7 @@ const SidekickList = ({
             const { data: sidekick } = await axios.patch(`/api/sidekicks/${id}/edit/favorite`)
             setTheMessage('... Updated Successfully')
 
-            if (!!sidekicks?.length) {
+            if (sidekicks?.length) {
                 // Update the specific row in the sidekicks state
                 const updatedSidekicks = currentSidekicks.map((sidekick: SidekickListItem) => {
                     if (sidekick.id === id) {

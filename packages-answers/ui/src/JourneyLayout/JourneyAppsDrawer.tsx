@@ -9,7 +9,7 @@ import ClickAwayListener from '@mui/material/ClickAwayListener'
 import { useAnswers } from '../AnswersContext'
 import JourneySourceCard from './JourneySourceCard'
 
-import { AppSettings, AppService, Journey, AnswersFilters } from 'types'
+import { AppSettings, AppService, Journey } from 'types'
 
 export const JourneyAppsDrawer = ({
     appSettings,

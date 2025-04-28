@@ -1,18 +1,11 @@
-import React, { Component, ElementType } from 'react'
-import Image from 'next/image'
+import React, { ElementType } from 'react'
 import { motion } from 'framer-motion'
-import { signIn } from 'next-auth/react'
 import { useFlags } from 'flagsmith/react'
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Button from '@mui/material/Button'
 import CardActionArea from '@mui/material/CardActionArea'
-import CardHeader from '@mui/material/CardHeader'
-import Avatar from '@mui/material/Avatar'
-
-import { AnswersFilters, AppService, AppSettings } from 'types'
 
 interface JourneySourceCardProps {
     domain?: string

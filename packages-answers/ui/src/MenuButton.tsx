@@ -76,6 +76,7 @@ export default function IconMenu({
                                 >
                                     {actions.map((action) => (
                                         <MenuItem
+                                            key={action.text}
                                             onClick={action.onClick}
                                             {...(action.href ? { href: action.href, component: NextLink, prefetch: false } : {})}
                                         >

@@ -1,9 +1,7 @@
 'use client'
-import React, { useState } from 'react'
-import useSWR from 'swr'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import CircularProgress from '@mui/material/CircularProgress'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
@@ -11,10 +9,8 @@ import TextField from '@mui/material/TextField'
 import Divider from '@mui/material/Divider'
 import Grid2 from '@mui/material/Unstable_Grid2/Grid2'
 
-import { JourneyAppsDrawer } from '../JourneyLayout/JourneyAppsDrawer'
 import { AnswersProvider, useAnswers } from '../AnswersContext'
 import SnackMessage from '../SnackMessage'
-import { debounce } from '@utils/debounce'
 
 import { AppSettings, User, Journey } from 'types'
 

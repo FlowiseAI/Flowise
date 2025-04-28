@@ -113,9 +113,9 @@ async function getMessages(chat: Partial<ChatType>, user: User) {
         console.log('Messages', messages)
         return messages?.map((m: any) => ({
             ...m,
-            agentReasoning: JSON.parse(m.agentReasoning ?? '[]'),
-            usedTools: JSON.parse(m.usedTools ?? '[]'),
-            contextDocuments: JSON.parse(m.sourceDocuments ?? '[]'),
+            // agentReasoning: JSON.parse(m.agentReasoning ?? '[]'),
+            // usedTools: JSON.parse(m.usedTools ?? '[]'),
+            // contextDocuments: JSON.parse(m.sourceDocuments ?? '[]'),
             fileUploads: (m.fileUploads as any[])?.map((f: any) => ({
                 ...f,
                 data: `${user.chatflowDomain}/api/v1/get-upload-file?chatflowId=${m.chatflowid}&chatId=${chat.chatflowChatId}&fileName=${f.name}`

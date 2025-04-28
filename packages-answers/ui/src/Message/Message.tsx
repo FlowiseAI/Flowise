@@ -1,53 +1,34 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState } from 'react'
 import { AxiosError } from 'axios'
 import { useFlags } from 'flagsmith/react'
-import ReactMarkdown from 'react-markdown'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { duotoneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import Image from 'next/image'
 import { JsonViewer } from '@textea/json-viewer'
-import { Box, Typography, Link, Avatar, Chip, Button, Accordion, AccordionSummary, AccordionDetails } from '@mui/material'
-import IconButton from '@mui/material/IconButton'
+import { Box, Typography, Avatar, Chip, Button, Divider } from '@mui/material'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import ThumbUpIcon from '@mui/icons-material/ThumbUp'
-import ThumbDownIcon from '@mui/icons-material/ThumbDown'
-import ContentCopy from '@mui/icons-material/ContentCopy'
-import LinkIcon from '@mui/icons-material/Link'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
-import PlayArrowIcon from '@mui/icons-material/PlayArrow'
-import OpenInFullIcon from '@mui/icons-material/OpenInFull'
-import CloseIcon from '@mui/icons-material/Close'
 
-import { countTokens } from '@utils/utilities/countTokens'
 import { useAnswers } from '../AnswersContext'
 import {
     Accordion as CustomAccordion,
     AccordionSummary as CustomAccordionSummary,
     AccordionDetails as CustomAccordionDetails
 } from '../Accordion'
-import FeedbackModal from '@ui/FeedbackModal'
-import { AppService, Document, Message, FileUpload } from 'types'
+import { AppService, Document, Message } from 'types'
 import { Rating } from 'db/generated/prisma-client'
-import { Card, CircularProgress, Stack, Tooltip } from '@mui/material'
-import { CodePreview } from './CodePreview'
-import { PreviewDialog } from './PreviewDialog'
 import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
-import { CodeCard } from './CodeCard'
-import remarkGfm from 'remark-gfm'
-import nextAgentGIF from './../../../../packages/ui/src/assets/images/next-agent.gif'
-import multiagent_supervisorPNG from './../../../../packages/ui/src/assets/images/multiagent_supervisor.png'
-import multiagent_workerPNG from './../../../../packages/ui/src/assets/images/multiagent_worker.png'
-import { isValidURL, removeDuplicateURL } from '../../../../packages/ui/src/utils/genericHelper.js'
 import dynamic from 'next/dynamic'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import parse from 'html-react-parser'
-import { AnswersContext } from '../AnswersContext'
+import { FileUpload } from '../types'
+import isArray from 'lodash/isArray'
 
-const SourceDocDialog = dynamic(() => import('../../../../packages/ui/src/ui-component/dialog/SourceDocDialog'))
+const ReactMarkdown = dynamic(() => import('react-markdown'))
+const remarkGfm = dynamic(() => import('remark-gfm'))
+const CodeCard = dynamic(() => import('./CodeCard').then((mod) => ({ default: mod.CodeCard })))
+const Dialog = dynamic(() => import('@mui/material/Dialog'))
+const DialogActions = dynamic(() => import('@mui/material/DialogActions'))
+const DialogContent = dynamic(() => import('@mui/material/DialogContent'))
+const DialogTitle = dynamic(() => import('@mui/material/DialogTitle'))
+const Tooltip = dynamic(() => import('@mui/material/Tooltip'))
 
 interface MessageExtra {
     prompt?: string
@@ -73,6 +54,7 @@ interface MessageCardProps extends Partial<Message>, MessageExtra {
     error?: AxiosError<MessageExtra>
     openLinksInNewTab?: boolean
     role: string
+    sourceDocuments?: string | Document[]
     setPreviewCode?: (
         preview: {
             code: string
@@ -149,16 +131,17 @@ export const MessageCard = ({
     other = { ...other, role, user } as any
     const { developer_mode } = useFlags(['developer_mode']) // only causes re-render if specified flag values / traits change
     const { user: currentUser, sendMessageFeedback, sendMessage, appSettings, messages, sidekick } = useAnswers()
+    const sourceDocuments = isArray(other.sourceDocuments) ? other.sourceDocuments : JSON.parse(other.sourceDocuments ?? '[]')
     const contextDocumentsBySource: Record<string, Document[]> = React.useMemo(
         () =>
-            contextDocuments?.reduce((uniqueDocuments: Record<string, Document[]>, current) => {
+            sourceDocuments?.reduce((uniqueDocuments: Record<string, Document[]>, current) => {
                 const key = current.metadata.url ?? current.metadata.source
                 return {
                     ...uniqueDocuments,
                     [key]: [...(uniqueDocuments[key] || []), current]
                 }
             }, {}) ?? {},
-        [contextDocuments]
+        [sourceDocuments]
     )
     const [showFeedback, setShowFeedback] = useState(false)
     const [sourceDialogProps, setSourceDialogProps] = useState<{ data: any; title: string } | null>({
@@ -305,6 +288,13 @@ export const MessageCard = ({
             }
         }
     }, [content, isUserMessage, setPreviewCode, isLastMessage])
+
+    // Simple lightweight token counter function (approximate)
+    const countTokensLite = (text: string): number => {
+        if (!text) return 0
+        // Simple approximation: count words and add 20% for special tokens/punctuation
+        return Math.ceil(text.split(/\s+/).length * 1.2)
+    }
 
     return (
         <Box
@@ -621,7 +611,9 @@ export const MessageCard = ({
                                     </Box>
                                 ) : file.mime?.startsWith('audio/') ? (
                                     <Box sx={{ width: '100%' }}>
-                                        <audio controls src={file.data} style={{ width: '100%' }} />
+                                        <audio controls src={file.data} style={{ width: '100%' }}>
+                                            <track kind='captions' src={file.data} />
+                                        </audio>
                                     </Box>
                                 ) : (
                                     <Box
@@ -795,40 +787,6 @@ export const MessageCard = ({
                 ) : null}
             </Box>
 
-            {/* {(other as any).usedTools && (other as any).usedTools.length > 0 && (
-                <Box sx={{ mt: 2, width: '100%' }}>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {(other as any).usedTools.map((tool: any, index: number) => {
-                            if (tool && typeof tool === 'object') {
-                                return (
-                                    <Chip
-                                        size='small'
-                                        key={index}
-                                        label={typeof tool.tool === 'string' ? tool.tool : 'Tool'}
-                                        component='a'
-                                        sx={{
-                                            borderColor: tool.error ? 'error.main' : 'primary.light',
-                                            color: tool.error ? 'error.main' : 'primary.light',
-                                            '&:hover': {
-                                                bgcolor: 'rgba(25, 118, 210, 0.08)'
-                                            }
-                                        }}
-                                        variant='outlined'
-                                        clickable
-                                        onClick={() =>
-                                            tool.output &&
-                                            onSourceDialogClick(tool.output, `${typeof tool.tool === 'string' ? tool.tool : 'Tool'} Output`)
-                                        }
-                                    />
-                                )
-                            }
-                            return null
-                        })}
-                    </Box>
-                </Box>
-            )} */}
-
-            {/* Action Buttons - Improved UI */}
             {(other as any).action && (
                 <Box sx={{ mt: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     {(other as any).action.text && (
@@ -919,16 +877,16 @@ export const MessageCard = ({
 
             {developer_mode?.enabled ? (
                 <Box>
-                    {contextDocuments?.length ? (
+                    {sourceDocuments?.length ? (
                         <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
                             <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>
-                                    Context ({countTokens(contextDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
+                                    Source Documents ({countTokensLite(sourceDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
                                 </Typography>
                             </CustomAccordionSummary>
                             <CustomAccordionDetails>
                                 <Typography sx={{ whiteSpace: 'pre-line' }} variant='body1' color='text.secondary' component='div'>
-                                    {contextDocuments?.map((d) => d.pageContent)?.join('/n')}
+                                    {sourceDocuments?.map((d) => d.pageContent)?.join('/n')}
                                 </Typography>
                             </CustomAccordionDetails>
                         </CustomAccordion>
@@ -1019,6 +977,59 @@ export const MessageCard = ({
                         </CustomAccordion>
                     ) : null}
                 </Box>
+            ) : null}
+            {Object.keys(contextDocumentsBySource)?.length ? (
+                <>
+                    <Divider />
+                    <Box
+                        sx={{
+                            width: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            flexWrap: 'wrap',
+                            gap: 1.8,
+                            mt: 1.5
+                        }}
+                    >
+                        {Object.entries(contextDocumentsBySource)?.map(([source, documents]) => {
+                            const doc = documents?.[0]
+                            return (
+                                <Tooltip key={`references-${doc.metadata.url ?? doc.metadata.source}`} title={'Click to view details'}>
+                                    <Box
+                                        onClick={() => setSelectedDocuments?.(documents)}
+                                        sx={{
+                                            textTransform: 'none',
+                                            borderRadius: 20,
+                                            color: 'text.secondary',
+                                            border: '1px solid',
+                                            borderColor: 'text.secondary',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            padding: '4px 10px',
+                                            gap: 1,
+                                            fontSize: '0.8125rem',
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(255, 255, 255, 0.08)'
+                                            }
+                                        }}
+                                    >
+                                        {services[doc.source ?? doc.metadata?.source]?.imageURL ? (
+                                            <Avatar
+                                                variant='source'
+                                                src={services[doc.source ?? doc.metadata?.source]?.imageURL}
+                                                sx={{ width: 20, height: 20 }}
+                                            />
+                                        ) : (
+                                            <Avatar variant='source' src={services['document']?.imageURL} sx={{ width: 20, height: 20 }} />
+                                        )}
+                                        {getDocumentLabel(doc)}
+                                    </Box>
+                                </Tooltip>
+                            )
+                        })}
+                    </Box>
+                </>
             ) : null}
         </Box>
     )

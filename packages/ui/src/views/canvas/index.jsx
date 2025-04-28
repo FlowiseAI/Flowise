@@ -161,7 +161,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
         setEdges((eds) => addEdge(newEdge, eds))
     }
 
-    const handleLoadFlow = async (file) => {
+    const handleLoadFlow = async (file, fileName) => {
         try {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
@@ -199,9 +199,11 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                 delete flowData.id
             }
 
+            const chatflowName = fileName ? `Copy of ${fileName.replace('.json', '')}` : `Untitled ${canvasTitle}`
+
             const newChatflow = {
                 id: flowData.id,
-                name: `Copy of ${templateName}`,
+                name: chatflowName,
                 description: flowData.description,
                 chatbotConfig: flowData.chatbotConfig,
                 visibility: flowData.visibility,
@@ -622,7 +624,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
             const pasteData = e.clipboardData.getData('text')
             //TODO: prevent paste event when input focused, temporary fix: catch chatflow syntax
             if (pasteData.includes('{"nodes":[') && pasteData.includes('],"edges":[')) {
-                handleLoadFlow(pasteData)
+                handleLoadFlow(pasteData, null)
             }
         }
 
@@ -637,9 +639,9 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
     useEffect(() => {
         if (templateFlowData?.includes && templateFlowData.includes('"nodes":[') && templateFlowData.includes('],"edges":[')) {
-            handleLoadFlow(templateFlowData)
+            handleLoadFlow(templateFlowData, null)
         } else if (typeof templateFlowData === 'object') {
-            handleLoadFlow(JSON.stringify(templateFlowData))
+            handleLoadFlow(JSON.stringify(templateFlowData), null)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

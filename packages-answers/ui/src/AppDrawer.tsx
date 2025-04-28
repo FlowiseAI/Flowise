@@ -30,10 +30,14 @@ import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
 import AssessmentIcon from '@mui/icons-material/Assessment'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
-import Dialog from '@mui/material/Dialog'
-import DialogContent from '@mui/material/DialogContent'
-import DialogTitle from '@mui/material/DialogTitle'
-import PurchaseSubscription from './billing/PurchaseSubscription'
+
+import dynamic from 'next/dynamic'
+import ChatDrawer from './ChatDrawer'
+
+const PurchaseSubscription = dynamic(() => import('./billing/PurchaseSubscription'), { ssr: false })
+const Dialog = dynamic(() => import('@mui/material/Dialog'), { ssr: false })
+const DialogContent = dynamic(() => import('@mui/material/DialogContent'), { ssr: false })
+const DialogTitle = dynamic(() => import('@mui/material/DialogTitle'), { ssr: false })
 
 const drawerWidth = 240
 
@@ -79,7 +83,7 @@ interface MenuConfig {
     subMenu?: MenuConfig[]
 }
 
-export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
+export const AppDrawer = ({ session, flagsmithState }: any) => {
     const { helpChatOpen, setHelpChatOpen } = useHelpChatContext()
     const user = session?.user
     const [drawerOpen, setDrawerOpen] = useState(false)
@@ -286,7 +290,7 @@ export const AppDrawer = ({ session, chatList, flagsmithState }: any) => {
                         }
                     }}
                 >
-                    {chatList}
+                    <ChatDrawer />
                 </Box>
 
                 <List sx={{ display: 'flex', flexDirection: 'column' }} disablePadding>

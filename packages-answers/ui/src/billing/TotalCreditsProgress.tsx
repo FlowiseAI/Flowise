@@ -1,8 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Box, Typography, LinearProgress, Alert, Tooltip, IconButton, Stack, Skeleton, Divider, Grid } from '@mui/material'
-import { Info as InfoIcon, Receipt as ReceiptIcon, Business as BusinessIcon } from '@mui/icons-material'
+import { Box, Typography, LinearProgress, Alert, Tooltip, IconButton, Stack, Skeleton, Grid } from '@mui/material'
+import { Info as InfoIcon, Business as BusinessIcon } from '@mui/icons-material'
 import { UsageSummary } from './hooks/useBillingData'
 
 interface TotalCreditsProgressProps {
@@ -76,13 +76,12 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
         hasUpcomingInvoice && usageSummary?.upcomingInvoice?.dueDate
             ? new Date(usageSummary.upcomingInvoice.dueDate).toLocaleDateString()
             : 'N/A'
-            
+
     // Check if organization data exists (admin users will have this data)
-    const hasOrgData = 
-        !isLoading && 
-        usageSummary?.usageDashboard && 
-        (usageSummary.usageDashboard.organizationTotalChats > 0 || 
-         usageSummary.usageDashboard.organizationTotalMessages > 0);
+    const hasOrgData =
+        !isLoading &&
+        usageSummary?.usageDashboard &&
+        (usageSummary.usageDashboard.organizationTotalChats > 0 || usageSummary.usageDashboard.organizationTotalMessages > 0)
 
     return (
         <Box
@@ -154,7 +153,7 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
                     </>
                 )}
             </Stack>
-            
+
             {/* Usage Statistics */}
             <Box sx={{ mt: 3 }}>
                 {hasOrgData && (
@@ -199,14 +198,8 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
                 <Box sx={{ mt: 3 }}>
                     <Stack direction='row' spacing={1} alignItems='center' sx={{ mb: 1 }}>
                         <BusinessIcon sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1rem' }} />
-                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>
-                            Organization Usage
-                        </Typography>
-                        <Tooltip
-                            title='Usage statistics for your entire organization. Only visible to admin users.'
-                            arrow
-                            placement='top'
-                        >
+                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}>Organization Usage</Typography>
+                        <Tooltip title='Usage statistics for your entire organization. Only visible to admin users.' arrow placement='top'>
                             <IconButton size='small' sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
                                 <InfoIcon fontSize='small' />
                             </IconButton>
@@ -248,7 +241,7 @@ const TotalCreditsProgress: React.FC<TotalCreditsProgressProps> = ({ usageSummar
                     </Grid>
                 </Box>
             )}
-            
+
             {/* Resource distribution section */}
             {!isLoading && totalUsed > 0 && (
                 <>

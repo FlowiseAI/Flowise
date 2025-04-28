@@ -13,12 +13,14 @@ jobs:
         strategy:
             matrix:
                 platform: [ubuntu-latest]
-                node-version: [18.15.0]
+                node-version: [20.17.0]
         runs-on: ${{ matrix.platform }}
         env:
             PUPPETEER_SKIP_DOWNLOAD: true
         steps:
             - uses: actions/checkout@v4
+              with:
+                  submodules: recursive
             - uses: pnpm/action-setup@v3
               with:
                   version: 9.7.0
