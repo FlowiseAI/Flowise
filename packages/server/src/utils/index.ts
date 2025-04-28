@@ -1259,7 +1259,8 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
 
     for (const flowNode of reactFlowNodes) {
         for (const inputParam of flowNode.data.inputParams) {
-            let obj: IOverrideConfig
+            let obj: IOverrideConfig | undefined
+
             if (inputParam.type === 'file') {
                 obj = {
                     node: flowNode.data.label,
@@ -1300,6 +1301,34 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                     }
                 }
                 continue
+            } else if (inputParam.type === 'array') {
+                // get array item schema
+                const arrayItem = inputParam.array
+                if (Array.isArray(arrayItem)) {
+                    const arraySchema = []
+                    // Each array item is a field definition
+                    for (const item of arrayItem) {
+                        let itemType = item.type
+                        if (itemType === 'options') {
+                            const availableOptions = item.options?.map((option) => option.name).join(', ')
+                            itemType = `(${availableOptions})`
+                        } else if (itemType === 'file') {
+                            itemType = item.fileType ?? item.type
+                        }
+                        arraySchema.push({
+                            name: item.name,
+                            type: itemType
+                        })
+                    }
+                    obj = {
+                        node: flowNode.data.label,
+                        nodeId: flowNode.data.id,
+                        label: inputParam.label,
+                        name: inputParam.name,
+                        type: inputParam.type,
+                        schema: arraySchema
+                    }
+                }
             } else {
                 obj = {
                     node: flowNode.data.label,
@@ -1309,7 +1338,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                     type: inputParam.type === 'password' ? 'string' : inputParam.type
                 }
             }
-            if (!configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
+            if (obj && !configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
                 configs.push(obj)
             }
         }
