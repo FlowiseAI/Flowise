@@ -549,14 +549,14 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         messageId: options.messageId,
                         sessionId: options.sessionId
                     }
-                    const trace = langfuse.trace({
-                        tags: [`Name:${chatflow.name}`],
-                        name: `${chatflow.id}`,
-                        version: chatflow.updatedDate,
-                        userId: options?.user?.id,
-                        sessionId: options.sessionId,
-                        metadata: metadata
-                    })
+                    // const trace = langfuse.trace({
+                    //     tags: [`Name:${chatflow.name}`],
+                    //     name: `${chatflow.id}`,
+                    //     version: chatflow.updatedDate,
+                    //     userId: options?.user?.id,
+                    //     sessionId: options.sessionId,
+                    //     metadata: metadata
+                    // })
 
                     const handler = new CallbackHandler({
                         ...langFuseOptions,
