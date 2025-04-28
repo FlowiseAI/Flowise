@@ -30,7 +30,7 @@ class TavilyAPI_Tools implements INode {
                 type: 'string',
                 optional: false,
                 description: 'The search query to execute with Tavily',
-                additionalParams: true,
+                additionalParams: true
             },
             {
                 label: 'Topic',
@@ -42,7 +42,7 @@ class TavilyAPI_Tools implements INode {
                 ],
                 default: 'general',
                 description: 'The category of the search. News for real-time updates, general for broader searches',
-                additionalParams: true, 
+                additionalParams: true,
                 optional: true
             },
             {
@@ -88,8 +88,7 @@ class TavilyAPI_Tools implements INode {
                 ],
                 optional: true,
                 additionalParams: true,
-                description: 'Time range to filter results',
-                    
+                description: 'Time range to filter results'
             },
             {
                 label: 'Days',
@@ -133,7 +132,7 @@ class TavilyAPI_Tools implements INode {
                 type: 'boolean',
                 default: false,
                 description: 'Include descriptive text for each image',
-                additionalParams: true, 
+                additionalParams: true,
                 optional: true
             },
             {
@@ -142,7 +141,7 @@ class TavilyAPI_Tools implements INode {
                 type: 'string',
                 optional: true,
                 description: 'Comma-separated list of domains to include in results',
-                additionalParams: true,
+                additionalParams: true
             },
             {
                 label: 'Exclude Domains',
@@ -150,7 +149,7 @@ class TavilyAPI_Tools implements INode {
                 type: 'string',
                 optional: true,
                 description: 'Comma-separated list of domains to exclude from results',
-                additionalParams: true,
+                additionalParams: true
             }
         ]
         this.credential = {
@@ -165,7 +164,7 @@ class TavilyAPI_Tools implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const tavilyApiKey = getCredentialParam('tavilyApiKey', credentialData, nodeData)
-        
+
         const query = nodeData.inputs?.query as string
         const topic = nodeData.inputs?.topic as string
         const searchDepth = nodeData.inputs?.searchDepth as string
@@ -195,8 +194,8 @@ class TavilyAPI_Tools implements INode {
         if (chunksPerSource) config.chunksPerSource = chunksPerSource
         if (timeRange) config.timeRange = timeRange
         if (days) config.days = days
-        if (includeDomains) config.includeDomains = includeDomains.split(',').map(d => d.trim())
-        if (excludeDomains) config.excludeDomains = excludeDomains.split(',').map(d => d.trim())
+        if (includeDomains) config.includeDomains = includeDomains.split(',').map((d) => d.trim())
+        if (excludeDomains) config.excludeDomains = excludeDomains.split(',').map((d) => d.trim())
 
         return new TavilySearchResults(config)
     }
