@@ -10,20 +10,12 @@ export const metadata = {
 }
 
 const ChatDetailPage = async ({ params }: any) => {
-    const session = await getCachedSession()
-    const user = session?.user
+    // const session = await getCachedSession()
+    // const user = session?.user
 
-    if (!user) {
-        return <Chat {...params} />
-    }
-    try {
-        const { sidekicks } = (await findSidekicksForChat(user)) ?? {}
-        // @ts-expect-error Async Server Component
-        return <Chat {...params} sidekicks={sidekicks} />
-    } catch (error) {
-        console.error(error)
-        return <Chat {...params} />
-    }
+    const chatcomponent = <Chat {...params} />
+    console.log('chatcomponent', chatcomponent)
+    return chatcomponent
 }
 
 export default ChatDetailPage
