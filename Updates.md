@@ -62,6 +62,19 @@ The frontend implementation displays usage events in a table with:
 
 # Updates Log
 
+## Billing Usage Events Table Enhancement - External Trace Link
+
+### Changes
+- Added an external link icon to each row in the billing usage events table
+- The icon only appears when hovering over a row
+- Clicking the icon opens the Langfuse trace page in a new tab
+- Used Material-UI components (IconButton, Tooltip, OpenInNewIcon) for the implementation
+- Added a hover state with useState to track which row is being hovered
+- Added getLangfuseTraceUrl helper function to generate proper trace URLs
+
+### Files Changed
+- `packages-answers/ui/src/billing/UsageEventsTable.tsx`: Added hover functionality and external link icon
+
 ## BillingService Optimization
 
 -   Changed BillingService from singleton to per-request instantiation to fix memory issues
@@ -373,3 +386,44 @@ Improved the search results UI to always display as an expanded grid layout with
 -   Better overall search experience with fewer interactions required
 
 # Focused Category View Implementation
+
+## 2023-11-XX: Added `canEdit` permission for Sidekicks
+
+### Changes:
+- Added a new `canEdit` boolean property to sidekicks that is true for both owners and admins
+- Updated the edit button display logic in SidekickSelect and AssistantInfoCard components
+- Added "Admin" chip to sidekicks that can be edited by admins but are not owned by the user
+- Backend now checks for admin role when determining if a user can edit a sidekick
+
+This change allows admins to edit sidekicks they don't own, improving workflow for organization management.
+
+## Empty Category Handling in SidekickSelect
+
+### Changes:
+- Improved empty state handling in SidekickSelect component
+- Removed empty category sections entirely rather than showing empty state messages
+- Added a global empty state message that appears only when no sidekicks exist at all
+- Only display category sections that have content after loading completes
+- Kept skeleton loading for initial load to prevent layout shifts
+- Reset focused category automatically when it contains no items
+- Added direct link to create a new sidekick from the empty state message
+
+This enhancement provides a cleaner UI by removing empty categories entirely and only showing relevant content to the user. Empty states are handled more gracefully with a single centralized message when appropriate.
+
+## Skeleton Loading Cards for SidekickSelect
+
+### Changes:
+- Added skeleton loading cards to the SidekickSelect component for improved user experience
+- Implemented a shimmer animation effect on skeleton cards using keyframes
+- Created SkeletonCard and SkeletonItem styled components for consistent styling
+- Used neutral gray tones for skeletons instead of colored styling for a more subtle appearance
+- Added loading state detection using the isLoading status from useSWR
+- Display skeleton cards in both horizontal scrolling and grid view layouts
+- Show skeleton cards when there are no categories or sidekicks available yet
+- Added proper empty state handling for categories with no sidekicks
+- Maintain consistent layout during loading for a smooth transition to loaded content
+- Fixed various linter errors including quote style consistency
+
+This enhancement improves perceived performance by providing visual feedback while data is loading, and ensures a consistent user experience even when there's no content yet. The neutral-colored skeletons closely match the actual content's appearance for a smoother transition.
+
+## 2023-11-XX: Added `canEdit` permission for Sidekicks
