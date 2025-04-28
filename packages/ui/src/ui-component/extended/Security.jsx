@@ -12,7 +12,7 @@ const Security = ({ dialogProps }) => {
 
     return (
         <Stack direction='column' divider={<Divider sx={{ my: 0.5, borderColor: theme.palette.grey[900] + 25 }} />} spacing={4}>
-            <RateLimit />
+            <RateLimit dialogProps={dialogProps} />
             <AllowedDomains dialogProps={dialogProps} />
             <OverrideConfig dialogProps={dialogProps} />
         </Stack>

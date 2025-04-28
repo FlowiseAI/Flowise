@@ -3,20 +3,21 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
 import { z } from 'zod'
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
 
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
     _tools: ListToolsResult | null = null
     model_config: any
-    transport: StdioClientTransport | null = null
+    transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport | null = null
     client: Client | null = null
-    constructor(serverParams: StdioServerParameters | any, transport: 'stdio' | 'sse') {
+    serverParams: StdioServerParameters | any
+    transportType: 'stdio' | 'sse'
+    constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
         super()
-        if (transport === 'stdio') {
-            this.transport = new StdioClientTransport(serverParams as StdioServerParameters)
-        } else {
-            // TODO: this.transport = new SSEClientTransport(serverParams.url);
-        }
+        this.serverParams = serverParams
+        this.transportType = transportType
     }
     async initialize() {
         if (this._tools === null) {
@@ -29,10 +30,30 @@ export class MCPToolkit extends BaseToolkit {
                     capabilities: {}
                 }
             )
-            if (this.transport === null) {
-                throw new Error('Transport is not initialized')
+            if (this.transportType === 'stdio') {
+                // Compatible with overridden PATH configuration
+                this.serverParams.env = {
+                    ...(this.serverParams.env || {}),
+                    PATH: process.env.PATH
+                }
+
+                this.transport = new StdioClientTransport(this.serverParams as StdioServerParameters)
+                await this.client.connect(this.transport)
+            } else {
+                if (this.serverParams.url === undefined) {
+                    throw new Error('URL is required for SSE transport')
+                }
+
+                const baseUrl = new URL(this.serverParams.url)
+                try {
+                    this.transport = new StreamableHTTPClientTransport(baseUrl)
+                    await this.client.connect(this.transport)
+                } catch (error) {
+                    this.transport = new SSEClientTransport(baseUrl)
+                    await this.client.connect(this.transport)
+                }
             }
-            await this.client.connect(this.transport)
+
             this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema)
 
             this.tools = await this.get_tools()

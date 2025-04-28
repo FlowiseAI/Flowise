@@ -204,6 +204,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
     // full file upload
     const [fullFileUpload, setFullFileUpload] = useState(false)
+    const [fullFileUploadAllowedTypes, setFullFileUploadAllowedTypes] = useState('*')
 
     // feedback
     const [chatFeedbackStatus, setChatFeedbackStatus] = useState(false)
@@ -771,7 +772,11 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
         if (data.followUpPrompts) {
             const followUpPrompts = JSON.parse(data.followUpPrompts)
-            setFollowUpPrompts(followUpPrompts)
+            if (typeof followUpPrompts === 'string') {
+                setFollowUpPrompts(JSON.parse(followUpPrompts))
+            } else {
+                setFollowUpPrompts(followUpPrompts)
+            }
         }
     }
 
@@ -1083,7 +1088,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     }
 
     const getFileUploadAllowedTypes = () => {
-        if (fullFileUpload) return '*'
+        if (fullFileUpload) {
+            return fullFileUploadAllowedTypes === '' ? '*' : fullFileUploadAllowedTypes
+        }
         return fileUploadAllowedTypes.includes('*') ? '*' : fileUploadAllowedTypes || '*'
     }
 
@@ -1273,6 +1280,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
                 if (config.fullFileUpload) {
                     setFullFileUpload(config.fullFileUpload.status)
+                    if (config.fullFileUpload?.allowedUploadFileTypes) {
+                        setFullFileUploadAllowedTypes(config.fullFileUpload?.allowedUploadFileTypes)
+                    }
                 }
             }
         }
@@ -1363,7 +1373,13 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         if (followUpPromptsStatus && messages.length > 0) {
             const lastMessage = messages[messages.length - 1]
             if (lastMessage.type === 'apiMessage' && lastMessage.followUpPrompts) {
-                setFollowUpPrompts(lastMessage.followUpPrompts)
+                if (Array.isArray(lastMessage.followUpPrompts)) {
+                    setFollowUpPrompts(lastMessage.followUpPrompts)
+                }
+                if (typeof lastMessage.followUpPrompts === 'string') {
+                    const followUpPrompts = JSON.parse(lastMessage.followUpPrompts)
+                    setFollowUpPrompts(followUpPrompts)
+                }
             } else if (lastMessage.type === 'userMessage') {
                 setFollowUpPrompts([])
             }

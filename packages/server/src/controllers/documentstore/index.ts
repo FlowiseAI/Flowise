@@ -201,7 +201,8 @@ const processLoader = async (req: Request, res: Response, next: NextFunction) =>
         }
         const docLoaderId = req.params.loaderId
         const body = req.body
-        const apiResponse = await documentStoreService.processLoaderMiddleware(body, docLoaderId)
+        const isInternalRequest = req.headers['x-request-from'] === 'internal'
+        const apiResponse = await documentStoreService.processLoaderMiddleware(body, docLoaderId, isInternalRequest)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
