@@ -31,7 +31,64 @@ import DownloadOutlined from '@mui/icons-material/DownloadOutlined'
 import CloseOutlined from '@mui/icons-material/CloseOutlined'
 import FilePresentOutlined from '@mui/icons-material/FilePresentOutlined'
 
-import { createCsvParseRun, fetchCsvParseRun, cloneCsvParseRun } from './actions'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || `http://localhost:4000`
+
+async function createCsvParseRun({
+    name,
+    configuration,
+    chatflowChatId,
+    rowsRequested,
+    file,
+    includeOriginalColumns,
+    csvParseRunId
+}: {
+    name: string
+    configuration: any
+    chatflowChatId: string
+    rowsRequested: number
+    file?: string | null
+    includeOriginalColumns: boolean
+    csvParseRunId?: string
+}) {
+    if (!file && !csvParseRunId) throw new Error('No file or csvParseRunId provided')
+
+    const token = sessionStorage.getItem('access_token')
+    const response = await fetch(`${API_BASE_URL}/api/v1/csv-parser`, {
+        method: 'POST',
+        body: JSON.stringify({
+            name,
+            configuration,
+            chatflowChatId,
+            rowsRequested,
+            file,
+            includeOriginalColumns,
+            csvParseRunId
+        }),
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+    const csvParseRun = await response.json()
+    if (!response.ok) {
+        throw new Error(csvParseRun?.message || 'Failed to create csv parse run')
+    }
+    return csvParseRun?.raw
+}
+
+async function fetchCsvParseRun({ csvParseRunId }: { csvParseRunId: string }) {
+    const token = sessionStorage.getItem('access_token')
+    const response = await fetch(`${API_BASE_URL}/api/v1/csv-parser/${csvParseRunId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+    if (!response.ok) {
+        throw new Error('Failed to get csv parse run')
+    }
+    const csvParseRun = await response.json()
+    return csvParseRun
+}
 
 const baseStyle = {
     flex: 1,
@@ -169,9 +226,8 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
             })
 
             if (isCloning) {
-                await cloneCsvParseRun({
+                await createCsvParseRun({
                     csvParseRunId: cloneFrom as string,
-                    orgId: user.org_id,
                     name: data.name,
                     configuration: {
                         context: data.context,
@@ -186,7 +242,6 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                 })
             } else {
                 await createCsvParseRun({
-                    orgId: user.org_id,
                     name: data.name,
                     configuration: {
                         context: data.context,
@@ -220,7 +275,7 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                 }, 1500)
             }
         } catch (err) {
-            // console.log(err)
+            console.error(err)
             setSnackbarMessage('There was an error processing your CSV.')
             setSnackbarOpen(true)
         } finally {

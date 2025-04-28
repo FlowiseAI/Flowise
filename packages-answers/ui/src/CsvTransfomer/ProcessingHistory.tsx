@@ -6,7 +6,43 @@ import { User } from 'types'
 import { Stack, Button, Chip, CircularProgress } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-import { fetchCsvParseRuns, downloadProcessedCsv } from './actions'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'
+
+async function fetchCsvParseRuns() {
+    const token = sessionStorage.getItem('access_token')
+    const response = await fetch(`${API_BASE_URL}/api/v1/csv-parser`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+    if (!response.ok) {
+        throw new Error('Failed to fetch csv parse runs')
+    }
+    return await response.json()
+}
+
+async function getProcessedCsvSignedUrl(csvParseRunId: string) {
+    const token = sessionStorage.getItem('access_token')
+    const response = await fetch(`${API_BASE_URL}/api/v1/csv-parser/${csvParseRunId}/signed-url`, {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    })
+    if (!response.ok) {
+        throw new Error('Failed to get signed URL for processed CSV')
+    }
+    const data = await response.json()
+    return data.signedUrl
+}
+
+async function downloadProcessedCsv(csvParseRunId: string) {
+    const signedUrl = await getProcessedCsvSignedUrl(csvParseRunId)
+    const response = await fetch(signedUrl)
+    if (!response.ok) {
+        throw new Error('Failed to download processed CSV')
+    }
+    return await response.blob()
+}
 
 const ProcessingHistory = ({ user }: { user: User }) => {
     const [csvParseRuns, setCsvParseRuns] = useState<any[]>([])
@@ -29,16 +65,19 @@ const ProcessingHistory = ({ user }: { user: User }) => {
     }, [getData])
 
     const handleDownloadProcessedCsv = async (csvParseRunId: string) => {
-        const csv = await downloadProcessedCsv({ csvParseRunId })
-        if (!csv) return
-        const url = window.URL.createObjectURL(new Blob([csv]))
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', `processed-csv-${csvParseRunId}.csv`)
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
-        window.URL.revokeObjectURL(url)
+        try {
+            const blob = await downloadProcessedCsv(csvParseRunId)
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.setAttribute('download', `processed-csv-${csvParseRunId}.csv`)
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+            window.URL.revokeObjectURL(url)
+        } catch (err) {
+            console.error('Error downloading processed CSV:', err)
+        }
     }
 
     const columns = [
