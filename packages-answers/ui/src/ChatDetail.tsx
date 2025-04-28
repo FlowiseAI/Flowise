@@ -14,12 +14,12 @@ import Image from 'next/image'
 
 const AppBar = dynamic(() => import('@mui/material/AppBar'))
 const ChatRoom = dynamic(() => import('./ChatRoom').then((mod) => ({ default: mod.ChatRoom })))
+const SidekickSelect = dynamic(() => import('./SidekickSelect'))
 const Drawer = dynamic(() => import('./Drawer'), { ssr: false })
 const SourceDocumentModal = dynamic(() => import('@ui/SourceDocumentModal'), { ssr: false })
 const CodePreview = dynamic(() => import('./Message/CodePreview').then((mod) => ({ default: mod.CodePreview })), { ssr: false })
 const DrawerFilters = dynamic(() => import('./DrawerFilters/DrawerFilters'), { ssr: false })
 const ChatInput = dynamic(() => import('./ChatInput'), { ssr: true })
-const SidekickSelect = dynamic(() => import('./SidekickSelect'), { ssr: false })
 
 const DISPLAY_MODES = {
     CHATBOT: 'chatbot',
@@ -62,7 +62,7 @@ export const ChatDetail = ({
 
     const displayMode = chatbotConfig?.displayMode || DISPLAY_MODES.CHATBOT
     const embeddedUrl = chatbotConfig?.embeddedUrl || ''
-    // console.log('chat', chat)
+    console.log('chat', { chat, chatbotConfig, displayMode, embeddedUrl, selectedSidekick })
     return (
         <>
             <Box sx={{ display: 'flex', width: '100%' }}>

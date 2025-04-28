@@ -14,7 +14,8 @@ import {
     Paper,
     Chip,
     Tooltip,
-    Snackbar
+    Snackbar,
+    Skeleton
 } from '@mui/material'
 import {
     ExpandMore as ExpandMoreIcon,
@@ -41,6 +42,7 @@ import useScrollTrigger from '@mui/material/useScrollTrigger'
 import { alpha } from '@mui/material/styles'
 import dynamic from 'next/dynamic'
 import { debounce } from '@utils/debounce'
+import { keyframes } from '@emotion/react'
 const MarketplaceLandingDialog = dynamic(() => import('@/views/chatflows/MarketplaceLandingDialog'), { ssr: false })
 
 // Create a theme that matches shadcn/ui styling
@@ -262,7 +264,7 @@ const CategoryFilterContainer = styled(Box)(({ theme }) => ({
 }))
 
 // Add a styled component for the category filter pills
-const CategoryFilterChip = styled(Chip)(({ theme, selected }) => ({
+const CategoryFilterChip = styled(Chip)<{ selected?: boolean }>(({ theme, selected }) => ({
     transition: 'all 0.2s ease',
     ...(selected && {
         backgroundColor: theme.palette.primary.main,
@@ -280,6 +282,65 @@ const StyledGridItem = styled(Grid)(({ theme }) => ({
     '& > div': {
         height: '100%'
     }
+}))
+
+// Add a skeleton card component
+const SkeletonCard = styled(Paper)(({ theme }) => ({
+    padding: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+    height: '220px',
+    position: 'relative',
+    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${
+        theme.palette.mode === 'dark' ? alpha(theme.palette.common.white, 0.05) : alpha(theme.palette.common.black, 0.08)
+    }`,
+    '.horizontal-container &': {
+        width: '300px',
+        minWidth: '300px',
+        maxWidth: '300px'
+    },
+    '.grid-container &': {
+        width: '100%'
+    }
+}))
+
+// Add a shimmer animation for skeleton items
+const shimmer = keyframes`
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+`
+
+// Styled component for skeleton items with shimmer effect
+const SkeletonItem = styled(Skeleton)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? alpha(theme.palette.common.white, 0.05) : alpha(theme.palette.common.black, 0.04),
+    backgroundImage: `linear-gradient(
+        90deg,
+        ${theme.palette.mode === 'dark' ? alpha(theme.palette.common.white, 0.05) : alpha(theme.palette.common.black, 0.04)} 25%,
+        ${theme.palette.mode === 'dark' ? alpha(theme.palette.common.white, 0.1) : alpha(theme.palette.common.black, 0.08)} 37%,
+        ${theme.palette.mode === 'dark' ? alpha(theme.palette.common.white, 0.05) : alpha(theme.palette.common.black, 0.04)} 63%
+    )`,
+    backgroundSize: '200px 100%',
+    backgroundRepeat: 'no-repeat',
+    animation: `${shimmer} 1.5s infinite linear`,
+    borderRadius: theme.shape.borderRadius
+}))
+
+const OrgSidekicksHeader = styled(Box)(({ theme }) => ({
+    position: 'sticky',
+    top: 0,
+    // backgroundColor: theme.palette.background.default,
+    zIndex: 1,
+    padding: theme.spacing(1, 0),
+    transition: theme.transitions && theme.transitions.create ? theme.transitions.create(['box-shadow']) : 'box-shadow 0.3s ease',
+    ...(trigger && {
+        boxShadow: `0 1px 0 ${theme.palette.divider}`
+    })
 }))
 
 const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
@@ -305,18 +366,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         disableHysteresis: true,
         threshold: 100
     })
-
-    const OrgSidekicksHeader = styled(Box)(({ theme }) => ({
-        position: 'sticky',
-        top: 0,
-        // backgroundColor: theme.palette.background.default,
-        zIndex: 1,
-        padding: theme.spacing(1, 0),
-        transition: theme.transitions && theme.transitions.create ? theme.transitions.create(['box-shadow']) : 'box-shadow 0.3s ease',
-        ...(trigger && {
-            boxShadow: `0 1px 0 ${theme.palette.divider}`
-        })
-    }))
 
     const [tabValue, setTabValue] = useState<string>('favorites')
 
@@ -432,7 +481,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         }
     }
 
-    const { data } = useSWR('/api/sidekicks', fetcher, {
+    const { data, isLoading } = useSWR('/api/sidekicks', fetcher, {
         fallbackData: defaultSidekicks
     })
 
@@ -909,11 +958,47 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         [handleCardClick, handleClone, handleEdit, handlePreviewClick, handleSidekickSelect, toggleFavorite, favorites, theme]
     )
 
+    // Function to render skeleton cards
+    const renderSkeletonCards = (count: number, isHorizontal: boolean = true) => {
+        return Array.from({ length: count }).map((_, index) => (
+            <SkeletonCard key={`skeleton-${index}`} className={isHorizontal ? 'horizontal-container' : 'grid-container'}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                        <SkeletonItem variant='rectangular' width='70%' height={28} />
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', width: '100%', gap: 1, mt: 1 }}>
+                            <SkeletonItem variant='rectangular' width='40%' height={24} />
+                        </Box>
+                    </Box>
+                    <SkeletonItem variant='rectangular' width='100%' height={42} />
+                    <Box sx={{ mt: 'auto', display: 'flex', justifyContent: 'flex-end', gap: 1, pt: 2 }}>
+                        <SkeletonItem variant='circular' width={36} height={36} />
+                        <SkeletonItem variant='circular' width={36} height={36} />
+                        <SkeletonItem variant='rectangular' width={60} height={36} sx={{ borderRadius: '18px' }} />
+                    </Box>
+                </Box>
+            </SkeletonCard>
+        ))
+    }
+
     // Render a category section with horizontal scroll
     const renderCategorySection = useCallback(
         (category: string, title: string) => {
             const sidekicks = getSidekicksByCategory(category)
-            if (sidekicks.length === 0) return null
+
+            // If data is loading or there are no categories yet, show skeleton cards
+            if (isLoading || (!isLoading && allCategories.top.length === 0 && allCategories.more.length === 0)) {
+                return (
+                    <CategorySection key={category}>
+                        <CategoryTitle variant='h6'>{title}</CategoryTitle>
+                        <HorizontalScrollContainer className='horizontal-container'>{renderSkeletonCards(6)}</HorizontalScrollContainer>
+                    </CategorySection>
+                )
+            }
+
+            // If no sidekicks in this category and loading is complete, don't display the category at all
+            if (sidekicks.length === 0 && !isLoading) {
+                return null
+            }
 
             const isExpanded = expandedCategory === category
             const currentViewMode = viewMode[category] || 'horizontal'
@@ -941,6 +1026,11 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
             // Special case for favorites - always render in grid view with two rows
             if (category === 'favorites') {
+                // Only display if there are items, or show loading skeleton
+                if (sidekicks.length === 0 && !isLoading) {
+                    return null
+                }
+
                 return (
                     <CategorySection key={category}>
                         <CategoryTitle variant='h6'>
@@ -966,15 +1056,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                     <Box sx={{ position: 'relative', height: '100%' }}>{renderSidekickCard(sidekick)}</Box>
                                 </Grid>
                             ))}
-                            {sidekicks.length === 0 && (
-                                <Grid item xs={12}>
-                                    <Box sx={{ padding: 3, textAlign: 'center' }}>
-                                        <Typography variant='body1' color='textSecondary'>
-                                            No favorite sidekicks found.
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-                            )}
                         </StyledGrid>
                     </CategorySection>
                 )
@@ -1054,7 +1135,9 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             toggleViewMode,
             allCategories,
             activeFilterCategory,
-            CategoryFilter
+            CategoryFilter,
+            isLoading,
+            renderSkeletonCards
         ]
     )
 
@@ -1063,6 +1146,31 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         (category: string) => {
             const sidekicks = getSidekicksByCategory(category)
             const categoryName = category.split(';').join(' | ')
+
+            // If data is loading, show skeleton grid
+            if (isLoading || (!isLoading && allCategories.top.length === 0 && allCategories.more.length === 0)) {
+                return (
+                    <CategorySection key={category}>
+                        <CategoryTitle variant='h6'>
+                            {categoryName}
+                            <SkeletonItem variant='rectangular' width={100} height={36} sx={{ borderRadius: '18px' }} />
+                        </CategoryTitle>
+                        <StyledGrid container spacing={2} className='grid-container'>
+                            {Array.from({ length: 6 }).map((_, index) => (
+                                <StyledGridItem item xs={12} sm={6} md={4} key={`skeleton-grid-${index}`}>
+                                    <Box sx={{ position: 'relative' }}>{renderSkeletonCards(1, false)}</Box>
+                                </StyledGridItem>
+                            ))}
+                        </StyledGrid>
+                    </CategorySection>
+                )
+            }
+
+            // If there are no sidekicks in this category, don't display anything
+            if (sidekicks.length === 0 && !isLoading) {
+                setFocusedCategory(null) // Reset focused category to return to main view
+                return null
+            }
 
             return (
                 <CategorySection key={category}>
@@ -1074,28 +1182,23 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     </CategoryTitle>
 
                     <StyledGrid container spacing={2} className='grid-container'>
-                        {sidekicks.length > 0 ? (
-                            sidekicks.map((sidekick) => (
-                                <StyledGridItem item xs={12} sm={6} md={4} key={`${category}-focused-${sidekick.id}`}>
-                                    <Box sx={{ position: 'relative' }}>{renderSidekickCard(sidekick)}</Box>
-                                </StyledGridItem>
-                            ))
-                        ) : (
-                            <Grid item xs={12}>
-                                <Box sx={{ padding: 3, textAlign: 'center' }}>
-                                    <Typography variant='body1' color='textSecondary'>
-                                        No sidekicks found in this category.
-                                    </Typography>
-                                </Box>
-                            </Grid>
-                        )}
+                        {sidekicks.map((sidekick) => (
+                            <StyledGridItem item xs={12} sm={6} md={4} key={`${category}-focused-${sidekick.id}`}>
+                                <Box sx={{ position: 'relative' }}>{renderSidekickCard(sidekick)}</Box>
+                            </StyledGridItem>
+                        ))}
                     </StyledGrid>
                 </CategorySection>
             )
         },
-        [renderSidekickCard, getSidekicksByCategory, toggleViewMode]
+        [renderSidekickCard, getSidekicksByCategory, toggleViewMode, isLoading, renderSkeletonCards, allCategories, setFocusedCategory]
     )
 
+    const handleCreateNewSidekick = () => {
+        navigate('/canvas')
+    }
+
+    // Component to render filter pills for available categories
     // Replace the old renderSidekickGrid function with our new rendering logic
     const content = useCallback(
         () => (
@@ -1139,12 +1242,38 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                             availableCategories={['all'].concat(allCategories.top).concat(allCategories.more)}
                         />
 
-                        <StyledGrid container spacing={2} className='grid-container'>
-                            {fuse
-                                .search(searchTerm)
-                                .filter((result) => {
+                        {isLoading ? (
+                            <StyledGrid container spacing={2} className='grid-container'>
+                                {Array.from({ length: 6 }).map((_, index) => (
+                                    <StyledGridItem item xs={12} sm={6} md={4} key={`search-skeleton-${index}`}>
+                                        <Box sx={{ position: 'relative' }}>{renderSkeletonCards(1, false)}</Box>
+                                    </StyledGridItem>
+                                ))}
+                            </StyledGrid>
+                        ) : (
+                            <StyledGrid container spacing={2} className='grid-container'>
+                                {fuse
+                                    .search(searchTerm)
+                                    .filter((result) => {
+                                        const sidekick = result.item
+                                        // If a filter is active, filter the search results by category
+                                        const currentFilter = activeFilterCategory['search']
+                                        if (currentFilter && currentFilter !== 'all') {
+                                            return (
+                                                sidekick.chatflow.category === currentFilter ||
+                                                sidekick.chatflow.categories?.includes(currentFilter) ||
+                                                sidekick.categories?.includes(currentFilter)
+                                            )
+                                        }
+                                        return true
+                                    })
+                                    .map((result) => (
+                                        <StyledGridItem item xs={12} sm={6} md={4} key={`search-grid-${result.item.id}`}>
+                                            <Box sx={{ position: 'relative' }}>{renderSidekickCard(result.item)}</Box>
+                                        </StyledGridItem>
+                                    ))}
+                                {fuse.search(searchTerm).filter((result) => {
                                     const sidekick = result.item
-                                    // If a filter is active, filter the search results by category
                                     const currentFilter = activeFilterCategory['search']
                                     if (currentFilter && currentFilter !== 'all') {
                                         return (
@@ -1154,33 +1283,17 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                                         )
                                     }
                                     return true
-                                })
-                                .map((result) => (
-                                    <StyledGridItem item xs={12} sm={6} md={4} key={`search-grid-${result.item.id}`}>
-                                        <Box sx={{ position: 'relative' }}>{renderSidekickCard(result.item)}</Box>
-                                    </StyledGridItem>
-                                ))}
-                            {fuse.search(searchTerm).filter((result) => {
-                                const sidekick = result.item
-                                const currentFilter = activeFilterCategory['search']
-                                if (currentFilter && currentFilter !== 'all') {
-                                    return (
-                                        sidekick.chatflow.category === currentFilter ||
-                                        sidekick.chatflow.categories?.includes(currentFilter) ||
-                                        sidekick.categories?.includes(currentFilter)
-                                    )
-                                }
-                                return true
-                            }).length === 0 && (
-                                <Grid item xs={12}>
-                                    <Box sx={{ padding: 3, textAlign: 'center' }}>
-                                        <Typography variant='body1' color='textSecondary'>
-                                            No sidekicks found matching your criteria.
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-                            )}
-                        </StyledGrid>
+                                }).length === 0 && (
+                                    <Grid item xs={12}>
+                                        <Box sx={{ padding: 3, textAlign: 'center' }}>
+                                            <Typography variant='body1' color='textSecondary'>
+                                                No sidekicks found matching your criteria.
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+                                )}
+                            </StyledGrid>
+                        )}
                     </CategorySection>
                 ) : focusedCategory ? (
                     // When a category is focused (Show All was clicked), only show that category
@@ -1188,15 +1301,40 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 ) : (
                     // Regular category sections
                     <>
-                        {renderCategorySection('favorites', 'Favorites')}
-                        {renderCategorySection('recent', 'Recent')}
-                        {renderCategorySection('Official', 'Official')}
+                        {/* Always show basic categories with skeletons while loading */}
+                        {isLoading ? (
+                            <>
+                                {renderCategorySection('favorites', 'Favorites')}
+                                {renderCategorySection('recent', 'Recent')}
+                                {renderCategorySection('Official', 'Official')}
+                            </>
+                        ) : combinedSidekicks.length === 0 ? (
+                            // When no sidekicks exist but loading is complete, show empty state message
+                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8 }}>
+                                <Typography variant='h6' color='textSecondary' gutterBottom>
+                                    No sidekicks available
+                                </Typography>
+                                <Typography variant='body1' color='textSecondary' align='center' sx={{ maxWidth: '500px', mb: 4 }}>
+                                    No sidekicks were found. Create a new sidekick or check back later.
+                                </Typography>
+                                <Button variant='contained' color='primary' onClick={handleCreateNewSidekick}>
+                                    Create New Sidekick
+                                </Button>
+                            </Box>
+                        ) : (
+                            // Otherwise render all categories that have items
+                            <>
+                                {renderCategorySection('favorites', 'Favorites')}
+                                {renderCategorySection('recent', 'Recent')}
+                                {renderCategorySection('Official', 'Official')}
 
-                        {/* Map through category-specific sections */}
-                        {allCategories.top
-                            .concat(allCategories.more)
-                            .filter((category) => !['favorites', 'recent', 'Official'].includes(category)) // Skip already rendered categories
-                            .map((category) => renderCategorySection(category, category.split(';').join(' | ')))}
+                                {/* Map through category-specific sections */}
+                                {allCategories.top
+                                    .concat(allCategories.more)
+                                    .filter((category) => !['favorites', 'recent', 'Official'].includes(category)) // Skip already rendered categories
+                                    .map((category) => renderCategorySection(category, category.split(';').join(' | ')))}
+                            </>
+                        )}
                     </>
                 )}
 
@@ -1231,16 +1369,14 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             viewMode,
             toggleViewMode,
             CategoryFilter,
-            activeFilterCategory
+            activeFilterCategory,
+            isLoading,
+            renderSkeletonCards,
+            renderFocusedCategory,
+            combinedSidekicks,
+            handleCreateNewSidekick
         ]
     )
-
-    const handleCreateNewSidekick = () => {
-        navigate('/canvas')
-    }
-
-    // Component to render filter pills for available categories
-
     if (noDialog) {
         return <ContentWrapper>{content()}</ContentWrapper>
     }
