@@ -16,7 +16,7 @@ interface ScrapedPageData {
 
 class WebScraperRecursiveTool extends Tool {
     name = 'cheerio_web_scraper'
-    description = `Scrapes web pages. Can recursively follow links from a starting URL up to specified limits OR scrape URLs listed in the default sitemap (/sitemap.xml) using Flowise's built-in sitemap parser. Extracts title, description, and paragraph text. Input is a single URL string. Returns a JSON string array of scraped page data objects.`
+    description = `Scrapes web pages recursively or via default sitemap. Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data objects.`
 
     private maxDepth: number
     private maxPages: number | null
@@ -379,7 +379,7 @@ class WebScraperRecursive_Tools implements INode {
                 rows: 4,
                 additionalParams: true,
                 optional: true,
-                placeholder: `Scrapes web pages recursively or via default sitemap up to specified limits. Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data.`
+                placeholder: `Scrapes web pages recursively or via default sitemap. Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data objects.`
             }
         ]
     }
