@@ -115,6 +115,7 @@ async function checkResourceAccess(resourceName: string, resourceId: string, fil
     }
 
     if (!hasAccess) {
+        console.log('FORBIDDEN', { resourceName, resourceId, filter, isAdmin })
         throw new Error('Forbidden: You do not have access to this resource')
     }
 }
