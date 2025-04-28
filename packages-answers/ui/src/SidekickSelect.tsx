@@ -1190,11 +1190,12 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                     <>
                         {renderCategorySection('favorites', 'Favorites')}
                         {renderCategorySection('recent', 'Recent')}
+                        {renderCategorySection('Official', 'Official')}
 
                         {/* Map through category-specific sections */}
                         {allCategories.top
                             .concat(allCategories.more)
-                            .filter((category) => !['favorites', 'recent'].includes(category)) // Skip already rendered categories
+                            .filter((category) => !['favorites', 'recent', 'Official'].includes(category)) // Skip already rendered categories
                             .map((category) => renderCategorySection(category, category.split(';').join(' | ')))}
                     </>
                 )}
