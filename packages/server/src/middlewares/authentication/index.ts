@@ -27,7 +27,6 @@ const jwtCheckPublic = auth({
 const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<User | null> => {
     const authHeader = req.headers.authorization
     if (!authHeader?.startsWith('Bearer ')) {
-        console.log('[AuthMiddleware] No Bearer token found in Authorization header')
         return null
     }
 
@@ -200,7 +199,6 @@ export const authenticationHandlerMiddleware =
         const authCookie = req.cookies?.Authorization
         if (authCookie) {
             req.headers.Authorization = authCookie
-            console.log('[AuthMiddleware] Using auth cookie for authentication')
         }
 
         // Try API key authentication first
@@ -227,7 +225,6 @@ export const authenticationHandlerMiddleware =
 
                 // Proceed with user synchronization if user is authenticated
                 if (!req.auth?.payload) {
-                    console.log('[AuthMiddleware] No auth payload present, proceeding without authentication')
                     if (apiKeyError) {
                         console.error('[AuthMiddleware] Error verifying API key:', apiKeyError)
                     }
@@ -278,19 +275,30 @@ export const authenticationHandlerMiddleware =
                             try {
                                 const stripe = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY ?? '')
 
-                                const customer = await stripe.customers.create({
+                                const existingCustomer = await stripe.customers.list({
                                     email,
-                                    name,
-                                    metadata: {
-                                        userId: user.id,
-                                        auth0Id,
-                                        orgId: organization.id
-                                    }
+                                    limit: 1
                                 })
-                                stripeCustomerId = customer.id
+
+                                if (existingCustomer.data.length > 0) {
+                                    stripeCustomerId = existingCustomer.data[0].id
+                                } else {
+                                    const customer = await stripe.customers.create(
+                                        {
+                                            email,
+                                            name,
+                                            metadata: {
+                                                userId: user.id,
+                                                auth0Id,
+                                                orgId: organization.id
+                                            }
+                                        },
+                                        { idempotencyKey: auth0Id }
+                                    )
+                                    stripeCustomerId = customer.id
+                                }
                                 // Optionally, update the user profile in your database with the new customerId
                                 user.stripeCustomerId = stripeCustomerId
-                                await AppDataSource.getRepository(User).save(user)
                             } catch (error) {
                                 console.error('Error creating/updating Stripe customers:', error)
                                 return res.status(500).send('Internal Server Error')

@@ -19,8 +19,6 @@ const MainUiLayout = async (props: {
     const currentDomain = host.split(':')[0] // Remove port if present
     const userDomain = session ? session?.user?.answersDomain?.split('https://')[1] : null // Remove the protocol
 
-    console.log('userDomain', userDomain, session?.user?.answersDomain, 'currentDomain', currentDomain)
-
     if (userDomain && userDomain !== currentDomain && !currentDomain.includes('localhost')) {
         console.log('Redirecting to:', session.user.answersDomain, 'from', currentDomain)
         redirect(session.user.answersDomain)
