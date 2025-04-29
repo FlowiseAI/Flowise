@@ -21,9 +21,9 @@ import {
     DialogTitle,
     IconButton,
     Tooltip,
-    Typography
+    Typography,
+    useTheme
 } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -33,9 +33,11 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 // API
 import useApi from '@/hooks/useApi'
 import executionsApi from '@/api/executions'
+import { useSelector } from 'react-redux'
 
 // icons
 import execution_empty from '@/assets/images/executions_empty.svg'
+import { IconTrash } from '@tabler/icons-react'
 
 // const
 import { ExecutionsListTable } from '@/ui-component/table/ExecutionsListTable'
@@ -45,6 +47,10 @@ import { omit } from 'lodash'
 // ==============================|| AGENT EXECUTIONS ||============================== //
 
 const AgentExecutions = () => {
+    const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
+    const borderColor = theme.palette.grey[900] + 25
+
     const getAllExecutions = useApi(executionsApi.getAllExecutions)
     const deleteExecutionsApi = useApi(executionsApi.deleteExecutions)
 
@@ -217,7 +223,7 @@ const AgentExecutions = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader title='Agent Executions' />
+                    <ViewHeader title='Agent Executions' description='Monitor and manage agentflows executions' />
 
                     {/* Filter Section */}
                     <Box sx={{ mb: 2, width: '100%' }}>
@@ -231,6 +237,14 @@ const AgentExecutions = () => {
                                         label='State'
                                         onChange={(e) => handleFilterChange('state', e.target.value)}
                                         size='small'
+                                        sx={{
+                                            '& .MuiOutlinedInput-notchedOutline': {
+                                                borderColor: borderColor
+                                            },
+                                            '& .MuiSvgIcon-root': {
+                                                color: customization.isDarkMode ? '#fff' : 'inherit'
+                                            }
+                                        }}
                                     >
                                         <MenuItem value=''>All</MenuItem>
                                         <MenuItem value='INPROGRESS'>In Progress</MenuItem>
@@ -251,7 +265,18 @@ const AgentExecutions = () => {
                                     className='form-control'
                                     wrapperClassName='datePicker'
                                     maxDate={new Date()}
-                                    customInput={<TextField size='small' label='Start date' fullWidth />}
+                                    customInput={
+                                        <TextField
+                                            size='small'
+                                            label='Start date'
+                                            fullWidth
+                                            sx={{
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: borderColor
+                                                }
+                                            }}
+                                        />
+                                    }
                                 />
                             </Grid>
                             <Grid sx={{ ml: -1 }} item xs={12} md={2}>
@@ -264,7 +289,18 @@ const AgentExecutions = () => {
                                     wrapperClassName='datePicker'
                                     minDate={filters.startDate}
                                     maxDate={new Date()}
-                                    customInput={<TextField size='small' label='End date' fullWidth />}
+                                    customInput={
+                                        <TextField
+                                            size='small'
+                                            label='End date'
+                                            fullWidth
+                                            sx={{
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: borderColor
+                                                }
+                                            }}
+                                        />
+                                    }
                                 />
                             </Grid>
                             <Grid sx={{ ml: -1 }} item xs={12} md={2}>
@@ -274,6 +310,11 @@ const AgentExecutions = () => {
                                     value={filters.sessionId}
                                     onChange={(e) => handleFilterChange('sessionId', e.target.value)}
                                     size='small'
+                                    sx={{
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: borderColor
+                                        }
+                                    }}
                                 />
                             </Grid>
                             <Grid item xs={12} md={4}>
@@ -287,11 +328,14 @@ const AgentExecutions = () => {
                                     <Tooltip title='Delete selected executions'>
                                         <span>
                                             <IconButton
+                                                sx={{ height: 30, width: 30 }}
+                                                size='small'
                                                 color='error'
                                                 onClick={handleDeleteDialogOpen}
+                                                edge='end'
                                                 disabled={selectedExecutionIds.length === 0}
                                             >
-                                                <DeleteIcon />
+                                                <IconTrash />
                                             </IconButton>
                                         </span>
                                     </Tooltip>
@@ -317,7 +361,19 @@ const AgentExecutions = () => {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                             <Typography variant='body2'>Items per page:</Typography>
-                            <FormControl variant='outlined' size='small' sx={{ minWidth: 80 }}>
+                            <FormControl
+                                variant='outlined'
+                                size='small'
+                                sx={{
+                                    minWidth: 80,
+                                    '& .MuiOutlinedInput-notchedOutline': {
+                                        borderColor: borderColor
+                                    },
+                                    '& .MuiSvgIcon-root': {
+                                        color: customization.isDarkMode ? '#fff' : 'inherit'
+                                    }
+                                }}
+                            >
                                 <Select value={pagination.limit} onChange={handleLimitChange} displayEmpty>
                                     <MenuItem value={10}>10</MenuItem>
                                     <MenuItem value={50}>50</MenuItem>

@@ -6,7 +6,7 @@ import axios from 'axios'
 // Material
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
 import { Popper, CircularProgress, TextField, Box, Typography } from '@mui/material'
-import { styled } from '@mui/material/styles'
+import { useTheme, styled } from '@mui/material/styles'
 
 // API
 import credentialsApi from '@/api/credentials'
@@ -66,6 +66,7 @@ export const AsyncDropdown = ({
     multiple = false
 }) => {
     const customization = useSelector((state) => state.customization)
+    const theme = useTheme()
 
     const [open, setOpen] = useState(false)
     const [options, setOptions] = useState([])
@@ -204,7 +205,15 @@ export const AsyncDropdown = ({
                         <TextField
                             {...params}
                             value={internalValue}
-                            sx={{ height: '100%', '& .MuiInputBase-root': { height: '100%' } }}
+                            sx={{
+                                height: '100%',
+                                '& .MuiInputBase-root': {
+                                    height: '100%',
+                                    '& fieldset': {
+                                        borderColor: theme.palette.grey[900] + 25
+                                    }
+                                }
+                            }}
                             InputProps={{
                                 ...params.InputProps,
                                 startAdornment: (

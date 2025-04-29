@@ -156,7 +156,13 @@ const Agentflows = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Name or Category' title='Agents'>
+                    <ViewHeader
+                        onSearchChange={onSearchChange}
+                        search={true}
+                        searchPlaceholder='Search Name or Category'
+                        title='Agentflows'
+                        description='Multi-agent systems, workflow orchestration'
+                    >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={agentflowVersion}

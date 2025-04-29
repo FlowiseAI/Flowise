@@ -31,13 +31,19 @@ const StickyNote = ({ data }) => {
         setOpen(true)
     }
 
+    const getBorderColor = () => {
+        if (data.selected) return theme.palette.primary.main
+        else if (theme?.customization?.isDarkMode) return theme.palette.grey[900] + 25
+        else return theme.palette.grey[900] + 50
+    }
+
     return (
         <>
             <NodeCardWrapper
                 content={false}
                 sx={{
                     padding: 0,
-                    borderColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                    borderColor: getBorderColor(),
                     backgroundColor: data.selected ? '#FFDC00' : '#FFE770'
                 }}
                 border={false}

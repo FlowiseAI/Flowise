@@ -46,7 +46,7 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows }) => ({
         lineHeight: rows ? '1.4375em' : '0.875em',
         fontWeight: 500,
         color: theme.palette.grey[900],
-        border: `1px solid ${theme.palette.textBackground.border}`,
+        border: `1px solid ${theme.palette.grey[900] + 25}`,
         borderRadius: '10px',
         backgroundColor: theme.palette.textBackground.main,
         boxSizing: 'border-box',
@@ -57,7 +57,6 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows }) => ({
         },
         '&:focus': {
             borderColor: theme.palette.primary.main,
-            boxShadow: `0 0 0 1px ${theme.palette.primary.main}`,
             outline: 'none'
         },
         '&[disabled]': {

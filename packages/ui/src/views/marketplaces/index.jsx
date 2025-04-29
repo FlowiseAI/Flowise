@@ -60,11 +60,7 @@ const MenuProps = {
         }
     }
 }
-const SelectStyles = {
-    '& .MuiOutlinedInput-notchedOutline': {
-        borderRadius: 2
-    }
-}
+
 // ==============================|| Marketplace ||============================== //
 
 const Marketplace = () => {
@@ -103,6 +99,16 @@ const Marketplace = () => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
     const { confirm } = useConfirm()
+
+    const getSelectStyles = (borderColor, isDarkMode) => ({
+        '& .MuiOutlinedInput-notchedOutline': {
+            borderRadius: 2,
+            borderColor: borderColor
+        },
+        '& .MuiSvgIcon-root': {
+            color: isDarkMode ? '#fff' : 'inherit'
+        }
+    })
 
     const handleTabChange = (event, newValue) => {
         if (newValue === 1 && !getAllCustomTemplatesApi.data) {
@@ -451,7 +457,7 @@ const Marketplace = () => {
                                             input={<OutlinedInput label='Badge' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
-                                            sx={SelectStyles}
+                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
                                         >
                                             {badges.map((name) => (
                                                 <MenuItem
@@ -487,7 +493,7 @@ const Marketplace = () => {
                                             input={<OutlinedInput label='Badge' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
-                                            sx={SelectStyles}
+                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
                                         >
                                             {types.map((name) => (
                                                 <MenuItem
@@ -523,7 +529,7 @@ const Marketplace = () => {
                                             input={<OutlinedInput label='Badge' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
-                                            sx={SelectStyles}
+                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
                                         >
                                             {framework.map((name) => (
                                                 <MenuItem
@@ -543,6 +549,7 @@ const Marketplace = () => {
                             search={true}
                             searchPlaceholder='Search Name/Description/Node'
                             title='Marketplace'
+                            description='Explore and use pre-built templates'
                         >
                             <ToggleButtonGroup
                                 sx={{ borderRadius: 2, height: '100%' }}

@@ -234,6 +234,7 @@ const Credentials = () => {
                             search={true}
                             searchPlaceholder='Search Credentials'
                             title='Credentials'
+                            description='API keys, tokens, and secrets for 3rd party integrations'
                         >
                             <StyledButton
                                 variant='contained'

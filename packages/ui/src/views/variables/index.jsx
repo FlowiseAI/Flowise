@@ -200,7 +200,13 @@ const Variables = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Variables' title='Variables'>
+                        <ViewHeader
+                            onSearchChange={onSearchChange}
+                            search={true}
+                            searchPlaceholder='Search Variables'
+                            title='Variables'
+                            description='Create and manage global variables'
+                        >
                             <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
                                 How To Use
                             </Button>
