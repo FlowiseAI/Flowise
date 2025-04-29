@@ -318,7 +318,7 @@ class WebScraperRecursive_Tools implements INode {
     constructor() {
         this.label = 'Cheerio Web Scraper'
         this.name = 'cheerioWebScraper'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Tool'
         this.icon = 'cheerioWebScraper.svg'
         this.category = 'Tools'
