@@ -104,7 +104,14 @@ class Custom_MCP implements INode {
                 serverParams = JSON.parse(serverParamsString)
             }
 
-            const toolkit = new MCPToolkit(serverParams, 'stdio')
+            // Compatible with stdio and SSE
+            let toolkit: MCPToolkit
+            if (serverParams?.command === undefined) {
+                toolkit = new MCPToolkit(serverParams, 'sse')
+            } else {
+                toolkit = new MCPToolkit(serverParams, 'stdio')
+            }
+
             await toolkit.initialize()
 
             const tools = toolkit.tools ?? []
