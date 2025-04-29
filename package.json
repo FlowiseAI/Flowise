@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.2.7-patch.1",
+    "version": "2.2.8",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [

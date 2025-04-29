@@ -164,6 +164,14 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Base URL',
+                name: 'baseUrl',
+                type: 'string',
+                description: 'Base URL for the API. Leave empty to use the default.',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -197,6 +205,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const contextCache = nodeData.inputs?.contextCache as FlowiseGoogleAICacheManager
         const streaming = nodeData.inputs?.streaming as boolean
+        const baseUrl = nodeData.inputs?.baseUrl as string | undefined
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
@@ -211,6 +220,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
         if (topK) obj.topK = parseFloat(topK)
         if (cache) obj.cache = cache
         if (temperature) obj.temperature = parseFloat(temperature)
+        if (baseUrl) obj.baseUrl = baseUrl
 
         // Safety Settings
         let harmCategories: string[] = convertMultiOptionsToStringArray(harmCategory)
