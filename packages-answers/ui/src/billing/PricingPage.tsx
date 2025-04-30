@@ -1,7 +1,6 @@
 'use client'
 
-import React from 'react'
-import { Box, Card, Container, Stack, Typography, Tooltip } from '@mui/material'
+import { Card, Container, Stack, Typography, Tooltip } from '@mui/material'
 import { TrendingUp as TrendingUpIcon, Info as InfoIcon } from '@mui/icons-material'
 import PricingOverview from './PricingOverview'
 import PurchaseCredits from './PurchaseCredits'

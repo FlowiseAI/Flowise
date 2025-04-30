@@ -47,6 +47,7 @@ const ChatDetailWidget = ({ appSettings, user, prompts }: { appSettings: AppSett
                         <>
                             <MessageCard
                                 user={user}
+                                // eslint-disable-next-line jsx-a11y/aria-role
                                 role='assistant'
                                 content={`There was an error completing your request, please try again`}
                                 error={error}
@@ -70,7 +71,13 @@ const ChatDetailWidget = ({ appSettings, user, prompts }: { appSettings: AppSett
                     )}
 
                     {!messages?.length ? (
-                        <MessageCard user={user} role='assistant' content={'Welcome! Try asking me something below!'} isWidget />
+                        <MessageCard
+                            user={user}
+                            // eslint-disable-next-line jsx-a11y/aria-role
+                            role='assistant'
+                            content={'Welcome! Try asking me something below!'}
+                            isWidget
+                        />
                     ) : null}
 
                     {messages?.length && !isLoading && !error ? (

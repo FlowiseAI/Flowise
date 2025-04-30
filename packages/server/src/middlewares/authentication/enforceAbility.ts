@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { EntityTarget, IsNull, Like } from 'typeorm'
+import { EntityTarget } from 'typeorm'
 import path from 'path'
 
 // Define interfaces for better type safety
@@ -49,7 +49,6 @@ const enforceAbility = (resourceName: string) => {
 
         // Store the filter for use in subsequent middleware or controllers
         res.locals.filter = filter
-        console.log('User res.locals.filter', res.locals.filter)
         try {
             // Only check resource access for requests with an ID parameter
             if (isResourceIdRequest(req)) {
@@ -116,6 +115,7 @@ async function checkResourceAccess(resourceName: string, resourceId: string, fil
     }
 
     if (!hasAccess) {
+        console.log('FORBIDDEN', { resourceName, resourceId, filter, isAdmin })
         throw new Error('Forbidden: You do not have access to this resource')
     }
 }

@@ -124,7 +124,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
         } else if (setting === 'chatflowConfiguration') {
             setChatflowConfigurationDialogProps({
                 title: `${title} Configuration`,
-                chatflow: chatflow
+                chatflow: chatflow,
+                handleSaveFlow
             })
             setChatflowConfigurationDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
@@ -158,9 +159,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
         }
     }
 
-    const onUploadFile = (file) => {
+    const onUploadFile = (file, fileName) => {
         setSettingsOpen(false)
-        handleLoadFlow(file)
+        handleLoadFlow(file, fileName)
     }
 
     const submitFlowName = () => {
@@ -231,7 +232,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
     const onConfigurationButtonClick = () => {
         setChatflowConfigurationDialogProps({
             title: `${title} Configuration`,
-            chatflow: chatflow
+            chatflow: chatflow,
+            handleSaveFlow
         })
         setChatflowConfigurationDialogOpen(true)
     }
@@ -253,7 +255,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
             if (chatflowConfigurationDialogOpen) {
                 setChatflowConfigurationDialogProps({
                     title: `${title} Configuration`,
-                    chatflow
+                    chatflow,
+                    handleSaveFlow
                 })
             }
         }
@@ -279,7 +282,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                     }
                                 }}
                                 color='inherit'
-                                onClick={() => navigate(-1)}
+                                onClick={() => {
+                                    try {
+                                        navigate(-1)
+                                        setTimeout(() => {
+                                            navigate('/chatflows')
+                                        }, 100)
+                                    } catch (error) {
+                                        navigate('/chatflows')
+                                    }
+                                }}
                             >
                                 <IconChevronLeft stroke={1.5} size='1.3rem' />
                             </Avatar>

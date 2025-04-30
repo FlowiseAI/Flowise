@@ -1,5 +1,3 @@
-import React from 'react'
-
 import SourcesAirtable from './SourcesAirtable'
 import SourcesConfluence from './SourcesConfluence'
 import SourcesCodebase from './SourcesCodebase'

@@ -18,7 +18,7 @@ const getChatflowStats = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<any> => {
     try {
-        const chatmessages = (await utilGetChatMessage({  
+        const chatmessages = (await utilGetChatMessage({
             user,
             chatflowid,
             chatTypes,

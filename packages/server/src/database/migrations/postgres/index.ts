@@ -49,6 +49,7 @@ import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtif
 import { AddFollowUpPrompts1726666309552 } from './1726666309552-AddFollowUpPrompts'
 import { AddTypeToAssistant1733011290987 } from './1733011290987-AddTypeToAssistant'
 import { UpdateUserUniqueAuth0Id1741898609435 } from './1741898609435-UpdateUserUniqueAuth0Id'
+import { AppCsvRuns1744553414309 } from './1744553414309-AddAppCsvRuns'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -101,5 +102,6 @@ export const postgresMigrations = [
     AddArtifactsToChatMessage1726156258465,
     AddFollowUpPrompts1726666309552,
     AddTypeToAssistant1733011290987,
-    UpdateUserUniqueAuth0Id1741898609435
+    UpdateUserUniqueAuth0Id1741898609435,
+    AppCsvRuns1744553414309
 ]

@@ -171,7 +171,6 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
             if (isCloning) {
                 await cloneCsvParseRun({
                     csvParseRunId: cloneFrom as string,
-                    userId: user.id,
                     orgId: user.org_id,
                     name: data.name,
                     configuration: {
@@ -187,7 +186,6 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                 })
             } else {
                 await createCsvParseRun({
-                    userId: user.id,
                     orgId: user.org_id,
                     name: data.name,
                     configuration: {

@@ -1,7 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
     Box,
-    Card,
     Typography,
     Table,
     TableBody,
@@ -11,19 +10,18 @@ import {
     TableRow,
     TablePagination,
     TableSortLabel,
-    CircularProgress,
     Chip,
-    Tooltip,
+    Skeleton,
     IconButton,
-    Skeleton
+    Tooltip
 } from '@mui/material'
-import InfoIcon from '@mui/icons-material/Info'
 import { useUsageEvents } from './hooks/useUsageEvents'
 import { format } from 'date-fns'
 import { useUser } from '@auth0/nextjs-auth0/client'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 
 // Skeleton row component for loading state
-const SkeletonRow = ({ isAdmin = false }) => {
+const SkeletonRow = ({ isAdmin = false }: { isAdmin?: boolean }) => {
     const columns = isAdmin ? 5 : 4 // Adjust number of cells based on admin status
 
     return (
@@ -41,6 +39,7 @@ const UsageEventsTable: React.FC = () => {
     const { user } = useUser()
     const isAdmin = user?.['https://theanswer.ai/roles']?.includes('Admin')
     const { events, pagination, isLoading, isError, setPage, setLimit, setSorting, params } = useUsageEvents()
+    const [hoveredRow, setHoveredRow] = useState<string | null>(null)
 
     const handleChangePage = (_: unknown, newPage: number) => {
         setPage(newPage + 1) // API is 1-indexed, MUI is 0-indexed
@@ -54,6 +53,13 @@ const UsageEventsTable: React.FC = () => {
     const handleSortRequest = (column: string) => {
         const isAsc = params.sortBy === column && params.sortOrder === 'asc'
         setSorting(column, isAsc ? 'desc' : 'asc')
+    }
+
+    // Function to generate Langfuse trace URL
+    const getLangfuseTraceUrl = (traceId: string) => {
+        // Use the default Langfuse URL unless a custom one is set in environment
+        const baseUrl = process.env.LANGFUSE_HOST || 'https://cloud.langfuse.com'
+        return `${baseUrl}/trace/${traceId}`
     }
 
     if (isError) {
@@ -134,9 +140,34 @@ const UsageEventsTable: React.FC = () => {
                             </TableRow>
                         ) : (
                             events.map((event) => (
-                                <TableRow key={event.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
-                                    <TableCell sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                                <TableRow 
+                                    key={event.id} 
+                                    hover 
+                                    sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}
+                                    onMouseEnter={() => setHoveredRow(event.id)}
+                                    onMouseLeave={() => setHoveredRow(null)}
+                                >
+                                    <TableCell sx={{ color: 'rgba(255, 255, 255, 0.9)', position: 'relative' }}>
                                         {format(new Date(event.timestamp), 'MMM d, yyyy HH:mm:ss')}
+                                        {hoveredRow === event.id && (
+                                            <Tooltip title="View in Langfuse" placement="top">
+                                                <IconButton
+                                                    size="small"
+                                                    sx={{ 
+                                                        position: 'absolute',
+                                                        right: 8,
+                                                        color: 'rgba(255, 255, 255, 0.7)',
+                                                        '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
+                                                    }}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        window.open(getLangfuseTraceUrl(event.id), '_blank');
+                                                    }}
+                                                >
+                                                    <OpenInNewIcon fontSize="small" />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
                                     </TableCell>
                                     {isAdmin && <TableCell sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>{event.userId}</TableCell>}
                                     <TableCell sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>{event.chatflowName || 'Unknown'}</TableCell>

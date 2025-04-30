@@ -1,24 +1,24 @@
-import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
+import type { SidebarsConfig } from '@docusaurus/plugin-content-docs'
 
 const sidebar: SidebarsConfig = {
-  apisidebar: [
-    {
-      type: "doc",
-      id: "api/prediction/prediction-api",
-    },
-    {
-      type: "category",
-      label: "prediction",
-      items: [
+    apisidebar: [
         {
-          type: "doc",
-          id: "api/prediction/create-prediction",
-          label: "Create a new prediction",
-          className: "api-method post",
+            type: 'doc',
+            id: 'api/prediction/prediction-api'
         },
-      ],
-    },
-  ],
-};
+        {
+            type: 'category',
+            label: 'prediction',
+            items: [
+                {
+                    type: 'doc',
+                    id: 'api/prediction/create-prediction',
+                    label: 'Create a new prediction',
+                    className: 'api-method post'
+                }
+            ]
+        }
+    ]
+}
 
-export default sidebar.apisidebar;
+export default sidebar.apisidebar

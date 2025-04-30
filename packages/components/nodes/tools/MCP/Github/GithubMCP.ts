@@ -95,7 +95,7 @@ class Github_MCP implements INode {
         const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-github/dist/index.js')
 
         const serverParams = {
-            command: 'node',
+            command: process.execPath,
             args: [packagePath],
             env: {
                 GITHUB_PERSONAL_ACCESS_TOKEN: accessToken

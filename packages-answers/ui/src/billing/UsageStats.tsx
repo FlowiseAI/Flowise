@@ -1,12 +1,9 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Box, Typography, Grid, LinearProgress, Tooltip, IconButton, Stack, useTheme, Skeleton } from '@mui/material'
 import { Info as InfoIcon, Bolt as CreditIcon, Memory as CpuIcon, Storage as StorageIcon } from '@mui/icons-material'
-import billingApi from '@/api/billing'
-import useSWR from 'swr'
 import { UsageSummary, UsageMetric } from './hooks/useBillingData'
-import TotalCreditsProgress from './TotalCreditsProgress'
 
 const getUsagePercentage = (used: number, total: number) => {
     if (!total) return 0

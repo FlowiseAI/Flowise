@@ -32,7 +32,7 @@ import authenticationHandlerMiddleware from './middlewares/authentication'
 import passport from 'passport'
 import passportConfig from './config/passport'
 import session from 'express-session'
-import { redisStore } from './AppConfig'
+import { createRedisStore } from './AppConfig'
 declare global {
     namespace Express {
         namespace Multer {
@@ -137,19 +137,29 @@ export class App {
         this.app.use(cors(getCorsOptions()))
 
         // Passport Middleware
-        this.app.use(
-            session({
-                store: redisStore,
-                secret: process.env.SESSION_SECRET ?? 'theanswerai',
-                resave: false,
-                saveUninitialized: false,
-                cookie: {
-                    secure: process.env.NODE_ENV === 'production',
-                    maxAge: 60 * 60 * 1000 // 1 hour to match Google token expiry
-                }
-            })
-        )
+        let redisStore
+        try {
+            redisStore = createRedisStore()
+        } catch (error) {
+            logger.error('❌ [server]: Error during Redis Store initialization:', error)
+        }
 
+        const sessionConfig: any = {
+            secret: process.env.SESSION_SECRET ?? 'theanswerai',
+            resave: false,
+            saveUninitialized: false,
+            cookie: {
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 60 * 60 * 1000 // 1 hour to match Google token expiry
+            }
+        }
+
+        // Only use Redis store if it was successfully created
+        if (redisStore) {
+            sessionConfig.store = redisStore
+        }
+
+        this.app.use(session(sessionConfig))
         this.app.use(passport.initialize())
         this.app.use(passport.session())
 
@@ -292,7 +302,8 @@ export class App {
 
         this.app.use((req: express.Request, res: express.Response) => {
             const path = req.url
-            const encodedDomain = Buffer.from(process.env.DOMAIN || '').toString('base64')
+            const currentDomain = req.get('host') || ''
+            const encodedDomain = Buffer.from(currentDomain).toString('base64')
             const redirectURL = new URL(`${encodedDomain}${path}`, process.env.ANSWERAI_DOMAIN)
             console.log('Redirecting to', redirectURL.toString())
             res.redirect(301, redirectURL.toString())

@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { Box, Card, Container, Grid, Typography, Stack, Tooltip } from '@mui/material'
 import { Info as InfoIcon, Bolt as CreditIcon } from '@mui/icons-material'
 import { BILLING_CONFIG } from '../config/billing'

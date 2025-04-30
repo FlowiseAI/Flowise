@@ -19,7 +19,7 @@ function renderRow(props: ListChildComponentProps) {
         top: (style.top as number) + LISTBOX_PADDING
     }
 
-    if (dataSet.hasOwnProperty('group')) {
+    if (Object.prototype.hasOwnProperty.call(dataSet, 'group')) {
         return (
             <ListSubheader key={dataSet.key} component='div' style={inlineStyle}>
                 {dataSet.group}
@@ -69,7 +69,7 @@ const ListboxComponent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<H
     const itemSize = smUp ? 36 : 48
 
     const getChildSize = (child: React.ReactChild) => {
-        if (child.hasOwnProperty('group')) {
+        if (Object.prototype.hasOwnProperty.call(child, 'group')) {
             return 48
         }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback } from 'react'
 import {
     Box,
     Button,
@@ -21,14 +21,13 @@ import {
 import {
     Bolt as ZapIcon,
     Timer as TimerIcon,
-    AutoAwesome as CreditlesIcon,
     Calculate as CalculatorIcon,
     TrendingUp as ActivityIcon,
     Group as UsersIcon,
     Memory as CpuIcon
 } from '@mui/icons-material'
 import { useRouter } from 'next/navigation'
-import { BILLING_CONFIG, STRIPE_PRICE_IDS } from '@ui/config/billing'
+import { STRIPE_PRICE_IDS } from '@ui/config/billing'
 import UsageStats from '../billing/UsageStats'
 
 interface UsageMetrics {

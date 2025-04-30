@@ -10,7 +10,7 @@ import useAI, { syncAi } from '../../../apps/web-extension/src/useAI'
 var activeTabId: any
 //@ts-ignore
 
-const getCleanedUrl = (url?: string) => (url ? url.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/[\/\\]/g, '') : '')
+const getCleanedUrl = (url?: string) => (url ? url.replace(/^(https?:\/\/)?(www\.)?/, '').replace(/[/\\]/g, '') : '')
 
 chrome.tabs.onActivated.addListener(function (activeInfo) {
     activeTabId = activeInfo.tabId
@@ -145,8 +145,9 @@ const Popup = () => {
             </ToggleButtonGroup>
 
             {answers?.length
-                ? answers.map((answer) => (
+                ? answers.map((answer: any) => (
                       <Typography
+                          key={answer?.id}
                           sx={{
                               whiteSpace: 'pre-line'
                           }}

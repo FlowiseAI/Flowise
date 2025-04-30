@@ -1,19 +1,16 @@
 import PropTypes from 'prop-types'
 import { useSelector, useDispatch } from 'react-redux'
 import { useState } from 'react'
-import { useNavigate } from '@/utils/navigation'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Switch } from '@mui/material'
+import { Box, Switch } from '@mui/material'
 import { styled } from '@mui/material/styles'
 
 // project imports
-import LogoSection from '../LogoSection'
 import ProfileSection from './ProfileSection'
 
 // assets
-import { IconMenu2 } from '@tabler/icons-react'
 
 // store
 import { SET_DARKMODE } from '@/store/actions'

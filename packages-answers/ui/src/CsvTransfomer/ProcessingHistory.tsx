@@ -15,10 +15,7 @@ const ProcessingHistory = ({ user }: { user: User }) => {
     const getData = useCallback(async () => {
         setLoading(true)
         try {
-            const csvParseRuns = await fetchCsvParseRuns({
-                userId: user.id,
-                orgId: user.org_id
-            })
+            const csvParseRuns = await fetchCsvParseRuns()
             setCsvParseRuns(csvParseRuns)
         } catch (error) {
             console.error('Error fetching CSV parse runs:', error)

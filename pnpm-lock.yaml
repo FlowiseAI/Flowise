@@ -849,7 +849,7 @@ importers:
                 version: 3.9.25
             '@getzep/zep-cloud':
                 specifier: ~1.0.7
-                version: 1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy))
+                version: 1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(ldugnz23cj2vfnhpnws7j7q2pe))
             '@getzep/zep-js':
                 specifier: ^0.9.0
                 version: 0.9.0
@@ -869,8 +869,8 @@ importers:
                 specifier: ^2.6.1
                 version: 2.8.1
             '@langchain/anthropic':
-                specifier: 0.3.14
-                version: 0.3.14(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)
+                specifier: 0.3.17
+                version: 0.3.17(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)
             '@langchain/aws':
                 specifier: 0.1.4
                 version: 0.1.4(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
@@ -882,7 +882,7 @@ importers:
                 version: 0.0.7(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             '@langchain/community':
                 specifier: ^0.3.34
-                version: 0.3.35(35kjpl3qqru57bmvlpxz6ozctq)
+                version: 0.3.35(q7lbehryoaa3okclkrnljso2vu)
             '@langchain/core':
                 specifier: 0.3.37
                 version: 0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
@@ -925,6 +925,9 @@ importers:
             '@langchain/xai':
                 specifier: ^0.0.1
                 version: 0.0.1(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))
+            '@last-rev/contentful-mcp-server':
+                specifier: ^1.0.3
+                version: 1.0.3
             '@mendable/firecrawl-js':
                 specifier: ^0.0.28
                 version: 0.0.28
@@ -1005,7 +1008,7 @@ importers:
                 version: 10.15.2
             contentful-management:
                 specifier: ^11.7.3
-                version: 11.48.0
+                version: 11.48.0(debug@4.4.0)
             couchbase:
                 specifier: 4.4.1
                 version: 4.4.1
@@ -1062,13 +1065,13 @@ importers:
                 version: 3.12.0
             langchain:
                 specifier: ^0.2.11
-                version: 0.2.20(dwimkbyi5m6j5oazbfdf5o45iy)
+                version: 0.2.20(ldugnz23cj2vfnhpnws7j7q2pe)
             langfuse:
                 specifier: 3.32.0
                 version: 3.32.0
             langfuse-langchain:
                 specifier: 3.32.0
-                version: 3.32.0(patch_hash=jzyriheobwdholz6eejh65gosy)(langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy))
+                version: 3.32.0(patch_hash=jzyriheobwdholz6eejh65gosy)(langchain@0.2.20(ldugnz23cj2vfnhpnws7j7q2pe))
             langsmith:
                 specifier: 0.1.6
                 version: 0.1.6
@@ -1576,13 +1579,16 @@ importers:
                 version: 0.5.4
             contentful-management:
                 specifier: ^11.7.3
-                version: 11.48.0
+                version: 11.48.0(debug@4.4.0)
             cors:
                 specifier: ^2.8.5
                 version: 2.8.5
             crypto-js:
                 specifier: ^4.1.1
                 version: 4.2.0
+            csv-parse:
+                specifier: ^5.6.0
+                version: 5.6.0
             dotenv:
                 specifier: ^16.0.0
                 version: 16.4.7
@@ -1604,9 +1610,6 @@ importers:
             flowise-components:
                 specifier: workspace:*
                 version: link:../components
-            flowise-ui:
-                specifier: workspace:*
-                version: link:../ui
             global-agent:
                 specifier: ^3.0.0
                 version: 3.0.0
@@ -1968,9 +1971,6 @@ importers:
             swr:
                 specifier: ^2.2.0
                 version: 2.3.3(react@18.2.0)
-            tinycolor2:
-                specifier: ^1.6.0
-                version: 1.6.0
             uuid:
                 specifier: ^9.0.1
                 version: 9.0.1
@@ -3438,6 +3438,10 @@ packages:
 
     '@contentful/content-source-maps@0.11.10':
         resolution: { integrity: sha512-nD1d5r3AL6ACmoWjkHrdrV9VCg7nxQw9T0SC7I4tClMaRQHW075sfO0zybBhHHTthDXL6pH+NvSlNoD2jOdxqg== }
+
+    '@contentful/node-apps-toolkit@3.13.0':
+        resolution: { integrity: sha512-3o8BkpQu5AWwS1vrvHf2WjM9RGEPS6wSXmNoFlm7POn9uTJJnLMDDoU9rON2wj0FXg3wlpxeyv19U+BU6wEVZg== }
+        engines: { node: '>=18' }
 
     '@contentful/rich-text-from-markdown@15.18.10':
         resolution: { integrity: sha512-NDjqURWge4EO4SPmxW45ih5iN9YQcvxGf9EsKDPh/DvI0zlzQJtx/9e7W88+yrN4W3G/qFzCOFFTCoBLUQaeQg== }
@@ -4954,8 +4958,8 @@ packages:
             react: '>=16.14.0'
             react-dom: '>=16.14.0'
 
-    '@langchain/anthropic@0.3.14':
-        resolution: { integrity: sha512-zfix+qo/coIkgjTYpadp71IAWGXriIfImYLwMr1HnFsit4/RN9DU+aEOdm0nTwycbaneUpwWs5yfje8IKWHfsA== }
+    '@langchain/anthropic@0.3.17':
+        resolution: { integrity: sha512-LTZeUPiPe2ANOGN7tF6LaVPXvULMfNH1pPb/bm3ium8ZJEy+EIbP8PHTjtyuJhDDaud69z70pMaWeVsgLIILFw== }
         engines: { node: '>=18' }
         peerDependencies:
             '@langchain/core': 0.3.37
@@ -5460,6 +5464,10 @@ packages:
         engines: { node: '>=18' }
         peerDependencies:
             '@langchain/core': 0.3.37
+
+    '@last-rev/contentful-mcp-server@1.0.3':
+        resolution: { integrity: sha512-bW3YUMW9NJ5wK1DuHQ3o8J7GjA6jNdjrombD77Pfnj6uXL4DF5YPfcBlNTnq9A7QksCSdP7nCo97pja3DO9fhg== }
+        hasBin: true
 
     '@leichtgewicht/ip-codec@2.0.5':
         resolution: { integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw== }
@@ -19894,6 +19902,9 @@ packages:
         resolution: { integrity: sha512-ql6P2LzhBTTDfzKts+Qo4H94VUKpxKDFz6QxxwaUZN0mwvi7L3lpOI7BqPCq7lgDh3XLl0dpeXwfcVIitlrYrw== }
         hasBin: true
 
+    runtypes@5.1.0:
+        resolution: { integrity: sha512-OMHkz6dxysXj4E8Fj/HCGjtdJUhapQUN7puvqzuzvjaX28pd52PZmEMqQlkIzCfKdhXdM0ghx8PpvELprEnOLQ== }
+
     rusha@0.8.14:
         resolution: { integrity: sha512-cLgakCUf6PedEu15t8kbsjnwIFFR2D4RfL+W3iWFJ4iac7z4B0ZI8fxy4R3J956kAI68HclCFGL8MPoUVC3qVA== }
 
@@ -25681,7 +25692,7 @@ snapshots:
 
     '@contentful/app-sdk@4.29.5':
         dependencies:
-            contentful-management: 11.48.0
+            contentful-management: 11.48.0(debug@4.4.0)
         transitivePeerDependencies:
             - debug
 
@@ -25689,6 +25700,18 @@ snapshots:
         dependencies:
             '@vercel/stega': 0.1.2
             json-pointer: 0.6.2
+
+    '@contentful/node-apps-toolkit@3.13.0':
+        dependencies:
+            '@types/debug': 4.1.12
+            contentful-management: 11.48.0(debug@4.4.0)
+            debug: 4.4.0(supports-color@5.5.0)
+            got: 11.8.6
+            jsonwebtoken: 9.0.2
+            lru-cache: 10.4.3
+            runtypes: 5.1.0
+        transitivePeerDependencies:
+            - supports-color
 
     '@contentful/rich-text-from-markdown@15.18.10':
         dependencies:
@@ -27356,7 +27379,7 @@ snapshots:
 
     '@gar/promisify@1.1.3': {}
 
-    '@getzep/zep-cloud@1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy))':
+    '@getzep/zep-cloud@1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(ldugnz23cj2vfnhpnws7j7q2pe))':
         dependencies:
             form-data: 4.0.0
             node-fetch: 2.7.0(encoding@0.1.13)
@@ -27365,7 +27388,7 @@ snapshots:
             zod: 3.24.2
         optionalDependencies:
             '@langchain/core': 0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
-            langchain: 0.2.20(dwimkbyi5m6j5oazbfdf5o45iy)
+            langchain: 0.2.20(ldugnz23cj2vfnhpnws7j7q2pe)
         transitivePeerDependencies:
             - encoding
 
@@ -28055,7 +28078,7 @@ snapshots:
             - terser
             - typescript
 
-    '@langchain/anthropic@0.3.14(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)':
+    '@langchain/anthropic@0.3.17(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)':
         dependencies:
             '@anthropic-ai/sdk': 0.37.0(encoding@0.1.13)
             '@langchain/core': 0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
@@ -28099,7 +28122,7 @@ snapshots:
             - encoding
             - openai
 
-    '@langchain/community@0.3.35(35kjpl3qqru57bmvlpxz6ozctq)':
+    '@langchain/community@0.3.35(q7lbehryoaa3okclkrnljso2vu)':
         dependencies:
             '@browserbasehq/stagehand': 1.12.0(@playwright/test@1.51.0)(bufferutil@4.0.9)(deepmerge@4.3.1)(dotenv@16.4.7)(encoding@0.1.13)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))(utf-8-validate@6.0.5)(zod@3.22.4)
             '@ibm-cloud/watsonx-ai': 1.6.0(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))
@@ -28110,7 +28133,7 @@ snapshots:
             flat: 5.0.2
             ibm-cloud-sdk-core: 5.3.2
             js-yaml: 4.1.0
-            langchain: 0.2.20(dwimkbyi5m6j5oazbfdf5o45iy)
+            langchain: 0.2.20(ldugnz23cj2vfnhpnws7j7q2pe)
             langsmith: 0.3.14(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
             uuid: 10.0.0
@@ -28127,7 +28150,7 @@ snapshots:
             '@browserbasehq/sdk': 2.3.0(encoding@0.1.13)
             '@datastax/astra-db-ts': 1.5.0
             '@elastic/elasticsearch': 8.17.1
-            '@getzep/zep-cloud': 1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy))
+            '@getzep/zep-cloud': 1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(ldugnz23cj2vfnhpnws7j7q2pe))
             '@getzep/zep-js': 0.9.0
             '@gomomento/sdk': 1.108.0(encoding@0.1.13)
             '@gomomento/sdk-core': 1.108.0
@@ -28385,6 +28408,18 @@ snapshots:
         transitivePeerDependencies:
             - encoding
             - ws
+
+    '@last-rev/contentful-mcp-server@1.0.3':
+        dependencies:
+            '@contentful/node-apps-toolkit': 3.13.0
+            '@modelcontextprotocol/sdk': 1.0.1
+            contentful-management: 10.46.4
+            dotenv: 16.4.7
+            zod: 3.22.4
+            zod-to-json-schema: 3.24.3(zod@3.22.4)
+        transitivePeerDependencies:
+            - debug
+            - supports-color
 
     '@leichtgewicht/ip-codec@2.0.5': {}
 
@@ -35198,7 +35233,7 @@ snapshots:
         transitivePeerDependencies:
             - debug
 
-    contentful-management@11.48.0:
+    contentful-management@11.48.0(debug@4.4.0):
         dependencies:
             '@contentful/rich-text-types': 16.8.5
             axios: 1.7.9(debug@4.4.0)
@@ -41681,7 +41716,7 @@ snapshots:
             - encoding
             - ws
 
-    langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy):
+    langchain@0.2.20(ldugnz23cj2vfnhpnws7j7q2pe):
         dependencies:
             '@langchain/core': 0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             '@langchain/openai': 0.2.11(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))
@@ -41703,7 +41738,7 @@ snapshots:
             '@browserbasehq/sdk': 2.3.0(encoding@0.1.13)
             '@gomomento/sdk': 1.108.0(encoding@0.1.13)
             '@gomomento/sdk-core': 1.108.0
-            '@langchain/anthropic': 0.3.14(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)
+            '@langchain/anthropic': 0.3.17(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)
             '@langchain/aws': 0.1.4(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
             '@langchain/cohere': 0.0.7(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             '@langchain/google-genai': 0.1.9(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(zod@3.22.4)
@@ -41753,9 +41788,9 @@ snapshots:
         dependencies:
             mustache: 4.2.0
 
-    langfuse-langchain@3.32.0(patch_hash=jzyriheobwdholz6eejh65gosy)(langchain@0.2.20(dwimkbyi5m6j5oazbfdf5o45iy)):
+    langfuse-langchain@3.32.0(patch_hash=jzyriheobwdholz6eejh65gosy)(langchain@0.2.20(ldugnz23cj2vfnhpnws7j7q2pe)):
         dependencies:
-            langchain: 0.2.20(dwimkbyi5m6j5oazbfdf5o45iy)
+            langchain: 0.2.20(ldugnz23cj2vfnhpnws7j7q2pe)
             langfuse: 3.32.0
             langfuse-core: 3.32.0
 
@@ -47823,6 +47858,8 @@ snapshots:
             queue-microtask: 1.2.3
 
     run-script-os@1.1.6: {}
+
+    runtypes@5.1.0: {}
 
     rusha@0.8.14: {}
 

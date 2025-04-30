@@ -94,9 +94,8 @@
             "outputMode": "new-only"
         },
         "db:generate": {
-            "cache": false,
             "dependsOn": ["db:deploy"],
-            "outputs": ["dist/**"]
+            "outputs": ["dist/**", "generated/**"]
         },
         "db:migrate": {
             "cache": false,
@@ -109,8 +108,8 @@
             "outputs": ["dist/**"]
         },
         "db#build": {
+            "cache": false,
             "outputs": ["dist/**", "generated/**"],
-
             "outputMode": "new-only"
         },
         "db#dev": {

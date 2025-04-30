@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux'
 // material-ui
 import { Button, Dialog, DialogContent, DialogTitle, DialogActions, Box, OutlinedInput } from '@mui/material'
 import { useState } from 'react'
-
+import PropTypes from 'prop-types'
 // Project import
 import { StyledButton } from '@/ui-component/button/StyledButton'
 
@@ -73,4 +73,9 @@ const ChatFeedbackContentDialog = ({ show, onCancel, onConfirm }) => {
     return portalElement ? createPortal(component, portalElement) : null
 }
 
+ChatFeedbackContentDialog.propTypes = {
+    show: PropTypes.bool.isRequired,
+    onCancel: PropTypes.func.isRequired,
+    onConfirm: PropTypes.func.isRequired
+}
 export default ChatFeedbackContentDialog

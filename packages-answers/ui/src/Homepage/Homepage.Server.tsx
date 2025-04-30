@@ -1,4 +1,3 @@
-import React from 'react'
 import getCachedSession from '@ui/getCachedSession'
 
 import { prisma } from '@db/client'

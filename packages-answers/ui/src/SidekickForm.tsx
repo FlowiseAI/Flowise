@@ -383,8 +383,8 @@ const SidekickForm = ({
                                                     You can create Organization and User speicific context by first creating them in the{' '}
                                                     <a href='/settings'>Settings</a>
                                                     <h5>Organization Context</h5>
-                                                    Organiztion context can be used for things like your organization's name, brand voice,
-                                                    core values, and other things that are specific for your entire organization.
+                                                    Organiztion context can be used for things like your organization&apos;s name, brand
+                                                    voice, core values, and other things that are specific for your entire organization.
                                                     <code>{`{{organization.brandVoice}}`}</code>
                                                     <h5>User Context</h5>
                                                     User context can be used for things like the users name, title, learning style, response
@@ -432,13 +432,13 @@ const SidekickForm = ({
                                                     This is the prompt that will wrap the `userInput` and `context` when the user interacts
                                                     with the Sidekick.
                                                     <h5>userInput</h5>
-                                                    The `userInput` is the variable that will be replaced with the user's input into the
-                                                    chat window.
+                                                    The `userInput` is the variable that will be replaced with the user&apos;s input into
+                                                    the chat window.
                                                     <code>{`{{userInput}}`}</code>
                                                     <h5>context</h5>
                                                     The `context` variable is used when the Sidekick interacts with a data source. For
                                                     example, if the Sidekick is interacting with a PDF, the `context` variable will be
-                                                    replaced with the text from the PDF that is relevant to the user's input.
+                                                    replaced with the text from the PDF that is relevant to the user&apos;s input.
                                                     <code>{`{{context}}`}</code>
                                                     <h5>User & Org Context</h5>
                                                     you can also use the `user` and `organization` context variables to personalize the user
@@ -699,6 +699,7 @@ const SidekickForm = ({
                                                         <a
                                                             href='https://platform.openai.com/docs/api-reference/completions/create'
                                                             target='_blank'
+                                                            rel='noreferrer'
                                                         >
                                                             Open AI website
                                                         </a>
@@ -706,7 +707,11 @@ const SidekickForm = ({
                                                     <h4>Handlebars Templates</h4>
                                                     All of the prompts and responses are written in Handlebars. You can learn more about
                                                     Handlebars{' '}
-                                                    <a href='https://handlebarsjs.com/guide/builtin-helpers.html' target='_blank'>
+                                                    <a
+                                                        href='https://handlebarsjs.com/guide/builtin-helpers.html'
+                                                        target='_blank'
+                                                        rel='noreferrer'
+                                                    >
                                                         here
                                                     </a>
                                                     .<p>Here is an example of how to use a Handlebars conditional:</p>

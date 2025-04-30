@@ -32,6 +32,22 @@ export enum ChatMessageRatingType {
     THUMBS_UP = 'THUMBS_UP',
     THUMBS_DOWN = 'THUMBS_DOWN'
 }
+
+export enum AppCsvParseRunsStatus {
+    PENDING = 'PENDING',
+    IN_PROGRESS = 'IN_PROGRESS',
+    COMPLETE_WITH_ERRORS = 'COMPLETE_WITH_ERRORS',
+    COMPLETE = 'COMPLETE',
+    GENERATING_CSV = 'GENERATING_CSV',
+    READY = 'READY'
+}
+
+export enum AppCsvParseRowStatus {
+    PENDING = 'PENDING',
+    IN_PROGRESS = 'IN_PROGRESS',
+    COMPLETE_WITH_ERRORS = 'COMPLETE_WITH_ERRORS',
+    COMPLETE = 'COMPLETE'
+}
 /**
  * Databases
  */
@@ -456,6 +472,36 @@ export interface IStripeEvent {
     eventData: any
     processed: boolean
     createdDate: Date
+}
+
+export interface IAppCsvParseRuns {
+    id: string
+    userId: string
+    organizationId: string
+    startedAt: Date
+    completedAt?: Date
+    rowsRequested: number
+    rowsProcessed?: number
+    name: string
+    configuration: ICommonObject
+    originalCsvUrl: string
+    processedCsvUrl?: string
+    chatflowChatId: string
+    includeOriginalColumns: boolean
+    status: AppCsvParseRunsStatus
+    errorMessages: string[]
+}
+
+export interface IAppCsvParseRows {
+    id: string
+    csvParseRunId: string
+    rowNumber: number
+    rowData: ICommonObject
+    generatedData?: ICommonObject
+    status: AppCsvParseRowStatus
+    errorMessage?: string
+    createdAt: Date
+    updatedAt: Date
 }
 
 // DocumentStore related

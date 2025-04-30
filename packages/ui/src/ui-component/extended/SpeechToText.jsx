@@ -25,7 +25,6 @@ import useNotifier from '@/utils/useNotifier'
 
 // API
 import chatflowsApi from '@/api/chatflows'
-import Image from 'next/image'
 
 // If implementing a new provider, this must be updated in
 // components/src/speechToText.ts as well
@@ -253,6 +252,12 @@ const SpeechToText = ({ dialogProps }) => {
     const onSave = async () => {
         const speechToText = setValue(true, selectedProvider, 'status')
         try {
+            if (!dialogProps.chatflow.id && dialogProps.handleSaveFlow) {
+                return dialogProps.handleSaveFlow(dialogProps.chatflow.name, {
+                    speechToText: JSON.stringify(speechToText)
+                })
+            }
+
             const saveResp = await chatflowsApi.updateChatflow(dialogProps.chatflow.id, {
                 speechToText: JSON.stringify(speechToText)
             })
