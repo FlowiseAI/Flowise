@@ -115,6 +115,45 @@ class AAI_VectorStores implements INode {
         ]
     }
 
+    /**
+     * Generate a secure namespace with proper prefixing
+     * to ensure isolation between different chatflows and organizations
+     */
+    private generateSecureNamespace(options: ICommonObject, namespace?: string): string {
+        const chatflowPrefix = `${options.chatflowid}_`
+        const orgPrefix = options.user?.organizationId ? `${options.user.organizationId}_` : ''
+        const baseNamespace = namespace || 'default'
+        return `${orgPrefix}${chatflowPrefix}${baseNamespace}`
+    }
+
+    /**
+     * Create security filters to ensure documents can only be
+     * accessed by the same chatflow and organization
+     */
+    private createSecurityFilters(options: ICommonObject): any {
+        const filters: any = {
+            _chatflowId: { $eq: options.chatflowid }
+        }
+
+        if (options.user?.organizationId) {
+            filters._organizationId = { $eq: options.user.organizationId }
+        }
+
+        return filters
+    }
+
+    /**
+     * Add security metadata to documents to ensure isolation
+     */
+    private addSecurityMetadata(doc: Document, options: ICommonObject): Document {
+        doc.metadata = {
+            ...doc.metadata,
+            _chatflowId: options.chatflowid,
+            ...(options.user?.organizationId ? { _organizationId: options.user.organizationId } : {})
+        }
+        return doc
+    }
+
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
@@ -125,16 +164,23 @@ class AAI_VectorStores implements INode {
             const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
             const namespace = nodeData.inputs?.namespace as string
 
+            // Get reference to the parent class for helper methods
+            const self = this as unknown as AAI_VectorStores
+
             // Get index and API key from environment variables
             const pineconeApiKey = process.env.AAI_DEFAULT_PINECONE
-            const _index = process.env.AAI_PINECONE_INDEX
+            const _index = process.env.AAI_DEFAULT_PINECONE_INDEX
 
             if (!pineconeApiKey) {
                 throw new Error('AAI_DEFAULT_PINECONE environment variable is not set')
             }
 
             if (!_index) {
-                throw new Error('AAI_PINECONE_INDEX environment variable is not set')
+                throw new Error('AAI_DEFAULT_PINECONE_INDEX environment variable is not set')
+            }
+
+            if (!options.chatflowid) {
+                throw new Error('Chatflow ID is required for AAI Vector Store')
             }
 
             const client = new Pinecone({ apiKey: pineconeApiKey })
@@ -147,7 +193,8 @@ class AAI_VectorStores implements INode {
                     if (isFileUploadEnabled && options.chatId) {
                         flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
                     }
-                    finalDocs.push(new Document(flattenDocs[i]))
+                    // Add security metadata to each document
+                    finalDocs.push(self.addSecurityMetadata(new Document(flattenDocs[i]), options))
                 }
             }
 
@@ -156,7 +203,8 @@ class AAI_VectorStores implements INode {
                 textKey: pineconeTextKey || 'text'
             }
 
-            if (namespace) obj.namespace = namespace
+            // Generate secure namespace
+            obj.namespace = self.generateSecureNamespace(options, namespace)
 
             try {
                 if (recordManager) {
@@ -169,7 +217,7 @@ class AAI_VectorStores implements INode {
                         options: {
                             cleanup: recordManager?.cleanup,
                             sourceIdKey: recordManager?.sourceIdKey ?? 'source',
-                            vectorStoreName: namespace
+                            vectorStoreName: obj.namespace || namespace
                         }
                     })
                     return res
@@ -186,16 +234,24 @@ class AAI_VectorStores implements INode {
             const recordManager = nodeData.inputs?.recordManager
             const namespace = nodeData.inputs?.namespace as string
 
+            // Get reference to the parent class for helper methods
+            const self = this as unknown as AAI_VectorStores
+
             // Get index and API key from environment variables
             const pineconeApiKey = process.env.AAI_DEFAULT_PINECONE
-            const _index = process.env.AAI_PINECONE_INDEX
+            const _index = process.env.AAI_DEFAULT_PINECONE_INDEX
 
             if (!pineconeApiKey) {
                 throw new Error('AAI_DEFAULT_PINECONE environment variable is not set')
             }
 
             if (!_index) {
-                throw new Error('AAI_PINECONE_INDEX environment variable is not set')
+                throw new Error('AAI_DEFAULT_PINECONE_INDEX environment variable is not set')
+            }
+
+            // Require chatflow ID for proper isolation
+            if (!options.chatflowid) {
+                throw new Error('Chatflow ID is required for AAI Vector Store')
             }
 
             const client = new Pinecone({ apiKey: pineconeApiKey })
@@ -206,12 +262,17 @@ class AAI_VectorStores implements INode {
                 textKey: pineconeTextKey || 'text'
             }
 
-            if (namespace) obj.namespace = namespace
+            // Generate secure namespace
+            obj.namespace = self.generateSecureNamespace(options, namespace)
+
+            // Add security filters
+            obj.filter = self.createSecurityFilters(options)
+
             const pineconeStore = new PineconeStore(embeddings, obj)
 
             try {
                 if (recordManager) {
-                    const vectorStoreName = namespace
+                    const vectorStoreName = obj.namespace || namespace
                     await recordManager.createSchema()
                     recordManager.namespace = `${recordManager.namespace}_${vectorStoreName}`
                     const keys: string[] = await recordManager.listKeys({})
@@ -240,14 +301,19 @@ class AAI_VectorStores implements INode {
 
         // Get index and API key from environment variables
         const pineconeApiKey = process.env.AAI_DEFAULT_PINECONE
-        const index = process.env.AAI_PINECONE_INDEX
+        const index = process.env.AAI_DEFAULT_PINECONE_INDEX
 
         if (!pineconeApiKey) {
             throw new Error('AAI_DEFAULT_PINECONE environment variable is not set')
         }
 
         if (!index) {
-            throw new Error('AAI_PINECONE_INDEX environment variable is not set')
+            throw new Error('AAI_DEFAULT_PINECONE_INDEX environment variable is not set')
+        }
+
+        // Require chatflow ID for proper isolation
+        if (!options.chatflowid) {
+            throw new Error('Chatflow ID is required for AAI Vector Store')
         }
 
         const client = new Pinecone({ apiKey: pineconeApiKey })
@@ -258,12 +324,23 @@ class AAI_VectorStores implements INode {
             textKey: pineconeTextKey || 'text'
         }
 
-        if (namespace) obj.namespace = namespace
-        let metadatafilter = {}
+        // Generate secure namespace
+        obj.namespace = this.generateSecureNamespace(options, namespace)
+
+        // Create base security filters
+        let metadatafilter = this.createSecurityFilters(options)
+
+        // Apply user-provided filters without compromising security
+        // We use $and to combine user filters with security filters
         if (pineconeMetadataFilter) {
-            metadatafilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
-            obj.filter = metadatafilter
+            const userFilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
+            metadatafilter = {
+                $and: [metadatafilter, userFilter]
+            }
         }
+
+        obj.filter = metadatafilter
+
         if (isFileUploadEnabled && options.chatId) {
             obj.filter = obj.filter || {}
             obj.filter.$or = [
