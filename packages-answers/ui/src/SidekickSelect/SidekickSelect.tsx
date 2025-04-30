@@ -1,7 +1,10 @@
 'use client'
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { Button, Box, Typography, DialogContent, DialogTitle, Fade, Grid, Snackbar } from '@mui/material'
-import { ExpandMore as ExpandMoreIcon, ChevronRight as ChevronRightIcon } from '@mui/icons-material'
+import { Button, Box, Typography, DialogContent, DialogTitle, Fade, Snackbar } from '@mui/material'
+import {
+    ExpandMore as ExpandMoreIcon,
+    ChevronRight as ChevronRightIcon
+} from '@mui/icons-material'
 import useSWR from 'swr'
 import { useUser } from '@auth0/nextjs-auth0/client'
 // Using any type for now since we don't have the declaration file
@@ -29,8 +32,7 @@ import SidekickCard from './SidekickCard'
 import { Sidekick } from './SidekickSelect.types'
 import useSidekickFavorites from './hooks/useSidekickFavorites'
 import SidekickSearchPanel from './SidekickSearchPanel'
-
-import { CategoryFilter, CategorySectionn } from './SidekickCategorySection'
+import SidekickCategoryList from './SidekickCategoryList'
 
 const MarketplaceLandingDialog = dynamic(() => import('@/views/chatflows/MarketplaceLandingDialog'), { ssr: false })
 
@@ -546,207 +548,29 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                         renderFocusedCategory(focusedCategory)
                     ) : (
                         // Regular category sections
-                        <>
-                            {/* Always show basic categories with skeletons while loading */}
-                            {isLoading ? (
-                                <>
-                                    <CategorySectionn
-                                        user={user}
-                                        category='favorites'
-                                        title='Favorites'
-                                        sidekicks={getSidekicksByCategory('favorites')}
-                                        isLoading={isLoading}
-                                        allCategories={allCategories}
-                                        expandedCategory={expandedCategory}
-                                        viewMode={viewMode}
-                                        toggleViewMode={toggleViewMode}
-                                        renderSkeletonCards={renderSkeletonCards}
-                                        handleSidekickSelect={handleSidekickSelect}
-                                        activeFilterCategory={activeFilterCategory}
-                                        favorites={favorites}
-                                        toggleFavorite={toggleFavorite}
-                                        navigate={navigate}
-                                        setExpandedCategory={setExpandedCategory}
-                                        setSelectedTemplateId={setSelectedTemplateId}
-                                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
-                                        setViewMode={setViewMode}
-                                        setActiveFilterCategory={setActiveFilterCategory}
-                                        sidekicksByCategoryCache={sidekicksByCategoryCache}
-                                    />
-                                    <CategorySectionn
-                                        user={user}
-                                        category='recent'
-                                        title='Recent'
-                                        sidekicks={getSidekicksByCategory('recent')}
-                                        isLoading={isLoading}
-                                        allCategories={allCategories}
-                                        expandedCategory={expandedCategory}
-                                        viewMode={viewMode}
-                                        toggleViewMode={toggleViewMode}
-                                        renderSkeletonCards={renderSkeletonCards}
-                                        handleSidekickSelect={handleSidekickSelect}
-                                        activeFilterCategory={activeFilterCategory}
-                                        favorites={favorites}
-                                        toggleFavorite={toggleFavorite}
-                                        navigate={navigate}
-                                        setExpandedCategory={setExpandedCategory}
-                                        setSelectedTemplateId={setSelectedTemplateId}
-                                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
-                                        setViewMode={setViewMode}
-                                        setActiveFilterCategory={setActiveFilterCategory}
-                                        sidekicksByCategoryCache={sidekicksByCategoryCache}
-                                    />
-                                    <CategorySectionn
-                                        user={user}
-                                        category='Official'
-                                        title='Official'
-                                        sidekicks={getSidekicksByCategory('Official')}
-                                        isLoading={isLoading}
-                                        allCategories={allCategories}
-                                        expandedCategory={expandedCategory}
-                                        viewMode={viewMode}
-                                        toggleViewMode={toggleViewMode}
-                                        renderSkeletonCards={renderSkeletonCards}
-                                        handleSidekickSelect={handleSidekickSelect}
-                                        activeFilterCategory={activeFilterCategory}
-                                        favorites={favorites}
-                                        toggleFavorite={toggleFavorite}
-                                        navigate={navigate}
-                                        setExpandedCategory={setExpandedCategory}
-                                        setSelectedTemplateId={setSelectedTemplateId}
-                                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
-                                        setViewMode={setViewMode}
-                                        setActiveFilterCategory={setActiveFilterCategory}
-                                        sidekicksByCategoryCache={sidekicksByCategoryCache}
-                                    />
-                                </>
-                            ) : combinedSidekicks.length === 0 ? (
-                                // When no sidekicks exist but loading is complete, show empty state message
-                                <Box
-                                    sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        py: 8
-                                    }}
-                                >
-                                    <Typography variant='h6' color='textSecondary' gutterBottom>
-                                        No sidekicks available
-                                    </Typography>
-                                    <Typography variant='body1' color='textSecondary' align='center' sx={{ maxWidth: '500px', mb: 4 }}>
-                                        No sidekicks were found. Create a new sidekick or check back later.
-                                    </Typography>
-                                    <Button variant='contained' color='primary' onClick={handleCreateNewSidekick}>
-                                        Create New Sidekick
-                                    </Button>
-                                </Box>
-                            ) : (
-                                // Otherwise render all categories that have items
-                                <>
-                                    <CategorySectionn
-                                        user={user}
-                                        category='favorites'
-                                        title='Favorites'
-                                        sidekicks={getSidekicksByCategory('favorites')}
-                                        isLoading={isLoading}
-                                        allCategories={allCategories}
-                                        expandedCategory={expandedCategory}
-                                        viewMode={viewMode}
-                                        toggleViewMode={toggleViewMode}
-                                        renderSkeletonCards={renderSkeletonCards}
-                                        handleSidekickSelect={handleSidekickSelect}
-                                        activeFilterCategory={activeFilterCategory}
-                                        favorites={favorites}
-                                        toggleFavorite={toggleFavorite}
-                                        navigate={navigate}
-                                        setExpandedCategory={setExpandedCategory}
-                                        setSelectedTemplateId={setSelectedTemplateId}
-                                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
-                                        setViewMode={setViewMode}
-                                        setActiveFilterCategory={setActiveFilterCategory}
-                                        sidekicksByCategoryCache={sidekicksByCategoryCache}
-                                    />
-                                    <CategorySectionn
-                                        user={user}
-                                        category='recent'
-                                        title='Recent'
-                                        sidekicks={getSidekicksByCategory('recent')}
-                                        isLoading={isLoading}
-                                        allCategories={allCategories}
-                                        expandedCategory={expandedCategory}
-                                        viewMode={viewMode}
-                                        toggleViewMode={toggleViewMode}
-                                        renderSkeletonCards={renderSkeletonCards}
-                                        handleSidekickSelect={handleSidekickSelect}
-                                        activeFilterCategory={activeFilterCategory}
-                                        favorites={favorites}
-                                        toggleFavorite={toggleFavorite}
-                                        navigate={navigate}
-                                        setExpandedCategory={setExpandedCategory}
-                                        setSelectedTemplateId={setSelectedTemplateId}
-                                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
-                                        setViewMode={setViewMode}
-                                        setActiveFilterCategory={setActiveFilterCategory}
-                                        sidekicksByCategoryCache={sidekicksByCategoryCache}
-                                    />
-                                    <CategorySectionn
-                                        user={user}
-                                        category='Official'
-                                        title='Official'
-                                        sidekicks={getSidekicksByCategory('Official')}
-                                        isLoading={isLoading}
-                                        allCategories={allCategories}
-                                        expandedCategory={expandedCategory}
-                                        viewMode={viewMode}
-                                        toggleViewMode={toggleViewMode}
-                                        renderSkeletonCards={renderSkeletonCards}
-                                        handleSidekickSelect={handleSidekickSelect}
-                                        activeFilterCategory={activeFilterCategory}
-                                        favorites={favorites}
-                                        toggleFavorite={toggleFavorite}
-                                        navigate={navigate}
-                                        setExpandedCategory={setExpandedCategory}
-                                        setSelectedTemplateId={setSelectedTemplateId}
-                                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
-                                        setViewMode={setViewMode}
-                                        setActiveFilterCategory={setActiveFilterCategory}
-                                        sidekicksByCategoryCache={sidekicksByCategoryCache}
-                                    />
-
-                                    {/* Map through category-specific sections but only render visible ones for performance */}
-                                    {allCategories.top
-                                        .concat(allCategories.more.slice(0, expandedCategory ? allCategories.more.length : 4)) // Limit categories when not expanded
-                                        .filter((category) => !['favorites', 'recent', 'Official'].includes(category)) // Skip already rendered categories
-                                        .map((category) => (
-                                            <CategorySectionn
-                                                key={category}
-                                                user={user}
-                                                category={category}
-                                                title={category.split(';').join(' | ')}
-                                                sidekicks={getSidekicksByCategory(category)}
-                                                isLoading={isLoading}
-                                                allCategories={allCategories}
-                                                expandedCategory={expandedCategory}
-                                                viewMode={viewMode}
-                                                toggleViewMode={toggleViewMode}
-                                                renderSkeletonCards={renderSkeletonCards}
-                                                handleSidekickSelect={handleSidekickSelect}
-                                                activeFilterCategory={activeFilterCategory}
-                                                favorites={favorites}
-                                                toggleFavorite={toggleFavorite}
-                                                navigate={navigate}
-                                                setExpandedCategory={setExpandedCategory}
-                                                setSelectedTemplateId={setSelectedTemplateId}
-                                                setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
-                                                setViewMode={setViewMode}
-                                                setActiveFilterCategory={setActiveFilterCategory}
-                                                sidekicksByCategoryCache={sidekicksByCategoryCache}
-                                            />
-                                        ))}
-                                </>
-                            )}
-                        </>
+                        <SidekickCategoryList 
+                            isLoading={isLoading}
+                            combinedSidekicks={combinedSidekicks}
+                            allCategories={allCategories}
+                            getSidekicksByCategory={getSidekicksByCategory}
+                            expandedCategory={expandedCategory}
+                            viewMode={viewMode}
+                            toggleViewMode={toggleViewMode}
+                            renderSkeletonCards={renderSkeletonCards}
+                            handleSidekickSelect={handleSidekickSelect}
+                            activeFilterCategory={activeFilterCategory}
+                            favorites={favorites}
+                            toggleFavorite={toggleFavorite}
+                            navigate={navigate}
+                            setExpandedCategory={setExpandedCategory}
+                            setSelectedTemplateId={setSelectedTemplateId}
+                            setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
+                            setViewMode={setViewMode}
+                            setActiveFilterCategory={setActiveFilterCategory}
+                            sidekicksByCategoryCache={sidekicksByCategoryCache}
+                            user={user}
+                            handleCreateNewSidekick={handleCreateNewSidekick}
+                        />
                     )}
 
                     <MarketplaceDialogComponent
@@ -786,14 +610,21 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             renderSkeletonCards,
             handleCreateNewSidekick,
             handleSidekickSelect,
+            getSidekicksByCategory,
 
             // Utils
             perfLog,
             expandedCategory,
-
+            
             // State
             activeFilterCategory,
-            viewMode
+            viewMode,
+            
+            // Props
+            user,
+            favorites,
+            toggleFavorite,
+            navigate
         ]
     )
 
