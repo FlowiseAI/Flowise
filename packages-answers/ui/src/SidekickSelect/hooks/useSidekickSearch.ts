@@ -28,7 +28,7 @@ export interface UseSidekickSearchResult {
 
 export const useSidekickSearch = ({
     sidekicks,
-    debounceMs = 600,
+    debounceMs = 300,
     enableLogs = false,
     initialTab = 'all'
 }: UseSidekickSearchProps): UseSidekickSearchResult => {
@@ -74,20 +74,24 @@ export const useSidekickSearch = ({
         }
     }, [sidekicks, enableLogs, fuse])
 
-    // Debounced search function
+    // Create a stable reference to the debounced function
     const debouncedSetSearchTerm = useMemo(
         () =>
-            debounce((value: string) => {
-                if (enableLogs) {
-                    console.log(`[useSidekickSearch] Search term debounced: "${value}"`)
-                }
+            debounce(
+                (value: string) => {
+                    if (enableLogs) {
+                        console.log(`[useSidekickSearch] Search term debounced: "${value}"`)
+                    }
 
-                setSearchTerm(value)
-                if (value) {
-                    setPreviousActiveTab(activeTab)
-                    setActiveTab('search')
-                }
-            }, debounceMs),
+                    setSearchTerm(value)
+                    if (value) {
+                        setPreviousActiveTab(activeTab)
+                        setActiveTab('search')
+                    }
+                },
+                debounceMs,
+                { trailing: true, leading: false }
+            ),
         [activeTab, debounceMs, enableLogs]
     )
 
