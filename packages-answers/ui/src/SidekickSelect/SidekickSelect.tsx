@@ -1,12 +1,7 @@
 'use client'
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
-import { Button, TextField, Box, Typography, DialogContent, DialogTitle, Fade, Grid, Snackbar } from '@mui/material'
-import {
-    ExpandMore as ExpandMoreIcon,
-    Search as SearchIcon,
-    Cancel as CancelIcon,
-    ChevronRight as ChevronRightIcon
-} from '@mui/icons-material'
+import { Button, Box, Typography, DialogContent, DialogTitle, Fade, Grid, Snackbar } from '@mui/material'
+import { ExpandMore as ExpandMoreIcon, ChevronRight as ChevronRightIcon } from '@mui/icons-material'
 import useSWR from 'swr'
 import { useUser } from '@auth0/nextjs-auth0/client'
 // Using any type for now since we don't have the declaration file
@@ -33,7 +28,7 @@ import {
 import SidekickCard from './SidekickCard'
 import { Sidekick } from './SidekickSelect.types'
 import useSidekickFavorites from './hooks/useSidekickFavorites'
-import useSidekickSearch from './hooks/useSidekickSearch'
+import SidekickSearchPanel from './SidekickSearchPanel'
 
 import { CategoryFilter, CategorySectionn } from './SidekickCategorySection'
 
@@ -224,30 +219,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
         return result
     }, [allSidekicks, marketplaceSidekicks, perfLog])
-
-    // Use search hook
-    const { searchInputValue, searchTerm, searchbarRef, fuse, searchResults, handleSearchChange, clearSearchField } = useSidekickSearch({
-        sidekicks: combinedSidekicks || [],
-        enableLogs: enablePerformanceLogs,
-        initialTab: 'all'
-    })
-
-    // Improved memoized search results with proper typing
-    const filteredSearchResults = useMemo(() => {
-        const currentFilter = activeFilterCategory['search']
-
-        if (!currentFilter || currentFilter === 'all') {
-            return searchResults
-        }
-
-        return searchResults.filter((sidekick) => {
-            return (
-                sidekick.chatflow.category === currentFilter ||
-                sidekick.chatflow.categories?.includes(currentFilter) ||
-                sidekick.categories?.includes(currentFilter)
-            )
-        })
-    }, [searchResults, activeFilterCategory])
 
     // Optimized selector function with memoization and caching
     const getSidekicksByCategory = useCallback(
@@ -550,98 +521,27 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
             perfLog(`Rendering main content, render #${renderCountRef.current}`)
 
-            const searchStartTime = searchTerm && fuse ? performance.now() : 0
-
-            // Separate memo for search results to avoid full re-render when only search changes
-            const searchResults =
-                searchTerm && fuse ? (
-                    <CategorySectionContainer>
-                        <CategoryTitle variant='h6'>Search Results</CategoryTitle>
-
-                        {/* Add category filter pills for search results */}
-                        <CategoryFilter
-                            parentCategory='search'
-                            availableCategories={['all'].concat(allCategories.top).concat(allCategories.more)}
-                            activeFilterCategory={activeFilterCategory}
-                            setActiveFilterCategory={setActiveFilterCategory}
-                            sidekicksByCategoryCache={sidekicksByCategoryCache}
-                        />
-
-                        {isLoading ? (
-                            <StyledGrid container spacing={2} className='grid-container'>
-                                {Array.from({ length: 6 }).map((_, index) => (
-                                    <StyledGridItem item xs={12} sm={6} md={4} key={`search-skeleton-${index}`}>
-                                        <Box sx={{ position: 'relative' }}>{renderSkeletonCards(1, false)}</Box>
-                                    </StyledGridItem>
-                                ))}
-                            </StyledGrid>
-                        ) : (
-                            <StyledGrid container spacing={2} className='grid-container'>
-                                {filteredSearchResults.map(
-                                    (result) =>
-                                        result && (
-                                            <StyledGridItem item xs={12} sm={6} md={4} key={`search-grid-${result.id}`}>
-                                                <Box sx={{ position: 'relative' }}>
-                                                    <SidekickCard
-                                                        sidekick={result}
-                                                        user={user}
-                                                        favorites={favorites}
-                                                        navigate={navigate}
-                                                        handleSidekickSelect={handleSidekickSelect}
-                                                        setSelectedTemplateId={setSelectedTemplateId}
-                                                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
-                                                        toggleFavorite={toggleFavorite}
-                                                    />
-                                                </Box>
-                                            </StyledGridItem>
-                                        )
-                                )}
-                                {filteredSearchResults.length === 0 && (
-                                    <Grid item xs={12}>
-                                        <Box sx={{ padding: 3, textAlign: 'center' }}>
-                                            <Typography variant='body1' color='textSecondary'>
-                                                No sidekicks found matching your criteria.
-                                            </Typography>
-                                        </Box>
-                                    </Grid>
-                                )}
-                            </StyledGrid>
-                        )}
-                    </CategorySectionContainer>
-                ) : null
-
             const result = (
                 <>
-                    <Box sx={{ pb: 4, display: 'flex', gap: 1 }}>
-                        <TextField
-                            inputRef={searchbarRef}
-                            key={'search-term-input'}
-                            fullWidth
-                            variant='outlined'
-                            style={{ position: 'relative' }}
-                            placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
-                            value={searchInputValue}
-                            onChange={(e) => {
-                                handleSearchChange(e.target.value)
-                            }}
-                            InputProps={{
-                                startAdornment: <SearchIcon color='action' />,
-                                endAdornment: searchInputValue.length > 0 && (
-                                    <Button
-                                        onClick={clearSearchField}
-                                        style={{ position: 'absolute', right: 10, padding: 0, minWidth: 'auto' }}
-                                    >
-                                        <CancelIcon color='action' />
-                                    </Button>
-                                )
-                            }}
-                        />
-                    </Box>
+                    <SidekickSearchPanel
+                        sidekicks={combinedSidekicks}
+                        allCategories={allCategories}
+                        isLoading={isLoading}
+                        user={user}
+                        activeFilterCategory={activeFilterCategory}
+                        setActiveFilterCategory={setActiveFilterCategory}
+                        favorites={favorites}
+                        toggleFavorite={toggleFavorite}
+                        navigate={navigate}
+                        handleSidekickSelect={handleSidekickSelect}
+                        setSelectedTemplateId={setSelectedTemplateId}
+                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
+                        sidekicksByCategoryCache={sidekicksByCategoryCache}
+                        renderSkeletonCards={renderSkeletonCards}
+                        enablePerformanceLogs={enablePerformanceLogs}
+                    />
 
-                    {searchTerm && fuse ? (
-                        // Search results section
-                        searchResults
-                    ) : focusedCategory ? (
+                    {focusedCategory ? (
                         // When a category is focused (Show All was clicked), only show that category
                         renderFocusedCategory(focusedCategory)
                     ) : (
@@ -865,12 +765,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
             if (enablePerformanceLogs) {
                 const endTime = performance.now()
-
-                if (searchStartTime > 0) {
-                    const searchEndTime = performance.now()
-                    perfLog(`Search rendering took ${(searchEndTime - searchStartTime).toFixed(2)}ms`)
-                }
-
                 perfLog(`Content rendering completed in ${(endTime - startTime).toFixed(2)}ms`)
             }
 
@@ -878,32 +772,28 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         },
         // Strictly limit dependencies to reduce re-renders
         [
-            searchTerm,
-            filteredSearchResults,
             focusedCategory,
             isLoading,
             allCategories.top,
             allCategories.more.length,
             isMarketplaceDialogOpen,
             selectedTemplateId,
-            searchInputValue,
             combinedSidekicks.length,
+            combinedSidekicks,
 
             // Functions
-
             renderFocusedCategory,
-
             renderSkeletonCards,
-
-            handleSearchChange,
-            clearSearchField,
             handleCreateNewSidekick,
             handleSidekickSelect,
 
             // Utils
-            fuse,
             perfLog,
-            expandedCategory
+            expandedCategory,
+
+            // State
+            activeFilterCategory,
+            viewMode
         ]
     )
 

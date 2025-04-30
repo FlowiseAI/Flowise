@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import type { Sidekick, Chat as ChatType, Journey } from 'types'
 
 const ChatDetail = dynamic(() => import('./ChatDetail').then((mod) => ({ default: mod.ChatDetail })))
-const Modal = dynamic(() => import('./Modal'))
+const Modal = dynamic(() => import('./Modal', { ssr: false }))
 export interface Params {
     chat?: ChatType
     journey?: Journey
