@@ -66,11 +66,6 @@ export class DeleteCalendarEventTool extends Tool {
                 eventId: params.eventId
             })
 
-            // If confirmation is required and not provided
-            // if (params.confirm !== true) {
-            //     return `Event found: "${existingEvent.data.summary}". To delete, please confirm by adding "Confirm: true" to your request.`
-            // }
-
             // Delete the event
             await calendar.events.delete({
                 calendarId,
