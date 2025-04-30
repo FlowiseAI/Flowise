@@ -30,9 +30,33 @@ import {
 import { styled } from '@mui/system'
 import useSWR from 'swr'
 import { useUser } from '@auth0/nextjs-auth0/client'
+// Using any type for now since we don't have the declaration file
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import marketplacesApi from '@/api/marketplaces'
-import { Sidekick } from './types/sidekick'
-import Fuse from 'fuse.js'
+// Temporary type definition for Sidekick
+interface Sidekick {
+    id: string
+    chatflow: {
+        id?: string
+        name: string
+        description?: string
+        category?: string
+        categories?: string[]
+        isOwner?: boolean
+        canEdit?: boolean
+        answersConfig?: any
+        chatbotConfig?: any
+        flowData?: any
+    }
+    categories?: string[]
+    isRecent?: boolean
+    isExecutable?: boolean
+    favoritedBy?: Array<{ id: string }>
+    flowData?: {
+        nodes: Array<{ data: { category: string } }>
+    }
+}
+
 import { useAnswers } from './AnswersContext'
 
 import { useNavigate, useNavigationState } from '@/utils/navigation'
@@ -43,10 +67,18 @@ import { alpha } from '@mui/material/styles'
 import dynamic from 'next/dynamic'
 import { debounce } from '@utils/debounce'
 import { keyframes } from '@emotion/react'
+import Fuse from 'fuse.js'
 const MarketplaceLandingDialog = dynamic(() => import('@/views/chatflows/MarketplaceLandingDialog'), { ssr: false })
 
-// Create a theme that matches shadcn/ui styling
+// Add marketplace dialog type definition
+interface MarketplaceDialogProps {
+    open: boolean
+    onClose: () => void
+    templateId: string | null
+    onUse: (sidekick: Sidekick) => void
+}
 
+// Component props
 interface SidekickSelectProps {
     onSidekickSelected?: (sidekick: Sidekick) => void
     sidekicks?: Sidekick[]
@@ -334,16 +366,39 @@ const SkeletonItem = styled(Skeleton)(({ theme }) => ({
 const OrgSidekicksHeader = styled(Box)(({ theme }) => ({
     position: 'sticky',
     top: 0,
-    // backgroundColor: theme.palette.background.default,
     zIndex: 1,
     padding: theme.spacing(1, 0),
     transition: theme.transitions && theme.transitions.create ? theme.transitions.create(['box-shadow']) : 'box-shadow 0.3s ease',
-    ...(trigger && {
-        boxShadow: `0 1px 0 ${theme.palette.divider}`
-    })
+    boxShadow: useScrollTrigger() ? `0 1px 0 ${theme.palette.divider}` : 'none'
 }))
 
+// Add proper marketplaceDialog component type declaration
+const MarketplaceDialogComponent = MarketplaceLandingDialog as React.ComponentType<MarketplaceDialogProps>
+
 const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
+    // Add render counter for debugging
+    const renderCountRef = useRef(0)
+    renderCountRef.current++
+
+    // Performance debug flag - set to true to see performance logs
+    const enablePerformanceLogs = true
+
+    // Add logger utility to avoid repeated string concatenation when logging is disabled
+    const perfLog = useCallback(
+        (message: string, ...args: any[]) => {
+            if (enablePerformanceLogs) {
+                console.log(`[SidekickSelect] ${message}`, ...args)
+            }
+        },
+        [enablePerformanceLogs]
+    )
+
+    // Track category render counts to identify excessive rerenders
+    const categoryRenderCountsRef = useRef<Record<string, number>>({})
+
+    // Improved cache structure with better typing and timestamp tracking
+    const sidekicksByCategoryCache = useRef<Record<string, { data: Sidekick[]; timestamp: number }>>({})
+
     const { chat, setSidekick, sidekick: selectedSidekick, setSidekick: setSelectedSidekick } = useAnswers()
     const { user } = useUser()
     const searchbarRef = useRef<HTMLInputElement>(null)
@@ -376,14 +431,19 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     // Replace multiple state variables and optimize debouncing
     const [searchTerm, setSearchTerm] = useState('')
-    const debouncedSetSearchTerm = useCallback(
-        debounce((value: string) => {
-            setSearchTerm(value)
-            if (value) {
-                setPreviousActiveTab(tabValue)
-                setTabValue('search')
-            }
-        }, 600),
+    const debouncedSetSearchTerm = useMemo(
+        () =>
+            debounce((value: string) => {
+                if (enablePerformanceLogs) {
+                    console.log(`[SidekickSelect] Search term debounced: "${value}"`)
+                }
+
+                setSearchTerm(value)
+                if (value) {
+                    setPreviousActiveTab(tabValue)
+                    setTabValue('search')
+                }
+            }, 600),
         [tabValue]
     )
 
@@ -462,33 +522,51 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         })
     }, [])
 
-    const fetcher = async (url: string) => {
+    // Fetcher with better caching and error handling
+    const fetcher = useCallback(async (url: string) => {
+        const startTime = enablePerformanceLogs ? performance.now() : 0
         try {
             const res = await fetch(url)
             if (res.status === 401) {
-                // window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
                 window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
             } else {
-                return res.json()
+                const data = await res.json()
+                if (enablePerformanceLogs) {
+                    const endTime = performance.now()
+                    console.log(
+                        `[SidekickSelect] API data fetched, sidekicks count: ${
+                            data?.sidekicks?.length || 0
+                        }, timestamp: ${new Date().toISOString()}`
+                    )
+                    console.log(`[SidekickSelect] API fetch took ${(endTime - startTime).toFixed(2)}ms`)
+                }
+
+                // Clear the cache when new data is fetched
+                sidekicksByCategoryCache.current = {}
+
+                return data
             }
         } catch (error) {
             console.log('error', error)
             if (error instanceof Response && error.status === 401) {
                 window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
-                // window.location.href = '/api/auth/login?redirect_uri=' + encodeURIComponent(window.location.href)
             }
             return { sidekicks: [], categories: { top: [], more: [] } }
         }
-    }
+    }, [])
 
+    // Use the optimized fetcher
     const { data, isLoading } = useSWR('/api/sidekicks', fetcher, {
-        fallbackData: defaultSidekicks
+        fallbackData: defaultSidekicks,
+        revalidateOnFocus: false, // Reduce unnecessary refetches
+        dedupingInterval: 10000 // Dedupe requests within 10 seconds
     })
 
     const { data: marketplaceSidekicks = [] } = useSWR('marketplaceSidekicks', async () => {
+        const startTime = enablePerformanceLogs ? performance.now() : 0
         try {
             const { data: marketplaceChatflows } = await marketplacesApi.getAllTemplatesFromMarketplaces()
-            return marketplaceChatflows?.map((chatflow: any) => ({
+            const result = marketplaceChatflows?.map((chatflow: any) => ({
                 id: chatflow.id,
                 ...chatflow,
                 chatflow: {
@@ -499,6 +577,13 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 category: chatflow.categories,
                 requiresClone: chatflow.requiresClone
             }))
+
+            if (enablePerformanceLogs) {
+                const endTime = performance.now()
+                console.log(`[SidekickSelect] Marketplace fetch took ${(endTime - startTime).toFixed(2)}ms, count: ${result?.length || 0}`)
+            }
+
+            return result
         } catch (error) {
             console.error('Error fetching marketplace sidekicks:', error)
             return []
@@ -507,16 +592,21 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     const { sidekicks: allSidekicks = [], categories: chatflowCategories = { top: [], more: [] } } = data
 
-    // Optimize the combined sidekicks calculation
+    // Optimize combinedSidekicks calculation with better dependency tracking
     const combinedSidekicks = useMemo(() => {
+        const startTime = enablePerformanceLogs ? performance.now() : 0
+
+        if (!allSidekicks || !marketplaceSidekicks) {
+            return []
+        }
+
         const sidekickMap = new Map<string, Sidekick>()
 
-        // First, add all sidekicks from allSidekicks
+        // Process all sidekicks and efficiently merge them
         allSidekicks.forEach((sidekick: any) => {
             sidekickMap.set(sidekick.id, sidekick)
         })
 
-        // Then, add or update with marketplace sidekicks, prioritizing executable ones
         marketplaceSidekicks.forEach((sidekick: any) => {
             const existingSidekick = sidekickMap.get(sidekick.id)
             if (!existingSidekick || (!existingSidekick.isExecutable && sidekick.isExecutable)) {
@@ -524,22 +614,163 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             }
         })
 
-        return Array.from(sidekickMap.values())
-    }, [allSidekicks, marketplaceSidekicks])
+        const result = Array.from(sidekickMap.values())
 
-    // Optimize Fuse.js initialization - only create when combinedSidekicks changes
-    useEffect(() => {
-        if (combinedSidekicks.length > 0) {
-            const fuseOptions = {
-                keys: ['chatflow.name', 'chatflow.description', 'categories'],
-                threshold: 0.3,
-                includeScore: true
-            }
-            setFuse(new Fuse(combinedSidekicks, fuseOptions))
+        if (enablePerformanceLogs) {
+            const endTime = performance.now()
+            console.log(
+                `[SidekickSelect] Recalculating combinedSidekicks, allSidekicks: ${allSidekicks.length}, marketplaceSidekicks: ${marketplaceSidekicks.length}`
+            )
+            console.log(
+                `[SidekickSelect] combinedSidekicks calculation completed in ${(endTime - startTime).toFixed(2)}ms, result count: ${
+                    result.length
+                }`
+            )
         }
-    }, [combinedSidekicks])
+
+        // When recalculating combined sidekicks, clear stale category cache
+        // But preserve favorites cache which is based on the favorites Set
+        Object.keys(sidekicksByCategoryCache.current)
+            .filter((category) => category !== 'favorites')
+            .forEach((category) => {
+                delete sidekicksByCategoryCache.current[category]
+            })
+
+        return result
+    }, [allSidekicks, marketplaceSidekicks, perfLog])
+
+    // Optimized Fuse.js initialization - with proper size check and caching
+    useEffect(() => {
+        if (combinedSidekicks.length === 0) return
+
+        const startTime = enablePerformanceLogs ? performance.now() : 0
+
+        // Skip initialization if Fuse already exists with same sidekick count
+        // Fixed the Fuse.js size() method type error
+        if (fuse && fuse.getIndex() && combinedSidekicks.length === fuse._docs.length) {
+            perfLog('Skipping Fuse.js initialization - index size unchanged')
+            return
+        }
+
+        const fuseOptions = {
+            keys: ['chatflow.name', 'chatflow.description', 'categories'],
+            threshold: 0.3,
+            includeScore: true
+        }
+
+        setFuse(new Fuse(combinedSidekicks, fuseOptions))
+
+        if (enablePerformanceLogs) {
+            const endTime = performance.now()
+            perfLog(`Fuse.js initialization with ${combinedSidekicks.length} sidekicks took ${(endTime - startTime).toFixed(2)}ms`)
+        }
+    }, [combinedSidekicks, perfLog])
+
+    // Improved memoized search results with proper typing
+    const searchResults = useMemo(() => {
+        if (!searchTerm || !fuse) return []
+
+        const startTime = enablePerformanceLogs ? performance.now() : 0
+        const results = fuse.search(searchTerm)
+
+        if (enablePerformanceLogs) {
+            const endTime = performance.now()
+            perfLog(`Fuse search for "${searchTerm}" took ${(endTime - startTime).toFixed(2)}ms, found ${results.length} results`)
+        }
+
+        return results
+    }, [searchTerm, fuse, perfLog])
+
+    // Optimized selector function with memoization and caching
+    const getSidekicksByCategory = useCallback(
+        (category: string) => {
+            // Initialize render counter for this category if not exists
+            if (!categoryRenderCountsRef.current[category]) {
+                categoryRenderCountsRef.current[category] = 0
+            }
+            categoryRenderCountsRef.current[category]++
+
+            const startTime = enablePerformanceLogs ? performance.now() : 0
+
+            perfLog(`Getting sidekicks for category: ${category}, render #${categoryRenderCountsRef.current[category]}`)
+
+            // Return from cache if available (with cache age check)
+            if (sidekicksByCategoryCache.current[category]) {
+                // Only use cache if it's less than 5 seconds old or for stable categories
+                const cacheAge = Date.now() - sidekicksByCategoryCache.current[category].timestamp
+                const isStableCategory = ['favorites', 'recent'].includes(category)
+
+                if (isStableCategory || cacheAge < 5000) {
+                    perfLog(`Using cached results for category: ${category}, age: ${cacheAge}ms`)
+                    return sidekicksByCategoryCache.current[category].data
+                }
+
+                perfLog(`Cache expired for category: ${category}, age: ${cacheAge}ms`)
+            }
+
+            // Optimize filtering logic with early returns
+            let result: Sidekick[] = []
+
+            // Fast path for common categories
+            if (category === 'favorites') {
+                result = combinedSidekicks.filter((sidekick) => favorites.has(sidekick.id))
+            } else if (category === 'recent') {
+                result = combinedSidekicks.filter((sidekick) => sidekick.isRecent)
+            } else if (category === 'all') {
+                result = combinedSidekicks
+            } else {
+                // Standard category filtering
+                result = combinedSidekicks.filter(
+                    (sidekick) =>
+                        sidekick.chatflow.category === category ||
+                        sidekick.chatflow.categories?.includes(category) ||
+                        sidekick.categories?.includes(category)
+                )
+            }
+
+            // Apply sorting consistently
+            result = result.sort((a, b) => {
+                if (a.isExecutable !== b.isExecutable) return a.isExecutable ? -1 : 1
+                return a.chatflow.name.localeCompare(b.chatflow.name)
+            })
+
+            if (enablePerformanceLogs) {
+                const endTime = performance.now()
+                perfLog(`Category ${category} filtering completed in ${(endTime - startTime).toFixed(2)}ms, result count: ${result.length}`)
+            }
+
+            // Store in cache with timestamp
+            sidekicksByCategoryCache.current[category] = {
+                data: result,
+                timestamp: Date.now()
+            }
+
+            return result
+        },
+        [combinedSidekicks, favorites, perfLog]
+    )
+
+    // Filtered search results with category filter applied
+    const filteredSearchResults = useMemo(() => {
+        const currentFilter = activeFilterCategory['search']
+
+        if (!currentFilter || currentFilter === 'all') {
+            return searchResults
+        }
+
+        return searchResults.filter((result) => {
+            const sidekick = result.item
+            return (
+                sidekick.chatflow.category === currentFilter ||
+                sidekick.chatflow.categories?.includes(currentFilter) ||
+                sidekick.categories?.includes(currentFilter)
+            )
+        })
+    }, [searchResults, activeFilterCategory])
 
     const allCategories = useMemo(() => {
+        const startTime = enablePerformanceLogs ? performance.now() : 0
+
         const allCats = [
             ...chatflowCategories.top,
             ...chatflowCategories.more,
@@ -580,13 +811,25 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             return countDiff !== 0 ? countDiff : a.localeCompare(b)
         })
 
-        return {
+        const result = {
             top: uniqueCats.slice(0, 4),
             more: uniqueCats.slice(4)
         }
+
+        if (enablePerformanceLogs) {
+            const endTime = performance.now()
+            console.log(
+                `[SidekickSelect] allCategories calculation completed in ${(endTime - startTime).toFixed(2)}ms, top: ${
+                    result.top.length
+                }, more: ${result.more.length}`
+            )
+        }
+
+        return result
     }, [chatflowCategories, marketplaceSidekicks, combinedSidekicks])
 
     const categoryCounts = useMemo(() => {
+        console.log('[SidekickSelect] Recalculating categoryCounts')
         const counts: Record<string, number> = {
             all: combinedSidekicks.length,
             favorites: combinedSidekicks.filter((s) => favorites.has(s.id)).length,
@@ -602,6 +845,8 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     // Consolidated filtering and sorting for performance
     const { userSidekicks, orgSidekicks } = useMemo(() => {
+        const startTime = enablePerformanceLogs ? performance.now() : 0
+
         // Filter function based on active tab
         const matchesTab = (sidekick: Sidekick) => {
             switch (tabValue) {
@@ -625,10 +870,19 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         // Get initial filtered list based on search or tab
         let filtered: Sidekick[]
         if (searchTerm && fuse) {
-            filtered = fuse
-                .search(searchTerm)
-                .map((result) => result.item)
-                .filter(matchesTab)
+            const searchStartTime = enablePerformanceLogs ? performance.now() : 0
+            const searchResults = fuse.search(searchTerm)
+
+            if (enablePerformanceLogs) {
+                const searchEndTime = performance.now()
+                console.log(
+                    `[SidekickSelect] Fuse search for "${searchTerm}" took ${(searchEndTime - searchStartTime).toFixed(2)}ms, found ${
+                        searchResults.length
+                    } results`
+                )
+            }
+
+            filtered = searchResults.map((result) => result.item).filter(matchesTab)
         } else {
             filtered = combinedSidekicks.filter(matchesTab)
         }
@@ -654,10 +908,20 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         userSidekicks.sort(sortFn)
         orgSidekicks.sort(sortFn)
 
+        if (enablePerformanceLogs) {
+            const endTime = performance.now()
+            console.log(
+                `[SidekickSelect] Filtering completed in ${(endTime - startTime).toFixed(2)}ms, userSidekicks: ${
+                    userSidekicks.length
+                }, orgSidekicks: ${orgSidekicks.length}`
+            )
+        }
+
         return { userSidekicks, orgSidekicks }
     }, [combinedSidekicks, searchTerm, tabValue, favorites, fuse])
 
     const handleSidekickSelect = (sidekick: Sidekick) => {
+        console.log('[SidekickSelect] Sidekick selected:', sidekick.id)
         if (!chat?.id) {
             // Update local storage first
             const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
@@ -758,64 +1022,36 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         setIsMarketplaceDialogOpen(true)
     }
 
-    const clearSearchField = () => {
+    const clearSearchField = useCallback(() => {
         setSearchInputValue('')
         setSearchTerm('')
         setTabValue(previousActiveTab)
-    }
 
-    // New function to get sidekicks by category
-    const getSidekicksByCategory = useCallback(
-        (category: string) => {
-            return combinedSidekicks
-                .filter((sidekick) => {
-                    if (category === 'favorites') return favorites.has(sidekick.id)
-                    if (category === 'recent') return sidekick.isRecent
-                    if (category === 'all') return true
+        // Focus back on the search field for better UX
+        if (searchbarRef.current) {
+            searchbarRef.current.focus()
+        }
+    }, [previousActiveTab])
 
-                    return (
-                        sidekick.chatflow.category === category ||
-                        sidekick.chatflow.categories?.includes(category) ||
-                        sidekick.categories?.includes(category)
-                    )
-                })
-                .sort((a, b) => {
-                    if (a.isExecutable !== b.isExecutable) return a.isExecutable ? -1 : 1
-                    return a.chatflow.name.localeCompare(b.chatflow.name)
-                })
-        },
-        [combinedSidekicks, favorites]
-    )
-    const CategoryFilter = useCallback(
-        ({ parentCategory, availableCategories }: { parentCategory: string; availableCategories: string[] }) => {
-            const handleFilterChange = (filterCategory: string) => {
-                setActiveFilterCategory((prev) => ({
-                    ...prev,
-                    [parentCategory]: filterCategory
-                }))
-            }
+    // Selectively invalidate cache entries instead of clearing the entire cache
+    useEffect(() => {
+        // Only invalidate "favorites" category when favorites change
+        if (sidekicksByCategoryCache.current['favorites']) {
+            delete sidekicksByCategoryCache.current['favorites']
+        }
+    }, [favorites])
 
-            // Default to parent category if no filter has been set
-            const currentFilter = activeFilterCategory[parentCategory] || parentCategory
+    // Selectively invalidate relevant cache entries when sidekicks change
+    useEffect(() => {
+        // Get categories that need invalidation
+        const categoriesToInvalidate = Object.keys(sidekicksByCategoryCache.current).filter((category) => category !== 'favorites') // Keep favorites cache if only sidekicks changed
 
-            return (
-                <CategoryFilterContainer>
-                    {availableCategories.map((category) => (
-                        <CategoryFilterChip
-                            key={`filter-${category}`}
-                            label={category === 'all' ? 'All' : category.split(';').join(' | ')}
-                            clickable
-                            selected={category === currentFilter}
-                            onClick={() => handleFilterChange(category)}
-                            color={category === currentFilter ? 'primary' : 'default'}
-                            variant={category === currentFilter ? 'filled' : 'outlined'}
-                        />
-                    ))}
-                </CategoryFilterContainer>
-            )
-        },
-        [activeFilterCategory]
-    )
+        // Selectively remove affected categories from cache
+        categoriesToInvalidate.forEach((category) => {
+            delete sidekicksByCategoryCache.current[category]
+        })
+    }, [combinedSidekicks])
+
     // Modified function for rendering individual sidekick card
     const renderSidekickCard = useCallback(
         (sidekick: Sidekick) => {
@@ -894,7 +1130,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                             {sidekick.chatflow.description || 'No description available'}
                         </SidekickDescription>
                         <SidekickFooter className='actionButtons'>
-                            {sidekick.chatflow.isOwner ? (
+                            {sidekick.chatflow.canEdit ? (
                                 <>
                                     <Tooltip title='Edit this sidekick'>
                                         <WhiteIconButton size='small' onClick={(e) => handleEdit(sidekick, e)}>
@@ -959,7 +1195,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     )
 
     // Function to render skeleton cards
-    const renderSkeletonCards = (count: number, isHorizontal: boolean = true) => {
+    const renderSkeletonCards = (count: number, isHorizontal = true) => {
         return Array.from({ length: count }).map((_, index) => (
             <SkeletonCard key={`skeleton-${index}`} className={isHorizontal ? 'horizontal-container' : 'grid-container'}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -1135,7 +1371,6 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
             toggleViewMode,
             allCategories,
             activeFilterCategory,
-            CategoryFilter,
             isLoading,
             renderSkeletonCards
         ]
@@ -1198,41 +1433,59 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         navigate('/canvas')
     }
 
-    // Component to render filter pills for available categories
-    // Replace the old renderSidekickGrid function with our new rendering logic
-    const content = useCallback(
-        () => (
-            <>
-                <Box sx={{ pb: 4, display: 'flex', gap: 1 }}>
-                    <TextField
-                        ref={searchbarRef}
-                        key={'search-term-input'}
-                        fullWidth
-                        variant='outlined'
-                        style={{ position: 'relative' }}
-                        placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
-                        // value={searchInputValue}
-                        onChange={(e) => {
-                            const value = e.target.value
-                            setSearchInputValue(value)
-                            debouncedSetSearchTerm(value)
-                        }}
-                        InputProps={{
-                            startAdornment: <SearchIcon color='action' />,
-                            endAdornment: searchInputValue.length > 0 && (
-                                <Button
-                                    onClick={clearSearchField}
-                                    style={{ position: 'absolute', right: 10, padding: 0, minWidth: 'auto' }}
-                                >
-                                    <CancelIcon color='action' />
-                                </Button>
-                            )
-                        }}
-                    />
-                </Box>
+    // Optimized CategoryFilter component
+    const CategoryFilter = useCallback(
+        ({ parentCategory, availableCategories }: { parentCategory: string; availableCategories: string[] }) => {
+            // Optimize by moving this function outside the component rendering
+            const handleFilterChange = useCallback(
+                (filterCategory: string) => {
+                    setActiveFilterCategory((prev) => ({
+                        ...prev,
+                        [parentCategory]: filterCategory
+                    }))
 
-                {searchTerm && fuse ? (
-                    // Search results section
+                    // When changing category filter, invalidate any relevant cache
+                    if (sidekicksByCategoryCache.current[parentCategory]) {
+                        delete sidekicksByCategoryCache.current[parentCategory]
+                    }
+                },
+                [parentCategory]
+            )
+
+            // Default to parent category if no filter has been set
+            const currentFilter = activeFilterCategory[parentCategory] || parentCategory
+
+            return (
+                <CategoryFilterContainer>
+                    {availableCategories.map((category) => (
+                        <CategoryFilterChip
+                            key={`filter-${category}`}
+                            label={category === 'all' ? 'All' : category.split(';').join(' | ')}
+                            clickable
+                            selected={category === currentFilter}
+                            onClick={() => handleFilterChange(category)}
+                            color={category === currentFilter ? 'primary' : 'default'}
+                            variant={category === currentFilter ? 'filled' : 'outlined'}
+                        />
+                    ))}
+                </CategoryFilterContainer>
+            )
+        },
+        [activeFilterCategory, sidekicksByCategoryCache]
+    )
+
+    // Optimize the content function to reduce excessive re-renders
+    const content = useMemo(
+        () => () => {
+            const startTime = enablePerformanceLogs ? performance.now() : 0
+
+            perfLog(`Rendering main content, render #${renderCountRef.current}`)
+
+            const searchStartTime = searchTerm && fuse ? performance.now() : 0
+
+            // Separate memo for search results to avoid full re-render when only search changes
+            const searchResults =
+                searchTerm && fuse ? (
                     <CategorySection>
                         <CategoryTitle variant='h6'>Search Results</CategoryTitle>
 
@@ -1252,38 +1505,12 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                             </StyledGrid>
                         ) : (
                             <StyledGrid container spacing={2} className='grid-container'>
-                                {fuse
-                                    .search(searchTerm)
-                                    .filter((result) => {
-                                        const sidekick = result.item
-                                        // If a filter is active, filter the search results by category
-                                        const currentFilter = activeFilterCategory['search']
-                                        if (currentFilter && currentFilter !== 'all') {
-                                            return (
-                                                sidekick.chatflow.category === currentFilter ||
-                                                sidekick.chatflow.categories?.includes(currentFilter) ||
-                                                sidekick.categories?.includes(currentFilter)
-                                            )
-                                        }
-                                        return true
-                                    })
-                                    .map((result) => (
-                                        <StyledGridItem item xs={12} sm={6} md={4} key={`search-grid-${result.item.id}`}>
-                                            <Box sx={{ position: 'relative' }}>{renderSidekickCard(result.item)}</Box>
-                                        </StyledGridItem>
-                                    ))}
-                                {fuse.search(searchTerm).filter((result) => {
-                                    const sidekick = result.item
-                                    const currentFilter = activeFilterCategory['search']
-                                    if (currentFilter && currentFilter !== 'all') {
-                                        return (
-                                            sidekick.chatflow.category === currentFilter ||
-                                            sidekick.chatflow.categories?.includes(currentFilter) ||
-                                            sidekick.categories?.includes(currentFilter)
-                                        )
-                                    }
-                                    return true
-                                }).length === 0 && (
+                                {filteredSearchResults.map((result) => (
+                                    <StyledGridItem item xs={12} sm={6} md={4} key={`search-grid-${result.item.id}`}>
+                                        <Box sx={{ position: 'relative' }}>{renderSidekickCard(result.item)}</Box>
+                                    </StyledGridItem>
+                                ))}
+                                {filteredSearchResults.length === 0 && (
                                     <Grid item xs={12}>
                                         <Box sx={{ padding: 3, textAlign: 'center' }}>
                                             <Typography variant='body1' color='textSecondary'>
@@ -1295,91 +1522,158 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                             </StyledGrid>
                         )}
                     </CategorySection>
-                ) : focusedCategory ? (
-                    // When a category is focused (Show All was clicked), only show that category
-                    renderFocusedCategory(focusedCategory)
-                ) : (
-                    // Regular category sections
-                    <>
-                        {/* Always show basic categories with skeletons while loading */}
-                        {isLoading ? (
-                            <>
-                                {renderCategorySection('favorites', 'Favorites')}
-                                {renderCategorySection('recent', 'Recent')}
-                                {renderCategorySection('Official', 'Official')}
-                            </>
-                        ) : combinedSidekicks.length === 0 ? (
-                            // When no sidekicks exist but loading is complete, show empty state message
-                            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', py: 8 }}>
-                                <Typography variant='h6' color='textSecondary' gutterBottom>
-                                    No sidekicks available
-                                </Typography>
-                                <Typography variant='body1' color='textSecondary' align='center' sx={{ maxWidth: '500px', mb: 4 }}>
-                                    No sidekicks were found. Create a new sidekick or check back later.
-                                </Typography>
-                                <Button variant='contained' color='primary' onClick={handleCreateNewSidekick}>
-                                    Create New Sidekick
-                                </Button>
-                            </Box>
-                        ) : (
-                            // Otherwise render all categories that have items
-                            <>
-                                {renderCategorySection('favorites', 'Favorites')}
-                                {renderCategorySection('recent', 'Recent')}
-                                {renderCategorySection('Official', 'Official')}
+                ) : null
 
-                                {/* Map through category-specific sections */}
-                                {allCategories.top
-                                    .concat(allCategories.more)
-                                    .filter((category) => !['favorites', 'recent', 'Official'].includes(category)) // Skip already rendered categories
-                                    .map((category) => renderCategorySection(category, category.split(';').join(' | ')))}
-                            </>
-                        )}
-                    </>
-                )}
+            const result = (
+                <>
+                    <Box sx={{ pb: 4, display: 'flex', gap: 1 }}>
+                        <TextField
+                            ref={searchbarRef}
+                            key={'search-term-input'}
+                            fullWidth
+                            variant='outlined'
+                            style={{ position: 'relative' }}
+                            placeholder='"Create an image of..." or "Write a poem about..." or "Generate a report for...")'
+                            value={searchInputValue}
+                            onChange={(e) => {
+                                const value = e.target.value
+                                setSearchInputValue(value)
+                                debouncedSetSearchTerm(value)
+                            }}
+                            InputProps={{
+                                startAdornment: <SearchIcon color='action' />,
+                                endAdornment: searchInputValue.length > 0 && (
+                                    <Button
+                                        onClick={clearSearchField}
+                                        style={{ position: 'absolute', right: 10, padding: 0, minWidth: 'auto' }}
+                                    >
+                                        <CancelIcon color='action' />
+                                    </Button>
+                                )
+                            }}
+                        />
+                    </Box>
 
-                <MarketplaceLandingDialog
-                    key='marketplace-dialog'
-                    open={isMarketplaceDialogOpen}
-                    onClose={() => {
-                        setIsMarketplaceDialogOpen(false)
-                        setSelectedTemplateId(null)
-                        // Remove the templateId from the URL when closing the dialog
-                        window.history.pushState(null, '', window.location.pathname)
-                    }}
-                    templateId={selectedTemplateId}
-                    onUse={(sidekick) => handleSidekickSelect(sidekick)}
-                />
-            </>
-        ),
+                    {searchTerm && fuse ? (
+                        // Search results section
+                        searchResults
+                    ) : focusedCategory ? (
+                        // When a category is focused (Show All was clicked), only show that category
+                        renderFocusedCategory(focusedCategory)
+                    ) : (
+                        // Regular category sections
+                        <>
+                            {/* Always show basic categories with skeletons while loading */}
+                            {isLoading ? (
+                                <>
+                                    {renderCategorySection('favorites', 'Favorites')}
+                                    {renderCategorySection('recent', 'Recent')}
+                                    {renderCategorySection('Official', 'Official')}
+                                </>
+                            ) : combinedSidekicks.length === 0 ? (
+                                // When no sidekicks exist but loading is complete, show empty state message
+                                <Box
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        py: 8
+                                    }}
+                                >
+                                    <Typography variant='h6' color='textSecondary' gutterBottom>
+                                        No sidekicks available
+                                    </Typography>
+                                    <Typography variant='body1' color='textSecondary' align='center' sx={{ maxWidth: '500px', mb: 4 }}>
+                                        No sidekicks were found. Create a new sidekick or check back later.
+                                    </Typography>
+                                    <Button variant='contained' color='primary' onClick={handleCreateNewSidekick}>
+                                        Create New Sidekick
+                                    </Button>
+                                </Box>
+                            ) : (
+                                // Otherwise render all categories that have items
+                                <>
+                                    {renderCategorySection('favorites', 'Favorites')}
+                                    {renderCategorySection('recent', 'Recent')}
+                                    {renderCategorySection('Official', 'Official')}
+
+                                    {/* Map through category-specific sections but only render visible ones for performance */}
+                                    {allCategories.top
+                                        .concat(allCategories.more.slice(0, expandedCategory ? allCategories.more.length : 4)) // Limit categories when not expanded
+                                        .filter((category) => !['favorites', 'recent', 'Official'].includes(category)) // Skip already rendered categories
+                                        .map((category) => renderCategorySection(category, category.split(';').join(' | ')))}
+                                </>
+                            )}
+                        </>
+                    )}
+
+                    <MarketplaceDialogComponent
+                        key='marketplace-dialog'
+                        open={isMarketplaceDialogOpen}
+                        onClose={() => {
+                            setIsMarketplaceDialogOpen(false)
+                            setSelectedTemplateId(null)
+                            window.history.pushState(null, '', window.location.pathname)
+                        }}
+                        templateId={selectedTemplateId}
+                        onUse={(sidekick) => handleSidekickSelect(sidekick as Sidekick)}
+                    />
+                </>
+            )
+
+            if (enablePerformanceLogs) {
+                const endTime = performance.now()
+
+                if (searchStartTime > 0) {
+                    const searchEndTime = performance.now()
+                    perfLog(`Search rendering took ${(searchEndTime - searchStartTime).toFixed(2)}ms`)
+                }
+
+                perfLog(`Content rendering completed in ${(endTime - startTime).toFixed(2)}ms`)
+            }
+
+            return result
+        },
+        // Strictly limit dependencies to reduce re-renders
         [
-            searchbarRef,
-            searchInputValue,
-            clearSearchField,
-            debouncedSetSearchTerm,
             searchTerm,
-            fuse,
-            renderCategorySection,
+            filteredSearchResults,
             focusedCategory,
-            allCategories,
+            isLoading,
+            allCategories.top,
+            allCategories.more.length,
             isMarketplaceDialogOpen,
             selectedTemplateId,
-            handleSidekickSelect,
-            renderSidekickCard,
-            viewMode,
-            toggleViewMode,
-            CategoryFilter,
-            activeFilterCategory,
-            isLoading,
-            renderSkeletonCards,
+            searchInputValue,
+            combinedSidekicks.length,
+
+            // Functions
+            renderCategorySection,
             renderFocusedCategory,
-            combinedSidekicks,
-            handleCreateNewSidekick
+            renderSidekickCard,
+            renderSkeletonCards,
+
+            debouncedSetSearchTerm,
+            clearSearchField,
+            handleCreateNewSidekick,
+            handleSidekickSelect,
+
+            // Utils
+            fuse,
+            perfLog,
+            expandedCategory
         ]
     )
+
+    if (enablePerformanceLogs) {
+        console.log(`[SidekickSelect] Before final render, noDialog: ${noDialog}, render #${renderCountRef.current}`)
+    }
+
     if (noDialog) {
         return <ContentWrapper>{content()}</ContentWrapper>
     }
+
     return (
         <Box>
             <Button variant='outlined' onClick={() => setOpen(true)} endIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'space-between' }}>
@@ -1394,17 +1688,16 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 </DialogTitle>
                 <DialogContent>{content()}</DialogContent>
             </StyledDialog>
-            <MarketplaceLandingDialog
+            <MarketplaceDialogComponent
                 key='marketplace-dialog'
                 open={isMarketplaceDialogOpen}
                 onClose={() => {
                     setIsMarketplaceDialogOpen(false)
                     setSelectedTemplateId(null)
-                    // Remove the templateId from the URL when closing the dialog
                     window.history.pushState(null, '', window.location.pathname)
                 }}
                 templateId={selectedTemplateId}
-                onUse={(sidekick) => handleSidekickSelect(sidekick)}
+                onUse={(sidekick) => handleSidekickSelect(sidekick as Sidekick)}
             />
             <Snackbar
                 open={showCopyMessage}
