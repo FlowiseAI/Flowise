@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <title>Flowise - Low-code LLM apps builder</title>
+        <title>RecepAI Admin | AI Receptionist for Hotels</title>
         <link rel="icon" href="favicon.ico" />
         <!-- Meta Tags-->
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#2296f3" />
-        <meta name="title" content="Flowise - Low-code LLM apps builder" />
-        <meta name="description" content="Drag & drop UI to build your customized LLM flow" />
-        <meta name="keywords" content="react, material-ui, workflow automation, llm, artificial-intelligence" />
-        <meta name="author" content="FlowiseAI" />
+        <meta name="title" content="RecepAI is an AI receptionist platform by Hotel Linkage, streamlining guest interactions and reservation support for hotels." />
+        <meta name="description" content="RecepAI is an AI receptionist platform by Hotel Linkage" />
+        <meta name="keywords" content="AI receptionist, hotel chatbot, digital receptionist, guest support, hospitality automation" />
+        <meta name="author" content="Hotel Linkage" />
         <!-- Open Graph / Facebook -->
         <meta property="og:locale" content="en_US" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://flowiseai.com/" />
-        <meta property="og:site_name" content="flowiseai.com" />
-        <meta property="og:title" content="Flowise - Low-code LLM apps builder" />
-        <meta property="og:description" content="Drag & drop UI to build your customized LLM flow" />
+        <meta property="og:url" content="https://www.hotellinkage.com/" />
+        <meta property="og:site_name" content="hotellinkage.com" />
+        <meta property="og:title" content="RecepAI is an AI receptionist platform by Hotel Linkage" />
+        <meta property="og:description" content="RecepAI is an AI receptionist platform by Hotel Linkage, streamlining guest interactions and reservation support for hotels." />
         <!-- Twitter -->
         <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content="https://twitter.com/FlowiseAI" />
-        <meta property="twitter:title" content="Flowise - Low-code LLM apps builder" />
+        <meta property="twitter:url" content="https://www.hotellinkage.com/" />
+        <meta property="twitter:title" content="Recep AI, AI receptionist for hotels" />
         <meta property="twitter:description" content="Drag & drop UI to build your customized LLM flow" />
         <meta name="twitter:creator" content="@FlowiseAI" />
 
@@ -30,17 +30,75 @@
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap"
             rel="stylesheet"
         />
+        <style>
+            .logout-button-container {
+                position: fixed;
+                bottom: 30px;
+                left: 0;
+                width: 260px; /* Sol menünün genişliği ile aynı */
+                text-align: center;
+                z-index: 9999;
+                padding: 10px 0;
+            }
+            .logout-button {
+                display: inline-block;
+                padding: 8px 15px;
+                background-color: #BE983D;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+                font-size: 14px;
+                font-weight: 500;
+                font-family: 'Poppins', sans-serif;
+                transition: background-color 0.3s;
+                width: 70%; /* Butonu menüye göre boyutlandırın */
+                text-align: center;
+            }
+            .logout-button:hover {
+                background-color: #A67C36;
+            }
+            @media (prefers-color-scheme: dark) {
+                .logout-button {
+                    background-color: #BE983D;
+                }
+                .logout-button:hover {
+                    background-color: #D5AE54;
+                }
+            }
+        </style>
     </head>
 
     <body>
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
         <div id="portal"></div>
+        
+        <!-- Logout Butonu -->
+        <div class="logout-button-container">
+            <a href="/logout" class="logout-button">Logout</a>
+        </div>
+        
         <script type="module" src="src/index.jsx"></script>
         <script>
             if (global === undefined) {
                 var global = window
             }
+            
+            // Menü yüksekliğine göre butonu konumlandırma
+            document.addEventListener('DOMContentLoaded', function() {
+                // Menünün son öğesi
+                setTimeout(function() {
+                    const sidebarItems = document.querySelectorAll('.sidebar-item, .MuiListItem-root');
+                    if (sidebarItems.length > 0) {
+                        const lastItem = sidebarItems[sidebarItems.length - 1];
+                        const rect = lastItem.getBoundingClientRect();
+                        const logoutBtn = document.querySelector('.logout-button-container');
+                        if (logoutBtn) {
+                            logoutBtn.style.bottom = (window.innerHeight - rect.bottom - rect.height - 20) + 'px';
+                        }
+                    }
+                }, 1000);
+            });
         </script>
     </body>
 </html>
