@@ -134,6 +134,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 // Remove the id when duplicating
                 delete flowData.id
                 flowData.name = `Copy of ${flowData.name}`
+                flowData.visibility = ['Private']
                 localStorage.setItem('duplicatedFlowData', JSON.stringify(flowData))
                 window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
             } catch (e) {

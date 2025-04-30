@@ -289,9 +289,7 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
                 }
             }
         }
-        newChatFlow.visibility = Array.from(
-            new Set([...(newChatFlow.visibility ?? []), ChatflowVisibility.PRIVATE, ChatflowVisibility.ANSWERAI])
-        )
+        newChatFlow.visibility = Array.from(new Set([...(newChatFlow.visibility ?? []), ChatflowVisibility.PRIVATE]))
         if (containsBase64File(newChatFlow)) {
             // we need a 2-step process, as we need to save the chatflow first and then update the file paths
             // this is because we need the chatflow id to create the file paths
@@ -421,9 +419,7 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
 
         // Update the chatbotConfig in the chatflow object
         chatflow.chatbotConfig = JSON.stringify(existingChatbotConfig)
-        updateChatFlow.visibility = Array.from(
-            new Set([...(updateChatFlow.visibility ?? []), ...[ChatflowVisibility.PRIVATE, ChatflowVisibility.ANSWERAI]])
-        )
+        updateChatFlow.visibility = Array.from(new Set([...(updateChatFlow.visibility ?? []), ChatflowVisibility.PRIVATE]))
         const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
 
