@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getCredentialData } from '../../../src/utils'
 import { Tool } from '@langchain/core/tools'
 import { google } from 'googleapis'
 
@@ -185,9 +185,9 @@ class UpdateCalendarEvent_Tools implements INode {
 
     //@ts-ignore
     loadMethods = {
-        async listCalendars(nodeData: INodeData): Promise<{ label: string; name: string }[]> {
+        async listCalendars(nodeData: INodeData, options?: ICommonObject): Promise<{ label: string; name: string }[]> {
             try {
-                const credentialData = nodeData.credential ? JSON.parse(nodeData.credential) : null
+                const credentialData: any = await getCredentialData(nodeData?.credential ?? '', options ?? {})
                 if (!credentialData?.googleAccessToken) {
                     throw new Error('Google access token not found in credentials')
                 }
@@ -211,7 +211,7 @@ class UpdateCalendarEvent_Tools implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = nodeData.credential ? JSON.parse(nodeData.credential) : null
+        let credentialData: any = await getCredentialData(nodeData?.credential ?? '', options)
         if (!credentialData) {
             throw new Error('Failed to retrieve credentials')
         }
