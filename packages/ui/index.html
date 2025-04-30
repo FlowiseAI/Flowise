@@ -31,6 +31,7 @@
             rel="stylesheet"
         />
         <style>
+            /* Eski logout button styling'i - display: none ile gizlenecek */
             .logout-button-container {
                 position: fixed;
                 bottom: 30px;
@@ -39,6 +40,7 @@
                 text-align: center;
                 z-index: 9999;
                 padding: 10px 0;
+                display: none; /* Eski butonu gizle */
             }
             .logout-button {
                 display: inline-block;
@@ -65,6 +67,60 @@
                     background-color: #D5AE54;
                 }
             }
+
+            /* Yeni logout button styling */
+            .sidebar-logout-item {
+                display: flex;
+                align-items: center;
+                padding: 12px 16px;
+                margin: 4px 10px;
+                border-radius: 8px;
+                text-decoration: none;
+                color: #637381;
+                transition: all 0.3s;
+                font-family: 'Poppins', sans-serif;
+                font-weight: 500;
+                position: relative;
+            }
+            
+            .sidebar-logout-item:hover {
+                background-color: rgba(190, 152, 61, 0.1);
+                color: #BE983D;
+            }
+            
+            .sidebar-logout-item .logout-icon {
+                margin-right: 12px;
+                width: 20px;
+                height: 20px;
+            }
+            
+            .sidebar-logout-item.active {
+                background-color: #BE983D;
+                color: white;
+            }
+            
+            /* Divider before logout for visual separation */
+            .sidebar-divider {
+                height: 1px;
+                background-color: rgba(0, 0, 0, 0.1);
+                margin: 16px 16px;
+            }
+            
+            /* Dark mode support */
+            @media (prefers-color-scheme: dark) {
+                .sidebar-logout-item {
+                    color: #b6c2cd;
+                }
+                
+                .sidebar-logout-item:hover {
+                    background-color: rgba(213, 174, 84, 0.15);
+                    color: #D5AE54;
+                }
+                
+                .sidebar-divider {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
+            }
         </style>
     </head>
 
@@ -73,7 +129,7 @@
         <div id="root"></div>
         <div id="portal"></div>
         
-        <!-- Logout Butonu -->
+        <!-- Eski Logout Butonu (gizli) -->
         <div class="logout-button-container">
             <a href="/logout" class="logout-button">Logout</a>
         </div>
@@ -84,20 +140,65 @@
                 var global = window
             }
             
-            // Menü yüksekliğine göre butonu konumlandırma
+            // Yeni logout butonu ekleme script'i
             document.addEventListener('DOMContentLoaded', function() {
-                // Menünün son öğesi
+                // Sidebar'ın tamamen yüklenmesi için bekle
                 setTimeout(function() {
-                    const sidebarItems = document.querySelectorAll('.sidebar-item, .MuiListItem-root');
-                    if (sidebarItems.length > 0) {
-                        const lastItem = sidebarItems[sidebarItems.length - 1];
-                        const rect = lastItem.getBoundingClientRect();
-                        const logoutBtn = document.querySelector('.logout-button-container');
-                        if (logoutBtn) {
-                            logoutBtn.style.bottom = (window.innerHeight - rect.bottom - rect.height - 20) + 'px';
+                    // Document Stores menü öğesini bul (logout'u eklemek istediğimiz yerden önceki öğe)
+                    const documentStoresItem = Array.from(document.querySelectorAll('.MuiListItem-root')).find(item => 
+                        item.innerText.includes('Document Stores')
+                    );
+                    
+                    if (documentStoresItem) {
+                        // Ayırıcı çizgi oluştur
+                        const divider = document.createElement('div');
+                        divider.className = 'sidebar-divider';
+                        
+                        // Logout öğesi oluştur
+                        const logoutItem = document.createElement('a');
+                        logoutItem.href = '/logout';
+                        logoutItem.className = 'sidebar-logout-item';
+                        
+                        // Logout ikonu oluştur (SVG)
+                        const logoutIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        logoutIcon.setAttribute('class', 'logout-icon');
+                        logoutIcon.setAttribute('viewBox', '0 0 24 24');
+                        logoutIcon.setAttribute('fill', 'none');
+                        logoutIcon.setAttribute('stroke', 'currentColor');
+                        logoutIcon.setAttribute('stroke-width', '2');
+                        logoutIcon.setAttribute('stroke-linecap', 'round');
+                        logoutIcon.setAttribute('stroke-linejoin', 'round');
+                        
+                        // Logout ikonu için path'ler
+                        const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path1.setAttribute('d', 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4');
+                        logoutIcon.appendChild(path1);
+                        
+                        const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path2.setAttribute('d', 'M16 17l5-5-5-5');
+                        logoutIcon.appendChild(path2);
+                        
+                        const path3 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path3.setAttribute('d', 'M21 12H9');
+                        logoutIcon.appendChild(path3);
+                        
+                        // Logout metni oluştur
+                        const logoutText = document.createTextNode('Logout');
+                        
+                        // Logout öğesini birleştir
+                        logoutItem.appendChild(logoutIcon);
+                        logoutItem.appendChild(logoutText);
+                        
+                        // Ana liste öğesini al
+                        const sidebarList = documentStoresItem.parentElement;
+                        
+                        // Document Stores'dan sonra ekle
+                        if (sidebarList) {
+                            sidebarList.appendChild(divider);
+                            sidebarList.appendChild(logoutItem);
                         }
                     }
-                }, 1000);
+                }, 1500); // Sidebar'ın yüklenmesi için daha fazla zaman ver
             });
         </script>
     </body>
