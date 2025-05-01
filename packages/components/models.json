@@ -970,6 +970,12 @@
                     "name": "gpt-3.5-turbo-16k-0613",
                     "input_cost": 0.000003,
                     "output_cost": 0.000004
+                },
+                {
+                    "label": "o4-mini",
+                    "name": "o4-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
                 }
             ]
         },
