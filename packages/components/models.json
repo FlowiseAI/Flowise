@@ -974,8 +974,8 @@
                 {
                     "label": "o4-mini",
                     "name": "o4-mini",
-                    "input_cost": 1.5e-07,
-                    "output_cost": 6e-07
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
                 }
             ]
         },
