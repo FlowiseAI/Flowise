@@ -39,7 +39,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     renderCountRef.current++
 
     // Performance debug flag - set to true to see performance logs
-    const enablePerformanceLogs = true
+    const enablePerformanceLogs = false
 
     // Get context values
     const { chat, sidekick: selectedSidekick } = useAnswers()
