@@ -83,10 +83,15 @@ class RedisEmbeddingsCache implements INode {
                 host,
                 username,
                 password,
-                ...tlsOptions
+                ...tlsOptions,
+                keepAlive: 60000,
+                retryStrategy: (times) => Math.min(times * 100, 3000),
             })
         } else {
-            client = new Redis(redisUrl)
+            client = new Redis(redisUrl, {
+                keepAlive: 60000,
+                retryStrategy: (times) => Math.min(times * 100, 3000),
+            })
         }
 
         ttl ??= '3600'

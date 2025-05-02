@@ -147,7 +147,14 @@ class Redis_VectorStores implements INode {
             }
 
             try {
-                const redisClient = createClient({ url: redisUrl })
+                const redisClient = createClient({ 
+                    url: redisUrl,
+                    socket: {
+                        keepAlive: 60000, // milliseconds
+                    },
+                    pingInterval: 60000, // milliseconds
+                    disableOfflineQueue: true 
+                })
                 await redisClient.connect()
 
                 const storeConfig: RedisVectorStoreConfig = {
@@ -212,7 +219,14 @@ class Redis_VectorStores implements INode {
             redisUrl = 'redis://' + username + ':' + password + '@' + host + ':' + portStr
         }
 
-        const redisClient = createClient({ url: redisUrl })
+        const redisClient = createClient({ 
+            url: redisUrl,
+            socket: {
+                keepAlive: 60000, // milliseconds
+            },
+            pingInterval: 60000, // milliseconds
+            disableOfflineQueue: true
+         })
 
         const storeConfig: RedisVectorStoreConfig = {
             redisClient: redisClient,

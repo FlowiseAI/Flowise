@@ -41,7 +41,10 @@ export class QueueManager {
             port: parseInt(process.env.REDIS_PORT || '6379'),
             username: process.env.REDIS_USERNAME || undefined,
             password: process.env.REDIS_PASSWORD || undefined,
-            tls: tlsOpts
+            tls: tlsOpts,
+            enableOfflineQueue: false,
+            enableReadyCheck: true,
+            keepAlive: 60000,
         }
     }
 

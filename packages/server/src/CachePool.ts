@@ -12,7 +12,10 @@ export class CachePool {
     constructor() {
         if (process.env.MODE === MODE.QUEUE) {
             if (process.env.REDIS_URL) {
-                this.redisClient = new Redis(process.env.REDIS_URL)
+                this.redisClient = new Redis(process.env.REDIS_URL, {
+                    keepAlive: 60000,
+                    retryStrategy: (times) => Math.min(times * 100, 3000),
+                })
             } else {
                 this.redisClient = new Redis({
                     host: process.env.REDIS_HOST || 'localhost',
@@ -26,7 +29,9 @@ export class CachePool {
                                   key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
                                   ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
                               }
-                            : undefined
+                            : undefined,
+                    keepAlive: 60000,
+                    retryStrategy: (times) => Math.min(times * 100, 3000),
                 })
             }
         }
