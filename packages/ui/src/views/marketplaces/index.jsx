@@ -426,7 +426,7 @@ const Marketplace = () => {
                                             multiple
                                             value={badgeFilter}
                                             onChange={handleBadgeFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
+                                            input={<OutlinedInput label='Tag' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
                                             sx={SelectStyles}
@@ -462,7 +462,7 @@ const Marketplace = () => {
                                             multiple
                                             value={typeFilter}
                                             onChange={handleTypeFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
+                                            input={<OutlinedInput label='Type' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
                                             sx={SelectStyles}
@@ -498,7 +498,7 @@ const Marketplace = () => {
                                             multiple
                                             value={frameworkFilter}
                                             onChange={handleFrameworkFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
+                                            input={<OutlinedInput label='Framework' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
                                             sx={SelectStyles}
