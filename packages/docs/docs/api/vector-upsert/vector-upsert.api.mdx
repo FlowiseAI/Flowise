@@ -1,0 +1,171 @@
+---
+id: vector-upsert
+title: 'Upsert vector embeddings'
+description: 'Upsert vector embeddings of documents in a chatflow'
+sidebar_label: 'Upsert vector embeddings'
+hide_title: true
+hide_table_of_contents: true
+api: eJztWNtu2zgQ/RVinlpAiR1vdtvqad26BdwtkjSJUyyCoKDFkcVGIlmScmIY+vfFkLItX7Jogz72yRI118Mz5IyX4PnMQXoLc8y8tnCXgMOsttIvIL1dwhS5RTusfQHp7V1zl4A2aLmXWo0FpK3axDi0HhIQ6DIrDX2GFOIyizIMqykKIdXMMZ0zobO6QuUdk4pxlhXc56V+gAQMt7xCj9aFCCRZMtwXkIDiFUIKUkACFr/X0qKA1NsaE3BZgRWHdAl+YUjKeSvVDJrdqN61rth4BJQQGULn32qxIO1MK4/K0yM3ppRZSLb3zZHyct+Nnn7DjHI3lqDxEl2Q89qcaYGE0m5IuxGNFcu4Q8ceClRsoWtW8Dmyqi69NCWuAHReW2RKC3RJkMq4Ys5gJvMF80X8xMYj5nUrS4tR2UEC+MgrU1IcJPj1hKDRc7RWCnynVS5nh9LaDvW6QJYF2TqygJytjAR/AnNel+tdryMHHHoftv6FDqZ4+RKapmkSiFly63u5ttWR4J7/DM65LONDK8at5QtIQHqs3CHoyQv3kMJUKm4X+/z4QBYprSmy2pSaCxQkVWmB5Vlg4L5VVZclnxK4kY0brPcgPPcF2g1mW2g6IEg21L5t87trttfJSVhwRisXARj0+/Sz7exmr/bihqBgrs4ydC6vy5IA+0W8V3U1FITYRlLV1RTtHg5nYZnOgpaijAfFDngnDSFbjbBE/zyTolXdNzoxgj/TaN2q7hu9upfGPM+oi6rshdI+IpGsok9YKKTg9OWu1yA60tmPFMETe2b4jA6A1fbvcnvD5etCOiZdqPOWL5QCvZKN41Am6PmqiHfdciFkrP6LrQD2Tuy1yyXw2hfaQgofdaHYSCNhyT3JD/qD06P+66PBKYT68NKHMEft3bK9etO5qi7bwmnPoNNDpTNWc15KwaQytWfG6rmM9PxFlVKhc3x28DTZDuS9tdqylXh3P54IsaEYxQ9bDrJbZs9uhp/Go6/js4vJNXQxDApr0E73QVtfrsTiXNfqN2AbwAaDAwc0xRNvUgyyv+Fq4frzcFF6tIqXzKGdo/2NWRezePoWmhpzo11IjxrnFHrxlunFy7+3lKIB6vQJw9hm17aEFArvjUt7PW7ksS+QK/eA9pjL3vxkL9ALq0WdBeZGQ9Aku3ac5zOpZkc/Yu8qyh42lvZ6pc54WWjn09N+v08hHrLyiaSYwDmW2tAlsLbXGW2uiA5xx7sDznpryCO0IwW9RyFI2ocPqxby45frvQCGF2N2jwtG9xYq3zKRPUhfsFw+omBzXtbITt+cXBavB9VsMpHv/lDzm/qVfPh0/vDqzePb8stf/OhDfvL4z3Dy2f0btpuofLkZVd5vbsjuqLFq7Q909mREqlyHPLfuRNYOasOL8cF08nUfT/vzk+McMSyaOjnuH/fbWuVZqNV2oBsGXgzH7Ko2RodJcptHXe5QWVRc0mcXxf/e+kx5EvsrrjounppFdxPuDIDPnF9bDnl89D1Tcqmo9kM6y7Yc19N2AvVqck6loOGb+E0Cy+WUO5zYsmlo+XuNlgbyuwTm3Mo4adwuQUhHzwLSnJcO/yeXF5ft8PCSdQfgJ8Jd9ZGKusjA1zjJ3OMizt/NXZNAgVygDYHED20TeXRN6hvFQyMelXdUGmYZGt8R3zvAqXTXB9vF+RUV3bQd16twqIapLthNNo/0h0US+sdOae+Ucgj+YLbLZZS41veommadvKd3yr9p/gMgEvuX
+sidebar_class_name: 'post api-method'
+info_path: docs/api/vector-upsert/vector-upsert-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Upsert vector embeddings'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/vector/upsert/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Upsert vector embeddings of documents in a chatflow
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Chatflow ID' }]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        stopNodeId: {
+                            type: 'string',
+                            description:
+                                'In cases when you have multiple vector store nodes, you can specify the node ID to store the vectors',
+                            example: 'node_1'
+                        },
+                        overrideConfig: {
+                            type: 'object',
+                            description: 'The configuration to override the default vector upsert settings (optional)'
+                        }
+                    }
+                }
+            },
+            'multipart/form-data': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        files: { type: 'array', items: { type: 'string', format: 'binary' }, description: 'Files to be uploaded' },
+                        modelName: { type: 'string', nullable: true, example: '', description: 'Other override configurations' }
+                    },
+                    required: ['files']
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Vector embeddings upserted successfully',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            numAdded: { type: 'number', description: 'Number of vectors added', example: 1 },
+                            numDeleted: { type: 'number', description: 'Number of vectors deleted', example: 1 },
+                            numUpdated: { type: 'number', description: 'Number of vectors updated', example: 1 },
+                            numSkipped: {
+                                type: 'number',
+                                description: 'Number of vectors skipped (not added, deleted, or updated)',
+                                example: 1
+                            },
+                            addedDocs: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        pageContent: { type: 'string', example: 'This is the content of the page.' },
+                                        metadata: {
+                                            type: 'object',
+                                            additionalProperties: { type: 'string' },
+                                            example: { author: 'John Doe', date: '2024-08-24' }
+                                        }
+                                    },
+                                    title: 'Document'
+                                }
+                            }
+                        },
+                        title: 'VectorUpsertResponse'
+                    }
+                }
+            }
+        },
+        '400': {
+            description: 'Invalid input provided',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', description: 'Error message', example: 'Invalid input provided' },
+                            code: { type: 'string', description: 'Error code', example: 'INVALID_INPUT' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '404': {
+            description: 'Chatflow not found',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', description: 'Error message', example: 'Invalid input provided' },
+                            code: { type: 'string', description: 'Error code', example: 'INVALID_INPUT' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '422': {
+            description: 'Validation error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', description: 'Error message', example: 'Invalid input provided' },
+                            code: { type: 'string', description: 'Error code', example: 'INVALID_INPUT' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        },
+        '500': {
+            description: 'Internal server error',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            message: { type: 'string', description: 'Error message', example: 'Invalid input provided' },
+                            code: { type: 'string', description: 'Error code', example: 'INVALID_INPUT' }
+                        },
+                        title: 'Error'
+                    }
+                }
+            }
+        }
+    }}
+></StatusCodes>
