@@ -20,7 +20,7 @@ class ChatPerplexity_ChatModels implements INode {
     constructor() {
         this.label = 'ChatPerplexity'
         this.name = 'chatPerplexity'
-        this.version = 1.0
+        this.version = 0.1
         this.type = 'ChatPerplexity'
         this.icon = 'perplexity.svg'
         this.category = 'Chat Models'
@@ -170,7 +170,6 @@ class ChatPerplexity_ChatModels implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        // --- Get Input Values ---
         const model = nodeData.inputs?.model as string
         const temperature = nodeData.inputs?.temperature as string
         const maxTokens = nodeData.inputs?.maxTokens as string
@@ -191,7 +190,7 @@ class ChatPerplexity_ChatModels implements INode {
             nodeData.credential = nodeData.inputs?.credentialId
         }
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const apiKey = getCredentialParam('perplexityApiKey', credentialData, nodeData) // Match credential input name
+        const apiKey = getCredentialParam('perplexityApiKey', credentialData, nodeData)
 
         if (!apiKey) {
             throw new Error('Perplexity API Key missing from credential')
@@ -223,16 +222,8 @@ class ChatPerplexity_ChatModels implements INode {
             }
         }
 
-        // --- Handle Proxy ---
-        // The Langchain Perplexity class uses the OpenAI client internally, which accepts configuration.
-        // However, PerplexityChatInput doesn't directly expose `configuration`. We might need to modify FlowiseChatPerplexity or handle proxy differently if needed.
-        // For now, let's assume the standard environment variables (HTTPS_PROXY) might work, or skip direct proxy config here.
-        // If proxy is essential, the FlowiseChatPerplexity wrapper might need adjustment to pass httpAgent to the OpenAI client it creates.
         if (proxyUrl) {
-            // This part needs verification/adjustment based on how Langchain's Perplexity class handles client options
             console.warn('Proxy configuration for ChatPerplexity might require adjustments to FlowiseChatPerplexity wrapper.')
-            // Example if direct configuration was possible (it's not on PerplexityChatInput):
-            // obj.configuration = { httpAgent: new HttpsProxyAgent(proxyUrl) };
         }
 
         const perplexityModel = new ChatPerplexity(nodeData.id, obj)

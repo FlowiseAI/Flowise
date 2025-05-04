@@ -21,7 +21,7 @@ export class ChatPerplexity extends LangchainChatPerplexity implements IVisionCh
         this.maxTokens = this.configuredMaxToken
     }
 
-    // Method to set multimodal options (though Perplexity might not use images like OpenAI)
+    // Method to set multimodal options
     setMultiModalOption(multiModalOption: IMultiModalOption): void {
         this.multiModalOption = multiModalOption
     }
