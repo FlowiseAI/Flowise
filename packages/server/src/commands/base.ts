@@ -75,7 +75,8 @@ export abstract class BaseCommand extends Command {
         REDIS_TLS: Flags.string(),
         REDIS_CERT: Flags.string(),
         REDIS_KEY: Flags.string(),
-        REDIS_CA: Flags.string()
+        REDIS_CA: Flags.string(),
+        ENABLE_BULLMQ_DASHBOARD: Flags.string()
     }
 
     protected async stopProcess() {
@@ -210,5 +211,6 @@ export abstract class BaseCommand extends Command {
         if (flags.QUEUE_REDIS_EVENT_STREAM_MAX_LEN) process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN = flags.QUEUE_REDIS_EVENT_STREAM_MAX_LEN
         if (flags.REMOVE_ON_AGE) process.env.REMOVE_ON_AGE = flags.REMOVE_ON_AGE
         if (flags.REMOVE_ON_COUNT) process.env.REMOVE_ON_COUNT = flags.REMOVE_ON_COUNT
+        if (flags.ENABLE_BULLMQ_DASHBOARD) process.env.ENABLE_BULLMQ_DASHBOARD = flags.ENABLE_BULLMQ_DASHBOARD
     }
 }
