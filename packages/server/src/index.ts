@@ -251,7 +251,7 @@ export class App {
             })
         })
 
-        if (process.env.MODE === MODE.QUEUE) {
+        if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true') {
             this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
         }
 
