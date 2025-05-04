@@ -28,7 +28,7 @@ const swaggerUiOptions = {
             }
         ]
     },
-    apis: [`${process.cwd()}/dist/routes/**/*.js`, `${process.cwd()}/src/yml/swagger.yml`]
+    apis: [`${process.cwd()}/dist/routes/**/*.js`, `${process.cwd()}/src/yml/swagger.yml`, `${process.cwd()}/src/yml/browser-extension.yml`]
 }
 
 // https://github.com/swagger-api/swagger-ui/blob/master/docs/usage/configuration.md

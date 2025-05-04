@@ -1,0 +1,26 @@
+# Browser Extension API Documentation
+paths:
+    /browser-extension/chatflows:
+        get:
+            tags:
+                - browser-extension
+            operationId: getBrowserExtensionChatflows
+            summary: Get chatflows available for browser extension
+            description: Retrieve all chatflows that have "Browser Extension" in their visibility settings for the authenticated user.
+            security:
+                - bearerAuth: []
+            responses:
+                '200':
+                    description: List of chatflows available for the browser extension
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Chatflow'
+                '401':
+                    description: Unauthorized - Authentication required
+                '403':
+                    description: Forbidden - User doesn't have permission
+                '500':
+                    description: Internal server error
