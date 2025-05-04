@@ -157,6 +157,8 @@ class ChatPerplexity_ChatModels implements INode {
                 optional: true,
                 additionalParams: true
             }
+            // LangchainJS currently does not has a web_search_options, search_after_date_filter or search_before_date_filter parameter.
+            // To add web_search_options (user_location, search_context_size) and search_after_date_filter, search_before_date_filter as a modelKwargs parameter.
         ]
     }
 
