@@ -49,6 +49,7 @@ services:
             - REDIS_CERT=${REDIS_CERT}
             - REDIS_KEY=${REDIS_KEY}
             - REDIS_CA=${REDIS_CA}
+            - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
         ports:
             - '${PORT}:${PORT}'
         volumes:
