@@ -15,7 +15,7 @@ interface ScrapedPageData {
 }
 
 class WebScraperRecursiveTool extends Tool {
-    name = 'cheerio_web_scraper'
+    name = 'web_scraper_tool'
     description = `Scrapes web pages recursively or via default sitemap. Extracts title, description, and paragraph text. Input should be a single URL string. Returns a JSON string array of scraped page data objects.`
 
     private maxDepth: number
@@ -316,11 +316,11 @@ class WebScraperRecursive_Tools implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Cheerio Web Scraper'
-        this.name = 'cheerioWebScraper'
-        this.version = 1.0
+        this.label = 'Web Scraper Tool'
+        this.name = 'webScraperTool'
+        this.version = 1.1
         this.type = 'Tool'
-        this.icon = 'cheerioWebScraper.svg'
+        this.icon = 'webScraperTool.svg'
         this.category = 'Tools'
         this.description = 'Scrapes web pages recursively by following links OR by fetching URLs from the default sitemap.'
         this.baseClasses = [this.type, ...getBaseClasses(WebScraperRecursiveTool)]
