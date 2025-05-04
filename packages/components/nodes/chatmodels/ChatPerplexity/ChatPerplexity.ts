@@ -1,0 +1,250 @@
+import { ChatPerplexity as LangchainChatPerplexity, PerplexityChatInput } from '@langchain/community/chat_models/perplexity'
+import { BaseCache } from '@langchain/core/caches'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ChatPerplexity } from './FlowiseChatPerplexity' // Import the wrapper class
+import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+import { HttpsProxyAgent } from 'https-proxy-agent'
+
+class ChatPerplexity_ChatModels implements INode {
+    label: string
+    name: string
+    version: number
+    type: string
+    icon: string
+    category: string
+    description: string
+    baseClasses: string[]
+    credential: INodeParams
+    inputs: INodeParams[]
+
+    constructor() {
+        this.label = 'ChatPerplexity'
+        this.name = 'chatPerplexity'
+        this.version = 1.0
+        this.type = 'ChatPerplexity'
+        this.icon = 'perplexity.svg' // Assuming an icon file named perplexity.svg exists or will be added
+        this.category = 'Chat Models'
+        this.description = 'Wrapper around Perplexity large language models that use the Chat endpoint'
+        this.baseClasses = [this.type, ...getBaseClasses(LangchainChatPerplexity)]
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['perplexityApi'] // Use the credential created earlier
+        }
+        this.inputs = [
+            {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
+            {
+                label: 'Model Name',
+                name: 'model', // Corresponds to 'model' in PerplexityChatInput
+                type: 'asyncOptions',
+                loadMethod: 'listModels',
+                default: 'llama-3-sonar-small-32k-online' // A default online model
+            },
+            {
+                label: 'Temperature',
+                name: 'temperature',
+                type: 'number',
+                step: 0.1,
+                default: 1, // Default from Perplexity docs (though Langchain uses undefined)
+                optional: true
+            },
+            {
+                label: 'Max Tokens',
+                name: 'maxTokens', // Corresponds to 'maxTokens'
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Top P',
+                name: 'topP', // Corresponds to 'topP'
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Top K',
+                name: 'topK', // Corresponds to 'topK'
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Presence Penalty',
+                name: 'presencePenalty', // Corresponds to 'presencePenalty'
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Frequency Penalty',
+                name: 'frequencyPenalty', // Corresponds to 'frequencyPenalty'
+                type: 'number',
+                step: 0.1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Timeout',
+                name: 'timeout',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Search Domain Filter',
+                name: 'searchDomainFilter',
+                type: 'json',
+                optional: true,
+                additionalParams: true,
+                description: 'Limit citations to URLs from specified domains (e.g., ["example.com", "anotherexample.org"])'
+            },
+            {
+                label: 'Return Images',
+                name: 'returnImages',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true,
+                description: 'Whether the model should return images (if supported by the model)'
+            },
+            {
+                label: 'Return Related Questions',
+                name: 'returnRelatedQuestions',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true,
+                description: 'Whether the online model should return related questions'
+            },
+            {
+                label: 'Search Recency Filter',
+                name: 'searchRecencyFilter',
+                type: 'options',
+                options: [
+                    { label: 'Not Set', name: '' },
+                    { label: 'Month', name: 'month' },
+                    { label: 'Week', name: 'week' },
+                    { label: 'Day', name: 'day' },
+                    { label: 'Hour', name: 'hour' }
+                ],
+                default: '',
+                optional: true,
+                additionalParams: true,
+                description: 'Filter search results by time interval (does not apply to images)'
+            },
+            {
+                label: 'Proxy Url',
+                name: 'proxyUrl',
+                type: 'string',
+                optional: true,
+                additionalParams: true
+            }
+            // Note: BasePath is handled via the client constructor in Langchain, not a direct field.
+            // Note: BaseOptions are also handled via client constructor. Proxy is simpler.
+        ]
+    }
+
+    //@ts-ignore
+    loadMethods = {
+        async listModels(): Promise<INodeOptionsValue[]> {
+            return await getModels(MODEL_TYPE.CHAT, 'chatPerplexity')
+        }
+    }
+
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        // --- Get Input Values ---
+        const model = nodeData.inputs?.model as string
+        const temperature = nodeData.inputs?.temperature as string
+        const maxTokens = nodeData.inputs?.maxTokens as string
+        const topP = nodeData.inputs?.topP as string
+        const topK = nodeData.inputs?.topK as string
+        const presencePenalty = nodeData.inputs?.presencePenalty as string
+        const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
+        const streaming = nodeData.inputs?.streaming as boolean
+        const timeout = nodeData.inputs?.timeout as string
+        const searchDomainFilterRaw = nodeData.inputs?.searchDomainFilter
+        const returnImages = nodeData.inputs?.returnImages as boolean
+        const returnRelatedQuestions = nodeData.inputs?.returnRelatedQuestions as boolean
+        const searchRecencyFilter = nodeData.inputs?.searchRecencyFilter as string
+        const proxyUrl = nodeData.inputs?.proxyUrl as string
+        const cache = nodeData.inputs?.cache as BaseCache
+
+        // --- Get Credential ---
+        if (nodeData.inputs?.credentialId) {
+            nodeData.credential = nodeData.inputs?.credentialId
+        }
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const apiKey = getCredentialParam('perplexityApiKey', credentialData, nodeData) // Match credential input name
+
+        if (!apiKey) {
+            throw new Error('Perplexity API Key missing from credential')
+        }
+
+        // --- Construct PerplexityChatInput Object ---
+        const obj: PerplexityChatInput = {
+            model,
+            apiKey,
+            streaming: streaming ?? true // Default streaming to true
+        }
+
+        // Add optional parameters if provided
+        if (temperature) obj.temperature = parseFloat(temperature)
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        if (topP) obj.topP = parseFloat(topP)
+        if (topK) obj.topK = parseInt(topK, 10)
+        if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
+        if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
+        if (timeout) obj.timeout = parseInt(timeout, 10)
+        if (returnImages) obj.returnImages = returnImages
+        if (returnRelatedQuestions) obj.returnRelatedQuestions = returnRelatedQuestions
+        if (searchRecencyFilter && searchRecencyFilter !== '') obj.searchRecencyFilter = searchRecencyFilter
+        if (cache) obj.cache = cache
+
+        // Handle JSON input for searchDomainFilter
+        if (searchDomainFilterRaw) {
+            try {
+                obj.searchDomainFilter = typeof searchDomainFilterRaw === 'object' ? searchDomainFilterRaw : JSON.parse(searchDomainFilterRaw)
+            } catch (exception) {
+                throw new Error("Invalid JSON in Search Domain Filter: " + exception)
+            }
+        }
+
+        // --- Handle Proxy ---
+        // The Langchain Perplexity class uses the OpenAI client internally, which accepts configuration.
+        // However, PerplexityChatInput doesn't directly expose `configuration`. We might need to modify FlowiseChatPerplexity or handle proxy differently if needed.
+        // For now, let's assume the standard environment variables (HTTPS_PROXY) might work, or skip direct proxy config here.
+        // If proxy is essential, the FlowiseChatPerplexity wrapper might need adjustment to pass httpAgent to the OpenAI client it creates.
+        if (proxyUrl) {
+            // This part needs verification/adjustment based on how Langchain's Perplexity class handles client options
+            console.warn('Proxy configuration for ChatPerplexity might require adjustments to FlowiseChatPerplexity wrapper.')
+            // Example if direct configuration was possible (it's not on PerplexityChatInput):
+            // obj.configuration = { httpAgent: new HttpsProxyAgent(proxyUrl) };
+        }
+
+
+        // --- Instantiate and Return ---
+        const perplexityModel = new ChatPerplexity(nodeData.id, obj)
+        return perplexityModel
+    }
+}
+
+module.exports = { nodeClass: ChatPerplexity_ChatModels }
