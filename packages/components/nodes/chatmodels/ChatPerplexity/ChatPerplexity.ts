@@ -2,9 +2,8 @@ import { ChatPerplexity as LangchainChatPerplexity, PerplexityChatInput } from '
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { ChatPerplexity } from './FlowiseChatPerplexity' // Import the wrapper class
+import { ChatPerplexity } from './FlowiseChatPerplexity'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
-import { HttpsProxyAgent } from 'https-proxy-agent'
 
 class ChatPerplexity_ChatModels implements INode {
     label: string
@@ -23,7 +22,7 @@ class ChatPerplexity_ChatModels implements INode {
         this.name = 'chatPerplexity'
         this.version = 1.0
         this.type = 'ChatPerplexity'
-        this.icon = 'perplexity.svg' // Assuming an icon file named perplexity.svg exists or will be added
+        this.icon = 'perplexity.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Perplexity large language models that use the Chat endpoint'
         this.baseClasses = [this.type, ...getBaseClasses(LangchainChatPerplexity)]
@@ -31,7 +30,7 @@ class ChatPerplexity_ChatModels implements INode {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
-            credentialNames: ['perplexityApi'] // Use the credential created earlier
+            credentialNames: ['perplexityApi']
         }
         this.inputs = [
             {
@@ -42,22 +41,22 @@ class ChatPerplexity_ChatModels implements INode {
             },
             {
                 label: 'Model Name',
-                name: 'model', // Corresponds to 'model' in PerplexityChatInput
+                name: 'model',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'llama-3-sonar-small-32k-online' // A default online model
+                default: 'sonar' 
             },
             {
                 label: 'Temperature',
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                default: 1, // Default from Perplexity docs (though Langchain uses undefined)
+                default: 1,
                 optional: true
             },
             {
                 label: 'Max Tokens',
-                name: 'maxTokens', // Corresponds to 'maxTokens'
+                name: 'maxTokens',
                 type: 'number',
                 step: 1,
                 optional: true,
@@ -65,7 +64,7 @@ class ChatPerplexity_ChatModels implements INode {
             },
             {
                 label: 'Top P',
-                name: 'topP', // Corresponds to 'topP'
+                name: 'topP',
                 type: 'number',
                 step: 0.1,
                 optional: true,
@@ -73,7 +72,7 @@ class ChatPerplexity_ChatModels implements INode {
             },
             {
                 label: 'Top K',
-                name: 'topK', // Corresponds to 'topK'
+                name: 'topK',
                 type: 'number',
                 step: 1,
                 optional: true,
@@ -81,7 +80,7 @@ class ChatPerplexity_ChatModels implements INode {
             },
             {
                 label: 'Presence Penalty',
-                name: 'presencePenalty', // Corresponds to 'presencePenalty'
+                name: 'presencePenalty',
                 type: 'number',
                 step: 0.1,
                 optional: true,
@@ -89,7 +88,7 @@ class ChatPerplexity_ChatModels implements INode {
             },
             {
                 label: 'Frequency Penalty',
-                name: 'frequencyPenalty', // Corresponds to 'frequencyPenalty'
+                name: 'frequencyPenalty',
                 type: 'number',
                 step: 0.1,
                 optional: true,
@@ -158,8 +157,6 @@ class ChatPerplexity_ChatModels implements INode {
                 optional: true,
                 additionalParams: true
             }
-            // Note: BasePath is handled via the client constructor in Langchain, not a direct field.
-            // Note: BaseOptions are also handled via client constructor. Proxy is simpler.
         ]
     }
 
@@ -188,7 +185,6 @@ class ChatPerplexity_ChatModels implements INode {
         const proxyUrl = nodeData.inputs?.proxyUrl as string
         const cache = nodeData.inputs?.cache as BaseCache
 
-        // --- Get Credential ---
         if (nodeData.inputs?.credentialId) {
             nodeData.credential = nodeData.inputs?.credentialId
         }
@@ -199,14 +195,12 @@ class ChatPerplexity_ChatModels implements INode {
             throw new Error('Perplexity API Key missing from credential')
         }
 
-        // --- Construct PerplexityChatInput Object ---
         const obj: PerplexityChatInput = {
             model,
             apiKey,
-            streaming: streaming ?? true // Default streaming to true
+            streaming: streaming ?? true
         }
 
-        // Add optional parameters if provided
         if (temperature) obj.temperature = parseFloat(temperature)
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
@@ -219,7 +213,6 @@ class ChatPerplexity_ChatModels implements INode {
         if (searchRecencyFilter && searchRecencyFilter !== '') obj.searchRecencyFilter = searchRecencyFilter
         if (cache) obj.cache = cache
 
-        // Handle JSON input for searchDomainFilter
         if (searchDomainFilterRaw) {
             try {
                 obj.searchDomainFilter = typeof searchDomainFilterRaw === 'object' ? searchDomainFilterRaw : JSON.parse(searchDomainFilterRaw)
@@ -240,8 +233,6 @@ class ChatPerplexity_ChatModels implements INode {
             // obj.configuration = { httpAgent: new HttpsProxyAgent(proxyUrl) };
         }
 
-
-        // --- Instantiate and Return ---
         const perplexityModel = new ChatPerplexity(nodeData.id, obj)
         return perplexityModel
     }
