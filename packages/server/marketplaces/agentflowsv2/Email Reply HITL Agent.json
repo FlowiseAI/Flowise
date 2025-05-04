@@ -706,7 +706,7 @@
                         "label": "Max Loop Count",
                         "name": "maxLoopCount",
                         "type": "number",
-                        "default": 10,
+                        "default": 5,
                         "id": "loopAgentflow_0-input-maxLoopCount-number",
                         "display": true
                     }
@@ -714,7 +714,7 @@
                 "inputAnchors": [],
                 "inputs": {
                     "loopBackToNode": "agentAgentflow_0-Email Reply Agent",
-                    "maxLoopCount": 10
+                    "maxLoopCount": 5
                 },
                 "outputAnchors": [],
                 "outputs": {},

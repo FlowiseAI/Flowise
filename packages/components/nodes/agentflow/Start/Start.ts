@@ -142,7 +142,8 @@ class Start_Agentflow implements INode {
                         label: 'Value',
                         name: 'value',
                         type: 'string',
-                        placeholder: 'Bar'
+                        placeholder: 'Bar',
+                        optional: true
                     }
                 ]
             }

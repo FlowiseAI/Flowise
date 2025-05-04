@@ -39,7 +39,7 @@ class Loop_Agentflow implements INode {
                 label: 'Max Loop Count',
                 name: 'maxLoopCount',
                 type: 'number',
-                default: 10
+                default: 5
             }
         ]
     }
@@ -72,7 +72,7 @@ class Loop_Agentflow implements INode {
 
         const data = {
             nodeID: loopBackToNodeId,
-            maxLoopCount: _maxLoopCount ? parseInt(_maxLoopCount) : 10
+            maxLoopCount: _maxLoopCount ? parseInt(_maxLoopCount) : 5
         }
 
         const returnOutput = {
@@ -82,7 +82,7 @@ class Loop_Agentflow implements INode {
             output: {
                 content: 'Loop back to ' + `${loopBackToNodeLabel} (${loopBackToNodeId})`,
                 nodeID: loopBackToNodeId,
-                maxLoopCount: _maxLoopCount ? parseInt(_maxLoopCount) : 10
+                maxLoopCount: _maxLoopCount ? parseInt(_maxLoopCount) : 5
             },
             state
         }

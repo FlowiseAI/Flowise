@@ -641,12 +641,14 @@ const AgentflowCanvas = () => {
         if (!chatflowId && !localStorage.getItem('duplicatedFlowData') && getNodesApi.data && nodes.length === 0) {
             const startNodeData = getNodesApi.data.find((node) => node.name === 'startAgentflow')
             if (startNodeData) {
+                const clonedStartNodeData = cloneDeep(startNodeData)
+                clonedStartNodeData.position = { x: 100, y: 100 }
                 const startNode = {
                     id: 'startAgentflow_0',
                     type: 'agentFlow',
                     position: { x: 100, y: 100 },
                     data: {
-                        ...initNode(startNodeData, 'startAgentflow_0', true),
+                        ...initNode(clonedStartNodeData, 'startAgentflow_0', true),
                         label: 'Start'
                     }
                 }

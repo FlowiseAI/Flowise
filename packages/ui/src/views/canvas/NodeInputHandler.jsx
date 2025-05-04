@@ -615,13 +615,14 @@ const NodeInputHandler = ({
         const currentNode = reactFlowInstance?.getNodes().find((node) => node.id === data.id)
         const currentNodeInputs = currentNode?.data?.inputs
 
-        const existingModel = currentNodeInputs?.llmModel || currentNodeInputs?.agentModel
+        const existingModel = currentNodeInputs?.llmModel || currentNodeInputs?.agentModel || currentNodeInputs?.humanInputModel
         if (existingModel) {
             try {
                 setLoading(true)
                 const selectedChatModelObj = {
                     name: existingModel,
-                    inputs: currentNodeInputs?.llmModelConfig || currentNodeInputs?.agentModelConfig
+                    inputs:
+                        currentNodeInputs?.llmModelConfig || currentNodeInputs?.agentModelConfig || currentNodeInputs?.humanInputModelConfig
                 }
                 const resp = await documentstoreApi.generateDocStoreToolDesc(storeId, { selectedChatModel: selectedChatModelObj })
                 if (resp.data) {
@@ -722,7 +723,7 @@ const NodeInputHandler = ({
         const currentNodeInputs = currentNode?.data?.inputs
 
         // Check if model is already selected in the node
-        const existingModel = currentNodeInputs?.llmModel || currentNodeInputs?.agentModel
+        const existingModel = currentNodeInputs?.llmModel || currentNodeInputs?.agentModel || currentNodeInputs?.humanInputModel
         if (existingModel) {
             // Open prompt generator dialog directly with existing model
             setPromptGeneratorDialogProps({
@@ -731,7 +732,10 @@ const NodeInputHandler = ({
                 data: {
                     selectedChatModel: {
                         name: existingModel,
-                        inputs: currentNodeInputs?.llmModelConfig || currentNodeInputs?.agentModelConfig
+                        inputs:
+                            currentNodeInputs?.llmModelConfig ||
+                            currentNodeInputs?.agentModelConfig ||
+                            currentNodeInputs?.humanInputModelConfig
                     }
                 }
             })
