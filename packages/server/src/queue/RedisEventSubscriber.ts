@@ -13,8 +13,7 @@ export class RedisEventSubscriber {
                 socket: {
                     keepAlive: 60000,
                 },
-                pingInterval: 60000,
-                disableOfflineQueue: true
+                pingInterval: 60000
             })
         } else {
             this.redisSubscriber = createClient({
@@ -29,8 +28,7 @@ export class RedisEventSubscriber {
                     ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined,
                     keepAlive: 60000,
                 },
-                pingInterval: 60000,
-                disableOfflineQueue: true
+                pingInterval: 60000
             })
         }
         this.sseStreamer = sseStreamer

@@ -42,7 +42,6 @@ export class QueueManager {
             username: process.env.REDIS_USERNAME || undefined,
             password: process.env.REDIS_PASSWORD || undefined,
             tls: tlsOpts,
-            enableOfflineQueue: false,
             enableReadyCheck: true,
             keepAlive: 60000,
         }

@@ -153,7 +153,6 @@ class Redis_VectorStores implements INode {
                         keepAlive: 60000, // milliseconds
                     },
                     pingInterval: 60000, // milliseconds
-                    disableOfflineQueue: true 
                 })
                 await redisClient.connect()
 
@@ -225,7 +224,6 @@ class Redis_VectorStores implements INode {
                 keepAlive: 60000, // milliseconds
             },
             pingInterval: 60000, // milliseconds
-            disableOfflineQueue: true
          })
 
         const storeConfig: RedisVectorStoreConfig = {

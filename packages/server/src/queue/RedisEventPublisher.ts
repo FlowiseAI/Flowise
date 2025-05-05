@@ -11,8 +11,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                 socket: {
                     keepAlive: 60000,
                 },
-                pingInterval: 60000,
-                disableOfflineQueue: true
+                pingInterval: 60000
             })
         } else {
             this.redisPublisher = createClient({
@@ -27,8 +26,7 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                     ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined,
                     keepAlive: 60000,
                 },
-                pingInterval: 60000,
-                disableOfflineQueue: true
+                pingInterval: 60000
             })
         }
     }

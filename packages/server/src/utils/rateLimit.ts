@@ -25,7 +25,6 @@ export class RateLimiterManager {
         if (process.env.MODE === MODE.QUEUE) {
             if (process.env.REDIS_URL) {
                 this.redisClient = new Redis(process.env.REDIS_URL, {
-                    enableOfflineQueue: false,
                     keepAlive: 60000,
                     retryStrategy: (times) => Math.min(times * 100, 3000),
                 })
@@ -43,7 +42,6 @@ export class RateLimiterManager {
                                   ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
                               }
                             : undefined,
-                    enableOfflineQueue: false,
                     keepAlive: 60000,
                     retryStrategy: (times) => Math.min(times * 100, 3000),
                 })
@@ -73,7 +71,6 @@ export class RateLimiterManager {
             username: process.env.REDIS_USERNAME || undefined,
             password: process.env.REDIS_PASSWORD || undefined,
             tls: tlsOpts,
-            enableOfflineQueue: false,
             maxRetriesPerRequest: null,
             enableReadyCheck: true,
             keepAlive: 60000,
