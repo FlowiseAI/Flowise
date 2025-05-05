@@ -30,6 +30,7 @@ import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
 import AssessmentIcon from '@mui/icons-material/Assessment'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
+import { ExportImportMenuItems } from './components/ExportImportComponent'
 
 import dynamic from 'next/dynamic'
 import ChatDrawer from './ChatDrawer'
@@ -460,6 +461,7 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                                 </MenuItem>
                                 <MenuItem onClick={handleSubscriptionOpen}>Upgrade Plan</MenuItem>
 
+                                <ExportImportMenuItems onClose={handleClose} />
                                 <MenuItem
                                     onClick={() => {
                                         handleClose()

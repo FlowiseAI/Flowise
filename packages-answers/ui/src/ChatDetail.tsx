@@ -62,7 +62,6 @@ export const ChatDetail = ({
 
     const displayMode = chatbotConfig?.displayMode || DISPLAY_MODES.CHATBOT
     const embeddedUrl = chatbotConfig?.embeddedUrl || ''
-    console.log('chat', { chat, chatbotConfig, displayMode, embeddedUrl, selectedSidekick })
     return (
         <>
             <Box sx={{ display: 'flex', width: '100%' }}>

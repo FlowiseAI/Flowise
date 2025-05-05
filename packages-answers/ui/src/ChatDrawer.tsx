@@ -71,7 +71,7 @@ export default function ChatDrawer({ journeys, chats, defaultOpen }: ChatDrawerP
 
     const chatsByDate = React.useMemo(() => {
         if (!fetchedChats || fetchedChats?.error) return {}
-        console.log({ fetchedChats })
+
         const sortedChats = fetchedChats?.sort(
             (a, b) => new Date(b.createdAt ?? b.createdDate).getTime() - new Date(a.createdAt ?? a.createdDate).getTime()
         )
@@ -80,31 +80,6 @@ export default function ChatDrawer({ journeys, chats, defaultOpen }: ChatDrawerP
             return { ...accum, [dateKey]: [...(accum[dateKey] || []), chat] }
         }, {})
     }, [fetchedChats])
-
-    const handleDrawerOpen = () => {
-        window.localStorage.setItem('drawerOpen', 'true')
-        setOpen(true)
-    }
-
-    const handleDrawerClose = () => {
-        window.localStorage.setItem('drawerOpen', 'false')
-        setOpen(false)
-    }
-
-    const handleExpandJourney = (idx: string | number) => (evt: any) => {
-        evt.preventDefault()
-        evt.stopPropagation()
-        setOpened((prev) => {
-            const newArr = { ...prev }
-            newArr[idx] = !newArr[idx]
-            return newArr
-        })
-    }
-
-    const handleAddChat = ({ journey }: any) => {
-        setOpen(false)
-        router.push('/chat')
-    }
 
     return (
         <>

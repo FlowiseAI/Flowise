@@ -9,7 +9,7 @@ import Avatar from '@mui/material/Avatar'
 import Close from '@mui/icons-material/Close'
 import ChatIcon from '@mui/icons-material/ContactSupport'
 import Resize from '@mui/icons-material/Height'
-
+import Script from 'next/script'
 // Need these as guidelines or either the chat window or main content will be unusable and the drawer tab icons will get lost.   May need some tweaking.
 const maxDrawerWidth = 40 // in "vw"
 const minDrawerWidth = 20 // in "vw"
@@ -207,20 +207,24 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
                 }}
             >
                 <Box sx={{ width: helpChatOpen ? drawerWidth : 0, textWrap: 'initial' }}>
-                    <aai-fullchatbot theme={themeConfig} chatflowid={chatflowid} apiHost={apiHost} />
-                    <script
-                        type='module'
-                        dangerouslySetInnerHTML={{
-                            __html: `
-                                import Chatbot from "https://cdn.jsdelivr.net/npm/aai-embed@2/dist/web.js"
-                                Chatbot.initFull({
-                                    chatflowid: "${chatflowid}",
-                                    apiHost: "${apiHost}",
-                                    theme: ${JSON.stringify(themeConfig)}
-                                })
-                            `
-                        }}
-                    />
+                    {helpChatOpen && (
+                        <>
+                            <aai-fullchatbot />
+                            <Script
+                                key='aai-chatbot-script'
+                                id='aai-chatbot-script'
+                                type='module'
+                                src='https://cdn.jsdelivr.net/npm/aai-embed@2/dist/web.js'
+                                onReady={() => {
+                                    Chatbot.initFull({
+                                        chatflowid: chatflowid,
+                                        apiHost: apiHost,
+                                        theme: themeConfig
+                                    })
+                                }}
+                            />
+                        </>
+                    )}
                 </Box>
             </Drawer>
         </Box>

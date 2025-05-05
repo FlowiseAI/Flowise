@@ -588,7 +588,8 @@ export const buildFlow = async ({
                     cachePool,
                     dynamicVariables,
                     uploads,
-                    baseURL
+                    baseURL,
+                    user
                 })
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
@@ -615,7 +616,8 @@ export const buildFlow = async ({
                     dynamicVariables,
                     uploads,
                     baseURL,
-                    componentNodes: componentNodes as ICommonObject
+                    componentNodes: componentNodes as ICommonObject,
+                    user
                 })
 
                 // Save dynamic variables

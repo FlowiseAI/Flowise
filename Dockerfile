@@ -37,7 +37,6 @@ FROM base as build
 
 # Copy package.json files and patches directory first
 COPY --from=pruner /app/out/json/ .
-COPY --from=pruner /app/patches ./patches
 
 # First install the dependencies (as they change less often)
 RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm install 
