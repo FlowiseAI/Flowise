@@ -331,46 +331,28 @@ export class StripeProvider {
                         // Ensure all unknown credit types are counted as AI tokens
                         const aiTokens = data.credits.ai_tokens + (data.credits.unknown || 0)
                         const totalCredits = aiTokens + data.credits.compute + data.credits.storage
-                        const totalCreditsWithMargin = Math.floor(totalCredits * BILLING_CONFIG.MARGIN_MULTIPLIER)
-                        const meterId = metersMap.get('credits')
-                        const ai_tokens_cost = (data.costs.base.ai + (data.costs.base.unknown || 0)) * BILLING_CONFIG.MARGIN_MULTIPLIER
-                        const compute_cost = data.costs.base.compute * BILLING_CONFIG.MARGIN_MULTIPLIER
-                        const storage_cost = data.costs.base.storage * BILLING_CONFIG.MARGIN_MULTIPLIER
-                        const total_cost_with_margin = ai_tokens_cost + compute_cost + storage_cost
 
-                        const total_credits_with_margin = totalCreditsWithMargin + (data.costs.base.unknown || 0)
+                        const meterId = metersMap.get('credits')
                         if (!meterId) {
                             throw new Error('No meter found for type: credits')
                         }
 
                         let retryCount = 0
-                        // console.log('Event sync', {
-                        //     totalCreditsWithMargin,
-                        //     meterId,
-                        //     timestamp,
-                        //     data,
-                        //     retries: BILLING_CONFIG.VALIDATION.MAX_RETRIES,
-                        //     retryCount
-                        // })
+
                         while (retryCount < BILLING_CONFIG.VALIDATION.MAX_RETRIES) {
                             try {
-                                const app = getRunningExpressApp()
-
                                 const stripeMeterEvent = {
                                     event_name: 'credits',
                                     identifier: `${data.traceId}_credits`,
                                     timestamp,
                                     payload: {
-                                        value: totalCreditsWithMargin.toString(),
+                                        value: totalCredits.toString(),
                                         stripe_customer_id: data.stripeCustomerId,
                                         user_id: data.userId,
                                         trace_id: data.traceId,
-                                        ai_tokens_credits: (aiTokens * BILLING_CONFIG.MARGIN_MULTIPLIER).toString(),
-                                        compute_credits: (data.credits.compute * BILLING_CONFIG.MARGIN_MULTIPLIER).toString(),
-                                        ai_tokens_cost: (
-                                            (data.costs.base.ai + (data.costs.base.unknown || 0)) *
-                                            BILLING_CONFIG.MARGIN_MULTIPLIER
-                                        ).toFixed(6),
+                                        ai_tokens_credits: aiTokens.toString(),
+                                        compute_credits: data.credits.compute.toString(),
+                                        ai_tokens_cost: (data.costs.base.ai + (data.costs.base.unknown || 0)).toFixed(6),
                                         compute_cost: (data.costs.base.compute * BILLING_CONFIG.MARGIN_MULTIPLIER).toFixed(6),
                                         total_cost_with_margin: (
                                             (data.costs.base.ai +
@@ -385,23 +367,6 @@ export class StripeProvider {
                                     log.error('Failed to create meter event', { error: error.message, stripeMeterEvent })
                                     throw error
                                 })
-                                // console.log('RESULT', result)
-                                // const usageEvent = await app.AppDataSource.getRepository(UsageEvent).save({
-                                //     traceId: data.traceId,
-                                //     userId: data.userId,
-                                //     organizationId: data.organizationId,
-                                //     aiCredentialsOwnership: data.aiCredentialsOwnership,
-                                //     resourceType: 'CREDITS',
-                                //     creditsConsumed: totalCreditsWithMargin,
-                                //     stripeCustomerId: data.stripeCustomerId,
-                                //     // messageId: data.messageId,
-                                //     timestamp,
-                                //     metadata: {
-                                //         stripeCustomerId: data.stripeCustomerId,
-                                //         stripeMeterEvent: result,
-                                //         langfuseTrace: data.fullTrace
-                                //     }
-                                // })
 
                                 // Update trace metadata with billing info
                                 await this.updateTraceMetadata(data, result, batchStartTime, BATCH_SIZE, i, meterId)
