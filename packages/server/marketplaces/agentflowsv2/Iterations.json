@@ -388,7 +388,7 @@
                     },
                     {
                         "label": "Return Response As",
-                        "name": "agentReturnResponseAs",
+                        "name": "llmReturnResponseAs",
                         "type": "options",
                         "options": [
                             {
@@ -401,7 +401,7 @@
                             }
                         ],
                         "default": "userMessage",
-                        "id": "llmAgentflow_0-input-agentReturnResponseAs-options",
+                        "id": "llmAgentflow_0-input-llmReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -514,7 +514,7 @@
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
                     "llmUserMessage": "<p>Reply only:</p><p>{{$iteration.item}}</p>",
-                    "agentReturnResponseAs": "userMessage",
+                    "llmReturnResponseAs": "userMessage",
                     "llmStructuredOutput": "",
                     "llmUpdateState": "",
                     "llmModelConfig": {
@@ -706,7 +706,7 @@
                     },
                     {
                         "label": "Return Response As",
-                        "name": "agentReturnResponseAs",
+                        "name": "llmReturnResponseAs",
                         "type": "options",
                         "options": [
                             {
@@ -719,7 +719,7 @@
                             }
                         ],
                         "default": "userMessage",
-                        "id": "llmAgentflow_1-input-agentReturnResponseAs-options",
+                        "id": "llmAgentflow_1-input-llmReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -832,7 +832,7 @@
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
                     "llmUserMessage": "<p>Reply only:</p><p>{{$iteration.item}}</p>",
-                    "agentReturnResponseAs": "userMessage",
+                    "llmReturnResponseAs": "userMessage",
                     "llmStructuredOutput": "",
                     "llmUpdateState": "",
                     "llmModelConfig": {

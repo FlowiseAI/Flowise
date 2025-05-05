@@ -243,7 +243,8 @@ export const getPastChatHistoryImageMessages = async (
     const transformedPastMessages = []
 
     for (let i = 0; i < pastChatHistory.length; i++) {
-        const message = pastChatHistory[i] as BaseMessage
+        const message = pastChatHistory[i] as BaseMessage & { role: string }
+        const messageRole = message.role || 'user'
         if (message.additional_kwargs && message.additional_kwargs.fileUploads) {
             // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
             const fileUploads = message.additional_kwargs.fileUploads
@@ -293,28 +294,28 @@ export const getPastChatHistoryImageMessages = async (
                 const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
                 if (imageContents.length > 0) {
                     chatHistory.push({
-                        role: 'user',
+                        role: messageRole,
                         content: imageContents
                     })
                     transformedPastMessages.push({
-                        role: 'user',
+                        role: messageRole,
                         content: [...JSON.parse((pastChatHistory[i] as any).additional_kwargs.fileUploads)]
                     })
                 }
                 chatHistory.push({
-                    role: 'user',
+                    role: messageRole,
                     content: messageContent
                 })
             } catch (e) {
                 // failed to parse fileUploads, continue with text only
                 chatHistory.push({
-                    role: 'user',
+                    role: messageRole,
                     content: message.content
                 })
             }
         } else {
             chatHistory.push({
-                role: 'user',
+                role: messageRole,
                 content: message.content
             })
         }

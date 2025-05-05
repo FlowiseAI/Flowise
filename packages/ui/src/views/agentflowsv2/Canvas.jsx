@@ -754,7 +754,7 @@ const AgentflowCanvas = () => {
                                 {isSyncNodesButtonEnabled && (
                                     <Fab
                                         sx={{
-                                            left: 40,
+                                            left: 60,
                                             top: 20,
                                             color: 'white',
                                             background: 'orange',

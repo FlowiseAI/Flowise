@@ -470,7 +470,7 @@
                     },
                     {
                         "label": "Return Response As",
-                        "name": "agentReturnResponseAs",
+                        "name": "llmReturnResponseAs",
                         "type": "options",
                         "options": [
                             {
@@ -483,7 +483,7 @@
                             }
                         ],
                         "default": "userMessage",
-                        "id": "llmAgentflow_0-input-agentReturnResponseAs-options",
+                        "id": "llmAgentflow_0-input-llmReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -601,7 +601,7 @@
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
                     "llmUserMessage": "",
-                    "agentReturnResponseAs": "userMessage",
+                    "llmReturnResponseAs": "userMessage",
                     "llmStructuredOutput": "",
                     "llmUpdateState": [
                         {
@@ -802,7 +802,7 @@
                     },
                     {
                         "label": "Return Response As",
-                        "name": "agentReturnResponseAs",
+                        "name": "llmReturnResponseAs",
                         "type": "options",
                         "options": [
                             {
@@ -815,7 +815,7 @@
                             }
                         ],
                         "default": "userMessage",
-                        "id": "llmAgentflow_1-input-agentReturnResponseAs-options",
+                        "id": "llmAgentflow_1-input-llmReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -928,7 +928,7 @@
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
                     "llmUserMessage": "",
-                    "agentReturnResponseAs": "userMessage",
+                    "llmReturnResponseAs": "userMessage",
                     "llmStructuredOutput": "",
                     "llmUpdateState": "",
                     "llmModelConfig": {
@@ -1377,7 +1377,7 @@
                     },
                     {
                         "label": "Return Response As",
-                        "name": "agentReturnResponseAs",
+                        "name": "llmReturnResponseAs",
                         "type": "options",
                         "options": [
                             {
@@ -1390,7 +1390,7 @@
                             }
                         ],
                         "default": "userMessage",
-                        "id": "llmAgentflow_2-input-agentReturnResponseAs-options",
+                        "id": "llmAgentflow_2-input-llmReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -1503,7 +1503,7 @@
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
                     "llmUserMessage": "<p>Given the question: <span class=\"variable\" data-type=\"mention\" data-id=\"question\" data-label=\"question\">{{ question }}</span></p><p>And the findings: <span class=\"variable\" data-type=\"mention\" data-id=\"retrieverAgentflow_0\" data-label=\"retrieverAgentflow_0\">{{ retrieverAgentflow_0 }}</span></p><p>Output the final response</p>",
-                    "agentReturnResponseAs": "userMessage",
+                    "llmReturnResponseAs": "userMessage",
                     "llmStructuredOutput": "",
                     "llmUpdateState": "",
                     "llmModelConfig": {
@@ -1699,7 +1699,7 @@
                     },
                     {
                         "label": "Return Response As",
-                        "name": "agentReturnResponseAs",
+                        "name": "llmReturnResponseAs",
                         "type": "options",
                         "options": [
                             {
@@ -1712,7 +1712,7 @@
                             }
                         ],
                         "default": "userMessage",
-                        "id": "llmAgentflow_3-input-agentReturnResponseAs-options",
+                        "id": "llmAgentflow_3-input-llmReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -1830,7 +1830,7 @@
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
                     "llmUserMessage": "<p>Look at the input and try to reason about the underlying semantic intent / meaning.</p><p>Here is the initial question:</p><p><span class=\"variable\" data-type=\"mention\" data-id=\"$flow.state.query\" data-label=\"$flow.state.query\">{{ $flow.state.query }}</span> </p><p>Formulate an improved question:</p><p></p>",
-                    "agentReturnResponseAs": "userMessage",
+                    "llmReturnResponseAs": "userMessage",
                     "llmStructuredOutput": "",
                     "llmUpdateState": [
                         {

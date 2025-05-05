@@ -1617,7 +1617,7 @@
                     },
                     {
                         "label": "Return Response As",
-                        "name": "agentReturnResponseAs",
+                        "name": "llmReturnResponseAs",
                         "type": "options",
                         "options": [
                             {
@@ -1630,7 +1630,7 @@
                             }
                         ],
                         "default": "userMessage",
-                        "id": "llmAgentflow_0-input-agentReturnResponseAs-options",
+                        "id": "llmAgentflow_0-input-llmReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -1748,7 +1748,7 @@
                     "llmEnableMemory": true,
                     "llmMemoryType": "allMessages",
                     "llmUserMessage": "<p>Given the conversation above, who should act next? Or should we FINISH? Select one of: SOFTWARE, REVIEWER</p>",
-                    "agentReturnResponseAs": "userMessage",
+                    "llmReturnResponseAs": "userMessage",
                     "llmStructuredOutput": [
                         {
                             "key": "next",

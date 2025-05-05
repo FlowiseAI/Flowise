@@ -186,7 +186,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        background: foundIcon.color
+                                        background: foundIcon.color,
+                                        cursor: 'default'
                                     }}
                                 >
                                     <foundIcon.icon size={20} color={'white'} />
@@ -200,7 +201,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
                                         ...theme.typography.mediumAvatar,
                                         borderRadius: '50%',
                                         backgroundColor: 'white',
-                                        cursor: 'grab'
+                                        cursor: 'default'
                                     }}
                                 >
                                     <img

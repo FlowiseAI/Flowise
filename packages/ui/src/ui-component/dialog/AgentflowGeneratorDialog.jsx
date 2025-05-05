@@ -269,7 +269,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                             <Box sx={{ mt: 2 }}>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Select Model<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        Select model to generate agentflow<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                 </div>
                                 <Dropdown

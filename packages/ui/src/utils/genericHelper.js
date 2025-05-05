@@ -229,6 +229,8 @@ export const initNode = (nodeData, newNodeId, isAgentflow) => {
 export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNodeData, isAgentflow) => {
     const initNewComponentNodeData = initNode(newComponentNodeData, existingComponentNodeData.id, isAgentflow)
 
+    const isAgentFlowV2 = newComponentNodeData.category === 'Agent Flows' || existingComponentNodeData.category === 'Agent Flows'
+
     // Update credentials with existing credentials
     if (existingComponentNodeData.credential) {
         initNewComponentNodeData.credential = existingComponentNodeData.credential
@@ -261,6 +263,11 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
         }
     }
 
+    if (isAgentFlowV2) {
+        // persists the label from the existing node
+        initNewComponentNodeData.label = existingComponentNodeData.label
+    }
+
     // Special case for Condition node to update outputAnchors
     if (initNewComponentNodeData.name.includes('seqCondition')) {
         const options = existingComponentNodeData.outputAnchors[0].options || []
@@ -284,22 +291,34 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
 
 export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
     const removedEdges = []
+
+    const isAgentFlowV2 = newComponentNodeData.category === 'Agent Flows'
+
     for (const edge of edges) {
         const targetNodeId = edge.targetHandle.split('-')[0]
         const sourceNodeId = edge.sourceHandle.split('-')[0]
 
         if (targetNodeId === newComponentNodeData.id) {
-            // Check if targetHandle is in inputParams or inputAnchors
-            const inputParam = newComponentNodeData.inputParams.find((param) => param.id === edge.targetHandle)
-            const inputAnchor = newComponentNodeData.inputAnchors.find((param) => param.id === edge.targetHandle)
+            if (isAgentFlowV2) {
+                if (edge.targetHandle !== newComponentNodeData.id) {
+                    removedEdges.push(edge)
+                }
+            } else {
+                // Check if targetHandle is in inputParams or inputAnchors
+                const inputParam = newComponentNodeData.inputParams.find((param) => param.id === edge.targetHandle)
+                const inputAnchor = newComponentNodeData.inputAnchors.find((param) => param.id === edge.targetHandle)
 
-            if (!inputParam && !inputAnchor) {
-                removedEdges.push(edge)
+                if (!inputParam && !inputAnchor) {
+                    removedEdges.push(edge)
+                }
             }
         }
 
         if (sourceNodeId === newComponentNodeData.id) {
-            if (newComponentNodeData.outputAnchors?.length) {
+            if (isAgentFlowV2) {
+                // AgentFlow v2 doesn't have specific output anchors, connections are directly from node
+                // No need to remove edges for AgentFlow v2 outputs
+            } else if (newComponentNodeData.outputAnchors?.length) {
                 for (const outputAnchor of newComponentNodeData.outputAnchors) {
                     const outputAnchorType = outputAnchor.type
                     if (outputAnchorType === 'options') {

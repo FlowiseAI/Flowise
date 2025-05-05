@@ -9,7 +9,7 @@ import {
     IServerSideEventStreamer,
     IUsedTool
 } from '../../../src/Interface'
-import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
+import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
 import { AnalyticHandler } from '../../../src/handler'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { ILLMMessage } from '../Interface.Agentflow'
@@ -923,7 +923,14 @@ class Agent_Agentflow implements INode {
         try {
             for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
                 if (sseStreamer) {
-                    sseStreamer.streamTokenEvent(chatId, chunk.content.toString())
+                    let content = ''
+                    if (Array.isArray(chunk.content) && chunk.content.length > 0) {
+                        const contents = chunk.content as MessageContentText[]
+                        content = contents.map((item) => item.text).join('')
+                    } else {
+                        content = chunk.content.toString()
+                    }
+                    sseStreamer.streamTokenEvent(chatId, content)
                 }
 
                 response = response.concat(chunk)
@@ -931,6 +938,10 @@ class Agent_Agentflow implements INode {
         } catch (error) {
             console.error('Error during streaming:', error)
             throw error
+        }
+        if (Array.isArray(response.content) && response.content.length > 0) {
+            const responseContents = response.content as MessageContentText[]
+            response.content = responseContents.map((item) => item.text).join('')
         }
         return response
     }

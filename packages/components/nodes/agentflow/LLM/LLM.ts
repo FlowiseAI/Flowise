@@ -1,6 +1,6 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
-import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
+import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { z } from 'zod'
 import { AnalyticHandler } from '../../../src/handler'
@@ -159,7 +159,7 @@ class LLM_Agentflow implements INode {
             },
             {
                 label: 'Return Response As',
-                name: 'agentReturnResponseAs',
+                name: 'llmReturnResponseAs',
                 type: 'options',
                 options: [
                     {
@@ -450,8 +450,10 @@ class LLM_Agentflow implements INode {
             // Track execution time
             const startTime = Date.now()
 
+            const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
+
             if (isStreamable) {
-                response = await this.handleStreamingResponse(llmNodeInstance, messages, options, chatId, abortController)
+                response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
             } else {
                 response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
 
@@ -543,7 +545,7 @@ class LLM_Agentflow implements INode {
                 }
             }
 
-            const returnResponseAs = nodeData.inputs?.agentReturnResponseAs as string
+            const returnResponseAs = nodeData.inputs?.llmReturnResponseAs as string
             let returnRole = 'user'
             if (returnResponseAs === 'assistantMessage') {
                 returnRole = 'assistant'
@@ -793,18 +795,36 @@ class LLM_Agentflow implements INode {
      * Handles streaming response from the LLM
      */
     private async handleStreamingResponse(
+        sseStreamer: IServerSideEventStreamer | undefined,
         llmNodeInstance: BaseChatModel,
         messages: BaseMessageLike[],
-        options: ICommonObject,
         chatId: string,
         abortController: AbortController
     ): Promise<AIMessageChunk> {
-        const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
         let response = new AIMessageChunk('')
 
-        for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
-            sseStreamer.streamTokenEvent(chatId, chunk.content.toString())
-            response = response.concat(chunk)
+        try {
+            for await (const chunk of await llmNodeInstance.stream(messages, { signal: abortController?.signal })) {
+                if (sseStreamer) {
+                    let content = ''
+                    if (Array.isArray(chunk.content) && chunk.content.length > 0) {
+                        const contents = chunk.content as MessageContentText[]
+                        content = contents.map((item) => item.text).join('')
+                    } else {
+                        content = chunk.content.toString()
+                    }
+                    sseStreamer.streamTokenEvent(chatId, content)
+                }
+
+                response = response.concat(chunk)
+            }
+        } catch (error) {
+            console.error('Error during streaming:', error)
+            throw error
+        }
+        if (Array.isArray(response.content) && response.content.length > 0) {
+            const responseContents = response.content as MessageContentText[]
+            response.content = responseContents.map((item) => item.text).join('')
         }
         return response
     }

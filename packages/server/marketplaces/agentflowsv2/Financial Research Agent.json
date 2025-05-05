@@ -343,7 +343,7 @@
                     },
                     {
                         "label": "Return Response As",
-                        "name": "agentReturnResponseAs",
+                        "name": "llmReturnResponseAs",
                         "type": "options",
                         "options": [
                             {
@@ -356,7 +356,7 @@
                             }
                         ],
                         "default": "userMessage",
-                        "id": "llmAgentflow_0-input-agentReturnResponseAs-options",
+                        "id": "llmAgentflow_0-input-llmReturnResponseAs-options",
                         "display": true
                     },
                     {
@@ -476,7 +476,7 @@
                         }
                     ],
                     "llmEnableMemory": true,
-                    "agentReturnResponseAs": "userMessage",
+                    "llmReturnResponseAs": "userMessage",
                     "llmStructuredOutput": [
                         {
                             "key": "searches",
