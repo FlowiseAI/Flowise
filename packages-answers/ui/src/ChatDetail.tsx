@@ -11,6 +11,8 @@ import type { AppSettings, Document, Sidekick } from 'types'
 
 import dynamic from 'next/dynamic'
 import Image from 'next/image'
+import Button from '@mui/material/Button'
+import RateReviewIcon from '@mui/icons-material/RateReview'
 
 const AppBar = dynamic(() => import('@mui/material/AppBar'))
 const ChatRoom = dynamic(() => import('./ChatRoom').then((mod) => ({ default: mod.ChatRoom })))
@@ -46,7 +48,7 @@ export const ChatDetail = ({
         showFilters,
         chatbotConfig,
         sidekick: selectedSidekick,
-        setSidekick: setSelectedSidekick
+        startNewChat
     } = useAnswers()
 
     const scrollRef = useRef<HTMLDivElement>(null)
@@ -62,6 +64,9 @@ export const ChatDetail = ({
 
     const displayMode = chatbotConfig?.displayMode || DISPLAY_MODES.CHATBOT
     const embeddedUrl = chatbotConfig?.embeddedUrl || ''
+    const handleNewChat = () => {
+        startNewChat()
+    }
     return (
         <>
             <Box sx={{ display: 'flex', width: '100%' }}>
@@ -116,6 +121,18 @@ export const ChatDetail = ({
                                     </Box>
 
                                     <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                                        <Button
+                                            variant='text'
+                                            onClick={handleNewChat}
+                                            endIcon={<RateReviewIcon />}
+                                            fullWidth
+                                            sx={{
+                                                textTransform: 'capitalize',
+                                                justifyContent: 'space-between'
+                                            }}
+                                        >
+                                            New chat
+                                        </Button>
                                         {/* {chat ? (
                                             <IconButton
                                                 size='large'

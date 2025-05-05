@@ -230,10 +230,17 @@ export function AnswersProvider({
         if (journey) {
             router.push(`/journey/${journey.id}`)
             setJourneyId(journey.id)
-        } else {
-            router.push('/chat')
-            setJourneyId(undefined)
+            return
         }
+
+        if (sidekick) {
+            router.push(`/chat/${sidekick.id}`)
+            setChatId(uuidv4())
+            setMessages([])
+            setFilters({})
+            return
+        }
+
         setChatId(undefined)
         setMessages([])
         setFilters({})
@@ -245,7 +252,7 @@ export function AnswersProvider({
     const updateLastMessage = (text: string) => {
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
-            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            if (allMessages[allMessages.length - 1]?.role === 'user') return allMessages
             allMessages[allMessages.length - 1].content += text
             return allMessages
         })
