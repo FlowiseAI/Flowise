@@ -12,7 +12,7 @@ class JiraApi implements INodeCredential {
         this.name = 'JiraApi'
         this.version = 1.0
         this.description =
-            'Refer to <a target="_blank" href="https://github.com/modelcontextprotocol/servers/tree/main/src/jira">official guide</a> on how to get botToken and teamId on Jira'
+            'Create an API token by going to <a target="_blank" href="https://id.atlassian.com/manage-profile/security/api-tokens">Atlassian API token management page</a>'
         this.inputs = [
             {
                 label: 'Jira API Key',

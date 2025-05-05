@@ -1,8 +1,9 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 import moment from 'moment'
+import { useSearchParams } from 'next/navigation'
 
 // material-ui
 import { styled } from '@mui/material/styles'
@@ -83,6 +84,7 @@ const Credentials = () => {
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
     useNotifier()
+    const searchParams = useSearchParams()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -122,7 +124,7 @@ const Credentials = () => {
         setShowCredentialListDialog(true)
     }
 
-    const addNew = (credentialComponent) => {
+    const addNew = useCallback((credentialComponent) => {
         const dialogProp = {
             type: 'ADD',
             cancelButtonName: 'Cancel',
@@ -131,7 +133,7 @@ const Credentials = () => {
         }
         setSpecificCredentialDialogProps(dialogProp)
         setShowSpecificCredentialDialog(true)
-    }
+    }, [])
 
     const edit = (credential) => {
         const dialogProp = {
@@ -236,8 +238,18 @@ const Credentials = () => {
         if (getAllComponentsCredentialsApi.data) {
             setComponentsCredentials(getAllComponentsCredentialsApi.data)
             dispatch({ type: SET_COMPONENT_CREDENTIALS, componentsCredentials: getAllComponentsCredentialsApi.data })
+            // Handle deep linking from URL parameter
+            const credParam = searchParams.get('cred')
+            if (credParam) {
+                const credComponent = getAllComponentsCredentialsApi.data.find(
+                    (comp) => comp.name.toLowerCase() === credParam.toLowerCase()
+                )
+                if (credComponent) {
+                    addNew(credComponent)
+                }
+            }
         }
-    }, [getAllComponentsCredentialsApi.data, dispatch])
+    }, [getAllComponentsCredentialsApi.data, dispatch, searchParams, addNew])
 
     const isAdmin = flags?.['org:manage']?.enabled
 

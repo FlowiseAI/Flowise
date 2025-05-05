@@ -1,6 +1,7 @@
 tags:
     - name: assistants
     - name: attachments
+    - name: browser-extension
     - name: chatmessage
     - name: chatflows
     - name: document-store
@@ -2525,3 +2526,8 @@ components:
             type: http
             scheme: bearer
             bearerFormat: JWT # optional, for documentation purposes only
+        apiKeyAuth:
+            type: apiKey
+            in: header
+            name: x-api-key
+            description: API key authentication

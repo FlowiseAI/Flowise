@@ -96,7 +96,7 @@ class Slack_MCP implements INode {
         const packagePath = getNodeModulesPackagePath('@modelcontextprotocol/server-slack/dist/index.js')
 
         const serverParams = {
-            command: 'node',
+            command: process.execPath,
             args: [packagePath],
             env: {
                 SLACK_BOT_TOKEN: botToken,
