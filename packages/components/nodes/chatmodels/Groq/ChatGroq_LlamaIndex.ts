@@ -35,6 +35,12 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
         }
         this.inputs = [
             {
+                label: 'Cache',
+                name: 'cache',
+                type: 'BaseCache',
+                optional: true
+            },
+            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'asyncOptions',
@@ -47,6 +53,21 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
                 type: 'number',
                 step: 0.1,
                 default: 0.9,
+                optional: true
+            },
+            {
+                label: 'Max Tokens',
+                name: 'maxTokens',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
                 optional: true
             }
         ]
@@ -62,16 +83,18 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
+        const maxTokens = nodeData.inputs?.maxTokens as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const groqApiKey = getCredentialParam('groqApiKey', credentialData, nodeData)
 
-        const obj: Partial<OpenAI> = {
+        const obj: Partial<Groq> = {
             temperature: parseFloat(temperature),
             model: modelName,
-            apiKey: groqApiKey
+            apiKey: groqApiKey,
         }
-
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
+        
         const model = new Groq(obj)
         return model
     }
