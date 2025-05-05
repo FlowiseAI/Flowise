@@ -291,7 +291,7 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
                     </Box>
 
                     <Box sx={{ display: 'flex', gap: 1, position: 'absolute', right: 0, top: 0 }}>
-                        {sidekick?.chatflow?.isOwner && (
+                        {sidekick?.chatflow?.canEdit && (
                             <Tooltip title='Edit this sidekick'>
                                 <WhiteIconButton size='small' onClick={handleEdit}>
                                     <EditIcon />
