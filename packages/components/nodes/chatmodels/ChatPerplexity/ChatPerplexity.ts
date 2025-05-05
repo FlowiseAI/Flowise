@@ -110,7 +110,6 @@ class ChatPerplexity_ChatModels implements INode {
                 optional: true,
                 additionalParams: true
             },
-            // Currently disabled as output is stored as additional_kwargs
             // {
             //     label: 'Search Domain Filter',
             //     name: 'searchDomainFilter',
@@ -119,6 +118,7 @@ class ChatPerplexity_ChatModels implements INode {
             //     additionalParams: true,
             //     description: 'Limit citations to URLs from specified domains (e.g., ["example.com", "anotherexample.org"])'
             // },
+            // Currently disabled as output is stored as additional_kwargs
             // {
             //     label: 'Return Images',
             //     name: 'returnImages',
@@ -127,6 +127,7 @@ class ChatPerplexity_ChatModels implements INode {
             //     additionalParams: true,
             //     description: 'Whether the model should return images (if supported by the model)'
             // },
+            // Currently disabled as output is stored as additional_kwargs
             // {
             //     label: 'Return Related Questions',
             //     name: 'returnRelatedQuestions',
