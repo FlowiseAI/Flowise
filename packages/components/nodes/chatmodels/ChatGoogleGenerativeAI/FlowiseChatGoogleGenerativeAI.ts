@@ -81,6 +81,8 @@ class LangchainChatGoogleGenerativeAI
 
     apiKey?: string
 
+    baseUrl?: string
+
     streaming = false
 
     streamUsage = true
@@ -151,19 +153,24 @@ class LangchainChatGoogleGenerativeAI
     }
 
     async getClient(prompt?: Content[], tools?: Tool[]) {
-        this.client = new GenerativeAI(this.apiKey ?? '').getGenerativeModel({
-            model: this.modelName,
-            tools,
-            safetySettings: this.safetySettings as SafetySetting[],
-            generationConfig: {
-                candidateCount: 1,
-                stopSequences: this.stopSequences,
-                maxOutputTokens: this.maxOutputTokens,
-                temperature: this.temperature,
-                topP: this.topP,
-                topK: this.topK
+        this.client = new GenerativeAI(this.apiKey ?? '').getGenerativeModel(
+            {
+                model: this.modelName,
+                tools,
+                safetySettings: this.safetySettings as SafetySetting[],
+                generationConfig: {
+                    candidateCount: 1,
+                    stopSequences: this.stopSequences,
+                    maxOutputTokens: this.maxOutputTokens,
+                    temperature: this.temperature,
+                    topP: this.topP,
+                    topK: this.topK
+                }
+            },
+            {
+                baseUrl: this.baseUrl
             }
-        })
+        )
         if (this.contextCache) {
             const cachedContent = await this.contextCache.lookup({
                 contents: prompt ? [{ ...prompt[0], parts: prompt[0].parts.slice(0, 1) }] : [],
