@@ -26,7 +26,7 @@
                 },
                 {
                     "label": "anthropic.claude-3.5-sonnet-20240620-v1:0",
-                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    "name": "anthropic.claude-3.5-sonnet-20240620-v1:0",
                     "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5 - most intelligent model",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
@@ -1071,6 +1071,47 @@
                     "name": "gpt-3.5-turbo-16k-0613",
                     "input_cost": 0.000003,
                     "output_cost": 0.000004
+                }
+            ]
+        },
+        {
+            "name": "chatPerplexity",
+            "models": [
+                {
+                    "label": "sonar",
+                    "name": "sonar",
+                    "input_cost": 1e-6,
+                    "output_cost": 1e-6
+                },
+                {
+                    "label": "sonar-pro",
+                    "name": "sonar-pro",
+                    "input_cost": 3e-6,
+                    "output_cost": 1.5e-5
+                },
+                {
+                    "label": "sonar-reasoning",
+                    "name": "sonar-reasoning",
+                    "input_cost": 1e-6,
+                    "output_cost": 5e-6
+                },
+                {
+                    "label": "sonar-reasoning-pro",
+                    "name": "sonar-reasoning-pro",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "sonar-deep-research",
+                    "name": "sonar",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "r1-1776",
+                    "name": "r1-1776",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
                 }
             ]
         },
