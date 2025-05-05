@@ -208,7 +208,7 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
                                 <Chip label='Owner' size='small' color='primary' variant='outlined' sx={{ mr: 1 }} />
                             )}
 
-                            {sidekick?.categories?.length > 0 && (
+                            {sidekick?.categories?.map && (
                                 <Tooltip title={sidekick.categories.map((category) => category.trim().split(';').join(', ')).join(', ')}>
                                     <Chip
                                         label={sidekick.categories.map((category) => category.trim().split(';').join(' | ')).join(' | ')}

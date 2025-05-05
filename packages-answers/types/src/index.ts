@@ -18,6 +18,7 @@ export interface Sidekick extends DB.Sidekick {
     }
     favoritedBy?: Array<User>
     sharedWith?: string
+    categories?: string[]
 }
 export type PineconeObject = {
     vectors: PineconeVector[]

@@ -46,7 +46,7 @@ export const ChatDetail = ({
         showFilters,
         chatbotConfig,
         sidekick: selectedSidekick,
-        startNewChat
+        setSidekick: setSelectedSidekick
     } = useAnswers()
 
     const scrollRef = useRef<HTMLDivElement>(null)

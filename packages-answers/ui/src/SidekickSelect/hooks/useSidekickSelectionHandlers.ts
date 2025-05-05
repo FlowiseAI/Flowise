@@ -26,7 +26,7 @@ const useSidekickSelectionHandlers = ({
     navigate,
     enablePerformanceLogs = false
 }: UseSidekickSelectionHandlersProps): UseSidekickSelectionHandlersResult => {
-    const { setSidekick, setSelectedSidekick } = useAnswers()
+    const { setSidekick, setSidekick: setSelectedSidekick } = useAnswers()
     const [isMarketplaceDialogOpen, setIsMarketplaceDialogOpen] = useState(false)
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
     const [showCopyMessage, setShowCopyMessage] = useState(false)
@@ -53,6 +53,7 @@ const useSidekickSelectionHandlers = ({
                 const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
                 sidekickHistory.lastUsed = sidekick
                 localStorage.setItem('sidekickHistory', JSON.stringify(sidekickHistory))
+                setIsMarketplaceDialogOpen(false)
             }
         },
         [chat, setSidekick, setSelectedSidekick]
