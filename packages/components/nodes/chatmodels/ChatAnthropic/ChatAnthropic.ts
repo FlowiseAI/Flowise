@@ -21,7 +21,7 @@ class ChatAnthropic_ChatModels implements INode {
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic'
-        this.version = 7.0
+        this.version = 8.0
         this.type = 'ChatAnthropic'
         this.icon = 'Anthropic.svg'
         this.category = 'Chat Models'
@@ -88,6 +88,24 @@ class ChatAnthropic_ChatModels implements INode {
                 additionalParams: true
             },
             {
+                label: 'Extended Thinking',
+                name: 'extendedThinking',
+                type: 'boolean',
+                description: 'Enable extended thinking for reasoning model such as Claude Sonnet 3.7',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Budget Tokens',
+                name: 'budgetTokens',
+                type: 'number',
+                step: 1,
+                default: 1024,
+                description: 'Maximum number of tokens Claude is allowed use for its internal reasoning process',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Allow Image Uploads',
                 name: 'allowImageUploads',
                 type: 'boolean',
@@ -114,6 +132,8 @@ class ChatAnthropic_ChatModels implements INode {
         const topK = nodeData.inputs?.topK as string
         const streaming = nodeData.inputs?.streaming as boolean
         const cache = nodeData.inputs?.cache as BaseCache
+        const extendedThinking = nodeData.inputs?.extendedThinking as boolean
+        const budgetTokens = nodeData.inputs?.budgetTokens as string
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const anthropicApiKey = getCredentialParam('anthropicApiKey', credentialData, nodeData)
@@ -131,6 +151,13 @@ class ChatAnthropic_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
         if (cache) obj.cache = cache
+        if (extendedThinking) {
+            obj.thinking = {
+                type: 'enabled',
+                budget_tokens: parseInt(budgetTokens, 10)
+            }
+            delete obj.temperature
+        }
 
         const multiModalOption: IMultiModalOption = {
             image: {

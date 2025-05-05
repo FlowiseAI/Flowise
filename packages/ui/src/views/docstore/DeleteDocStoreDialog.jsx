@@ -147,7 +147,7 @@ const DeleteDocStoreDialog = ({ show, dialogProps, onCancel, onDelete }) => {
                 {dialogProps.type === 'STORE' && dialogProps.recordManagerConfig && (
                     <FormControlLabel
                         control={<Checkbox checked={removeFromVS} onChange={(event) => setRemoveFromVS(event.target.checked)} />}
-                        label='Remove data from vector store'
+                        label='Remove data from vector store and record manager'
                     />
                 )}
                 {removeFromVS && (

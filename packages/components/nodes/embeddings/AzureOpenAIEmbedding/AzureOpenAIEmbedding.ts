@@ -1,4 +1,4 @@
-import { AzureOpenAIInput, ClientOptions, LegacyOpenAIInput, OpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
+import { AzureOpenAIInput, ClientOptions, AzureOpenAIEmbeddings, OpenAIEmbeddingsParams } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -28,7 +28,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
         this.icon = 'Azure.svg'
         this.category = 'Embeddings'
         this.description = 'Azure OpenAI API to generate embeddings for a given text'
-        this.baseClasses = [this.type, ...getBaseClasses(OpenAIEmbeddings)]
+        this.baseClasses = [this.type, ...getBaseClasses(AzureOpenAIEmbeddings)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -81,7 +81,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
         const azureOpenAIApiDeploymentName = getCredentialParam('azureOpenAIApiDeploymentName', credentialData, nodeData)
         const azureOpenAIApiVersion = getCredentialParam('azureOpenAIApiVersion', credentialData, nodeData)
 
-        const obj: Partial<OpenAIEmbeddingsParams> & Partial<AzureOpenAIInput> & { configuration?: ClientOptions & LegacyOpenAIInput } = {
+        const obj: Partial<OpenAIEmbeddingsParams> & Partial<AzureOpenAIInput> & { configuration?: ClientOptions } = {
             azureOpenAIApiKey,
             azureOpenAIApiInstanceName,
             azureOpenAIApiDeploymentName,
@@ -102,7 +102,7 @@ class AzureOpenAIEmbedding_Embeddings implements INode {
             }
         }
 
-        const model = new OpenAIEmbeddings(obj)
+        const model = new AzureOpenAIEmbeddings(obj)
         return model
     }
 }

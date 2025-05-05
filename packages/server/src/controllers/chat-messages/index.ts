@@ -180,6 +180,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
             const messages = await utilGetChatMessage({
                 chatflowid,
                 chatTypes,
+                sessionId,
                 startDate,
                 endDate,
                 feedback: isFeedback,

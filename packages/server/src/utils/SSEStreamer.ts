@@ -166,6 +166,7 @@ export class SSEStreamer implements IServerSideEventStreamer {
     }
 
     streamErrorEvent(chatId: string, msg: string) {
+        if (msg.includes('401 Incorrect API key provided')) msg = '401 Invalid model key or Incorrect local model configuration.'
         const client = this.clients[chatId]
         if (client) {
             const clientResponse = {
@@ -194,7 +195,12 @@ export class SSEStreamer implements IServerSideEventStreamer {
             metadataJson['memoryType'] = apiResponse.memoryType
         }
         if (apiResponse.followUpPrompts) {
-            metadataJson['followUpPrompts'] = JSON.parse(apiResponse.followUpPrompts)
+            metadataJson['followUpPrompts'] =
+                typeof apiResponse.followUpPrompts === 'string' ? JSON.parse(apiResponse.followUpPrompts) : apiResponse.followUpPrompts
+        }
+        if (apiResponse.flowVariables) {
+            metadataJson['flowVariables'] =
+                typeof apiResponse.flowVariables === 'string' ? JSON.parse(apiResponse.flowVariables) : apiResponse.flowVariables
         }
         if (Object.keys(metadataJson).length > 0) {
             this.streamCustomEvent(chatId, 'metadata', metadataJson)

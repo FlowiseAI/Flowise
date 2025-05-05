@@ -1,4 +1,4 @@
-import { OpenAI, OpenAIInput } from '@langchain/openai'
+import { ClientOptions, OpenAI, OpenAIInput } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
@@ -153,7 +153,7 @@ class OpenAI_LLMs implements INode {
 
         const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: Partial<OpenAIInput> & BaseLLMParams & { openAIApiKey?: string } = {
+        const obj: Partial<OpenAIInput> & BaseLLMParams & { configuration?: ClientOptions } = {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
@@ -179,10 +179,14 @@ class OpenAI_LLMs implements INode {
             }
         }
 
-        const model = new OpenAI(obj, {
-            basePath,
-            baseOptions: parsedBaseOptions
-        })
+        if (basePath || parsedBaseOptions) {
+            obj.configuration = {
+                baseURL: basePath,
+                defaultHeaders: parsedBaseOptions
+            }
+        }
+
+        const model = new OpenAI(obj)
         return model
     }
 }

@@ -3,12 +3,12 @@ import { getCredentialData } from './utils'
 import { ChatAnthropic } from '@langchain/anthropic'
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 import { ChatMistralAI } from '@langchain/mistralai'
-import { ChatOpenAI } from '@langchain/openai'
+import { ChatOpenAI, AzureChatOpenAI } from '@langchain/openai'
 import { z } from 'zod'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { StructuredOutputParser } from '@langchain/core/output_parsers'
 import { ChatGroq } from '@langchain/groq'
-import ollama from 'ollama'
+import { Ollama } from 'ollama'
 
 const FollowUpPromptType = z
     .object({
@@ -46,7 +46,7 @@ export const generateFollowUpPrompts = async (
                 const azureOpenAIApiDeploymentName = credentialData['azureOpenAIApiDeploymentName']
                 const azureOpenAIApiVersion = credentialData['azureOpenAIApiVersion']
 
-                const llm = new ChatOpenAI({
+                const llm = new AzureChatOpenAI({
                     azureOpenAIApiKey,
                     azureOpenAIApiInstanceName,
                     azureOpenAIApiDeploymentName,
@@ -122,7 +122,11 @@ export const generateFollowUpPrompts = async (
                 return structuredResponse
             }
             case FollowUpPromptProvider.OLLAMA: {
-                const response = await ollama.chat({
+                const ollamaClient = new Ollama({
+                    host: providerConfig.baseUrl || 'http://127.0.0.1:11434'
+                })
+
+                const response = await ollamaClient.chat({
                     model: providerConfig.modelName,
                     messages: [
                         {

@@ -1,6 +1,6 @@
-import { INodeParams, INodeCredential } from '../src/Interface'
+import { INodeCredential, INodeParams } from '../src/Interface'
 
-class NvdiaNIMApi implements INodeCredential {
+class NvidiaNIMApi implements INodeCredential {
     label: string
     name: string
     version: number
@@ -8,17 +8,17 @@ class NvdiaNIMApi implements INodeCredential {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Nvdia NIM API Key'
-        this.name = 'nvdiaNIMApi'
+        this.label = 'NVIDIA NGC API Key'
+        this.name = 'nvidiaNIMApi'
         this.version = 1.0
         this.inputs = [
             {
-                label: 'Nvdia NIM API Key',
-                name: 'nvdiaNIMApiKey',
+                label: 'NVIDIA NGC API Key',
+                name: 'nvidiaNIMApiKey',
                 type: 'password'
             }
         ]
     }
 }
 
-module.exports = { credClass: NvdiaNIMApi }
+module.exports = { credClass: NvidiaNIMApi }

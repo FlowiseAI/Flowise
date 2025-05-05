@@ -1,45 +1,46 @@
 import PropTypes from 'prop-types'
-import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
-import { useEffect, useRef, useState, useContext } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 
 // material-ui
-import { useTheme, styled } from '@mui/material/styles'
-import { Popper, Box, Typography, Tooltip, IconButton, Button, TextField } from '@mui/material'
-import { useGridApiContext } from '@mui/x-data-grid'
-import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
-import { tooltipClasses } from '@mui/material/Tooltip'
-import { IconArrowsMaximize, IconEdit, IconAlertTriangle, IconBulb, IconRefresh } from '@tabler/icons-react'
 import { Tabs } from '@mui/base/Tabs'
+import IconAutoFixHigh from '@mui/icons-material/AutoFixHigh'
+import { Box, Button, IconButton, Popper, TextField, Tooltip, Typography } from '@mui/material'
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
+import { styled, useTheme } from '@mui/material/styles'
+import { tooltipClasses } from '@mui/material/Tooltip'
+import { useGridApiContext } from '@mui/x-data-grid'
+import { IconAlertTriangle, IconArrowsMaximize, IconBulb, IconEdit, IconRefresh } from '@tabler/icons-react'
 
 // project import
+import { flowContext } from '@/store/context/ReactFlowContext'
+import ConditionDialog from '@/ui-component/dialog/ConditionDialog'
+import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
+import FormatPromptValuesDialog from '@/ui-component/dialog/FormatPromptValuesDialog'
+import InputHintDialog from '@/ui-component/dialog/InputHintDialog'
+import ManageScrapedLinksDialog from '@/ui-component/dialog/ManageScrapedLinksDialog'
+import NvidiaNIMDialog from '@/ui-component/dialog/NvidiaNIMDialog'
+import PromptLangsmithHubDialog from '@/ui-component/dialog/PromptLangsmithHubDialog'
+import { AsyncDropdown } from '@/ui-component/dropdown/AsyncDropdown'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import { MultiDropdown } from '@/ui-component/dropdown/MultiDropdown'
-import { AsyncDropdown } from '@/ui-component/dropdown/AsyncDropdown'
-import { Input } from '@/ui-component/input/Input'
-import { DataGrid } from '@/ui-component/grid/DataGrid'
-import { File } from '@/ui-component/file/File'
-import { SwitchInput } from '@/ui-component/switch/Switch'
-import { flowContext } from '@/store/context/ReactFlowContext'
-import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
-import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
+import { File } from '@/ui-component/file/File'
+import { DataGrid } from '@/ui-component/grid/DataGrid'
+import { Input } from '@/ui-component/input/Input'
+import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
+import { SwitchInput } from '@/ui-component/switch/Switch'
+import { Tab } from '@/ui-component/tabs/Tab'
 import { TabPanel } from '@/ui-component/tabs/TabPanel'
 import { TabsList } from '@/ui-component/tabs/TabsList'
-import { Tab } from '@/ui-component/tabs/Tab'
-import ToolDialog from '@/views/tools/ToolDialog'
+import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import AssistantDialog from '@/views/assistants/openai/AssistantDialog'
-import FormatPromptValuesDialog from '@/ui-component/dialog/FormatPromptValuesDialog'
-import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
-import ConditionDialog from '@/ui-component/dialog/ConditionDialog'
-import PromptLangsmithHubDialog from '@/ui-component/dialog/PromptLangsmithHubDialog'
-import ManageScrapedLinksDialog from '@/ui-component/dialog/ManageScrapedLinksDialog'
+import ToolDialog from '@/views/tools/ToolDialog'
 import CredentialInputHandler from './CredentialInputHandler'
-import InputHintDialog from '@/ui-component/dialog/InputHintDialog'
 
 // utils
-import { getInputVariables, getCustomConditionOutputs, isValidConnection, getAvailableNodesForVariable } from '@/utils/genericHelper'
+import { getAvailableNodesForVariable, getCustomConditionOutputs, getInputVariables, isValidConnection } from '@/utils/genericHelper'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
@@ -95,6 +96,7 @@ const NodeInputHandler = ({
     const [inputHintDialogProps, setInputHintDialogProps] = useState({})
     const [showConditionDialog, setShowConditionDialog] = useState(false)
     const [conditionDialogProps, setConditionDialogProps] = useState({})
+    const [isNvidiaNIMDialogOpen, setIsNvidiaNIMDialogOpen] = useState(false)
     const [tabValue, setTabValue] = useState(0)
 
     const onInputHintDialogClicked = (hint) => {
@@ -443,6 +445,13 @@ const NodeInputHandler = ({
         setAsyncOptionEditDialog('')
     }
 
+    const handleNvidiaNIMDialogComplete = (containerData) => {
+        if (containerData) {
+            data.inputs['basePath'] = containerData.baseUrl
+            data.inputs['modelName'] = containerData.image
+        }
+    }
+
     useEffect(() => {
         if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
             setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)
@@ -528,6 +537,22 @@ const NodeInputHandler = ({
                                     ></PromptLangsmithHubDialog>
                                 </>
                             )}
+                        {data.name === 'Chat NVIDIA NIM' && inputParam.name === 'modelName' && (
+                            <>
+                                <Button
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        width: '100%'
+                                    }}
+                                    sx={{ borderRadius: '12px', width: '100%', mb: 2, mt: -1 }}
+                                    variant='outlined'
+                                    onClick={() => setIsNvidiaNIMDialogOpen(true)}
+                                >
+                                    Setup NIM Locally
+                                </Button>
+                            </>
+                        )}
                         <div style={{ display: 'flex', flexDirection: 'row' }}>
                             <Typography>
                                 {inputParam.label}
@@ -770,16 +795,17 @@ const NodeInputHandler = ({
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                             />
                         )}
-                        {inputParam.type === 'asyncOptions' && (
+                        {(inputParam.type === 'asyncOptions' || inputParam.type === 'asyncMultiOptions') && (
                             <>
                                 {data.inputParams.length === 1 && <div style={{ marginTop: 10 }} />}
-                                <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row', alignContent: 'center' }}>
+                                <div key={reloadTimestamp} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}>
                                     <AsyncDropdown
                                         disabled={disabled}
                                         name={inputParam.name}
                                         nodeData={data}
                                         value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                                         freeSolo={inputParam.freeSolo}
+                                        multiple={inputParam.type === 'asyncMultiOptions'}
                                         isCreateNewOption={EDITABLE_OPTIONS.includes(inputParam.name)}
                                         onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
                                         onCreateNew={() => addAsyncOption(inputParam.name)}
@@ -893,6 +919,11 @@ const NodeInputHandler = ({
                 dialogProps={inputHintDialogProps}
                 onCancel={() => setShowInputHintDialog(false)}
             ></InputHintDialog>
+            <NvidiaNIMDialog
+                open={isNvidiaNIMDialogOpen}
+                onClose={() => setIsNvidiaNIMDialogOpen(false)}
+                onComplete={handleNvidiaNIMDialogComplete}
+            ></NvidiaNIMDialog>
         </div>
     )
 }
