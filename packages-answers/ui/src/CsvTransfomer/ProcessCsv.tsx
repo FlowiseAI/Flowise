@@ -31,8 +31,6 @@ import DownloadOutlined from '@mui/icons-material/DownloadOutlined'
 import CloseOutlined from '@mui/icons-material/CloseOutlined'
 import FilePresentOutlined from '@mui/icons-material/FilePresentOutlined'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || `http://localhost:4000`
-
 async function createCsvParseRun({
     name,
     configuration,
@@ -53,7 +51,8 @@ async function createCsvParseRun({
     if (!file && !csvParseRunId) throw new Error('No file or csvParseRunId provided')
 
     const token = sessionStorage.getItem('access_token')
-    const response = await fetch(`${API_BASE_URL}/api/v1/csv-parser`, {
+    const baseURL = sessionStorage.getItem('baseURL') || ''
+    const response = await fetch(`${baseURL}/api/v1/csv-parser`, {
         method: 'POST',
         body: JSON.stringify({
             name,
@@ -77,8 +76,9 @@ async function createCsvParseRun({
 }
 
 async function fetchCsvParseRun({ csvParseRunId }: { csvParseRunId: string }) {
+    const baseURL = sessionStorage.getItem('baseURL') || ''
     const token = sessionStorage.getItem('access_token')
-    const response = await fetch(`${API_BASE_URL}/api/v1/csv-parser/${csvParseRunId}`, {
+    const response = await fetch(`${baseURL}/api/v1/csv-parser/${csvParseRunId}`, {
         headers: {
             Authorization: `Bearer ${token}`
         }

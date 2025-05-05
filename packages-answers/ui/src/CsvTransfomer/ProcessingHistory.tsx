@@ -6,11 +6,10 @@ import { User } from 'types'
 import { Stack, Button, Chip, CircularProgress } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'
-
 async function fetchCsvParseRuns() {
     const token = sessionStorage.getItem('access_token')
-    const response = await fetch(`${API_BASE_URL}/api/v1/csv-parser`, {
+    const baseURL = sessionStorage.getItem('baseURL') || ''
+    const response = await fetch(`${baseURL}/api/v1/csv-parser`, {
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -23,7 +22,8 @@ async function fetchCsvParseRuns() {
 
 async function getProcessedCsvSignedUrl(csvParseRunId: string) {
     const token = sessionStorage.getItem('access_token')
-    const response = await fetch(`${API_BASE_URL}/api/v1/csv-parser/${csvParseRunId}/signed-url`, {
+    const baseURL = sessionStorage.getItem('baseURL') || ''
+    const response = await fetch(`${baseURL}/api/v1/csv-parser/${csvParseRunId}/signed-url`, {
         headers: {
             Authorization: `Bearer ${token}`
         }
