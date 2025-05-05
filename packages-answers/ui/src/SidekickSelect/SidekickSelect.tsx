@@ -86,13 +86,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         setSelectedTemplateId,
         showCopyMessage,
         setShowCopyMessage,
-        handleSidekickSelect,
+        handleSidekickSelect: handleSidekickSelectFromSidekickSelect,
         handleCreateNewSidekick
     } = useSidekickSelectionHandlers({
         chat,
         navigate,
         enablePerformanceLogs
     })
+
+    const handleSidekickSelect = (sidekick: Sidekick) => {
+        handleSidekickSelectFromSidekickSelect(sidekick)
+        setOpen(false)
+    }
 
     if (enablePerformanceLogs) {
         console.log(`[SidekickSelect] Before final render, noDialog: ${noDialog}, render #${renderCountRef.current}`)
