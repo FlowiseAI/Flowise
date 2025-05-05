@@ -452,8 +452,7 @@ const getUsageSummary = async (req: Request, res: Response, next: NextFunction) 
  */
 const usageSyncHandler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const traceId = req.body?.trace_id || req.query?.traceId
-
+        const traceId = req.body?.traceId || req.query?.traceId
         const billingService = new BillingService()
         const result = await billingService.syncUsageToStripe(traceId)
         return res.json({
