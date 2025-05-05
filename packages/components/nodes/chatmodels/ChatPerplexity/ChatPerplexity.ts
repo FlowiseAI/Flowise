@@ -44,7 +44,7 @@ class ChatPerplexity_ChatModels implements INode {
                 name: 'model',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'sonar' 
+                default: 'sonar'
             },
             {
                 label: 'Temperature',
@@ -218,9 +218,10 @@ class ChatPerplexity_ChatModels implements INode {
 
         if (searchDomainFilterRaw) {
             try {
-                obj.searchDomainFilter = typeof searchDomainFilterRaw === 'object' ? searchDomainFilterRaw : JSON.parse(searchDomainFilterRaw)
+                obj.searchDomainFilter =
+                    typeof searchDomainFilterRaw === 'object' ? searchDomainFilterRaw : JSON.parse(searchDomainFilterRaw)
             } catch (exception) {
-                throw new Error("Invalid JSON in Search Domain Filter: " + exception)
+                throw new Error('Invalid JSON in Search Domain Filter: ' + exception)
             }
         }
 
