@@ -238,25 +238,34 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
          * {isImageUploadAllowed: boolean, imgUploadSizeAndTypes: Array<{ fileTypes: string[], maxUploadSize: number }>}
          */
         let acceptFile = false
+
+        // Early return if constraints are not available yet
+        if (!constraints) {
+            console.warn('Upload constraints not loaded yet')
+            return false
+        }
+
         if (constraints.isImageUploadAllowed) {
             const fileType = file.type
             const sizeInMB = file.size / 1024 / 1024
-            constraints.imgUploadSizeAndTypes.map((allowed) => {
-                if (allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
-                    acceptFile = true
-                }
-            })
+            if (constraints.imgUploadSizeAndTypes && Array.isArray(constraints.imgUploadSizeAndTypes)) {
+                constraints.imgUploadSizeAndTypes.forEach((allowed) => {
+                    if (allowed.fileTypes && allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
+                        acceptFile = true
+                    }
+                })
+            }
         }
 
         if (fullFileUpload) {
             return true
         } else if (constraints.isRAGFileUploadAllowed) {
             const fileExt = file.name.split('.').pop()
-            if (fileExt) {
-                constraints.fileUploadSizeAndTypes.map((allowed) => {
-                    if (allowed.fileTypes.length === 1 && allowed.fileTypes[0] === '*') {
+            if (fileExt && constraints.fileUploadSizeAndTypes && Array.isArray(constraints.fileUploadSizeAndTypes)) {
+                constraints.fileUploadSizeAndTypes.forEach((allowed) => {
+                    if (allowed.fileTypes && allowed.fileTypes.length === 1 && allowed.fileTypes[0] === '*') {
                         acceptFile = true
-                    } else if (allowed.fileTypes.includes(`.${fileExt}`)) {
+                    } else if (allowed.fileTypes && allowed.fileTypes.includes(`.${fileExt}`)) {
                         acceptFile = true
                     }
                 })
