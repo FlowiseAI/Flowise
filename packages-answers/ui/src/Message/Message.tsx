@@ -189,6 +189,7 @@ export const MessageCard = ({
                     chatflowid: chatflowid ?? '',
                     chatId: chatId ?? ''
                 })
+                setShowFeedback(true)
             } catch (err) {
                 setLastInteraction(undefined)
             }
@@ -883,7 +884,7 @@ export const MessageCard = ({
                 </Dialog>
             )}
 
-            {(role === 'assistant' || role === 'apiMessage') && isFeedbackAllowed ? (
+            {(role === 'assistant' || role === 'apiMessage') && isFeedbackAllowed && !isLoading ? (
                 <Box
                     sx={{
                         position: 'absolute',
@@ -904,7 +905,7 @@ export const MessageCard = ({
                     ) : (
                         <>
                             <IconButton
-                                color={lastInteraction === 'like' ? 'secondary' : 'default'}
+                                color={lastInteraction === 'thumbsUp' ? 'secondary' : 'default'}
                                 size='small'
                                 data-cy='like-button'
                                 onClick={(event) => {
@@ -918,7 +919,7 @@ export const MessageCard = ({
                             </IconButton>
                             <IconButton
                                 size='small'
-                                color={lastInteraction === 'dislike' ? 'secondary' : 'default'}
+                                color={lastInteraction === 'thumbsDown' ? 'secondary' : 'default'}
                                 onClick={(event) => {
                                     event.stopPropagation()
                                     event.preventDefault()

@@ -257,23 +257,26 @@ export function AnswersProvider({
     const deleteChat = async (id: string) => axios.delete(`${apiUrl}/chats?id=${id}`).then(() => router.refresh())
 
     const sendMessageFeedback = async (data: FeedbackPayload) => {
-        const { chatflowid } = data
+        const { chatflowid, messageId, rating } = data
         const response = await chatmessagefeedbackApi.addFeedback(chatflowid, { ...data })
         if (response.data) {
             const data = response.data
             let id = ''
             if (data && data.id) id = data.id
-            // setMessages((prevMessages) => {
-            //     const allMessages = [...cloneDeep(prevMessages)]
-            //     return allMessages.map((message) => {
-            //         if (message.id === messageId) {
-            //             message.feedback = {
-            //                 rating: 'THUMBS_UP'
-            //             }
-            //         }
-            //         return message
-            //     })
-            // })
+
+            setMessages((prevMessages) => {
+                const allMessages = [...cloneDeep(prevMessages)]
+                return allMessages.map((message) => {
+                    if (message.id === messageId) {
+                        return {
+                            ...message,
+                            feedback: { rating }
+                        }
+                    }
+                    return message
+                })
+            })
+
             setFeedbackId(id)
             setShowFeedbackContentDialog(true)
         }
@@ -536,7 +539,16 @@ export function AnswersProvider({
 
         try {
             // Start with empty message that will be updated by streaming
-            setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '', isLoading: true } as Message])
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                    role: 'assistant',
+                    content: '',
+                    isLoading: true,
+                    chatflowid: chatflowid,
+                    type: 'apiMessage'
+                } as Message
+            ])
             await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
                 openWhenHidden: true,
                 method: 'POST',
@@ -590,6 +602,17 @@ export function AnswersProvider({
                             if (payload.data.chatId) {
                                 setChatId(payload.data.chatId)
                             }
+                            if (payload.data.chatMessageId) {
+                                setMessages((prevMessages) => {
+                                    const allMessages = [...cloneDeep(prevMessages)]
+                                    const lastMessage = allMessages[allMessages.length - 1]
+                                    if (lastMessage?.role === 'user') return allMessages
+                                    lastMessage.id = payload.data.chatMessageId
+                                    lastMessage.chatId = payload.data.chatId
+                                    lastMessage.chatflowid = chatflowid
+                                    return allMessages
+                                })
+                            }
                             break
                         case 'error':
                             setError(payload.data)
@@ -612,6 +635,8 @@ export function AnswersProvider({
                                 const lastMessage = allMessages[allMessages.length - 1]
                                 if (lastMessage?.role === 'user') return allMessages
                                 lastMessage.isLoading = false
+                                lastMessage.role = 'assistant'
+                                lastMessage.type = 'apiMessage'
                                 return allMessages
                             })
                             setIsLoading(false)
