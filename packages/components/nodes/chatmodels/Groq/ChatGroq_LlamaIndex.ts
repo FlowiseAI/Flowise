@@ -84,7 +84,6 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const maxTokens = nodeData.inputs?.maxTokens as string
-
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const groqApiKey = getCredentialParam('groqApiKey', credentialData, nodeData)
 
@@ -93,7 +92,7 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
             model: modelName,
             apiKey: groqApiKey
         }
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10) 
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         const model = new Groq(obj)
         return model
     }
