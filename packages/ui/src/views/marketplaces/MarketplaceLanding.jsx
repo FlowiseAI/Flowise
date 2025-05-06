@@ -212,7 +212,7 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
 
             if (!user) {
                 const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-                const loginUrl = `/api/auth/login?returnTo=${redirectUrl}`
+                const loginUrl = `/api/auth/login?redirect_uri=${redirectUrl}`
                 setNavigationState(state)
                 window.location.href = loginUrl
             } else {

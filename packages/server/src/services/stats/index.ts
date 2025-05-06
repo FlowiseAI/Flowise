@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import { ChatMessageRatingType, chatType, IUser } from '../../Interface'
+import { ChatMessageRatingType, ChatType, IUser } from '../../Interface'
 import { ChatMessage } from '../../database/entities/ChatMessage'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
 import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
@@ -10,7 +10,7 @@ import { getErrorMessage } from '../../errors/utils'
 const getChatflowStats = async (
     user: IUser,
     chatflowid: string,
-    chatTypeFilter: chatType | undefined,
+    chatTypes: ChatType[] | undefined,
     startDate?: string,
     endDate?: string,
     messageId?: string,
@@ -18,20 +18,16 @@ const getChatflowStats = async (
     feedbackTypes?: ChatMessageRatingType[]
 ): Promise<any> => {
     try {
-        const chatmessages = (await utilGetChatMessage(
+        const chatmessages = (await utilGetChatMessage({
             user,
             chatflowid,
-            chatTypeFilter,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
+            chatTypes,
             startDate,
             endDate,
             messageId,
             feedback,
             feedbackTypes
-        )) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
+        })) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
         const totalMessages = chatmessages.length
         const totalFeedback = chatmessages.filter((message) => message?.feedback).length
         const positiveFeedback = chatmessages.filter((message) => message?.feedback?.rating === 'THUMBS_UP').length

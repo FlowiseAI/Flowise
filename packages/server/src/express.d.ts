@@ -16,8 +16,18 @@ declare global {
                     name: string
                     'https://theanswer.ai/roles'?: string[]
                     permissions?: string[]
+                    stripeCustomerId?: string
                 }
                 token: string
+            }
+        }
+
+        interface Response {
+            locals: {
+                filter?: {
+                    userId?: string
+                    organizationId: string
+                }
             }
         }
     }

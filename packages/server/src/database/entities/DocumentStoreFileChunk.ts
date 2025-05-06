@@ -25,9 +25,9 @@ export class DocumentStoreFileChunk implements IDocumentStoreFileChunk {
 
     @Index()
     @Column({ type: 'uuid', nullable: true })
-    userId?: string
+    userId: string
 
     @Index()
     @Column({ type: 'uuid', nullable: true })
-    organizationId?: string
+    organizationId: string
 }

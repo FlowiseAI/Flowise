@@ -1,0 +1,199 @@
+---
+id: refresh-document
+title: 'Re-process and upsert all documents in document store'
+description: 'Re-process and upsert all existing documents in document store'
+sidebar_label: 'Re-process and upsert all documents in document store'
+hide_title: true
+hide_table_of_contents: true
+api: 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
+sidebar_class_name: 'post api-method'
+info_path: docs/api/document-store/document-store-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Re-process and upsert all documents in document store'}></Heading>
+
+<MethodEndpoint method={'post'} path={'/document-store/refresh/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Re-process and upsert all existing documents in document store
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Document Store ID' }]}
+></ParamsDetails>
+
+<RequestSchema
+    title={'Body'}
+    body={{
+        content: {
+            'application/json': {
+                schema: {
+                    type: 'object',
+                    properties: {
+                        items: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    docId: {
+                                        type: 'string',
+                                        format: 'uuid',
+                                        nullable: true,
+                                        description:
+                                            'Document ID within the store. If provided, existing configuration from the document will be used for the new document'
+                                    },
+                                    metadata: {
+                                        type: 'object',
+                                        nullable: true,
+                                        description: 'Metadata associated with the document',
+                                        example: { foo: 'bar' }
+                                    },
+                                    replaceExisting: {
+                                        type: 'boolean',
+                                        nullable: true,
+                                        description:
+                                            'Whether to replace existing document loader with the new upserted chunks. However this does not delete the existing embeddings in the vector store'
+                                    },
+                                    createNewDocStore: {
+                                        type: 'boolean',
+                                        nullable: true,
+                                        description: 'Whether to create a new document store'
+                                    },
+                                    docStore: {
+                                        type: 'object',
+                                        nullable: true,
+                                        description: 'Only when createNewDocStore is true, pass in the new document store configuration',
+                                        properties: {
+                                            name: {
+                                                type: 'string',
+                                                example: 'plainText',
+                                                description: 'Name of the new document store to be created'
+                                            },
+                                            description: {
+                                                type: 'string',
+                                                example: 'plainText',
+                                                description: 'Description of the new document store to be created'
+                                            }
+                                        }
+                                    },
+                                    loader: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: { type: 'string', example: 'plainText', description: 'Name of the loader (camelCase)' },
+                                            config: { type: 'object', description: 'Configuration for the loader' }
+                                        }
+                                    },
+                                    splitter: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: {
+                                                type: 'string',
+                                                example: 'recursiveCharacterTextSplitter',
+                                                description: 'Name of the text splitter (camelCase)'
+                                            },
+                                            config: { type: 'object', description: 'Configuration for the text splitter' }
+                                        }
+                                    },
+                                    embedding: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: {
+                                                type: 'string',
+                                                example: 'openAIEmbeddings',
+                                                description: 'Name of the embedding generator (camelCase)'
+                                            },
+                                            config: { type: 'object', description: 'Configuration for the embedding generator' }
+                                        }
+                                    },
+                                    vectorStore: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: { type: 'string', example: 'faiss', description: 'Name of the vector store (camelCase)' },
+                                            config: { type: 'object', description: 'Configuration for the vector store' }
+                                        }
+                                    },
+                                    recordManager: {
+                                        type: 'object',
+                                        nullable: true,
+                                        properties: {
+                                            name: {
+                                                type: 'string',
+                                                example: 'postgresRecordManager',
+                                                description: 'Name of the record manager (camelCase)'
+                                            },
+                                            config: { type: 'object', description: 'Configuration for the record manager' }
+                                        }
+                                    }
+                                },
+                                title: 'DocumentStoreLoaderForUpsert'
+                            }
+                        }
+                    },
+                    title: 'DocumentStoreLoaderForRefresh'
+                }
+            }
+        },
+        required: true
+    }}
+></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successfully execute refresh operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'array',
+                        items: {
+                            type: 'object',
+                            properties: {
+                                numAdded: { type: 'number', description: 'Number of vectors added', example: 1 },
+                                numDeleted: { type: 'number', description: 'Number of vectors deleted', example: 1 },
+                                numUpdated: { type: 'number', description: 'Number of vectors updated', example: 1 },
+                                numSkipped: {
+                                    type: 'number',
+                                    description: 'Number of vectors skipped (not added, deleted, or updated)',
+                                    example: 1
+                                },
+                                addedDocs: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            pageContent: { type: 'string', example: 'This is the content of the page.' },
+                                            metadata: {
+                                                type: 'object',
+                                                additionalProperties: { type: 'string' },
+                                                example: { author: 'John Doe', date: '2024-08-24' }
+                                            }
+                                        },
+                                        title: 'Document'
+                                    }
+                                }
+                            },
+                            title: 'VectorUpsertResponse'
+                        }
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid request body' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

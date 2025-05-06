@@ -40,15 +40,16 @@ export async function findSidekicksForChat(user: User) {
     }
 
     // Fetch user chats from the database
-    const userChats = await prisma.chat.findMany({
-        where: {
-            users: { some: { email: user.email } },
-            organization: { id: user.org_id }
-        },
-        select: {
-            id: true
-        }
-    })
+    // const
+    //  = await prisma.chat.findMany({
+    //     where: {
+    //         users: { some: { email: user.email } },
+    //         organization: { id: user.org_id }
+    //     },
+    //     select: {
+    //         id: true
+    //     }
+    // })
 
     const { chatflowDomain } = user
     try {
@@ -132,7 +133,6 @@ export async function findSidekicksForChat(user: User) {
                     chatflowDomain: chatflowDomain,
                     chatbotConfig: parseChatbotConfig(chatflow.chatbotConfig),
                     flowData: parseFlowData(chatflow.flowData),
-                    isRecent: userChats.some((chat) => chat.chatflowId === chatflow.id),
                     category: chatflow.category,
                     categories,
                     isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),

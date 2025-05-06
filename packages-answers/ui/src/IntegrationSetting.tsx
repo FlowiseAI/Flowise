@@ -1,5 +1,3 @@
-import React from 'react'
-
 import JiraSettings from './JiraSettings'
 import SlackSettings from './SlackSettings'
 import ConfluenceSettings from './ConfluenceSettings'

@@ -1,15 +1,15 @@
+'use client'
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useTheme } from '@mui/material/styles'
 import { Box, Drawer } from '@mui/material'
-import { FullPageChat } from 'aai-embed-react'
 import generateThemeColors from '@/utils/generateThemeColors'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 import Avatar from '@mui/material/Avatar'
 import Close from '@mui/icons-material/Close'
 import ChatIcon from '@mui/icons-material/ContactSupport'
 import Resize from '@mui/icons-material/Height'
-
+import Script from 'next/script'
 // Need these as guidelines or either the chat window or main content will be unusable and the drawer tab icons will get lost.   May need some tweaking.
 const maxDrawerWidth = 40 // in "vw"
 const minDrawerWidth = 20 // in "vw"
@@ -182,7 +182,6 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
                 anchor='right'
                 open={helpChatOpen}
                 variant='permanent'
-                keepMounted={true}
                 sx={{
                     height: '100vh',
                     width: helpChatOpen ? drawerWidth : 0,
@@ -208,26 +207,24 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
                 }}
             >
                 <Box sx={{ width: helpChatOpen ? drawerWidth : 0, textWrap: 'initial' }}>
-                    <FullPageChat
-                        key='helpchatbot'
-                        apiHost={apiHost}
-                        chatflowid={chatflowid}
-                        // observersConfig={{
-                        //     //   observeUserInput: (userInput: string) => {
-                        //     //     // console.log("User input observed:", userInput);
-                        //     //   },
-                        //     //xw   observeLoading: (loading: boolean) => {
-                        //     //     // console.log("Loading state observed:", loading);
-                        //     //   },
-                        //     observeMessages: (messages) => {
-                        //         console.log('Messages observed again:', messages)
-                        //     },
-                        //     observeStreamEnd: (messages) => {
-                        //         console.log('Stream End:', messages)
-                        //     }
-                        // }}
-                        theme={themeConfig}
-                    />
+                    {helpChatOpen && (
+                        <>
+                            <aai-fullchatbot />
+                            <Script
+                                key='aai-chatbot-script'
+                                id='aai-chatbot-script'
+                                type='module'
+                                src='https://cdn.jsdelivr.net/npm/aai-embed@2/dist/web.js'
+                                onReady={() => {
+                                    Chatbot.initFull({
+                                        chatflowid: chatflowid,
+                                        apiHost: apiHost,
+                                        theme: themeConfig
+                                    })
+                                }}
+                            />
+                        </>
+                    )}
                 </Box>
             </Drawer>
         </Box>

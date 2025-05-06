@@ -6,21 +6,24 @@ import { Session } from '@auth0/nextjs-auth0'
 import CssBaseline from '@mui/material/CssBaseline'
 import ThemeProvider from '@mui/material/styles/ThemeProvider'
 
-import { AppDrawer } from '../AppDrawer'
 import { darkModeTheme } from '../theme'
 import GlobalStyles from '../GlobalStyles'
 
 import { AppSettings } from 'types'
-import HelpChatDrawer from '../HelpChatDrawer'
-import { HelpChatProvider } from '../HelpChatContext'
 import { UserProvider } from '@auth0/nextjs-auth0/client'
+import { Auth0Setup } from '@/hooks/useAuth0Setup'
+import dynamic from 'next/dynamic'
+const HelpChatDrawer = dynamic(() => import('../HelpChatDrawer'), { ssr: false })
+const HelpChatProvider = dynamic(() => import('../HelpChatContext').then((mod) => mod.HelpChatProvider), {
+    ssr: false
+})
+const AppDrawer = dynamic(() => import('../AppDrawer'))
 
-import { Auth0Setup } from '@/AppProvider'
 import React from 'react'
 
 export default function AppLayout({
     session,
-    chatList,
+
     params,
     children,
     flagsmithState,
@@ -29,7 +32,7 @@ export default function AppLayout({
     session?: Session
     appSettings?: AppSettings
     children: React.ReactNode
-    chatList?: any
+
     params?: {
         slug: string
     }
@@ -59,22 +62,22 @@ export default function AppLayout({
                         authorizationParams={authorizationParams}
                     > */}
                     <ThemeProvider theme={darkModeTheme}>
-                        <HelpChatProvider>
-                            <CssBaseline enableColorScheme />
-                            <GlobalStyles />
-                            <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
-                                {!noDrawer && (
-                                    <AppDrawer params={params} session={session} chatList={chatList} flagsmithState={flagsmithState} />
-                                )}
-                                <div style={{ flex: 1, position: 'relative' }}>
-                                    <div style={{ width: '100%', height: '100%', position: 'relative' }}>{children}</div>
-                                </div>
-                                <HelpChatDrawer
-                                    apiHost='https://lastrev.flowise.theanswer.ai'
-                                    chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d'
-                                />
+                        <CssBaseline enableColorScheme />
+                        <GlobalStyles />
+                        <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', overflowY: 'auto' }}>
+                            {!noDrawer && <AppDrawer params={params} session={session} flagsmithState={flagsmithState} />}
+                            <div style={{ flex: 1, position: 'relative', overflow: 'auto' }}>
+                                <div style={{ width: '100%', position: 'relative' }}>{children}</div>
                             </div>
-                        </HelpChatProvider>
+                            <React.Suspense fallback={<div>Loading...</div>}>
+                                <HelpChatProvider>
+                                    <HelpChatDrawer
+                                        apiHost='https://lr-production.studio.theanswer.ai'
+                                        chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d'
+                                    />
+                                </HelpChatProvider>
+                            </React.Suspense>
+                        </div>
                     </ThemeProvider>
                     {/* </Auth0Provider> */}
                 </FlagsmithProvider>

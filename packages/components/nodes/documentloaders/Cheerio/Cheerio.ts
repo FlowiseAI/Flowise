@@ -4,9 +4,9 @@ import { CheerioWebBaseLoader, WebBaseLoaderParams } from '@langchain/community/
 import { Document } from '@langchain/core/documents'
 import { test } from 'linkifyjs'
 import { parse } from 'css-what'
-import { webCrawl, xmlScrape } from '../../../src'
 import { SelectorType } from 'cheerio'
-import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { ICommonObject, INodeOutputsValue, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { handleEscapeCharacters, webCrawl, xmlScrape } from '../../../src/utils'
 
 class CustomCheerioLoader extends CheerioWebBaseLoader {
     // Additional parameters for customizing the loader's behavior
@@ -58,11 +58,12 @@ class Cheerio_DocumentLoaders implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Cheerio Web Scraper'
         this.name = 'cheerioWebScraper'
-        this.version = 1.1
+        this.version = 2.0
         this.type = 'Document'
         this.icon = 'cheerio.svg'
         this.category = 'Document Loaders'
@@ -170,6 +171,20 @@ class Cheerio_DocumentLoaders implements INode {
                 additionalParams: true
             }
         ]
+        this.outputs = [
+            {
+                label: 'Document',
+                name: 'document',
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: [...this.baseClasses, 'json']
+            },
+            {
+                label: 'Text',
+                name: 'text',
+                description: 'Concatenated string from pageContent of documents',
+                baseClasses: ['string', 'json']
+            }
+        ]
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
@@ -182,6 +197,7 @@ class Cheerio_DocumentLoaders implements INode {
 
         const outputParams = { outputFormat, excludeSelector }
         let limit = parseInt(nodeData.inputs?.limit as string)
+        const output = nodeData.outputs?.output as string
 
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
 
@@ -287,7 +303,15 @@ class Cheerio_DocumentLoaders implements INode {
             }))
         }
 
-        return docs
+        if (output === 'document') {
+            return docs
+        } else {
+            let finaltext = ''
+            for (const doc of docs) {
+                finaltext += `${doc.pageContent}\n`
+            }
+            return handleEscapeCharacters(finaltext, false)
+        }
     }
 }
 

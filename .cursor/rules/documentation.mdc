@@ -1,0 +1,84 @@
+---
+description: Use these rules when working with the documentation site and get information about how the application works
+globs: 
+alwaysApply: false
+---
+# Docs Package
+packages/docs
+
+## Overview
+The docs package contains the documentation website for TheAnswer platform. It provides comprehensive guides, API references, and examples for using the platform's features.
+
+## Purpose in the Monorepo
+This package serves as the central documentation hub for both users and developers, providing detailed information about all aspects of TheAnswer platform. It helps onboard new users and serves as a reference for experienced users.
+
+## Key Features
+- Comprehensive guides and tutorials
+- API documentation
+- Component references
+- Integration examples
+- Searchable content
+- OpenAPI specification visualization
+- Interactive examples
+
+## Technical Details
+
+### Technologies Used
+- **Docusaurus**: Documentation framework
+- **React**: UI components
+- **OpenAPI**: For API documentation
+- **MDX**: For enhanced markdown
+
+### Dependencies
+- **@docusaurus/core** and **@docusaurus/preset-classic**: Docusaurus framework
+- **docusaurus-plugin-openapi-docs**: For OpenAPI documentation
+- **docusaurus-theme-openapi-docs**: For OpenAPI theme
+- **aai-embed** and **aai-embed-react**: For embedding chatbot examples
+
+### Project Structure
+The documentation follows a structured approach with:
+- Guides section for tutorials
+- API reference section
+- Component documentation
+- Examples and use cases
+- Getting started guides
+
+### Build Process
+Uses Docusaurus build system for generating static site.
+
+## Development Guidelines
+
+### Documentation Standards
+- Use clear, concise language
+- Include code examples
+- Organize content in a logical hierarchy
+- Target both beginner and advanced users
+- Keep API references up-to-date with the codebase
+
+### Contributing Guidelines
+- Follow Docusaurus best practices
+- Use proper MDX formatting
+- Ensure examples are working and tested
+- Update documentation when related code changes
+
+### Content Organization
+- Structured by user roles and use cases
+- Progressive disclosure (basic to advanced)
+- Clear navigation paths
+- Search-optimized content
+
+## Scripts and Commands
+- `start`: Runs the documentation site locally
+- `build`: Builds the static site
+- `api-docs`: Generates API documentation from OpenAPI specs
+- `gen-api-docs`: Generates specific API documentation
+- `clean-api-docs`: Cleans generated API docs
+
+## Deployment
+The documentation is built as a static site and can be deployed to any static hosting service.
+
+## Integration with Other Packages
+- Pulls examples from other packages
+- References APIs from server package
+- Shows component usage from components package
+- Embeds chatbot examples from embed packages 

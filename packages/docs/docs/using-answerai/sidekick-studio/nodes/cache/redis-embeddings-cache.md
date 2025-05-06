@@ -30,7 +30,7 @@ The Redis Embeddings Cache feature in AnswerAI allows you to store generated emb
     - For 'redisCacheApi', enter the Redis host, port, username, and password
     - For 'redisCacheUrlApi', enter the Redis connection URL
     - If using SSL, enable the SSL option
-        <figure><img src="/.gitbook/assets/screenshots/redis cache api credentials.png" alt="" /><figcaption><p>Redis Cache API Configuration &#x26; Drop UI</p></figcaption></figure> <!-- TODO: Screenshot of creating Redis Cache credential -->
+      <figure><img src="/.gitbook/assets/screenshots/redis cache api credentials.png" alt="" /><figcaption><p>Redis Cache API Configuration &#x26; Drop UI</p></figcaption></figure> <!-- TODO: Screenshot of creating Redis Cache credential -->
 
 3. Add the Redis Embeddings Cache node to your AnswerAI workflow:
     <!-- TODO: Screenshot of adding Redis Embeddings Cache node to the workflow -->
@@ -42,7 +42,7 @@ The Redis Embeddings Cache feature in AnswerAI allows you to store generated emb
     - Connect the previously created Redis credential to the node
     - (Optional) Set the Time to Live (TTL) in seconds (default is 3600 seconds or 1 hour)
     - (Optional) Specify a namespace for the cache
-        <!-- TODO: Screenshot showing the configuration of the Redis Embeddings Cache node -->
+      <!-- TODO: Screenshot showing the configuration of the Redis Embeddings Cache node -->
 
 5. Connect the Redis Embeddings Cache node to other nodes in your workflow that require embeddings:
       <!-- TODO: Screenshot showing the connection between Redis Embeddings Cache and other relevant nodes -->

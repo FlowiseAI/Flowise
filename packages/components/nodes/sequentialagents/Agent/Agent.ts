@@ -18,18 +18,30 @@ import {
     ISeqAgentNode,
     IDatabaseEntity,
     IUsedTool,
-    IDocument
+    IDocument,
+    IStateWithMessages,
+    ConversationHistorySelection
 } from '../../../src/Interface'
-import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX, ARTIFACTS_PREFIX } from '../../../src/agents'
+import {
+    extractOutputFromArray,
+    getInputVariables,
+    getVars,
+    handleEscapeCharacters,
+    prepareSandboxVars,
+    removeInvalidImageMarkdown,
+    transformBracesWithColon
+} from '../../../src/utils'
 import {
     customGet,
     getVM,
     processImageMessage,
     transformObjectPropertyToFunction,
+    filterConversationHistory,
     restructureMessages,
     MessagesState,
-    RunnableCallable
+    RunnableCallable,
+    checkMessageHistory
 } from '../commonUtils'
 import { END, StateGraph } from '@langchain/langgraph'
 import { StructuredTool } from '@langchain/core/tools'
@@ -66,9 +78,9 @@ const howToUseCode = `
         "sourceDocuments": [
             {
                 "pageContent": "This is the page content",
-                "metadata": "{foo: var}",
+                "metadata": "{foo: var}"
             }
-        ],
+        ]
     }
     \`\`\`
 
@@ -100,10 +112,10 @@ const howToUse = `
     |-----------|-----------|
     | user      | john doe  |
 
-2. If you want to use the agent's output as the value to update state, it is available as available as \`$flow.output\` with the following structure:
+2. If you want to use the Agent's output as the value to update state, it is available as available as \`$flow.output\` with the following structure:
     \`\`\`json
     {
-        "output": "Hello! How can I assist you today?",
+        "content": "Hello! How can I assist you today?",
         "usedTools": [
             {
                 "tool": "tool-name",
@@ -114,9 +126,9 @@ const howToUse = `
         "sourceDocuments": [
             {
                 "pageContent": "This is the page content",
-                "metadata": "{foo: var}",
+                "metadata": "{foo: var}"
             }
-        ],
+        ]
     }
     \`\`\`
 
@@ -149,6 +161,31 @@ const defaultFunc = `const result = $flow.output;
 return {
   aggregate: [result.content]
 };`
+
+const messageHistoryExample = `const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');
+
+return [
+    new HumanMessage("What is 333382 🦜 1932?"),
+    new AIMessage({
+        content: "",
+        tool_calls: [
+        {
+            id: "12345",
+            name: "calulator",
+            args: {
+                number1: 333382,
+                number2: 1932,
+                operation: "divide",
+            },
+        },
+        ],
+    }),
+    new ToolMessage({
+        tool_call_id: "12345",
+        content: "The answer is 172.558.",
+    }),
+    new AIMessage("The answer is 172.558."),
+]`
 const TAB_IDENTIFIER = 'selectedUpdateStateMemoryTab'
 
 class Agent_SeqAgents implements INode {
@@ -168,7 +205,7 @@ class Agent_SeqAgents implements INode {
     constructor() {
         this.label = 'Agent'
         this.name = 'seqAgent'
-        this.version = 2.0
+        this.version = 4.1
         this.type = 'Agent'
         this.icon = 'seqAgent.png'
         this.category = 'Sequential Agents'
@@ -191,6 +228,53 @@ class Agent_SeqAgents implements INode {
                 default: examplePrompt
             },
             {
+                label: 'Prepend Messages History',
+                name: 'messageHistory',
+                description:
+                    'Prepend a list of messages between System Prompt and Human Prompt. This is useful when you want to provide few shot examples',
+                type: 'code',
+                hideCodeExecute: true,
+                codeExample: messageHistoryExample,
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Conversation History',
+                name: 'conversationHistorySelection',
+                type: 'options',
+                options: [
+                    {
+                        label: 'User Question',
+                        name: 'user_question',
+                        description: 'Use the user question from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Last Conversation Message',
+                        name: 'last_message',
+                        description: 'Use the last conversation message from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'All Conversation Messages',
+                        name: 'all_messages',
+                        description: 'Use all conversation messages from the historical conversation messages as input.'
+                    },
+                    {
+                        label: 'Empty',
+                        name: 'empty',
+                        description:
+                            'Do not use any messages from the conversation history. ' +
+                            'Ensure to use either System Prompt, Human Prompt, or Messages History.'
+                    }
+                ],
+                default: 'all_messages',
+                optional: true,
+                description:
+                    'Select which messages from the conversation history to include in the prompt. ' +
+                    'The selected messages will be inserted between the System Prompt (if defined) and ' +
+                    '[Messages History, Human Prompt].',
+                additionalParams: true
+            },
+            {
                 label: 'Human Prompt',
                 name: 'humanMessagePrompt',
                 type: 'string',
@@ -207,9 +291,11 @@ class Agent_SeqAgents implements INode {
                 optional: true
             },
             {
-                label: 'Start | Agent | Condition | LLM | Tool Node',
+                label: 'Sequential Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | Condition | LLMNode | ToolNode',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
+                description:
+                    'Can be connected to one of the following nodes: Start, Agent, Condition, LLM Node, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {
@@ -222,7 +308,12 @@ class Agent_SeqAgents implements INode {
             {
                 label: 'Require Approval',
                 name: 'interrupt',
-                description: 'Require approval before executing tools. Will proceed when tools are not called',
+                description:
+                    'Pause execution and request user approval before running tools.\n' +
+                    'If enabled, the agent will prompt the user with customizable approve/reject options\n' +
+                    'and will proceed only after approval. This requires a configured agent memory to manage\n' +
+                    'the state and handle approval requests.\n' +
+                    'If no tools are invoked, the agent proceeds without interruption.',
                 type: 'boolean',
                 optional: true
             },
@@ -368,7 +459,9 @@ class Agent_SeqAgents implements INode {
         let tools = nodeData.inputs?.tools
         tools = flatten(tools)
         let agentSystemPrompt = nodeData.inputs?.systemMessagePrompt as string
+        agentSystemPrompt = transformBracesWithColon(agentSystemPrompt)
         let agentHumanPrompt = nodeData.inputs?.humanMessagePrompt as string
+        agentHumanPrompt = transformBracesWithColon(agentHumanPrompt)
         const agentLabel = nodeData.inputs?.agentName as string
         const sequentialNodes = nodeData.inputs?.sequentialNode as ISeqAgentNode[]
         const maxIterations = nodeData.inputs?.maxIterations as string
@@ -426,6 +519,8 @@ class Agent_SeqAgents implements INode {
                     llm,
                     interrupt,
                     agent: await createAgent(
+                        nodeData,
+                        options,
                         agentName,
                         state,
                         llm,
@@ -515,6 +610,8 @@ class Agent_SeqAgents implements INode {
 }
 
 async function createAgent(
+    nodeData: INodeData,
+    options: ICommonObject,
     agentName: string,
     state: ISeqAgentsState,
     llm: BaseChatModel,
@@ -535,7 +632,8 @@ async function createAgent(
         if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
         if (humanPrompt) promptArrays.push(['human', humanPrompt])
 
-        const prompt = ChatPromptTemplate.fromMessages(promptArrays)
+        let prompt = ChatPromptTemplate.fromMessages(promptArrays)
+        prompt = await checkMessageHistory(nodeData, options, prompt, promptArrays, systemPrompt)
 
         if (multiModalMessageContent.length) {
             const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
@@ -545,6 +643,33 @@ async function createAgent(
         if (llm.bindTools === undefined) {
             throw new Error(`This agent only compatible with function calling models.`)
         }
+
+        // Filter tools from tools with duplicate names, make sure the logs clearly show what happened
+        // Check for duplicate tool names and filter them out
+        // TODO: WE ABSOLUTELY NEED TO FIX THIS
+        // TODO: Why tools are duplicated?
+        const initialToolCount = tools.length
+        const uniqueToolNames = new Set(tools.map((tool: any) => tool.name))
+
+        if (initialToolCount > uniqueToolNames.size) {
+            console.log(`[ToolAgent] Found duplicate tool names. Initial count: ${initialToolCount}, unique count: ${uniqueToolNames.size}`)
+            const duplicateTools = tools
+                .map((tool: any) => tool.name)
+                .filter((name: string, index: number, array: string[]) => array.indexOf(name) !== index)
+            console.log(`[ToolAgent] Duplicate tool names: ${JSON.stringify(duplicateTools)}`)
+        }
+
+        tools = tools.filter((tool: any, index: number, self: any[]) => {
+            const firstIndex = self.findIndex((t) => t.name === tool.name)
+            const isDuplicate = firstIndex !== index
+            if (isDuplicate) {
+                console.log(`[ToolAgent] Filtering out duplicate tool: ${tool.name}`)
+            }
+            return firstIndex === index
+        })
+
+        console.log(`[ToolAgent] Binding ${tools.length} tools to model: ${tools.map((t: any) => t.name).join(', ')}`)
+
         const modelWithTools = llm.bindTools(tools)
 
         let agent
@@ -582,7 +707,7 @@ async function createAgent(
             sessionId: flowObj?.sessionId,
             chatId: flowObj?.chatId,
             input: flowObj?.input,
-            verbose: process.env.DEBUG === 'true' ? true : false,
+            verbose: process.env.DEBUG === 'true',
             maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
         })
         return executor
@@ -597,7 +722,9 @@ async function createAgent(
         if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
         if (humanPrompt) promptArrays.push(['human', humanPrompt])
 
-        const prompt = ChatPromptTemplate.fromMessages(promptArrays)
+        let prompt = ChatPromptTemplate.fromMessages(promptArrays)
+        prompt = await checkMessageHistory(nodeData, options, prompt, promptArrays, systemPrompt)
+
         if (multiModalMessageContent.length) {
             const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
             prompt.promptMessages.splice(1, 0, msg)
@@ -624,7 +751,8 @@ async function createAgent(
         if (systemPrompt) promptArrays.unshift(['system', systemPrompt])
         if (humanPrompt) promptArrays.push(['human', humanPrompt])
 
-        const prompt = ChatPromptTemplate.fromMessages(promptArrays)
+        let prompt = ChatPromptTemplate.fromMessages(promptArrays)
+        prompt = await checkMessageHistory(nodeData, options, prompt, promptArrays, systemPrompt)
 
         if (multiModalMessageContent.length) {
             const msg = HumanMessagePromptTemplate.fromTemplate([...multiModalMessageContent])
@@ -681,6 +809,9 @@ async function agentNode(
             throw new Error('Aborted!')
         }
 
+        const historySelection = (nodeData.inputs?.conversationHistorySelection || 'all_messages') as ConversationHistorySelection
+        // @ts-ignore
+        state.messages = filterConversationHistory(historySelection, input, state)
         // @ts-ignore
         state.messages = restructureMessages(llm, state)
 
@@ -688,17 +819,25 @@ async function agentNode(
 
         if (interrupt) {
             const messages = state.messages as unknown as BaseMessage[]
-            const lastMessage = messages[messages.length - 1]
+            const lastMessage = messages.length ? messages[messages.length - 1] : null
 
             // If the last message is a tool message and is an interrupted message, format output into standard agent output
-            if (lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
-                let formattedAgentResult: { output?: string; usedTools?: IUsedTool[]; sourceDocuments?: IDocument[] } = {}
+            if (lastMessage && lastMessage._getType() === 'tool' && lastMessage.additional_kwargs?.nodeId === nodeData.id) {
+                let formattedAgentResult: {
+                    output?: string
+                    usedTools?: IUsedTool[]
+                    sourceDocuments?: IDocument[]
+                    artifacts?: ICommonObject[]
+                } = {}
                 formattedAgentResult.output = result.content
                 if (lastMessage.additional_kwargs?.usedTools) {
                     formattedAgentResult.usedTools = lastMessage.additional_kwargs.usedTools as IUsedTool[]
                 }
                 if (lastMessage.additional_kwargs?.sourceDocuments) {
                     formattedAgentResult.sourceDocuments = lastMessage.additional_kwargs.sourceDocuments as IDocument[]
+                }
+                if (lastMessage.additional_kwargs?.artifacts) {
+                    formattedAgentResult.artifacts = lastMessage.additional_kwargs.artifacts as ICommonObject[]
                 }
                 result = formattedAgentResult
             } else {
@@ -718,12 +857,17 @@ async function agentNode(
         if (result.sourceDocuments) {
             additional_kwargs.sourceDocuments = result.sourceDocuments
         }
+        if (result.artifacts) {
+            additional_kwargs.artifacts = result.artifacts
+        }
         if (result.output) {
             result.content = result.output
             delete result.output
         }
 
-        const outputContent = typeof result === 'string' ? result : result.content || result.output
+        let outputContent = typeof result === 'string' ? result : result.content || result.output
+        outputContent = extractOutputFromArray(outputContent)
+        outputContent = removeInvalidImageMarkdown(outputContent)
 
         if (nodeData.inputs?.updateStateMemoryUI || nodeData.inputs?.updateStateMemoryCode) {
             let formattedOutput = {
@@ -859,10 +1003,35 @@ class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable
     }
 
     private async run(input: BaseMessage[] | MessagesState, config: RunnableConfig): Promise<BaseMessage[] | MessagesState> {
-        const message = Array.isArray(input) ? input[input.length - 1] : input.messages[input.messages.length - 1]
+        let messages: BaseMessage[]
+
+        // Check if input is an array of BaseMessage[]
+        if (Array.isArray(input)) {
+            messages = input
+        }
+        // Check if input is IStateWithMessages
+        else if ((input as IStateWithMessages).messages) {
+            messages = (input as IStateWithMessages).messages
+        }
+        // Handle MessagesState type
+        else {
+            messages = (input as MessagesState).messages
+        }
+
+        // Get the last message
+        const message = messages[messages.length - 1]
 
         if (message._getType() !== 'ai') {
             throw new Error('ToolNode only accepts AIMessages as input.')
+        }
+
+        // Extract all properties except messages for IStateWithMessages
+        const { messages: _, ...inputWithoutMessages } = Array.isArray(input) ? { messages: input } : input
+        const ChannelsWithoutMessages = {
+            chatId: this.options.chatId,
+            sessionId: this.options.sessionId,
+            input: this.inputQuery,
+            state: inputWithoutMessages
         }
 
         const outputs = await Promise.all(
@@ -871,8 +1040,14 @@ class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable
                 if (tool === undefined) {
                     throw new Error(`Tool ${call.name} not found.`)
                 }
+                if (tool && (tool as any).setFlowObject) {
+                    // @ts-ignore
+                    tool.setFlowObject(ChannelsWithoutMessages)
+                }
                 let output = await tool.invoke(call.args, config)
                 let sourceDocuments: Document[] = []
+                let artifacts = []
+
                 if (output?.includes(SOURCE_DOCUMENTS_PREFIX)) {
                     const outputArray = output.split(SOURCE_DOCUMENTS_PREFIX)
                     output = outputArray[0]
@@ -883,12 +1058,23 @@ class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable
                         console.error('Error parsing source documents from tool')
                     }
                 }
+                if (output?.includes(ARTIFACTS_PREFIX)) {
+                    const outputArray = output.split(ARTIFACTS_PREFIX)
+                    output = outputArray[0]
+                    try {
+                        artifacts = JSON.parse(outputArray[1])
+                    } catch (e) {
+                        console.error('Error parsing artifacts from tool')
+                    }
+                }
+
                 return new ToolMessage({
                     name: tool.name,
                     content: typeof output === 'string' ? output : JSON.stringify(output),
                     tool_call_id: call.id!,
                     additional_kwargs: {
                         sourceDocuments,
+                        artifacts,
                         args: call.args,
                         usedTools: [
                             {

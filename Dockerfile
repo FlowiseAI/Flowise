@@ -35,6 +35,7 @@ RUN turbo prune --scope=flowise --docker
 # Create a stage for building the application.
 FROM base as build
 
+# Copy package.json files and patches directory first
 COPY --from=pruner /app/out/json/ .
 
 # First install the dependencies (as they change less often)

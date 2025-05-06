@@ -1,4 +1,3 @@
-import React from 'react'
 import Box from '@mui/material/Box'
 
 import Fab from '@mui/material/Fab'

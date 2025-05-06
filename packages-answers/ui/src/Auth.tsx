@@ -1,7 +1,6 @@
 'use client'
-import { Session } from '@auth0/nextjs-auth0'
-import { ClientSafeProvider, signIn } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { ClientSafeProvider } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -17,7 +16,7 @@ type AuthFormInputs = {
 interface AuthProps {
     providers: Record<string, ClientSafeProvider> | null
 }
-const Auth = ({}: AuthProps) => {
+const Auth = ({ providers }: AuthProps) => {
     // Extract error message from query params
     const error = useSearchParams().get('error')
 

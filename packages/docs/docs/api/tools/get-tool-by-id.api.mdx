@@ -1,0 +1,94 @@
+---
+id: get-tool-by-id
+title: 'Get a tool by ID'
+description: 'Retrieve a specific tool by ID'
+sidebar_label: 'Get a tool by ID'
+hide_title: true
+hide_table_of_contents: true
+api: eJy1Vm1v2zYQ/ivE7cM2QLZsx0k6fZq3LIWLogtiBwMWBAVNniK2Eqnyxakh6L8PRymu37IUA/ZJInm85+Hdw+M1INEJq2qvjIYMbtFbhWtknLkahcqVYN6Ykq02bH4FCZgaLSfjuYQMHtEvjSl/28wlJOD5o4PsHmiDg4cEHIpgld9Adt/ACrlFOwu+gOz+oX1IoOaWV+jRumigiEDNfQEJaF4hZKDIrcUvQVmUkHkbMAEnCqw4ZA34TU1WzlulH6FNDg5D1Ig1YVl0tdEOHe2bjEb02bdeBCHQuTyUbHtISEAY7VF7sud1XSoRF9JPjjY1x2TM6hMKDwnUltx41UEqeUw4gdzYinvIIIR41H1Gd1p9CciURO1VrtCy3FjmC4wpgQTwK6/qkjyKXJ6fjXE0eDPJxWA8xl8GKzGdDM4nFzy/vLyY5hdTClAX12Mi+8AfeIXM5KehJPf40asKP8alw6i/5vvq2+hFiFmnueBQxiMTJONaMoL9lh1H4MKUxr4O+zuZMe6cEYp7lOxJ+eI0+g/X1+eXZ2fkXAmjF1accq9DWfIVbehUeSAmE6xAdnf7fi9nPzpGLvfgCu9rl6VpPzMUpkrJyKV07GHdKfsl0b9G5N3izw+s2/zy6dsE8qD/wzGvgxb0y0vlN0zuptYyYST+K6awSAtX3J/U5PZyUBwGlPpjMe0J46lAvQVgT9yxHmEv3pPRZDoYvRlMpsvxNBufZ5PJ38Qm1PJ/ZlNy51kP8x2U2gS88tFgGSPW0tT0VO2a6zUvlWTzK1Zbs1YSJUTb6bFtrIraeJaboKPZ+WmXHq3mJXNo12gZWmtsJFWhL0xf/anOUcXOII1VP22UbIEqP23q6nqw5Y7Mea2GvkCu3RPaIVfpenwUyBtrZIjC6tGhTQ79OM8flX4cfI+/RWd72lmWpqURvCyM89l0NBoRxVNe3pMVk7jG0tQVar/1t/PULeiqdSV/98Hb6okQob/ONO6MIOl/rp9V9u6vZQy20rmJ23eU4NjsZn5Eb3Yzj7Wm4ro7rQjOm4p1r3EClI/OcjwcDUf908ZFfNr693YWozibs0Woa2MpvftR3400SbjiipZdZ/7r3jLRr43zFdc7EG/RM77fUxy8H9sX9/VupA+qx68+rUuudLzIxLjpdfncjSSQKUk9CaWZpptmxR3e2bJtafpLQEt9ykMCa25VV/LuG5DK0b+ELOelOyyAu2R/uu37lJ/Zc+PxAsF+kusNpYWXgUaQwGfcdD1P+9AmUCCXaCOJbmEmBNZ+Z8tRP0JC3N7Ot38sIQG+L78DuUXvJ+k0TWexNJ9Rt+2WnacxEWzbfwDYinnJ
+sidebar_class_name: 'get api-method'
+info_path: docs/api/tools/tools-api
+custom_edit_url: null
+---
+
+import MethodEndpoint from '@theme/ApiExplorer/MethodEndpoint'
+import ParamsDetails from '@theme/ParamsDetails'
+import RequestSchema from '@theme/RequestSchema'
+import StatusCodes from '@theme/StatusCodes'
+import OperationTabs from '@theme/OperationTabs'
+import TabItem from '@theme/TabItem'
+import Heading from '@theme/Heading'
+
+<Heading as={'h1'} className={'openapi__heading'} children={'Get a tool by ID'}></Heading>
+
+<MethodEndpoint method={'get'} path={'/tools/{id}'} context={'endpoint'}></MethodEndpoint>
+
+Retrieve a specific tool by ID
+
+<Heading id={'request'} as={'h2'} className={'openapi-tabs__heading'} children={'Request'}></Heading>
+
+<ParamsDetails
+    parameters={[{ in: 'path', name: 'id', required: true, schema: { type: 'string' }, description: 'Tool ID' }]}
+></ParamsDetails>
+
+<RequestSchema title={'Body'} body={undefined}></RequestSchema>
+
+<StatusCodes
+    id={undefined}
+    label={undefined}
+    responses={{
+        '200': {
+            description: 'Successful operation',
+            content: {
+                'application/json': {
+                    schema: {
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                format: 'uuid',
+                                description: 'Unique identifier for the tool',
+                                example: 'cfd531e0-82fc-11e9-bc42-526af7764f64'
+                            },
+                            name: { type: 'string', description: 'Name of the tool', example: 'date_time_tool' },
+                            description: {
+                                type: 'string',
+                                description: 'Description of the tool',
+                                example: 'A tool used for date and time operations'
+                            },
+                            color: { type: 'string', description: 'Color associated with the tool', example: '#FF5733' },
+                            iconSrc: {
+                                type: 'string',
+                                nullable: true,
+                                description: "Source URL for the tool's icon",
+                                example: 'https://example.com/icons/date.png'
+                            },
+                            schema: { type: 'string', nullable: true, description: 'JSON schema associated with the tool' },
+                            func: {
+                                type: 'string',
+                                nullable: true,
+                                description: 'Functionality description or code associated with the tool'
+                            },
+                            createdDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the tool was created',
+                                example: '2024-08-24T14:15:22Z'
+                            },
+                            updatedDate: {
+                                type: 'string',
+                                format: 'date-time',
+                                description: 'Date and time when the tool was last updated',
+                                example: '2024-08-24T14:15:22Z'
+                            }
+                        },
+                        title: 'Tool'
+                    }
+                }
+            }
+        },
+        '400': { description: 'Invalid ID provided' },
+        '404': { description: 'Tool not found' },
+        '500': { description: 'Internal server error' }
+    }}
+></StatusCodes>

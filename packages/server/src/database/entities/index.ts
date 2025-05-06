@@ -15,6 +15,14 @@ import { Organization } from './Organization'
 import { PaidPlan } from './PaidPlan'
 import { TrialPlan } from './TrialPlan'
 import { Chat } from './Chat'
+import { Subscription } from './Subscription'
+import { UsageEvent } from './UsageEvent'
+import { BlockingStatus } from './BlockingStatus'
+import { StripeEvent } from './StripeEvent'
+import { CustomTemplate } from './CustomTemplate'
+import { AppCsvParseRuns } from './AppCsvParseRuns'
+import { AppCsvParseRows } from './AppCsvParseRows'
+
 export const entities = {
     ChatFlow,
     ChatMessage,
@@ -32,5 +40,17 @@ export const entities = {
     Organization,
     PaidPlan,
     TrialPlan,
-    Chat
+    Chat,
+    Subscription,
+    UsageEvent,
+    BlockingStatus,
+    StripeEvent,
+    CustomTemplate,
+    AppCsvParseRuns,
+    AppCsvParseRows
 }
+
+export * from './Subscription'
+export * from './UsageEvent'
+export * from './BlockingStatus'
+export * from './StripeEvent'

@@ -21,9 +21,14 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
                 'https://www.googleapis.com/auth/userinfo.profile',
                 'https://www.googleapis.com/auth/userinfo.email',
                 'https://www.googleapis.com/auth/gmail.readonly',
-                'https://www.googleapis.com/auth/gmail.labels'
+                'https://www.googleapis.com/auth/gmail.labels',
+                'https://www.googleapis.com/auth/calendar.readonly',
+                'https://www.googleapis.com/auth/calendar.events.readonly',
+                'https://www.googleapis.com/auth/calendar',
+                'https://www.googleapis.com/auth/calendar.events'
             ],
-            accessType: 'offline'
+            accessType: 'offline',
+            prompt: 'consent'
         })(req, res, next)
     } catch (error) {
         // eslint-disable-next-line no-console

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import apiKeyService from '../../services/apikey'
 import { ChatFlow } from '../../database/entities/ChatFlow'
-import { createRateLimiter } from '../../utils/rateLimit'
+import { RateLimiterManager } from '../../utils/rateLimit'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { ChatflowType } from '../../Interface'
 import chatflowsService from '../../services/chatflows'
@@ -104,7 +104,7 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
         }
 
         // For authenticated users, check ownership
-        if (req.user && !(await checkOwnership(apiResponse, req.user))) {
+        if (req.user && !(await checkOwnership(apiResponse, req.user, req))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
 
@@ -173,7 +173,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
             return res.status(404).send(`Chatflow ${req.params.id} not found`)
         }
 
-        if (!(await checkOwnership(chatflow, req.user))) {
+        if (!(await checkOwnership(chatflow, req.user, req))) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
         }
         const body = req.body
@@ -186,7 +186,8 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         }
 
         updateChatFlow.id = chatflow.id
-        createRateLimiter(updateChatFlow)
+        const rateLimiterManager = RateLimiterManager.getInstance()
+        await rateLimiterManager.updateRateLimiter(updateChatFlow)
 
         const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow)
 

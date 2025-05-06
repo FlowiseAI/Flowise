@@ -1,4 +1,4 @@
-type DebounceFn<T extends (...args: any[]) => any> = (this: ThisParameterType<T>, ...args: Parameters<T>) => ReturnType<T>
+type DebounceFn<T extends (...args: any[]) => any> = (this: ThisParameterType<T>, ...args: Parameters<T>) => void
 
 export function debounce<T extends (...args: any[]) => any>(
     func: T,
@@ -8,7 +8,7 @@ export function debounce<T extends (...args: any[]) => any>(
     let timeoutId: ReturnType<typeof setTimeout> | undefined
     let lastArgs: Parameters<T> | undefined
     let lastThis: ThisParameterType<T> | undefined
-    let result: ReturnType<T> | undefined
+    let isInvokePending = false
 
     const clear = () => {
         if (timeoutId) {
@@ -17,32 +17,48 @@ export function debounce<T extends (...args: any[]) => any>(
         }
     }
 
-    const invoke = (time: number) => {
+    const invoke = () => {
         clear()
-        result = func.apply(lastThis!, lastArgs!)
+        func.apply(lastThis!, lastArgs!)
         lastArgs = lastThis = undefined
+        isInvokePending = false
     }
 
     const debounced: DebounceFn<T> = function (this: ThisParameterType<T>, ...args: Parameters<T>) {
         lastArgs = args
         lastThis = this
 
-        if (!timeoutId && options?.leading !== false) {
-            result = func.apply(this, args)
+        // If leading is true and this is the first call, execute immediately
+        if (!timeoutId && options?.leading === true && !isInvokePending) {
+            isInvokePending = true
+            func.apply(this, args)
+            return
         }
 
+        // Clear any existing timeout
         clear()
 
+        // Set isInvokePending to true to indicate an invocation is queued
+        isInvokePending = true
+
+        // Set a new timeout
         timeoutId = setTimeout(() => {
             if (options?.trailing !== false) {
-                invoke(Date.now())
+                invoke()
+            } else {
+                isInvokePending = false
             }
         }, wait)
-
-        return result!
     }
 
-    // debounced.cancel = clear;
+    // Add cancel method
+    Object.defineProperty(debounced, 'cancel', {
+        value: () => {
+            clear()
+            isInvokePending = false
+            lastArgs = lastThis = undefined
+        }
+    })
 
     return debounced
 }

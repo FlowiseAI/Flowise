@@ -1,12 +1,11 @@
 'use client'
 import PropTypes from 'prop-types'
-import { useEffect, useState, useRef, useMemo } from 'react'
-import { Box, Stack, Tabs, Tab, FormControl, InputLabel, Select, MenuItem, Button } from '@mui/material'
+import { useEffect, useState, useRef } from 'react'
+import { Box, Stack, Button, Skeleton } from '@mui/material'
 import MainCard from '@/ui-component/cards/MainCard'
 import ToolDialog from './ToolDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
-import FlowListView from '@/ui-component/lists/FlowListView'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { useFlags } from 'flagsmith/react'
 
@@ -18,7 +17,13 @@ import marketplacesApi from '@/api/marketplaces'
 import useApi from '@/hooks/useApi'
 
 // icons
-import { IconPlus, IconFileUpload } from '@tabler/icons-react'
+import { IconPlus } from '@tabler/icons-react'
+
+// project imports
+import ItemCard from '@/ui-component/cards/ItemCard'
+import { gridSpacing } from '@/store/constant'
+import ToolEmptySVG from '@/assets/images/tools_empty.svg'
+import { ToolsTable } from '@/ui-component/table/ToolsListTable'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -48,6 +53,7 @@ const Tools = () => {
     const [marketplaceTools, setMarketplaceTools] = useState([])
     const [organizationTools, setOrganizationTools] = useState([])
     const flags = useFlags(['org:manage'])
+    const [view, setView] = useState(typeof window !== 'undefined' ? localStorage.getItem('toolsDisplayStyle') || 'card' : 'card')
 
     const inputRef = useRef(null)
 
@@ -81,7 +87,11 @@ const Tools = () => {
             console.error(e)
         }
     }
-
+    const handleChange = (event, nextView) => {
+        if (nextView === null) return
+        localStorage.setItem('toolsDisplayStyle', nextView)
+        setView(nextView)
+    }
     const handleFileUpload = (e) => {
         if (!e.target.files) return
 
@@ -136,6 +146,11 @@ const Tools = () => {
         getAllToolsApi.request()
     }
 
+    function filterTools(data) {
+        return (
+            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 || data.description.toLowerCase().indexOf(search.toLowerCase()) > -1
+        )
+    }
     const onUseTemplate = (selectedTool) => {
         const dialogProp = {
             title: 'Add New Tool',
@@ -147,7 +162,6 @@ const Tools = () => {
         setDialogProps(dialogProp)
         setShowDialog(true)
     }
-
     useEffect(() => {
         getAllToolsApi.request()
         getMarketplaceToolsApi.request()
@@ -186,36 +200,36 @@ const Tools = () => {
         }
     }, [getAllToolsApi.data])
 
-    const filterTools = (tools, search, categoryFilter) => {
-        const searchRegex = new RegExp(search, 'i') // 'i' flag for case-insensitive search
+    // const filterTools = (tools, search, categoryFilter) => {
+    //     const searchRegex = new RegExp(search, 'i') // 'i' flag for case-insensitive search
 
-        return tools.filter((tool) => {
-            if (!tool) return false
+    //     return tools.filter((tool) => {
+    //         if (!tool) return false
 
-            // Check category first
-            const category = tool.category || ''
-            if (categoryFilter !== 'All' && !category.includes(categoryFilter)) {
-                return false
-            }
+    //         // Check category first
+    //         const category = tool.category || ''
+    //         if (categoryFilter !== 'All' && !category.includes(categoryFilter)) {
+    //             return false
+    //         }
 
-            // If category matches, then check search
-            const name = tool.name || tool.templateName || ''
-            const description = tool.description || ''
-            const searchText = `${name} ${description}`
+    //         // If category matches, then check search
+    //         const name = tool.name || tool.templateName || ''
+    //         const description = tool.description || ''
+    //         const searchText = `${name} ${description}`
 
-            return searchRegex.test(searchText)
-        })
-    }
+    //         return searchRegex.test(searchText)
+    //     })
+    // }
 
-    const filteredMyTools = useMemo(() => filterTools(myTools, search, categoryFilter), [myTools, search, categoryFilter])
-    const filteredMarketplaceTools = useMemo(
-        () => filterTools(marketplaceTools, search, categoryFilter),
-        [marketplaceTools, search, categoryFilter]
-    )
-    const filteredOrganizationTools = useMemo(
-        () => filterTools(organizationTools, search, categoryFilter),
-        [organizationTools, search, categoryFilter]
-    )
+    // const filteredMyTools = useMemo(() => filterTools(myTools, search, categoryFilter), [myTools, search, categoryFilter])
+    // const filteredMarketplaceTools = useMemo(
+    //     () => filterTools(marketplaceTools, search, categoryFilter),
+    //     [marketplaceTools, search, categoryFilter]
+    // )
+    // const filteredOrganizationTools = useMemo(
+    //     () => filterTools(organizationTools, search, categoryFilter),
+    //     [organizationTools, search, categoryFilter]
+    // )
 
     const isAdmin = flags?.['org:manage']?.enabled
 
@@ -226,34 +240,8 @@ const Tools = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader
-                            onSearchChange={onSearchChange}
-                            search={true}
-                            searchPlaceholder='Search Name, Description or Category'
-                            title='Tools'
-                        >
-                            <FormControl sx={{ minWidth: 120, mr: 1 }}>
-                                <InputLabel id='category-filter-label'>Category</InputLabel>
-                                <Select
-                                    size='small'
-                                    labelId='category-filter-label'
-                                    value={categoryFilter}
-                                    onChange={handleCategoryChange}
-                                    label='Category'
-                                >
-                                    {categories.map((category) => (
-                                        <MenuItem key={category} value={category}>
-                                            {category}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                            <Button
-                                variant='outlined'
-                                onClick={() => inputRef.current.click()}
-                                startIcon={<IconFileUpload />}
-                                sx={{ borderRadius: 2, height: 40, mr: 1 }}
-                            >
+                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Tools' title='Tools'>
+                            <Button sx={{ borderRadius: 2, maxHeight: 40 }} value={view} color='primary' exclusive onChange={handleChange}>
                                 Load
                             </Button>
                             <input
@@ -273,44 +261,38 @@ const Tools = () => {
                                 Create
                             </StyledButton>
                         </ViewHeader>
-
-                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                            <Tabs value={tabValue} onChange={handleTabChange} aria-label='tool tabs'>
-                                <Tab label='My Tools' />
-                                <Tab label='Marketplace Tools' />
-                                <Tab label='Organization Tools' />
-                            </Tabs>
-                        </Box>
-                        <TabPanel value={tabValue} index={0}>
-                            <FlowListView
-                                data={filteredMyTools}
-                                isLoading={isLoading}
-                                updateFlowsApi={getAllToolsApi}
-                                setError={setError}
-                                type='tools'
-                                onItemClick={edit}
-                            />
-                        </TabPanel>
-                        <TabPanel value={tabValue} index={1}>
-                            <FlowListView
-                                data={filteredMarketplaceTools}
-                                isLoading={isLoading}
-                                updateFlowsApi={getMarketplaceToolsApi}
-                                setError={setError}
-                                type='marketplace'
-                                onItemClick={goToTool}
-                            />
-                        </TabPanel>
-                        <TabPanel value={tabValue} index={2}>
-                            <FlowListView
-                                data={filteredOrganizationTools}
-                                isLoading={isLoading}
-                                updateFlowsApi={getAllToolsApi}
-                                setError={setError}
-                                type='tools'
-                                onItemClick={(tool) => (isAdmin ? edit(tool) : goToTool(tool))}
-                            />
-                        </TabPanel>
+                        {!view || view === 'card' ? (
+                            <>
+                                {isLoading ? (
+                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                        <Skeleton variant='rounded' height={160} />
+                                        <Skeleton variant='rounded' height={160} />
+                                        <Skeleton variant='rounded' height={160} />
+                                    </Box>
+                                ) : (
+                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                        {getAllToolsApi.data &&
+                                            getAllToolsApi.data
+                                                ?.filter(filterTools)
+                                                .map((data, index) => <ItemCard data={data} key={index} onClick={() => edit(data)} />)}
+                                    </Box>
+                                )}
+                            </>
+                        ) : (
+                            <ToolsTable data={getAllToolsApi.data} isLoading={isLoading} onSelect={edit} />
+                        )}
+                        {!isLoading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
+                            <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                                <Box sx={{ p: 2, height: 'auto' }}>
+                                    <img
+                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
+                                        src={ToolEmptySVG}
+                                        alt='ToolEmptySVG'
+                                    />
+                                </Box>
+                                <div>No Tools Created Yet</div>
+                            </Stack>
+                        )}
                     </Stack>
                 )}
             </MainCard>

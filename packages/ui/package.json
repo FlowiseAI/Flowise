@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "2.0.4",
+    "version": "2.2.7",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -14,7 +14,9 @@
         "@emotion/cache": "^11.4.0",
         "@emotion/react": "^11.10.6",
         "@emotion/styled": "^11.10.6",
-        "@auth0/auth0-react": "^2.2.4",
+        "@auth0/nextjs-auth0": "3.5.0",
+        "@auth0/auth0-react": "2.3.0",
+        "@microsoft/fetch-event-source": "^2.0.1",
         "@mui/base": "5.0.0-beta.40",
         "@mui/icons-material": "5.0.3",
         "@mui/lab": "5.0.0-alpha.156",
@@ -24,7 +26,7 @@
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
-        "axios": "1.6.2",
+        "axios": "1.7.9",
         "clsx": "^1.1.1",
         "dotenv": "^16.0.0",
         "flagsmith": "^4.0.3",
@@ -60,12 +62,12 @@
         "remark-gfm": "^3.0.1",
         "remark-math": "^5.1.1",
         "socket.io-client": "^4.6.1",
-        "tinycolor2": "^1.6.0",
         "uuid": "^9.0.1",
         "yup": "^0.32.9"
     },
     "scripts": {
         "not:dev": "vite",
+        "start": "vite",
         "not:build": "vite build",
         "clean": "rimraf build",
         "nuke": "rimraf build node_modules .turbo"

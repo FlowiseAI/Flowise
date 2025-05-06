@@ -168,32 +168,49 @@
         },
         {
             "width": 300,
-            "height": 253,
-            "id": "bufferMemory_0",
+            "height": 328,
+            "id": "RedisBackedChatMemory_0",
             "position": {
-                "x": 1642.0644080121785,
-                "y": 1715.6131926891728
+                "x": 75,
+                "y": 82
             },
             "type": "customNode",
             "data": {
-                "id": "bufferMemory_0",
-                "label": "Buffer Memory",
+                "id": "RedisBackedChatMemory_0",
+                "label": "Redis-Backed Chat Memory",
                 "version": 2,
-                "name": "bufferMemory",
-                "type": "BufferMemory",
-                "baseClasses": ["BufferMemory", "BaseChatMemory", "BaseMemory"],
+                "name": "RedisBackedChatMemory",
+                "type": "RedisBackedChatMemory",
+                "baseClasses": ["RedisBackedChatMemory", "BaseChatMemory", "BaseMemory"],
                 "category": "Memory",
-                "description": "Retrieve chat messages stored in database",
+                "description": "Summarizes the conversation and stores the memory in Redis server",
                 "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "optional": true,
+                        "credentialNames": ["redisCacheApi", "redisCacheUrlApi"],
+                        "id": "RedisBackedChatMemory_0-input-credential-credential"
+                    },
                     {
                         "label": "Session Id",
                         "name": "sessionId",
                         "type": "string",
-                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory#ui-and-embedded-chat\">more</a>",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat\">more</a>",
                         "default": "",
                         "additionalParams": true,
                         "optional": true,
-                        "id": "bufferMemory_0-input-sessionId-string"
+                        "id": "RedisBackedChatMemory_0-input-sessionId-string"
+                    },
+                    {
+                        "label": "Session Timeouts",
+                        "name": "sessionTTL",
+                        "type": "number",
+                        "description": "Seconds till a session expires. If not specified, the session will never expire.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-sessionTTL-number"
                     },
                     {
                         "label": "Memory Key",
@@ -201,31 +218,36 @@
                         "type": "string",
                         "default": "chat_history",
                         "additionalParams": true,
-                        "id": "bufferMemory_0-input-memoryKey-string"
+                        "id": "RedisBackedChatMemory_0-input-memoryKey-string"
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "windowSize",
+                        "type": "number",
+                        "description": "Window of size k to surface the last k back-and-forth to use as memory.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "RedisBackedChatMemory_0-input-windowSize-number"
                     }
                 ],
                 "inputAnchors": [],
                 "inputs": {
                     "sessionId": "",
-                    "memoryKey": "chat_history"
+                    "sessionTTL": "",
+                    "memoryKey": "chat_history",
+                    "windowSize": ""
                 },
                 "outputAnchors": [
                     {
-                        "id": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
-                        "name": "bufferMemory",
-                        "label": "BufferMemory",
-                        "type": "BufferMemory | BaseChatMemory | BaseMemory"
+                        "id": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
+                        "name": "RedisBackedChatMemory",
+                        "label": "RedisBackedChatMemory",
+                        "description": "Summarizes the conversation and stores the memory in Redis server",
+                        "type": "RedisBackedChatMemory | BaseChatMemory | BaseMemory"
                     }
                 ],
-                "outputs": {},
-                "selected": false
-            },
-            "selected": false,
-            "positionAbsolute": {
-                "x": 1642.0644080121785,
-                "y": 1715.6131926891728
-            },
-            "dragging": false
+                "outputs": {}
+            }
         },
         {
             "width": 300,
@@ -975,7 +997,7 @@
                 ],
                 "inputs": {
                     "tools": ["{{chainTool_0.data.instance}}", "{{chainTool_1.data.instance}}"],
-                    "memory": "{{bufferMemory_0.data.instance}}",
+                    "memory": "{{RedisBackedChatMemory_0.data.instance}}",
                     "model": "{{chatOpenAI_3.data.instance}}",
                     "systemMessage": "You are a helpful AI assistant.",
                     "inputModeration": "",
@@ -1118,12 +1140,12 @@
             "id": "chainTool_1-chainTool_1-output-chainTool-ChainTool|DynamicTool|Tool|StructuredTool|BaseLangChain-toolAgent_0-toolAgent_0-input-tools-Tool"
         },
         {
-            "source": "bufferMemory_0",
-            "sourceHandle": "bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory",
+            "source": "RedisBackedChatMemory_0",
+            "sourceHandle": "RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory",
             "target": "toolAgent_0",
             "targetHandle": "toolAgent_0-input-memory-BaseChatMemory",
             "type": "buttonedge",
-            "id": "bufferMemory_0-bufferMemory_0-output-bufferMemory-BufferMemory|BaseChatMemory|BaseMemory-toolAgent_0-toolAgent_0-input-memory-BaseChatMemory"
+            "id": "RedisBackedChatMemory_0-RedisBackedChatMemory_0-output-RedisBackedChatMemory-RedisBackedChatMemory|BaseChatMemory|BaseMemory-toolAgent_0-toolAgent_0-input-memory-BaseChatMemory"
         },
         {
             "source": "chatOpenAI_3",

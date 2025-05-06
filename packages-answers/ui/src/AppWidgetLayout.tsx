@@ -1,5 +1,4 @@
 'use client'
-import React from 'react'
 import { Session } from '@auth0/nextjs-auth0'
 import flagsmith from 'flagsmith/isomorphic'
 import { FlagsmithProvider } from 'flagsmith/react'

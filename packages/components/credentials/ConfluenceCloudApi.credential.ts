@@ -21,10 +21,16 @@ class ConfluenceCloudApi implements INodeCredential {
                 placeholder: '<CONFLUENCE_ACCESS_TOKEN>'
             },
             {
-                label: 'Username',
+                label: 'Username/Email',
                 name: 'username',
                 type: 'string',
                 placeholder: '<CONFLUENCE_USERNAME>'
+            },
+            {
+                label: 'Base URL',
+                name: 'baseURL',
+                type: 'string',
+                placeholder: '<CONFLUENCE_BASE_URL>'
             }
         ]
     }

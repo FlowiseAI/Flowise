@@ -1,0 +1,89 @@
+---
+description: Use this information to get details about the Flowise UI in the canvas. 
+globs: 
+alwaysApply: false
+---
+# UI Package (flowise-ui)
+
+## Overview
+The UI package provides the web interface for TheAnswer platform, allowing users to build and manage AI workflows through a visual interface. It serves as the primary user-facing component of the system.
+
+## Purpose in the Monorepo
+This package is the primary user-facing component, providing the interface for building workflows, managing chatbots, and monitoring system status. It's designed to work seamlessly with the server and components packages.
+
+## Key Features
+- Visual flow editor using ReactFlow for designing AI workflows
+- Dashboard for monitoring and analytics
+- Settings management interface
+- Code editors with syntax highlighting
+- Theme customization
+- Real-time status updates via websockets
+
+## Technical Details
+
+### Technologies Used
+- **React**: UI framework
+- **Next.js**: For server-side rendering and routing
+- **Material UI**: Component library for UI elements
+- **ReactFlow**: For visual workflow editing
+- **CodeMirror**: For code editing with syntax highlighting
+- **Socket.io Client**: For real-time updates
+- **Formik**: For form handling
+- **Yup**: For validation
+
+### Dependencies
+- **@mui** packages: For Material UI components
+- **@uiw/react-codemirror**: For code editing
+- **reactflow**: For visual workflow editing
+- **socket.io-client**: For real-time communication
+- **formik** and **yup**: For form handling and validation
+- **moment**: For date/time handling
+- **axios**: For API requests
+- **aai-embed** and **aai-embed-react**: For chatbot embedding
+
+### Project Structure
+The UI follows a structured approach with:
+- Components organized by feature
+- Theme configuration
+- Layout templates
+- Redux for state management
+- Utility functions
+
+### Build Process
+Uses Vite for build and development processes.
+
+## Development Guidelines
+
+### Coding Standards
+- Use functional components with hooks
+- Follow Material UI design patterns
+- Implement responsive design principles
+- Use TypeScript for type safety
+- Follow established component patterns
+
+### UI/UX Guidelines
+- Maintain consistent styling across the application
+- Follow accessibility best practices
+- Design responsive interfaces for different screen sizes
+- Use consistent error handling and feedback mechanisms
+
+### State Management
+- Use Redux for global state
+- Use React context for theme and authentication
+- Implement proper loading states for async operations
+
+## Scripts and Commands
+- `start`: Runs the UI development server
+- `clean`: Removes build artifacts
+- `nuke`: Completely cleans the project including node_modules
+
+## Browser Support
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Performance Considerations
+- Lazy-loading for components
+- Optimized bundle size
+- Efficient state updates to prevent unnecessary re-renders 

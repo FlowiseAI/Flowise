@@ -12,7 +12,6 @@ import credentialsApi from '@/api/credentials'
 
 // const
 import { baseURL } from '@/store/constant'
-
 const StyledPopper = styled(Popper)({
     boxShadow: '0px 8px 10px -5px rgb(0 0 0 / 20%), 0px 16px 24px 2px rgb(0 0 0 / 14%), 0px 6px 30px 5px rgb(0 0 0 / 12%)',
     borderRadius: '10px',
@@ -27,9 +26,8 @@ const StyledPopper = styled(Popper)({
 
 const fetchList = async ({ name, nodeData }) => {
     const loadMethod = nodeData.inputParams.find((param) => param.name === name)?.loadMethod
-
     let lists = await client
-        .post(`/node-load-method/${nodeData.name}`, { ...nodeData, loadMethod })
+        .post(`${baseURL}/api/v1/node-load-method/${nodeData.name}`, { ...nodeData, loadMethod })
         .then(async function (response) {
             return response.data
         })
@@ -48,15 +46,32 @@ export const AsyncDropdown = ({
     onCreateNew,
     credentialNames = [],
     disabled = false,
-    disableClearable = false
+    freeSolo = false,
+    disableClearable = false,
+    multiple = false
 }) => {
     const customization = useSelector((state) => state.customization)
-
     const [open, setOpen] = useState(false)
     const [options, setOptions] = useState([])
     const [loading, setLoading] = useState(false)
-    const findMatchingOptions = (options = [], value) => options.find((option) => option.name === value)
-    const getDefaultOptionValue = () => ''
+
+    const inputParam = nodeData?.inputParams?.find((param) => param.name === name)
+    const isLazyLoad = inputParam?.loadOptionsOnOpen
+    const credential = nodeData?.credential
+
+    const findMatchingOptions = (options = [], value) => {
+        if (multiple) {
+            let values = []
+            if ('choose an option' !== value && value && typeof value === 'string') {
+                values = JSON.parse(value)
+            } else {
+                values = value
+            }
+            return options.filter((option) => values.includes(option.name))
+        }
+        return options.find((option) => option.name === value)
+    }
+    const getDefaultOptionValue = () => (multiple ? [] : '')
     const addNewOption = [{ label: '- Create New -', name: '-create-' }]
     let [internalValue, setInternalValue] = useState(value ?? 'choose an option')
 
@@ -85,27 +100,44 @@ export const AsyncDropdown = ({
         }
     }
 
-    useEffect(() => {
+    const loadOptions = async () => {
+        if (loading) return
         setLoading(true)
-        ;(async () => {
-            const fetchData = async () => {
-                let response = credentialNames.length ? await fetchCredentialList() : await fetchList({ name, nodeData })
-                if (isCreateNewOption) setOptions([...response, ...addNewOption])
-                else setOptions([...response])
-                setLoading(false)
+        try {
+            let response
+            if (credentialNames.length) {
+                response = await fetchCredentialList()
+            } else {
+                response = await fetchList({ name, nodeData })
             }
-            fetchData()
-        })()
+            if (isCreateNewOption) {
+                setOptions([...response, ...addNewOption])
+            } else {
+                setOptions([...response])
+            }
+        } catch (error) {
+            console.error('Error loading options:', error)
+            setOptions([])
+        } finally {
+            setLoading(false)
+        }
+    }
 
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    useEffect(() => {
+        if (!isLazyLoad || credential) {
+            loadOptions()
+        }
+    }, [credential])
 
     return (
         <>
             <Autocomplete
                 id={name}
+                freeSolo={freeSolo}
                 disabled={disabled}
                 disableClearable={disableClearable}
+                multiple={multiple}
+                filterSelectedOptions={multiple}
                 size='small'
                 sx={{ mt: 1, width: '100%' }}
                 open={open}
@@ -118,12 +150,22 @@ export const AsyncDropdown = ({
                 options={options}
                 value={findMatchingOptions(options, internalValue) || getDefaultOptionValue()}
                 onChange={(e, selection) => {
-                    const value = selection ? selection.name : ''
-                    if (isCreateNewOption && value === '-create-') {
-                        onCreateNew()
-                    } else {
+                    if (multiple) {
+                        let value = ''
+                        if (selection.length) {
+                            const selectionNames = selection.map((item) => item.name)
+                            value = JSON.stringify(selectionNames)
+                        }
                         setInternalValue(value)
                         onSelect(value)
+                    } else {
+                        const value = selection ? selection.name : ''
+                        if (isCreateNewOption && value === '-create-') {
+                            onCreateNew()
+                        } else {
+                            setInternalValue(value)
+                            onSelect(value)
+                        }
                     }
                 }}
                 PopperComponent={StyledPopper}
@@ -166,7 +208,9 @@ AsyncDropdown.propTypes = {
     onSelect: PropTypes.func,
     onCreateNew: PropTypes.func,
     disabled: PropTypes.bool,
+    freeSolo: PropTypes.bool,
     credentialNames: PropTypes.array,
     disableClearable: PropTypes.bool,
-    isCreateNewOption: PropTypes.bool
+    isCreateNewOption: PropTypes.bool,
+    multiple: PropTypes.bool
 }

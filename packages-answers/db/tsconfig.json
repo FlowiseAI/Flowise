@@ -1,12 +1,12 @@
 {
-  "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": ".",
-    "allowJs": true,
-    "isolatedModules": false
-  },
-  "exclude": ["node_modules"],
-  "extends": "tsconfig/node.json",
-  "include": ["src", "prisma/scripts"],
-  "types": ["node", "types"]
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": ".",
+        "allowJs": true,
+        "isolatedModules": false
+    },
+    "exclude": ["node_modules"],
+    "extends": "tsconfig/node.json",
+    "include": ["src", "prisma/scripts"],
+    "types": ["node", "types"]
 }

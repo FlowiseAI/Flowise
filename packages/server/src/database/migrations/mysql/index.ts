@@ -28,6 +28,10 @@ import { AddAnswersConfig1714692854264 } from './1714692854264-AddAnswersConfig'
 import { AddUser1716422641414 } from './1716422641414-AddUser'
 import { AddDescriptionToChatFlow1722099922876 } from './1722101786123-AddDescriptionToChatflow'
 import { AddPlans1722954685054 } from './1722954685053-AddPlans'
+import { AddCustomTemplate1725629836652 } from './1725629836652-AddCustomTemplate'
+import { AddArtifactsToChatMessage1726156258465 } from './1726156258465-AddArtifactsToChatMessage'
+import { AddFollowUpPrompts1726666302024 } from './1726666302024-AddFollowUpPrompts'
+import { AddTypeToAssistant1733011290987 } from './1733011290987-AddTypeToAssistant'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -59,5 +63,9 @@ export const mysqlMigrations = [
     AddActionToChatMessage1721078251523,
     LongTextColumn1722301395521,
     AddDescriptionToChatFlow1722099922876,
-    AddPlans1722954685054
+    AddPlans1722954685054,
+    AddCustomTemplate1725629836652,
+    AddArtifactsToChatMessage1726156258465,
+    AddFollowUpPrompts1726666302024,
+    AddTypeToAssistant1733011290987
 ]

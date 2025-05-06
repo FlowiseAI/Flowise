@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 
 // material-ui
 import { Box, Typography, IconButton, Button } from '@mui/material'
-import { IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons-react'
+import { IconRefresh, IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons-react'
 
 // project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
@@ -21,6 +21,7 @@ import { ContentfulConfig } from '@/ui-component/contentful/ContentfulConfig'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import ManageScrapedLinksDialog from '@/ui-component/dialog/ManageScrapedLinksDialog'
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
+import { GmailLabelPicker } from '@/ui-component/gmail/GmailLabelPicker'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
@@ -43,6 +44,7 @@ const DocStoreInputHandler = ({
     const [expandDialogProps, setExpandDialogProps] = useState({})
     const [showManageScrapedLinksDialog, setShowManageScrapedLinksDialog] = useState(false)
     const [manageScrapedLinksDialogProps, setManageScrapedLinksDialogProps] = useState({})
+    const [reloadTimestamp, setReloadTimestamp] = useState(Date.now().toString())
 
     const onExpandDialogClicked = (value, inputParam) => {
         const dialogProps = {
@@ -78,6 +80,14 @@ const DocStoreInputHandler = ({
     const onExpandDialogSave = (newValue, inputParamName) => {
         setShowExpandDialog(false)
         data.inputs[inputParamName] = newValue
+    }
+
+    const getCredential = () => {
+        const credential = data.inputs.credential || data.inputs[FLOWISE_CREDENTIAL_ID]
+        if (credential) {
+            return { credential }
+        }
+        return {}
     }
 
     return (
@@ -130,13 +140,23 @@ const DocStoreInputHandler = ({
                             <CredentialInputHandler
                                 key={JSON.stringify(inputParam)}
                                 disabled={disabled}
-                                data={data.inputs.credential ? { credential: data.inputs.credential } : {}}
+                                data={getCredential()}
                                 inputParam={inputParam}
                                 onSelect={(newValue) => {
                                     data.credential = newValue
                                     data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
                                     handleCredentialChange(newValue)
                                 }}
+                            />
+                        )}
+                        {inputParam && data.name === 'gmail' && inputParam.name === 'selectedLabels' && (
+                            <GmailLabelPicker
+                                disabled={disabled}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? '[]'}
+                                credentialId={selectedCredential}
+                                credentialData={selectedCredentialData}
+                                handleCredentialDataChange={handleCredentialDataChange}
                             />
                         )}
                         {inputParam && data.name === 'googleDrive' && inputParam.name === 'selectedFiles' && (
@@ -238,19 +258,33 @@ const DocStoreInputHandler = ({
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                             />
                         )}
-                        {inputParam.type === 'asyncOptions' && (
+                        {(inputParam.type === 'asyncOptions' || inputParam.type === 'asyncMultiOptions') && (
                             <>
                                 {data.inputParams?.length === 1 && <div style={{ marginTop: 10 }} />}
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                    <AsyncDropdown
-                                        key={JSON.stringify(inputParam)}
-                                        disabled={disabled}
-                                        name={inputParam.name}
-                                        nodeData={data}
-                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
-                                        onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                        onCreateNew={() => addAsyncOption(inputParam.name)}
-                                    />
+                                    <div key={reloadTimestamp} style={{ flex: 1 }}>
+                                        <AsyncDropdown
+                                            key={JSON.stringify(inputParam)}
+                                            disabled={disabled}
+                                            name={inputParam.name}
+                                            nodeData={data}
+                                            freeSolo={inputParam.freeSolo}
+                                            multiple={inputParam.type === 'asyncMultiOptions'}
+                                            value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                            onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                            onCreateNew={() => addAsyncOption(inputParam.name)}
+                                        />
+                                    </div>
+                                    {inputParam.refresh && (
+                                        <IconButton
+                                            title='Refresh'
+                                            color='primary'
+                                            size='small'
+                                            onClick={() => setReloadTimestamp(Date.now().toString())}
+                                        >
+                                            <IconRefresh />
+                                        </IconButton>
+                                    )}
                                 </div>
                             </>
                         )}

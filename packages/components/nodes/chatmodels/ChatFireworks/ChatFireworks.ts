@@ -18,7 +18,7 @@ class ChatFireworks_ChatModels implements INode {
     constructor() {
         this.label = 'ChatFireworks'
         this.name = 'chatFireworks'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'ChatFireworks'
         this.icon = 'Fireworks.png'
         this.category = 'Chat Models'
@@ -50,6 +50,13 @@ class ChatFireworks_ChatModels implements INode {
                 type: 'number',
                 step: 0.1,
                 default: 0.9,
+                optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
                 optional: true
             }
         ]

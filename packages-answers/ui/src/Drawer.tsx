@@ -1,5 +1,5 @@
 'use client'
-import { styled, Theme, CSSObject } from '@mui/material/styles'
+import { styled } from '@mui/material/styles'
 import MuiDrawer from '@mui/material/Drawer'
 import closedMixin from './theme/closedMixin'
 import openedMixin from './theme/openedMixin'

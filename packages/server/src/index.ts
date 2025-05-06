@@ -2,36 +2,69 @@ import express from 'express'
 import cors from 'cors'
 import http from 'http'
 import basicAuth from 'express-basic-auth'
-import { Server } from 'socket.io'
 import { DataSource } from 'typeorm'
-import { IChatFlow } from './Interface'
+import { MODE } from './Interface'
 import { getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
 import { NodesPool } from './NodesPool'
 import { ChatFlow } from './database/entities/ChatFlow'
-import { ChatflowPool } from './ChatflowPool'
 import { CachePool } from './CachePool'
-import { initializeRateLimiter } from './utils/rateLimit'
+import { AbortControllerPool } from './AbortControllerPool'
+import { RateLimiterManager } from './utils/rateLimit'
 import { getAPIKeys } from './utils/apiKey'
 import { sanitizeMiddleware, getCorsOptions, getAllowedIframeOrigins } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
+import { initCronJobs } from './utils/cron'
+import { SSEStreamer } from './utils/SSEStreamer'
+import { validateAPIKey } from './utils/validateKey'
+import { IMetricsProvider } from './Interface.Metrics'
+import { Prometheus } from './metrics/Prometheus'
+import { OpenTelemetry } from './metrics/OpenTelemetry'
+import { QueueManager } from './queue/QueueManager'
+import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
+import { WHITELIST_URLS } from './utils/constants'
+import 'global-agent/bootstrap'
 
 import authenticationHandlerMiddleware from './middlewares/authentication'
 import passport from 'passport'
 import passportConfig from './config/passport'
 import session from 'express-session'
+import { createRedisStore } from './AppConfig'
+declare global {
+    namespace Express {
+        namespace Multer {
+            interface File {
+                bucket: string
+                key: string
+                acl: string
+                contentType: string
+                contentDisposition: null
+                storageClass: string
+                serverSideEncryption: null
+                metadata: any
+                location: string
+                etag: string
+            }
+        }
+    }
+}
 
 passportConfig(passport)
 export class App {
     app: express.Application
     nodesPool: NodesPool
-    chatflowPool: ChatflowPool
+    abortControllerPool: AbortControllerPool
     cachePool: CachePool
     telemetry: Telemetry
+    rateLimiterManager: RateLimiterManager
     AppDataSource: DataSource = getDataSource()
+    sseStreamer: SSEStreamer
+    metricsProvider: IMetricsProvider
+    queueManager: QueueManager
+    redisSubscriber: RedisEventSubscriber
 
     constructor() {
         this.app = express()
@@ -50,8 +83,8 @@ export class App {
             this.nodesPool = new NodesPool()
             await this.nodesPool.initialize()
 
-            // Initialize chatflow pool
-            this.chatflowPool = new ChatflowPool()
+            // Initialize abort controllers pool
+            this.abortControllerPool = new AbortControllerPool()
 
             // Initialize API keys
             await getAPIKeys()
@@ -60,21 +93,39 @@ export class App {
             await getEncryptionKey()
 
             // Initialize Rate Limit
-            const AllChatFlow: IChatFlow[] = await getAllChatFlow({})
-            await initializeRateLimiter(AllChatFlow)
+            this.rateLimiterManager = RateLimiterManager.getInstance()
+            await this.rateLimiterManager.initializeRateLimiters(await getDataSource().getRepository(ChatFlow).find())
 
             // Initialize cache pool
             this.cachePool = new CachePool()
 
             // Initialize telemetry
             this.telemetry = new Telemetry()
+
+            // Initialize SSE Streamer
+            this.sseStreamer = new SSEStreamer()
+
+            // Init Queues
+            if (process.env.MODE === MODE.QUEUE) {
+                this.queueManager = QueueManager.getInstance()
+                this.queueManager.setupAllQueues({
+                    componentNodes: this.nodesPool.componentNodes,
+                    telemetry: this.telemetry,
+                    cachePool: this.cachePool,
+                    appDataSource: this.AppDataSource,
+                    abortControllerPool: this.abortControllerPool
+                })
+                this.redisSubscriber = new RedisEventSubscriber(this.sseStreamer)
+                await this.redisSubscriber.connect()
+            }
+
             logger.info('📦 [server]: Data Source has been initialized!')
         } catch (error) {
             logger.error('❌ [server]: Error during Data Source initialization:', error)
         }
     }
 
-    async config(socketIO?: Server) {
+    async config() {
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))
@@ -86,16 +137,29 @@ export class App {
         this.app.use(cors(getCorsOptions()))
 
         // Passport Middleware
-        this.app.use(
-            session({
-                secret: process.env.SESSION_SECRET ?? 'theanswerai',
-                resave: false,
-                saveUninitialized: false,
-                cookie: {
-                    secure: process.env.NODE_ENV === 'production'
-                }
-            })
-        )
+        let redisStore
+        try {
+            redisStore = createRedisStore()
+        } catch (error) {
+            logger.error('❌ [server]: Error during Redis Store initialization:', error)
+        }
+
+        const sessionConfig: any = {
+            secret: process.env.SESSION_SECRET ?? 'theanswerai',
+            resave: false,
+            saveUninitialized: false,
+            cookie: {
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 60 * 60 * 1000 // 1 hour to match Google token expiry
+            }
+        }
+
+        // Only use Redis store if it was successfully created
+        if (redisStore) {
+            sessionConfig.store = redisStore
+        }
+
+        this.app.use(session(sessionConfig))
         this.app.use(passport.initialize())
         this.app.use(passport.session())
 
@@ -120,32 +184,12 @@ export class App {
         // Add the sanitizeMiddleware to guard against XSS
         this.app.use(sanitizeMiddleware)
 
-        // Make io accessible to our router on req.io
-        this.app.use((req, res, next) => {
-            req.io = socketIO
-            next()
-        })
-        const whitelistURLs = [
-            '/api/v1/google-auth',
-            process.env.GOOGLE_CALLBACK_URL ?? '/api/v1/google-auth/callback',
-            '/api/v1/verify/apikey/',
-            '/api/v1/chatflows/apikey/',
-            '/api/v1/public-chatflows',
-            '/api/v1/public-chatbotConfig',
-            '/api/v1/prediction/',
-            '/api/v1/vector/upsert/',
-            '/api/v1/node-icon/',
-            '/api/v1/components-credentials-icon/',
-            '/api/v1/chatflows-streaming',
-            '/api/v1/chatflows-uploads',
-            '/api/v1/openai-assistants-file/download',
-            '/api/v1/feedback',
-            '/api/v1/leads',
-            '/api/v1/get-upload-file',
-            '/api/v1/ip',
-            '/api/v1/ping',
-            '/api/v1/marketplaces/templates'
-        ]
+        const whitelistURLs = WHITELIST_URLS
+        const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
+        const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
+
+        this.app.use(authenticationHandlerMiddleware({ whitelistURLs, AppDataSource: this.AppDataSource }))
+
         if (process.env.FLOWISE_USERNAME && process.env.FLOWISE_PASSWORD) {
             const username = process.env.FLOWISE_USERNAME
             const password = process.env.FLOWISE_PASSWORD
@@ -157,9 +201,84 @@ export class App {
                     whitelistURLs.some((url) => new RegExp(url, 'i').test(req.url)) ? next() : basicAuthMiddleware(req, res, next)
                 } else next()
             })
+            this.app.use(async (req, res, next) => {
+                if (req.user) return next()
+                // Step 1: Check if the req path contains /api/v1 regardless of case
+                if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
+                    // Step 2: Check if the req path is case sensitive
+                    if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
+                        // Step 3: Check if the req path is in the whitelist
+                        const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
+                        if (isWhitelisted) {
+                            next()
+                        } else if (req.headers['x-request-from'] === 'internal') {
+                            basicAuthMiddleware(req, res, next)
+                        } else {
+                            const isKeyValidated = await validateAPIKey(req)
+                            if (!isKeyValidated) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+                            next()
+                        }
+                    } else {
+                        return res.status(401).json({ error: 'Unauthorized Access' })
+                    }
+                } else {
+                    // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
+                    next()
+                }
+            })
+        } else {
+            this.app.use(async (req, res, next) => {
+                if (req.user) return next()
+                // Step 1: Check if the req path contains /api/v1 regardless of case
+                if (URL_CASE_INSENSITIVE_REGEX.test(req.path)) {
+                    // Step 2: Check if the req path is case sensitive
+                    if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
+                        // Step 3: Check if the req path is in the whitelist
+                        const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
+                        if (isWhitelisted) {
+                            next()
+                        } else if (req.headers['x-request-from'] === 'internal') {
+                            next()
+                        } else {
+                            const isKeyValidated = await validateAPIKey(req)
+                            if (!isKeyValidated) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
+                            next()
+                        }
+                    } else {
+                        return res.status(401).json({ error: 'Unauthorized Access' })
+                    }
+                } else {
+                    // If the req path does not contain /api/v1, then allow the request to pass through, example: /assets, /canvas
+                    next()
+                }
+            })
         }
 
-        this.app.use(authenticationHandlerMiddleware({ whitelistURLs, AppDataSource: this.AppDataSource }))
+        if (process.env.ENABLE_METRICS === 'true') {
+            switch (process.env.METRICS_PROVIDER) {
+                // default to prometheus
+                case 'prometheus':
+                case undefined:
+                    this.metricsProvider = new Prometheus(this.app)
+                    break
+                case 'open_telemetry':
+                    this.metricsProvider = new OpenTelemetry(this.app)
+                    break
+                // add more cases for other metrics providers here
+            }
+            if (this.metricsProvider) {
+                await this.metricsProvider.initializeCounters()
+                logger.info(`📊 [server]: Metrics Provider [${this.metricsProvider.getName()}] has been initialized!`)
+            } else {
+                logger.error(
+                    "❌ [server]: Metrics collection is enabled, but failed to initialize provider (valid values are 'prometheus' or 'open_telemetry'."
+                )
+            }
+        }
 
         this.app.use('/api/v1', flowiseApiV1Router)
 
@@ -173,13 +292,18 @@ export class App {
             })
         })
 
+        if (process.env.MODE === MODE.QUEUE) {
+            this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
+        }
+
         // ----------------------------------------
         // Redirect to staging.theanswer.ai
         // ----------------------------------------
 
         this.app.use((req: express.Request, res: express.Response) => {
             const path = req.url
-            const encodedDomain = Buffer.from(process.env.DOMAIN || '').toString('base64')
+            const currentDomain = req.get('host') || ''
+            const encodedDomain = Buffer.from(currentDomain).toString('base64')
             const redirectURL = new URL(`${encodedDomain}${path}`, process.env.ANSWERAI_DOMAIN)
             console.log('Redirecting to', redirectURL.toString())
             res.redirect(301, redirectURL.toString())
@@ -193,6 +317,9 @@ export class App {
         try {
             const removePromises: any[] = []
             removePromises.push(this.telemetry.flush())
+            if (this.queueManager) {
+                removePromises.push(this.redisSubscriber.disconnect())
+            }
             await Promise.all(removePromises)
         } catch (e) {
             logger.error(`❌[server]: Flowise Server shut down error: ${e}`)
@@ -202,13 +329,6 @@ export class App {
 
 let serverApp: App | undefined
 
-export const getAllChatFlow = async ({ userId }: { userId?: string }): Promise<IChatFlow[]> =>
-    getDataSource()
-        .getRepository(ChatFlow)
-        .createQueryBuilder('chatFlow')
-        .where(userId ? 'chatFlow.userId = :userId OR chatFlow.userId IS NULL' : 'chatFlow.userId IS NULL', { userId })
-        .getMany()
-
 export async function start(): Promise<void> {
     serverApp = new App()
 
@@ -216,12 +336,11 @@ export async function start(): Promise<void> {
     const port = parseInt(process.env.PORT || '', 10) || 3000
     const server = http.createServer(serverApp.app)
 
-    const io = new Server(server, {
-        cors: getCorsOptions()
-    })
-
     await serverApp.initDatabase()
-    await serverApp.config(io)
+    await serverApp.config()
+
+    // Initialize cron jobs
+    initCronJobs()
 
     server.listen(port, host, () => {
         logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)

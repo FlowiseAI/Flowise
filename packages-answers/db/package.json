@@ -1,43 +1,43 @@
 {
-  "name": "db",
-  "version": "0.0.0",
-  "private": true,
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**"
-  ],
-  "scripts": {
-    "dev": "concurrently \"prisma generate --watch\"",
-    "build": "prisma generate",
-    "prisma": "npx prisma",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy",
-    "db:studio": "npx prisma studio",
-    "run:script": "ts-node --cwd ./prisma/scripts -P ../../tsconfig.json --compiler-options '{\"module\":\"CommonJS\"}'"
-  },
-  "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
-  },
-  "dependencies": {
-    "@prisma/client": "^5.10.2",
-    "prisma-json-types-generator": "^3.0.4"
-  },
-  "devDependencies": {
-    "@types/jest": "^29.5.0",
-    "@types/node": "^18.15.11",
-    "concurrently": "^7.6.0",
-    "eslint": "^7.32.0",
-    "eslint-config-custom": "workspace:*",
-    "jest": "^29.5.0",
-    "prisma": "^5.10.2",
-    "ts-node": "^10.9.1",
-    "tsconfig": "workspace:*",
-    "typescript": "^4.8.4"
-  },
-  "engines": {
-    "node": ">=14.0.0"
-  }
+    "name": "db",
+    "version": "0.0.0",
+    "private": true,
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": [
+        "dist/**"
+    ],
+    "scripts": {
+        "dev": "concurrently \"prisma generate --watch\"",
+        "build": "prisma generate",
+        "prisma": "npx prisma",
+        "db:generate": "prisma generate",
+        "db:migrate": "prisma migrate dev",
+        "db:deploy": "prisma migrate deploy",
+        "db:studio": "npx prisma studio",
+        "run:script": "ts-node --cwd ./prisma/scripts -P ../../tsconfig.json --compiler-options '{\"module\":\"CommonJS\"}'"
+    },
+    "prisma": {
+        "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    },
+    "dependencies": {
+        "@prisma/client": "^5.10.2",
+        "prisma-json-types-generator": "^3.0.4"
+    },
+    "devDependencies": {
+        "@types/jest": "^29.5.0",
+        "@types/node": "^18.15.11",
+        "concurrently": "^7.6.0",
+        "eslint": "^7.32.0",
+        "eslint-config-custom": "workspace:*",
+        "jest": "^29.5.0",
+        "prisma": "^5.10.2",
+        "ts-node": "^10.9.1",
+        "tsconfig": "workspace:*",
+        "typescript": "^4.8.4"
+    },
+    "engines": {
+        "node": ">=14.0.0"
+    }
 }

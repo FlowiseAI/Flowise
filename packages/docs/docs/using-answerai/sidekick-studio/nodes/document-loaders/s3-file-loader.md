@@ -29,24 +29,24 @@ The S3 File Loader is a powerful feature that allows you to retrieve files from 
 
 2. Configure S3 File Loader:
    a. Drag and drop the S3 File Loader onto the canvas
-      <!-- TODO: Screenshot of S3 File Loader node on canvas -->
-      <figure><img src="/.gitbook/assets/screenshots/s3loader.png" alt="" /><figcaption><p> S3 File Loader Node &#x26; Drop UI</p></figcaption></figure>
+   <!-- TODO: Screenshot of S3 File Loader node on canvas -->
+   <figure><img src="/.gitbook/assets/screenshots/s3loader.png" alt="" /><figcaption><p> S3 File Loader Node &#x26; Drop UI</p></figcaption></figure>
 
     b. Set up AWS Credentials:
 
     - Create a new credential for your AWS account
     - Provide the access key and secret key
     - Ensure proper S3 bucket policy is granted to the associated account
-          <!-- TODO: Screenshot of AWS Credential configuration -->
-          <figure><img src="/.gitbook/assets/screenshots/s3awsconfiguration.png" alt="" /><figcaption><p> S3 File Loader Node AWS COnfiguration &#x26; Drop UI</p></figcaption></figure>
+        <!-- TODO: Screenshot of AWS Credential configuration -->
+        <figure><img src="/.gitbook/assets/screenshots/s3awsconfiguration.png" alt="" /><figcaption><p> S3 File Loader Node AWS COnfiguration &#x26; Drop UI</p></figcaption></figure>
 
     c. Configure S3 settings:
 
     - Enter your S3 Bucket name
     - Specify the Object Key (unique identifier for your file in S3)
     - Select the appropriate AWS Region
-          <!-- TODO: Screenshot of S3 configuration settings -->
-          <figure><img src="/.gitbook/assets/screenshots/s3configuration.png" alt="" /><figcaption><p> S3 File Loader Node Settings &#x26; Drop UI</p></figcaption></figure>
+        <!-- TODO: Screenshot of S3 configuration settings -->
+        <figure><img src="/.gitbook/assets/screenshots/s3configuration.png" alt="" /><figcaption><p> S3 File Loader Node Settings &#x26; Drop UI</p></figcaption></figure>
 
     d. Set up Unstructured API:
 

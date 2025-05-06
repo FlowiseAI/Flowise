@@ -6,8 +6,11 @@ export class User implements IUser {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
-    @Column()
+    @Column({ unique: true })
     auth0Id: string
+
+    @Column({ nullable: true })
+    stripeCustomerId: string
 
     @Column()
     email: string
@@ -24,7 +27,7 @@ export class User implements IUser {
     updatedDate: Date
 
     @Index()
-    @Column({ type: 'uuid', nullable: true, array: true })
+    @Column({ type: 'uuid' })
     organizationId: string
 
     @Column({ type: 'uuid', nullable: true })

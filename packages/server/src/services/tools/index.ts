@@ -1,11 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Tool, ToolVisibility } from '../../database/entities/Tool'
-import { getAppVersion } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { getAppVersion } from '../../utils'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { IUser } from '../../Interface'
-import { IsNull, Like } from 'typeorm'
+import { QueryRunner, IsNull, Like } from 'typeorm'
 
 const createTool = async (requestBody: any, user: IUser): Promise<any> => {
     try {
@@ -21,6 +22,7 @@ const createTool = async (requestBody: any, user: IUser): Promise<any> => {
             toolId: dbResponse.id,
             toolName: dbResponse.name
         })
+        appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.TOOL_CREATED, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.createTool - ${getErrorMessage(error)}`)
@@ -40,7 +42,7 @@ const deleteTool = async (toolId: string, user: IUser): Promise<any> => {
     }
 }
 
-const getAllTools = async (user: IUser): Promise<any> => {
+const getAllTools = async (user: IUser): Promise<Tool[]> => {
     try {
         const appServer = getRunningExpressApp()
         const toolRepo = appServer.AppDataSource.getRepository(Tool)
@@ -105,10 +107,55 @@ const updateTool = async (toolId: string, toolBody: any, user: IUser): Promise<a
     }
 }
 
+const importTools = async (newTools: Partial<Tool>[], queryRunner?: QueryRunner) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const repository = queryRunner ? queryRunner.manager.getRepository(Tool) : appServer.AppDataSource.getRepository(Tool)
+
+        // step 1 - check whether file tools array is zero
+        if (newTools.length == 0) return
+
+        // step 2 - check whether ids are duplicate in database
+        let ids = '('
+        let count: number = 0
+        const lastCount = newTools.length - 1
+        newTools.forEach((newTools) => {
+            ids += `'${newTools.id}'`
+            if (lastCount != count) ids += ','
+            if (lastCount == count) ids += ')'
+            count += 1
+        })
+
+        const selectResponse = await repository.createQueryBuilder('t').select('t.id').where(`t.id IN ${ids}`).getMany()
+        const foundIds = selectResponse.map((response) => {
+            return response.id
+        })
+
+        // step 3 - remove ids that are only duplicate
+        const prepTools: Partial<Tool>[] = newTools.map((newTool) => {
+            let id: string = ''
+            if (newTool.id) id = newTool.id
+            if (foundIds.includes(id)) {
+                newTool.id = undefined
+                newTool.name += ' (1)'
+            }
+            return newTool
+        })
+
+        // step 4 - transactional insert array of entities
+        const insertResponse = await repository.insert(prepTools)
+
+        return insertResponse
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.importTools - ${getErrorMessage(error)}`)
+    }
+}
+
 export default {
     createTool,
     deleteTool,
     getAllTools,
     getToolById,
-    updateTool
+    updateTool,
+    importTools
 }

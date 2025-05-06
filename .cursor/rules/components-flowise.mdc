@@ -1,0 +1,603 @@
+---
+description: This rule is helpful for context about creating new nodes and credentials for the app to be used in the canvas
+globs: 
+alwaysApply: false
+---
+# Components Package (flowise-components)
+
+## Overview
+The components package serves as a core library of LangChain components for building AI workflows. It provides integrations with various AI models, databases, and tools that can be used to create conversational AI applications within TheAnswer platform.
+
+## Purpose in the Monorepo
+This package is a foundational dependency that provides the building blocks for AI workflows in TheAnswer platform. Other packages like the server rely on these components to create and execute AI chains and workflows.
+
+## Key Features
+- Integrations with various LLM providers (OpenAI, Anthropic, Google, etc.)
+- Vector database connections (Pinecone, Qdrant, Weaviate, etc.)
+- Document processing utilities
+- Memory implementations
+- Tool integrations for various external services
+
+## Technical Details
+
+### Technologies Used
+- **TypeScript**: For type-safe development
+- **LangChain**: Core framework for AI workflows
+- **Various AI SDKs**: OpenAI, Anthropic, Google, Mistral, etc.
+- **Database Connectors**: For MongoDB, PostgreSQL, Pinecone, Qdrant, etc.
+- **Document Processing Libraries**: For handling PDFs, CSVs, and other document formats
+
+### Dependencies
+The package includes a wide range of dependencies for:
+- AI model integrations (OpenAI, Anthropic, Google, etc.)
+- Vector databases (Pinecone, Qdrant, etc.)
+- Document processing (PDF parsing, HTML processing)
+- API integrations (Contentful, Notion, etc.)
+- Utilities for various data transformations
+
+### Project Structure
+The package follows a modular structure organized by component types and providers.
+
+### Build Process
+Uses TypeScript compilation and Gulp for building.
+
+## Development Guidelines
+
+### Coding Standards
+- Use TypeScript for all new components
+- Follow existing patterns for model and database integrations
+- Implement proper error handling and logging
+- Ensure components are properly typed and exported
+
+### Testing
+- Test components with various inputs and environments
+- Validate integrations with external services
+
+### Documentation
+- Document all public APIs and component interfaces
+- Include usage examples for complex components
+
+## Scripts and Commands
+- `build`: Compiles TypeScript and runs Gulp
+- `dev`: Watches for changes and rebuilds automatically
+- `clean`: Removes build artifacts
+- `nuke`: Completely cleans the project including node_modules
+
+## Versioning and Publishing
+The package is versioned according to the monorepo versioning strategy and is not individually published to NPM. 
+
+# Creating Nodes with Authentication in the Components Package
+
+## Overview of the Components Package Structure
+
+The components package serves as a library of LangChain components for building AI workflows. When adding new functionality that requires authentication, you need to understand two key concepts:
+
+1. **Credentials**: Define how to authenticate with external services
+2. **Nodes**: Components that use credentials to interact with external services
+
+## Credential System
+
+### Credential File Structure
+
+Credentials are defined in standalone TypeScript files in the `packages/components/credentials` directory. Each credential file follows a specific naming pattern and implements the `INodeCredential` interface.
+
+```typescript
+// ExampleService.credential.ts
+import { INodeParams, INodeCredential } from '../src/Interface'
+
+class ExampleServiceApi implements INodeCredential {
+    label: string
+    name: string
+    version: number
+    description?: string
+    inputs: INodeParams[]
+
+    constructor() {
+        this.label = 'Example Service API'
+        this.name = 'exampleServiceApi'
+        this.version = 1.0
+        this.description = 'Authentication for Example Service'
+        this.inputs = [
+            {
+                label: 'API Key',
+                name: 'apiKey',
+                type: 'password'
+            },
+            {
+                label: 'Base URL',
+                name: 'baseUrl',
+                type: 'string',
+                optional: true,
+                default: 'https://api.example.com'
+            }
+        ]
+    }
+}
+
+module.exports = { credClass: ExampleServiceApi }
+```
+
+### Key Properties of Credentials
+
+1. **label**: Human-readable name shown in the UI
+2. **name**: Machine-readable identifier (camelCase)
+3. **version**: Version number for tracking changes
+4. **description**: Optional description with HTML support
+5. **inputs**: Array of credential parameters
+
+### Input Parameter Types
+
+The `inputs` array can include various parameter types:
+- `string`: Regular text input
+- `password`: Secure input that masks the value
+- `number`: Numeric input
+- `boolean`: True/false toggle
+- `json`: JSON object input
+
+Each parameter can have additional properties:
+- `optional`: Whether the parameter is required
+- `default`: Default value
+- `placeholder`: Placeholder text
+- `description`: Help text for the parameter
+
+## Node System
+
+### Node File Structure
+
+Nodes are grouped by functionality in the `packages/components/nodes` directory. Each node type has its own subdirectory (e.g., `llms`, `tools`, `chatmodels`). Nodes implement the `INode` interface.
+
+```typescript
+// nodes/tools/ExampleService/ExampleService.ts
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getCredentialData, getCredentialParam } from '../../../src/utils'
+
+class ExampleService_Tools implements INode {
+    label: string
+    name: string
+    version: number
+    description: string
+    type: string
+    icon: string
+    category: string
+    baseClasses: string[]
+    credential: INodeParams
+    inputs: INodeParams[]
+
+    constructor() {
+        this.label = 'Example Service'
+        this.name = 'exampleService'
+        this.version = 1.0
+        this.type = 'ExampleService'
+        this.icon = 'example.svg'
+        this.category = 'Tools'
+        this.description = 'Use Example Service to perform tasks'
+        this.baseClasses = [this.type, 'Tool']
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['exampleServiceApi']
+        }
+        this.inputs = [
+            {
+                label: 'Feature',
+                name: 'feature',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Feature A',
+                        name: 'featureA'
+                    },
+                    {
+                        label: 'Feature B',
+                        name: 'featureB'
+                    }
+                ]
+            }
+        ]
+    }
+
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        // Get credential data
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+        const baseUrl = getCredentialParam('baseUrl', credentialData, nodeData)
+
+        // Get input data
+        const feature = nodeData.inputs?.feature as string
+
+        // Initialize service with authentication
+        // Example:
+        const service = new ExampleServiceSDK({
+            apiKey: apiKey,
+            baseUrl: baseUrl
+        })
+
+        // Configure based on feature selection
+        if (feature === 'featureA') {
+            // Configure for Feature A
+        } else if (feature === 'featureB') {
+            // Configure for Feature B
+        }
+
+        return service
+    }
+}
+
+module.exports = { nodeClass: ExampleService_Tools }
+```
+
+### Key Properties of Nodes
+
+1. **label**: Human-readable name shown in the UI
+2. **name**: Machine-readable identifier (camelCase)
+3. **version**: Version number for tracking changes
+4. **type**: Type identifier (PascalCase)
+5. **icon**: SVG icon filename
+6. **category**: Category for grouping in the UI
+7. **description**: Description of the node's functionality
+8. **baseClasses**: Array of base classes for type compatibility
+9. **credential**: Credential configuration object
+10. **inputs**: Array of node parameters
+
+### Authentication Flow
+
+The credential system works as follows:
+
+1. The node defines which credentials it accepts in the `credential.credentialNames` array
+2. When initialized, the node retrieves credential data using `getCredentialData`
+3. Individual credential parameters are accessed with `getCredentialParam`
+4. These parameters are then used to initialize the external service client
+
+### Utility Functions for Credential Handling
+
+The `utils.ts` file provides crucial functions for handling credentials:
+
+1. **getCredentialData**: Retrieves the credential object by ID
+   ```typescript
+   const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+   ```
+
+2. **getCredentialParam**: Extracts a specific parameter from the credential data
+   ```typescript
+   const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+   ```
+
+## Real-World Examples
+
+### Simple Authentication (OpenAI)
+
+The OpenAI credential and node implementation demonstrate a straightforward authentication pattern:
+
+**OpenAIApi.credential.ts**:
+```typescript
+class OpenAIApi implements INodeCredential {
+    // Properties...
+    constructor() {
+        this.label = 'OpenAI API'
+        this.name = 'openAIApi'
+        this.version = 1.0
+        this.inputs = [
+            {
+                label: 'OpenAI Api Key',
+                name: 'openAIApiKey',
+                type: 'password'
+            }
+        ]
+    }
+}
+```
+
+**OpenAI.ts (LLM Node)**:
+```typescript
+class OpenAI_LLMs implements INode {
+    // Properties...
+    constructor() {
+        // Node properties...
+        this.credential = {
+            label: 'Connect Credential',
+            name: 'credential',
+            type: 'credential',
+            credentialNames: ['openAIApi']
+        }
+        // Inputs...
+    }
+
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+        
+        // Initialize OpenAI client with the key
+        const model = new OpenAI({
+            openAIApiKey,
+            // Other configuration from node inputs...
+        })
+        
+        return model
+    }
+}
+```
+
+### Complex Authentication (Contentful)
+
+Contentful shows a more complex authentication pattern with multiple required parameters:
+
+**ContentfulDeliveryApi.credential.ts**:
+```typescript
+class ContentfulDeliveryApi implements INodeCredential {
+    // Properties...
+    constructor() {
+        this.label = 'Contentful Delivery API'
+        this.name = 'contentfulDeliveryApi'
+        this.version = 1.1
+        this.description = 'Refer to guide on how to get your delivery and preview keys in Contentful'
+        this.inputs = [
+            {
+                label: 'Delivery Token',
+                name: 'deliveryToken',
+                type: 'string',
+                placeholder: '<CONTENTFUL_DELIVERY_TOKEN>'
+            },
+            {
+                label: 'Preview Token',
+                name: 'previewToken',
+                type: 'string',
+                placeholder: '<CONTENTFUL_PREVIEW_TOKEN>'
+            },
+            {
+                label: 'Space Id',
+                name: 'spaceId',
+                type: 'string',
+                placeholder: 'asdf1234'
+            }
+        ]
+    }
+}
+```
+
+A tool node using this credential would retrieve and use these parameters:
+
+```typescript
+async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+    const deliveryToken = getCredentialParam('deliveryToken', credentialData, nodeData)
+    const previewToken = getCredentialParam('previewToken', credentialData, nodeData)
+    const spaceId = getCredentialParam('spaceId', credentialData, nodeData)
+    
+    // Initialize Contentful client
+    const client = createContentfulClient({
+        accessToken: deliveryToken,
+        previewAccessToken: previewToken,
+        space: spaceId
+    })
+    
+    return client
+}
+```
+
+### OAuth Authentication (Google)
+
+For OAuth-based services like Google, the credential setup is more complex:
+
+**GoogleAuth.credential.ts**:
+```typescript
+class GoogleVertexAuth implements INodeCredential {
+    // Properties...
+    constructor() {
+        this.label = 'Google Vertex Auth'
+        this.name = 'googleVertexAuth'
+        this.version = 1.0
+        this.inputs = [
+            {
+                label: 'Google Application Credential File Path',
+                name: 'googleApplicationCredentialFilePath',
+                description: 'Path to your google application credential json file.',
+                type: 'string',
+                optional: true
+            },
+            {
+                label: 'Google Credential JSON Object',
+                name: 'googleApplicationCredential',
+                description: 'JSON object of your google application credential.',
+                type: 'string',
+                rows: 4,
+                optional: true
+            },
+            {
+                label: 'Project ID',
+                name: 'projectID',
+                description: 'Project ID of GCP.',
+                type: 'string',
+                optional: true
+            }
+        ]
+    }
+}
+```
+
+## Step-by-Step Guide to Creating a New Node with Authentication
+
+1. **Create the Credential File**:
+
+   Create a new file in `packages/components/credentials` named `YourService.credential.ts`:
+
+   ```typescript
+   import { INodeParams, INodeCredential } from '../src/Interface'
+
+   class YourServiceApi implements INodeCredential {
+       label: string
+       name: string
+       version: number
+       description: string
+       inputs: INodeParams[]
+
+       constructor() {
+           this.label = 'Your Service API'
+           this.name = 'yourServiceApi'
+           this.version = 1.0
+           this.description = 'Authentication for Your Service'
+           this.inputs = [
+               {
+                   label: 'API Key',
+                   name: 'apiKey',
+                   type: 'password',
+                   description: 'Your API key from the service dashboard'
+               },
+               {
+                   label: 'Region',
+                   name: 'region',
+                   type: 'options',
+                   options: [
+                       {
+                           label: 'US',
+                           name: 'us'
+                       },
+                       {
+                           label: 'EU',
+                           name: 'eu'
+                       }
+                   ],
+                   default: 'us'
+               }
+           ]
+       }
+   }
+
+   module.exports = { credClass: YourServiceApi }
+   ```
+
+2. **Create the Node Directory**:
+
+   Create a directory for your node in the appropriate category:
+   ```
+   packages/components/nodes/tools/YourService/
+   ```
+
+3. **Add an Icon**:
+
+   Add an SVG icon for your service:
+   ```
+   packages/components/nodes/tools/YourService/yourservice.svg
+   ```
+
+4. **Create the Node Implementation**:
+
+   Create a TypeScript file for your node:
+   ```typescript
+   // packages/components/nodes/tools/YourService/YourService.ts
+   import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+   import { getCredentialData, getCredentialParam } from '../../../src/utils'
+   
+   class YourService_Tools implements INode {
+       label: string
+       name: string
+       version: number
+       description: string
+       type: string
+       icon: string
+       category: string
+       baseClasses: string[]
+       credential: INodeParams
+       inputs: INodeParams[]
+   
+       constructor() {
+           this.label = 'Your Service'
+           this.name = 'yourService'
+           this.version = 1.0
+           this.type = 'YourService'
+           this.icon = 'yourservice.svg'
+           this.category = 'Tools'
+           this.description = 'Interact with Your Service API'
+           this.baseClasses = [this.type, 'Tool']
+           this.credential = {
+               label: 'Connect Credential',
+               name: 'credential',
+               type: 'credential',
+               credentialNames: ['yourServiceApi']
+           }
+           this.inputs = [
+               {
+                   label: 'Operation',
+                   name: 'operation',
+                   type: 'options',
+                   options: [
+                       {
+                           label: 'Search',
+                           name: 'search'
+                       },
+                       {
+                           label: 'Create',
+                           name: 'create'
+                       }
+                   ]
+               },
+               {
+                   label: 'Query',
+                   name: 'query',
+                   type: 'string',
+                   description: 'Search query or creation data',
+                   optional: true,
+                   additionalParams: true
+               }
+           ]
+       }
+   
+       async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+           // Get credential data
+           const credentialData = await getCredentialData(nodeData.credential ?? '', options)
+           const apiKey = getCredentialParam('apiKey', credentialData, nodeData)
+           const region = getCredentialParam('region', credentialData, nodeData)
+   
+           // Get input parameters
+           const operation = nodeData.inputs?.operation as string
+           const query = nodeData.inputs?.query as string
+   
+           // Initialize client with authentication
+           const client = new YourServiceClient({
+               apiKey,
+               region
+           })
+   
+           // Configure based on operation
+           if (operation === 'search') {
+               return client.configureForSearch(query)
+           } else if (operation === 'create') {
+               return client.configureForCreate(query)
+           }
+   
+           return client
+       }
+   }
+   
+   module.exports = { nodeClass: YourService_Tools }
+   ```
+
+5. **Testing Your Implementation**:
+
+   - Build the component package with `pnpm build`
+   - Create a credential in the UI using your new credential type
+   - Add your node to a workflow in the UI
+   - Connect the credential to your node
+   - Configure the node inputs and test the functionality
+
+## Best Practices for Node Implementation
+
+1. **Secure Credential Handling**:
+   - Always use `password` type for sensitive parameters
+   - Never expose credentials in logs or output
+
+2. **Error Handling**:
+   - Implement proper error handling in the `init` method
+   - Provide meaningful error messages for authentication failures
+
+3. **Documentation**:
+   - Add clear descriptions to credential and node parameters
+   - Include links to service documentation where applicable
+
+4. **Parameter Organization**:
+   - Group related parameters together
+   - Use `additionalParams: true` for optional parameters
+
+5. **Version Management**:
+   - Increment the version number when making changes
+   - Maintain backward compatibility when possible

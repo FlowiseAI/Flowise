@@ -1,0 +1,252 @@
+openapi: 3.0.0
+info:
+    title: Tools API
+    description: API for managing custom tools
+    version: 1.0.0
+    contact:
+        name: AnswerAI Support
+        url: https://theanswer.ai
+        email: support@theanswer.ai
+servers:
+    - url: https://api.theanswer.ai/v1
+      description: Production server
+    - url: https://staging-api.theanswer.ai/v1
+      description: Staging server
+    - url: http://localhost:4000/api/v1
+      description: Local development server
+tags:
+    - name: tools
+      description: Operations for managing custom tools
+paths:
+    /tools:
+        post:
+            summary: Create a new tool
+            description: Create a new tool
+            operationId: createTool
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Tool'
+                required: true
+            responses:
+                '200':
+                    description: Tool created successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Tool'
+                '400':
+                    description: Invalid request body
+                '422':
+                    description: Validation error
+                '500':
+                    description: Internal server error
+        get:
+            summary: List all tools
+            description: Retrieve a list of all tools
+            operationId: getAllTools
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Tool'
+                '500':
+                    description: Internal server error
+    /tools/{id}:
+        get:
+            summary: Get a tool by ID
+            description: Retrieve a specific tool by ID
+            operationId: getToolById
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Tool ID
+            responses:
+                '200':
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Tool'
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Tool not found
+                '500':
+                    description: Internal server error
+        put:
+            summary: Update a tool by ID
+            description: Update a specific tool by ID
+            operationId: updateTool
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Tool ID
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/Tool'
+                required: true
+            responses:
+                '200':
+                    description: Tool updated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Tool'
+                '400':
+                    description: Invalid ID or request body provided
+                '404':
+                    description: Tool not found
+                '500':
+                    description: Internal server error
+        delete:
+            summary: Delete a tool by ID
+            description: Delete a specific tool by ID
+            operationId: deleteTool
+            tags:
+                - tools
+            security:
+                - bearerAuth: []
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
+                      type: string
+                  description: Tool ID
+            responses:
+                '200':
+                    description: Tool deleted successfully
+                '400':
+                    description: Invalid ID provided
+                '404':
+                    description: Tool not found
+                '500':
+                    description: Internal server error
+components:
+    securitySchemes:
+        bearerAuth:
+            type: http
+            scheme: bearer
+            bearerFormat: JWT
+    schemas:
+        ToolInput:
+            type: object
+            properties:
+                name:
+                    type: string
+                    description: Name of the tool
+                    example: date_time_tool
+                description:
+                    type: string
+                    description: Description of the tool
+                    example: A tool used for date and time operations
+                color:
+                    type: string
+                    description: Color associated with the tool
+                    example: '#FF5733'
+                iconSrc:
+                    type: string
+                    nullable: true
+                    description: Source URL for the tool's icon
+                    example: https://example.com/icons/date.png
+                schema:
+                    type: string
+                    nullable: true
+                    description: JSON schema associated with the tool
+                    example: '{"type":"object","properties":{"format":{"type":"string","description":"Date format"}}}'
+                func:
+                    type: string
+                    nullable: true
+                    description: Functionality description or code associated with the tool
+                    example: function getDateTime(format) { return new Date().toLocaleString(format); }
+            required:
+                - name
+                - description
+        Tool:
+            type: object
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the tool
+                    example: cfd531e0-82fc-11e9-bc42-526af7764f64
+                name:
+                    type: string
+                    description: Name of the tool
+                    example: date_time_tool
+                description:
+                    type: string
+                    description: Description of the tool
+                    example: A tool used for date and time operations
+                color:
+                    type: string
+                    description: Color associated with the tool
+                    example: '#FF5733'
+                iconSrc:
+                    type: string
+                    nullable: true
+                    description: Source URL for the tool's icon
+                    example: https://example.com/icons/date.png
+                schema:
+                    type: string
+                    nullable: true
+                    description: JSON schema associated with the tool
+                func:
+                    type: string
+                    nullable: true
+                    description: Functionality description or code associated with the tool
+                createdDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the tool was created
+                    example: '2024-08-24T14:15:22Z'
+                updatedDate:
+                    type: string
+                    format: date-time
+                    description: Date and time when the tool was last updated
+                    example: '2024-08-24T14:15:22Z'
+        Error:
+            type: object
+            properties:
+                message:
+                    type: string
+                    description: Error message
+                    example: Invalid request parameters
+                code:
+                    type: string
+                    description: Error code
+                    example: INVALID_PARAMETERS
+                details:
+                    type: object
+                    description: Additional error details
+                    nullable: true

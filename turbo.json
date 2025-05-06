@@ -17,6 +17,7 @@
         "AWS_S3_BUCKET",
         "AWS_S3_REGION",
         "AWS_SECRET_ACCESS_KEY",
+        "CHATFLOW_DOMAIN_OVERRIDE",
         "DATABASE_PORT",
         "DATABASE_URL",
         "DATABASE_URL",
@@ -46,8 +47,17 @@
         "VITE_API_URL",
         "VITE_APP_URL",
         "NEXT_PUBLIC_GOOGLE_DEVELOPER_KEY",
-        "NEXT_PUBLIC_GOOGLE_CLIENT_ID"
+        "NEXT_PUBLIC_GOOGLE_CLIENT_ID",
+        "BILLING_STRIPE_SECRET_KEY",
+        "BILLING_STRIPE_WEBHOOK_SECRET",
+        "BILLING_STRIPE_METER_PREFIX",
+        "CREDIT_RATE",
+        "_API_KEY",
+        "LANGFUSE_SECRET_KEY",
+        "LANGFUSE_PUBLIC_KEY",
+        "LANGFUSE_HOST"
     ],
+
     "pipeline": {
         "//#dev-docker": {
             "cache": false
@@ -64,16 +74,28 @@
         "//#db:studio": {
             "cache": false
         },
+        "flowise-components:build": {
+            "cache": false,
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**", "build/**", ".next/**"]
+        },
+        "flowise-components:dev": {
+            "cache": false
+        },
         "build": {
             "dependsOn": ["^build"],
             "outputs": ["dist/**", "build/**", ".next/**"],
 
             "outputMode": "new-only"
         },
+        "test:auth": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**", "build/**", ".next/**"],
+            "outputMode": "new-only"
+        },
         "db:generate": {
-            "cache": false,
             "dependsOn": ["db:deploy"],
-            "outputs": ["dist/**"]
+            "outputs": ["dist/**", "generated/**"]
         },
         "db:migrate": {
             "cache": false,
@@ -86,9 +108,8 @@
             "outputs": ["dist/**"]
         },
         "db#build": {
-            "dependsOn": [],
+            "cache": false,
             "outputs": ["dist/**", "generated/**"],
-
             "outputMode": "new-only"
         },
         "db#dev": {

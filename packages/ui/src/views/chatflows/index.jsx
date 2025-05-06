@@ -22,6 +22,7 @@ import { baseURL } from '@/store/constant'
 
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { useFlags } from 'flagsmith/react'
+import PropTypes from 'prop-types'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -48,6 +49,11 @@ function TabPanel(props) {
     )
 }
 
+TabPanel.propTypes = {
+    children: PropTypes.node.isRequired,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired
+}
 const Chatflows = () => {
     const navigate = useNavigate()
     const { user } = useUser()
@@ -86,6 +92,20 @@ const Chatflows = () => {
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue)
+    }
+
+    function filterFlows(data) {
+        return (
+            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
+            (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
+            data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
+        )
+    }
+
+    const onLoginClick = (username, password) => {
+        localStorage.setItem('username', username)
+        localStorage.setItem('password', password)
+        navigate(0)
     }
 
     const addNew = () => {

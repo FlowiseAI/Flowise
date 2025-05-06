@@ -295,8 +295,11 @@ class PineconeVectorStore extends VectorStoreBase implements VectorStoreNoEmbedM
     async query(query: VectorStoreQuery): Promise<VectorStoreQueryResult> {
         const queryOptions: any = {
             vector: query.queryEmbedding,
-            topK: query.similarityTopK,
-            filter: this.queryFilter
+            topK: query.similarityTopK
+        }
+
+        if (this.queryFilter && Object.keys(this.queryFilter).length > 0) {
+            queryOptions.filter = this.queryFilter
         }
 
         const idx = await this.index()

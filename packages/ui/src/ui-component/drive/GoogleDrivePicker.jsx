@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types'
 import { useEffect, useState } from 'react'
-import { Button, List, ListItem, ListItemAvatar, ListItemText, Avatar } from '@mui/material'
+import { Button, List, ListItem, ListItemAvatar, ListItemText, Avatar, IconButton, Stack } from '@mui/material'
 import useApi from '@/hooks/useApi'
 import credentialsApi from '@/api/credentials'
-import { IconX } from '@tabler/icons-react'
+import { IconX, IconTrash } from '@tabler/icons-react'
 import { useDispatch } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
@@ -13,6 +13,7 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
     const [selectedFiles, setSelectedFiles] = useState(value ? JSON.parse(value) : [])
     const [accessToken, setAccessToken] = useState(null)
     const [isTokenExpired, setIsTokenExpired] = useState(false)
+    const [isRefreshing, setIsRefreshing] = useState(false)
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
     const getCredentialDataApi = useApi(credentialsApi.getSpecificCredential)
@@ -21,6 +22,18 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
             getCredentialDataApi.request(credentialId)
         }
     }, [credentialId])
+
+    // Initialize from credentialData prop if available
+    useEffect(() => {
+        if (credentialData?.plainDataObj) {
+            const expiresAt = new Date(credentialData.plainDataObj.expiresAt)
+            const now = new Date()
+            const isExpired = expiresAt < now
+
+            setIsTokenExpired(isExpired)
+            setAccessToken(credentialData.plainDataObj.googleAccessToken ?? '')
+        }
+    }, [credentialData])
 
     useEffect(() => {
         if (getCredentialDataApi.data) {
@@ -113,17 +126,37 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
 
     const pickerCallback = (data) => {
         if (data.action === window.google.picker.Action.PICKED) {
-            const files = data.docs.map((file) => ({ fileId: file.id, fileName: file.name, iconUrl: file.iconUrl }))
-            setSelectedFiles(files)
-            onChange(JSON.stringify(files))
+            const newFiles = data.docs.map((file) => ({ fileId: file.id, fileName: file.name, iconUrl: file.iconUrl }))
+            // Filter out any files that already exist in the selection
+            const uniqueNewFiles = newFiles.filter(
+                (newFile) => !selectedFiles.some((existingFile) => existingFile.fileId === newFile.fileId)
+            )
+            const updatedFiles = [...selectedFiles, ...uniqueNewFiles]
+            setSelectedFiles(updatedFiles)
+            onChange(JSON.stringify(updatedFiles))
         }
+    }
+
+    const handleClearAll = () => {
+        setSelectedFiles([])
+        onChange(JSON.stringify([]))
+    }
+
+    const handleRemoveFile = (fileId) => {
+        const updatedFiles = selectedFiles.filter((file) => file.fileId !== fileId)
+        setSelectedFiles(updatedFiles)
+        onChange(JSON.stringify(updatedFiles))
     }
 
     const handleRefreshAccessToken = async () => {
         try {
+            setIsRefreshing(true)
             const response = await credentialsApi.refreshAccessToken({ credentialId })
+
             if (response.status === 200) {
+                getCredentialDataApi.request(credentialId)
                 setIsTokenExpired(false)
+
                 enqueueSnackbar({
                     message: 'Successfully refreshed access token',
                     options: {
@@ -139,8 +172,11 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
             }
         } catch (error) {
             console.error('Error refreshing access token:', error)
+
+            const errorMessage = error.response?.data?.message || 'Error refreshing access token'
+
             enqueueSnackbar({
-                message: 'Error refreshing access token',
+                message: errorMessage,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -151,41 +187,47 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
                     )
                 }
             })
+        } finally {
+            setIsRefreshing(false)
         }
     }
     return (
         <div style={{ margin: '10px 0px 0 0' }}>
-            <Button
-                variant='outlined'
-                onClick={createPicker}
-                disabled={!pickerInited || disabled || isTokenExpired}
-                sx={{
-                    mb: 2,
-                    '&.Mui-disabled': {
-                        color: 'gray',
-                        borderColor: 'gray'
-                    }
-                }}
-            >
-                Select Files from Google Drive
-            </Button>
-            {isTokenExpired && (
+            <Stack direction='row' spacing={2} sx={{ mb: 2 }}>
                 <Button
                     variant='outlined'
-                    onClick={handleRefreshAccessToken}
-                    disabled={!isTokenExpired || !credentialId}
+                    onClick={createPicker}
+                    disabled={!pickerInited || disabled || isTokenExpired}
                     sx={{
-                        mb: 2,
-                        ml: 2,
                         '&.Mui-disabled': {
                             color: 'gray',
                             borderColor: 'gray'
                         }
                     }}
                 >
-                    Refresh Access Token
+                    Select Files from Google Drive
                 </Button>
-            )}
+                {selectedFiles.length > 0 && (
+                    <Button variant='outlined' onClick={handleClearAll} color='error' startIcon={<IconTrash size={20} />}>
+                        Clear All
+                    </Button>
+                )}
+                {isTokenExpired && (
+                    <Button
+                        variant='outlined'
+                        onClick={handleRefreshAccessToken}
+                        disabled={!isTokenExpired || !credentialId || isRefreshing}
+                        sx={{
+                            '&.Mui-disabled': {
+                                color: 'gray',
+                                borderColor: 'gray'
+                            }
+                        }}
+                    >
+                        Refresh Access Token
+                    </Button>
+                )}
+            </Stack>
             {isTokenExpired && (
                 <div style={{ color: 'red', marginBottom: '10px' }}>
                     Access token has expired. Please re-authenticate or refresh the access token.
@@ -200,8 +242,25 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
                                 borderRadius: 1,
                                 border: '1px solid',
                                 borderColor: 'divider',
-                                p: 0
+                                p: 0,
+                                mb: 1
                             }}
+                            secondaryAction={
+                                <IconButton
+                                    edge='end'
+                                    aria-label='delete'
+                                    onClick={() => handleRemoveFile(file.fileId)}
+                                    sx={{
+                                        mr: 1,
+                                        color: 'error.main',
+                                        '&:hover': {
+                                            backgroundColor: 'error.lighter'
+                                        }
+                                    }}
+                                >
+                                    <IconTrash size={20} />
+                                </IconButton>
+                            }
                         >
                             <ListItemAvatar>
                                 <Avatar

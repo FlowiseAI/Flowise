@@ -3,8 +3,6 @@ import React, { useState, useEffect, useRef, ChangeEvent } from 'react'
 
 import Button from '@mui/material/Button'
 import Box from '@mui/material/Box'
-import TextField from '@mui/material/TextField'
-import Tooltip from '@mui/material/Tooltip'
 import AttachFileIcon from '@mui/icons-material/PermMedia'
 import MicIcon from '@mui/icons-material/Mic'
 import IconButton from '@mui/material/IconButton'
@@ -15,8 +13,12 @@ import { throttle } from '@utils/throttle'
 import { useAnswers } from './AnswersContext'
 
 import type { Sidekick, StarterPrompt } from 'types'
-import { DefaultPrompts } from './DefaultPrompts'
-import { FileUpload } from './AnswersContext'
+
+import dynamic from 'next/dynamic'
+import { FileUpload } from './types'
+const DefaultPrompts = dynamic(() => import('./DefaultPrompts').then((mod) => mod.DefaultPrompts))
+const Tooltip = dynamic(() => import('@mui/material/Tooltip'))
+const TextField = dynamic(() => import('@mui/material/TextField'))
 
 interface ChatInputProps {
     scrollRef?: React.RefObject<HTMLDivElement>
@@ -38,7 +40,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
     const [isLoadingRecording, setIsLoadingRecording] = useState(false)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const recordingIntervalRef = useRef<number | undefined>(undefined)
-    const { chat, journey, messages, sendMessage, isLoading, sidekick, gptModel, startNewChat, chatbotConfig } = useAnswers()
+    const { chat, journey, messages, sendMessage, isLoading, sidekick, gptModel, startNewChat, chatbotConfig, handleAbort } = useAnswers()
     const constraints = sidekick?.constraints
     const [isMessageStopping, setIsMessageStopping] = useState(false)
     const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
@@ -51,9 +53,9 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         [scrollRef]
     )
 
-    useEffect(() => {
-        if (messages?.length && isLoading) throttledScroll()
-    }, [chat, journey, messages, scrollRef])
+    // useEffect(() => {
+    //     // if (messages?.length && isLoading) throttledScroll()
+    // }, [chat, journey, messages, scrollRef])
 
     useEffect(() => {
         if (isRecording) {
@@ -299,15 +301,14 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         }
     }
 
-    const handleAbort = async () => {
+    const handleAbortMessage = async () => {
         setIsMessageStopping(true)
         try {
-            // Need to implement abort functionality in AnswersContext
-            await abortMessage(chat?.id)
+            await handleAbort()
             setIsMessageStopping(false)
         } catch (error) {
             setIsMessageStopping(false)
-            // Handle error
+            console.error('Error stopping message:', error)
         }
     }
 
@@ -389,6 +390,15 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
         >
+            {/* Add a stop button when message is loading */}
+            {isLoading && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mb: 2 }}>
+                    <Button variant='outlined' color='secondary' onClick={handleAbortMessage} disabled={isMessageStopping}>
+                        {isMessageStopping ? 'Stopping...' : 'Stop Generating'}
+                    </Button>
+                </Box>
+            )}
+
             {!messages?.length ? (
                 <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', alignItems: 'flex-end' }}>
                     <DefaultPrompts prompts={chatbotConfig?.starterPrompts} onPromptSelected={handlePromptSelected} />

@@ -23,6 +23,7 @@ There are three different .env files you can set environment variables for Answe
 | LOG_PATH                      | Path to store log files                                  | Root, Server           |
 | DISABLE_FLOWISE_TELEMETRY     | Disable Flowise telemetry when set to true               | Root                   |
 | IFRAME_ORIGINS                | Allowed origins for iframes                              | Root                   |
+| CHATFLOW_DOMAIN_OVERRIDE      | Overrides the chatflowDomain with a specified URL        | Root, Web              |
 | VITE_AUTH_DOMAIN              | Auth0 domain for authentication                          | Root, UI               |
 | VITE_AUTH_CLIENT_ID           | Auth0 client ID for authentication                       | Root, UI               |
 | VITE_AUTH_AUDIENCE            | Auth0 audience for authentication                        | Root, UI               |

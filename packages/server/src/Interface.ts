@@ -1,12 +1,29 @@
-import { IAction } from 'flowise-components'
-import { ICommonObject, IFileUpload, INode, INodeData as INodeDataFromComponent, INodeParams } from 'flowise-components'
+import {
+    IAction,
+    ICommonObject,
+    IFileUpload,
+    INode,
+    INodeData as INodeDataFromComponent,
+    INodeParams,
+    IServerSideEventStreamer
+} from 'flowise-components'
+import { DataSource } from 'typeorm'
+import { CachePool } from './CachePool'
+import { Telemetry } from './utils/telemetry'
 import { ChatflowVisibility } from './database/entities/ChatFlow'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT'
+export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'ASSISTANT'
 
-export enum chatType {
+export type AssistantType = 'CUSTOM' | 'OPENAI' | 'AZURE'
+
+export enum MODE {
+    QUEUE = 'queue',
+    MAIN = 'main'
+}
+
+export enum ChatType {
     INTERNAL = 'INTERNAL',
     EXTERNAL = 'EXTERNAL'
 }
@@ -14,6 +31,22 @@ export enum chatType {
 export enum ChatMessageRatingType {
     THUMBS_UP = 'THUMBS_UP',
     THUMBS_DOWN = 'THUMBS_DOWN'
+}
+
+export enum AppCsvParseRunsStatus {
+    PENDING = 'PENDING',
+    IN_PROGRESS = 'IN_PROGRESS',
+    COMPLETE_WITH_ERRORS = 'COMPLETE_WITH_ERRORS',
+    COMPLETE = 'COMPLETE',
+    GENERATING_CSV = 'GENERATING_CSV',
+    READY = 'READY'
+}
+
+export enum AppCsvParseRowStatus {
+    PENDING = 'PENDING',
+    IN_PROGRESS = 'IN_PROGRESS',
+    COMPLETE_WITH_ERRORS = 'COMPLETE_WITH_ERRORS',
+    COMPLETE = 'COMPLETE'
 }
 /**
  * Databases
@@ -23,14 +56,20 @@ export interface IUser {
     name: string
     email: string
     organizationId: string
+    stripeCustomerId?: string
     updatedDate: Date
     createdDate: Date
     permissions?: string[]
     roles?: string[]
+    apiKey?: {
+        id: string
+        metadata?: IApiKeyMetadata
+    }
 }
 export interface IOrganization {
     id: string
     name: string
+    stripeCustomerId?: string
     updatedDate: Date
     createdDate: Date
 }
@@ -45,13 +84,15 @@ export interface IChatFlow {
     isPublic?: boolean
     apikeyid?: string
     analytic?: string
+    speechToText?: string
     chatbotConfig?: string
+    followUpPrompts?: string
     apiConfig?: string
     category?: string
     visibility?: string[]
     type?: ChatflowType
-    userId?: string
-    organizationId?: string
+    userId: string
+    organizationId: string
     displayMode?: string
     embeddedUrl?: string
 }
@@ -66,14 +107,17 @@ export interface IChatMessage {
     fileAnnotations?: string
     agentReasoning?: string
     fileUploads?: string
+    artifacts?: string
     chatType: string
     chatId: string
-    userId: string
+    userId?: string
+    organizationId?: string
     memoryType?: string
     sessionId?: string
     createdDate: Date
     leadEmail?: string
     action?: string | null
+    followUpPrompts?: string
 }
 
 export interface IChatMessageFeedback {
@@ -240,7 +284,6 @@ export interface IMessage {
 export interface IncomingInput {
     question: string
     overrideConfig?: ICommonObject
-    socketIOClientId?: string
     chatId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]
@@ -248,6 +291,7 @@ export interface IncomingInput {
     history?: IMessage[]
     action?: IAction
     chatType?: string
+    streaming?: boolean
 }
 
 export interface IActiveChatflows {
@@ -256,6 +300,7 @@ export interface IActiveChatflows {
         endingNodeData?: INodeData
         inSync: boolean
         overrideConfig?: ICommonObject
+        chatId?: string
     }
 }
 
@@ -293,12 +338,23 @@ export interface IUploadFileSizeAndTypes {
     maxUploadSize: number
 }
 
+export interface IApiKeyMetadata {
+    createdBy?: string
+    allowedScopes?: string[]
+    description?: string
+}
+
 export interface IApiKey {
     id: string
     keyName: string
     apiKey: string
     apiSecret: string
     updatedDate: Date
+    organizationId: string
+    userId: string
+    lastUsedAt?: Date
+    isActive: boolean
+    metadata?: IApiKeyMetadata
 }
 
 export interface ITrialPlan {
@@ -312,6 +368,140 @@ export interface IPaidPlan {
     availableExecutions: number
     usedExecutions: number
     createdDate: Date
+}
+export interface ICustomTemplate {
+    id: string
+    name: string
+    flowData: string
+    updatedDate: Date
+    createdDate: Date
+    description?: string
+    type?: string
+    badge?: string
+    framework?: string
+    usecases?: string
+}
+
+export interface IFlowConfig {
+    chatflowid: string
+    chatId: string
+    sessionId: string
+    chatHistory: IMessage[]
+    apiMessageId: string
+    overrideConfig?: ICommonObject
+}
+
+export interface IPredictionQueueAppServer {
+    appDataSource: DataSource
+    componentNodes: IComponentNodes
+    sseStreamer: IServerSideEventStreamer
+    telemetry: Telemetry
+    cachePool: CachePool
+}
+
+export interface IExecuteFlowParams extends IPredictionQueueAppServer {
+    incomingInput: IncomingInput
+    chatflow: IChatFlow
+    chatId: string
+    baseURL: string
+    isInternal: boolean
+    signal?: AbortController
+    files?: Express.Multer.File[]
+    isUpsert?: boolean
+    user?: IUser
+}
+
+export interface INodeOverrides {
+    [key: string]: {
+        label: string
+        name: string
+        type: string
+        enabled: boolean
+    }[]
+}
+
+export interface IVariableOverride {
+    id: string
+    name: string
+    type: 'static' | 'runtime'
+    enabled: boolean
+}
+
+export interface ISubscription {
+    id: string
+    entityType: 'user' | 'organization'
+    entityId: string
+    organizationId?: string
+    subscriptionType: 'FREE' | 'PAID' | 'ENTERPRISE'
+    stripeSubscriptionId: string
+    stripeSubscriptionItemId: string
+    status: string
+    creditsLimit: number
+    currentPeriodStart: Date
+    currentPeriodEnd: Date
+    createdDate: Date
+}
+
+export interface IUsageEvent {
+    id: string
+    stripeCustomerId: string
+    userId: string
+    organizationId: string
+    resourceType: 'CREDITS'
+    creditsConsumed: number
+    stripeMeterEventId?: string
+    traceId?: string
+    metadata?: Record<string, any>
+    createdDate: Date
+}
+
+export interface IBlockingStatus {
+    id: string
+    entityType: 'user' | 'organization'
+    entityId: string
+    organizationId?: string
+    isBlocked: boolean
+    reason?: string
+    createdDate: Date
+}
+
+export interface IStripeEvent {
+    id: string
+    stripeEventId: string
+    eventType: string
+    eventData: any
+    processed: boolean
+    createdDate: Date
+}
+
+export interface IAppCsvParseRuns {
+    id: string
+    userId: string
+    organizationId: string
+    startedAt: Date
+    completedAt?: Date
+    rowsRequested: number
+    rowsProcessed?: number
+    name: string
+    configuration: ICommonObject
+    originalCsvUrl: string
+    processedCsvUrl?: string
+    chatflowChatId: string
+    includeOriginalColumns: boolean
+    status: AppCsvParseRunsStatus
+    errorMessages: string[]
+}
+
+export interface IAppCsvParseRows {
+    id: string
+    csvParseRunId: string
+    rowNumber: number
+    rowData: ICommonObject
+    generatedData?: ICommonObject
+    status: AppCsvParseRowStatus
+    errorMessage?: string
+    createdAt: Date
+    updatedAt: Date
 }
 
 // DocumentStore related

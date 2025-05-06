@@ -1,10 +1,6 @@
-import { createPortal } from 'react-dom'
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import PropTypes from 'prop-types'
 
-import { Dialog, DialogActions, DialogContent, Typography, DialogTitle } from '@mui/material'
-import { StyledButton } from '@/ui-component/button/StyledButton'
-import { Input } from '@/ui-component/input/Input'
 import { useAuth0 } from '@auth0/auth0-react'
 
 const LoginDialog = ({ show, dialogProps, onConfirm }) => {

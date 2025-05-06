@@ -1,4 +1,3 @@
-import React from 'react'
 import JourneyFormClient from './JourneyForm.Client'
 
 import { AppSettings, User, Journey } from 'types'
