@@ -37,4 +37,4 @@ COPY docker/worker/healthcheck/healthcheck.js .
 WORKDIR /app 
 
 # Start healthcheck in background and flowise worker in foreground
-ENTRYPOINT ["/bin/sh", "-c", "node /app/healthcheck/healthcheck.js & flowise worker"]
+ENTRYPOINT ["/bin/sh", "-c", "node /app/healthcheck/healthcheck.js & sleep 5 && flowise worker"]
