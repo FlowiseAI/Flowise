@@ -35,12 +35,6 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
         }
         this.inputs = [
             {
-                label: 'Cache',
-                name: 'cache',
-                type: 'BaseCache',
-                optional: true
-            },
-            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'asyncOptions',
@@ -62,13 +56,6 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
-            },
-            {
-                label: 'Streaming',
-                name: 'streaming',
-                type: 'boolean',
-                default: true,
-                optional: true
             }
         ]
     }
