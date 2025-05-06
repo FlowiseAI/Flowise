@@ -11,9 +11,8 @@ export class RedisEventSubscriber {
             this.redisSubscriber = createClient({
                 url: process.env.REDIS_URL,
                 socket: {
-                    keepAlive: 60000,
-                },
-                pingInterval: 60000
+                    keepAlive: process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10)) ? parseInt(process.env.REDIS_KEEP_ALIVE, 10) : undefined,
+                }
             })
         } else {
             this.redisSubscriber = createClient({
@@ -26,9 +25,8 @@ export class RedisEventSubscriber {
                     cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
                     key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
                     ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined,
-                    keepAlive: 60000,
-                },
-                pingInterval: 60000
+                    keepAlive: process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10)) ? parseInt(process.env.REDIS_KEEP_ALIVE, 10) : undefined,
+                }
             })
         }
         this.sseStreamer = sseStreamer

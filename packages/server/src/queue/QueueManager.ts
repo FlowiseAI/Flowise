@@ -43,7 +43,7 @@ export class QueueManager {
             password: process.env.REDIS_PASSWORD || undefined,
             tls: tlsOpts,
             enableReadyCheck: true,
-            keepAlive: 60000,
+            keepAlive: process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10)) ? parseInt(process.env.REDIS_KEEP_ALIVE, 10) : undefined,
         }
     }
 

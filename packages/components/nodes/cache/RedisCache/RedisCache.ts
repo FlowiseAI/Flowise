@@ -127,13 +127,11 @@ const getRedisClient = async (nodeData: INodeData, options: ICommonObject) => {
             username,
             password,
             ...tlsOptions,
-            keepAlive: 60000,
-            retryStrategy: (times) => Math.min(times * 100, 3000),
+            keepAlive: process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10)) ? parseInt(process.env.REDIS_KEEP_ALIVE, 10) : undefined,
         })
     } else {
         client = new Redis(redisUrl, {
-            keepAlive: 60000,
-            retryStrategy: (times) => Math.min(times * 100, 3000),
+            keepAlive: process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10)) ? parseInt(process.env.REDIS_KEEP_ALIVE, 10) : undefined,
         })
     }
 
