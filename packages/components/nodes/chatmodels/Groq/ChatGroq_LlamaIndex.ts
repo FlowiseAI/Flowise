@@ -88,7 +88,7 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const groqApiKey = getCredentialParam('groqApiKey', credentialData, nodeData)
 
-        const obj: Partial<Groq> = {
+        const obj: Partial<OpenAI> = {
             temperature: parseFloat(temperature),
             model: modelName,
             apiKey: groqApiKey,
