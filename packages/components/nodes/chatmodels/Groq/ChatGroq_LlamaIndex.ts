@@ -91,10 +91,9 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
         const obj: Partial<OpenAI> = {
             temperature: parseFloat(temperature),
             model: modelName,
-            apiKey: groqApiKey,
+            apiKey: groqApiKey
         }
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10) 
         const model = new Groq(obj)
         return model
     }
