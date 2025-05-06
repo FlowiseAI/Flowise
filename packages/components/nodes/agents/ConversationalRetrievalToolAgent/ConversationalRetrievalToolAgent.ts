@@ -23,8 +23,9 @@ import { Moderation, checkInputs, streamResponse } from '../../moderation/Modera
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 import type { Document } from '@langchain/core/documents'
 import { BaseRetriever } from '@langchain/core/retrievers'
-import { RESPONSE_TEMPLATE } from '../../chains/ConversationalRetrievalQAChain/prompts'
+import { RESPONSE_TEMPLATE, REPHRASE_TEMPLATE } from '../../chains/ConversationalRetrievalQAChain/prompts'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
+import { StringOutputParser } from '@langchain/core/output_parsers'
 
 class ConversationalRetrievalToolAgent_Agents implements INode {
     label: string
@@ -78,6 +79,17 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
                 additionalParams: true,
                 optional: true,
                 default: RESPONSE_TEMPLATE
+            },
+            {
+                label: 'Rephrase Prompt',
+                name: 'rephrasePrompt',
+                type: 'string',
+                description: 'Using previous chat history, rephrase question into a standalone question',
+                warning: 'Prompt must include input variables: {chat_history} and {question}',
+                rows: 4,
+                additionalParams: true,
+                optional: true,
+                default: REPHRASE_TEMPLATE
             },
             {
                 label: 'Input Moderation',
@@ -213,6 +225,7 @@ const prepareAgent = async (
     const maxIterations = nodeData.inputs?.maxIterations as string
     const memory = nodeData.inputs?.memory as FlowiseMemory
     let systemMessage = nodeData.inputs?.systemMessage as string
+    let rephrasePrompt = nodeData.inputs?.rephrasePrompt as string
     let tools = nodeData.inputs?.tools
     tools = flatten(tools)
     const memoryKey = memory.memoryKey ? memory.memoryKey : 'chat_history'
@@ -220,6 +233,9 @@ const prepareAgent = async (
     const vectorStoreRetriever = nodeData.inputs?.vectorStoreRetriever as BaseRetriever
 
     systemMessage = transformBracesWithColon(systemMessage)
+    if (rephrasePrompt) {
+        rephrasePrompt = transformBracesWithColon(rephrasePrompt)
+    }
 
     const prompt = ChatPromptTemplate.fromMessages([
         ['system', systemMessage ? systemMessage : `You are a helpful AI assistant.`],
@@ -263,6 +279,50 @@ const prepareAgent = async (
 
     const modelWithTools = model.bindTools(tools)
 
+    // Function to get standalone question (either rephrased or original)
+    const getStandaloneQuestion = async (input: string): Promise<string> => {
+        // If no rephrase prompt, return the original input
+        if (!rephrasePrompt) {
+            return input
+        }
+
+        // Get chat history
+        const messages = (await memory.getChatMessages(flowObj?.sessionId, true)) as BaseMessage[]
+        
+        // If no chat history, return original input
+        if (!messages || messages.length === 0) {
+            return input
+        }
+
+        // Create rephrase chain just like in ConversationalRetrievalQAChain
+        try {
+            const CONDENSE_QUESTION_PROMPT = PromptTemplate.fromTemplate(rephrasePrompt)
+            const condenseQuestionChain = RunnableSequence.from([
+                CONDENSE_QUESTION_PROMPT, 
+                model, 
+                new StringOutputParser()
+            ])
+            
+            // Format chat history
+            const chatHistoryString = messages.map(message => 
+                `${message._getType()}: ${message.content}`
+            ).join('\n')
+            
+            // Get standalone question
+            return await condenseQuestionChain.invoke({
+                question: input,
+                chat_history: chatHistoryString
+            })
+        } catch (error) {
+            console.error("Error rephrasing question:", error)
+            // On error, fall back to original input
+            return input
+        }
+    }
+
+    // Get standalone question before creating runnable
+    const standaloneQuestion = await getStandaloneQuestion(flowObj?.input || "")
+
     const runnableAgent = RunnableSequence.from([
         {
             [inputKey]: (i: { input: string; steps: ToolsAgentStep[] }) => i.input,
@@ -272,7 +332,9 @@ const prepareAgent = async (
                 return messages ?? []
             },
             context: async (i: { input: string; chatHistory?: string }) => {
-                const relevantDocs = await vectorStoreRetriever.invoke(i.input)
+                // Use the standalone question (rephrased or original) for retrieval
+                const retrievalQuery = standaloneQuestion || i.input
+                const relevantDocs = await vectorStoreRetriever.invoke(retrievalQuery)
                 const formattedDocs = formatDocs(relevantDocs)
                 return formattedDocs
             }
