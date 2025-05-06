@@ -8,6 +8,7 @@ import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback
 import { CustomTemplate } from '../../database/entities/CustomTemplate'
 import { DocumentStore } from '../../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
+import { Execution } from '../../database/entities/Execution'
 import { Tool } from '../../database/entities/Tool'
 import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
@@ -19,10 +20,12 @@ import chatflowService from '../chatflows'
 import documenStoreService from '../documentstore'
 import marketplacesService from '../marketplaces'
 import toolsService from '../tools'
+import executionService from '../executions'
 import variableService from '../variables'
 
 type ExportInput = {
     agentflow: boolean
+    agentflowv2: boolean
     assistantCustom: boolean
     assistantOpenAI: boolean
     assistantAzure: boolean
@@ -31,12 +34,14 @@ type ExportInput = {
     chat_feedback: boolean
     custom_template: boolean
     document_store: boolean
+    execution: boolean
     tool: boolean
     variable: boolean
 }
 
 type ExportData = {
     AgentFlow: ChatFlow[]
+    AgentFlowV2: ChatFlow[]
     AssistantCustom: Assistant[]
     AssistantFlow: ChatFlow[]
     AssistantOpenAI: Assistant[]
@@ -47,6 +52,7 @@ type ExportData = {
     CustomTemplate: CustomTemplate[]
     DocumentStore: DocumentStore[]
     DocumentStoreFileChunk: DocumentStoreFileChunk[]
+    Execution: Execution[]
     Tool: Tool[]
     Variable: Variable[]
 }
@@ -55,6 +61,7 @@ const convertExportInput = (body: any): ExportInput => {
     try {
         if (!body || typeof body !== 'object') throw new Error('Invalid ExportInput object in request body')
         if (body.agentflow && typeof body.agentflow !== 'boolean') throw new Error('Invalid agentflow property in ExportInput object')
+        if (body.agentflowv2 && typeof body.agentflowv2 !== 'boolean') throw new Error('Invalid agentflowv2 property in ExportInput object')
         if (body.assistant && typeof body.assistant !== 'boolean') throw new Error('Invalid assistant property in ExportInput object')
         if (body.chatflow && typeof body.chatflow !== 'boolean') throw new Error('Invalid chatflow property in ExportInput object')
         if (body.chat_message && typeof body.chat_message !== 'boolean')
@@ -65,6 +72,7 @@ const convertExportInput = (body: any): ExportInput => {
             throw new Error('Invalid custom_template property in ExportInput object')
         if (body.document_store && typeof body.document_store !== 'boolean')
             throw new Error('Invalid document_store property in ExportInput object')
+        if (body.execution && typeof body.execution !== 'boolean') throw new Error('Invalid execution property in ExportInput object')
         if (body.tool && typeof body.tool !== 'boolean') throw new Error('Invalid tool property in ExportInput object')
         if (body.variable && typeof body.variable !== 'boolean') throw new Error('Invalid variable property in ExportInput object')
         return body as ExportInput
@@ -80,6 +88,7 @@ const FileDefaultName = 'ExportData.json'
 const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: string } & ExportData> => {
     try {
         let AgentFlow: ChatFlow[] = exportInput.agentflow === true ? await chatflowService.getAllChatflows('MULTIAGENT') : []
+        let AgentFlowV2: ChatFlow[] = exportInput.agentflowv2 === true ? await chatflowService.getAllChatflows('AGENTFLOW') : []
 
         let AssistantCustom: Assistant[] = exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM') : []
         let AssistantFlow: ChatFlow[] = exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT') : []
@@ -103,6 +112,9 @@ const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: 
         let DocumentStoreFileChunk: DocumentStoreFileChunk[] =
             exportInput.document_store === true ? await documenStoreService.getAllDocumentFileChunks() : []
 
+        const { data: totalExecutions } = exportInput.execution === true ? await executionService.getAllExecutions() : { data: [] }
+        let Execution: Execution[] = exportInput.execution === true ? totalExecutions : []
+
         let Tool: Tool[] = exportInput.tool === true ? await toolsService.getAllTools() : []
 
         let Variable: Variable[] = exportInput.variable === true ? await variableService.getAllVariables() : []
@@ -110,6 +122,7 @@ const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: 
         return {
             FileDefaultName,
             AgentFlow,
+            AgentFlowV2,
             AssistantCustom,
             AssistantFlow,
             AssistantOpenAI,
@@ -120,6 +133,7 @@ const exportData = async (exportInput: ExportInput): Promise<{ FileDefaultName: 
             CustomTemplate,
             DocumentStore,
             DocumentStoreFileChunk,
+            Execution,
             Tool,
             Variable
         }
@@ -404,6 +418,27 @@ async function replaceDuplicateIdsForVariable(queryRunner: QueryRunner, original
     }
 }
 
+async function replaceDuplicateIdsForExecution(queryRunner: QueryRunner, originalData: ExportData, executions: Execution[]) {
+    try {
+        const ids = executions.map((execution) => execution.id)
+        const records = await queryRunner.manager.find(Execution, {
+            where: { id: In(ids) }
+        })
+        if (records.length < 0) return originalData
+        for (let record of records) {
+            const oldId = record.id
+            const newId = uuidv4()
+            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
+        }
+        return originalData
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: exportImportService.replaceDuplicateIdsForExecution - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 function reduceSpaceForChatflowFlowData(chatflows: ChatFlow[]) {
     return chatflows.map((chatflow) => {
         return { ...chatflow, flowData: JSON.stringify(JSON.parse(chatflow.flowData)) }
@@ -420,6 +455,10 @@ const importData = async (importData: ExportData) => {
             if (importData.AgentFlow.length > 0) {
                 importData.AgentFlow = reduceSpaceForChatflowFlowData(importData.AgentFlow)
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AgentFlow)
+            }
+            if (importData.AgentFlowV2.length > 0) {
+                importData.AgentFlowV2 = reduceSpaceForChatflowFlowData(importData.AgentFlowV2)
+                importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.AgentFlowV2)
             }
             if (importData.AssistantCustom.length > 0)
                 importData = await replaceDuplicateIdsForAssistant(queryRunner, importData, importData.AssistantCustom)
@@ -446,12 +485,15 @@ const importData = async (importData: ExportData) => {
             if (importData.DocumentStoreFileChunk.length > 0)
                 importData = await replaceDuplicateIdsForDocumentStoreFileChunk(queryRunner, importData, importData.DocumentStoreFileChunk)
             if (importData.Tool.length > 0) importData = await replaceDuplicateIdsForTool(queryRunner, importData, importData.Tool)
+            if (importData.Execution.length > 0)
+                importData = await replaceDuplicateIdsForExecution(queryRunner, importData, importData.Execution)
             if (importData.Variable.length > 0)
                 importData = await replaceDuplicateIdsForVariable(queryRunner, importData, importData.Variable)
 
             await queryRunner.startTransaction()
 
             if (importData.AgentFlow.length > 0) await queryRunner.manager.save(ChatFlow, importData.AgentFlow)
+            if (importData.AgentFlowV2.length > 0) await queryRunner.manager.save(ChatFlow, importData.AgentFlowV2)
             if (importData.AssistantFlow.length > 0) await queryRunner.manager.save(ChatFlow, importData.AssistantFlow)
             if (importData.AssistantCustom.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantCustom)
             if (importData.AssistantOpenAI.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantOpenAI)
@@ -465,6 +507,7 @@ const importData = async (importData: ExportData) => {
             if (importData.DocumentStoreFileChunk.length > 0)
                 await queryRunner.manager.save(DocumentStoreFileChunk, importData.DocumentStoreFileChunk)
             if (importData.Tool.length > 0) await queryRunner.manager.save(Tool, importData.Tool)
+            if (importData.Execution.length > 0) await queryRunner.manager.save(Execution, importData.Execution)
             if (importData.Variable.length > 0) await queryRunner.manager.save(Variable, importData.Variable)
 
             await queryRunner.commitTransaction()

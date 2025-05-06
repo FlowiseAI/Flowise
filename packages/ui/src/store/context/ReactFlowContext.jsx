@@ -33,7 +33,6 @@ export const ReactFlowContext = ({ children }) => {
                 return node
             })
         )
-        dispatch({ type: SET_DIRTY })
     }
 
     const clearAgentflowNodeStatus = () => {

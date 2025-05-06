@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, ManyToOne, JoinColumn } from 'typeorm'
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, JoinColumn, OneToOne } from 'typeorm'
 import { IChatMessage, MessageType } from '../../Interface'
 import { Execution } from './Execution'
 
@@ -18,7 +18,7 @@ export class ChatMessage implements IChatMessage {
     @Column({ nullable: true, type: 'uuid' })
     executionId: string
 
-    @ManyToOne(() => Execution)
+    @OneToOne(() => Execution)
     @JoinColumn({ name: 'executionId' })
     execution: Execution
 

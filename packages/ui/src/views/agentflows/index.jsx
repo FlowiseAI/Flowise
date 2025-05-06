@@ -131,14 +131,14 @@ const Agentflows = () => {
                     images[agentflows[i].id] = []
                     icons[agentflows[i].id] = []
                     for (let j = 0; j < nodes.length; j += 1) {
-                        if (nodes[j].data.icon) {
+                        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
+                        if (foundIcon) {
+                            icons[agentflows[i].id].push(foundIcon)
+                        } else {
                             const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
                             if (!images[agentflows[i].id].includes(imageSrc)) {
                                 images[agentflows[i].id].push(imageSrc)
                             }
-                        } else if (nodes[j].data.color && !nodes[j].data.icon) {
-                            const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
-                            if (foundIcon) icons[agentflows[i].id].push(foundIcon)
                         }
                     }
                 }
@@ -259,6 +259,7 @@ const Agentflows = () => {
                             isAgentCanvas={true}
                             data={getAllAgentflows.data}
                             images={images}
+                            icons={icons}
                             isLoading={isLoading}
                             filterFunction={filterFlows}
                             updateFlowsApi={getAllAgentflows}

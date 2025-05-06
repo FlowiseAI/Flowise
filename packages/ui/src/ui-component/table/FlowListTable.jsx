@@ -47,7 +47,7 @@ const getLocalStorageKeyName = (name, isAgentCanvas) => {
     return (isAgentCanvas ? 'agentcanvas' : 'chatflowcanvas') + '_' + name
 }
 
-export const FlowListTable = ({ data, images, isLoading, filterFunction, updateFlowsApi, setError, isAgentCanvas }) => {
+export const FlowListTable = ({ data, images, icons, isLoading, filterFunction, updateFlowsApi, setError, isAgentCanvas }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -203,7 +203,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                             </div>
                                         </StyledTableCell>
                                         <StyledTableCell key='2'>
-                                            {images[row.id] && (
+                                            {(images[row.id] || icons[row.id]) && (
                                                 <Box
                                                     sx={{
                                                         display: 'flex',
@@ -212,33 +212,55 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                         gap: 1
                                                     }}
                                                 >
-                                                    {images[row.id]
-                                                        .slice(0, images[row.id].length > 5 ? 5 : images[row.id].length)
-                                                        .map((img) => (
-                                                            <Box
-                                                                key={img}
-                                                                sx={{
-                                                                    width: 30,
-                                                                    height: 30,
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: customization.isDarkMode
-                                                                        ? theme.palette.common.white
-                                                                        : theme.palette.grey[300] + 75
-                                                                }}
-                                                            >
-                                                                <img
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        padding: 5,
-                                                                        objectFit: 'contain'
+                                                    {[
+                                                        ...(images[row.id] || []).map((img) => ({ type: 'image', src: img })),
+                                                        ...(icons[row.id] || []).map((ic) => ({
+                                                            type: 'icon',
+                                                            icon: ic.icon,
+                                                            color: ic.color
+                                                        }))
+                                                    ]
+                                                        .slice(0, 5)
+                                                        .map((item, index) =>
+                                                            item.type === 'image' ? (
+                                                                <Box
+                                                                    key={item.src}
+                                                                    sx={{
+                                                                        width: 30,
+                                                                        height: 30,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: customization.isDarkMode
+                                                                            ? theme.palette.common.white
+                                                                            : theme.palette.grey[300] + 75
                                                                     }}
-                                                                    alt=''
-                                                                    src={img}
-                                                                />
-                                                            </Box>
-                                                        ))}
-                                                    {images[row.id].length > 5 && (
+                                                                >
+                                                                    <img
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            padding: 5,
+                                                                            objectFit: 'contain'
+                                                                        }}
+                                                                        alt=''
+                                                                        src={item.src}
+                                                                    />
+                                                                </Box>
+                                                            ) : (
+                                                                <div
+                                                                    key={index}
+                                                                    style={{
+                                                                        width: 30,
+                                                                        height: 30,
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}
+                                                                >
+                                                                    <item.icon size={25} color={item.color} />
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    {(images[row.id]?.length || 0) + (icons[row.id]?.length || 0) > 5 && (
                                                         <Typography
                                                             sx={{
                                                                 alignItems: 'center',
@@ -247,7 +269,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                                 fontWeight: 200
                                                             }}
                                                         >
-                                                            + {images[row.id].length - 5} More
+                                                            + {(images[row.id]?.length || 0) + (icons[row.id]?.length || 0) - 5} More
                                                         </Typography>
                                                     )}
                                                 </Box>
@@ -285,6 +307,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
 FlowListTable.propTypes = {
     data: PropTypes.array,
     images: PropTypes.object,
+    icons: PropTypes.object,
     isLoading: PropTypes.bool,
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object,
