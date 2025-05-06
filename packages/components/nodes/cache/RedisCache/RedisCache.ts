@@ -126,10 +126,15 @@ const getRedisClient = async (nodeData: INodeData, options: ICommonObject) => {
             host,
             username,
             password,
-            ...tlsOptions
+            ...tlsOptions,
+            keepAlive: 60000,
+            retryStrategy: (times) => Math.min(times * 100, 3000),
         })
     } else {
-        client = new Redis(redisUrl)
+        client = new Redis(redisUrl, {
+            keepAlive: 60000,
+            retryStrategy: (times) => Math.min(times * 100, 3000),
+        })
     }
 
     return client

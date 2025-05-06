@@ -132,7 +132,16 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     }
 
     private async withRedisClient<T>(fn: (client: Redis) => Promise<T>): Promise<T> {
-        const client = typeof this.redisOptions === 'string' ? new Redis(this.redisOptions) : new Redis(this.redisOptions)
+        const client = typeof this.redisOptions === 'string' 
+            ? new Redis(this.redisOptions, {
+                keepAlive: 60000,
+                retryStrategy: (times) => Math.min(times * 100, 3000),
+            }) 
+            : new Redis({
+                ...this.redisOptions,
+                keepAlive: 60000,
+                retryStrategy: (times) => Math.min(times * 100, 3000),
+            })
         try {
             return await fn(client)
         } finally {
