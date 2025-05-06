@@ -64,6 +64,9 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     type?: ChatflowType
 
+    @Column({ nullable: true, type: 'jsonb' })
+    browser_ext_config?: string
+
     @Index()
     @Column({ type: 'text', nullable: true })
     parentChatflowId?: string
