@@ -669,6 +669,22 @@
             "name": "groqChat",
             "models": [
                 {
+                    "label": "meta-llama/llama-4-maverick-17b-128e-instruct",
+                    "name": "meta-llama/llama-4-maverick-17b-128e-instruct"
+                },
+                {
+                    "label": "meta-llama/llama-4-scout-17b-16e-instruct",
+                    "name": "meta-llama/llama-4-scout-17b-16e-instruct"
+                },
+                {
+                    "label": "coumpound-beta",
+                    "name": "compound-beta"
+                },
+                {
+                    "label": "compound-beta-mini",
+                    "name": "compound-beta-mini"
+                },
+                {
                     "label": "deepseek-r1-distill-llama-70b",
                     "name": "deepseek-r1-distill-llama-70b"
                 },
@@ -697,28 +713,12 @@
                     "name": "llama-3.2-90b-text-preview"
                 },
                 {
-                    "label": "llama-3.1-405b-reasoning",
-                    "name": "llama-3.1-405b-reasoning"
-                },
-                {
-                    "label": "llama-3.1-70b-versatile",
-                    "name": "llama-3.1-70b-versatile"
-                },
-                {
                     "label": "llama-3.1-8b-instant",
                     "name": "llama-3.1-8b-instant"
                 },
                 {
-                    "label": "llama3-groq-70b-8192-tool-use-preview",
-                    "name": "llama3-groq-70b-8192-tool-use-preview"
-                },
-                {
-                    "label": "llama3-groq-8b-8192-tool-use-preview",
-                    "name": "llama3-groq-8b-8192-tool-use-preview"
-                },
-                {
-                    "label": "gemma-7b-it",
-                    "name": "gemma-7b-it"
+                    "label": "gemma-2-9b-it",
+                    "name": "gemma-2-9b-it"
                 },
                 {
                     "label": "llama3-70b-8192",
@@ -729,16 +729,16 @@
                     "name": "llama3-8b-8192"
                 },
                 {
-                    "label": "mixtral-8x7b-32768",
-                    "name": "mixtral-8x7b-32768"
+                    "label": "mixtral-saba-24b",
+                    "name": "mixtral-saba-24b"
                 },
                 {
-                    "label": "meta-llama/llama-4-maverick-17b-128e-instruct",
-                    "name": "meta-llama/llama-4-maverick-17b-128e-instruct"
+                    "label": "qwen-qwq-32b",
+                    "name": "qwen-qwq-32b"
                 },
                 {
-                    "label": "meta-llama/llama-4-scout-17b-16e-instruct",
-                    "name": "meta-llama/llama-4-scout-17b-16e-instruct"
+                    "label": "allam-2-7b",
+                    "name": "allam-2-7b"
                 }
             ]
         },
