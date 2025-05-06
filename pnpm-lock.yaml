@@ -840,11 +840,11 @@ importers:
                 specifier: ^16.0.0
                 version: 16.4.5
             flowise-embed:
-                specifier: latest
-                version: 3.0.1
+                specifier: 3.0.2
+                version: 3.0.2
             flowise-embed-react:
-                specifier: latest
-                version: 3.0.1(@types/node@22.13.9)(flowise-embed@3.0.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
+                specifier: 3.0.2
+                version: 3.0.2(@types/node@22.13.9)(flowise-embed@3.0.2)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
             flowise-react-json-view:
                 specifier: '*'
                 version: 1.21.7(@types/react@18.2.65)(encoding@0.1.13)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -10485,14 +10485,14 @@ packages:
     flatted@3.3.1:
         resolution: { integrity: sha512-X8cqMLLie7KsNUDSdzeN8FYK9rEt4Dt67OsG/DNGnYTSDBG4uFAJFBnUeiV+zCVAvwFy56IjM9sH51jVaEhNxw== }
 
-    flowise-embed-react@3.0.1:
-        resolution: { integrity: sha512-IGIUs8MyhKyyRpA2r8u9WnhMw9BYnqzLCADGOZNPL0Cr1eeUTEZ8RfJ5poAl04o1wyKmNfndkGNkIWkYvgo+Yg== }
+    flowise-embed-react@3.0.2:
+        resolution: { integrity: sha512-OuVlSTZTqVXRhCpGIemMElxZrgjkZbC2fKf6ocokCZNUfwaspilFWD9md0xD/8kEpYDpAOpGQFx/objSfuLWxg== }
         peerDependencies:
             flowise-embed: '*'
             react: 18.x
 
-    flowise-embed@3.0.1:
-        resolution: { integrity: sha512-KWljWFUFedlGG2qnksxm/4o1pGnACZam6/cIREXLXTZpNCbmaaVEOaY/KVtXyLhWOJu/was0vDpraDU+5qe+tg== }
+    flowise-embed@3.0.2:
+        resolution: { integrity: sha512-aFAk1WFWf+xPySsZ5MQoCJbfOYsc9797AWitNm7gM/TJyDkqu+XtexihZMtq92oNJcXv7+cC1U+iVoNifVXiUg== }
 
     flowise-nim-container-manager@1.0.11:
         resolution: { integrity: sha512-Er/leiIzJZ691kWqXkjCWv29g0G5qWA4juBOcGZ1P5kBLnkKFxbWc5x8JsSPcHuJQIiGNX/dYEzp2ZrOV3YYMg== }
@@ -14088,9 +14088,6 @@ packages:
 
     picocolors@1.0.0:
         resolution: { integrity: sha512-1fygroTLlHu66zi26VoTDv8yRgm0Fccecssto+MhsZ0D/DGW2sm8E8AjW7NU5VVTRt5GxbeZ5qBuJr+HyLYkjQ== }
-
-    picocolors@1.0.1:
-        resolution: { integrity: sha512-anP1Z8qwhkbmu7MFP5iTt+wQKXgwzf7zTyGlcdzabySa9vd0Xt392U0rVmz9poOaBj0uHJKyyo9/upk0HrEQew== }
 
     picocolors@1.1.1:
         resolution: { integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA== }
@@ -19949,7 +19946,7 @@ snapshots:
     '@babel/helper-create-class-features-plugin@7.24.5(@babel/core@7.24.0)':
         dependencies:
             '@babel/core': 7.24.0
-            '@babel/helper-annotate-as-pure': 7.25.9
+            '@babel/helper-annotate-as-pure': 7.22.5
             '@babel/helper-environment-visitor': 7.22.20
             '@babel/helper-function-name': 7.23.0
             '@babel/helper-member-expression-to-functions': 7.24.5
@@ -30673,10 +30670,10 @@ snapshots:
 
     flatted@3.3.1: {}
 
-    flowise-embed-react@3.0.1(@types/node@22.13.9)(flowise-embed@3.0.1)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
+    flowise-embed-react@3.0.2(@types/node@22.13.9)(flowise-embed@3.0.2)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2):
         dependencies:
             '@ladle/react': 2.5.1(@types/node@22.13.9)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(sass@1.71.1)(terser@5.29.1)(typescript@5.5.2)
-            flowise-embed: 3.0.1
+            flowise-embed: 3.0.2
             react: 18.2.0
         transitivePeerDependencies:
             - '@types/node'
@@ -30690,7 +30687,7 @@ snapshots:
             - terser
             - typescript
 
-    flowise-embed@3.0.1:
+    flowise-embed@3.0.2:
         dependencies:
             '@babel/core': 7.24.0
             '@microsoft/fetch-event-source': 2.0.1
@@ -35407,8 +35404,6 @@ snapshots:
 
     picocolors@1.0.0: {}
 
-    picocolors@1.0.1: {}
-
     picocolors@1.1.1: {}
 
     picomatch@2.3.1: {}
@@ -35896,7 +35891,7 @@ snapshots:
     postcss@8.4.35:
         dependencies:
             nanoid: 3.3.7
-            picocolors: 1.0.1
+            picocolors: 1.1.1
             source-map-js: 1.2.0
 
     postcss@8.4.39:
@@ -38273,7 +38268,7 @@ snapshots:
             micromatch: 4.0.5
             normalize-path: 3.0.0
             object-hash: 3.0.0
-            picocolors: 1.0.1
+            picocolors: 1.1.1
             postcss: 8.4.39
             postcss-import: 15.1.0(postcss@8.4.39)
             postcss-js: 4.0.1(postcss@8.4.39)

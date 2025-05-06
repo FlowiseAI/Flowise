@@ -121,24 +121,34 @@ export const AsyncDropdown = ({
                 if (credentialNames.length) {
                     response = await fetchCredentialList()
                 } else {
-                    const previousNodes = getAvailableNodesForVariable(
-                        reactFlowInstance.getNodes(),
-                        reactFlowInstance.getEdges(),
-                        nodeData.id,
-                        `${nodeData.id}-input-${name}-${nodeData.inputParams.find((param) => param.name === name)?.type || ''}`,
-                        true
-                    ).map((node) => ({ id: node.id, name: node.data.name, label: node.data.label, inputs: node.data.inputs }))
-
-                    let currentNode = reactFlowInstance.getNodes().find((node) => node.id === nodeData.id)
-                    if (currentNode) {
-                        currentNode = {
-                            id: currentNode.id,
-                            name: currentNode.data.name,
-                            label: currentNode.data.label,
-                            inputs: currentNode.data.inputs
-                        }
+                    const body = {
+                        name,
+                        nodeData
                     }
-                    response = await fetchList({ name, nodeData, previousNodes, currentNode })
+                    if (reactFlowInstance) {
+                        const previousNodes = getAvailableNodesForVariable(
+                            reactFlowInstance.getNodes(),
+                            reactFlowInstance.getEdges(),
+                            nodeData.id,
+                            `${nodeData.id}-input-${name}-${nodeData.inputParams.find((param) => param.name === name)?.type || ''}`,
+                            true
+                        ).map((node) => ({ id: node.id, name: node.data.name, label: node.data.label, inputs: node.data.inputs }))
+
+                        let currentNode = reactFlowInstance.getNodes().find((node) => node.id === nodeData.id)
+                        if (currentNode) {
+                            currentNode = {
+                                id: currentNode.id,
+                                name: currentNode.data.name,
+                                label: currentNode.data.label,
+                                inputs: currentNode.data.inputs
+                            }
+                            body.currentNode = currentNode
+                        }
+
+                        body.previousNodes = previousNodes
+                    }
+
+                    response = await fetchList(body)
                 }
                 for (let j = 0; j < response.length; j += 1) {
                     if (response[j].imageSrc) {
