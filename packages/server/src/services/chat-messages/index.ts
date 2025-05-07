@@ -119,15 +119,6 @@ const removeAllChatMessages = async (
             }
         }
 
-        // Get messages before deletion to check for executionId
-        const messages = await appServer.AppDataSource.getRepository(ChatMessage).find({ where: deleteOptions })
-        const executionIds = messages.map((msg) => msg.executionId).filter(Boolean)
-
-        // Delete executions if they exist
-        if (executionIds.length > 0) {
-            await appServer.AppDataSource.getRepository('Execution').delete(executionIds)
-        }
-
         const dbResponse = await appServer.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
         return dbResponse
     } catch (error) {

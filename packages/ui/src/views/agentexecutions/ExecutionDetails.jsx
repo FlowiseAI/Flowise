@@ -1,11 +1,11 @@
 import { useEffect, useState, useCallback, forwardRef } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 // MUI
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView'
-import { Typography, Box, Drawer, Chip } from '@mui/material'
+import { Typography, Box, Drawer, Chip, Button, Tooltip } from '@mui/material'
 import { styled, alpha } from '@mui/material/styles'
 import { useTreeItem2 } from '@mui/x-tree-view/useTreeItem2'
 import {
@@ -24,12 +24,30 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import ErrorIcon from '@mui/icons-material/Error'
 import { IconButton } from '@mui/material'
-import { IconRefresh, IconExternalLink, IconCopy, IconLoader, IconCircleXFilled, IconRelationOneToManyFilled } from '@tabler/icons-react'
+import {
+    IconRefresh,
+    IconExternalLink,
+    IconCopy,
+    IconLoader,
+    IconCircleXFilled,
+    IconRelationOneToManyFilled,
+    IconShare,
+    IconWorld,
+    IconX
+} from '@tabler/icons-react'
 
 // Project imports
 import { useTheme } from '@mui/material/styles'
 import { FLOWISE_CREDENTIAL_ID, AGENTFLOW_ICONS } from '@/store/constant'
 import { NodeExecutionDetails } from '@/views/agentexecutions/NodeExecutionDetails'
+import ShareExecutionDialog from './ShareExecutionDialog'
+import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
+
+// API
+import executionsApi from '@/api/executions'
+
+// Hooks
+import useApi from '@/hooks/useApi'
 
 const getIconColor = (status) => {
     switch (status) {
@@ -272,13 +290,52 @@ const MIN_DRAWER_WIDTH = 400
 const DEFAULT_DRAWER_WIDTH = window.innerWidth - 400
 const MAX_DRAWER_WIDTH = window.innerWidth
 
-export const ExecutionDetails = ({ open, execution, metadata, onClose, onProceedSuccess }) => {
+export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose, onProceedSuccess, onUpdateSharing, onRefresh }) => {
     const [drawerWidth, setDrawerWidth] = useState(Math.min(DEFAULT_DRAWER_WIDTH, MAX_DRAWER_WIDTH))
     const [executionTree, setExecution] = useState([])
     const [expandedItems, setExpandedItems] = useState([])
     const [selectedItem, setSelectedItem] = useState(null)
+    const [showShareDialog, setShowShareDialog] = useState(false)
+    const [copied, setCopied] = useState(false)
+    const [localMetadata, setLocalMetadata] = useState({})
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const updateExecutionApi = useApi(executionsApi.updateExecution)
+
+    const dispatch = useDispatch()
+
+    // useEffect to initialize localMetadata when metadata changes
+    useEffect(() => {
+        if (metadata) {
+            setLocalMetadata(metadata)
+        }
+    }, [metadata])
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(localMetadata?.id)
+        setCopied(true)
+
+        // Show success message
+        dispatch(
+            enqueueSnackbarAction({
+                message: 'ID copied to clipboard',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => dispatch(closeSnackbarAction(key))}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        )
+
+        // Reset copied state after 2 seconds
+        setTimeout(() => {
+            setCopied(false)
+        }, 2000)
+    }
 
     const handleMouseDown = () => {
         document.addEventListener('mousemove', handleMouseMove)
@@ -573,6 +630,38 @@ export const ExecutionDetails = ({ open, execution, metadata, onClose, onProceed
         setExpandedItems(itemIds)
     }
 
+    const onSharePublicly = () => {
+        const newIsPublic = !localMetadata.isPublic
+        updateExecutionApi.request(localMetadata.id, { isPublic: newIsPublic }).then(() => {
+            // Update local metadata to reflect the change
+            setLocalMetadata((prev) => ({
+                ...prev,
+                isPublic: newIsPublic
+            }))
+
+            // Show success message
+            dispatch(
+                enqueueSnackbarAction({
+                    message: newIsPublic ? 'Execution shared publicly' : 'Execution is no longer public',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => dispatch(closeSnackbarAction(key))}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            )
+
+            // Notify parent component to refresh data
+            if (onUpdateSharing) {
+                onUpdateSharing()
+            }
+        })
+    }
+
     useEffect(() => {
         if (execution) {
             const newTree = buildTreeData(execution)
@@ -628,158 +717,267 @@ export const ExecutionDetails = ({ open, execution, metadata, onClose, onProceed
         setSelectedItem(selectedNode)
     }
 
-    const handleRefresh = () => {
-        // TODO: Implement refresh logic
-    }
-
-    return (
-        <Drawer
-            variant='temporary'
-            anchor='right'
-            sx={{
-                width: drawerWidth,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {
-                    width: drawerWidth,
-                    height: '100%'
-                }
-            }}
-            open={open}
-            onClose={onClose}
-        >
-            <button
-                aria-label='Resize drawer'
-                style={{
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: '8px',
-                    cursor: 'ew-resize',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 0,
-                    border: 'none',
-                    background: 'transparent',
-                    '&:hover': {
-                        background: 'rgba(0, 0, 0, 0.1)'
-                    }
-                }}
-                onMouseDown={handleMouseDown}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault()
-                        // Start resize mode
-                        handleMouseDown()
-                    }
+    // Content to be rendered in both drawer and full page modes
+    const contentComponent = (
+        <Box sx={{ display: 'flex', height: '100%', flexDirection: 'row' }}>
+            <Box
+                sx={{
+                    flex: '1 1 35%',
+                    padding: 2,
+                    borderRight: 1,
+                    borderColor: 'divider'
                 }}
             >
-                <DragHandleIcon
-                    sx={{
-                        transform: 'rotate(90deg)',
-                        fontSize: '20px',
-                        color: customization.isDarkMode ? 'white' : 'action.disabled'
-                    }}
-                />
-            </button>
-            <Box sx={{ display: 'flex', height: '100%', flexDirection: 'row' }}>
                 <Box
                     sx={{
-                        flex: '1 1 35%',
-                        padding: 2,
-                        borderRight: 1,
+                        pb: 1,
+                        mb: 2,
+                        backgroundColor: (theme) => theme.palette.background.paper,
+                        borderBottom: 1,
                         borderColor: 'divider'
                     }}
                 >
-                    <Box
-                        sx={{
-                            pb: 1,
-                            mb: 2,
-                            backgroundColor: (theme) => theme.palette.background.paper,
-                            borderBottom: 1,
-                            borderColor: 'divider'
-                        }}
-                    >
-                        <Box>
+                    <Box>
+                        {!isPublic && (
                             <Chip
+                                sx={{ pl: 1 }}
                                 icon={<IconExternalLink size={15} />}
                                 variant='outlined'
                                 label={metadata?.agentflow?.name || metadata?.agentflow?.id || 'Go to AgentFlow'}
                                 className={'button'}
                                 onClick={() => window.open(`/v2/agentcanvas/${metadata?.agentflow?.id}`, '_blank')}
                             />
+                        )}
 
+                        {!isPublic && (
+                            <Tooltip
+                                title={`Execution ID: ${localMetadata?.id || ''}`}
+                                placement='top'
+                                disableHoverListener={!localMetadata?.id}
+                            >
+                                <Chip
+                                    sx={{ ml: 1, pl: 1 }}
+                                    icon={<IconCopy size={15} />}
+                                    variant='outlined'
+                                    label={copied ? 'Copied!' : 'Copy ID'}
+                                    className={'button'}
+                                    onClick={copyToClipboard}
+                                />
+                            </Tooltip>
+                        )}
+
+                        {!isPublic && !localMetadata.isPublic && (
                             <Chip
-                                sx={{ ml: 1 }}
-                                icon={<IconCopy size={15} />}
+                                sx={{ ml: 1, pl: 1 }}
+                                icon={
+                                    updateExecutionApi.loading ? (
+                                        <IconLoader size={15} className='spin-animation' />
+                                    ) : (
+                                        <IconShare size={15} />
+                                    )
+                                }
                                 variant='outlined'
-                                label={'Copy ID'}
+                                label={updateExecutionApi.loading ? 'Updating...' : 'Share'}
                                 className={'button'}
-                                onClick={() => navigator.clipboard.writeText(metadata?.id)}
+                                onClick={() => onSharePublicly()}
+                                disabled={updateExecutionApi.loading}
                             />
+                        )}
 
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', alignContent: 'center' }}>
-                                <Typography sx={{ flex: 1, mt: 1 }} color='text.primary'>
-                                    {metadata?.updatedDate ? moment(metadata.updatedDate).format('MMM D, YYYY h:mm A') : 'N/A'}
-                                </Typography>
-                                <IconButton
-                                    onClick={handleRefresh}
-                                    size='small'
-                                    sx={{
-                                        color: theme.palette.text.primary,
-                                        '&:hover': {
-                                            backgroundColor: (theme) => theme.palette.primary.main + '20'
-                                        }
-                                    }}
-                                    title='Refresh execution data'
-                                >
-                                    <IconRefresh size={20} />
-                                </IconButton>
-                            </Box>
+                        {!isPublic && localMetadata.isPublic && (
+                            <Chip
+                                sx={{ ml: 1, pl: 1 }}
+                                icon={
+                                    updateExecutionApi.loading ? (
+                                        <IconLoader size={15} className='spin-animation' />
+                                    ) : (
+                                        <IconWorld size={15} />
+                                    )
+                                }
+                                variant='outlined'
+                                label={updateExecutionApi.loading ? 'Updating...' : 'Public'}
+                                className={'button'}
+                                onClick={() => setShowShareDialog(true)}
+                                disabled={updateExecutionApi.loading}
+                            />
+                        )}
+
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', alignContent: 'center' }}>
+                            <Typography sx={{ flex: 1, mt: 1 }} color='text.primary'>
+                                {metadata?.updatedDate ? moment(metadata.updatedDate).format('MMM D, YYYY h:mm A') : 'N/A'}
+                            </Typography>
+                            <IconButton
+                                onClick={() => onRefresh(localMetadata?.id)}
+                                size='small'
+                                sx={{
+                                    color: theme.palette.text.primary,
+                                    '&:hover': {
+                                        backgroundColor: (theme) => theme.palette.primary.main + '20'
+                                    }
+                                }}
+                                title='Refresh execution data'
+                            >
+                                <IconRefresh size={20} />
+                            </IconButton>
                         </Box>
                     </Box>
-                    <RichTreeView
-                        expandedItems={expandedItems}
-                        onExpandedItemsChange={handleExpandedItemsChange}
-                        selectedItems={selectedItem ? [selectedItem.id] : []}
-                        onSelectedItemsChange={handleNodeSelect}
-                        items={executionTree}
-                        slots={{
-                            item: CustomTreeItem
-                        }}
-                    />
                 </Box>
+                <RichTreeView
+                    expandedItems={expandedItems}
+                    onExpandedItemsChange={handleExpandedItemsChange}
+                    selectedItems={selectedItem ? [selectedItem.id] : []}
+                    onSelectedItemsChange={handleNodeSelect}
+                    items={executionTree}
+                    slots={{
+                        item: CustomTreeItem
+                    }}
+                />
+            </Box>
+            <Box
+                sx={{
+                    flex: '1 1 65%',
+                    padding: 2,
+                    overflow: 'auto'
+                }}
+            >
+                {selectedItem && selectedItem.data ? (
+                    <NodeExecutionDetails
+                        data={selectedItem.data}
+                        label={selectedItem.label}
+                        status={selectedItem.status}
+                        metadata={metadata}
+                        isPublic={isPublic}
+                        onProceedSuccess={onProceedSuccess}
+                    />
+                ) : (
+                    <Typography color='text.secondary'>No data available for this item</Typography>
+                )}
+            </Box>
+        </Box>
+    )
+
+    // Resize handle component (shared between modes)
+    const resizeHandle = (
+        <button
+            aria-label='Resize drawer'
+            style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: '8px',
+                cursor: 'ew-resize',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 0,
+                border: 'none',
+                background: 'transparent',
+                '&:hover': {
+                    background: 'rgba(0, 0, 0, 0.1)'
+                }
+            }}
+            onMouseDown={handleMouseDown}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    // Start resize mode
+                    handleMouseDown()
+                }
+            }}
+        >
+            <DragHandleIcon
+                sx={{
+                    transform: 'rotate(90deg)',
+                    fontSize: '20px',
+                    color: customization.isDarkMode ? 'white' : 'action.disabled'
+                }}
+            />
+        </button>
+    )
+
+    // Render as full page component if isPublic is true
+    if (isPublic) {
+        return (
+            <Box
+                sx={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    zIndex: 1300,
+                    backgroundColor: (theme) => theme.palette.background.paper
+                }}
+            >
                 <Box
                     sx={{
-                        flex: '1 1 65%',
-                        padding: 2,
-                        overflow: 'auto'
+                        display: 'flex',
+                        flexDirection: 'column',
+                        width: '100%',
+                        height: '100%',
+                        position: 'relative'
                     }}
                 >
-                    {selectedItem && selectedItem.data ? (
-                        <NodeExecutionDetails
-                            data={selectedItem.data}
-                            label={selectedItem.label}
-                            status={selectedItem.status}
-                            metadata={metadata}
-                            onProceedSuccess={onProceedSuccess}
-                        />
-                    ) : (
-                        <Typography color='text.secondary'>No data available for this item</Typography>
-                    )}
+                    {contentComponent}
                 </Box>
             </Box>
-        </Drawer>
+        )
+    }
+
+    // Render as drawer component (original behavior)
+    return (
+        <>
+            <Drawer
+                variant='temporary'
+                anchor='right'
+                sx={{
+                    width: drawerWidth,
+                    flexShrink: 0,
+                    '& .MuiDrawer-paper': {
+                        width: drawerWidth,
+                        height: '100%'
+                    }
+                }}
+                open={open}
+                onClose={onClose}
+            >
+                {resizeHandle}
+                {contentComponent}
+            </Drawer>
+            <ShareExecutionDialog
+                show={showShareDialog}
+                executionId={localMetadata?.id}
+                onClose={() => setShowShareDialog(false)}
+                onUnshare={() => {
+                    updateExecutionApi.request(localMetadata.id, { isPublic: false }).then(() => {
+                        // Update local metadata to reflect the change
+                        setLocalMetadata((prev) => ({
+                            ...prev,
+                            isPublic: false
+                        }))
+                        setShowShareDialog(false)
+
+                        // Notify parent component to refresh data
+                        if (onUpdateSharing) {
+                            onUpdateSharing()
+                        }
+                    })
+                }}
+            />
+        </>
     )
 }
 
 ExecutionDetails.propTypes = {
     open: PropTypes.bool,
+    isPublic: PropTypes.bool,
     execution: PropTypes.array,
     metadata: PropTypes.object,
     onClose: PropTypes.func,
-    onProceedSuccess: PropTypes.func
+    onProceedSuccess: PropTypes.func,
+    onUpdateSharing: PropTypes.func,
+    onRefresh: PropTypes.func
 }
 
 ExecutionDetails.displayName = 'ExecutionDetails'

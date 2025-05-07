@@ -391,12 +391,25 @@ class Agent_Agentflow implements INode {
                     }
                 }
                 const toolInstance = await newToolNodeInstance.init(newNodeData, '', options)
-                toolsInstance.push(toolInstance as Tool)
+                // toolInstance might returns a list of tools like MCP tools
+                if (Array.isArray(toolInstance)) {
+                    for (const subTool of toolInstance) {
+                        const subToolInstance = subTool as Tool
+                        ;(subToolInstance as any).agentSelectedTool = tool.agentSelectedTool
+                        toolsInstance.push(subToolInstance)
+                    }
+                } else {
+                    toolsInstance.push(toolInstance as Tool)
+                }
             }
 
             const availableTools: ISimpliefiedTool[] = toolsInstance.map((tool, index) => {
                 const originalTool = tools[index]
-                const componentNode = options.componentNodes[originalTool.agentSelectedTool]
+                let agentSelectedTool = (tool as any)?.agentSelectedTool
+                if (!agentSelectedTool) {
+                    agentSelectedTool = originalTool?.agentSelectedTool
+                }
+                const componentNode = options.componentNodes[agentSelectedTool]
 
                 const jsonSchema = zodToJsonSchema(tool.schema)
                 if (jsonSchema.$schema) {
@@ -750,7 +763,7 @@ class Agent_Agentflow implements INode {
             if (error instanceof Error && error.message === 'Aborted') {
                 throw error
             }
-            throw new Error(`Error in LLM node: ${error instanceof Error ? error.message : String(error)}`)
+            throw new Error(`Error in Agent node: ${error instanceof Error ? error.message : String(error)}`)
         }
     }
 

@@ -2,6 +2,36 @@ import { Request, Response, NextFunction } from 'express'
 import executionsService from '../../services/executions'
 import { ExecutionState } from '../../Interface'
 
+const getExecutionById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const executionId = req.params.id
+        const execution = await executionsService.getExecutionById(executionId)
+        return res.json(execution)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getPublicExecutionById = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const executionId = req.params.id
+        const execution = await executionsService.getPublicExecutionById(executionId)
+        return res.json(execution)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const updateExecution = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const executionId = req.params.id
+        const execution = await executionsService.updateExecution(executionId, req.body)
+        return res.json(execution)
+    } catch (error) {
+        next(error)
+    }
+}
+
 const getAllExecutions = async (req: Request, res: Response, next: NextFunction) => {
     try {
         // Extract all possible filters from query params
@@ -77,5 +107,8 @@ const deleteExecutions = async (req: Request, res: Response, next: NextFunction)
 
 export default {
     getAllExecutions,
-    deleteExecutions
+    deleteExecutions,
+    getExecutionById,
+    getPublicExecutionById,
+    updateExecution
 }

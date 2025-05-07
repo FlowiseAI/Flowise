@@ -10,6 +10,7 @@ export class AddExecutionEntity1738090872625 implements MigrationInterface {
                 \`state\` varchar(255) NOT NULL,
                 \`agentflowId\` varchar(255) NOT NULL,
                 \`sessionId\` varchar(255) NOT NULL,
+                \`isPublic\` boolean,
                 \`createdDate\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
                 \`updatedDate\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                 \`stoppedDate\` datetime(6),

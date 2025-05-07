@@ -191,7 +191,7 @@ const updateExecution = async (appDataSource: DataSource, executionId: string, d
     await appDataSource.getRepository(Execution).save(execution)
 }
 
-const _removeCredentialId = (obj: any): any => {
+export const _removeCredentialId = (obj: any): any => {
     if (!obj || typeof obj !== 'object') return obj
 
     if (Array.isArray(obj)) {

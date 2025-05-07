@@ -53,6 +53,7 @@ const AgentExecutions = () => {
 
     const getAllExecutions = useApi(executionsApi.getAllExecutions)
     const deleteExecutionsApi = useApi(executionsApi.deleteExecutions)
+    const getExecutionByIdApi = useApi(executionsApi.getExecutionById)
 
     const [error, setError] = useState(null)
     const [isLoading, setLoading] = useState(true)
@@ -216,6 +217,16 @@ const AgentExecutions = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [deleteExecutionsApi.data])
+
+    useEffect(() => {
+        if (getExecutionByIdApi.data) {
+            const execution = getExecutionByIdApi.data
+            const executionDetails =
+                typeof execution.executionData === 'string' ? JSON.parse(execution.executionData) : execution.executionData
+            setSelectedExecutionData(executionDetails)
+            setSelectedMetadata(omit(execution, ['executionData']))
+        }
+    }, [getExecutionByIdApi.data])
 
     return (
         <MainCard>
@@ -398,6 +409,13 @@ const AgentExecutions = () => {
                         onProceedSuccess={() => {
                             setOpenDrawer(false)
                             getAllExecutions.request()
+                        }}
+                        onUpdateSharing={() => {
+                            getAllExecutions.request()
+                        }}
+                        onRefresh={(executionId) => {
+                            getAllExecutions.request()
+                            getExecutionByIdApi.request(executionId)
                         }}
                     />
 

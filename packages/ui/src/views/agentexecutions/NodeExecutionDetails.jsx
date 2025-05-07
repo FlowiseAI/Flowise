@@ -36,7 +36,7 @@ import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 
 import predictionApi from '@/api/prediction'
 
-export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedSuccess }) => {
+export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, onProceedSuccess }) => {
     const [dataView, setDataView] = useState('rendered')
     const [openFeedbackDialog, setOpenFeedbackDialog] = useState(false)
     const [feedback, setFeedback] = useState('')
@@ -113,8 +113,13 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, onProceedS
             }
         }
         try {
-            const response = await predictionApi.sendMessageAndGetPrediction(metadata?.agentflowId, params)
-            if (response.data) {
+            let response
+            if (isPublic) {
+                response = await predictionApi.sendMessageAndGetPredictionPublic(metadata?.agentflowId, params)
+            } else {
+                response = await predictionApi.sendMessageAndGetPrediction(metadata?.agentflowId, params)
+            }
+            if (response && response.data) {
                 enqueueSnackbar('Successfully submitted response', { variant: 'success' })
                 if (onProceedSuccess) onProceedSuccess(response.data)
             }
@@ -968,6 +973,7 @@ NodeExecutionDetails.propTypes = {
     label: PropTypes.string,
     status: PropTypes.string,
     metadata: PropTypes.object,
+    isPublic: PropTypes.bool,
     onProceedSuccess: PropTypes.func
 }
 

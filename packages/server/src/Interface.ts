@@ -151,6 +151,7 @@ export interface IExecution {
     state: ExecutionState
     agentflowId: string
     sessionId: string
+    isPublic?: boolean
     action?: string
     createdDate: Date
     updatedDate: Date

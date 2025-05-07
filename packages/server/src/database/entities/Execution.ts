@@ -24,6 +24,9 @@ export class Execution implements IExecution {
     @Column({ nullable: true, type: 'text' })
     action?: string
 
+    @Column({ nullable: true })
+    isPublic?: boolean
+
     @Column({ type: 'timestamp' })
     @CreateDateColumn()
     createdDate: Date

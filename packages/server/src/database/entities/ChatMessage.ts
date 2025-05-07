@@ -16,7 +16,7 @@ export class ChatMessage implements IChatMessage {
     chatflowid: string
 
     @Column({ nullable: true, type: 'uuid' })
-    executionId: string
+    executionId?: string
 
     @OneToOne(() => Execution)
     @JoinColumn({ name: 'executionId' })
