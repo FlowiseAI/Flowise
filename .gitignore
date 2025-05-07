@@ -1,6 +1,5 @@
 # editor
 .idea
-.vscode
 
 # dependencies
 **/node_modules
@@ -81,7 +80,7 @@
 *.csr
 
 ## Certificate
-*.der 
+*.der
 
 ## Key database file
 *.kdb
