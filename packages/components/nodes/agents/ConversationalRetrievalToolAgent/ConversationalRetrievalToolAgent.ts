@@ -26,6 +26,7 @@ import { BaseRetriever } from '@langchain/core/retrievers'
 import { RESPONSE_TEMPLATE, REPHRASE_TEMPLATE } from '../../chains/ConversationalRetrievalQAChain/prompts'
 import { addImagesToMessages, llmSupportsVision } from '../../../src/multiModalUtils'
 import { StringOutputParser } from '@langchain/core/output_parsers'
+import { Tool } from '@langchain/core/tools'
 
 class ConversationalRetrievalToolAgent_Agents implements INode {
     label: string
@@ -120,6 +121,7 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
+        console.log(`[ConversationalRetrievalToolAgent] RUN_START. Input: ${input.substring(0,50)}. Options: shouldStreamResponse=${options.shouldStreamResponse}, sseStreamer_exists=${!!options.sseStreamer}, chatId=${options.chatId}`);
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
@@ -149,7 +151,9 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
 
+        console.log(`[ConversationalRetrievalToolAgent] PRE_STREAM_CHECK. shouldStreamResponse=${shouldStreamResponse}, sseStreamer_exists=${!!sseStreamer}`);
         if (shouldStreamResponse) {
+            console.log(`[ConversationalRetrievalToolAgent] ENTERING_STREAM_BLOCK. chatId=${chatId}`);
             const handler = new CustomChainHandler(sseStreamer, chatId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
@@ -159,6 +163,24 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
             if (res.usedTools) {
                 sseStreamer.streamUsedToolsEvent(chatId, res.usedTools)
                 usedTools = res.usedTools
+            }
+
+            // If the tool is set to returnDirect, stream the output to the client
+            if (res.usedTools && res.usedTools.length) {
+                console.log('Using tool and it\'s set to returnDirect', res.usedTools)
+                let inputTools = nodeData.inputs?.tools
+                inputTools = flatten(inputTools)
+                for (const tool of res.usedTools) {
+                    const inputTool = inputTools.find((inputTool: Tool) => inputTool.name === tool.tool)
+                    if (inputTool && (inputTool as any).returnDirect && shouldStreamResponse) {
+                        sseStreamer.streamTokenEvent(chatId, tool.toolOutput)
+                    }
+                }
+            }
+
+            if (sseStreamer) {
+                sseStreamer.streamEndEvent(chatId)
+                console.log('streamEndEvent')
             }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
