@@ -968,6 +968,9 @@ importers:
             '@supabase/supabase-js':
                 specifier: ^2.29.0
                 version: 2.49.1(bufferutil@4.0.9)(utf-8-validate@6.0.5)
+            '@tsmztech/mcp-server-salesforce':
+                specifier: ^0.0.2
+                version: 0.0.2
             '@types/js-yaml':
                 specifier: ^4.0.5
                 version: 4.0.9
@@ -1703,7 +1706,7 @@ importers:
                 version: 17.7.0
             typeorm:
                 specifier: ^0.3.6
-                version: 0.3.21(ioredis@5.6.0)(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+                version: 0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             uuid:
                 specifier: ^9.0.1
                 version: 9.0.1
@@ -1776,7 +1779,7 @@ importers:
                 version: 8.0.0
             jest:
                 specifier: ^29.7.0
-                version: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+                version: 29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             mocha:
                 specifier: ^10.3.0
                 version: 10.8.2
@@ -1785,7 +1788,7 @@ importers:
                 version: 2.0.22
             oclif:
                 specifier: ^3
-                version: 3.17.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(encoding@0.1.13)(mem-fs@2.3.0)(typescript@5.5.4)
+                version: 3.17.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(encoding@0.1.13)(mem-fs@2.3.0)(typescript@5.5.4)
             rimraf:
                 specifier: ^5.0.5
                 version: 5.0.10
@@ -1800,10 +1803,10 @@ importers:
                 version: 2.0.11
             ts-jest:
                 specifier: ^29.1.2
-                version: 29.2.6(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)))(typescript@5.5.4)
+                version: 29.2.6(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)))(typescript@5.5.4)
             ts-node:
                 specifier: ^10.7.0
-                version: 10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
+                version: 10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
             tsc-watch:
                 specifier: ^6.0.4
                 version: 6.2.1(typescript@5.5.4)
@@ -5556,6 +5559,9 @@ packages:
         peerDependencies:
             zod: '>= 3'
 
+    '@modelcontextprotocol/sdk@0.5.0':
+        resolution: { integrity: sha512-RXgulUX6ewvxjAG0kOpLMEdXXWkzWgaoCGaA2CwNW7cQCIphjpJhjpHSiaPdVCnisjRF/0Cm9KWHUuIoeiAblQ== }
+
     '@modelcontextprotocol/sdk@1.0.1':
         resolution: { integrity: sha512-slLdFaxQJ9AlRg+hw28iiTtGvShAOgOKXcD0F91nUcRYiOMuS9ZBYjcdNZRXW9G5JQ511GRTdUy1zQVZDpJ+4w== }
 
@@ -8141,6 +8147,10 @@ packages:
     '@tsconfig/node16@1.0.4':
         resolution: { integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA== }
 
+    '@tsmztech/mcp-server-salesforce@0.0.2':
+        resolution: { integrity: sha512-esb5cu4E2IXYNuOwmUpXtm8EHPnJ5WNV8TPkbyA64amie2/jmMIp52+lZi84cb/1tyO3c1K+5kXOsgqFCl+DuQ== }
+        hasBin: true
+
     '@tufjs/canonical-json@1.0.0':
         resolution: { integrity: sha512-QTnf++uxunWvG2z3UFNzAoQPHxnSXOwtaI3iJ+AohhV+5vONuArPjJE7aPXPVXfXJsqrVbZBu9b81AJoSd09IQ== }
         engines: { node: ^14.17.0 || ^16.13.0 || >=18.0.0 }
@@ -9781,6 +9791,10 @@ packages:
     base64-js@1.5.1:
         resolution: { integrity: sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA== }
 
+    base64-url@2.3.3:
+        resolution: { integrity: sha512-dLMhIsK7OplcDauDH/tZLvK7JmUZK3A7KiQpjNzsBrM6Etw7hzNI1tLEywqJk9NnwkgWuFKSlx/IUO7vF6Mo8Q== }
+        engines: { node: '>=6' }
+
     base64id@2.0.0:
         resolution: { integrity: sha512-lGe34o6EHj9y3Kts9R4ZYs/Gr+6N7MCaMlIFA3F1R2O5/m7K06AxfSeO5530PEERE6/WyEg3lsuyw4GHlPZHog== }
         engines: { node: ^4.5.0 || >= 5.9 }
@@ -10426,6 +10440,9 @@ packages:
         resolution: { integrity: sha512-qkCtZ59BidfEwHltnJwkyVZn+XQojdAySM1D1gSeh11Z4pW1Kpolkyo53L5noc0nrxmIvyFwTmJRo4xs7FFLPw== }
         engines: { node: ^12.13.0 || ^14.15.0 || >=16.0.0 }
 
+    co-prompt@1.0.0:
+        resolution: { integrity: sha512-uKmEbjDnL9SJTb+TNfIFsATe1F3IsNsR7KDGUG1hq7ColkMV0MSn7dg3eKVS+3wwtyvVqrgfIwi39NOJiknO7Q== }
+
     co@4.6.0:
         resolution: { integrity: sha512-QVb0dM5HvG+uaxitm8wONl7jltx8dqhfU33DcqtOZcLSVIKSDDLDi7+0LbAKiyI8hD9u42m2YxXSkMGWThaecQ== }
         engines: { iojs: '>= 1.0.0', node: '>= 0.12.0' }
@@ -10444,6 +10461,11 @@ packages:
     codsen-utils@1.6.7:
         resolution: { integrity: sha512-M+9D3IhFAk4T8iATX62herVuIx1sp5kskWgxEegKD/JwTTSSGjGQs5Q5J4vVJ4mLcn1uhfxDYv6Yzr8zleHF3w== }
         engines: { node: '>=14.18.0' }
+
+    coffeescript@1.12.7:
+        resolution: { integrity: sha512-pLXHFxQMPklVoEekowk8b3erNynC+DVJzChxS/LCBBgR6/8AJkHivkm//zbowcfc7BTCAjryuhx6gPqPRfsFoA== }
+        engines: { node: '>=0.8.0' }
+        hasBin: true
 
     cohere-ai@6.2.2:
         resolution: { integrity: sha512-+Tq+4e8N/YWKJqFpWaULsfbZR/GOvGh8WWYFKR1bpipu8bCok3VcbTPnBmIToQiIqOgFpGk3HsA4b0guVyL3vg== }
@@ -10896,6 +10918,10 @@ packages:
         resolution: { integrity: sha512-x8dy3RnvYdlUcPOjkEHqozhiwzKNSq7GcPuXFbnyMOCHxX8V3OgIg/pYuabl2sbUPfIJaeAQB7PMOK8DFIdoRA== }
         engines: { node: '>=12' }
 
+    csprng@0.1.2:
+        resolution: { integrity: sha512-D3WAbvvgUVIqSxUfdvLeGjuotsB32bvfVPd+AaaTWMtyUeC9zgCnw5xs94no89yFLVsafvY9dMZEhTwsY/ZecA== }
+        engines: { node: '>=0.6.0' }
+
     css-blank-pseudo@3.0.3:
         resolution: { integrity: sha512-VS90XWtsHGqoM0t4KpH053c4ehxZ2E6HtGI7x68YFV0pTo/QmkV/YFA+NnlvK8guxZVNWGQhVNJGC39Q8XF4OQ== }
         engines: { node: ^12 || ^14 || >=16 }
@@ -11133,6 +11159,9 @@ packages:
     csv-generate@4.4.2:
         resolution: { integrity: sha512-W6nVsf+rz0J3yo9FOjeer7tmzBJKaTTxf7K0uw6GZgRocZYPVpuSWWa5/aoWWrjQZj4/oNIKTYapOM7hiNjVMA== }
 
+    csv-parse@4.16.3:
+        resolution: { integrity: sha512-cO1I/zmz4w2dcKHVvpCr7JVRu8/FymG5OEpmvsZYlccYolPBLoVGKUHgNoc4ZGkFeFlWGEDmMyBM+TTqRdW/wg== }
+
     csv-parse@5.6.0:
         resolution: { integrity: sha512-l3nz3euub2QMg5ouu5U09Ew9Wf6/wQ8I++ch1loQ0ljmzhmfZYrH9fflS22i/PQEvsPvxCwxgz5q7UB8K1JO4Q== }
 
@@ -11140,6 +11169,9 @@ packages:
         resolution: { integrity: sha512-fgKbp+AJbn1h2dcAHKIdKNSSjfp43BZZykXsCjzALjKy80VXQNHPFJ6T9Afwdzoj24aMkq8GwDS7KGcDPpejrA== }
         engines: { node: '>= 10' }
         hasBin: true
+
+    csv-stringify@1.1.2:
+        resolution: { integrity: sha512-3NmNhhd+AkYs5YtM1GEh01VR6PKj6qch2ayfQaltx5xpcAdThjnbbI5eT8CzRVpXfGKAxnmrSYLsNl/4f3eWiw== }
 
     csv-stringify@6.5.2:
         resolution: { integrity: sha512-RFPahj0sXcmUyjrObAK+DOWtMvMIFV328n4qZJhgX3x2RqkQgOTU2mCUmiFR0CzM6AzChlRSUErjiJeEt8BaQA== }
@@ -12703,6 +12735,10 @@ packages:
 
     faye-websocket@0.11.4:
         resolution: { integrity: sha512-CzbClwlXAuiRQAlUyfqPgvPoNKTckTPGfwZV4ZdAhVcP2lh9KUxJg2b5GkE7XbjKQ3YJnQ9z6D9ntLAlB+tP8g== }
+        engines: { node: '>=0.8.0' }
+
+    faye@1.4.0:
+        resolution: { integrity: sha512-kRrIg4be8VNYhycS2PY//hpBJSzZPr/DBbcy9VWelhZMW3KhyLkQR0HL0k0MNpmVoNFF4EdfMFkNAWjTP65g6w== }
         engines: { node: '>=0.8.0' }
 
     fb-watchman@2.0.2:
@@ -14424,6 +14460,10 @@ packages:
         resolution: { integrity: sha512-eXK1UInq2bPmjyX6e3VHIzMLobc4J94i4AWn+Hpq3OU5KkrRC96OAcR3PRJ/pGu6m8TRnBHP9dkXQVsT/COVIA== }
         engines: { node: '>=0.10.0' }
 
+    is-wsl@1.1.0:
+        resolution: { integrity: sha512-gfygJYZ2gLTDlmbWMI0CE2MwnFzSN/2SZfkMlItC4K/JBlsWVDB0bO6XhqcY13YXE7iMcAJnzTCJjPiTeJJ0Mw== }
+        engines: { node: '>=4' }
+
     is-wsl@2.2.0:
         resolution: { integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww== }
         engines: { node: '>=8' }
@@ -14932,6 +14972,11 @@ packages:
         engines: { node: '>=6' }
         hasBin: true
 
+    jsforce@1.11.1:
+        resolution: { integrity: sha512-u1vL2F4FYRNccwjwA3ftMULEf9Ekeyvsz7vYKeQ03sKg6m7DNwB2O9d0erCM7k5sQUJ44J39CI05nokDKN3ktw== }
+        engines: { node: '>=4.0' }
+        hasBin: true
+
     json-bigint@1.0.0:
         resolution: { integrity: sha512-SiPv/8VpZuWbvLSMtTDU8hEfrZWg/mH/nV/b4o0CYbSxu1UIQPLdwKOCIyLQX+VIPO5vrLX3i8qtqFyhdPSUSQ== }
 
@@ -15074,6 +15119,9 @@ packages:
 
     kebab-case@1.0.2:
         resolution: { integrity: sha512-7n6wXq4gNgBELfDCpzKc+mRrZFs7D+wgfF5WRFLNAr4DA/qtr9Js8uOAVAfHhuLMfAcQ0pRKqbpjx+TcJVdE1Q== }
+
+    keypress@0.2.1:
+        resolution: { integrity: sha512-HjorDJFNhnM4SicvaUXac0X77NiskggxJdesG72+O5zBKpSqKFCrqmndKVqpu3pFqkla0St6uGk8Ju0sCurrmg== }
 
     keyv@4.5.4:
         resolution: { integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw== }
@@ -16777,6 +16825,9 @@ packages:
         resolution: { integrity: sha512-ypMKuglUrZUD99Tk2bUQ+xNQj43lPEfAeX2o9cTteAmShXy2VHDJpuwu1o0xqoKCt9jLVAvwyFKdLTPXKAfJyA== }
         engines: { node: '>=10' }
 
+    multistream@2.1.1:
+        resolution: { integrity: sha512-xasv76hl6nr1dEy3lPvy7Ej7K/Lx3O/FCvwge8PeVJpciPPoNCbaANcNiBug3IpdvTveZUcAV0DJzdnUDMesNQ== }
+
     mustache@4.2.0:
         resolution: { integrity: sha512-71ippSywq5Yb7/tVYyGbkBggbU8H3u5Rz56fH60jGFgr8uHwxs+aSKeqmluIVzM0m0kB7xQjKS6qPfd0b2ZoqQ== }
         hasBin: true
@@ -17406,6 +17457,10 @@ packages:
 
     openid-client@5.7.1:
         resolution: { integrity: sha512-jDBPgSVfTnkIh71Hg9pRvtJc6wTwqjRkN88+gCFtYWrlP4Yx2Dsrow8uPi3qLr/aeymPF3o2+dS+wOpglK04ew== }
+
+    opn@5.5.0:
+        resolution: { integrity: sha512-PqHpggC9bLV0VeWcdKhkpxY+3JTzetLSqTCWL/z/tFIbI6G8JCjondXklT1JinczLz2Xib62sSp0T/gKT4KksA== }
+        engines: { node: '>=4' }
 
     option@0.2.4:
         resolution: { integrity: sha512-pkEqbDyl8ou5cpq+VsnQbe/WlEy5qS7xPzMS1U55OCG9KPvwFD46zDbxQIj3egJSFc3D+XhYOPUzz49zQAVy7A== }
@@ -20192,6 +20247,10 @@ packages:
     seq-queue@0.0.5:
         resolution: { integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q== }
 
+    sequin@0.1.1:
+        resolution: { integrity: sha512-hJWMZRwP75ocoBM+1/YaCsvS0j5MTPeBHJkS2/wruehl9xwtX30HlDF1Gt6UZ8HHHY8SJa2/IL+jo+JJCd59rA== }
+        engines: { node: '>=0.4.0' }
+
     serialize-error-cjs@0.1.4:
         resolution: { integrity: sha512-6a6dNqipzbCPlTFgztfNP2oG+IGcflMe/01zSzGrQcxGMKbIjOemBBD85pH92klWaJavAUWxAh9Z0aU28zxW6A== }
         deprecated: Rolling release, please update to 0.2.0
@@ -22878,6 +22937,10 @@ packages:
     xml-parser-xo@3.2.0:
         resolution: { integrity: sha512-8LRU6cq+d7mVsoDaMhnkkt3CTtAs4153p49fRo+HIB3I1FD1o5CeXRjRH29sQevIfVJIcPjKSsPU/+Ujhq09Rg== }
         engines: { node: '>= 10' }
+
+    xml2js@0.5.0:
+        resolution: { integrity: sha512-drPFnkQJik/O+uPKpqSgr22mpuFHqKdbS835iAQrUC73L2F5WkboIRd63ai/2Yg6I1jzifPFKH2NTK+cfglkIA== }
+        engines: { node: '>=4.0.0' }
 
     xml2js@0.6.2:
         resolution: { integrity: sha512-T4rieHaC1EXcES0Kxxj4JWgaUQHDk+qwHcYOCFHfiwKz7tOVPLq7Hjq9dM1WCMhylqMEfP7hMcOIChvotiZegA== }
@@ -27780,7 +27843,7 @@ snapshots:
             - supports-color
             - ts-node
 
-    '@jest/core@29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))':
+    '@jest/core@29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))':
         dependencies:
             '@jest/console': 29.7.0
             '@jest/reporters': 29.7.0
@@ -27794,7 +27857,7 @@ snapshots:
             exit: 0.1.2
             graceful-fs: 4.2.11
             jest-changed-files: 29.7.0
-            jest-config: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+            jest-config: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             jest-haste-map: 29.7.0
             jest-message-util: 29.7.0
             jest-regex-util: 29.6.3
@@ -28673,6 +28736,12 @@ snapshots:
             zod: 3.24.2
             zod-to-json-schema: 3.24.3(zod@3.24.2)
 
+    '@modelcontextprotocol/sdk@0.5.0':
+        dependencies:
+            content-type: 1.0.5
+            raw-body: 3.0.0
+            zod: 3.24.2
+
     '@modelcontextprotocol/sdk@1.0.1':
         dependencies:
             content-type: 1.0.5
@@ -29213,7 +29282,7 @@ snapshots:
             - bluebird
             - supports-color
 
-    '@oclif/core@2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)':
+    '@oclif/core@2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)':
         dependencies:
             '@types/cli-progress': 3.11.6
             ansi-escapes: 4.3.2
@@ -29238,7 +29307,7 @@ snapshots:
             strip-ansi: 6.0.1
             supports-color: 8.1.1
             supports-hyperlinks: 2.3.0
-            ts-node: 10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
+            ts-node: 10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
             tslib: 2.8.1
             widest-line: 3.1.0
             wordwrap: 1.0.0
@@ -29269,18 +29338,18 @@ snapshots:
             wordwrap: 1.0.0
             wrap-ansi: 7.0.0
 
-    '@oclif/plugin-help@5.2.20(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)':
+    '@oclif/plugin-help@5.2.20(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)':
         dependencies:
-            '@oclif/core': 2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
+            '@oclif/core': 2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
         transitivePeerDependencies:
             - '@swc/core'
             - '@swc/wasm'
             - '@types/node'
             - typescript
 
-    '@oclif/plugin-not-found@2.4.3(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)':
+    '@oclif/plugin-not-found@2.4.3(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)':
         dependencies:
-            '@oclif/core': 2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
+            '@oclif/core': 2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
             chalk: 4.1.2
             fast-levenshtein: 3.0.0
         transitivePeerDependencies:
@@ -29289,9 +29358,9 @@ snapshots:
             - '@types/node'
             - typescript
 
-    '@oclif/plugin-warn-if-update-available@2.1.1(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)':
+    '@oclif/plugin-warn-if-update-available@2.1.1(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)':
         dependencies:
-            '@oclif/core': 2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
+            '@oclif/core': 2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
             chalk: 4.1.2
             debug: 4.4.0(supports-color@5.5.0)
             http-call: 5.3.0
@@ -32107,6 +32176,12 @@ snapshots:
 
     '@tsconfig/node16@1.0.4': {}
 
+    '@tsmztech/mcp-server-salesforce@0.0.2':
+        dependencies:
+            '@modelcontextprotocol/sdk': 0.5.0
+            dotenv: 16.4.7
+            jsforce: 1.11.1
+
     '@tufjs/canonical-json@1.0.0': {}
 
     '@tufjs/models@1.0.4':
@@ -34302,6 +34377,8 @@ snapshots:
 
     base64-js@1.5.1: {}
 
+    base64-url@2.3.3: {}
+
     base64id@2.0.0: {}
 
     base64url@3.0.1: {}
@@ -35072,6 +35149,10 @@ snapshots:
         dependencies:
             mkdirp-infer-owner: 2.0.0
 
+    co-prompt@1.0.0:
+        dependencies:
+            keypress: 0.2.1
+
     co@4.6.0: {}
 
     coa@2.0.2:
@@ -35095,6 +35176,8 @@ snapshots:
     codsen-utils@1.6.7:
         dependencies:
             rfdc: 1.4.1
+
+    coffeescript@1.12.7: {}
 
     cohere-ai@6.2.2: {}
 
@@ -35582,13 +35665,13 @@ snapshots:
             - supports-color
             - ts-node
 
-    create-jest@29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)):
+    create-jest@29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)):
         dependencies:
             '@jest/types': 29.6.3
             chalk: 4.1.2
             exit: 0.1.2
             graceful-fs: 4.2.11
-            jest-config: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+            jest-config: 29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             jest-util: 29.7.0
             prompts: 2.4.2
         transitivePeerDependencies:
@@ -35663,6 +35746,10 @@ snapshots:
     crypto-random-string@4.0.0:
         dependencies:
             type-fest: 1.4.0
+
+    csprng@0.1.2:
+        dependencies:
+            sequin: 0.1.1
 
     css-blank-pseudo@3.0.3(postcss@8.4.21):
         dependencies:
@@ -35940,9 +36027,15 @@ snapshots:
 
     csv-generate@4.4.2: {}
 
+    csv-parse@4.16.3: {}
+
     csv-parse@5.6.0: {}
 
     csv-parser@3.2.0: {}
+
+    csv-stringify@1.1.2:
+        dependencies:
+            lodash.get: 4.4.2
 
     csv-stringify@6.5.2: {}
 
@@ -38308,6 +38401,15 @@ snapshots:
         dependencies:
             websocket-driver: 0.7.4
 
+    faye@1.4.0:
+        dependencies:
+            asap: 2.0.6
+            csprng: 0.1.2
+            faye-websocket: 0.11.4
+            safe-buffer: 5.2.1
+            tough-cookie: 5.1.2
+            tunnel-agent: 0.6.0
+
     fb-watchman@2.0.2:
         dependencies:
             bser: 2.1.1
@@ -40465,6 +40567,8 @@ snapshots:
 
     is-windows@1.0.2: {}
 
+    is-wsl@1.1.0: {}
+
     is-wsl@2.2.0:
         dependencies:
             is-docker: 2.2.1
@@ -40687,16 +40791,16 @@ snapshots:
             - supports-color
             - ts-node
 
-    jest-cli@29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)):
+    jest-cli@29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)):
         dependencies:
-            '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+            '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             '@jest/test-result': 29.7.0
             '@jest/types': 29.6.3
             chalk: 4.1.2
-            create-jest: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+            create-jest: 29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             exit: 0.1.2
             import-local: 3.2.0
-            jest-config: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+            jest-config: 29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             jest-util: 29.7.0
             jest-validate: 29.7.0
             yargs: 17.7.2
@@ -40771,7 +40875,7 @@ snapshots:
             - babel-plugin-macros
             - supports-color
 
-    jest-config@29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)):
+    jest-config@29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)):
         dependencies:
             '@babel/core': 7.26.10
             '@jest/test-sequencer': 29.7.0
@@ -40797,7 +40901,38 @@ snapshots:
             strip-json-comments: 3.1.1
         optionalDependencies:
             '@types/node': 18.15.11
-            ts-node: 10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
+            ts-node: 10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
+        transitivePeerDependencies:
+            - babel-plugin-macros
+            - supports-color
+
+    jest-config@29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)):
+        dependencies:
+            '@babel/core': 7.26.10
+            '@jest/test-sequencer': 29.7.0
+            '@jest/types': 29.6.3
+            babel-jest: 29.7.0(@babel/core@7.26.10)
+            chalk: 4.1.2
+            ci-info: 3.9.0
+            deepmerge: 4.3.1
+            glob: 7.2.3
+            graceful-fs: 4.2.11
+            jest-circus: 29.7.0(babel-plugin-macros@3.1.0)
+            jest-environment-node: 29.7.0
+            jest-get-type: 29.6.3
+            jest-regex-util: 29.6.3
+            jest-resolve: 29.7.0
+            jest-runner: 29.7.0
+            jest-util: 29.7.0
+            jest-validate: 29.7.0
+            micromatch: 4.0.8
+            parse-json: 5.2.0
+            pretty-format: 29.7.0
+            slash: 3.0.0
+            strip-json-comments: 3.1.1
+        optionalDependencies:
+            '@types/node': 22.13.10
+            ts-node: 10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
         transitivePeerDependencies:
             - babel-plugin-macros
             - supports-color
@@ -41365,12 +41500,12 @@ snapshots:
             - supports-color
             - ts-node
 
-    jest@29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)):
+    jest@29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)):
         dependencies:
-            '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+            '@jest/core': 29.7.0(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             '@jest/types': 29.6.3
             import-local: 3.2.0
-            jest-cli: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+            jest-cli: 29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
         transitivePeerDependencies:
             - '@types/node'
             - babel-plugin-macros
@@ -41549,6 +41684,24 @@ snapshots:
 
     jsesc@3.1.0: {}
 
+    jsforce@1.11.1:
+        dependencies:
+            base64-url: 2.3.3
+            co-prompt: 1.0.0
+            coffeescript: 1.12.7
+            commander: 2.20.3
+            csv-parse: 4.16.3
+            csv-stringify: 1.1.2
+            faye: 1.4.0
+            inherits: 2.0.4
+            lodash: 4.17.21
+            multistream: 2.1.1
+            opn: 5.5.0
+            promise: 7.3.1
+            readable-stream: 2.3.8
+            request: 2.88.2
+            xml2js: 0.5.0
+
     json-bigint@1.0.0:
         dependencies:
             bignumber.js: 9.1.2
@@ -41705,6 +41858,8 @@ snapshots:
             commander: 8.3.0
 
     kebab-case@1.0.2: {}
+
+    keypress@0.2.1: {}
 
     keyv@4.5.4:
         dependencies:
@@ -43993,6 +44148,11 @@ snapshots:
             arrify: 2.0.1
             minimatch: 3.1.2
 
+    multistream@2.1.1:
+        dependencies:
+            inherits: 2.0.4
+            readable-stream: 2.3.8
+
     mustache@4.2.0: {}
 
     mute-stdout@1.0.1: {}
@@ -44647,12 +44807,12 @@ snapshots:
 
     obuf@1.1.2: {}
 
-    oclif@3.17.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(encoding@0.1.13)(mem-fs@2.3.0)(typescript@5.5.4):
+    oclif@3.17.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(encoding@0.1.13)(mem-fs@2.3.0)(typescript@5.5.4):
         dependencies:
-            '@oclif/core': 2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
-            '@oclif/plugin-help': 5.2.20(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
-            '@oclif/plugin-not-found': 2.4.3(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
-            '@oclif/plugin-warn-if-update-available': 2.1.1(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
+            '@oclif/core': 2.16.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
+            '@oclif/plugin-help': 5.2.20(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
+            '@oclif/plugin-not-found': 2.4.3(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
+            '@oclif/plugin-warn-if-update-available': 2.1.1(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)
             async-retry: 1.3.3
             aws-sdk: 2.1692.0
             concurrently: 7.6.0
@@ -44817,6 +44977,10 @@ snapshots:
             lru-cache: 6.0.0
             object-hash: 2.2.0
             oidc-token-hash: 5.1.0
+
+    opn@5.5.0:
+        dependencies:
+            is-wsl: 1.1.0
 
     option@0.2.4: {}
 
@@ -47714,7 +47878,7 @@ snapshots:
     repomix@0.3.0:
         dependencies:
             '@clack/prompts': 0.10.1
-            '@modelcontextprotocol/sdk': 1.7.0
+            '@modelcontextprotocol/sdk': 1.11.0
             '@secretlint/core': 9.2.0
             '@secretlint/secretlint-rule-preset-recommend': 9.2.0
             cli-spinners: 2.9.2
@@ -48258,6 +48422,8 @@ snapshots:
             - supports-color
 
     seq-queue@0.0.5: {}
+
+    sequin@0.1.1: {}
 
     serialize-error-cjs@0.1.4: {}
 
@@ -49811,12 +49977,12 @@ snapshots:
 
     ts-interface-checker@0.1.13: {}
 
-    ts-jest@29.2.6(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)))(typescript@5.5.4):
+    ts-jest@29.2.6(@babel/core@7.26.10)(@jest/transform@29.7.0)(@jest/types@29.6.3)(babel-jest@29.7.0(@babel/core@7.26.10))(jest@29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)))(typescript@5.5.4):
         dependencies:
             bs-logger: 0.2.6
             ejs: 3.1.10
             fast-json-stable-stringify: 2.1.0
-            jest: 29.7.0(@types/node@18.15.11)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4))
+            jest: 29.7.0(@types/node@22.13.10)(babel-plugin-macros@3.1.0)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             jest-util: 29.7.0
             json5: 2.2.3
             lodash.memoize: 4.1.2
@@ -49881,26 +50047,6 @@ snapshots:
             '@swc/core': 1.11.9(@swc/helpers@0.5.15)
         optional: true
 
-    ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4):
-        dependencies:
-            '@cspotcode/source-map-support': 0.8.1
-            '@tsconfig/node10': 1.0.11
-            '@tsconfig/node12': 1.0.11
-            '@tsconfig/node14': 1.0.3
-            '@tsconfig/node16': 1.0.4
-            '@types/node': 18.15.11
-            acorn: 8.14.1
-            acorn-walk: 8.3.4
-            arg: 4.1.3
-            create-require: 1.1.1
-            diff: 4.0.2
-            make-error: 1.3.6
-            typescript: 5.5.4
-            v8-compile-cache-lib: 3.0.1
-            yn: 3.1.1
-        optionalDependencies:
-            '@swc/core': 1.11.9(@swc/helpers@0.5.15)
-
     ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@4.9.5):
         dependencies:
             '@cspotcode/source-map-support': 0.8.1
@@ -49941,7 +50087,6 @@ snapshots:
             yn: 3.1.1
         optionalDependencies:
             '@swc/core': 1.11.9(@swc/helpers@0.5.15)
-        optional: true
 
     ts-toolbelt@9.6.0: {}
 
@@ -50221,32 +50366,6 @@ snapshots:
             redis: 4.7.0
             sqlite3: 5.1.7
             ts-node: 10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@4.9.5)
-        transitivePeerDependencies:
-            - supports-color
-
-    typeorm@0.3.21(ioredis@5.6.0)(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)):
-        dependencies:
-            '@sqltools/formatter': 1.2.5
-            ansis: 3.17.0
-            app-root-path: 3.1.0
-            buffer: 6.0.3
-            dayjs: 1.11.13
-            debug: 4.4.0(supports-color@5.5.0)
-            dotenv: 16.4.7
-            glob: 10.4.5
-            reflect-metadata: 0.1.14
-            sha.js: 2.4.11
-            sql-highlight: 6.0.0
-            tslib: 2.8.1
-            uuid: 11.1.0
-            yargs: 17.7.2
-        optionalDependencies:
-            ioredis: 5.6.0
-            mysql2: 3.13.0
-            pg: 8.14.0
-            redis: 4.7.0
-            sqlite3: 5.1.7
-            ts-node: 10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@5.5.4)
         transitivePeerDependencies:
             - supports-color
 
@@ -51674,6 +51793,11 @@ snapshots:
     xml-name-validator@4.0.0: {}
 
     xml-parser-xo@3.2.0: {}
+
+    xml2js@0.5.0:
+        dependencies:
+            sax: 1.4.1
+            xmlbuilder: 11.0.1
 
     xml2js@0.6.2:
         dependencies:
