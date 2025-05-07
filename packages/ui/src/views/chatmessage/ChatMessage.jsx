@@ -200,6 +200,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
     // full file upload
     const [fullFileUpload, setFullFileUpload] = useState(false)
+    const [fullFileUploadAllowedTypes, setFullFileUploadAllowedTypes] = useState('*')
 
     // feedback
     const [chatFeedbackStatus, setChatFeedbackStatus] = useState(false)
@@ -237,25 +238,34 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
          * {isImageUploadAllowed: boolean, imgUploadSizeAndTypes: Array<{ fileTypes: string[], maxUploadSize: number }>}
          */
         let acceptFile = false
+
+        // Early return if constraints are not available yet
+        if (!constraints) {
+            console.warn('Upload constraints not loaded yet')
+            return false
+        }
+
         if (constraints.isImageUploadAllowed) {
             const fileType = file.type
             const sizeInMB = file.size / 1024 / 1024
-            constraints.imgUploadSizeAndTypes.map((allowed) => {
-                if (allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
-                    acceptFile = true
-                }
-            })
+            if (constraints.imgUploadSizeAndTypes && Array.isArray(constraints.imgUploadSizeAndTypes)) {
+                constraints.imgUploadSizeAndTypes.forEach((allowed) => {
+                    if (allowed.fileTypes && allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
+                        acceptFile = true
+                    }
+                })
+            }
         }
 
         if (fullFileUpload) {
             return true
         } else if (constraints.isRAGFileUploadAllowed) {
             const fileExt = file.name.split('.').pop()
-            if (fileExt) {
-                constraints.fileUploadSizeAndTypes.map((allowed) => {
-                    if (allowed.fileTypes.length === 1 && allowed.fileTypes[0] === '*') {
+            if (fileExt && constraints.fileUploadSizeAndTypes && Array.isArray(constraints.fileUploadSizeAndTypes)) {
+                constraints.fileUploadSizeAndTypes.forEach((allowed) => {
+                    if (allowed.fileTypes && allowed.fileTypes.length === 1 && allowed.fileTypes[0] === '*') {
                         acceptFile = true
-                    } else if (allowed.fileTypes.includes(`.${fileExt}`)) {
+                    } else if (allowed.fileTypes && allowed.fileTypes.includes(`.${fileExt}`)) {
                         acceptFile = true
                     }
                 })
@@ -693,7 +703,11 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
         if (data.followUpPrompts) {
             const followUpPrompts = JSON.parse(data.followUpPrompts)
-            setFollowUpPrompts(followUpPrompts)
+            if (typeof followUpPrompts === 'string') {
+                setFollowUpPrompts(JSON.parse(followUpPrompts))
+            } else {
+                setFollowUpPrompts(followUpPrompts)
+            }
         }
     }
 
@@ -981,7 +995,9 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     }
 
     const getFileUploadAllowedTypes = () => {
-        if (fullFileUpload) return '*'
+        if (fullFileUpload) {
+            return fullFileUploadAllowedTypes === '' ? '*' : fullFileUploadAllowedTypes
+        }
         return fileUploadAllowedTypes.includes('*') ? '*' : fileUploadAllowedTypes || '*'
     }
 
@@ -1118,6 +1134,9 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
 
                 if (config.fullFileUpload) {
                     setFullFileUpload(config.fullFileUpload.status)
+                    if (config.fullFileUpload?.allowedUploadFileTypes) {
+                        setFullFileUploadAllowedTypes(config.fullFileUpload?.allowedUploadFileTypes)
+                    }
                 }
             }
         }
@@ -1198,7 +1217,13 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
         if (followUpPromptsStatus && messages.length > 0) {
             const lastMessage = messages[messages.length - 1]
             if (lastMessage.type === 'apiMessage' && lastMessage.followUpPrompts) {
-                setFollowUpPrompts(lastMessage.followUpPrompts)
+                if (Array.isArray(lastMessage.followUpPrompts)) {
+                    setFollowUpPrompts(lastMessage.followUpPrompts)
+                }
+                if (typeof lastMessage.followUpPrompts === 'string') {
+                    const followUpPrompts = JSON.parse(lastMessage.followUpPrompts)
+                    setFollowUpPrompts(followUpPrompts)
+                }
             } else if (lastMessage.type === 'userMessage') {
                 setFollowUpPrompts([])
             }
@@ -1677,10 +1702,24 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                                                     key={index}
                                                                                     label={tool.tool}
                                                                                     component='a'
-                                                                                    sx={{ mr: 1, mt: 1 }}
+                                                                                    sx={{
+                                                                                        mr: 1,
+                                                                                        mt: 1,
+                                                                                        borderColor: tool.error ? 'error.main' : undefined,
+                                                                                        color: tool.error ? 'error.main' : undefined
+                                                                                    }}
                                                                                     variant='outlined'
                                                                                     clickable
-                                                                                    icon={<IconTool size={15} />}
+                                                                                    icon={
+                                                                                        <IconTool
+                                                                                            size={15}
+                                                                                            color={
+                                                                                                tool.error
+                                                                                                    ? theme.palette.error.main
+                                                                                                    : undefined
+                                                                                            }
+                                                                                        />
+                                                                                    }
                                                                                     onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                                                 />
                                                                             ) : null
@@ -1808,10 +1847,20 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                                                             key={index}
                                                             label={tool.tool}
                                                             component='a'
-                                                            sx={{ mr: 1, mt: 1 }}
+                                                            sx={{
+                                                                mr: 1,
+                                                                mt: 1,
+                                                                borderColor: tool.error ? 'error.main' : undefined,
+                                                                color: tool.error ? 'error.main' : undefined
+                                                            }}
                                                             variant='outlined'
                                                             clickable
-                                                            icon={<IconTool size={15} />}
+                                                            icon={
+                                                                <IconTool
+                                                                    size={15}
+                                                                    color={tool.error ? theme.palette.error.main : undefined}
+                                                                />
+                                                            }
                                                             onClick={() => onSourceDialogClick(tool, 'Used Tools')}
                                                         />
                                                     ) : null

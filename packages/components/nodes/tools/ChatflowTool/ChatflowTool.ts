@@ -164,7 +164,7 @@ class ChatflowTool_Tools implements INode {
         let toolInput = ''
         if (useQuestionFromChat) {
             toolInput = input
-        } else if (!customInput) {
+        } else if (customInput) {
             toolInput = customInput
         }
 

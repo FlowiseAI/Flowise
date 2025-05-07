@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.2.4",
+    "version": "2.2.8",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -13,10 +13,13 @@
     "scripts": {
         "build": "turbo run build",
         "build-force": "pnpm clean && turbo run build --force",
-        "dev": "turbo run dev --parallel",
+        "dev": "turbo run dev --parallel --no-cache",
         "start": "run-script-os",
         "start:windows": "cd packages/server/bin && run start",
         "start:default": "cd packages/server/bin && ./run start",
+        "start-worker": "run-script-os",
+        "start-worker:windows": "cd packages/server/bin && run worker",
+        "start-worker:default": "cd packages/server/bin && ./run worker",
         "clean": "pnpm --filter \"./packages/**\" clean",
         "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -59,7 +62,20 @@
             "sqlite3"
         ],
         "overrides": {
-            "set-value": "^3.0.3"
+            "axios": "1.7.9",
+            "body-parser": "2.0.2",
+            "braces": "3.0.3",
+            "cross-spawn": "7.0.6",
+            "glob-parent": "6.0.2",
+            "http-proxy-middleware": "3.0.3",
+            "json5": "2.2.3",
+            "nth-check": "2.1.1",
+            "path-to-regexp": "0.1.12",
+            "prismjs": "1.29.0",
+            "semver": "7.7.1",
+            "set-value": "4.1.0",
+            "unset-value": "2.0.1",
+            "webpack-dev-middleware": "7.4.2"
         }
     },
     "engines": {
@@ -67,10 +83,11 @@
         "pnpm": ">=9"
     },
     "resolutions": {
-        "@google/generative-ai": "^0.15.0",
-        "@langchain/core": "0.3.29",
+        "@google/generative-ai": "^0.24.0",
+        "@grpc/grpc-js": "^1.10.10",
+        "@langchain/core": "0.3.37",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
-        "openai": "4.57.3",
+        "openai": "4.82.0",
         "protobufjs": "7.4.0"
     },
     "eslintIgnore": [

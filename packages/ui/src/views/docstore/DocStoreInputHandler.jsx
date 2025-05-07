@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 
 // material-ui
 import { Box, Typography, IconButton, Button } from '@mui/material'
-import { IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons-react'
+import { IconRefresh, IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons-react'
 
 // project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
@@ -33,6 +33,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
     const [expandDialogProps, setExpandDialogProps] = useState({})
     const [showManageScrapedLinksDialog, setShowManageScrapedLinksDialog] = useState(false)
     const [manageScrapedLinksDialogProps, setManageScrapedLinksDialogProps] = useState({})
+    const [reloadTimestamp, setReloadTimestamp] = useState(Date.now().toString())
 
     const onExpandDialogClicked = (value, inputParam) => {
         const dialogProps = {
@@ -216,19 +217,33 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false }) => {
                                 value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                             />
                         )}
-                        {inputParam.type === 'asyncOptions' && (
+                        {(inputParam.type === 'asyncOptions' || inputParam.type === 'asyncMultiOptions') && (
                             <>
                                 {data.inputParams?.length === 1 && <div style={{ marginTop: 10 }} />}
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                    <AsyncDropdown
-                                        key={JSON.stringify(inputParam)}
-                                        disabled={disabled}
-                                        name={inputParam.name}
-                                        nodeData={data}
-                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
-                                        onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                        onCreateNew={() => addAsyncOption(inputParam.name)}
-                                    />
+                                    <div key={reloadTimestamp} style={{ flex: 1 }}>
+                                        <AsyncDropdown
+                                            key={JSON.stringify(inputParam)}
+                                            disabled={disabled}
+                                            name={inputParam.name}
+                                            nodeData={data}
+                                            freeSolo={inputParam.freeSolo}
+                                            multiple={inputParam.type === 'asyncMultiOptions'}
+                                            value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                            onSelect={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                            onCreateNew={() => addAsyncOption(inputParam.name)}
+                                        />
+                                    </div>
+                                    {inputParam.refresh && (
+                                        <IconButton
+                                            title='Refresh'
+                                            color='primary'
+                                            size='small'
+                                            onClick={() => setReloadTimestamp(Date.now().toString())}
+                                        >
+                                            <IconRefresh />
+                                        </IconButton>
+                                    )}
                                 </div>
                             </>
                         )}

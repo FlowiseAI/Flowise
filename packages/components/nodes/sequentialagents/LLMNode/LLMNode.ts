@@ -1,4 +1,4 @@
-import { flatten, uniq } from 'lodash'
+import { difference, flatten, uniq } from 'lodash'
 import { DataSource } from 'typeorm'
 import { z } from 'zod'
 import { RunnableSequence, RunnablePassthrough, RunnableConfig } from '@langchain/core/runnables'
@@ -182,7 +182,7 @@ class LLMNode_SeqAgents implements INode {
     constructor() {
         this.label = 'LLM Node'
         this.name = 'seqLLMNode'
-        this.version = 4.0
+        this.version = 4.1
         this.type = 'LLMNode'
         this.icon = 'llmNode.svg'
         this.category = 'Sequential Agents'
@@ -261,9 +261,11 @@ class LLMNode_SeqAgents implements INode {
                 additionalParams: true
             },
             {
-                label: 'Start | Agent | Condition | LLM | Tool Node',
+                label: 'Sequential Node',
                 name: 'sequentialNode',
-                type: 'Start | Agent | Condition | LLMNode | ToolNode',
+                type: 'Start | Agent | Condition | LLMNode | ToolNode | CustomFunction | ExecuteFlow',
+                description:
+                    'Can be connected to one of the following nodes: Start, Agent, Condition, LLM, Tool Node, Custom Function, Execute Flow',
                 list: true
             },
             {
@@ -428,8 +430,15 @@ class LLMNode_SeqAgents implements INode {
         const abortControllerSignal = options.signal as AbortController
         const llmNodeInputVariables = uniq([...getInputVariables(systemPrompt), ...getInputVariables(humanPrompt)])
 
-        if (!llmNodeInputVariables.every((element) => Object.keys(llmNodeInputVariablesValues).includes(element))) {
-            throw new Error('LLM Node input variables values are not provided!')
+        const missingInputVars = difference(llmNodeInputVariables, Object.keys(llmNodeInputVariablesValues)).join(' ')
+        const allVariablesSatisfied = missingInputVars.length === 0
+        if (!allVariablesSatisfied) {
+            const nodeInputVars = llmNodeInputVariables.join(' ')
+            const providedInputVars = Object.keys(llmNodeInputVariablesValues).join(' ')
+
+            throw new Error(
+                `LLM Node input variables values are not provided! Required: ${nodeInputVars}, Provided: ${providedInputVars}. Missing: ${missingInputVars}`
+            )
         }
 
         const workerNode = async (state: ISeqAgentsState, config: RunnableConfig) => {

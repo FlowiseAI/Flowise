@@ -41,11 +41,13 @@ body_data = {
     "docId": "${dialogProps.loaderId}",
     "metadata": {}, # Add additional metadata to the document chunks
     "replaceExisting": True, # Replace existing document with the new upserted chunks
+    "createNewDocStore": False, # Create a new document store
     "splitter": json.dumps({"config":{"chunkSize":20000}}) # Override existing configuration
     # "loader": "",
     # "vectorStore": "",
     # "embedding": "",
     # "recordManager": "",
+    # "docStore": ""
 }
 
 headers = {
@@ -71,11 +73,14 @@ formData.append("splitter", JSON.stringify({"config":{"chunkSize":20000}}));
 formData.append("metadata", "{}");
 // Replace existing document with the new upserted chunks
 formData.append("replaceExisting", "true");
+// Create a new document store
+formData.append("createNewDocStore", "false");
 // Override existing configuration
 // formData.append("loader", "");
 // formData.append("embedding", "");
 // formData.append("vectorStore", "");
 // formData.append("recordManager", "");
+// formData.append("docStore", "");
 
 async function query(formData) {
     const response = await fetch(
@@ -105,11 +110,13 @@ curl -X POST http://localhost:3000/api/v1/document-store/upsert/${dialogProps.st
   -F "splitter={"config":{"chunkSize":20000}}" \\
   -F "metadata={}" \\
   -F "replaceExisting=true" \\
+  -F "createNewDocStore=false" \\
   # Override existing configuration:
   # -F "loader=" \\
   # -F "embedding=" \\
   # -F "vectorStore=" \\
-  # -F "recordManager="
+  # -F "recordManager=" \\
+  # -F "docStore="
 \`\`\`
 `
     }
@@ -135,6 +142,7 @@ output = query({
     "docId": "${dialogProps.loaderId}",
     "metadata": "{}", # Add additional metadata to the document chunks
     "replaceExisting": True, # Replace existing document with the new upserted chunks
+    "createNewDocStore": False, # Create a new document store
     # Override existing configuration
     "loader": {
         "config": {
@@ -149,6 +157,7 @@ output = query({
     # embedding: {},
     # vectorStore: {},
     # recordManager: {}
+    # docStore: {}
 })
 print(output)
 \`\`\`
@@ -174,6 +183,7 @@ query({
     "docId": "${dialogProps.loaderId},
     "metadata": "{}", // Add additional metadata to the document chunks
     "replaceExisting": true, // Replace existing document with the new upserted chunks
+    "createNewDocStore": false, // Create a new document store
     // Override existing configuration
     "loader": {
         "config": {
@@ -188,6 +198,7 @@ query({
     // embedding: {},
     // vectorStore: {},
     // recordManager: {}
+    // docStore: {}
 }).then((response) => {
     console.log(response);
 });
@@ -201,6 +212,7 @@ curl -X POST http://localhost:3000/api/v1/document-store/upsert/${dialogProps.st
         "docId": "${dialogProps.loaderId}",
         "metadata": "{}",
         "replaceExisting": true,
+        "createNewDocStore": false,
         "loader": {
             "config": {
                 "text": "This is a new text"
@@ -215,6 +227,7 @@ curl -X POST http://localhost:3000/api/v1/document-store/upsert/${dialogProps.st
         // "embedding": {},
         // "vectorStore": {},
         // "recordManager": {}
+        // "docStore": {}
       }'
 
 \`\`\`
