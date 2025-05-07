@@ -314,16 +314,10 @@ const prepareAgent = async (
         // Create rephrase chain just like in ConversationalRetrievalQAChain
         try {
             const CONDENSE_QUESTION_PROMPT = PromptTemplate.fromTemplate(rephrasePrompt)
-            const condenseQuestionChain = RunnableSequence.from([
-                CONDENSE_QUESTION_PROMPT, 
-                model, 
-                new StringOutputParser()
-            ])
+            const condenseQuestionChain = RunnableSequence.from([CONDENSE_QUESTION_PROMPT, model, new StringOutputParser()])
             
             // Format chat history
-            const chatHistoryString = messages.map(message => 
-                `${message._getType()}: ${message.content}`
-            ).join('\n')
+            const chatHistoryString = messages.map((message) => `${message._getType()}: ${message.content}`).join('\n')
             
             // Get standalone question
             return await condenseQuestionChain.invoke({
@@ -331,14 +325,14 @@ const prepareAgent = async (
                 chat_history: chatHistoryString
             })
         } catch (error) {
-            console.error("Error rephrasing question:", error)
+            console.error('Error rephrasing question:', error)
             // On error, fall back to original input
             return input
         }
     }
 
     // Get standalone question before creating runnable
-    const standaloneQuestion = await getStandaloneQuestion(flowObj?.input || "")
+    const standaloneQuestion = await getStandaloneQuestion(flowObj?.input || '')
 
     const runnableAgent = RunnableSequence.from([
         {
