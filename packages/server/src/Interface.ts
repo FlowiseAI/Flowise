@@ -95,6 +95,7 @@ export interface IChatFlow {
     organizationId: string
     displayMode?: string
     embeddedUrl?: string
+    browserExtConfig?: string
 }
 
 export interface IChatMessage {
