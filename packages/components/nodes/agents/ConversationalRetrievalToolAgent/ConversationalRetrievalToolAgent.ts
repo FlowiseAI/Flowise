@@ -121,7 +121,6 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
-        console.log(`[ConversationalRetrievalToolAgent] RUN_START. Input: ${input.substring(0,50)}. Options: shouldStreamResponse=${options.shouldStreamResponse}, sseStreamer_exists=${!!options.sseStreamer}, chatId=${options.chatId}`);
         const memory = nodeData.inputs?.memory as FlowiseMemory
         const moderations = nodeData.inputs?.inputModeration as Moderation[]
 
@@ -151,9 +150,7 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
         let sourceDocuments: ICommonObject[] = []
         let usedTools: IUsedTool[] = []
 
-        console.log(`[ConversationalRetrievalToolAgent] PRE_STREAM_CHECK. shouldStreamResponse=${shouldStreamResponse}, sseStreamer_exists=${!!sseStreamer}`);
         if (shouldStreamResponse) {
-            console.log(`[ConversationalRetrievalToolAgent] ENTERING_STREAM_BLOCK. chatId=${chatId}`);
             const handler = new CustomChainHandler(sseStreamer, chatId)
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, handler, ...callbacks] })
             if (res.sourceDocuments) {
@@ -180,7 +177,6 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
 
             if (sseStreamer) {
                 sseStreamer.streamEndEvent(chatId)
-                console.log('streamEndEvent')
             }
         } else {
             res = await executor.invoke({ input }, { callbacks: [loggerHandler, ...callbacks] })
