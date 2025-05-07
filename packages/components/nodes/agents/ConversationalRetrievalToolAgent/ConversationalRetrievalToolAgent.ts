@@ -44,7 +44,7 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
     constructor(fields?: { sessionId?: string }) {
         this.label = 'Conversational Retrieval Tool Agent'
         this.name = 'conversationalRetrievalToolAgent'
-        this.author = 'niztal(falkor)'
+        this.author = 'niztal(falkor) and nikitas-novatix'
         this.version = 1.0
         this.type = 'AgentExecutor'
         this.category = 'Agents'
