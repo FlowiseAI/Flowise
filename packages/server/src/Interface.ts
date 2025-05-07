@@ -352,6 +352,7 @@ export interface IFlowConfig {
     apiMessageId: string
     overrideConfig?: ICommonObject
     state?: ICommonObject
+    runtimeChatHistoryLength?: number
 }
 
 export interface IPredictionQueueAppServer {

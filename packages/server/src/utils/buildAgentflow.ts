@@ -32,6 +32,7 @@ import {
     INodeDirectedGraph
 } from '../Interface'
 import {
+    RUNTIME_MESSAGES_LENGTH_VAR_PREFIX,
     CHAT_HISTORY_VAR_PREFIX,
     databaseEntities,
     FILE_ATTACHMENT_PREFIX,
@@ -277,6 +278,10 @@ export const resolveVariables = async (
 
             if (variableFullPath === CHAT_HISTORY_VAR_PREFIX) {
                 resolvedValue = resolvedValue.replace(match, convertChatHistoryToText(chatHistory))
+            }
+
+            if (variableFullPath === RUNTIME_MESSAGES_LENGTH_VAR_PREFIX) {
+                resolvedValue = resolvedValue.replace(match, flowConfig?.runtimeChatHistoryLength ?? 0)
             }
 
             if (variableFullPath.startsWith('$iteration')) {
@@ -536,7 +541,7 @@ async function determineNodesToIgnore(
         // Find indexes of unfulfilled conditions
         const unfulfilledIndexes = outputConditions
             .map((condition: any, index: number) =>
-                condition.isFullfilled === false || !Object.prototype.hasOwnProperty.call(condition, 'isFullfilled') ? index : -1
+                condition.isFulfilled === false || !Object.prototype.hasOwnProperty.call(condition, 'isFulfilled') ? index : -1
             )
             .filter((index: number) => index !== -1)
 
@@ -823,13 +828,15 @@ const executeNode = async ({
 
         // Prepare flow config
         let updatedState = cloneDeep(agentflowRuntime.state)
-        const chatHistory = [...pastChatHistory, ...(agentflowRuntime.chatHistory || [])]
+        const runtimeChatHistory = agentflowRuntime.chatHistory || []
+        const chatHistory = [...pastChatHistory, ...runtimeChatHistory]
         const flowConfig: IFlowConfig = {
             chatflowid: chatflow.id,
             chatId,
             sessionId,
             apiMessageId,
             chatHistory,
+            runtimeChatHistoryLength: Math.max(0, runtimeChatHistory.length - 1),
             state: updatedState,
             ...overrideConfig
         }

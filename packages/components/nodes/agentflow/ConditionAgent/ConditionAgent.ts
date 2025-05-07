@@ -400,7 +400,7 @@ class ConditionAgent_Agentflow implements INode {
             const conditions = _conditionAgentScenarios.map((scenario, index) => {
                 return {
                     output: scenario.scenario,
-                    isFullfilled: index === matchedScenarioIndex
+                    isFulfilled: index === matchedScenarioIndex
                 }
             })
 

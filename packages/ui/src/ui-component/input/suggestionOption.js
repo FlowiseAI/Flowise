@@ -60,6 +60,12 @@ export const suggestionOptions = (
                 category: 'Chat Context'
             },
             {
+                id: 'runtime_messages_length',
+                mentionLabel: 'runtime_messages_length',
+                description: 'Total messsages between LLM and Agent',
+                category: 'Chat Context'
+            },
+            {
                 id: 'file_attachment',
                 mentionLabel: 'file_attachment',
                 description: 'Files uploaded from the chat',

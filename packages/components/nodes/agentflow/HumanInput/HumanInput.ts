@@ -157,23 +157,23 @@ class HumanInput_Agentflow implements INode {
                     type: 'proceed',
                     startNodeId: humanInput?.startNodeId,
                     feedback: humanInputEnableFeedback && humanInput?.feedback ? humanInput.feedback : undefined,
-                    isFullfilled: false
+                    isFulfilled: false
                 },
                 {
                     type: 'reject',
                     startNodeId: humanInput?.startNodeId,
                     feedback: humanInputEnableFeedback && humanInput?.feedback ? humanInput.feedback : undefined,
-                    isFullfilled: false
+                    isFulfilled: false
                 }
             ]
 
             // Only one outcome can be fulfilled at a time
             switch (humanInput?.type) {
                 case 'proceed':
-                    outcomes[0].isFullfilled = true
+                    outcomes[0].isFulfilled = true
                     break
                 case 'reject':
-                    outcomes[1].isFullfilled = true
+                    outcomes[1].isFulfilled = true
                     break
             }
 

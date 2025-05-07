@@ -166,6 +166,59 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
         setFeedbackType('')
     }
 
+    const renderFullfilledConditions = (conditions) => {
+        const fullfilledConditions = conditions.filter((condition) => condition.isFulfilled)
+        return fullfilledConditions.map((condition, index) => {
+            if (condition.type === 'string' && condition.operation === 'equal' && condition.value1 === '' && condition.value2 === '') {
+                return (
+                    <Box
+                        key={`else-${index}`}
+                        sx={{
+                            border: 1,
+                            borderColor: 'success.main',
+                            borderRadius: 1,
+                            p: 2,
+                            backgroundColor: theme.palette.background.default
+                        }}
+                    >
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant='body1'>Else condition fulfilled</Typography>
+                            <Chip
+                                label={condition.isFulfilled ? 'Fulfilled' : 'Not Fulfilled'}
+                                size='small'
+                                sx={{ color: 'white', backgroundColor: theme.palette.success.dark }}
+                                variant='filled'
+                            />
+                        </Box>
+                    </Box>
+                )
+            }
+            return (
+                <Box
+                    key={`condition-${index}`}
+                    sx={{
+                        border: 1,
+                        borderColor: 'success.main',
+                        borderRadius: 1,
+                        p: 2,
+                        backgroundColor: theme.palette.background.default
+                    }}
+                >
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant='subtitle2'>Condition {index}</Typography>
+                        <Chip
+                            label={condition.isFulfilled ? 'Fulfilled' : 'Not Fulfilled'}
+                            size='small'
+                            variant='filled'
+                            sx={{ color: 'white', backgroundColor: theme.palette.success.dark }}
+                        />
+                    </Box>
+                    <JSONViewer data={condition} />
+                </Box>
+            )
+        })
+    }
+
     return (
         <Box sx={{ position: 'relative' }}>
             <Box
@@ -745,8 +798,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                 })()}
                             </Box>
                         ))
-                    ) : data?.input?.form || data?.input?.http ? (
-                        <JSONViewer data={data.input.form || data.input.http} />
+                    ) : data?.input?.form || data?.input?.http || data?.input?.conditions ? (
+                        <JSONViewer data={data.input.form || data.input.http || data.input.conditions} />
                     ) : data?.input?.code ? (
                         <Box
                             sx={{
@@ -793,6 +846,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     </Typography>
                     {data?.output?.form || data?.output?.http ? (
                         <JSONViewer data={data.output.form || data.output.http} />
+                    ) : data?.output?.conditions ? (
+                        renderFullfilledConditions(data.output.conditions)
                     ) : (
                         <Box
                             sx={{

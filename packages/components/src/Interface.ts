@@ -470,7 +470,7 @@ export interface ICondition {
     value1: CommonType
     operation: string
     value2: CommonType
-    isFullfilled?: boolean
+    isFulfilled?: boolean
 }
 
 export interface IHumanInput {

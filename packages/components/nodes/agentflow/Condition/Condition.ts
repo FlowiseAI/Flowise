@@ -308,30 +308,30 @@ class Condition_Agentflow implements INode {
             if (compareOperationResult) {
                 // find the matching condition
                 const conditionIndex = conditions.findIndex((c) => JSON.stringify(c) === JSON.stringify(condition))
-                // add isFullfilled to the condition
+                // add isFulfilled to the condition
                 if (conditionIndex > -1) {
-                    conditions[conditionIndex] = { ...condition, isFullfilled: true }
+                    conditions[conditionIndex] = { ...condition, isFulfilled: true }
                 }
                 break
             }
         }
 
-        // If no condition is fullfilled, add isFullfilled to the ELSE condition
+        // If no condition is fullfilled, add isFulfilled to the ELSE condition
         const dummyElseConditionData = {
             type: 'string',
             value1: '',
             operation: 'equal',
             value2: ''
         }
-        if (!conditions.some((c) => c.isFullfilled)) {
+        if (!conditions.some((c) => c.isFulfilled)) {
             conditions.push({
                 ...dummyElseConditionData,
-                isFullfilled: true
+                isFulfilled: true
             })
         } else {
             conditions.push({
                 ...dummyElseConditionData,
-                isFullfilled: false
+                isFulfilled: false
             })
         }
 
