@@ -303,10 +303,9 @@ const prepareAgent = async (
             return input
         }
 
-        // Get chat history
+        // Get chat history. If no chat history, return original input
         const messages = (await memory.getChatMessages(flowObj?.sessionId, true)) as BaseMessage[]
-        
-        // If no chat history, return original input
+
         if (!messages || messages.length === 0) {
             return input
         }
@@ -315,11 +314,7 @@ const prepareAgent = async (
         try {
             const CONDENSE_QUESTION_PROMPT = PromptTemplate.fromTemplate(rephrasePrompt)
             const condenseQuestionChain = RunnableSequence.from([CONDENSE_QUESTION_PROMPT, model, new StringOutputParser()])
-            
-            // Format chat history
             const chatHistoryString = messages.map((message) => `${message._getType()}: ${message.content}`).join('\n')
-            
-            // Get standalone question
             return await condenseQuestionChain.invoke({
                 question: input,
                 chat_history: chatHistoryString
