@@ -99,14 +99,85 @@ const checkFlowValidation = async (flowId: string): Promise<IValidationResult[]>
                             inputValue.forEach((item: Record<string, any>, index: number) => {
                                 if (param.array) {
                                     param.array.forEach((arrayParam: INodeParams) => {
-                                        // Assume array item parameters are required unless explicitly optional
-                                        if (
-                                            (arrayParam.optional === undefined || !arrayParam.optional) &&
-                                            (item[arrayParam.name] === undefined ||
-                                                item[arrayParam.name] === null ||
-                                                item[arrayParam.name] === '')
-                                        ) {
-                                            nodeIssues.push(`${param.label} item #${index + 1}: ${arrayParam.label} is required`)
+                                        // Evaluate if this parameter should be shown based on current values
+                                        // First check show conditions
+                                        let shouldValidate = true
+
+                                        if (arrayParam.show) {
+                                            // Default to not showing unless conditions match
+                                            shouldValidate = false
+
+                                            // Each key in show is a condition that must be satisfied
+                                            for (const [conditionKey, expectedValue] of Object.entries(arrayParam.show)) {
+                                                const isIndexCondition = conditionKey.includes('$index')
+                                                let actualValue
+
+                                                if (isIndexCondition) {
+                                                    // Replace $index with actual index and evaluate
+                                                    const normalizedKey = conditionKey.replace(/conditions\[\$index\]\.(\w+)/, '$1')
+                                                    actualValue = item[normalizedKey]
+                                                } else {
+                                                    // Direct property in the current item
+                                                    actualValue = item[conditionKey]
+                                                }
+
+                                                // Check if condition is satisfied
+                                                let conditionMet = false
+                                                if (Array.isArray(expectedValue)) {
+                                                    conditionMet = expectedValue.includes(actualValue)
+                                                } else {
+                                                    conditionMet = actualValue === expectedValue
+                                                }
+
+                                                if (conditionMet) {
+                                                    shouldValidate = true
+                                                    break // One matching condition is enough
+                                                }
+                                            }
+                                        }
+
+                                        // Then check hide conditions (they override show conditions)
+                                        if (shouldValidate && arrayParam.hide) {
+                                            for (const [conditionKey, expectedValue] of Object.entries(arrayParam.hide)) {
+                                                const isIndexCondition = conditionKey.includes('$index')
+                                                let actualValue
+
+                                                if (isIndexCondition) {
+                                                    // Replace $index with actual index and evaluate
+                                                    const normalizedKey = conditionKey.replace(/conditions\[\$index\]\.(\w+)/, '$1')
+                                                    actualValue = item[normalizedKey]
+                                                } else {
+                                                    // Direct property in the current item
+                                                    actualValue = item[conditionKey]
+                                                }
+
+                                                // Check if hide condition is met
+                                                let shouldHide = false
+                                                if (Array.isArray(expectedValue)) {
+                                                    shouldHide = expectedValue.includes(actualValue)
+                                                } else {
+                                                    shouldHide = actualValue === expectedValue
+                                                }
+
+                                                if (shouldHide) {
+                                                    shouldValidate = false
+                                                    break // One matching hide condition is enough to hide
+                                                }
+                                            }
+                                        }
+
+                                        // Only validate if field should be shown
+                                        if (shouldValidate) {
+                                            // Check if value is required and missing
+                                            if (
+                                                (arrayParam.optional === undefined || !arrayParam.optional) &&
+                                                (item[arrayParam.name] === undefined ||
+                                                    item[arrayParam.name] === null ||
+                                                    item[arrayParam.name] === '' ||
+                                                    item[arrayParam.name] === '<p></p>')
+                                            ) {
+                                                nodeIssues.push(`${param.label} item #${index + 1}: ${arrayParam.label} is required`)
+                                            }
                                         }
                                     })
                                 }
