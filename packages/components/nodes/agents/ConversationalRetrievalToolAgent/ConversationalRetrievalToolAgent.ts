@@ -164,7 +164,6 @@ class ConversationalRetrievalToolAgent_Agents implements INode {
 
             // If the tool is set to returnDirect, stream the output to the client
             if (res.usedTools && res.usedTools.length) {
-                console.log('Using tool and it\'s set to returnDirect', res.usedTools)
                 let inputTools = nodeData.inputs?.tools
                 inputTools = flatten(inputTools)
                 for (const tool of res.usedTools) {
