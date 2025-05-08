@@ -168,10 +168,10 @@ export const defaultThemeConfig = {
             time: true
         },
         footer: {
-            textColor: '#303235',
-            text: 'Powered by',
-            company: 'HayimG',
-            companyLink: 'https://hayimg.com'
+         //   textColor: '#303235',
+           // text: 'Powered by',
+            //company: 'HayimG',
+            //companyLink: 'https://hayimg.com'
         }
     }
 }
