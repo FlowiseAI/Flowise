@@ -16,7 +16,7 @@ class AAIChatMemory_Memory implements INode {
     inputs: INodeParams[]
 
     constructor() {
-        this.label = 'Answer Agent Chat Memory'
+        this.label = 'Answer Chat Memory'
         this.name = 'AAIChatMemory'
         this.version = 1.0
         this.type = 'AAIChatMemory'
