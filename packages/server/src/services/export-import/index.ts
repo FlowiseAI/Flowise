@@ -178,7 +178,11 @@ async function replaceDuplicateIdsForChatMessage(queryRunner: QueryRunner, origi
         const chatmessageChatflowIds = chatMessages.map((chatMessage) => {
             return { id: chatMessage.chatflowid, qty: 0 }
         })
-        const originalDataChatflowIds = originalData.ChatFlow.map((chatflow) => chatflow.id)
+        const originalDataChatflowIds = [
+            ...originalData.AssistantFlow.map((assistantFlow) => assistantFlow.id),
+            ...originalData.AgentFlow.map((agentflow) => agentflow.id),
+            ...originalData.ChatFlow.map((chatflow) => chatflow.id)
+        ]
         chatmessageChatflowIds.forEach((item) => {
             if (originalDataChatflowIds.includes(item.id)) {
                 item.qty += 1
@@ -229,7 +233,11 @@ async function replaceDuplicateIdsForChatMessageFeedback(
         const feedbackChatflowIds = chatMessageFeedbacks.map((feedback) => {
             return { id: feedback.chatflowid, qty: 0 }
         })
-        const originalDataChatflowIds = originalData.ChatFlow.map((chatflow) => chatflow.id)
+        const originalDataChatflowIds = [
+            ...originalData.AssistantFlow.map((assistantFlow) => assistantFlow.id),
+            ...originalData.AgentFlow.map((agentflow) => agentflow.id),
+            ...originalData.ChatFlow.map((chatflow) => chatflow.id)
+        ]
         feedbackChatflowIds.forEach((item) => {
             if (originalDataChatflowIds.includes(item.id)) {
                 item.qty += 1
