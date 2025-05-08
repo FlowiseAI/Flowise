@@ -556,6 +556,12 @@
                                 "type": "asyncOptions",
                                 "loadMethod": "listTools",
                                 "loadConfig": true
+                            },
+                            {
+                                "label": "Require Human Input",
+                                "name": "agentSelectedToolRequiresHumanInput",
+                                "type": "boolean",
+                                "optional": true
                             }
                         ],
                         "id": "agentAgentflow_1-input-agentTools-array",
@@ -897,6 +903,12 @@
                                 "type": "asyncOptions",
                                 "loadMethod": "listTools",
                                 "loadConfig": true
+                            },
+                            {
+                                "label": "Require Human Input",
+                                "name": "agentSelectedToolRequiresHumanInput",
+                                "type": "boolean",
+                                "optional": true
                             }
                         ],
                         "id": "agentAgentflow_2-input-agentTools-array",
@@ -1235,6 +1247,12 @@
                                 "type": "asyncOptions",
                                 "loadMethod": "listTools",
                                 "loadConfig": true
+                            },
+                            {
+                                "label": "Require Human Input",
+                                "name": "agentSelectedToolRequiresHumanInput",
+                                "type": "boolean",
+                                "optional": true
                             }
                         ],
                         "id": "agentAgentflow_3-input-agentTools-array",

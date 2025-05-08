@@ -2,6 +2,7 @@ import { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import {
     ICommonObject,
     IDatabaseEntity,
+    IHumanInput,
     INode,
     INodeData,
     INodeOptionsValue,
@@ -30,6 +31,7 @@ import {
 interface ITool {
     agentSelectedTool: string
     agentSelectedToolConfig: ICommonObject
+    agentSelectedToolRequiresHumanInput: boolean
 }
 
 interface IKnowledgeBase {
@@ -141,6 +143,12 @@ class Agent_Agentflow implements INode {
                         type: 'asyncOptions',
                         loadMethod: 'listTools',
                         loadConfig: true
+                    },
+                    {
+                        label: 'Require Human Input',
+                        name: 'agentSelectedToolRequiresHumanInput',
+                        type: 'boolean',
+                        optional: true
                     }
                 ]
             },
@@ -487,6 +495,10 @@ class Agent_Agentflow implements INode {
                     }
                 }
                 const toolInstance = await newToolNodeInstance.init(newNodeData, '', options)
+                if (tool.agentSelectedToolRequiresHumanInput) {
+                    toolInstance.requiresHumanInput = true
+                }
+
                 // toolInstance might returns a list of tools like MCP tools
                 if (Array.isArray(toolInstance)) {
                     for (const subTool of toolInstance) {
@@ -694,9 +706,15 @@ class Agent_Agentflow implements INode {
                     ...modelConfig
                 }
             }
-            let llmNodeInstance = (await newLLMNodeInstance.init(newNodeData, '', options)) as BaseChatModel
+
+            const llmWithoutToolsBind = (await newLLMNodeInstance.init(newNodeData, '', options)) as BaseChatModel
+            let llmNodeInstance = llmWithoutToolsBind
 
             if (llmNodeInstance && toolsInstance.length > 0) {
+                if (llmNodeInstance.bindTools === undefined) {
+                    throw new Error(`Agent needs to have a function calling capable models.`)
+                }
+
                 // @ts-ignore
                 llmNodeInstance = llmNodeInstance.bindTools(toolsInstance)
             }
@@ -774,25 +792,30 @@ class Agent_Agentflow implements INode {
             // Get initial response from LLM
             const sseStreamer: IServerSideEventStreamer | undefined = options.sseStreamer
 
-            if (isStreamable) {
-                response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
-            } else {
-                response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
-            }
-
             // Handle tool calls with support for recursion
             let usedTools: IUsedTool[] = []
             let sourceDocuments: Array<any> = []
             let artifacts: any[] = []
             let additionalTokens = 0
+            let isWaitingForHumanInput = false
 
             // Store the current messages length to track which messages are added during tool calls
             const messagesBeforeToolCalls = [...messages]
             let _toolCallMessages: BaseMessageLike[] = []
 
-            if (response.tool_calls && response.tool_calls.length > 0) {
-                const result = await this.handleToolCalls({
-                    response,
+            // Check if this is hummanInput for tool calls
+            const _humanInput = nodeData.inputs?.humanInput
+            const humanInput: IHumanInput = typeof _humanInput === 'string' ? JSON.parse(_humanInput) : _humanInput
+            const humanInputAction = options.humanInputAction
+            const iterationContext = options.iterationContext
+
+            if (humanInput) {
+                if (humanInput.type !== 'proceed' && humanInput.type !== 'reject') {
+                    throw new Error(`Invalid human input type. Expected 'proceed' or 'reject', but got '${humanInput.type}'`)
+                }
+                const result = await this.handleResumedToolCalls({
+                    humanInput,
+                    humanInputAction,
                     messages,
                     toolsInstance,
                     sseStreamer,
@@ -800,9 +823,10 @@ class Agent_Agentflow implements INode {
                     input,
                     options,
                     abortController,
-                    llmNodeInstance,
+                    llmWithoutToolsBind,
                     isStreamable,
-                    isLastNode
+                    isLastNode,
+                    iterationContext
                 })
 
                 response = result.response
@@ -810,6 +834,7 @@ class Agent_Agentflow implements INode {
                 sourceDocuments = result.sourceDocuments
                 artifacts = result.artifacts
                 additionalTokens = result.totalTokens
+                isWaitingForHumanInput = result.isWaitingForHumanInput || false
 
                 // Calculate which messages were added during tool calls
                 _toolCallMessages = messages.slice(messagesBeforeToolCalls.length)
@@ -828,7 +853,55 @@ class Agent_Agentflow implements INode {
                         sseStreamer.streamArtifactsEvent(chatId, flatten(artifacts))
                     }
                 }
-            } else if (!isStreamable && isLastNode && sseStreamer) {
+            } else {
+                if (isStreamable) {
+                    response = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+                } else {
+                    response = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+                }
+            }
+
+            if (!humanInput && response.tool_calls && response.tool_calls.length > 0) {
+                const result = await this.handleToolCalls({
+                    response,
+                    messages,
+                    toolsInstance,
+                    sseStreamer,
+                    chatId,
+                    input,
+                    options,
+                    abortController,
+                    llmNodeInstance,
+                    isStreamable,
+                    isLastNode,
+                    iterationContext
+                })
+
+                response = result.response
+                usedTools = result.usedTools
+                sourceDocuments = result.sourceDocuments
+                artifacts = result.artifacts
+                additionalTokens = result.totalTokens
+                isWaitingForHumanInput = result.isWaitingForHumanInput || false
+
+                // Calculate which messages were added during tool calls
+                _toolCallMessages = messages.slice(messagesBeforeToolCalls.length)
+
+                // Stream additional data if this is the last node
+                if (isLastNode && sseStreamer) {
+                    if (usedTools.length > 0) {
+                        sseStreamer.streamUsedToolsEvent(chatId, flatten(usedTools))
+                    }
+
+                    if (sourceDocuments.length > 0) {
+                        sseStreamer.streamSourceDocumentsEvent(chatId, flatten(sourceDocuments))
+                    }
+
+                    if (artifacts.length > 0) {
+                        sseStreamer.streamArtifactsEvent(chatId, flatten(artifacts))
+                    }
+                }
+            } else if (!humanInput && !isStreamable && isLastNode && sseStreamer) {
                 // Stream whole response back to UI if not streaming and no tool calls
                 sseStreamer.streamTokenEvent(chatId, JSON.stringify(response, null, 2))
             }
@@ -862,7 +935,8 @@ class Agent_Agentflow implements INode {
                 usedTools,
                 sourceDocuments,
                 artifacts,
-                additionalTokens
+                additionalTokens,
+                isWaitingForHumanInput
             )
 
             // End analytics tracking
@@ -1149,7 +1223,8 @@ class Agent_Agentflow implements INode {
         usedTools: IUsedTool[],
         sourceDocuments: Array<any>,
         artifacts: any[],
-        additionalTokens: number = 0
+        additionalTokens: number = 0,
+        isWaitingForHumanInput: boolean = false
     ): any {
         const output: any = {
             content: finalResponse,
@@ -1197,6 +1272,10 @@ class Agent_Agentflow implements INode {
             output.availableTools = availableTools
         }
 
+        if (isWaitingForHumanInput) {
+            output.isWaitingForHumanInput = isWaitingForHumanInput
+        }
+
         return output
     }
 
@@ -1231,7 +1310,8 @@ class Agent_Agentflow implements INode {
         abortController,
         llmNodeInstance,
         isStreamable,
-        isLastNode
+        isLastNode,
+        iterationContext
     }: {
         response: AIMessageChunk
         messages: BaseMessageLike[]
@@ -1244,12 +1324,14 @@ class Agent_Agentflow implements INode {
         llmNodeInstance: BaseChatModel
         isStreamable: boolean
         isLastNode: boolean
+        iterationContext: ICommonObject
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
         sourceDocuments: Array<any>
         artifacts: any[]
         totalTokens: number
+        isWaitingForHumanInput?: boolean
     }> {
         // Track total tokens used throughout this process
         let totalTokens = response.usage_metadata?.total_tokens || 0
@@ -1284,12 +1366,22 @@ class Agent_Agentflow implements INode {
             if (selectedTool) {
                 let parsedDocs
                 let parsedArtifacts
+                let isToolRequireHumanInput =
+                    (selectedTool as any).requiresHumanInput && (!iterationContext || Object.keys(iterationContext).length === 0)
 
                 const flowConfig = {
                     sessionId: options.sessionId,
                     chatId: options.chatId,
                     input: input,
                     state: options.agentflowRuntime?.state
+                }
+
+                if (isToolRequireHumanInput) {
+                    const toolCallDetails = '```json\n' + JSON.stringify(toolCall, null, 2) + '\n```'
+                    const responseContent = response.content + `\nAttempting to use tool:\n${toolCallDetails}`
+                    response.content = responseContent
+                    sseStreamer?.streamTokenEvent(chatId, responseContent)
+                    return { response, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput: true }
                 }
 
                 try {
@@ -1409,7 +1501,8 @@ class Agent_Agentflow implements INode {
                 abortController,
                 llmNodeInstance,
                 isStreamable,
-                isLastNode
+                isLastNode,
+                iterationContext
             })
 
             // Merge results from recursive tool calls
@@ -1421,6 +1514,250 @@ class Agent_Agentflow implements INode {
         }
 
         return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens }
+    }
+
+    /**
+     * Handles tool calls and their responses, with support for recursive tool calling
+     */
+    private async handleResumedToolCalls({
+        humanInput,
+        humanInputAction,
+        messages,
+        toolsInstance,
+        sseStreamer,
+        chatId,
+        input,
+        options,
+        abortController,
+        llmWithoutToolsBind,
+        isStreamable,
+        isLastNode,
+        iterationContext
+    }: {
+        humanInput: IHumanInput
+        humanInputAction: Record<string, any> | undefined
+        messages: BaseMessageLike[]
+        toolsInstance: Tool[]
+        sseStreamer: IServerSideEventStreamer | undefined
+        chatId: string
+        input: string | Record<string, any>
+        options: ICommonObject
+        abortController: AbortController
+        llmWithoutToolsBind: BaseChatModel
+        isStreamable: boolean
+        isLastNode: boolean
+        iterationContext: ICommonObject
+    }): Promise<{
+        response: AIMessageChunk
+        usedTools: IUsedTool[]
+        sourceDocuments: Array<any>
+        artifacts: any[]
+        totalTokens: number
+        isWaitingForHumanInput?: boolean
+    }> {
+        let llmNodeInstance = llmWithoutToolsBind
+
+        const lastCheckpointMessages = humanInputAction?.data?.input?.messages ?? []
+        if (!lastCheckpointMessages.length) {
+            return { response: new AIMessageChunk(''), usedTools: [], sourceDocuments: [], artifacts: [], totalTokens: 0 }
+        }
+
+        // Use the last message as the response
+        const response = lastCheckpointMessages[lastCheckpointMessages.length - 1] as AIMessageChunk
+
+        // Replace messages array
+        messages.length = 0
+        messages.push(...lastCheckpointMessages.slice(0, lastCheckpointMessages.length - 1))
+
+        // Track total tokens used throughout this process
+        let totalTokens = response.usage_metadata?.total_tokens || 0
+
+        if (!response.tool_calls || response.tool_calls.length === 0) {
+            return { response, usedTools: [], sourceDocuments: [], artifacts: [], totalTokens }
+        }
+
+        // Stream tool calls if available
+        if (sseStreamer) {
+            sseStreamer.streamCalledToolsEvent(chatId, JSON.stringify(response.tool_calls))
+        }
+
+        // Add LLM response with tool calls to messages
+        messages.push({
+            id: response.id,
+            role: 'assistant',
+            content: response.content,
+            tool_calls: response.tool_calls,
+            usage_metadata: response.usage_metadata
+        })
+
+        const usedTools: IUsedTool[] = []
+        let sourceDocuments: Array<any> = []
+        let artifacts: any[] = []
+        let isWaitingForHumanInput: boolean | undefined
+
+        // Process each tool call
+        for (let i = 0; i < response.tool_calls.length; i++) {
+            const toolCall = response.tool_calls[i]
+
+            const selectedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
+            if (selectedTool) {
+                let parsedDocs
+                let parsedArtifacts
+
+                const flowConfig = {
+                    sessionId: options.sessionId,
+                    chatId: options.chatId,
+                    input: input,
+                    state: options.agentflowRuntime?.state
+                }
+
+                if (humanInput.type === 'reject') {
+                    messages.pop()
+                    toolsInstance = toolsInstance.filter((tool) => tool.name !== toolCall.name)
+                }
+                if (humanInput.type === 'proceed') {
+                    try {
+                        //@ts-ignore
+                        let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+
+                        // Extract source documents if present
+                        if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
+                            const [output, docs] = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)
+                            toolOutput = output
+                            try {
+                                parsedDocs = JSON.parse(docs)
+                                sourceDocuments.push(parsedDocs)
+                            } catch (e) {
+                                console.error('Error parsing source documents from tool:', e)
+                            }
+                        }
+
+                        // Extract artifacts if present
+                        if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
+                            const [output, artifact] = toolOutput.split(ARTIFACTS_PREFIX)
+                            toolOutput = output
+                            try {
+                                parsedArtifacts = JSON.parse(artifact)
+                                artifacts.push(parsedArtifacts)
+                            } catch (e) {
+                                console.error('Error parsing artifacts from tool:', e)
+                            }
+                        }
+
+                        // Add tool message to conversation
+                        messages.push({
+                            role: 'tool',
+                            content: toolOutput,
+                            tool_call_id: toolCall.id,
+                            name: toolCall.name,
+                            additional_kwargs: {
+                                artifacts: parsedArtifacts,
+                                sourceDocuments: parsedDocs
+                            }
+                        })
+
+                        // Track used tools
+                        usedTools.push({
+                            tool: toolCall.name,
+                            toolInput: toolCall.args,
+                            toolOutput
+                        })
+                    } catch (e) {
+                        console.error('Error invoking tool:', e)
+                        usedTools.push({
+                            tool: selectedTool.name,
+                            toolInput: toolCall.args,
+                            toolOutput: '',
+                            error: getErrorMessage(e)
+                        })
+                    }
+                }
+            }
+        }
+
+        // Return direct tool output if there's exactly one tool with returnDirect
+        if (response.tool_calls.length === 1) {
+            const selectedTool = toolsInstance.find((tool) => tool.name === response.tool_calls?.[0]?.name)
+            if (selectedTool && selectedTool.returnDirect) {
+                const lastToolOutput = usedTools[0]?.toolOutput || ''
+                const lastToolOutputString = typeof lastToolOutput === 'string' ? lastToolOutput : JSON.stringify(lastToolOutput, null, 2)
+
+                if (sseStreamer) {
+                    sseStreamer.streamTokenEvent(chatId, lastToolOutputString)
+                }
+
+                return {
+                    response: new AIMessageChunk(lastToolOutputString),
+                    usedTools,
+                    sourceDocuments,
+                    artifacts,
+                    totalTokens
+                }
+            }
+        }
+
+        // Get LLM response after tool calls
+        let newResponse: AIMessageChunk
+
+        if (llmNodeInstance && toolsInstance.length > 0) {
+            if (llmNodeInstance.bindTools === undefined) {
+                throw new Error(`Agent needs to have a function calling capable models.`)
+            }
+
+            // @ts-ignore
+            llmNodeInstance = llmNodeInstance.bindTools(toolsInstance)
+        }
+
+        if (isStreamable) {
+            newResponse = await this.handleStreamingResponse(sseStreamer, llmNodeInstance, messages, chatId, abortController)
+        } else {
+            newResponse = await llmNodeInstance.invoke(messages, { signal: abortController?.signal })
+
+            // Stream non-streaming response if this is the last node
+            if (isLastNode && sseStreamer) {
+                sseStreamer.streamTokenEvent(chatId, JSON.stringify(newResponse, null, 2))
+            }
+        }
+
+        // Add tokens from this response
+        if (newResponse.usage_metadata?.total_tokens) {
+            totalTokens += newResponse.usage_metadata.total_tokens
+        }
+
+        // Check for recursive tool calls and handle them
+        if (newResponse.tool_calls && newResponse.tool_calls.length > 0) {
+            const {
+                response: recursiveResponse,
+                usedTools: recursiveUsedTools,
+                sourceDocuments: recursiveSourceDocuments,
+                artifacts: recursiveArtifacts,
+                totalTokens: recursiveTokens,
+                isWaitingForHumanInput: recursiveIsWaitingForHumanInput
+            } = await this.handleToolCalls({
+                response: newResponse,
+                messages,
+                toolsInstance,
+                sseStreamer,
+                chatId,
+                input,
+                options,
+                abortController,
+                llmNodeInstance,
+                isStreamable,
+                isLastNode,
+                iterationContext
+            })
+
+            // Merge results from recursive tool calls
+            newResponse = recursiveResponse
+            usedTools.push(...recursiveUsedTools)
+            sourceDocuments = [...sourceDocuments, ...recursiveSourceDocuments]
+            artifacts = [...artifacts, ...recursiveArtifacts]
+            totalTokens += recursiveTokens
+            isWaitingForHumanInput = recursiveIsWaitingForHumanInput
+        }
+
+        return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput }
     }
 }
 

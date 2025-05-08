@@ -868,8 +868,15 @@ const executeNode = async ({
         )
 
         // Handle human input if present
+        let humanInputAction: Record<string, any> | undefined
+
+        if (agentFlowExecutedData.length) {
+            const lastNodeOutput = agentFlowExecutedData[agentFlowExecutedData.length - 1]?.data?.output as ICommonObject | undefined
+            humanInputAction = lastNodeOutput?.humanInputAction
+        }
+
         if (humanInput && nodeId === humanInput.startNodeId) {
-            reactFlowNodeData.inputs = { humanInput }
+            reactFlowNodeData.inputs = { ...reactFlowNodeData.inputs, humanInput }
             // Remove the stopped humanInput from execution data
             agentFlowExecutedData = agentFlowExecutedData.filter((execData) => execData.nodeId !== nodeId)
         }
@@ -913,7 +920,9 @@ const executeNode = async ({
             agentflowRuntime,
             abortController,
             analyticHandlers,
-            parentTraceIds
+            parentTraceIds,
+            humanInputAction,
+            iterationContext
         }
 
         // Execute node
@@ -1061,6 +1070,53 @@ const executeNode = async ({
 
         // Stop going through the current route if the node is a human task
         if (!humanInput && reactFlowNode.data.name === 'humanInputAgentflow') {
+            const humanInputAction = {
+                id: uuidv4(),
+                mapping: {
+                    approve: 'Proceed',
+                    reject: 'Reject'
+                },
+                elements: [
+                    { type: 'agentflowv2-approve-button', label: 'Proceed' },
+                    { type: 'agentflowv2-reject-button', label: 'Reject' }
+                ],
+                data: {
+                    nodeId,
+                    nodeLabel: reactFlowNode.data.label,
+                    input: results.input
+                }
+            }
+
+            const newWorkflowExecutedData: IAgentflowExecutedData = {
+                nodeId,
+                nodeLabel: reactFlowNode.data.label,
+                data: {
+                    ...results,
+                    output: {
+                        ...results.output,
+                        humanInputAction
+                    }
+                },
+                previousNodeIds: reversedGraph[nodeId] || [],
+                status: 'STOPPED'
+            }
+            agentFlowExecutedData.push(newWorkflowExecutedData)
+
+            sseStreamer?.streamNextAgentFlowEvent(chatId, {
+                nodeId,
+                nodeLabel: reactFlowNode.data.label,
+                status: 'STOPPED'
+            })
+            sseStreamer?.streamAgentFlowExecutedDataEvent(chatId, agentFlowExecutedData)
+            sseStreamer?.streamAgentFlowEvent(chatId, 'STOPPED')
+
+            sseStreamer?.streamActionEvent(chatId, humanInputAction)
+
+            return { result: results, shouldStop: true, agentFlowExecutedData }
+        }
+
+        // Stop going through the current route if the node is a agent node waiting for human input before using the tool
+        if (reactFlowNode.data.name === 'agentAgentflow' && results?.output?.isWaitingForHumanInput) {
             const humanInputAction = {
                 id: uuidv4(),
                 mapping: {

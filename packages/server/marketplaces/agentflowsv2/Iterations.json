@@ -960,6 +960,12 @@
                                 "type": "asyncOptions",
                                 "loadMethod": "listTools",
                                 "loadConfig": true
+                            },
+                            {
+                                "label": "Require Human Input",
+                                "name": "agentSelectedToolRequiresHumanInput",
+                                "type": "boolean",
+                                "optional": true
                             }
                         ],
                         "id": "agentAgentflow_0-input-agentTools-array",
