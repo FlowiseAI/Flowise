@@ -2,10 +2,10 @@
     "name": "flowise-ui",
     "version": "2.2.8",
     "license": "SEE LICENSE IN LICENSE.md",
-    "homepage": "https://flowiseai.com",
+    "homepage": "https://hayimg.com",
     "author": {
         "name": "HenryHeng",
-        "email": "henryheng@flowiseai.com"
+        "email": hayimg@gmail.com"
     },
     "dependencies": {
         "@codemirror/lang-javascript": "^6.2.1",
