@@ -12,10 +12,10 @@
         "nuke": "rimraf dist node_modules .turbo"
     },
     "keywords": [],
-    "homepage": "https://flowiseai.com",
+    "homepage": "https://hayimg.com",
     "author": {
-        "name": "Henry Heng",
-        "email": "henryheng@flowiseai.com"
+        "name": "HayimG",
+        "email": "hayimg@gmail.com"
     },
     "license": "SEE LICENSE IN LICENSE.md",
     "dependencies": {

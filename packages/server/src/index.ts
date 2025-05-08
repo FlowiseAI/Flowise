@@ -144,7 +144,7 @@ export class App {
         })
 
         // Switch off the default 'X-Powered-By: Express' header
-       // this.app.disable('x-powered-by')
+        this.app.disable('x-powered-by')
 
         // Add the expressRequestLogger middleware to log all requests
         this.app.use(expressRequestLogger)

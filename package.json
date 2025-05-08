@@ -1,11 +1,11 @@
 {
-    "name": "flowise",
+    "name": "HayimG",
     "version": "2.2.8",
     "private": true,
-    "homepage": "https://flowiseai.com",
+    "homepage": "https://hayimg.com",
     "workspaces": [
         "packages/*",
-        "flowise",
+        "hayimg",
         "ui",
         "components",
         "api-documentation"
