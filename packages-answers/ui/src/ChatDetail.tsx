@@ -115,7 +115,7 @@ export const ChatDetail = ({
                                             }
                                         }}
                                     >
-                                        {chat?.id ? <Typography variant='body1'>{chat?.title ?? chat.id}</Typography> : null}
+                                        {chat ? <Typography variant='body1'>{chat?.title ?? chat.id}</Typography> : null}
 
                                         {journey ? <Typography variant='body2'>{journey?.goal ?? journey?.title}</Typography> : null}
                                     </Box>

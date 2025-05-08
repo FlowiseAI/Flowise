@@ -1,6 +1,8 @@
 import React from 'react'
 import { Box, Button, IconButton } from '@mui/material'
 import type { Message, Sidekick } from 'types'
+import ChatFeedbackContentDialog from './../../../packages/ui/src/ui-component/dialog/ChatFeedbackContentDialog'
+import { useAnswers } from './AnswersContext'
 import RefreshIcon from '@mui/icons-material/Refresh'
 
 import dynamic from 'next/dynamic'
@@ -34,6 +36,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     setPreviewCode
 }) => {
     const openLinksInNewTab = chatbotConfig?.chatLinksInNewTab?.status ?? false
+    const { showFeedbackContentDialog, setShowFeedbackContentDialog, feedbackId, submitFeedbackContent } = useAnswers()
+
     return (
         <Box
             sx={{
@@ -48,6 +52,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
             </Box>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <ChatFeedbackContentDialog
+                    show={showFeedbackContentDialog}
+                    onCancel={() => setShowFeedbackContentDialog(false)}
+                    onConfirm={submitFeedbackContent}
+                />
                 {messages?.map((message, index) => (
                     <MessageCard
                         {...message}
@@ -55,6 +64,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                         setSelectedDocuments={setSelectedDocuments}
                         setPreviewCode={setPreviewCode}
                         openLinksInNewTab={openLinksInNewTab}
+                        role={message.role}
+                        isFeedbackAllowed={chatbotConfig?.chatFeedback?.status}
                     />
                 ))}
 
