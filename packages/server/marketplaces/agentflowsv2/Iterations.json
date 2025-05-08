@@ -997,6 +997,50 @@
                         "display": true
                     },
                     {
+                        "label": "Knowledge (Vector Embeddings)",
+                        "name": "agentKnowledgeVSEmbeddings",
+                        "type": "array",
+                        "description": "Give your agent context about different document sources from existing vector stores and embeddings",
+                        "array": [
+                            {
+                                "label": "Vector Store",
+                                "name": "vectorStore",
+                                "type": "asyncOptions",
+                                "loadMethod": "listVectorStores",
+                                "loadConfig": true
+                            },
+                            {
+                                "label": "Embedding Model",
+                                "name": "embeddingModel",
+                                "type": "asyncOptions",
+                                "loadMethod": "listEmbeddings",
+                                "loadConfig": true
+                            },
+                            {
+                                "label": "Knowledge Name",
+                                "name": "knowledgeName",
+                                "type": "string",
+                                "placeholder": "A short name for the knowledge base, this is useful for the AI to know when and how to search for correct information"
+                            },
+                            {
+                                "label": "Describe Knowledge",
+                                "name": "knowledgeDescription",
+                                "type": "string",
+                                "placeholder": "Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information",
+                                "rows": 4
+                            },
+                            {
+                                "label": "Return Source Documents",
+                                "name": "returnSourceDocuments",
+                                "type": "boolean",
+                                "optional": true
+                            }
+                        ],
+                        "optional": true,
+                        "id": "agentAgentflow_0-input-agentKnowledgeVSEmbeddings-array",
+                        "display": true
+                    },
+                    {
                         "label": "Enable Memory",
                         "name": "agentEnableMemory",
                         "type": "boolean",

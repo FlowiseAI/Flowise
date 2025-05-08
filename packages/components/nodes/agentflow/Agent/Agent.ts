@@ -38,6 +38,16 @@ interface IKnowledgeBase {
     returnSourceDocuments: boolean
 }
 
+interface IKnowledgeBaseVSEmbeddings {
+    vectorStore: string
+    vectorStoreConfig: ICommonObject
+    embeddingModel: string
+    embeddingModelConfig: ICommonObject
+    knowledgeName: string
+    knowledgeDescription: string
+    returnSourceDocuments: boolean
+}
+
 interface ISimpliefiedTool {
     name: string
     description: string
@@ -151,6 +161,50 @@ class Agent_Agentflow implements INode {
                         name: 'docStoreDescription',
                         type: 'string',
                         generateDocStoreDescription: true,
+                        placeholder:
+                            'Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information',
+                        rows: 4
+                    },
+                    {
+                        label: 'Return Source Documents',
+                        name: 'returnSourceDocuments',
+                        type: 'boolean',
+                        optional: true
+                    }
+                ],
+                optional: true
+            },
+            {
+                label: 'Knowledge (Vector Embeddings)',
+                name: 'agentKnowledgeVSEmbeddings',
+                type: 'array',
+                description: 'Give your agent context about different document sources from existing vector stores and embeddings',
+                array: [
+                    {
+                        label: 'Vector Store',
+                        name: 'vectorStore',
+                        type: 'asyncOptions',
+                        loadMethod: 'listVectorStores',
+                        loadConfig: true
+                    },
+                    {
+                        label: 'Embedding Model',
+                        name: 'embeddingModel',
+                        type: 'asyncOptions',
+                        loadMethod: 'listEmbeddings',
+                        loadConfig: true
+                    },
+                    {
+                        label: 'Knowledge Name',
+                        name: 'knowledgeName',
+                        type: 'string',
+                        placeholder:
+                            'A short name for the knowledge base, this is useful for the AI to know when and how to search for correct information'
+                    },
+                    {
+                        label: 'Describe Knowledge',
+                        name: 'knowledgeDescription',
+                        type: 'string',
                         placeholder:
                             'Describe what the knowledge base is about, this is useful for the AI to know when and how to search for correct information',
                         rows: 4
@@ -302,6 +356,27 @@ class Agent_Agentflow implements INode {
             }
             return returnOptions
         },
+        async listEmbeddings(_: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
+            const componentNodes = options.componentNodes as {
+                [key: string]: INode
+            }
+
+            const returnOptions: INodeOptionsValue[] = []
+            for (const nodeName in componentNodes) {
+                const componentNode = componentNodes[nodeName]
+                if (componentNode.category === 'Embeddings') {
+                    if (componentNode.tags?.includes('LlamaIndex')) {
+                        continue
+                    }
+                    returnOptions.push({
+                        label: componentNode.label,
+                        name: nodeName,
+                        imageSrc: componentNode.icon
+                    })
+                }
+            }
+            return returnOptions
+        },
         async listTools(_: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
             const componentNodes = options.componentNodes as {
                 [key: string]: INode
@@ -356,6 +431,27 @@ class Agent_Agentflow implements INode {
                 }
             }
             return returnData
+        },
+        async listVectorStores(_: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
+            const componentNodes = options.componentNodes as {
+                [key: string]: INode
+            }
+
+            const returnOptions: INodeOptionsValue[] = []
+            for (const nodeName in componentNodes) {
+                const componentNode = componentNodes[nodeName]
+                if (componentNode.category === 'Vector Stores') {
+                    if (componentNode.tags?.includes('LlamaIndex')) {
+                        continue
+                    }
+                    returnOptions.push({
+                        label: componentNode.label,
+                        name: nodeName,
+                        imageSrc: componentNode.icon
+                    })
+                }
+            }
+            return returnOptions
         }
     }
 
@@ -433,7 +529,7 @@ class Agent_Agentflow implements INode {
                 for (const knowledgeBase of knowledgeBases) {
                     const nodeInstanceFilePath = options.componentNodes['retrieverTool'].filePath as string
                     const nodeModule = await import(nodeInstanceFilePath)
-                    const newToolNodeInstance = new nodeModule.nodeClass()
+                    const newRetrieverToolNodeInstance = new nodeModule.nodeClass()
                     const [storeId, storeName] = knowledgeBase.documentStore.split(':')
 
                     const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
@@ -454,7 +550,7 @@ class Agent_Agentflow implements INode {
                         options
                     )
 
-                    const newNodeData = {
+                    const newRetrieverToolNodeData = {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
@@ -467,11 +563,11 @@ class Agent_Agentflow implements INode {
                             returnSourceDocuments: knowledgeBase.returnSourceDocuments
                         }
                     }
-                    const toolInstance = await newToolNodeInstance.init(newNodeData, '', options)
+                    const retrieverToolInstance = await newRetrieverToolNodeInstance.init(newRetrieverToolNodeData, '', options)
 
-                    toolsInstance.push(toolInstance as Tool)
+                    toolsInstance.push(retrieverToolInstance as Tool)
 
-                    const jsonSchema = zodToJsonSchema(toolInstance.schema)
+                    const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
                     if (jsonSchema.$schema) {
                         delete jsonSchema.$schema
                     }
@@ -485,8 +581,89 @@ class Agent_Agentflow implements INode {
                         description: knowledgeBase.docStoreDescription,
                         schema: jsonSchema,
                         toolNode: {
-                            label: componentNode?.label || toolInstance.name,
-                            name: componentNode?.name || toolInstance.name
+                            label: componentNode?.label || retrieverToolInstance.name,
+                            name: componentNode?.name || retrieverToolInstance.name
+                        }
+                    })
+                }
+            }
+
+            const knowledgeBasesForVSEmbeddings = nodeData.inputs?.agentKnowledgeVSEmbeddings as IKnowledgeBaseVSEmbeddings[]
+            if (knowledgeBasesForVSEmbeddings && knowledgeBasesForVSEmbeddings.length > 0) {
+                for (const knowledgeBase of knowledgeBasesForVSEmbeddings) {
+                    const nodeInstanceFilePath = options.componentNodes['retrieverTool'].filePath as string
+                    const nodeModule = await import(nodeInstanceFilePath)
+                    const newRetrieverToolNodeInstance = new nodeModule.nodeClass()
+
+                    const selectedEmbeddingModel = knowledgeBase.embeddingModel
+                    const selectedEmbeddingModelConfig = knowledgeBase.embeddingModelConfig
+                    const embeddingInstanceFilePath = options.componentNodes[selectedEmbeddingModel].filePath as string
+                    const embeddingModule = await import(embeddingInstanceFilePath)
+                    const newEmbeddingInstance = new embeddingModule.nodeClass()
+                    const newEmbeddingNodeData = {
+                        ...nodeData,
+                        credential: selectedEmbeddingModelConfig['FLOWISE_CREDENTIAL_ID'],
+                        inputs: {
+                            ...nodeData.inputs,
+                            ...selectedEmbeddingModelConfig
+                        }
+                    }
+                    const embeddingInstance = await newEmbeddingInstance.init(newEmbeddingNodeData, '', options)
+
+                    const selectedVectorStore = knowledgeBase.vectorStore
+                    const selectedVectorStoreConfig = knowledgeBase.vectorStoreConfig
+                    const vectorStoreInstanceFilePath = options.componentNodes[selectedVectorStore].filePath as string
+                    const vectorStoreModule = await import(vectorStoreInstanceFilePath)
+                    const newVectorStoreInstance = new vectorStoreModule.nodeClass()
+                    const newVSNodeData = {
+                        ...nodeData,
+                        credential: selectedVectorStoreConfig['FLOWISE_CREDENTIAL_ID'],
+                        inputs: {
+                            ...nodeData.inputs,
+                            ...selectedVectorStoreConfig,
+                            embeddings: embeddingInstance
+                        },
+                        outputs: {
+                            output: 'retriever'
+                        }
+                    }
+                    const vectorStoreInstance = await newVectorStoreInstance.init(newVSNodeData, '', options)
+
+                    const knowledgeName = knowledgeBase.knowledgeName || ''
+
+                    const newRetrieverToolNodeData = {
+                        ...nodeData,
+                        inputs: {
+                            ...nodeData.inputs,
+                            name: knowledgeName
+                                .toLowerCase()
+                                .replace(/ /g, '_')
+                                .replace(/[^a-z0-9_-]/g, ''),
+                            description: knowledgeBase.knowledgeDescription,
+                            retriever: vectorStoreInstance,
+                            returnSourceDocuments: knowledgeBase.returnSourceDocuments
+                        }
+                    }
+                    const retrieverToolInstance = await newRetrieverToolNodeInstance.init(newRetrieverToolNodeData, '', options)
+
+                    toolsInstance.push(retrieverToolInstance as Tool)
+
+                    const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
+                    if (jsonSchema.$schema) {
+                        delete jsonSchema.$schema
+                    }
+                    const componentNode = options.componentNodes['retrieverTool']
+
+                    availableTools.push({
+                        name: knowledgeName
+                            .toLowerCase()
+                            .replace(/ /g, '_')
+                            .replace(/[^a-z0-9_-]/g, ''),
+                        description: knowledgeBase.knowledgeDescription,
+                        schema: jsonSchema,
+                        toolNode: {
+                            label: componentNode?.label || retrieverToolInstance.name,
+                            name: componentNode?.name || retrieverToolInstance.name
                         }
                     })
                 }
