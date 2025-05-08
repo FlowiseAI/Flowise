@@ -9,7 +9,9 @@ import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import MuiDrawer from '@mui/material/Drawer'
 import ListItemIcon from '@mui/material/ListItemIcon'
+import RateReviewIcon from '@mui/icons-material/RateReview'
 import ViewSidebarOutlinedIcon from '@mui/icons-material/ViewSidebarOutlined'
+import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import Collapse from '@mui/material/Collapse'
@@ -240,6 +242,37 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                             />
                         </IconButton>
                     </Box>
+                    <Button
+                        href='/chat'
+                        variant='outlined'
+                        onClick={handleNewChat}
+                        component={NextLink}
+                        endIcon={<RateReviewIcon />}
+                        fullWidth
+                        sx={{
+                            minWidth: 0,
+                            textTransform: 'capitalize',
+                            justifyContent: 'space-between',
+                            '.MuiDrawer-closed & .MuiButton-endIcon': {
+                                margin: 0
+                            }
+                        }}
+                    >
+                        <Box
+                            component='span'
+                            sx={{
+                                overflow: 'hidden',
+                                transition: '.2s',
+                                maxWidth: '240px',
+                                '.MuiDrawer-closed &': {
+                                    maxWidth: '0',
+                                    opacity: 0
+                                }
+                            }}
+                        >
+                            New chat
+                        </Box>
+                    </Button>
                 </Box>
                 <Box
                     sx={{
