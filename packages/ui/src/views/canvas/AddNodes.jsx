@@ -57,7 +57,7 @@ function a11yProps(index) {
 
 const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager', 'Utilities']
 
-const agentMemoryNodes = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory']
+const agentMemoryNodes = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory', 'answerAiAgentMemory']
 
 // Show blacklisted nodes (exceptions) for agent canvas
 const exceptionsForAgentCanvas = {
