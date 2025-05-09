@@ -80,6 +80,9 @@ const Chatflows = () => {
 
     const location = useLocation()
 
+    const [sortBy, setSortBy] = useState('updatedDate')
+    const [sortOrder, setSortOrder] = useState('desc')
+
     useEffect(() => {
         // Check if there's a templateId in the URL when the component mounts
         const searchParams = new URLSearchParams(location.search)
@@ -95,10 +98,11 @@ const Chatflows = () => {
     }
 
     function filterFlows(data) {
+        if (!data) return false
         return (
-            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
+            (data.name?.toLowerCase() || '').indexOf(search.toLowerCase()) > -1 ||
             (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
+            (data.id?.toLowerCase() || '').indexOf(search.toLowerCase()) > -1
         )
     }
 
@@ -129,6 +133,41 @@ const Chatflows = () => {
 
     const handleCategoryChange = (event) => {
         setCategoryFilter(event.target.value)
+    }
+
+    const handleSortChange = (event) => {
+        const newSortBy = event.target.value
+        setSortBy(newSortBy)
+        // Set default sort order based on the field
+        if (newSortBy === 'name') {
+            setSortOrder('asc') // A->Z for names
+        } else {
+            setSortOrder('desc') // Newest first for dates
+        }
+    }
+
+    const handleSortOrderChange = (event) => {
+        setSortOrder(event.target.value)
+    }
+
+    const sortChatflows = (chatflows) => {
+        return [...chatflows].sort((a, b) => {
+            let comparison = 0
+            if (sortBy === 'name') {
+                const nameA = a?.name || ''
+                const nameB = b?.name || ''
+                comparison = nameA.localeCompare(nameB)
+            } else if (sortBy === 'createdDate') {
+                const dateA = a?.createdDate ? new Date(a.createdDate) : new Date(0)
+                const dateB = b?.createdDate ? new Date(b.createdDate) : new Date(0)
+                comparison = dateA - dateB
+            } else if (sortBy === 'updatedDate') {
+                const dateA = a?.updatedDate ? new Date(a.updatedDate) : new Date(0)
+                const dateB = b?.updatedDate ? new Date(b.updatedDate) : new Date(0)
+                comparison = dateA - dateB
+            }
+            return sortOrder === 'asc' ? comparison : -comparison
+        })
     }
 
     useEffect(() => {
@@ -196,43 +235,45 @@ const Chatflows = () => {
         }
     }, [flags, user, getAllChatflowsApi.data, getMarketplaceChatflowsApi.data])
 
-    const filterChatflows = (flows, search, categoryFilter) => {
-        const searchRegex = new RegExp(search, 'i') // 'i' flag for case-insensitive search
+    const filteredMyChatflows = useMemo(() => {
+        return sortChatflows(
+            myChatflows.filter((flow) => {
+                const matchesSearch = filterFlows(flow)
+                const matchesCategory = categoryFilter === 'All' || (flow.category && flow.category.split(';').includes(categoryFilter))
+                return matchesSearch && matchesCategory
+            })
+        )
+    }, [myChatflows, search, categoryFilter, sortBy, sortOrder])
 
-        return flows.filter((flow) => {
-            if (!flow) return false
+    const filteredAnswerAIChatflows = useMemo(() => {
+        return sortChatflows(
+            answerAIChatflows.filter((flow) => {
+                const matchesSearch = filterFlows(flow)
+                const matchesCategory = categoryFilter === 'All' || (flow.category && flow.category.split(';').includes(categoryFilter))
+                return matchesSearch && matchesCategory
+            })
+        )
+    }, [answerAIChatflows, search, categoryFilter, sortBy, sortOrder])
 
-            // Check category first
-            const category = flow.category || ''
-            if (categoryFilter !== 'All' && !category.includes(categoryFilter)) {
-                return false
-            }
+    const filteredCommunityChatflows = useMemo(() => {
+        return sortChatflows(
+            communityChatflows.filter((flow) => {
+                const matchesSearch = filterFlows(flow)
+                const matchesCategory = categoryFilter === 'All' || (flow.category && flow.category.split(';').includes(categoryFilter))
+                return matchesSearch && matchesCategory
+            })
+        )
+    }, [communityChatflows, search, categoryFilter, sortBy, sortOrder])
 
-            // If category matches, then check search
-            const name = flow.name || flow.templateName || ''
-            const description = flow.description || ''
-            const searchText = `${name} ${description}`
-
-            return searchRegex.test(searchText)
-        })
-    }
-
-    const filteredMyChatflows = useMemo(() => filterChatflows(myChatflows, search, categoryFilter), [myChatflows, search, categoryFilter])
-
-    const filteredAnswerAIChatflows = useMemo(
-        () => filterChatflows(answerAIChatflows, search, categoryFilter),
-        [answerAIChatflows, search, categoryFilter]
-    )
-
-    const filteredCommunityChatflows = useMemo(
-        () => filterChatflows(communityChatflows, search, categoryFilter),
-        [communityChatflows, search, categoryFilter]
-    )
-
-    const filteredOrganizationChatflows = useMemo(
-        () => filterChatflows(organizationChatflows, search, categoryFilter),
-        [organizationChatflows, search, categoryFilter]
-    )
+    const filteredOrganizationChatflows = useMemo(() => {
+        return sortChatflows(
+            organizationChatflows.filter((flow) => {
+                const matchesSearch = filterFlows(flow)
+                const matchesCategory = categoryFilter === 'All' || (flow.category && flow.category.split(';').includes(categoryFilter))
+                return matchesSearch && matchesCategory
+            })
+        )
+    }, [organizationChatflows, search, categoryFilter, sortBy, sortOrder])
 
     const handleCloseMarketplaceDialog = () => {
         setIsMarketplaceDialogOpen(false)
@@ -264,6 +305,21 @@ const Chatflows = () => {
                                     {category}
                                 </MenuItem>
                             ))}
+                        </Select>
+                    </FormControl>
+                    <FormControl sx={{ minWidth: 120, mr: 1 }}>
+                        <InputLabel id='sort-by-label'>Sort By</InputLabel>
+                        <Select size='small' labelId='sort-by-label' value={sortBy} onChange={handleSortChange} label='Sort By'>
+                            <MenuItem value='name'>Name</MenuItem>
+                            <MenuItem value='createdDate'>Created Date</MenuItem>
+                            <MenuItem value='updatedDate'>Updated Date</MenuItem>
+                        </Select>
+                    </FormControl>
+                    <FormControl sx={{ minWidth: 120, mr: 1 }}>
+                        <InputLabel id='sort-order-label'>Order</InputLabel>
+                        <Select size='small' labelId='sort-order-label' value={sortOrder} onChange={handleSortOrderChange} label='Order'>
+                            <MenuItem value='asc'>Ascending</MenuItem>
+                            <MenuItem value='desc'>Descending</MenuItem>
                         </Select>
                     </FormControl>
                     <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />}>
