@@ -2,6 +2,7 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Inter
 import { getBaseClasses } from '../../../src/utils'
 import { ListKeyOptions, RecordManagerInterface, UpdateOptions } from '@langchain/community/indexes/base'
 import { DataSource } from 'typeorm'
+import { generateSecureNamespace } from '../../../src/aaiUtils'
 
 class AAIRecordManager_RecordManager implements INode {
     label: string
@@ -104,7 +105,7 @@ class AAIRecordManager_RecordManager implements INode {
             process.env.POSTGRES_DATABASE ||
             'postgres'
 
-        const port = process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PORT || process.env.POSTGRES_PORT || '54332'
+        const port = process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PORT || process.env.POSTGRES_PORT || '5432'
 
         const tableName =
             process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_TABLE_NAME ||
@@ -113,7 +114,8 @@ class AAIRecordManager_RecordManager implements INode {
 
         const additionalConfig = nodeData.inputs?.additionalConfig as string
         const _namespace = nodeData.inputs?.namespace as string
-        const namespace = _namespace ? _namespace : options.chatflowid
+        // Use generateSecureNamespace for consistent namespace generation with AAIVectorStore
+        const namespace = generateSecureNamespace(options, _namespace)
         const cleanup = nodeData.inputs?.cleanup as string
         const _sourceIdKey = nodeData.inputs?.sourceIdKey as string
         const sourceIdKey = _sourceIdKey ? _sourceIdKey : 'source'

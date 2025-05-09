@@ -512,7 +512,12 @@ const generateDocStoreToolDesc = async (req: Request, res: Response, next: NextF
         if (typeof req.body === 'undefined') {
             throw new Error('Error: documentStoreController.generateDocStoreToolDesc - body not provided!')
         }
-        const apiResponse = await documentStoreService.generateDocStoreToolDesc(req.params.id, req.body.selectedChatModel)
+        const apiResponse = await documentStoreService.generateDocStoreToolDesc(
+            req.params.id,
+            req.body.selectedChatModel,
+            req.user?.id!,
+            req.user?.organizationId!
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)

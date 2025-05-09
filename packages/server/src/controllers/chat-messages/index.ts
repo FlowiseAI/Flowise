@@ -219,6 +219,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
                     const [chatId, memoryType, sessionId] = composite_key.split('_')
                     try {
                         await clearSessionMemory(
+                            req.user!,
                             nodes,
                             appServer.nodesPool.componentNodes,
                             chatId,
@@ -238,6 +239,7 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         } else {
             try {
                 await clearSessionMemory(
+                    req.user!,
                     nodes,
                     appServer.nodesPool.componentNodes,
                     chatId,

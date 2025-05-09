@@ -726,6 +726,7 @@ export const buildFlow = async ({
  * @param {string} isClearFromViewMessageDialog
  */
 export const clearSessionMemory = async (
+    user: IUser,
     reactFlowNodes: IReactFlowNode[],
     componentNodes: IComponentNodes,
     chatId: string,
@@ -743,7 +744,14 @@ export const clearSessionMemory = async (
         const nodeInstanceFilePath = componentNodes[node.data.name].filePath as string
         const nodeModule = await import(nodeInstanceFilePath)
         const newNodeInstance = new nodeModule.nodeClass()
-        const options: ICommonObject = { chatId, appDataSource, databaseEntities, logger }
+        const options: ICommonObject = {
+            chatId,
+            appDataSource,
+            databaseEntities,
+            logger,
+            userId: user?.id,
+            organizationId: user?.organizationId
+        }
 
         // SessionId always take priority first because it is the sessionId used for 3rd party memory node
         if (sessionId && node.data.inputs) {
