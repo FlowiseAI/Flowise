@@ -15,7 +15,7 @@ export class AddExecutionEntity1738090872625 implements MigrationInterface {
                 \`updatedDate\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
                 \`stoppedDate\` datetime(6),
                 PRIMARY KEY (\`id\`)
-              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;`
+              ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;`
         )
 
         const columnExists = await queryRunner.hasColumn('chat_message', 'executionId')
