@@ -1552,6 +1552,10 @@ export const executeAgentFlow = async ({
                 agentflowRuntime.form = nodeResult.output.form
             }
 
+            if (nodeResult && nodeResult.output && nodeResult.output.ephemeralMemory) {
+                pastChatHistory.length = 0
+            }
+
             // Process node outputs and handle branching
             const processResult = await processNodeOutputs({
                 nodeId: currentNode.nodeId,

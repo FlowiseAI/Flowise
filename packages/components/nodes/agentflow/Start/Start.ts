@@ -126,6 +126,13 @@ class Start_Agentflow implements INode {
                 ]
             },
             {
+                label: 'Ephemeral Memory',
+                name: 'startEphemeralMemory',
+                type: 'boolean',
+                description: 'Start fresh for every execution without past chat history',
+                optional: true
+            },
+            {
                 label: 'Flow State',
                 name: 'startState',
                 description: 'Runtime state during the execution of the workflow',
@@ -153,6 +160,7 @@ class Start_Agentflow implements INode {
     async run(nodeData: INodeData, input: string | Record<string, any>, options: ICommonObject): Promise<any> {
         const _flowState = nodeData.inputs?.startState as string
         const startInputType = nodeData.inputs?.startInputType as string
+        const startEphemeralMemory = nodeData.inputs?.startEphemeralMemory as boolean
 
         let flowStateArray = []
         if (_flowState) {
@@ -188,6 +196,10 @@ class Start_Agentflow implements INode {
                 form = options.agentflowRuntime.form
             }
             outputData.form = form
+        }
+
+        if (startEphemeralMemory) {
+            outputData.ephemeralMemory = true
         }
 
         const returnOutput = {

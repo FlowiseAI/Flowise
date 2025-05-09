@@ -129,6 +129,13 @@
                         "display": true
                     },
                     {
+                        "label": "Ephemeral Memory",
+                        "name": "startEphemeralMemory",
+                        "type": "boolean",
+                        "description": "Start fresh for every execution without past chat history",
+                        "optional": true
+                    },
+                    {
                         "label": "Flow State",
                         "name": "startState",
                         "description": "Runtime state during the execution of the workflow",
