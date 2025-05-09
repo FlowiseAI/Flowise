@@ -8,21 +8,18 @@ import type { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, I
 import { FLOWISE_CHATID, getBaseClasses } from '../../../src/utils'
 import { addMMRInputParams, howToUseFileUpload, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
+import { generateSecureNamespace } from '../../../src/aaiUtils'
 
 // Standalone utility functions
-function generateSecureNamespace(options: ICommonObject, namespace?: string): string {
-    const chatflowPrefix = `${options.chatflowid}_`
-    const orgPrefix = options.user?.organizationId ? `${options.user.organizationId}_` : ''
-    const baseNamespace = namespace || 'default'
-    return `${orgPrefix}${chatflowPrefix}${baseNamespace}`
-}
-
 function createSecurityFilters(options: ICommonObject): any {
     const filters: any = {
         _chatflowId: { $eq: options.chatflowid }
     }
     if (options.user?.organizationId) {
         filters._organizationId = { $eq: options.user.organizationId }
+    }
+    if (options.organizationId) {
+        filters._organizationId = { $eq: options.organizationId }
     }
     return filters
 }
@@ -31,7 +28,8 @@ function addSecurityMetadata(doc: Document, options: ICommonObject): Document {
     doc.metadata = {
         ...doc.metadata,
         _chatflowId: options.chatflowid,
-        ...(options.user?.organizationId ? { _organizationId: options.user.organizationId } : {})
+        ...(options.user?.organizationId ? { _organizationId: options.user.organizationId } : {}),
+        ...(options.organizationId ? { _organizationId: options.organizationId } : {})
     }
     return doc
 }

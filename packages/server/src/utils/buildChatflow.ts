@@ -313,7 +313,9 @@ export const executeFlow = async ({
                         chatId,
                         chatflowid,
                         appDataSource,
-                        databaseEntities: databaseEntities
+                        databaseEntities: databaseEntities,
+                        userId: user?.id,
+                        organizationId: user?.organizationId
                     }
                     const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
                     logger.debug(`Speech to text result: ${speechToTextResult}`)
@@ -703,7 +705,9 @@ export const executeFlow = async ({
                         rawOutput: resultText,
                         appDataSource,
                         databaseEntities,
-                        logger
+                        logger,
+                        userId: user?.id,
+                        organizationId: user?.organizationId
                     }
                     const customFuncNodeInstance = new nodeModule.nodeClass()
                     let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)

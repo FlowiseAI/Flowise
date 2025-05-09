@@ -123,7 +123,7 @@ const getSingleNodeAsyncOptions = async (
 }
 
 // execute custom function node
-const executeCustomFunction = async (requestBody: any) => {
+const executeCustomFunction = async (requestBody: any, userId: string, organizationId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const body = requestBody
@@ -147,7 +147,9 @@ const executeCustomFunction = async (requestBody: any) => {
                 const options: ICommonObject = {
                     appDataSource: appServer.AppDataSource,
                     databaseEntities,
-                    logger
+                    logger,
+                    userId,
+                    organizationId
                 }
 
                 const returnData = await newNodeInstance.init(nodeData, '', options)
