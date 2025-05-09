@@ -291,7 +291,7 @@ const Chatflows = () => {
                     searchPlaceholder='Search Name, Description or Category'
                     title='Chatflows'
                 >
-                    <FormControl sx={{ minWidth: 120, mr: 1 }}>
+                    <FormControl sx={{ minWidth: 120 }}>
                         <InputLabel id='category-filter-label'>Category</InputLabel>
                         <Select
                             size='small'
@@ -308,7 +308,7 @@ const Chatflows = () => {
                             ))}
                         </Select>
                     </FormControl>
-                    <FormControl sx={{ minWidth: 120, mr: 1 }}>
+                    <FormControl sx={{ minWidth: 140 }}>
                         <InputLabel id='sort-by-label'>Sort By</InputLabel>
                         <Select
                             size='small'
@@ -323,7 +323,7 @@ const Chatflows = () => {
                             <MenuItem value='updatedDate'>Updated Date</MenuItem>
                         </Select>
                     </FormControl>
-                    <FormControl sx={{ minWidth: 120, mr: 1 }}>
+                    <FormControl sx={{ minWidth: 80, mr: 1 }}>
                         <InputLabel id='sort-order-label'>Order</InputLabel>
                         <Select
                             size='small'
@@ -332,6 +332,7 @@ const Chatflows = () => {
                             onChange={handleSortOrderChange}
                             label='Order'
                             sx={{ '& .MuiSelect-icon': { color: '#fff' } }}
+                            renderValue={(selected) => (selected === 'asc' ? 'Asc' : 'Desc')}
                         >
                             <MenuItem value='asc'>Ascending</MenuItem>
                             <MenuItem value='desc'>Descending</MenuItem>
