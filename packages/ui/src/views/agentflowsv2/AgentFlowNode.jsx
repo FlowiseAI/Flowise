@@ -360,7 +360,8 @@ const AgentFlowNode = ({ data }) => {
                                     {
                                         tools: data.inputs?.selectedTool ? [{ selectedTool: data.inputs?.selectedTool }] : [],
                                         toolProperty: 'selectedTool'
-                                    }
+                                    },
+                                    { tools: data.inputs?.agentKnowledgeVSEmbeddings, toolProperty: ['vectorStore', 'embeddingModel'] }
                                 ]
 
                                 // Filter out undefined tools and render each valid collection
@@ -368,31 +369,60 @@ const AgentFlowNode = ({ data }) => {
                                     .filter((config) => config.tools && config.tools.length > 0)
                                     .map((config, configIndex) => (
                                         <Box key={`tools-${configIndex}`} sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                                            {config.tools.map((tool, toolIndex) => {
-                                                const toolName = tool[config.toolProperty]
-                                                if (!toolName) return null
+                                            {config.tools.flatMap((tool, toolIndex) => {
+                                                if (Array.isArray(config.toolProperty)) {
+                                                    return config.toolProperty
+                                                        .filter((prop) => tool[prop])
+                                                        .map((prop, propIndex) => {
+                                                            const toolName = tool[prop]
+                                                            return (
+                                                                <Box
+                                                                    key={`tool-${configIndex}-${toolIndex}-${propIndex}`}
+                                                                    sx={{
+                                                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                        borderRadius: '50%',
+                                                                        width: 24,
+                                                                        height: 24,
+                                                                        display: 'flex',
+                                                                        justifyContent: 'center',
+                                                                        alignItems: 'center',
+                                                                        padding: '4px'
+                                                                    }}
+                                                                >
+                                                                    <img
+                                                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                                        src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                                        alt={toolName}
+                                                                    />
+                                                                </Box>
+                                                            )
+                                                        })
+                                                } else {
+                                                    const toolName = tool[config.toolProperty]
+                                                    if (!toolName) return []
 
-                                                return (
-                                                    <Box
-                                                        key={`tool-${configIndex}-${toolIndex}`}
-                                                        sx={{
-                                                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                                                            borderRadius: '50%',
-                                                            width: 24,
-                                                            height: 24,
-                                                            display: 'flex',
-                                                            justifyContent: 'center',
-                                                            alignItems: 'center',
-                                                            padding: '4px'
-                                                        }}
-                                                    >
-                                                        <img
-                                                            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                            src={`${baseURL}/api/v1/node-icon/${toolName}`}
-                                                            alt={toolName}
-                                                        />
-                                                    </Box>
-                                                )
+                                                    return [
+                                                        <Box
+                                                            key={`tool-${configIndex}-${toolIndex}`}
+                                                            sx={{
+                                                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                borderRadius: '50%',
+                                                                width: 24,
+                                                                height: 24,
+                                                                display: 'flex',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                padding: '4px'
+                                                            }}
+                                                        >
+                                                            <img
+                                                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                                                                src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                                alt={toolName}
+                                                            />
+                                                        </Box>
+                                                    ]
+                                                }
                                             })}
                                         </Box>
                                     ))
