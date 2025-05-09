@@ -653,7 +653,7 @@ const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComp
             nodeData.inputs.selectedFiles = data.loaderConfig.selectedFiles || '[]'
         }
         const options: ICommonObject = {
-            chatflowid: uuidv4(),
+            chatflowid: data.storeId ?? uuidv4(),
             appDataSource,
             databaseEntities,
             logger
@@ -1429,7 +1429,7 @@ const queryVectorStore = async (data: ICommonObject, userId: string, organizatio
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Document store ${data.storeId} not found`)
         }
         const options: ICommonObject = {
-            chatflowid: uuidv4(),
+            chatflowid: data.storeId ?? uuidv4(),
             appDataSource: appServer.AppDataSource,
             databaseEntities,
             logger
