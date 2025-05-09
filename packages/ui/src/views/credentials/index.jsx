@@ -24,7 +24,8 @@ import {
     useTheme,
     Tabs,
     Tab,
-    Chip
+    Chip,
+    TableSortLabel
 } from '@mui/material'
 
 // project imports
@@ -209,6 +210,37 @@ const Credentials = () => {
         setTabValue(newValue)
     }
 
+    // Add sorting state
+    const [order, setOrder] = useState('asc')
+    const [orderBy, setOrderBy] = useState('name')
+
+    // Add sorting handler
+    const handleRequestSort = (property) => {
+        const isAsc = orderBy === property && order === 'asc'
+        setOrder(isAsc ? 'desc' : 'asc')
+        setOrderBy(property)
+    }
+
+    // Add sorting function
+    const sortData = (data) => {
+        return data.sort((a, b) => {
+            let aValue = a[orderBy === 'name' ? 'name' : orderBy]
+            let bValue = b[orderBy === 'name' ? 'name' : orderBy]
+
+            // Convert dates to timestamps for comparison
+            if (orderBy === 'updatedDate' || orderBy === 'createdDate') {
+                aValue = new Date(aValue).getTime()
+                bValue = new Date(bValue).getTime()
+            }
+
+            if (order === 'desc') {
+                return bValue < aValue ? -1 : bValue > aValue ? 1 : 0
+            } else {
+                return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+            }
+        })
+    }
+
     useEffect(() => {
         getAllCredentialsApi.request()
         getAllComponentsCredentialsApi.request()
@@ -308,10 +340,42 @@ const Credentials = () => {
                                         }}
                                     >
                                         <TableRow>
-                                            <StyledTableCell>Name</StyledTableCell>
-                                            <StyledTableCell>Visibility</StyledTableCell>
-                                            <StyledTableCell>Last Updated</StyledTableCell>
-                                            <StyledTableCell>Created</StyledTableCell>
+                                            <StyledTableCell>
+                                                <TableSortLabel
+                                                    active={orderBy === 'name'}
+                                                    direction={orderBy === 'name' ? order : 'asc'}
+                                                    onClick={() => handleRequestSort('name')}
+                                                >
+                                                    Name
+                                                </TableSortLabel>
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <TableSortLabel
+                                                    active={orderBy === 'visibility'}
+                                                    direction={orderBy === 'visibility' ? order : 'asc'}
+                                                    onClick={() => handleRequestSort('visibility')}
+                                                >
+                                                    Visibility
+                                                </TableSortLabel>
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <TableSortLabel
+                                                    active={orderBy === 'updatedDate'}
+                                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                                    onClick={() => handleRequestSort('updatedDate')}
+                                                >
+                                                    Last Updated
+                                                </TableSortLabel>
+                                            </StyledTableCell>
+                                            <StyledTableCell>
+                                                <TableSortLabel
+                                                    active={orderBy === 'createdDate'}
+                                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                                    onClick={() => handleRequestSort('createdDate')}
+                                                >
+                                                    Created
+                                                </TableSortLabel>
+                                            </StyledTableCell>
                                             <StyledTableCell> </StyledTableCell>
                                             <StyledTableCell> </StyledTableCell>
                                         </TableRow>
@@ -366,95 +430,88 @@ const Credentials = () => {
                                             </>
                                         ) : (
                                             <>
-                                                {(tabValue === 0 ? myCredentials : organizationCredentials)
-                                                    .filter(filterCredentials)
-                                                    .map((credential, index) => (
-                                                        <StyledTableRow
-                                                            key={index}
-                                                            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                                        >
-                                                            <StyledTableCell scope='row'>
+                                                {sortData(
+                                                    (tabValue === 0 ? myCredentials : organizationCredentials).filter(filterCredentials)
+                                                ).map((credential, index) => (
+                                                    <StyledTableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                                        <StyledTableCell scope='row'>
+                                                            <Box
+                                                                sx={{
+                                                                    display: 'flex',
+                                                                    flexDirection: 'row',
+                                                                    alignItems: 'center',
+                                                                    gap: 1
+                                                                }}
+                                                            >
                                                                 <Box
                                                                     sx={{
-                                                                        display: 'flex',
-                                                                        flexDirection: 'row',
-                                                                        alignItems: 'center',
-                                                                        gap: 1
+                                                                        width: 35,
+                                                                        height: 35,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: customization.isDarkMode
+                                                                            ? theme.palette.common.white
+                                                                            : theme.palette.grey[300] + 75
                                                                     }}
                                                                 >
-                                                                    <Box
-                                                                        sx={{
-                                                                            width: 35,
-                                                                            height: 35,
-                                                                            borderRadius: '50%',
-                                                                            backgroundColor: customization.isDarkMode
-                                                                                ? theme.palette.common.white
-                                                                                : theme.palette.grey[300] + 75
+                                                                    <img
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            padding: 5,
+                                                                            objectFit: 'contain'
                                                                         }}
-                                                                    >
-                                                                        <img
-                                                                            style={{
-                                                                                width: '100%',
-                                                                                height: '100%',
-                                                                                padding: 5,
-                                                                                objectFit: 'contain'
-                                                                            }}
-                                                                            alt={credential.credentialName}
-                                                                            src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
-                                                                        />
-                                                                    </Box>
-                                                                    {credential.name}
-                                                                </Box>
-                                                            </StyledTableCell>
-
-                                                            <StyledTableCell>
-                                                                {credential.visibility.map((visibility, index) => (
-                                                                    <Chip
-                                                                        key={index}
-                                                                        label={
-                                                                            visibility === 'private'
-                                                                                ? 'Private'
-                                                                                : visibility === 'organization'
-                                                                                ? 'Organization'
-                                                                                : visibility.charAt(0).toUpperCase() + visibility.slice(1)
-                                                                        }
-                                                                        color={visibility === 'private' ? 'default' : 'primary'}
-                                                                        size='small'
-                                                                        sx={{ mr: 1, mb: 1 }}
+                                                                        alt={credential.credentialName}
+                                                                        src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
                                                                     />
-                                                                ))}
-                                                            </StyledTableCell>
+                                                                </Box>
+                                                                {credential.name}
+                                                            </Box>
+                                                        </StyledTableCell>
 
-                                                            <StyledTableCell>
-                                                                {moment(credential.updatedDate).format('MMMM Do, YYYY')}
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                {moment(credential.createdDate).format('MMMM Do, YYYY')}
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                {(credential.isOwner || (isAdmin && tabValue === 1)) && (
-                                                                    <IconButton
-                                                                        title='Edit'
-                                                                        color='primary'
-                                                                        onClick={() => edit(credential)}
-                                                                    >
-                                                                        <IconEdit />
-                                                                    </IconButton>
-                                                                )}
-                                                            </StyledTableCell>
-                                                            <StyledTableCell>
-                                                                {(credential.isOwner || (isAdmin && tabValue === 1)) && (
-                                                                    <IconButton
-                                                                        title='Delete'
-                                                                        color='error'
-                                                                        onClick={() => deleteCredential(credential)}
-                                                                    >
-                                                                        <IconTrash />
-                                                                    </IconButton>
-                                                                )}
-                                                            </StyledTableCell>
-                                                        </StyledTableRow>
-                                                    ))}
+                                                        <StyledTableCell>
+                                                            {credential.visibility.map((visibility, index) => (
+                                                                <Chip
+                                                                    key={index}
+                                                                    label={
+                                                                        visibility === 'private'
+                                                                            ? 'Private'
+                                                                            : visibility === 'organization'
+                                                                            ? 'Organization'
+                                                                            : visibility.charAt(0).toUpperCase() + visibility.slice(1)
+                                                                    }
+                                                                    color={visibility === 'private' ? 'default' : 'primary'}
+                                                                    size='small'
+                                                                    sx={{ mr: 1, mb: 1 }}
+                                                                />
+                                                            ))}
+                                                        </StyledTableCell>
+
+                                                        <StyledTableCell>
+                                                            {moment(credential.updatedDate).format('MMMM Do, YYYY')}
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            {moment(credential.createdDate).format('MMMM Do, YYYY')}
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            {(credential.isOwner || (isAdmin && tabValue === 1)) && (
+                                                                <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
+                                                                    <IconEdit />
+                                                                </IconButton>
+                                                            )}
+                                                        </StyledTableCell>
+                                                        <StyledTableCell>
+                                                            {(credential.isOwner || (isAdmin && tabValue === 1)) && (
+                                                                <IconButton
+                                                                    title='Delete'
+                                                                    color='error'
+                                                                    onClick={() => deleteCredential(credential)}
+                                                                >
+                                                                    <IconTrash />
+                                                                </IconButton>
+                                                            )}
+                                                        </StyledTableCell>
+                                                    </StyledTableRow>
+                                                ))}
                                             </>
                                         )}
                                     </TableBody>
