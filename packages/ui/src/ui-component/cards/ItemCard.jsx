@@ -3,10 +3,11 @@ import { useSelector } from 'react-redux'
 
 // material-ui
 import { styled } from '@mui/material/styles'
-import { Box, Grid, Typography, useTheme } from '@mui/material'
+import { Box, Grid, Tooltip, Typography, useTheme } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
+import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -117,7 +118,7 @@ const ItemCard = ({ data, images, onClick }) => {
                         >
                             {images.slice(0, images.length > 3 ? 3 : images.length).map((img) => (
                                 <Box
-                                    key={img}
+                                    key={img.imageSrc}
                                     sx={{
                                         width: 30,
                                         height: 30,
@@ -127,13 +128,28 @@ const ItemCard = ({ data, images, onClick }) => {
                                             : theme.palette.grey[300] + 75
                                     }}
                                 >
-                                    <img style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }} alt='' src={img} />
+                                    <Tooltip title={img.label} placement='top'>
+                                        <img
+                                            style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
+                                            alt=''
+                                            src={img.imageSrc}
+                                        />
+                                    </Tooltip>
                                 </Box>
                             ))}
                             {images.length > 3 && (
-                                <Typography sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}>
-                                    + {images.length - 3} More
-                                </Typography>
+                                <MoreItemsTooltip images={images.slice(3)}>
+                                    <Typography
+                                        sx={{
+                                            alignItems: 'center',
+                                            display: 'flex',
+                                            fontSize: '.9rem',
+                                            fontWeight: 200
+                                        }}
+                                    >
+                                        + {images.length - 3} More
+                                    </Typography>
+                                </MoreItemsTooltip>
                             )}
                         </Box>
                     )}

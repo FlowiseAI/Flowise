@@ -23,6 +23,7 @@ import {
 import { tableCellClasses } from '@mui/material/TableCell'
 import FlowListMenu from '../button/FlowListMenu'
 import { Link } from 'react-router-dom'
+import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -158,7 +159,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                 {sortedData.filter(filterFunction).map((row, index) => (
                                     <StyledTableRow key={index}>
                                         <StyledTableCell key='0'>
-                                            <Tooltip title={row.templateName || row.name}>
+                                            <Tooltip title={row.templateName || row.name} placement='top-start'>
                                                 <Typography
                                                     sx={{
                                                         display: '-webkit-box',
@@ -211,7 +212,7 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                         .slice(0, images[row.id].length > 5 ? 5 : images[row.id].length)
                                                         .map((img) => (
                                                             <Box
-                                                                key={img}
+                                                                key={img.imageSrc}
                                                                 sx={{
                                                                     width: 30,
                                                                     height: 30,
@@ -221,29 +222,33 @@ export const FlowListTable = ({ data, images, isLoading, filterFunction, updateF
                                                                         : theme.palette.grey[300] + 75
                                                                 }}
                                                             >
-                                                                <img
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        padding: 5,
-                                                                        objectFit: 'contain'
-                                                                    }}
-                                                                    alt=''
-                                                                    src={img}
-                                                                />
+                                                                <Tooltip title={img.label} placement='top'>
+                                                                    <img
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            padding: 5,
+                                                                            objectFit: 'contain'
+                                                                        }}
+                                                                        alt=''
+                                                                        src={img.imageSrc}
+                                                                    />
+                                                                </Tooltip>
                                                             </Box>
                                                         ))}
                                                     {images[row.id].length > 5 && (
-                                                        <Typography
-                                                            sx={{
-                                                                alignItems: 'center',
-                                                                display: 'flex',
-                                                                fontSize: '.9rem',
-                                                                fontWeight: 200
-                                                            }}
-                                                        >
-                                                            + {images[row.id].length - 5} More
-                                                        </Typography>
+                                                        <MoreItemsTooltip images={images[row.id].slice(5)}>
+                                                            <Typography
+                                                                sx={{
+                                                                    alignItems: 'center',
+                                                                    display: 'flex',
+                                                                    fontSize: '.9rem',
+                                                                    fontWeight: 200
+                                                                }}
+                                                            >
+                                                                + {images[row.id].length - 5} More
+                                                            </Typography>
+                                                        </MoreItemsTooltip>
                                                     )}
                                                 </Box>
                                             )}
