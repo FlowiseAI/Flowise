@@ -18,9 +18,9 @@ import assistantService from '../assistants'
 import chatMessagesService from '../chat-messages'
 import chatflowService from '../chatflows'
 import documenStoreService from '../documentstore'
+import executionService from '../executions'
 import marketplacesService from '../marketplaces'
 import toolsService from '../tools'
-import executionService from '../executions'
 import variableService from '../variables'
 
 type ExportInput = {
@@ -194,8 +194,9 @@ async function replaceDuplicateIdsForChatMessage(queryRunner: QueryRunner, origi
         })
         const originalDataChatflowIds = [
             ...originalData.AssistantFlow.map((assistantFlow) => assistantFlow.id),
-            ...originalData.AgentFlow.map((agentflow) => agentflow.id),
-            ...originalData.ChatFlow.map((chatflow) => chatflow.id)
+            ...originalData.AgentFlow.map((agentFlow) => agentFlow.id),
+            ...originalData.AgentFlowV2.map((agentFlowV2) => agentFlowV2.id),
+            ...originalData.ChatFlow.map((chatFlow) => chatFlow.id)
         ]
         chatmessageChatflowIds.forEach((item) => {
             if (originalDataChatflowIds.includes(item.id)) {
@@ -249,8 +250,9 @@ async function replaceDuplicateIdsForChatMessageFeedback(
         })
         const originalDataChatflowIds = [
             ...originalData.AssistantFlow.map((assistantFlow) => assistantFlow.id),
-            ...originalData.AgentFlow.map((agentflow) => agentflow.id),
-            ...originalData.ChatFlow.map((chatflow) => chatflow.id)
+            ...originalData.AgentFlow.map((agentFlow) => agentFlow.id),
+            ...originalData.AgentFlowV2.map((agentFlowV2) => agentFlowV2.id),
+            ...originalData.ChatFlow.map((chatFlow) => chatFlow.id)
         ]
         feedbackChatflowIds.forEach((item) => {
             if (originalDataChatflowIds.includes(item.id)) {
