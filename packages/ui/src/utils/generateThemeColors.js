@@ -19,7 +19,7 @@ function generateThemeColors(baseColor) {
         textInputSendButtonColor: colorUtil(baseColor).toHexString(),
         feedbackColor: colorUtil(baseColor).toHexString(),
         textInputBackgroundColor: '#ffffff',
-        textInputTextColor: getContrastingColor(colorUtil('#ffffff')),
+        textInputTextColor: '#000000',
         footerTextColor: getContrastingColor(colorUtil(baseColor))
     }
 }
