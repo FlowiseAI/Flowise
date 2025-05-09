@@ -239,6 +239,54 @@ async function replaceDuplicateIdsForChatMessage(queryRunner: QueryRunner, origi
     }
 }
 
+async function replaceExecutionIdForChatMessage(queryRunner: QueryRunner, originalData: ExportData, chatMessages: ChatMessage[]) {
+    try {
+        // step 1 - get all execution ids from chatMessages
+        const chatMessageExecutionIds = chatMessages
+            .map((chatMessage) => {
+                return { id: chatMessage.executionId, qty: 0 }
+            })
+            .filter((item): item is { id: string; qty: number } => item !== undefined)
+
+        // step 2 - increase qty if execution id is in importData.Execution
+        const originalDataExecutionIds = originalData.Execution.map((execution) => execution.id)
+        chatMessageExecutionIds.forEach((item) => {
+            if (originalDataExecutionIds.includes(item.id)) {
+                item.qty += 1
+            }
+        })
+
+        // step 3 - increase qty if execution id is in database
+        const databaseExecutionIds = await (
+            await queryRunner.manager.find(Execution, {
+                where: { id: In(chatMessageExecutionIds.map((chatMessageExecutionId) => chatMessageExecutionId.id)) }
+            })
+        ).map((execution) => execution.id)
+        chatMessageExecutionIds.forEach((item) => {
+            if (databaseExecutionIds.includes(item.id)) {
+                item.qty += 1
+            }
+        })
+
+        // step 4 - if executionIds not found replace with NULL
+        const missingExecutionIds = chatMessageExecutionIds.filter((item) => item.qty === 0).map((item) => item.id)
+        chatMessages.forEach((chatMessage) => {
+            if (chatMessage.executionId && missingExecutionIds.includes(chatMessage.executionId)) {
+                delete chatMessage.executionId
+            }
+        })
+
+        originalData.ChatMessage = chatMessages
+
+        return originalData
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: exportImportService.replaceExecutionIdForChatMessage - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 async function replaceDuplicateIdsForChatMessageFeedback(
     queryRunner: QueryRunner,
     originalData: ExportData,
@@ -484,8 +532,10 @@ const importData = async (importData: ExportData) => {
                 importData.ChatFlow = reduceSpaceForChatflowFlowData(importData.ChatFlow)
                 importData = await replaceDuplicateIdsForChatFlow(queryRunner, importData, importData.ChatFlow)
             }
-            if (importData.ChatMessage.length > 0)
+            if (importData.ChatMessage.length > 0) {
                 importData = await replaceDuplicateIdsForChatMessage(queryRunner, importData, importData.ChatMessage)
+                importData = await replaceExecutionIdForChatMessage(queryRunner, importData, importData.ChatMessage)
+            }
             if (importData.ChatMessageFeedback.length > 0)
                 importData = await replaceDuplicateIdsForChatMessageFeedback(queryRunner, importData, importData.ChatMessageFeedback)
             if (importData.CustomTemplate.length > 0)
