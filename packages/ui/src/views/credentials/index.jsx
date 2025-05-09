@@ -233,6 +233,12 @@ const Credentials = () => {
                 bValue = new Date(bValue).getTime()
             }
 
+            // Case-insensitive comparison for names
+            if (orderBy === 'name') {
+                aValue = aValue.toLowerCase()
+                bValue = bValue.toLowerCase()
+            }
+
             if (order === 'desc') {
                 return bValue < aValue ? -1 : bValue > aValue ? 1 : 0
             } else {
