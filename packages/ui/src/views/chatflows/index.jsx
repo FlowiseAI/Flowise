@@ -230,8 +230,9 @@ const Chatflows = () => {
             setNodeTypes({ ...myNodeTypes, ...answerAINodeTypes, ...communityNodeTypes })
 
             const allFlows = [...myChatflowsData, ...answerAIFlows, ...communityFlows]
-            const uniqueCategories = ['All', ...new Set(allFlows.flatMap((item) => (item?.category ? item.category.split(';') : [])))]
-            setCategories(uniqueCategories)
+            const rawCategories = Array.from(new Set(allFlows.flatMap((item) => (item?.category ? item.category.split(';') : []))))
+            const sortedCategories = rawCategories.filter((c) => c && c !== 'All').sort((a, b) => a.localeCompare(b))
+            setCategories(['All', ...sortedCategories])
         }
     }, [flags, user, getAllChatflowsApi.data, getMarketplaceChatflowsApi.data])
 
