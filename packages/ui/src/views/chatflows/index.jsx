@@ -299,6 +299,7 @@ const Chatflows = () => {
                             value={categoryFilter}
                             onChange={handleCategoryChange}
                             label='Category'
+                            sx={{ '& .MuiSelect-icon': { color: '#fff' } }}
                         >
                             {categories.map((category) => (
                                 <MenuItem key={category} value={category}>
@@ -309,7 +310,14 @@ const Chatflows = () => {
                     </FormControl>
                     <FormControl sx={{ minWidth: 120, mr: 1 }}>
                         <InputLabel id='sort-by-label'>Sort By</InputLabel>
-                        <Select size='small' labelId='sort-by-label' value={sortBy} onChange={handleSortChange} label='Sort By'>
+                        <Select
+                            size='small'
+                            labelId='sort-by-label'
+                            value={sortBy}
+                            onChange={handleSortChange}
+                            label='Sort By'
+                            sx={{ '& .MuiSelect-icon': { color: '#fff' } }}
+                        >
                             <MenuItem value='name'>Name</MenuItem>
                             <MenuItem value='createdDate'>Created Date</MenuItem>
                             <MenuItem value='updatedDate'>Updated Date</MenuItem>
@@ -317,7 +325,14 @@ const Chatflows = () => {
                     </FormControl>
                     <FormControl sx={{ minWidth: 120, mr: 1 }}>
                         <InputLabel id='sort-order-label'>Order</InputLabel>
-                        <Select size='small' labelId='sort-order-label' value={sortOrder} onChange={handleSortOrderChange} label='Order'>
+                        <Select
+                            size='small'
+                            labelId='sort-order-label'
+                            value={sortOrder}
+                            onChange={handleSortOrderChange}
+                            label='Order'
+                            sx={{ '& .MuiSelect-icon': { color: '#fff' } }}
+                        >
                             <MenuItem value='asc'>Ascending</MenuItem>
                             <MenuItem value='desc'>Descending</MenuItem>
                         </Select>
