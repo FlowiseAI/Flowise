@@ -14,10 +14,11 @@ class AAIChatMemory_Memory implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-
+    tags: string[]
     constructor() {
         this.label = 'Answer Chat Memory'
         this.name = 'AAIChatMemory'
+        this.tags = ['AAI']
         this.version = 1.0
         this.type = 'AAIChatMemory'
         this.icon = 'answerai-square-black.png'

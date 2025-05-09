@@ -17,7 +17,7 @@ class ChatOpenAI_ChatModels implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
-
+    tags: string[]
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
@@ -33,6 +33,7 @@ class ChatOpenAI_ChatModels implements INode {
             type: 'credential',
             credentialNames: ['openAIApi']
         }
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Cache',

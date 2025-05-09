@@ -15,11 +15,12 @@ class AAIRecordManager_RecordManager implements INode {
     badge: string
     baseClasses: string[]
     inputs: INodeParams[]
-
+    tags: string[]
     constructor() {
         this.label = 'AAI Record Manager'
         this.name = 'aaiRecordManager'
         this.version = 1.0
+        this.tags = ['AAI']
         this.type = 'AAI RecordManager'
         this.icon = 'answerai-square-black.png'
         this.category = 'Record Manager'

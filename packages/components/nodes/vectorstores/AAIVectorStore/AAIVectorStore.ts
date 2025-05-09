@@ -42,6 +42,7 @@ class AAI_VectorStores implements INode {
     name: string
     version: number
     description: string
+    tags: string[]
     type: string
     icon: string
     category: string
@@ -52,6 +53,7 @@ class AAI_VectorStores implements INode {
 
     constructor() {
         this.label = 'AAI Vector Store'
+        this.tags = ['AAI']
         this.name = 'aaiVectorStore'
         this.version = 1.0
         this.type = 'AAIVectorStore'

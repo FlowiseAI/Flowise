@@ -16,10 +16,11 @@ class PostgresAgentMemory_Memory implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
-
+    tags: string[]
     constructor() {
         this.label = 'Answer Agent Memory'
         this.name = 'answerAiAgentMemory'
+        this.tags = ['AAI']
         this.version = 1.0
         this.type = 'AgentMemory'
         this.icon = 'answerai-square-black.png'
