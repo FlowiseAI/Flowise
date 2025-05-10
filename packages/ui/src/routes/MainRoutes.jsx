@@ -39,6 +39,9 @@ const LoaderConfigPreviewChunks = Loadable(lazy(() => import('@/views/docstore/L
 const VectorStoreConfigure = Loadable(lazy(() => import('@/views/docstore/VectorStoreConfigure')))
 const VectorStoreQuery = Loadable(lazy(() => import('@/views/docstore/VectorStoreQuery')))
 
+// execution routing
+const Executions = Loadable(lazy(() => import('@/views/agentexecutions')))
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -56,6 +59,10 @@ const MainRoutes = {
         {
             path: '/agentflows',
             element: <Agentflows />
+        },
+        {
+            path: '/executions',
+            element: <Executions />
         },
         {
             path: '/marketplaces',

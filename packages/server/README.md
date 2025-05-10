@@ -4,7 +4,7 @@
 
 English | [中文](./README-ZH.md)
 
-![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
+![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true)
 
 Drag & drop UI to build your customized LLM flow
 

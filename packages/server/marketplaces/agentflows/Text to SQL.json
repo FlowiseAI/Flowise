@@ -1,7 +1,7 @@
 {
     "description": "Text to SQL query process using team of 3 agents: SQL Expert, SQL Reviewer, and SQL Executor",
     "framework": ["Langchain"],
-    "usecases": ["SQL"],
+    "usecases": ["SQL", "Hierarchical Agent Teams"],
     "nodes": [
         {
             "id": "supervisor_0",

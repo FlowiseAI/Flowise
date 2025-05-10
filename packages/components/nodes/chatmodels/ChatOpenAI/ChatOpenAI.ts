@@ -21,7 +21,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 8.1
+        this.version = 8.2
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -172,7 +172,9 @@ class ChatOpenAI_ChatModels implements INode {
                 ],
                 default: 'low',
                 optional: false,
-                additionalParams: true
+                show: {
+                    allowImageUploads: true
+                }
             },
             {
                 label: 'Reasoning Effort',

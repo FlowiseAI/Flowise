@@ -69,7 +69,18 @@ export const JsonEditorInput = ({
                     />
                 )}
                 {!disabled && (
-                    <div key={JSON.stringify(myValue)}>
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.stopPropagation()
+                            }
+                        }}
+                        role='button'
+                        aria-label='JSON Editor'
+                        tabIndex={0}
+                        key={JSON.stringify(myValue)}
+                    >
                         <ReactJson
                             theme={isDarkMode ? 'ocean' : 'rjv-default'}
                             style={{ padding: 10, borderRadius: 10 }}

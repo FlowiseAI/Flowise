@@ -4,7 +4,7 @@
 
 [English](./README.md) | 中文
 
-![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
+![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true)
 
 拖放界面来构建自定义的 LLM 流程
 
