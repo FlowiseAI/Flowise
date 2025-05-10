@@ -51,6 +51,7 @@ import { DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR } from '../../utils/pro
 import { DataSource } from 'typeorm'
 import { Telemetry } from '../../utils/telemetry'
 import { INPUT_PARAMS_TYPE, OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
+import { fixKeysRecursively } from './utils'
 
 const DOCUMENT_STORE_BASE_FOLDER = 'docustore'
 
@@ -1172,7 +1173,7 @@ const _insertIntoVectorStoreWorkerThread = async (
         const docs: Document[] = chunks.map((chunk: DocumentStoreFileChunk) => {
             return new Document({
                 pageContent: chunk.pageContent,
-                metadata: JSON.parse(chunk.metadata)
+                metadata: fixKeysRecursively(JSON.parse(chunk.metadata))
             })
         })
         vStoreNodeData.inputs.document = docs
