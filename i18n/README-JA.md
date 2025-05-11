@@ -1,10 +1,8 @@
 <!-- markdownlint-disable MD030 -->
 
 <p align="center">
-<a href="https://www.flowiseai.com">
-  <img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_dark.svg#gh-dark-mode-only" alt="Flowise Logo" width="250">
-  <img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_white.svg#gh-light-mode-only" alt="Flowise Logo" width="250">
-</a>
+<img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_white.svg#gh-light-mode-only">
+<img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_dark.svg#gh-dark-mode-only">
 </p>
 
 [![Release Notes](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/FlowiseAI/Flowise/releases)
