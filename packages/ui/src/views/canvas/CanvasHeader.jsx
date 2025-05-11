@@ -33,7 +33,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -122,7 +122,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 const parsedFlowData = JSON.parse(flowData)
                 flowData = JSON.stringify(parsedFlowData)
                 localStorage.setItem('duplicatedFlowData', flowData)
-                window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
+                if (isAgentflowV2) {
+                    window.open(`${uiBaseURL}/v2/agentcanvas`, '_blank')
+                } else if (isAgentCanvas) {
+                    window.open(`${uiBaseURL}/agentcanvas`, '_blank')
+                } else {
+                    window.open(`${uiBaseURL}/canvas`, '_blank')
+                }
             } catch (e) {
                 console.error(e)
             }
@@ -255,9 +261,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                     }
                                 }}
                                 color='inherit'
-                                onClick={() =>
-                                    window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
-                                }
+                                onClick={() => {
+                                    if (window.history.state && window.history.state.idx > 0) {
+                                        navigate(-1)
+                                    } else {
+                                        navigate('/', { replace: true })
+                                    }
+                                }}
                             >
                                 <IconChevronLeft stroke={1.5} size='1.3rem' />
                             </Avatar>
@@ -486,7 +496,8 @@ CanvasHeader.propTypes = {
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isAgentflowV2: PropTypes.bool
 }
 
 export default CanvasHeader
