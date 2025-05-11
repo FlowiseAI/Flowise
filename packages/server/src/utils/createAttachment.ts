@@ -98,8 +98,18 @@ export const createFileAttachment = async (req: Request) => {
                 if (isBase64) {
                     content = fileBuffer.toString('base64')
                 } else {
-                    const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
-                    content = documents.map((doc) => doc.pageContent).join('\n')
+                    if (fileInputFieldFromExt === 'pdfFile') {
+                        const { PDFLoader } = await import('@langchain/community/document_loaders/fs/pdf')
+                        const loader = new PDFLoader(new Blob([fileBuffer]), {
+                            splitPages: false,
+                            pdfjs: () => import('pdfjs-dist/legacy/build/pdf.js')
+                        })
+                        const documents = await loader.load()
+                        content = documents.map((doc) => doc.pageContent).join('\n')
+                    } else {
+                        const documents: IDocument[] = await fileLoaderNodeInstance.init(nodeData, '', options)
+                        content = documents.map((doc) => doc.pageContent).join('\n')
+                    }
                 }
 
                 fileAttachments.push({
