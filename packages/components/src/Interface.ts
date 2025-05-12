@@ -347,8 +347,7 @@ export abstract class FlowiseMemory extends BufferMemory implements MemoryMethod
     abstract getChatMessages(
         overrideSessionId?: string,
         returnBaseMessages?: boolean,
-        prependMessages?: IMessage[],
-        currentMessages?: IMessage[]
+        prependMessages?: IMessage[]
     ): Promise<IMessage[] | BaseMessage[]>
     abstract addChatMessages(msgArray: { text: string; type: MessageType }[], overrideSessionId?: string): Promise<void>
     abstract clearChatMessages(overrideSessionId?: string): Promise<void>

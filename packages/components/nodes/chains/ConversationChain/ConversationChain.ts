@@ -24,8 +24,7 @@ import {
     INodeData,
     INodeParams,
     MessageContentImageUrl,
-    IServerSideEventStreamer,
-    IMessage
+    IServerSideEventStreamer
 } from '../../../src/Interface'
 import { ConsoleCallbackHandler, CustomChainHandler, additionalCallbacks } from '../../../src/handler'
 import { getBaseClasses, handleEscapeCharacters, transformBracesWithColon } from '../../../src/utils'
@@ -261,14 +260,8 @@ const prepareChain = async (nodeData: INodeData, options: ICommonObject, session
     const conversationChain = RunnableSequence.from([
         {
             [inputKey]: (input: { input: string }) => input.input,
-            [memoryKey]: async (input: { input: string }) => {
-                const currentMessages = [
-                    {
-                        message: input.input,
-                        type: 'userMessage'
-                    }
-                ] as IMessage[]
-                const history = await memory.getChatMessages(sessionId, true, prependMessages, currentMessages)
+            [memoryKey]: async () => {
+                const history = await memory.getChatMessages(sessionId, true, prependMessages)
                 return history
             },
             ...promptVariables

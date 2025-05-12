@@ -290,8 +290,7 @@ class Mem0MemoryExtended extends BaseMem0Memory implements MemoryMethods {
     async getChatMessages(
         overrideUserId = '',
         returnBaseMessages = false,
-        prependMessages?: IMessage[],
-        currentMessages?: IMessage[]
+        prependMessages?: IMessage[]
     ): Promise<IMessage[] | BaseMessage[]> {
         const flowiseSessionId = overrideUserId
         if (!flowiseSessionId) {
@@ -323,12 +322,7 @@ class Mem0MemoryExtended extends BaseMem0Memory implements MemoryMethods {
         }
 
         if (returnBaseMessages) {
-            const memoryVariables = await this.loadMemoryVariables(
-                {
-                    [this.inputKey]: currentMessages?.[0]?.message ?? ''
-                },
-                overrideUserId
-            )
+            const memoryVariables = await this.loadMemoryVariables({}, overrideUserId)
             const mem0History = memoryVariables[this.memoryKey]
 
             if (mem0History && typeof mem0History === 'string') {
