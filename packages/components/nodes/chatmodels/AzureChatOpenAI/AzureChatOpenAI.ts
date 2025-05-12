@@ -237,7 +237,7 @@ class AzureChatOpenAI_ChatModels implements INode {
                 console.error('Error parsing base options', exception)
             }
         }
-        if (modelName === 'o3-mini') {
+        if (modelName === 'o3-mini' || modelName.includes('o1')) {
             delete obj.temperature
         }
         if ((modelName.includes('o1') || modelName.includes('o3')) && reasoningEffort) {
