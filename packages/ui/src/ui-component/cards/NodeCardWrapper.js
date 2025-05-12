@@ -7,14 +7,14 @@ import MainCard from './MainCard'
 const NodeCardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
-    border: 'solid 1px',
-    borderColor: theme.palette.primary[200] + 75,
+    border: `1px solid ${theme.customization?.isDarkMode ? theme.palette.grey[900] + 25 : theme.palette.primary[200] + 75}`,
     width: '300px',
     height: 'auto',
     padding: '10px',
-    boxShadow: '0 2px 14px 0 rgb(32 40 45 / 8%)',
+    boxShadow: `rgba(0, 0, 0, 0.05) 0px 0px 0px 1px`,
     '&:hover': {
-        borderColor: theme.palette.primary.main
+        borderColor: theme.palette.primary.main,
+        boxShadow: `rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px`
     }
 }))
 

@@ -7,6 +7,9 @@ import { RedisEventPublisher } from './RedisEventPublisher'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { BaseQueue } from './BaseQueue'
 import { RedisOptions } from 'bullmq'
+import logger from '../utils/logger'
+import { generateAgentflowv2 as generateAgentflowv2_json } from 'flowise-components'
+import { databaseEntities } from '../utils'
 
 interface PredictionQueueOptions {
     appDataSource: DataSource
@@ -14,6 +17,15 @@ interface PredictionQueueOptions {
     cachePool: CachePool
     componentNodes: IComponentNodes
     abortControllerPool: AbortControllerPool
+}
+
+interface IGenerateAgentflowv2Params extends IExecuteFlowParams {
+    prompt: string
+    componentNodes: IComponentNodes
+    toolNodes: IComponentNodes
+    selectedChatModel: Record<string, any>
+    question: string
+    isAgentFlowGenerator: boolean
 }
 
 export class PredictionQueue extends BaseQueue {
@@ -45,12 +57,23 @@ export class PredictionQueue extends BaseQueue {
         return this.queue
     }
 
-    async processJob(data: IExecuteFlowParams) {
+    async processJob(data: IExecuteFlowParams | IGenerateAgentflowv2Params) {
         if (this.appDataSource) data.appDataSource = this.appDataSource
         if (this.telemetry) data.telemetry = this.telemetry
         if (this.cachePool) data.cachePool = this.cachePool
         if (this.componentNodes) data.componentNodes = this.componentNodes
         if (this.redisPublisher) data.sseStreamer = this.redisPublisher
+
+        if (Object.prototype.hasOwnProperty.call(data, 'isAgentFlowGenerator')) {
+            logger.info('Generating Agentflow...')
+            const { prompt, componentNodes, toolNodes, selectedChatModel, question } = data as IGenerateAgentflowv2Params
+            const options: Record<string, any> = {
+                appDataSource: this.appDataSource,
+                databaseEntities: databaseEntities,
+                logger: logger
+            }
+            return await generateAgentflowv2_json({ prompt, componentNodes, toolNodes, selectedChatModel }, question, options)
+        }
 
         if (this.abortControllerPool) {
             const abortControllerId = `${data.chatflow.id}_${data.chatId}`

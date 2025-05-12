@@ -7,10 +7,11 @@ import PropTypes from 'prop-types'
 import { Button, Dialog, DialogContent, DialogTitle } from '@mui/material'
 import { TableViewOnly } from '@/ui-component/table/Table'
 import { IconBook2 } from '@tabler/icons-react'
+import { useTheme } from '@mui/material/styles'
 
 // Store
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
-import { baseURL } from '@/store/constant'
+import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 
 // API
 import configApi from '@/api/config'
@@ -19,8 +20,16 @@ import useApi from '@/hooks/useApi'
 const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
+    const theme = useTheme()
 
     const getNodeConfigApi = useApi(configApi.getNodeConfig)
+
+    const renderIcon = (node) => {
+        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === node.name)
+
+        if (!foundIcon) return null
+        return <foundIcon.icon size={24} color={'white'} />
+    }
 
     useEffect(() => {
         if (dialogProps.data) {
@@ -48,27 +57,46 @@ const NodeInfoDialog = ({ show, dialogProps, onCancel }) => {
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 {dialogProps.data && dialogProps.data.name && dialogProps.data.label && (
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                        <div
-                            style={{
-                                width: 50,
-                                height: 50,
-                                marginRight: 10,
-                                borderRadius: '50%',
-                                backgroundColor: 'white'
-                            }}
-                        >
-                            <img
+                        {dialogProps.data.color && !dialogProps.data.icon ? (
+                            <div
                                 style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    padding: 7,
-                                    borderRadius: '50%',
-                                    objectFit: 'contain'
+                                    ...theme.typography.commonAvatar,
+                                    ...theme.typography.largeAvatar,
+                                    borderRadius: '15px',
+                                    backgroundColor: dialogProps.data.color,
+                                    cursor: 'grab',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    background: dialogProps.data.color,
+                                    marginRight: 10
                                 }}
-                                alt={dialogProps.data.name}
-                                src={`${baseURL}/api/v1/node-icon/${dialogProps.data.name}`}
-                            />
-                        </div>
+                            >
+                                {renderIcon(dialogProps.data)}
+                            </div>
+                        ) : (
+                            <div
+                                style={{
+                                    width: 50,
+                                    height: 50,
+                                    marginRight: 10,
+                                    borderRadius: '50%',
+                                    backgroundColor: 'white'
+                                }}
+                            >
+                                <img
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        padding: 7,
+                                        borderRadius: '50%',
+                                        objectFit: 'contain'
+                                    }}
+                                    alt={dialogProps.data.name}
+                                    src={`${baseURL}/api/v1/node-icon/${dialogProps.data.name}`}
+                                />
+                            </div>
+                        )}
                         <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 10 }}>
                             {dialogProps.data.label}
                             <div style={{ display: 'flex', flexDirection: 'row' }}>
