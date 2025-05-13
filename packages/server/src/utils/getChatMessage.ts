@@ -52,6 +52,7 @@ export const utilGetChatMessage = async ({
 
         // do the join with chat message feedback based on messageId for each chat message in the chatflow
         query
+            .leftJoinAndSelect('chat_message.execution', 'execution')
             .leftJoinAndMapOne('chat_message.feedback', ChatMessageFeedback, 'feedback', 'feedback.messageId = chat_message.id')
             .where('chat_message.chatflowid = :chatflowid', { chatflowid })
 
@@ -120,6 +121,9 @@ export const utilGetChatMessage = async ({
             sessionId: sessionId ?? undefined,
             createdDate: createdDateQuery,
             id: messageId ?? undefined
+        },
+        relations: {
+            execution: true
         },
         order: {
             createdDate: sortOrder === 'DESC' ? 'DESC' : 'ASC'

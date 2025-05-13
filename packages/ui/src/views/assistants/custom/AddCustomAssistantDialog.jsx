@@ -72,9 +72,10 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 onConfirm(createResp.data.id)
             }
         } catch (err) {
-            const errorData = typeof err === 'string' ? err : err.response?.data || `${err.response.data.message}`
             enqueueSnackbar({
-                message: `Failed to add new Custom Assistant: ${errorData}`,
+                message: `Failed to add new Custom Assistant: ${
+                    typeof err.response.data === 'object' ? err.response.data.message : err.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

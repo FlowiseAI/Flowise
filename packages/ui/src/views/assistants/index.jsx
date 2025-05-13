@@ -122,7 +122,10 @@ const Assistants = () => {
         <>
             <MainCard>
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader title='Assistants' />
+                    <ViewHeader
+                        title='Assistants'
+                        description='Chat assistants with instructions, tools, and files to respond to user queries'
+                    />
                     <FeatureCards />
                 </Stack>
             </MainCard>

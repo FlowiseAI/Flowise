@@ -118,6 +118,7 @@ const removeAllChatMessages = async (
                 logger.error(`[server]: Error deleting file storage for chatflow ${chatflowid}, chatId ${chatId}: ${e}`)
             }
         }
+
         const dbResponse = await appServer.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
         return dbResponse
     } catch (error) {
@@ -136,6 +137,10 @@ const removeChatMessagesByMessageIds = async (
     try {
         const appServer = getRunningExpressApp()
 
+        // Get messages before deletion to check for executionId
+        const messages = await appServer.AppDataSource.getRepository(ChatMessage).findByIds(messageIds)
+        const executionIds = messages.map((msg) => msg.executionId).filter(Boolean)
+
         for (const [composite_key] of chatIdMap) {
             const [chatId] = composite_key.split('_')
 
@@ -145,6 +150,11 @@ const removeChatMessagesByMessageIds = async (
 
             // Delete all uploads corresponding to this chatflow/chatId
             await removeFilesFromStorage(chatflowid, chatId)
+        }
+
+        // Delete executions if they exist
+        if (executionIds.length > 0) {
+            await appServer.AppDataSource.getRepository('Execution').delete(executionIds)
         }
 
         const dbResponse = await appServer.AppDataSource.getRepository(ChatMessage).delete(messageIds)

@@ -1,11 +1,6 @@
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
-import rehypeMathjax from 'rehype-mathjax'
-import rehypeRaw from 'rehype-raw'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
-import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
 import { Dialog, DialogContent, DialogTitle } from '@mui/material'
 
 const InputHintDialog = ({ show, dialogProps, onCancel }) => {
@@ -24,29 +19,7 @@ const InputHintDialog = ({ show, dialogProps, onCancel }) => {
                 {dialogProps.label}
             </DialogTitle>
             <DialogContent>
-                <MemoizedReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                    components={{
-                        code({ inline, className, children, ...props }) {
-                            const match = /language-(\w+)/.exec(className || '')
-                            return !inline ? (
-                                <CodeBlock
-                                    isDialog={true}
-                                    language={(match && match[1]) || ''}
-                                    value={String(children).replace(/\n$/, '')}
-                                    {...props}
-                                />
-                            ) : (
-                                <code className={className} {...props}>
-                                    {children}
-                                </code>
-                            )
-                        }
-                    }}
-                >
-                    {dialogProps?.value}
-                </MemoizedReactMarkdown>
+                <MemoizedReactMarkdown>{dialogProps?.value}</MemoizedReactMarkdown>
             </DialogContent>
         </Dialog>
     ) : null

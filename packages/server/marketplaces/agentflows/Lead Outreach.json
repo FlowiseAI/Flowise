@@ -1,7 +1,7 @@
 {
     "description": "Research leads and create personalized email drafts for sales team",
     "framework": ["Langchain"],
-    "usecases": ["Leads"],
+    "usecases": ["Leads", "Hierarchical Agent Teams"],
     "nodes": [
         {
             "id": "supervisor_0",

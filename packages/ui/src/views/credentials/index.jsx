@@ -42,6 +42,7 @@ import useNotifier from '@/utils/useNotifier'
 // Icons
 import { IconTrash, IconEdit, IconX, IconPlus } from '@tabler/icons-react'
 import CredentialEmptySVG from '@/assets/images/credential_empty.svg'
+import keySVG from '@/assets/images/key.svg'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -233,6 +234,7 @@ const Credentials = () => {
                             search={true}
                             searchPlaceholder='Search Credentials'
                             title='Credentials'
+                            description='API keys, tokens, and secrets for 3rd party integrations'
                         >
                             <StyledButton
                                 variant='contained'
@@ -346,6 +348,11 @@ const Credentials = () => {
                                                                         }}
                                                                         alt={credential.credentialName}
                                                                         src={`${baseURL}/api/v1/components-credentials-icon/${credential.credentialName}`}
+                                                                        onError={(e) => {
+                                                                            e.target.onerror = null
+                                                                            e.target.style.padding = '5px'
+                                                                            e.target.src = keySVG
+                                                                        }}
                                                                     />
                                                                 </Box>
                                                                 {credential.name}

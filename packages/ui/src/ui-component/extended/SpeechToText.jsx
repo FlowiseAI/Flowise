@@ -6,6 +6,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 // material-ui
 import { Typography, Box, Button, FormControl, ListItem, ListItemAvatar, ListItemText, MenuItem, Select } from '@mui/material'
 import { IconX } from '@tabler/icons-react'
+import { useTheme } from '@mui/material/styles'
 
 // Project import
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
@@ -242,6 +243,7 @@ const SpeechToText = ({ dialogProps }) => {
     const dispatch = useDispatch()
 
     useNotifier()
+    const theme = useTheme()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -349,7 +351,16 @@ const SpeechToText = ({ dialogProps }) => {
             <Box fullWidth sx={{ mb: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography>Providers</Typography>
                 <FormControl fullWidth>
-                    <Select size='small' value={selectedProvider} onChange={handleProviderChange}>
+                    <Select
+                        size='small'
+                        value={selectedProvider}
+                        onChange={handleProviderChange}
+                        sx={{
+                            '& .MuiSvgIcon-root': {
+                                color: theme?.customization?.isDarkMode ? '#fff' : 'inherit'
+                            }
+                        }}
+                    >
                         <MenuItem value='none'>None</MenuItem>
                         {Object.values(speechToTextProviders).map((provider) => (
                             <MenuItem key={provider.name} value={provider.name}>

@@ -367,7 +367,13 @@ const APIKey = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search API Keys' title='API Keys'>
+                        <ViewHeader
+                            onSearchChange={onSearchChange}
+                            search={true}
+                            searchPlaceholder='Search API Keys'
+                            title='API Keys'
+                            description='Flowise API & SDK authentication keys'
+                        >
                             <Button
                                 variant='outlined'
                                 sx={{ borderRadius: 2, height: '100%' }}

@@ -120,6 +120,7 @@ const OpenAIAssistantLayout = () => {
                             search={true}
                             searchPlaceholder='Search Assistants'
                             title='OpenAI Assistant'
+                            description='Create assistants using OpenAI Assistant API'
                             onBack={() => navigate(-1)}
                         >
                             <Button

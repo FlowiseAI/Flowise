@@ -11,6 +11,11 @@ import chatflowsApi from '@/api/chatflows'
 // Hooks
 import useApi from '@/hooks/useApi'
 
+// MUI
+import { Box, Card, Stack, Typography, useTheme } from '@mui/material'
+import { IconCircleXFilled } from '@tabler/icons-react'
+import { alpha } from '@mui/material/styles'
+
 //Const
 import { baseURL } from '@/store/constant'
 
@@ -20,6 +25,7 @@ const ChatbotFull = () => {
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId = URLpath[URLpath.length - 1] === 'chatbot' ? '' : URLpath[URLpath.length - 1]
     const navigate = useNavigate()
+    const theme = useTheme()
 
     const [chatflow, setChatflow] = useState(null)
     const [chatbotTheme, setChatbotTheme] = useState({})
@@ -80,7 +86,7 @@ const ChatbotFull = () => {
             const chatflowType = chatflowData.type
             if (chatflowData.chatbotConfig) {
                 let parsedConfig = {}
-                if (chatflowType === 'MULTIAGENT') {
+                if (chatflowType === 'MULTIAGENT' || chatflowType === 'AGENTFLOW') {
                     parsedConfig.showAgentMessages = true
                 }
 
@@ -99,7 +105,7 @@ const ChatbotFull = () => {
                     setChatbotTheme(parsedConfig)
                     setChatbotOverrideConfig({})
                 }
-            } else if (chatflowType === 'MULTIAGENT') {
+            } else if (chatflowType === 'MULTIAGENT' || chatflowType === 'AGENTFLOW') {
                 setChatbotTheme({ showAgentMessages: true })
             }
         }
@@ -114,7 +120,29 @@ const ChatbotFull = () => {
             {!isLoading ? (
                 <>
                     {!chatflow || chatflow.apikeyid ? (
-                        <p>Invalid Chatbot</p>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                            <Box sx={{ maxWidth: '500px', width: '100%' }}>
+                                <Card
+                                    variant='outlined'
+                                    sx={{
+                                        border: `1px solid ${theme.palette.error.main}`,
+                                        borderRadius: 2,
+                                        padding: '20px',
+                                        boxShadow: `0 4px 8px ${alpha(theme.palette.error.main, 0.15)}`
+                                    }}
+                                >
+                                    <Stack spacing={2} alignItems='center'>
+                                        <IconCircleXFilled size={50} color={theme.palette.error.main} />
+                                        <Typography variant='h3' color='error.main' align='center'>
+                                            Invalid Chatbot
+                                        </Typography>
+                                        <Typography variant='body1' color='text.secondary' align='center'>
+                                            {`The chatbot you're looking for doesn't exist or requires API key authentication.`}
+                                        </Typography>
+                                    </Stack>
+                                </Card>
+                            </Box>
+                        </Box>
                     ) : (
                         <FullPageChat
                             chatflowid={chatflow.id}

@@ -68,10 +68,10 @@ const getSingleOpenaiAssistant = async (credentialId: string, assistantId: strin
         if (dbResponse.tool_resources?.file_search?.vector_store_ids?.length) {
             // Since there can only be 1 vector store per assistant
             const vectorStoreId = dbResponse.tool_resources.file_search.vector_store_ids[0]
-            const vectorStoreFiles = await openai.beta.vectorStores.files.list(vectorStoreId)
+            const vectorStoreFiles = await openai.vectorStores.files.list(vectorStoreId)
             const fileIds = vectorStoreFiles.data?.map((file) => file.id) ?? []
             ;(dbResponse.tool_resources.file_search as any).files = [...existingFiles.filter((file) => fileIds.includes(file.id))]
-            ;(dbResponse.tool_resources.file_search as any).vector_store_object = await openai.beta.vectorStores.retrieve(vectorStoreId)
+            ;(dbResponse.tool_resources.file_search as any).vector_store_object = await openai.vectorStores.retrieve(vectorStoreId)
         }
         return dbResponse
     } catch (error) {

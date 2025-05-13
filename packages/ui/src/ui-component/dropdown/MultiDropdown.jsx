@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux'
 
 import { Popper, FormControl, TextField, Box, Typography } from '@mui/material'
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
-import { styled } from '@mui/material/styles'
+import { useTheme, styled } from '@mui/material/styles'
 import PropTypes from 'prop-types'
 
 const StyledPopper = styled(Popper)({
@@ -28,6 +28,7 @@ export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = 
     }
     const getDefaultOptionValue = () => []
     let [internalValue, setInternalValue] = useState(value ?? [])
+    const theme = useTheme()
 
     return (
         <FormControl sx={{ mt: 1, width: '100%', ...formControlSx }} size='small'>
@@ -54,7 +55,19 @@ export const MultiDropdown = ({ name, value, options, onSelect, formControlSx = 
                 }}
                 PopperComponent={StyledPopper}
                 renderInput={(params) => (
-                    <TextField {...params} value={internalValue} sx={{ height: '100%', '& .MuiInputBase-root': { height: '100%' } }} />
+                    <TextField
+                        {...params}
+                        value={internalValue}
+                        sx={{
+                            height: '100%',
+                            '& .MuiInputBase-root': {
+                                height: '100%',
+                                '& fieldset': {
+                                    borderColor: theme.palette.grey[900] + 25
+                                }
+                            }
+                        }}
+                    />
                 )}
                 renderOption={(props, option) => (
                     <Box component='li' {...props}>

@@ -99,6 +99,16 @@ export class SSEStreamer implements IServerSideEventStreamer {
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
     }
+    streamCalledToolsEvent(chatId: string, data: any): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'calledTools',
+                data: data
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
     streamFileAnnotationsEvent(chatId: string, data: any): void {
         const client = this.clients[chatId]
         if (client) {
@@ -134,6 +144,36 @@ export class SSEStreamer implements IServerSideEventStreamer {
         if (client) {
             const clientResponse = {
                 event: 'nextAgent',
+                data: data
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+    streamAgentFlowEvent(chatId: string, data: any): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'agentFlowEvent',
+                data: data
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+    streamAgentFlowExecutedDataEvent(chatId: string, data: any): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'agentFlowExecutedData',
+                data: data
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+    streamNextAgentFlowEvent(chatId: string, data: any): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'nextAgentFlow',
                 data: data
             }
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
@@ -204,6 +244,17 @@ export class SSEStreamer implements IServerSideEventStreamer {
         }
         if (Object.keys(metadataJson).length > 0) {
             this.streamCustomEvent(chatId, 'metadata', metadataJson)
+        }
+    }
+
+    streamUsageMetadataEvent(chatId: string, data: any): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'usageMetadata',
+                data: data
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
     }
 }

@@ -93,22 +93,43 @@ export const utilGetUploadsConfig = async (chatflowid: string): Promise<IUploadC
         'seqStart'
     ]
 
-    if (nodes.some((node) => imgUploadAllowedNodes.includes(node.data.name))) {
-        nodes.forEach((node: IReactFlowNode) => {
-            const data = node.data
-            if (data.category === 'Chat Models' && data.inputs?.['allowImageUploads'] === true) {
-                // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
-                node.data.inputParams.map((param: INodeParams) => {
-                    if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
-                        imgUploadSizeAndTypes.push({
-                            fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
-                            maxUploadSize: 5
-                        })
-                        isImageUploadAllowed = true
-                    }
-                })
+    const isAgentflow = nodes.some((node) => node.data.category === 'Agent Flows')
+
+    if (isAgentflow) {
+        // check through all the nodes and check if any of the nodes data inputs agentModelConfig or llmModelConfig or conditionAgentModelConfig has allowImageUploads
+        nodes.forEach((node) => {
+            if (node.data.category === 'Agent Flows') {
+                if (
+                    node.data.inputs?.agentModelConfig?.allowImageUploads ||
+                    node.data.inputs?.llmModelConfig?.allowImageUploads ||
+                    node.data.inputs?.conditionAgentModelConfig?.allowImageUploads
+                ) {
+                    imgUploadSizeAndTypes.push({
+                        fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
+                        maxUploadSize: 5
+                    })
+                    isImageUploadAllowed = true
+                }
             }
         })
+    } else {
+        if (nodes.some((node) => imgUploadAllowedNodes.includes(node.data.name))) {
+            nodes.forEach((node: IReactFlowNode) => {
+                const data = node.data
+                if (data.category === 'Chat Models' && data.inputs?.['allowImageUploads'] === true) {
+                    // TODO: for now the maxUploadSize is hardcoded to 5MB, we need to add it to the node properties
+                    node.data.inputParams.map((param: INodeParams) => {
+                        if (param.name === 'allowImageUploads' && node.data.inputs?.['allowImageUploads']) {
+                            imgUploadSizeAndTypes.push({
+                                fileTypes: 'image/gif;image/jpeg;image/png;image/webp;'.split(';'),
+                                maxUploadSize: 5
+                            })
+                            isImageUploadAllowed = true
+                        }
+                    })
+                }
+            })
+        }
     }
 
     return {

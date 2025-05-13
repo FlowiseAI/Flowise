@@ -98,6 +98,7 @@ const CustomAssistantLayout = () => {
                             search={true}
                             searchPlaceholder='Search Assistants'
                             title='Custom Assistant'
+                            description='Create custom assistants with your choice of LLMs'
                             onBack={() => navigate(-1)}
                         >
                             <StyledButton

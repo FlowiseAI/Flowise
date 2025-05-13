@@ -1,7 +1,7 @@
 {
     "description": "Customer support team consisting of Support Representative and Quality Assurance Specialist to handle support tickets",
     "framework": ["Langchain"],
-    "usecases": ["Customer Support"],
+    "usecases": ["Customer Support", "Hierarchical Agent Teams"],
     "nodes": [
         {
             "id": "supervisor_0",

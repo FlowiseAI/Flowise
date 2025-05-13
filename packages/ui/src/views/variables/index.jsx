@@ -27,6 +27,11 @@ import {
 import MainCard from '@/ui-component/cards/MainCard'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+import { refreshVariablesCache } from '@/ui-component/input/suggestionOption'
+import AddEditVariableDialog from './AddEditVariableDialog'
+import HowToUseVariablesDialog from './HowToUseVariablesDialog'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // API
 import variablesApi from '@/api/variables'
@@ -41,12 +46,6 @@ import useNotifier from '@/utils/useNotifier'
 // Icons
 import { IconTrash, IconEdit, IconX, IconPlus, IconVariable } from '@tabler/icons-react'
 import VariablesEmptySVG from '@/assets/images/variables_empty.svg'
-
-// const
-import AddEditVariableDialog from './AddEditVariableDialog'
-import HowToUseVariablesDialog from './HowToUseVariablesDialog'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -170,6 +169,7 @@ const Variables = () => {
     const onConfirm = () => {
         setShowVariableDialog(false)
         getAllVariables.request()
+        refreshVariablesCache()
     }
 
     useEffect(() => {
@@ -200,7 +200,13 @@ const Variables = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Variables' title='Variables'>
+                        <ViewHeader
+                            onSearchChange={onSearchChange}
+                            search={true}
+                            searchPlaceholder='Search Variables'
+                            title='Variables'
+                            description='Create and manage global variables'
+                        >
                             <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
                                 How To Use
                             </Button>
