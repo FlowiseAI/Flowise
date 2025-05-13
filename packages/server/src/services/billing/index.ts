@@ -15,18 +15,18 @@ import { Subscription } from '../../database/entities/Subscription'
 // import { UserCredits } from '../../database/entities/UserCredits'
 import Stripe from 'stripe'
 
-async function syncUsageToStripe(traceId?: string) {
-    try {
-        const billingService = new BillingService()
-        return await billingService.syncUsageToStripe(traceId || '')
-    } catch (error) {
-        logger.error('Error syncing usage:', error)
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Failed to sync usage: ${error instanceof Error ? error.message : String(error)}`
-        )
-    }
-}
+// async function syncUsageToStripe(traceId?: string) {
+//     try {
+//         const billingService = new BillingService()
+//         return await billingService.syncUsageToStripe(traceId || '')
+//     } catch (error) {
+//         logger.error('Error syncing usage:', error)
+//         throw new InternalFlowiseError(
+//             StatusCodes.INTERNAL_SERVER_ERROR,
+//             `Failed to sync usage: ${error instanceof Error ? error.message : String(error)}`
+//         )
+//     }
+// }
 
 async function attachPaymentMethod(params: AttachPaymentMethodParams) {
     try {
@@ -200,7 +200,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 }
 
 export default {
-    syncUsageToStripe,
+    // syncUsageToStripe,
     attachPaymentMethod,
     createCheckoutSession,
     updateSubscription,

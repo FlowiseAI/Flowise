@@ -17,7 +17,7 @@ class ChatAnthropic_ChatModels implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
-
+    tags: string[]
     constructor() {
         this.label = 'ChatAnthropic'
         this.name = 'chatAnthropic'
@@ -115,6 +115,7 @@ class ChatAnthropic_ChatModels implements INode {
                 optional: true
             }
         ]
+        this.tags = ['AAI']
     }
 
     //@ts-ignore

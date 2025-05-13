@@ -72,7 +72,7 @@ export default function AppLayout({
                             <React.Suspense fallback={<div>Loading...</div>}>
                                 <HelpChatProvider>
                                     <HelpChatDrawer
-                                        apiHost='https://lastrev.flowise.theanswer.ai'
+                                        apiHost='https://lr-production.studio.theanswer.ai'
                                         chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d'
                                     />
                                 </HelpChatProvider>

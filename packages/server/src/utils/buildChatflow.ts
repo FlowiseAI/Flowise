@@ -313,7 +313,9 @@ export const executeFlow = async ({
                         chatId,
                         chatflowid,
                         appDataSource,
-                        databaseEntities: databaseEntities
+                        databaseEntities: databaseEntities,
+                        userId: user?.id,
+                        organizationId: user?.organizationId
                     }
                     const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
                     logger.debug(`Speech to text result: ${speechToTextResult}`)
@@ -703,7 +705,9 @@ export const executeFlow = async ({
                         rawOutput: resultText,
                         appDataSource,
                         databaseEntities,
-                        logger
+                        logger,
+                        userId: user?.id,
+                        organizationId: user?.organizationId
                     }
                     const customFuncNodeInstance = new nodeModule.nodeClass()
                     let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
@@ -945,45 +949,56 @@ const validateAndSaveChat = async (
         }
     }
 
-    const billedUserId = req.user?.id || chatflow.userId
-    if (!billedUserId || !chatflow.organizationId) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Chatflow ${chatflowid} does not have a user or organization associated with it`
-        )
-    }
-
-    // Get the user's Stripe customer ID
-    const user = await appServer.AppDataSource.getRepository(User).findOne({
-        where: { id: billedUserId }
-    })
-
-    if (user && user.stripeCustomerId) {
-        // Use the new BillingService to check usage limits
-        // Get usage summary for the customer
-        const billingService = new BillingService()
-        const usage = await billingService.getUsageSummary(user.stripeCustomerId)
-        const subscription = await billingService.getActiveSubscription(user.stripeCustomerId)
-
-        // Determine plan type and limits
-        const isPro = subscription?.status === 'active' && subscription.items.data[0]?.price.id === BILLING_CONFIG.PRICE_IDS.PAID_MONTHLY
-        const planLimits = isPro ? BILLING_CONFIG.PLAN_LIMITS.PRO : BILLING_CONFIG.PLAN_LIMITS.FREE
-
-        // Calculate total usage
-        const totalUsage = (usage.usageByMeter?.ai_tokens || 0) + (usage.usageByMeter?.compute || 0) + (usage.usageByMeter?.storage || 0)
-
-        // Check if over limit
-        const isOverLimit = totalUsage >= planLimits
-
-        // console.log('[BuildChatflow] Usage summary:', { totalUsage, planLimits, isOverLimit })
-        if (isOverLimit) {
-            throw new InternalFlowiseError(
-                StatusCodes.PAYMENT_REQUIRED,
-                'Usage limit reached. Please upgrade your plan to continue using this service.'
-            )
+    try {
+        const billedUserId = req.user?.id || chatflow.userId
+        if (!billedUserId || !chatflow.organizationId) {
+            logger.warn(`Chatflow ${chatflowid} does not have a user or organization associated with it`)
+            return
         }
+
+        // Get the user's Stripe customer ID
+        const user = await appServer.AppDataSource.getRepository(User).findOne({
+            where: { id: billedUserId }
+        })
+
+        if (user && user.stripeCustomerId) {
+            // Use the new BillingService to check usage limits
+            try {
+                // Get usage summary for the customer
+                const billingService = new BillingService()
+                const usage = await billingService.getUsageSummary(user.stripeCustomerId)
+                const subscription = await billingService.getActiveSubscription(user.stripeCustomerId)
+
+                // Determine plan type and limits
+                const isPro =
+                    subscription?.status === 'active' && subscription.items.data[0]?.price.id === BILLING_CONFIG.PRICE_IDS.PAID_MONTHLY
+                const planLimits = isPro ? BILLING_CONFIG.PLAN_LIMITS.PRO : BILLING_CONFIG.PLAN_LIMITS.FREE
+
+                // Calculate total usage
+                const totalUsage =
+                    (usage.usageByMeter?.ai_tokens || 0) + (usage.usageByMeter?.compute || 0) + (usage.usageByMeter?.storage || 0)
+
+                // Check if over limit
+                const isOverLimit = totalUsage >= planLimits
+
+                // console.log('[BuildChatflow] Usage summary:', { totalUsage, planLimits, isOverLimit })
+                if (isOverLimit) {
+                    throw new InternalFlowiseError(
+                        StatusCodes.PAYMENT_REQUIRED,
+                        'Usage limit reached. Please upgrade your plan to continue using this service.'
+                    )
+                }
+            } catch (billingError) {
+                logger.error(`Error checking billing information: ${getErrorMessage(billingError)}`)
+                // Allow operation to continue even if billing check fails
+            }
+        }
+    } catch (error) {
+        logger.error(`Error in billing validation: ${getErrorMessage(error)}`)
+        // Continue without enforcing billing restrictions if there's an error
     }
 }
+
 /**
  * Increment success metric counter
  * @param {IMetricsProvider} metricsProvider

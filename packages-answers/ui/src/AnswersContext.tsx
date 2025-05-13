@@ -7,9 +7,38 @@ import { cloneDeep } from 'lodash'
 import { deepmerge } from '@utils/deepmerge'
 import { clearEmptyValues } from './clearEmptyValues'
 import predictionApi from '@/api/prediction'
+import chatmessagefeedbackApi from '@/api/chatmessagefeedback'
+
+// import {
+//     AnswersFilters,
+//     AppSettings,
+//     Chat,
+//     Journey,
+//     Message,
+//     Prompt,
+//     Sidekick,
+//     User,
+//     MessageFeedback,
+//     SidekickListItem,
+//     ChatbotConfig,
+//     FlowData,
+//     FeedbackPayload
+// } from 'types'
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
 
-import { AnswersFilters, AppSettings, Chat, Journey, Message, Prompt, Sidekick, User, MessageFeedback, SidekickListItem } from 'types'
+import {
+    AnswersFilters,
+    AppSettings,
+    Chat,
+    Journey,
+    Message,
+    Prompt,
+    Sidekick,
+    User,
+    MessageFeedback,
+    SidekickListItem,
+    FeedbackPayload
+} from 'types'
 import { ChatbotConfig } from './types'
 import { FlowData } from './types'
 
@@ -83,11 +112,16 @@ interface AnswersContextType {
     flowData?: FlowData
     gptModel: string
     setGptModel: (arg: SetStateAction<string>) => void
-    sendMessageFeedback: (args: Partial<MessageFeedback>) => void
+    sendMessageFeedback: (args: FeedbackPayload) => Promise<any>
     socketIOClientId?: string
     setSocketIOClientId: (id: string) => void
     isChatFlowAvailableToStream: boolean
     handleAbort: () => Promise<void>
+    feedbackId: string
+    setFeedbackId: (id: string) => void
+    showFeedbackContentDialog: boolean
+    setShowFeedbackContentDialog: (show: boolean) => void
+    submitFeedbackContent: (text: string) => Promise<void>
 }
 // @ts-ignore
 const AnswersContext = createContext<AnswersContextType>({
@@ -117,7 +151,12 @@ const AnswersContext = createContext<AnswersContextType>({
     socketIOClientId: '',
     setSocketIOClientId: () => {},
     isChatFlowAvailableToStream: false,
-    handleAbort: async () => {}
+    handleAbort: async () => {},
+    feedbackId: '',
+    setFeedbackId: () => {},
+    showFeedbackContentDialog: false,
+    setShowFeedbackContentDialog: () => {},
+    submitFeedbackContent: async () => {}
 })
 
 export function useAnswers() {
@@ -158,6 +197,8 @@ export function AnswersProvider({
     // const [chat, setChat] = useState<Chat | undefined>(chat);
     const [journey, setJourney] = useState<Journey | undefined>(initialJourney)
     const [isLoading, setIsLoading] = useState(false)
+    const [feedbackId, setFeedbackId] = useState('')
+    const [showFeedbackContentDialog, setShowFeedbackContentDialog] = useState(false)
 
     const [showFilters, setShowFilters] = useState(false)
     const [useStreaming, setUseStreaming] = useState(initialUseStreaming)
@@ -215,8 +256,42 @@ export function AnswersProvider({
 
     const deleteChat = async (id: string) => axios.delete(`${apiUrl}/chats?id=${id}`).then(() => router.refresh())
 
-    const sendMessageFeedback = async (data: Partial<MessageFeedback>) =>
-        axios.post(`${apiUrl}/chats/message_feedback`, data).then(() => router.refresh())
+    const sendMessageFeedback = async (data: FeedbackPayload) => {
+        const { chatflowid, messageId, rating } = data
+        const response = await chatmessagefeedbackApi.addFeedback(chatflowid, { ...data })
+        if (response.data) {
+            const data = response.data
+            let id = ''
+            if (data && data.id) id = data.id
+
+            setMessages((prevMessages) => {
+                const allMessages = [...cloneDeep(prevMessages)]
+                return allMessages.map((message) => {
+                    if (message.id === messageId) {
+                        return {
+                            ...message,
+                            feedback: { rating }
+                        }
+                    }
+                    return message
+                })
+            })
+
+            setFeedbackId(id)
+            setShowFeedbackContentDialog(true)
+        }
+    }
+
+    const submitFeedbackContent = async (text: string) => {
+        const body = {
+            content: text
+        }
+        const result = await chatmessagefeedbackApi.updateFeedback(feedbackId, body)
+        if (result.data) {
+            setFeedbackId('')
+            setShowFeedbackContentDialog(false)
+        }
+    }
 
     const deletePrompt = async (id: string) => axios.delete(`${apiUrl}/prompts?id=${id}`).then(() => router.refresh())
     const deleteJourney = async (id: string) => axios.delete(`${apiUrl}/journeys?id=${id}`).then(() => router.refresh())
@@ -230,10 +305,17 @@ export function AnswersProvider({
         if (journey) {
             router.push(`/journey/${journey.id}`)
             setJourneyId(journey.id)
-        } else {
-            router.push('/chat')
-            setJourneyId(undefined)
+            return
         }
+
+        if (sidekick) {
+            router.push(`/chat/${sidekick.id}`)
+            setChatId(uuidv4())
+            setMessages([])
+            setFilters({})
+            return
+        }
+
         setChatId(undefined)
         setMessages([])
         setFilters({})
@@ -245,7 +327,7 @@ export function AnswersProvider({
     const updateLastMessage = (text: string) => {
         setMessages((prevMessages) => {
             let allMessages = [...cloneDeep(prevMessages)]
-            if (allMessages[allMessages.length - 1].role === 'user') return allMessages
+            if (allMessages[allMessages.length - 1]?.role === 'user') return allMessages
             allMessages[allMessages.length - 1].content += text
             return allMessages
         })
@@ -381,6 +463,7 @@ export function AnswersProvider({
                     // })),
                     uploads: files,
                     audio,
+                    socketIOClientId: isChatFlowAvailableToStream ? socketIOClientId : undefined,
                     chatType: 'ANSWERAI',
                     action
                 }
@@ -456,7 +539,16 @@ export function AnswersProvider({
 
         try {
             // Start with empty message that will be updated by streaming
-            setMessages((prevMessages) => [...prevMessages, { role: 'assistant', content: '', isLoading: true } as Message])
+            setMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                    role: 'assistant',
+                    content: '',
+                    isLoading: true,
+                    chatflowid: chatflowid,
+                    type: 'apiMessage'
+                } as Message
+            ])
             await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
                 openWhenHidden: true,
                 method: 'POST',
@@ -510,6 +602,17 @@ export function AnswersProvider({
                             if (payload.data.chatId) {
                                 setChatId(payload.data.chatId)
                             }
+                            if (payload.data.chatMessageId) {
+                                setMessages((prevMessages) => {
+                                    const allMessages = [...cloneDeep(prevMessages)]
+                                    const lastMessage = allMessages[allMessages.length - 1]
+                                    if (lastMessage?.role === 'user') return allMessages
+                                    lastMessage.id = payload.data.chatMessageId
+                                    lastMessage.chatId = payload.data.chatId
+                                    lastMessage.chatflowid = chatflowid
+                                    return allMessages
+                                })
+                            }
                             break
                         case 'error':
                             setError(payload.data)
@@ -532,6 +635,8 @@ export function AnswersProvider({
                                 const lastMessage = allMessages[allMessages.length - 1]
                                 if (lastMessage?.role === 'user') return allMessages
                                 lastMessage.isLoading = false
+                                lastMessage.role = 'assistant'
+                                lastMessage.type = 'apiMessage'
                                 return allMessages
                             })
                             setIsLoading(false)
@@ -739,7 +844,12 @@ export function AnswersProvider({
         socketIOClientId,
         setSocketIOClientId,
         isChatFlowAvailableToStream,
-        handleAbort
+        handleAbort,
+        feedbackId,
+        setFeedbackId,
+        showFeedbackContentDialog,
+        setShowFeedbackContentDialog,
+        submitFeedbackContent
     }
     // @ts-ignore
     return <AnswersContext.Provider value={contextValue}>{children}</AnswersContext.Provider>

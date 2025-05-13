@@ -181,7 +181,8 @@ const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, us
                 : chatflow?.visibility?.includes(ChatflowVisibility.ORGANIZATION)
                 ? 'ORGANIZATION'
                 : '',
-            isOwner: chatflow.userId === userId
+            isOwner: chatflow.userId === userId,
+            canEdit: chatflow.userId === userId || permissions?.includes('org:manage')
         }))
 
         if (!(await checkOwnership(dbResponse, user))) {

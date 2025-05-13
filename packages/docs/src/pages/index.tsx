@@ -71,7 +71,7 @@ function HomepageHeader() {
         script.onload = () => {
             window.Chatbot.init({
                 chatflowid: 'e24d5572-a27a-40b9-83fe-19a376535b9d',
-                apiHost: 'https://lastrev.flowise.theanswer.ai',
+                apiHost: 'https://lr-production.studio.theanswer.ai',
                 theme
             })
         }

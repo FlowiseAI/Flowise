@@ -8,6 +8,31 @@ import type { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, I
 import { FLOWISE_CHATID, getBaseClasses } from '../../../src/utils'
 import { addMMRInputParams, howToUseFileUpload, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
+import { generateSecureNamespace } from '../../../src/aaiUtils'
+
+// Standalone utility functions
+function createSecurityFilters(options: ICommonObject): any {
+    const filters: any = {
+        _chatflowId: { $eq: options.chatflowid }
+    }
+    if (options.user?.organizationId) {
+        filters._organizationId = { $eq: options.user.organizationId }
+    }
+    if (options.organizationId) {
+        filters._organizationId = { $eq: options.organizationId }
+    }
+    return filters
+}
+
+function addSecurityMetadata(doc: Document, options: ICommonObject): Document {
+    doc.metadata = {
+        ...doc.metadata,
+        _chatflowId: options.chatflowid,
+        ...(options.user?.organizationId ? { _organizationId: options.user.organizationId } : {}),
+        ...(options.organizationId ? { _organizationId: options.organizationId } : {})
+    }
+    return doc
+}
 
 /**
  * AAI Vector Store - Uses Pinecone with environment variables
@@ -17,6 +42,7 @@ class AAI_VectorStores implements INode {
     name: string
     version: number
     description: string
+    tags: string[]
     type: string
     icon: string
     category: string
@@ -27,6 +53,7 @@ class AAI_VectorStores implements INode {
 
     constructor() {
         this.label = 'AAI Vector Store'
+        this.tags = ['AAI']
         this.name = 'aaiVectorStore'
         this.version = 1.0
         this.type = 'AAIVectorStore'
@@ -115,45 +142,6 @@ class AAI_VectorStores implements INode {
         ]
     }
 
-    /**
-     * Generate a secure namespace with proper prefixing
-     * to ensure isolation between different chatflows and organizations
-     */
-    private generateSecureNamespace(options: ICommonObject, namespace?: string): string {
-        const chatflowPrefix = `${options.chatflowid}_`
-        const orgPrefix = options.user?.organizationId ? `${options.user.organizationId}_` : ''
-        const baseNamespace = namespace || 'default'
-        return `${orgPrefix}${chatflowPrefix}${baseNamespace}`
-    }
-
-    /**
-     * Create security filters to ensure documents can only be
-     * accessed by the same chatflow and organization
-     */
-    private createSecurityFilters(options: ICommonObject): any {
-        const filters: any = {
-            _chatflowId: { $eq: options.chatflowid }
-        }
-
-        if (options.user?.organizationId) {
-            filters._organizationId = { $eq: options.user.organizationId }
-        }
-
-        return filters
-    }
-
-    /**
-     * Add security metadata to documents to ensure isolation
-     */
-    private addSecurityMetadata(doc: Document, options: ICommonObject): Document {
-        doc.metadata = {
-            ...doc.metadata,
-            _chatflowId: options.chatflowid,
-            ...(options.user?.organizationId ? { _organizationId: options.user.organizationId } : {})
-        }
-        return doc
-    }
-
     //@ts-ignore
     vectorStoreMethods = {
         async upsert(nodeData: INodeData, options: ICommonObject): Promise<Partial<IndexingResult>> {
@@ -163,9 +151,6 @@ class AAI_VectorStores implements INode {
             const pineconeTextKey = nodeData.inputs?.pineconeTextKey as string
             const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
             const namespace = nodeData.inputs?.namespace as string
-
-            // Get reference to the parent class for helper methods
-            const self = this as unknown as AAI_VectorStores
 
             // Get index and API key from environment variables
             const pineconeApiKey = process.env.AAI_DEFAULT_PINECONE
@@ -194,7 +179,7 @@ class AAI_VectorStores implements INode {
                         flattenDocs[i].metadata = { ...flattenDocs[i].metadata, [FLOWISE_CHATID]: options.chatId }
                     }
                     // Add security metadata to each document
-                    finalDocs.push(self.addSecurityMetadata(new Document(flattenDocs[i]), options))
+                    finalDocs.push(addSecurityMetadata(new Document(flattenDocs[i]), options))
                 }
             }
 
@@ -204,7 +189,7 @@ class AAI_VectorStores implements INode {
             }
 
             // Generate secure namespace
-            obj.namespace = self.generateSecureNamespace(options, namespace)
+            obj.namespace = generateSecureNamespace(options, namespace)
 
             try {
                 if (recordManager) {
@@ -234,9 +219,6 @@ class AAI_VectorStores implements INode {
             const recordManager = nodeData.inputs?.recordManager
             const namespace = nodeData.inputs?.namespace as string
 
-            // Get reference to the parent class for helper methods
-            const self = this as unknown as AAI_VectorStores
-
             // Get index and API key from environment variables
             const pineconeApiKey = process.env.AAI_DEFAULT_PINECONE
             const _index = process.env.AAI_DEFAULT_PINECONE_INDEX
@@ -263,10 +245,10 @@ class AAI_VectorStores implements INode {
             }
 
             // Generate secure namespace
-            obj.namespace = self.generateSecureNamespace(options, namespace)
+            obj.namespace = generateSecureNamespace(options, namespace)
 
             // Add security filters
-            obj.filter = self.createSecurityFilters(options)
+            obj.filter = createSecurityFilters(options)
 
             const pineconeStore = new PineconeStore(embeddings, obj)
 
@@ -325,10 +307,10 @@ class AAI_VectorStores implements INode {
         }
 
         // Generate secure namespace
-        obj.namespace = this.generateSecureNamespace(options, namespace)
+        obj.namespace = generateSecureNamespace(options, namespace)
 
         // Create base security filters
-        let metadatafilter = this.createSecurityFilters(options)
+        let metadatafilter = createSecurityFilters(options)
 
         // Apply user-provided filters without compromising security
         // We use $and to combine user filters with security filters

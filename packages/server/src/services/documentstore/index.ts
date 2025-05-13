@@ -337,7 +337,7 @@ const syncAndRefreshChunks = async (storeId: string, fileId: string, userId: str
         })
 
         // Get fresh documents from Google Drive
-        const docs = await _splitIntoChunks(appServer.AppDataSource, componentNodes, data)
+        const docs = await _splitIntoChunks(appServer.AppDataSource, componentNodes, data, userId, organizationId)
 
         // Save new chunks
         let totalChars = 0
@@ -489,6 +489,8 @@ const deleteVectorStoreFromStore = async (storeId: string, userId: string, organ
 
         const options: ICommonObject = {
             chatflowid: storeId,
+            organizationId,
+            userId,
             appDataSource: appServer.AppDataSource,
             databaseEntities,
             logger
@@ -627,7 +629,13 @@ const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore, use
     }
 }
 
-const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComponentNodes, data: IDocumentStoreLoaderForPreview) => {
+const _splitIntoChunks = async (
+    appDataSource: DataSource,
+    componentNodes: IComponentNodes,
+    data: IDocumentStoreLoaderForPreview,
+    userId: string,
+    organizationId: string
+) => {
     try {
         let splitterInstance = null
         if (data.splitterId && data.splitterConfig && Object.keys(data.splitterConfig).length > 0) {
@@ -653,7 +661,9 @@ const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComp
             nodeData.inputs.selectedFiles = data.loaderConfig.selectedFiles || '[]'
         }
         const options: ICommonObject = {
-            chatflowid: uuidv4(),
+            chatflowid: data.storeId ?? uuidv4(),
+            userId,
+            organizationId,
             appDataSource,
             databaseEntities,
             logger
@@ -769,7 +779,7 @@ export const previewChunks = async ({ appDataSource, componentNodes, data }: IEx
         if (!data.rehydrated) {
             await _normalizeFilePaths(appDataSource, data, null)
         }
-        let docs = await _splitIntoChunks(appDataSource, componentNodes, data)
+        let docs = await _splitIntoChunks(appDataSource, componentNodes, data, data.userId, data.organizationId)
         const totalChunks = docs.length
         // if -1, return all chunks
         if (data.previewChunkCount === -1) data.previewChunkCount = totalChunks
@@ -1304,6 +1314,8 @@ const _insertIntoVectorStoreWorkerThread = async (
 
         const options: ICommonObject = {
             chatflowid,
+            userId,
+            organizationId,
             appDataSource,
             databaseEntities,
             logger
@@ -1429,10 +1441,12 @@ const queryVectorStore = async (data: ICommonObject, userId: string, organizatio
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Document store ${data.storeId} not found`)
         }
         const options: ICommonObject = {
-            chatflowid: uuidv4(),
+            chatflowid: data.storeId ?? uuidv4(),
             appDataSource: appServer.AppDataSource,
             databaseEntities,
-            logger
+            logger,
+            organizationId,
+            userId
         }
 
         if (!entity.embeddingConfig) {
@@ -2019,7 +2033,12 @@ const refreshDocStoreMiddleware = async (storeId: string, data: IDocumentStoreRe
     }
 }
 
-const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: ICommonObject): Promise<string> => {
+const generateDocStoreToolDesc = async (
+    docStoreId: string,
+    selectedChatModel: ICommonObject,
+    userId: string,
+    organizationId: string
+): Promise<string> => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -2055,7 +2074,9 @@ const generateDocStoreToolDesc = async (docStoreId: string, selectedChatModel: I
             const options: ICommonObject = {
                 appDataSource: appServer.AppDataSource,
                 databaseEntities,
-                logger
+                logger,
+                userId,
+                organizationId
             }
             const llmNodeInstance = await newNodeInstance.init(nodeData, '', options)
             const response = await llmNodeInstance.invoke(

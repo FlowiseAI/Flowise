@@ -16,10 +16,12 @@ class Deepseek_ChatModels implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'ChatDeepseek'
         this.name = 'chatDeepseek'
+        this.tags = ['AAI']
         this.version = 1.0
         this.type = 'chatDeepseek'
         this.icon = 'deepseek.svg'

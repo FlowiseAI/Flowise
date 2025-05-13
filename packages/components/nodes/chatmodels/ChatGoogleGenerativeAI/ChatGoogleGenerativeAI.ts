@@ -17,10 +17,12 @@ class GoogleGenerativeAI_ChatModels implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'ChatGoogleGenerativeAI'
         this.name = 'chatGoogleGenerativeAI'
+        this.tags = ['AAI']
         this.version = 3.0
         this.type = 'ChatGoogleGenerativeAI'
         this.icon = 'GoogleGemini.svg'
