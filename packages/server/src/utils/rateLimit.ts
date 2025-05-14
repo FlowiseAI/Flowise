@@ -24,7 +24,12 @@ export class RateLimiterManager {
     constructor() {
         if (process.env.MODE === MODE.QUEUE) {
             if (process.env.REDIS_URL) {
-                this.redisClient = new Redis(process.env.REDIS_URL)
+                this.redisClient = new Redis(process.env.REDIS_URL, {
+                    keepAlive:
+                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                            : undefined
+                })
             } else {
                 this.redisClient = new Redis({
                     host: process.env.REDIS_HOST || 'localhost',
@@ -38,6 +43,10 @@ export class RateLimiterManager {
                                   key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
                                   ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
                               }
+                            : undefined,
+                    keepAlive:
+                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
                             : undefined
                 })
             }
@@ -65,7 +74,13 @@ export class RateLimiterManager {
             port: parseInt(process.env.REDIS_PORT || '6379'),
             username: process.env.REDIS_USERNAME || undefined,
             password: process.env.REDIS_PASSWORD || undefined,
-            tls: tlsOpts
+            tls: tlsOpts,
+            maxRetriesPerRequest: null,
+            enableReadyCheck: true,
+            keepAlive:
+                process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                    ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                    : undefined
         }
     }
 
