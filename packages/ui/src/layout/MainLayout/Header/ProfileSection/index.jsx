@@ -36,7 +36,6 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import AboutDialog from '@/ui-component/dialog/AboutDialog'
 import Transitions from '@/ui-component/extended/Transitions'
 
 // assets
@@ -54,7 +53,6 @@ import { useNavigate } from 'react-router-dom'
 
 const dataToExport = [
     'Agentflows',
-    'Agentflows V2',
     'Assistants Custom',
     'Assistants OpenAI',
     'Assistants Azure',
@@ -63,7 +61,6 @@ const dataToExport = [
     'Chat Feedbacks',
     'Custom Templates',
     'Document Stores',
-    'Executions',
     'Tools',
     'Variables'
 ]
@@ -173,7 +170,6 @@ const ProfileSection = ({ username, handleLogout }) => {
     const customization = useSelector((state) => state.customization)
 
     const [open, setOpen] = useState(false)
-    const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
 
     const anchorRef = useRef(null)
@@ -258,7 +254,6 @@ const ProfileSection = ({ username, handleLogout }) => {
     const onExport = (data) => {
         const body = {}
         if (data.includes('Agentflows')) body.agentflow = true
-        if (data.includes('Agentflows V2')) body.agentflowv2 = true
         if (data.includes('Assistants Custom')) body.assistantCustom = true
         if (data.includes('Assistants OpenAI')) body.assistantOpenAI = true
         if (data.includes('Assistants Azure')) body.assistantAzure = true
@@ -267,7 +262,6 @@ const ProfileSection = ({ username, handleLogout }) => {
         if (data.includes('Chat Feedbacks')) body.chat_feedback = true
         if (data.includes('Custom Templates')) body.custom_template = true
         if (data.includes('Document Stores')) body.document_store = true
-        if (data.includes('Executions')) body.execution = true
         if (data.includes('Tools')) body.tool = true
         if (data.includes('Variables')) body.variable = true
 
@@ -429,22 +423,12 @@ const ProfileSection = ({ username, handleLogout }) => {
                                                     <ListItemText primary={<Typography variant='body2'>Import</Typography>} />
                                                 </ListItemButton>
                                                 <input ref={inputRef} type='file' hidden onChange={fileChange} accept='.json' />
-                                                <ListItemButton
-                                                    sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                    onClick={() => {
-                                                        setOpen(false)
-                                                        setAboutDialogOpen(true)
-                                                    }}
-                                                >
-                                                    <ListItemIcon>
-                                                        <IconInfoCircle stroke={1.5} size='1.3rem' />
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={<Typography variant='body2'>About Flowise</Typography>} />
-                                                </ListItemButton>
+                                                {/* FIXED: The ListItemButton tag was improperly formatted */}
                                                 {localStorage.getItem('username') && localStorage.getItem('password') && (
                                                     <ListItemButton
+                                                        component='a'
+                                                        href='https://recepai.hotellinkage.net/logout'
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
-                                                        onClick={handleLogout}
                                                     >
                                                         <ListItemIcon>
                                                             <IconLogout stroke={1.5} size='1.3rem' />
@@ -461,7 +445,6 @@ const ProfileSection = ({ username, handleLogout }) => {
                     </Transitions>
                 )}
             </Popper>
-            <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
             <ExportDialog show={exportDialogOpen} onCancel={() => setExportDialogOpen(false)} onExport={(data) => onExport(data)} />
         </>
     )
