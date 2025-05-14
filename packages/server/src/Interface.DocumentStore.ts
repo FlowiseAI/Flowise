@@ -188,6 +188,7 @@ export const addLoaderSource = (loader: IDocumentStoreLoader, isGetFileNameOnly 
 
     switch (loader.loaderId) {
         case 'pdfFile':
+        case 'docxFile':
         case 'jsonFile':
         case 'csvFile':
         case 'file':
