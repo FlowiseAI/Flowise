@@ -16,7 +16,8 @@ jobs:
     if: ${{ github.event_name == 'push' }}
     needs: [buildApp]
     uses: ./.github/workflows/buildPushDockerImage.yml
-
-
+    with:
+      sha-tag: ${{ github.sha }}
+    secrets: inherit
 
  
