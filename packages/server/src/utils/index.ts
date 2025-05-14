@@ -64,10 +64,11 @@ import {
     SecretsManagerClientConfig
 } from '@aws-sdk/client-secrets-manager'
 
-const QUESTION_VAR_PREFIX = 'question'
-const FILE_ATTACHMENT_PREFIX = 'file_attachment'
-const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
-const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
+export const QUESTION_VAR_PREFIX = 'question'
+export const FILE_ATTACHMENT_PREFIX = 'file_attachment'
+export const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
+export const RUNTIME_MESSAGES_LENGTH_VAR_PREFIX = 'runtime_messages_length'
+export const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
 let secretsManagerClient: SecretsManagerClient | null = null
 const USE_AWS_SECRETS_MANAGER = process.env.SECRETKEY_STORAGE_TYPE === 'aws'
@@ -236,6 +237,22 @@ export const getStartingNodes = (graph: INodeDirectedGraph, endNodeId: string) =
         .map(([id, _]) => id)
 
     return { startingNodeIds, depthQueue: depthQueueReversed }
+}
+
+/**
+ * Get starting node and check if flow is valid
+ * @param {INodeDependencies} nodeDependencies
+ */
+export const getStartingNode = (nodeDependencies: INodeDependencies) => {
+    // Find starting node
+    const startingNodeIds = [] as string[]
+    Object.keys(nodeDependencies).forEach((nodeId) => {
+        if (nodeDependencies[nodeId] === 0) {
+            startingNodeIds.push(nodeId)
+        }
+    })
+
+    return { startingNodeIds }
 }
 
 /**
@@ -763,7 +780,7 @@ export const clearSessionMemory = async (
     }
 }
 
-const getGlobalVariable = async (
+export const getGlobalVariable = async (
     overrideConfig?: ICommonObject,
     availableVariables: IVariable[] = [],
     variableOverrides: ICommonObject[] = []
@@ -990,7 +1007,6 @@ export const resolveVariables = async (
     variableOverrides: ICommonObject[] = []
 ): Promise<INodeData> => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
-    const types = 'inputs'
 
     const getParamValues = async (paramsObj: ICommonObject) => {
         for (const key in paramsObj) {
@@ -1030,7 +1046,7 @@ export const resolveVariables = async (
         }
     }
 
-    const paramsObj = flowNodeData[types] ?? {}
+    const paramsObj = flowNodeData['inputs'] ?? {}
     await getParamValues(paramsObj)
 
     return flowNodeData
@@ -1244,7 +1260,8 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
 
     for (const flowNode of reactFlowNodes) {
         for (const inputParam of flowNode.data.inputParams) {
-            let obj: IOverrideConfig
+            let obj: IOverrideConfig | undefined
+
             if (inputParam.type === 'file') {
                 obj = {
                     node: flowNode.data.label,
@@ -1285,6 +1302,34 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                     }
                 }
                 continue
+            } else if (inputParam.type === 'array') {
+                // get array item schema
+                const arrayItem = inputParam.array
+                if (Array.isArray(arrayItem)) {
+                    const arraySchema = []
+                    // Each array item is a field definition
+                    for (const item of arrayItem) {
+                        let itemType = item.type
+                        if (itemType === 'options') {
+                            const availableOptions = item.options?.map((option) => option.name).join(', ')
+                            itemType = `(${availableOptions})`
+                        } else if (itemType === 'file') {
+                            itemType = item.fileType ?? item.type
+                        }
+                        arraySchema.push({
+                            name: item.name,
+                            type: itemType
+                        })
+                    }
+                    obj = {
+                        node: flowNode.data.label,
+                        nodeId: flowNode.data.id,
+                        label: inputParam.label,
+                        name: inputParam.name,
+                        type: inputParam.type,
+                        schema: arraySchema
+                    }
+                }
             } else {
                 obj = {
                     node: flowNode.data.label,
@@ -1294,7 +1339,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                     type: inputParam.type === 'password' ? 'string' : inputParam.type
                 }
             }
-            if (!configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
+            if (obj && !configs.some((config) => JSON.stringify(config) === JSON.stringify(obj))) {
                 configs.push(obj)
             }
         }
@@ -1813,4 +1858,71 @@ export const getMulterStorage = () => {
     } else {
         return multer({ dest: getUploadPath() })
     }
+}
+
+/**
+ * Calculate depth of each node from starting nodes
+ * @param {INodeDirectedGraph} graph
+ * @param {string[]} startingNodeIds
+ * @returns {Record<string, number>} Map of nodeId to its depth
+ */
+export const calculateNodesDepth = (graph: INodeDirectedGraph, startingNodeIds: string[]): Record<string, number> => {
+    const depths: Record<string, number> = {}
+    const visited = new Set<string>()
+
+    // Initialize all nodes with depth -1 (unvisited)
+    for (const nodeId in graph) {
+        depths[nodeId] = -1
+    }
+
+    // BFS queue with [nodeId, depth]
+    const queue: [string, number][] = startingNodeIds.map((id) => [id, 0])
+
+    // Set starting nodes depth to 0
+    startingNodeIds.forEach((id) => {
+        depths[id] = 0
+    })
+
+    while (queue.length > 0) {
+        const [currentNode, currentDepth] = queue.shift()!
+
+        if (visited.has(currentNode)) continue
+        visited.add(currentNode)
+
+        // Process all neighbors
+        for (const neighbor of graph[currentNode]) {
+            if (!visited.has(neighbor)) {
+                // Update depth if unvisited or found shorter path
+                if (depths[neighbor] === -1 || depths[neighbor] > currentDepth + 1) {
+                    depths[neighbor] = currentDepth + 1
+                }
+                queue.push([neighbor, currentDepth + 1])
+            }
+        }
+    }
+
+    return depths
+}
+
+/**
+ * Helper function to get all nodes in a path starting from a node
+ * @param {INodeDirectedGraph} graph
+ * @param {string} startNode
+ * @returns {string[]}
+ */
+export const getAllNodesInPath = (startNode: string, graph: INodeDirectedGraph): string[] => {
+    const nodes = new Set<string>()
+    const queue = [startNode]
+
+    while (queue.length > 0) {
+        const current = queue.shift()!
+        if (nodes.has(current)) continue
+
+        nodes.add(current)
+        if (graph[current]) {
+            queue.push(...graph[current])
+        }
+    }
+
+    return Array.from(nodes)
 }

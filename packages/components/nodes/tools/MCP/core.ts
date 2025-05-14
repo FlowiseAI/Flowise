@@ -19,44 +19,61 @@ export class MCPToolkit extends BaseToolkit {
         this.serverParams = serverParams
         this.transportType = transportType
     }
-    async initialize() {
-        if (this._tools === null) {
-            this.client = new Client(
-                {
-                    name: 'flowise-client',
-                    version: '1.0.0'
-                },
-                {
-                    capabilities: {}
-                }
-            )
-            if (this.transportType === 'stdio') {
-                // Compatible with overridden PATH configuration
-                this.serverParams.env = {
+
+    // Method to create a new client with transport
+    async createClient(): Promise<Client> {
+        const client = new Client(
+            {
+                name: 'flowise-client',
+                version: '1.0.0'
+            },
+            {
+                capabilities: {}
+            }
+        )
+
+        let transport: StdioClientTransport | SSEClientTransport | StreamableHTTPClientTransport
+
+        if (this.transportType === 'stdio') {
+            // Compatible with overridden PATH configuration
+            const params = {
+                ...this.serverParams,
+                env: {
                     ...(this.serverParams.env || {}),
                     PATH: process.env.PATH
                 }
-
-                this.transport = new StdioClientTransport(this.serverParams as StdioServerParameters)
-                await this.client.connect(this.transport)
-            } else {
-                if (this.serverParams.url === undefined) {
-                    throw new Error('URL is required for SSE transport')
-                }
-
-                const baseUrl = new URL(this.serverParams.url)
-                try {
-                    this.transport = new StreamableHTTPClientTransport(baseUrl)
-                    await this.client.connect(this.transport)
-                } catch (error) {
-                    this.transport = new SSEClientTransport(baseUrl)
-                    await this.client.connect(this.transport)
-                }
             }
+
+            transport = new StdioClientTransport(params as StdioServerParameters)
+            await client.connect(transport)
+        } else {
+            if (this.serverParams.url === undefined) {
+                throw new Error('URL is required for SSE transport')
+            }
+
+            const baseUrl = new URL(this.serverParams.url)
+            try {
+                transport = new StreamableHTTPClientTransport(baseUrl)
+                await client.connect(transport)
+            } catch (error) {
+                transport = new SSEClientTransport(baseUrl)
+                await client.connect(transport)
+            }
+        }
+
+        return client
+    }
+
+    async initialize() {
+        if (this._tools === null) {
+            this.client = await this.createClient()
 
             this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema)
 
             this.tools = await this.get_tools()
+
+            // Close the initial client after initialization
+            await this.client.close()
         }
     }
 
@@ -69,7 +86,7 @@ export class MCPToolkit extends BaseToolkit {
                 throw new Error('Client is not initialized')
             }
             return await MCPTool({
-                client: this.client,
+                toolkit: this,
                 name: tool.name,
                 description: tool.description || '',
                 argsSchema: createSchemaModel(tool.inputSchema)
@@ -80,23 +97,31 @@ export class MCPToolkit extends BaseToolkit {
 }
 
 export async function MCPTool({
-    client,
+    toolkit,
     name,
     description,
     argsSchema
 }: {
-    client: Client
+    toolkit: MCPToolkit
     name: string
     description: string
     argsSchema: any
 }): Promise<Tool> {
     return tool(
         async (input): Promise<string> => {
-            const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input } }
-            const res = await client.request(req, CallToolResultSchema)
-            const content = res.content
-            const contentString = JSON.stringify(content)
-            return contentString
+            // Create a new client for this request
+            const client = await toolkit.createClient()
+
+            try {
+                const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input } }
+                const res = await client.request(req, CallToolResultSchema)
+                const content = res.content
+                const contentString = JSON.stringify(content)
+                return contentString
+            } finally {
+                // Always close the client after the request completes
+                await client.close()
+            }
         },
         {
             name: name,
