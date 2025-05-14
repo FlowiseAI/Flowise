@@ -40,7 +40,6 @@ export abstract class BaseCommand extends Command {
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
         LANGCHAIN_PROJECT: Flags.string(),
-        DISABLE_FLOWISE_TELEMETRY: Flags.string(),
         MODEL_LIST_CONFIG_JSON: Flags.string(),
         STORAGE_TYPE: Flags.string(),
         S3_STORAGE_BUCKET_NAME: Flags.string(),
@@ -174,9 +173,6 @@ export abstract class BaseCommand extends Command {
         if (flags.LANGCHAIN_ENDPOINT) process.env.LANGCHAIN_ENDPOINT = flags.LANGCHAIN_ENDPOINT
         if (flags.LANGCHAIN_API_KEY) process.env.LANGCHAIN_API_KEY = flags.LANGCHAIN_API_KEY
         if (flags.LANGCHAIN_PROJECT) process.env.LANGCHAIN_PROJECT = flags.LANGCHAIN_PROJECT
-
-        // Telemetry
-        if (flags.DISABLE_FLOWISE_TELEMETRY) process.env.DISABLE_FLOWISE_TELEMETRY = flags.DISABLE_FLOWISE_TELEMETRY
 
         // Model list config
         if (flags.MODEL_LIST_CONFIG_JSON) process.env.MODEL_LIST_CONFIG_JSON = flags.MODEL_LIST_CONFIG_JSON
