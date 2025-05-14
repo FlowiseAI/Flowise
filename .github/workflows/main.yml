@@ -18,6 +18,7 @@ jobs:
     uses: ./.github/workflows/buildPushDockerImage.yml
     with:
       sha-tag: ${{ github.sha }}
+      image-name: flowise 
     secrets: inherit
 
  
