@@ -7,6 +7,7 @@ import { RedisEventPublisher } from './RedisEventPublisher'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { BaseQueue } from './BaseQueue'
 import { RedisOptions } from 'bullmq'
+import { UsageCacheManager } from '../UsageCacheManager'
 import logger from '../utils/logger'
 import { generateAgentflowv2 as generateAgentflowv2_json } from 'flowise-components'
 import { databaseEntities } from '../utils'
@@ -17,6 +18,7 @@ interface PredictionQueueOptions {
     cachePool: CachePool
     componentNodes: IComponentNodes
     abortControllerPool: AbortControllerPool
+    usageCacheManager: UsageCacheManager
 }
 
 interface IGenerateAgentflowv2Params extends IExecuteFlowParams {
@@ -34,6 +36,7 @@ export class PredictionQueue extends BaseQueue {
     private cachePool: CachePool
     private appDataSource: DataSource
     private abortControllerPool: AbortControllerPool
+    private usageCacheManager: UsageCacheManager
     private redisPublisher: RedisEventPublisher
     private queueName: string
 
@@ -45,6 +48,7 @@ export class PredictionQueue extends BaseQueue {
         this.cachePool = options.cachePool
         this.appDataSource = options.appDataSource
         this.abortControllerPool = options.abortControllerPool
+        this.usageCacheManager = options.usageCacheManager
         this.redisPublisher = new RedisEventPublisher()
         this.redisPublisher.connect()
     }
@@ -61,6 +65,7 @@ export class PredictionQueue extends BaseQueue {
         if (this.appDataSource) data.appDataSource = this.appDataSource
         if (this.telemetry) data.telemetry = this.telemetry
         if (this.cachePool) data.cachePool = this.cachePool
+        if (this.usageCacheManager) data.usageCacheManager = this.usageCacheManager
         if (this.componentNodes) data.componentNodes = this.componentNodes
         if (this.redisPublisher) data.sseStreamer = this.redisPublisher
 

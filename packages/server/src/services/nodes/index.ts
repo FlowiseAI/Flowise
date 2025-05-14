@@ -100,7 +100,8 @@ const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any): Pr
                     databaseEntities: databaseEntities,
                     componentNodes: appServer.nodesPool.componentNodes,
                     previousNodes: requestBody.previousNodes,
-                    currentNode: requestBody.currentNode
+                    currentNode: requestBody.currentNode,
+                    searchOptions: requestBody.searchOptions
                 })
 
                 return dbResponse

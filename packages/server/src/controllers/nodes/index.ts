@@ -3,6 +3,7 @@ import _ from 'lodash'
 import nodesService from '../../services/nodes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { getWorkspaceSearchOptionsFromReq } from '../../enterprise/utils/ControllerServiceUtils'
 
 const getAllNodes = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -67,7 +68,9 @@ const getSingleNodeAsyncOptions = async (req: Request, res: Response, next: Next
                 `Error: nodesController.getSingleNodeAsyncOptions - name not provided!`
             )
         }
-        const apiResponse = await nodesService.getSingleNodeAsyncOptions(req.params.name, req.body)
+        const body = req.body
+        body.searchOptions = getWorkspaceSearchOptionsFromReq(req)
+        const apiResponse = await nodesService.getSingleNodeAsyncOptions(req.params.name, body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
