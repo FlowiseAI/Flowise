@@ -65,8 +65,7 @@ class Jsonlines_DocumentLoaders implements INode {
                 label: 'Pointer Extraction',
                 name: 'pointerName',
                 type: 'string',
-                placeholder: 'key',
-                description: 'Ex: { "key": "value" }, Pointer Extraction = "key", "value" will be extracted as pageContent of the chunk',
+                placeholder: 'Enter pointer name',
                 optional: false
             },
             {
@@ -135,13 +134,14 @@ class Jsonlines_DocumentLoaders implements INode {
             } else {
                 files = [fileName]
             }
+            const orgId = options.orgId
             const chatflowid = options.chatflowid
 
             for (const file of files) {
                 if (!file) continue
-                const fileData = await getFileFromStorage(file, chatflowid)
+                const fileData = await getFileFromStorage(file, orgId, chatflowid)
                 const blob = new Blob([fileData])
-                const loader = new JSONLinesLoader(blob, pointer, metadata)
+                const loader = new JSONLinesLoader(blob, pointer)
 
                 if (textSplitter) {
                     let splittedDocs = await loader.load()
@@ -164,7 +164,7 @@ class Jsonlines_DocumentLoaders implements INode {
                 splitDataURI.pop()
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                 const blob = new Blob([bf])
-                const loader = new JSONLinesLoader(blob, pointer, metadata)
+                const loader = new JSONLinesLoader(blob, pointer)
 
                 if (textSplitter) {
                     let splittedDocs = await loader.load()
