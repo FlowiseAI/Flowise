@@ -9,7 +9,13 @@ export class RedisEventSubscriber {
     constructor(sseStreamer: SSEStreamer) {
         if (process.env.REDIS_URL) {
             this.redisSubscriber = createClient({
-                url: process.env.REDIS_URL
+                url: process.env.REDIS_URL,
+                socket: {
+                    keepAlive:
+                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                            : undefined
+                }
             })
         } else {
             this.redisSubscriber = createClient({
@@ -21,7 +27,11 @@ export class RedisEventSubscriber {
                     tls: process.env.REDIS_TLS === 'true',
                     cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
                     key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
-                    ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
+                    ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined,
+                    keepAlive:
+                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                            : undefined
                 }
             })
         }
@@ -84,6 +94,15 @@ export class RedisEventSubscriber {
                 break
             case 'nextAgent':
                 this.sseStreamer.streamNextAgentEvent(chatId, data)
+                break
+            case 'agentFlowEvent':
+                this.sseStreamer.streamAgentFlowEvent(chatId, data)
+                break
+            case 'agentFlowExecutedData':
+                this.sseStreamer.streamAgentFlowExecutedDataEvent(chatId, data)
+                break
+            case 'nextAgentFlow':
+                this.sseStreamer.streamNextAgentFlowEvent(chatId, data)
                 break
             case 'action':
                 this.sseStreamer.streamActionEvent(chatId, data)

@@ -46,6 +46,28 @@ export const createFileAttachment = async (req: Request) => {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
 
+    // Parse chatbot configuration to get file upload settings
+    let pdfConfig = {
+        usage: 'perPage',
+        legacyBuild: false
+    }
+
+    if (chatflow.chatbotConfig) {
+        try {
+            const chatbotConfig = JSON.parse(chatflow.chatbotConfig)
+            if (chatbotConfig?.fullFileUpload?.pdfFile) {
+                if (chatbotConfig.fullFileUpload.pdfFile.usage) {
+                    pdfConfig.usage = chatbotConfig.fullFileUpload.pdfFile.usage
+                }
+                if (chatbotConfig.fullFileUpload.pdfFile.legacyBuild !== undefined) {
+                    pdfConfig.legacyBuild = chatbotConfig.fullFileUpload.pdfFile.legacyBuild
+                }
+            }
+        } catch (e) {
+            // Use default PDF config if parsing fails
+        }
+    }
+
     // Find FileLoader node
     const fileLoaderComponent = appServer.nodesPool.componentNodes['fileLoader']
     const fileLoaderNodeInstanceFilePath = fileLoaderComponent.filePath as string
@@ -91,6 +113,12 @@ export const createFileAttachment = async (req: Request) => {
                         [fileInputField]: storagePath
                     },
                     outputs: { output: 'document' }
+                }
+
+                // Apply PDF specific configuration if this is a PDF file
+                if (fileInputField === 'pdfFile') {
+                    nodeData.inputs.usage = pdfConfig.usage
+                    nodeData.inputs.legacyBuild = pdfConfig.legacyBuild as unknown as string
                 }
 
                 let content = ''

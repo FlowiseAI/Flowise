@@ -31,7 +31,7 @@ export const CodeEditor = ({
         '.cm-content':
             lang !== 'js'
                 ? {
-                      fontFamily: 'Roboto, sans-serif',
+                      fontFamily: `'Inter', 'Roboto', 'Arial', sans-serif`,
                       fontSize: '0.95rem',
                       letterSpacing: '0em',
                       fontWeight: 400,
@@ -47,11 +47,7 @@ export const CodeEditor = ({
             value={value}
             height={height ?? 'calc(100vh - 220px)'}
             theme={theme === 'dark' ? (lang === 'js' ? vscodeDark : sublime) : 'none'}
-            extensions={
-                lang === 'js'
-                    ? [javascript({ jsx: true }), EditorView.lineWrapping, customStyle]
-                    : [json(), EditorView.lineWrapping, customStyle]
-            }
+            extensions={[lang === 'js' ? javascript({ jsx: true }) : json(), EditorView.lineWrapping, customStyle]}
             onChange={onValueChange}
             readOnly={disabled}
             editable={!disabled}
