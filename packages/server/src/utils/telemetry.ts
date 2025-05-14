@@ -14,11 +14,7 @@ export class Telemetry {
         if (process.env.POSTHOG_PUBLIC_API_KEY) {
             this.postHog = new PostHog(process.env.POSTHOG_PUBLIC_API_KEY)
         } else {
-            if (process.env.DISABLE_FLOWISE_TELEMETRY !== 'true') {
-                this.postHog = new PostHog('phc_jEDuFYnOnuXsws986TLWzuisbRjwFqTl9JL8tDMgqme')
-            } else {
-                this.postHog = undefined
-            }
+            this.postHog = undefined
         }
     }
 
