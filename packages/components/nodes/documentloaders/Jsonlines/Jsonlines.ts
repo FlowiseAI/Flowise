@@ -65,7 +65,8 @@ class Jsonlines_DocumentLoaders implements INode {
                 label: 'Pointer Extraction',
                 name: 'pointerName',
                 type: 'string',
-                placeholder: 'Enter pointer name',
+                placeholder: 'key',
+                description: 'Ex: { "key": "value" }, Pointer Extraction = "key", "value" will be extracted as pageContent of the chunk',
                 optional: false
             },
             {
