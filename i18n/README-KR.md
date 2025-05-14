@@ -31,12 +31,6 @@
     npx flowise start
     ```
 
-    사용자 이름과 비밀번호로 시작하기
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
-    ```
-
 3. [http://localhost:3000](http://localhost:3000) URL 열기
 
 ## 🐳 도커(Docker)를 활용하여 시작하기
@@ -126,15 +120,6 @@ Flowise는 단일 리포지토리에 3개의 서로 다른 모듈이 있습니�
         ```
 
     코드가 변경되면 [http://localhost:8080](http://localhost:8080)에서 자동으로 애플리케이션을 새로고침 합니다.
-
-## 🔒 인증
-
-애플리케이션 수준의 인증을 사용하려면 `packages/server`의 `.env` 파일에 `FLOWISE_USERNAME` 및 `FLOWISE_PASSWORD`를 추가합니다:
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
 
 ## 🌱 환경 변수
 
