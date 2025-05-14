@@ -1,0 +1,33 @@
+name: Docker Push
+
+on:
+  workflow_call:
+    inputs:
+      sha-tag:
+        description: "SHA tag for the commit that triggered this flow"
+        required: true
+        type: string
+      image-name:
+        description: "Name of docker image to push"
+        required: true
+        type: string
+
+
+jobs:
+  dockerPush:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/flowise:${{ inputs.sha-tag }} .
+
+      - name: Push Docker image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/flowise:${{ inputs.sha-tag }}

@@ -1,0 +1,27 @@
+name: Flowise build
+
+on:
+  workflow_call:
+    inputs:
+      app-name:
+        description: "Name of application to build"
+        required: true
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run build script
+        run: npm run build
