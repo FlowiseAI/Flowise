@@ -82,17 +82,16 @@ const exportData = async (exportInput: ExportInput, user: IUser): Promise<{ File
     }
 }
 
-const importData = async (importData: ExportData) => {
+const importData = async (importData: ExportData, user: IUser) => {
     try {
         const appServer = getRunningExpressApp()
         const queryRunner = appServer.AppDataSource.createQueryRunner()
-
         try {
             await queryRunner.startTransaction()
 
             if (importData.Tool.length > 0) await toolsService.importTools(importData.Tool, queryRunner)
-            if (importData.ChatFlow.length > 0) await chatflowService.importChatflows(importData.ChatFlow, queryRunner)
-            if (importData.AgentFlow.length > 0) await chatflowService.importChatflows(importData.AgentFlow, queryRunner)
+            if (importData.ChatFlow.length > 0) await chatflowService.importChatflows(user, importData.ChatFlow, queryRunner)
+            if (importData.AgentFlow.length > 0) await chatflowService.importChatflows(user, importData.AgentFlow, queryRunner)
             if (importData.Variable.length > 0) await variableService.importVariables(importData.Variable, queryRunner)
             if (importData.Assistant.length > 0) await assistantService.importAssistants(importData.Assistant, queryRunner)
 
