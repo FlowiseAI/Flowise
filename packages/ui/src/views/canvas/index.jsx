@@ -701,7 +701,14 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                                     }}
                                 />
                                 <Background color='#aaa' gap={16} />
-                                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
+                                <AddNodes
+                                    isAgentCanvas={isAgentCanvas}
+                                    nodesData={getNodesApi.data}
+                                    node={selectedNode}
+                                    setNodes={setNodes}
+                                    setEdges={setEdges}
+                                    setDirtyReactFlow={setDirty}
+                                />
                                 {isSyncNodesButtonEnabled && (
                                     <Fab
                                         sx={{

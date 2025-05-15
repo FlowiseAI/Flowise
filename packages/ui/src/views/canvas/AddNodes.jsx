@@ -4,49 +4,24 @@ import PropTypes from 'prop-types'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import {
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    Box,
-    ClickAwayListener,
-    Divider,
-    InputAdornment,
-    List,
-    ListItemButton,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    OutlinedInput,
-    Paper,
-    Popper,
-    Stack,
-    Typography,
-    Chip,
-    Tab,
-    Tabs
-} from '@mui/material'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 // third-party
-import PerfectScrollbar from 'react-perfect-scrollbar'
 
 // project imports
-import MainCard from '@/ui-component/cards/MainCard'
-import Transitions from '@/ui-component/extended/Transitions'
 import { StyledFab } from '@/ui-component/button/StyledFab'
 
 // icons
-import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons-react'
+import { IconPlus, IconMinus } from '@tabler/icons-react'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 import LangChainPNG from '@/assets/images/langchain.png'
 import utilNodesPNG from '@/assets/images/utilNodes.png'
 import AAIPNG from '@/assets/images/aai.png'
 
 // const
-import { baseURL } from '@/store/constant'
 import { SET_COMPONENT_NODES } from '@/store/actions'
-import Image from 'next/image'
+
+// Custom components
+import CreateAgentButton from './CreateAgentButton'
 
 // ==============================|| ADD NODES||============================== //
 function a11yProps(index) {
@@ -71,7 +46,7 @@ const blacklistForChatflowCanvas = {
     Memory: agentMemoryNodes
 }
 
-const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
+const AddNodes = ({ nodesData, node, isAgentCanvas, setNodes: setReactFlowNodes, setEdges, setDirtyReactFlow }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -81,6 +56,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const [open, setOpen] = useState(false)
     const [categoryExpanded, setCategoryExpanded] = useState({})
     const [tabValue, setTabValue] = useState(0)
+    const [showCreateAgentDialog, setShowCreateAgentDialog] = useState(true)
 
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
@@ -262,6 +238,10 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         }
     }
 
+    const handleAgentDialogClose = () => {
+        setOpen(false)
+    }
+
     useEffect(() => {
         if (prevOpen.current === true && open === false) {
             anchorRef.current.focus()
@@ -296,293 +276,15 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             >
                 {open ? <IconMinus /> : <IconPlus />}
             </StyledFab>
-            <Popper
-                placement='bottom-end'
-                open={open}
-                anchorEl={anchorRef.current}
-                role={undefined}
-                transition
-                disablePortal
-                popperOptions={{
-                    modifiers: [
-                        {
-                            name: 'offset',
-                            options: {
-                                offset: [-40, 14]
-                            }
-                        }
-                    ]
-                }}
-                sx={{ zIndex: 1000 }}
-            >
-                {({ TransitionProps }) => (
-                    <Transitions in={open} {...TransitionProps}>
-                        <Paper>
-                            <ClickAwayListener onClickAway={handleClose}>
-                                <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
-                                    <Box sx={{ p: 2 }}>
-                                        <Stack>
-                                            <Typography variant='h4'>Add Nodes</Typography>
-                                        </Stack>
-                                        <OutlinedInput
-                                            // eslint-disable-next-line
-                                            autoFocus
-                                            sx={{ width: '100%', pr: 2, pl: 2, my: 2 }}
-                                            id='input-search-node'
-                                            value={searchValue}
-                                            onChange={(e) => filterSearch(e.target.value)}
-                                            placeholder='Search nodes'
-                                            startAdornment={
-                                                <InputAdornment position='start'>
-                                                    <IconSearch stroke={1.5} size='1rem' color={theme.palette.grey[500]} />
-                                                </InputAdornment>
-                                            }
-                                            endAdornment={
-                                                <InputAdornment
-                                                    position='end'
-                                                    sx={{
-                                                        cursor: 'pointer',
-                                                        color: theme.palette.grey[500],
-                                                        '&:hover': {
-                                                            color: theme.palette.grey[900]
-                                                        }
-                                                    }}
-                                                    title='Clear Search'
-                                                >
-                                                    <IconX
-                                                        stroke={1.5}
-                                                        size='1rem'
-                                                        onClick={() => filterSearch('')}
-                                                        style={{
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    />
-                                                </InputAdornment>
-                                            }
-                                            aria-describedby='search-helper-text'
-                                            inputProps={{
-                                                'aria-label': 'weight'
-                                            }}
-                                        />
-                                        {!isAgentCanvas && (
-                                            <Tabs
-                                                sx={{ position: 'relative', minHeight: '50px', height: '50px' }}
-                                                variant='fullWidth'
-                                                value={tabValue}
-                                                onChange={handleTabChange}
-                                                aria-label='tabs'
-                                            >
-                                                {['AAI', 'All', 'LlamaIndex', 'Utilities'].map((item, index) => (
-                                                    <Tab
-                                                        icon={
-                                                            <div
-                                                                style={{
-                                                                    borderRadius: '50%'
-                                                                }}
-                                                            >
-                                                                <Image
-                                                                    style={{
-                                                                        width: '20px',
-                                                                        height: '20px',
-                                                                        borderRadius: '50%',
-                                                                        objectFit: 'contain'
-                                                                    }}
-                                                                    src={getImage(index)}
-                                                                    alt={item}
-                                                                />
-                                                            </div>
-                                                        }
-                                                        iconPosition='start'
-                                                        sx={{ minHeight: '50px', height: '50px' }}
-                                                        key={index}
-                                                        label={item}
-                                                        {...a11yProps(index)}
-                                                    ></Tab>
-                                                ))}
-                                            </Tabs>
-                                        )}
-
-                                        <Divider />
-                                    </Box>
-                                    <PerfectScrollbar
-                                        containerRef={(el) => {
-                                            ps.current = el
-                                        }}
-                                        style={{
-                                            height: '100%',
-                                            maxHeight: `calc(100vh - ${isAgentCanvas ? '300' : '380'}px)`,
-                                            overflowX: 'hidden'
-                                        }}
-                                    >
-                                        <Box sx={{ p: 2, pt: 0 }}>
-                                            <List
-                                                sx={{
-                                                    width: '100%',
-                                                    maxWidth: 455,
-                                                    py: 0,
-                                                    borderRadius: '10px',
-                                                    [theme.breakpoints.down('md')]: {
-                                                        maxWidth: 370
-                                                    },
-                                                    '& .MuiListItemSecondaryAction-root': {
-                                                        top: 22
-                                                    },
-                                                    '& .MuiDivider-root': {
-                                                        my: 0
-                                                    },
-                                                    '& .list-container': {
-                                                        pl: 7
-                                                    }
-                                                }}
-                                            >
-                                                {Object.keys(nodes)
-                                                    .sort()
-                                                    .map((category) => (
-                                                        <Accordion
-                                                            expanded={categoryExpanded[category] || tabValue === 0 || false}
-                                                            onChange={handleAccordionChange(category)}
-                                                            key={category}
-                                                            disableGutters
-                                                        >
-                                                            <AccordionSummary
-                                                                expandIcon={<ExpandMoreIcon />}
-                                                                aria-controls={`nodes-accordian-${category}`}
-                                                                id={`nodes-accordian-header-${category}`}
-                                                            >
-                                                                {category.split(';').length > 1 ? (
-                                                                    <div
-                                                                        style={{
-                                                                            display: 'flex',
-                                                                            flexDirection: 'row',
-                                                                            alignItems: 'center'
-                                                                        }}
-                                                                    >
-                                                                        <Typography variant='h5'>{category.split(';')[0]}</Typography>
-                                                                        &nbsp;
-                                                                        <Chip
-                                                                            sx={{
-                                                                                width: 'max-content',
-                                                                                fontWeight: 700,
-                                                                                fontSize: '0.65rem',
-                                                                                background:
-                                                                                    category.split(';')[1] === 'DEPRECATING'
-                                                                                        ? theme.palette.warning.main
-                                                                                        : theme.palette.teal.main,
-                                                                                color:
-                                                                                    category.split(';')[1] !== 'DEPRECATING'
-                                                                                        ? 'white'
-                                                                                        : 'inherit'
-                                                                            }}
-                                                                            size='small'
-                                                                            label={category.split(';')[1]}
-                                                                        />
-                                                                    </div>
-                                                                ) : (
-                                                                    <Typography variant='h5'>{category}</Typography>
-                                                                )}
-                                                            </AccordionSummary>
-                                                            <AccordionDetails>
-                                                                {nodes[category].map((node, index) => (
-                                                                    <div
-                                                                        key={node.name}
-                                                                        onDragStart={(event) => onDragStart(event, node)}
-                                                                        draggable
-                                                                    >
-                                                                        <ListItemButton
-                                                                            sx={{
-                                                                                p: 0,
-                                                                                borderRadius: `${customization.borderRadius}px`,
-                                                                                cursor: 'move'
-                                                                            }}
-                                                                        >
-                                                                            <ListItem alignItems='center'>
-                                                                                <ListItemAvatar>
-                                                                                    <div
-                                                                                        style={{
-                                                                                            width: 50,
-                                                                                            height: 50,
-                                                                                            borderRadius: '50%',
-                                                                                            backgroundColor: 'white'
-                                                                                        }}
-                                                                                    >
-                                                                                        <img
-                                                                                            style={{
-                                                                                                width: '100%',
-                                                                                                height: '100%',
-                                                                                                padding: 10,
-                                                                                                objectFit: 'contain'
-                                                                                            }}
-                                                                                            alt={node.name}
-                                                                                            src={`${baseURL}/api/v1/node-icon/${node.name}`}
-                                                                                        />
-                                                                                    </div>
-                                                                                </ListItemAvatar>
-                                                                                <ListItemText
-                                                                                    sx={{ ml: 1 }}
-                                                                                    primary={
-                                                                                        <>
-                                                                                            <div
-                                                                                                style={{
-                                                                                                    display: 'flex',
-                                                                                                    flexDirection: 'row',
-                                                                                                    alignItems: 'center'
-                                                                                                }}
-                                                                                            >
-                                                                                                <span>{node.label}</span>
-                                                                                                &nbsp;
-                                                                                                {node.badge && (
-                                                                                                    <Chip
-                                                                                                        sx={{
-                                                                                                            width: 'max-content',
-                                                                                                            fontWeight: 700,
-                                                                                                            fontSize: '0.65rem',
-                                                                                                            background:
-                                                                                                                node.badge === 'DEPRECATING'
-                                                                                                                    ? theme.palette.warning
-                                                                                                                          .main
-                                                                                                                    : theme.palette.teal
-                                                                                                                          .main,
-                                                                                                            color:
-                                                                                                                node.badge !== 'DEPRECATING'
-                                                                                                                    ? 'white'
-                                                                                                                    : 'inherit'
-                                                                                                        }}
-                                                                                                        size='small'
-                                                                                                        label={node.badge}
-                                                                                                    />
-                                                                                                )}
-                                                                                            </div>
-                                                                                            {node.author && (
-                                                                                                <span
-                                                                                                    style={{
-                                                                                                        fontSize: '0.65rem',
-                                                                                                        fontWeight: 700
-                                                                                                    }}
-                                                                                                >
-                                                                                                    By {node.author}
-                                                                                                </span>
-                                                                                            )}
-                                                                                        </>
-                                                                                    }
-                                                                                    secondary={node.description}
-                                                                                />
-                                                                            </ListItem>
-                                                                        </ListItemButton>
-                                                                        {index === nodes[category].length - 1 ? null : <Divider />}
-                                                                    </div>
-                                                                ))}
-                                                            </AccordionDetails>
-                                                        </Accordion>
-                                                    ))}
-                                            </List>
-                                        </Box>
-                                    </PerfectScrollbar>
-                                </MainCard>
-                            </ClickAwayListener>
-                        </Paper>
-                    </Transitions>
-                )}
-            </Popper>
+            <CreateAgentButton
+                nodesData={nodesData}
+                canvasPublic={false}
+                openFromAddNodes={open}
+                setNodes={setReactFlowNodes}
+                setEdges={setEdges}
+                setDirtyReactFlow={setDirtyReactFlow}
+                onClose={handleAgentDialogClose}
+            />
         </>
     )
 }
@@ -590,7 +292,10 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 AddNodes.propTypes = {
     nodesData: PropTypes.array,
     node: PropTypes.object,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    setNodes: PropTypes.func,
+    setEdges: PropTypes.func,
+    setDirtyReactFlow: PropTypes.func
 }
 
 export default AddNodes

@@ -69,9 +69,9 @@ const LLM_OPTIONS = [
     }
 ]
 
-const CreateAgentButton = ({ nodesData, canvasPublic, setNodes, setEdges, setDirtyReactFlow }) => {
+const CreateAgentButton = ({ nodesData, canvasPublic, setNodes, setEdges, setDirtyReactFlow, openFromAddNodes, onClose }) => {
     const { reactFlowInstance } = useContext(flowContext)
-    const [open, setOpen] = useState(false)
+    const [open, setOpen] = useState(openFromAddNodes || false)
     const [systemPrompt, setSystemPrompt] = useState('You are a helpful AI assistant.')
     const [selectedLLMName, setSelectedLLMName] = useState(LLM_OPTIONS[0]?.name || '')
     const [selectedTools, setSelectedTools] = useState([])
@@ -95,10 +95,20 @@ const CreateAgentButton = ({ nodesData, canvasPublic, setNodes, setEdges, setDir
         }
     }, [nodesData])
 
+    useEffect(() => {
+        // Update open state if openFromAddNodes prop changes
+        if (openFromAddNodes !== undefined) {
+            setOpen(openFromAddNodes)
+        }
+    }, [openFromAddNodes])
+
     const handleOpen = () => setOpen(true)
     const handleClose = () => {
-        setOpen(false)
-        // Reset form if needed
+        // When opened from AddNodes, we'll let the AddNodes component handle the closing
+        if (!openFromAddNodes) {
+            setOpen(false)
+        }
+        // Reset form
         setSystemPrompt('You are a helpful AI assistant.')
         setSelectedLLMName(LLM_OPTIONS[0]?.name || '')
         setSelectedTools([])
@@ -322,21 +332,27 @@ const CreateAgentButton = ({ nodesData, canvasPublic, setNodes, setEdges, setDir
         }
 
         handleClose()
+        // When opened from AddNodes, we need to tell the parent to close
+        if (openFromAddNodes && onClose) {
+            onClose()
+        }
     }
 
     return (
         <>
-            <StyledFab
-                sx={{ left: 20, top: 80 }} // Positioned below the AddNodes FAB
-                size='small'
-                color='secondary'
-                aria-label='create-agent'
-                title='Create Tool Agent'
-                onClick={handleOpen}
-                disabled={canvasPublic} // Disable if canvas is public
-            >
-                <IconRobot />
-            </StyledFab>
+            {!openFromAddNodes && (
+                <StyledFab
+                    sx={{ left: 20, top: 80 }} // Positioned below the AddNodes FAB
+                    size='small'
+                    color='secondary'
+                    aria-label='create-agent'
+                    title='Create Tool Agent'
+                    onClick={handleOpen}
+                    disabled={canvasPublic} // Disable if canvas is public
+                >
+                    <IconRobot />
+                </StyledFab>
+            )}
             <Dialog open={open} onClose={handleClose} fullWidth maxWidth='sm' aria-labelledby='create-agent-dialog-title'>
                 <DialogTitle sx={{ p: 2 }} id='create-agent-dialog-title'>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -457,7 +473,9 @@ CreateAgentButton.propTypes = {
     canvasPublic: PropTypes.bool,
     setNodes: PropTypes.func,
     setEdges: PropTypes.func,
-    setDirtyReactFlow: PropTypes.func
+    setDirtyReactFlow: PropTypes.func,
+    openFromAddNodes: PropTypes.bool,
+    onClose: PropTypes.func
 }
 
 export default CreateAgentButton
