@@ -1,7 +1,7 @@
 import React from 'react'
 
 export const metadata = {
-    title: 'DB | Answers AI'
+    title: 'DB | Answer Agent'
 }
 
 const DB_STUDIO_SERVER_URL = process.env.DB_STUDIO_SERVER_URL || 'http://localhost:5555/'

@@ -5,8 +5,8 @@ import getCachedSession from '@ui/getCachedSession'
 import { findSidekicksForChat } from '@utils/findSidekicksForChat'
 
 export const metadata = {
-    title: 'Chats | Answers AI',
-    description: 'Your current Answers AI chat'
+    title: 'Chats | Answer Agent',
+    description: 'Your current Answer Agent chat'
 }
 
 const ChatDetailPage = async ({ params }: any) => {

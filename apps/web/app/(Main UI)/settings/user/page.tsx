@@ -4,7 +4,7 @@ import UserProfile from '@ui/UserProfile/UserProfile'
 import getCachedSession from '@ui/getCachedSession'
 
 export const metadata = {
-    title: 'User Settings | Answers AI',
+    title: 'User Settings | Answer Agent',
     description: 'User Settings'
 }
 

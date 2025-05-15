@@ -69,22 +69,15 @@ const createDocumentStore = async (newDocumentStore: DocumentStore, userId: stri
     }
 }
 
-const getAllDocumentStores = async (userId: string, organizationId: string, user?: IUser) => {
+const getAllDocumentStores = async (userId: string, organizationId: string, _user?: IUser) => {
     try {
         const appServer = getRunningExpressApp()
         let entities
 
-        if (user?.permissions?.includes('org:manage')) {
-            // Admin users can see all document stores in their organization
-            entities = await appServer.AppDataSource.getRepository(DocumentStore).find({
-                where: { organizationId }
-            })
-        } else {
-            // Regular users can only see their own document stores
-            entities = await appServer.AppDataSource.getRepository(DocumentStore).find({
-                where: { userId, organizationId }
-            })
-        }
+        entities = await appServer.AppDataSource.getRepository(DocumentStore).find({
+            where: { userId, organizationId }
+        })
+
         return entities
     } catch (error) {
         throw new InternalFlowiseError(
