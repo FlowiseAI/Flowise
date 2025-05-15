@@ -48,6 +48,14 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
                 step: 0.1,
                 default: 0.9,
                 optional: true
+            },
+            {
+                label: 'Max Tokens',
+                name: 'maxTokens',
+                type: 'number',
+                step: 1,
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -62,7 +70,7 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
-
+        const maxTokens = nodeData.inputs?.maxTokens as string
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const groqApiKey = getCredentialParam('groqApiKey', credentialData, nodeData)
 
@@ -71,7 +79,7 @@ class ChatGroq_LlamaIndex_ChatModels implements INode {
             model: modelName,
             apiKey: groqApiKey
         }
-
+        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         const model = new Groq(obj)
         return model
     }

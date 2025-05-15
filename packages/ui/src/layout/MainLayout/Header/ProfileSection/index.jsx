@@ -54,6 +54,7 @@ import { useNavigate } from 'react-router-dom'
 
 const dataToExport = [
     'Agentflows',
+    'Agentflows V2',
     'Assistants Custom',
     'Assistants OpenAI',
     'Assistants Azure',
@@ -62,6 +63,7 @@ const dataToExport = [
     'Chat Feedbacks',
     'Custom Templates',
     'Document Stores',
+    'Executions',
     'Tools',
     'Variables'
 ]
@@ -256,6 +258,7 @@ const ProfileSection = ({ username, handleLogout }) => {
     const onExport = (data) => {
         const body = {}
         if (data.includes('Agentflows')) body.agentflow = true
+        if (data.includes('Agentflows V2')) body.agentflowv2 = true
         if (data.includes('Assistants Custom')) body.assistantCustom = true
         if (data.includes('Assistants OpenAI')) body.assistantOpenAI = true
         if (data.includes('Assistants Azure')) body.assistantAzure = true
@@ -264,6 +267,7 @@ const ProfileSection = ({ username, handleLogout }) => {
         if (data.includes('Chat Feedbacks')) body.chat_feedback = true
         if (data.includes('Custom Templates')) body.custom_template = true
         if (data.includes('Document Stores')) body.document_store = true
+        if (data.includes('Executions')) body.execution = true
         if (data.includes('Tools')) body.tool = true
         if (data.includes('Variables')) body.variable = true
 

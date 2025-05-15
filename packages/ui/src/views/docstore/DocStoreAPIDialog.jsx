@@ -1,12 +1,7 @@
 import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import rehypeMathjax from 'rehype-mathjax'
-import rehypeRaw from 'rehype-raw'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
-import { CodeBlock } from '@/ui-component/markdown/CodeBlock'
 import { Typography, Stack, Card, Accordion, AccordionSummary, AccordionDetails, Dialog, DialogContent, DialogTitle } from '@mui/material'
 import { TableViewOnly } from '@/ui-component/table/Table'
 import documentstoreApi from '@/api/documentstore'
@@ -308,29 +303,7 @@ curl -X POST http://localhost:3000/api/v1/document-store/upsert/${dialogProps.st
                 {dialogProps.title}
             </DialogTitle>
             <DialogContent>
-                <MemoizedReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeMathjax, rehypeRaw]}
-                    components={{
-                        code({ inline, className, children, ...props }) {
-                            const match = /language-(\w+)/.exec(className || '')
-                            return !inline ? (
-                                <CodeBlock
-                                    isDialog={true}
-                                    language={(match && match[1]) || ''}
-                                    value={String(children).replace(/\n$/, '')}
-                                    {...props}
-                                />
-                            ) : (
-                                <code className={className} {...props}>
-                                    {children}
-                                </code>
-                            )
-                        }
-                    }}
-                >
-                    {values}
-                </MemoizedReactMarkdown>
+                <MemoizedReactMarkdown>{values}</MemoizedReactMarkdown>
 
                 <Typography sx={{ mt: 3, mb: 1 }}>You can override existing configurations:</Typography>
 
