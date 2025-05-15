@@ -128,8 +128,8 @@ async function getMessages(chat: Partial<ChatType>, user: User) {
 }
 
 export const metadata = {
-    title: 'Chats | Answers AI',
-    description: 'Your current Answers AI chat'
+    title: 'Chats | Answer Agent',
+    description: 'Your current Answer Agent chat'
 }
 
 const ChatDetailPage = async ({ params }: { params: { chatId: string } }) => {

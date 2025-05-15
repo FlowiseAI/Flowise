@@ -126,7 +126,7 @@ const Popup = () => {
             }}
         >
             <Box sx={{ display: 'flex', width: '100%', justifyContent: 'space-between' }}>
-                <Typography variant='h5'>Answers AI</Typography>
+                <Typography variant='h5'>Answer Agent</Typography>
                 <Button variant='contained' color='secondary' onClick={handleSummarize}>
                     Summarize
                 </Button>

@@ -3,7 +3,7 @@ import React from 'react'
 import { getAppSettings } from '@ui/getAppSettings'
 
 export const metadata = {
-    title: 'Events | Answers AIs'
+    title: 'Events | Answer Agents'
 }
 
 const INNGEST_SERVER_URL = process.env.INNGEST_SERVER_URL || 'http://localhost:8288'

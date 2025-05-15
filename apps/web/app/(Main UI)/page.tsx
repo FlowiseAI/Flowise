@@ -4,8 +4,8 @@ import React from 'react'
 // import Homepage from '@ui/Homepage';
 
 export const metadata = {
-    title: 'Answers AI',
-    description: 'Welcome to Answers AI, the last stop for all your questions.'
+    title: 'Answer Agent',
+    description: 'Welcome to Answer Agent, the last stop for all your questions.'
 }
 
 const HomepagePage = async () => {
