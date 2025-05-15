@@ -26,7 +26,7 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
 
 const getAllDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await documentStoreService.getAllDocumentStores(req.user?.id!, req.user?.organizationId!)
+        const apiResponse = await documentStoreService.getAllDocumentStores(req.user?.id!, req.user?.organizationId!, req.user)
         return res.json(DocumentStoreDTO.fromEntities(apiResponse))
     } catch (error) {
         next(error)
@@ -64,7 +64,12 @@ const getDocumentStoreById = async (req: Request, res: Response, next: NextFunct
                 `Error: documentStoreController.getDocumentStoreById - id not provided!`
             )
         }
-        const apiResponse = await documentStoreService.getDocumentStoreById(req.params.id, req.user?.id!, req.user?.organizationId!)
+        const apiResponse = await documentStoreService.getDocumentStoreById(
+            req.params.id,
+            req.user?.id!,
+            req.user?.organizationId!,
+            req.user
+        )
         if (apiResponse && apiResponse.whereUsed) {
             apiResponse.whereUsed = JSON.stringify(
                 await documentStoreService.getUsedChatflowNames(apiResponse, req.user?.id!, req.user?.organizationId!)
