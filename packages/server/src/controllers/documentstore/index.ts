@@ -26,7 +26,7 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
 
 const getAllDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await documentStoreService.getAllDocumentStores(req.user?.id!, req.user?.organizationId!, req.user)
+        const apiResponse = await documentStoreService.getAllDocumentStores(req.user?.id!, req.user?.organizationId!)
         return res.json(DocumentStoreDTO.fromEntities(apiResponse))
     } catch (error) {
         next(error)
