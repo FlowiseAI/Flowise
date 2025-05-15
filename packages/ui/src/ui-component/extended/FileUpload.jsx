@@ -5,7 +5,7 @@ import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackba
 import parser from 'html-react-parser'
 
 // material-ui
-import { Button, Box, Typography } from '@mui/material'
+import { Button, Box, Typography, FormControl, RadioGroup, FormControlLabel, Radio } from '@mui/material'
 import { IconX, IconBulb } from '@tabler/icons-react'
 
 // Project import
@@ -31,7 +31,9 @@ const availableFileTypes = [
     { name: 'PDF', ext: 'application/pdf' },
     { name: 'SQL', ext: 'application/sql' },
     { name: 'Text File', ext: 'text/plain' },
-    { name: 'XML', ext: 'application/xml' }
+    { name: 'XML', ext: 'application/xml' },
+    { name: 'DOC', ext: 'application/msword' },
+    { name: 'DOCX', ext: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
 ]
 
 const FileUpload = ({ dialogProps }) => {
@@ -45,6 +47,8 @@ const FileUpload = ({ dialogProps }) => {
     const [fullFileUpload, setFullFileUpload] = useState(false)
     const [allowedFileTypes, setAllowedFileTypes] = useState([])
     const [chatbotConfig, setChatbotConfig] = useState({})
+    const [pdfUsage, setPdfUsage] = useState('perPage')
+    const [pdfLegacyBuild, setPdfLegacyBuild] = useState(false)
 
     const handleChange = (value) => {
         setFullFileUpload(value)
@@ -59,11 +63,23 @@ const FileUpload = ({ dialogProps }) => {
         }
     }
 
+    const handlePdfUsageChange = (event) => {
+        setPdfUsage(event.target.value)
+    }
+
+    const handleLegacyBuildChange = (value) => {
+        setPdfLegacyBuild(value)
+    }
+
     const onSave = async () => {
         try {
             const value = {
                 status: fullFileUpload,
-                allowedUploadFileTypes: allowedFileTypes.join(',')
+                allowedUploadFileTypes: allowedFileTypes.join(','),
+                pdfFile: {
+                    usage: pdfUsage,
+                    legacyBuild: pdfLegacyBuild
+                }
             }
             chatbotConfig.fullFileUpload = value
 
@@ -119,6 +135,14 @@ const FileUpload = ({ dialogProps }) => {
                     if (chatbotConfig.fullFileUpload?.allowedUploadFileTypes) {
                         const allowedFileTypes = chatbotConfig.fullFileUpload.allowedUploadFileTypes.split(',')
                         setAllowedFileTypes(allowedFileTypes)
+                    }
+                    if (chatbotConfig.fullFileUpload?.pdfFile) {
+                        if (chatbotConfig.fullFileUpload.pdfFile.usage) {
+                            setPdfUsage(chatbotConfig.fullFileUpload.pdfFile.usage)
+                        }
+                        if (chatbotConfig.fullFileUpload.pdfFile.legacyBuild !== undefined) {
+                            setPdfLegacyBuild(chatbotConfig.fullFileUpload.pdfFile.legacyBuild)
+                        }
                     }
                 } catch (e) {
                     setChatbotConfig({})
@@ -202,6 +226,26 @@ const FileUpload = ({ dialogProps }) => {
                     </div>
                 ))}
             </div>
+
+            <Box sx={{ marginBottom: 3 }}>
+                <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>PDF Usage</Typography>
+                <FormControl disabled={!fullFileUpload}>
+                    <RadioGroup name='pdf-usage' value={pdfUsage} onChange={handlePdfUsageChange}>
+                        <FormControlLabel value='perPage' control={<Radio />} label='One document per page' />
+                        <FormControlLabel value='perFile' control={<Radio />} label='One document per file' />
+                    </RadioGroup>
+                </FormControl>
+            </Box>
+
+            <Box sx={{ marginBottom: 3 }}>
+                <SwitchInput
+                    label='Use Legacy Build (for PDF compatibility issues)'
+                    onChange={handleLegacyBuildChange}
+                    value={pdfLegacyBuild}
+                    disabled={!fullFileUpload}
+                />
+            </Box>
+
             <StyledButton style={{ marginBottom: 10, marginTop: 20 }} variant='contained' onClick={onSave}>
                 Save
             </StyledButton>

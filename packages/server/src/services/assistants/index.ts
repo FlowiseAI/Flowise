@@ -433,9 +433,10 @@ const getDocumentStores = async (): Promise<any> => {
 const getTools = async (): Promise<any> => {
     try {
         const tools = await nodesService.getAllNodesForCategory('Tools')
+        const mcpTools = await nodesService.getAllNodesForCategory('Tools (MCP)')
 
         // filter out those tools that input params type are not in the list
-        const filteredTools = tools.filter((tool) => {
+        const filteredTools = [...tools, ...mcpTools].filter((tool) => {
             const inputs = tool.inputs || []
             return inputs.every((input) => INPUT_PARAMS_TYPE.includes(input.type))
         })

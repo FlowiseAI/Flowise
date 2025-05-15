@@ -78,6 +78,10 @@ export default function themePalette(theme) {
             paper: theme.paper,
             default: theme.backgroundDefault
         },
+        textBackground: {
+            main: theme.customization.isDarkMode ? theme.colors?.darkPrimary800 : theme.colors?.grey50,
+            border: theme.customization.isDarkMode ? theme.colors?.transparent : theme.colors?.grey400
+        },
         card: {
             main: theme.customization.isDarkMode ? theme.colors?.darkPrimaryMain : theme.colors?.paper,
             light: theme.customization.isDarkMode ? theme.colors?.darkPrimary200 : theme.colors?.paper,
