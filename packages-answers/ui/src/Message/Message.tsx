@@ -1103,27 +1103,23 @@ export const MessageCard = ({
                             p: 0,
                             borderRadius: 1,
                             boxShadow: 'none',
-                            '&:before': { display: 'none' }
-                            // mb: 1,
-                            // mt: 2
+                            '&:before': { display: 'none' },
+
+                            mb: '8px!important',
+                            mt: '8px!important'
                         }}
                     >
                         <CustomAccordionSummary
                             expandIcon={<ExpandMoreIcon sx={{ color: '#e0e0e0' }} width={16} height={16} />}
                             sx={{
                                 p: 0,
-                                minHeight: '36px',
-                                '& .MuiAccordionSummary-content': {
-                                    margin: '6px 0'
-                                }
+                                minHeight: '36px'
                             }}
                         >
                             <Typography
                                 variant='body2'
                                 color='text.secondary'
                                 sx={{
-                                    // color: '#e0e0e0',
-                                    // fontWeight: 'bold',
                                     display: 'flex',
                                     alignItems: 'center'
                                 }}

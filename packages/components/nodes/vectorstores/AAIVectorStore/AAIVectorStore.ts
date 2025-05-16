@@ -310,18 +310,18 @@ class AAI_VectorStores implements INode {
         obj.namespace = generateSecureNamespace(options, namespace)
 
         // Create base security filters
-        let metadatafilter = createSecurityFilters(options)
+        let securityFilter = createSecurityFilters(options)
 
         // Apply user-provided filters without compromising security
         // We use $and to combine user filters with security filters
         if (pineconeMetadataFilter) {
             const userFilter = typeof pineconeMetadataFilter === 'object' ? pineconeMetadataFilter : JSON.parse(pineconeMetadataFilter)
-            metadatafilter = {
-                $and: [metadatafilter, userFilter]
+            securityFilter = {
+                $and: [securityFilter, userFilter]
             }
         }
 
-        obj.filter = metadatafilter
+        obj.filter = securityFilter
 
         if (isFileUploadEnabled && options.chatId) {
             obj.filter = obj.filter || {}
