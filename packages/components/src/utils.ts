@@ -1207,7 +1207,6 @@ export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, text
     return docs
 }
 
-
 /**
  * Normalize special characters in key to be used in vector store
  * @param str - Key to normalize
