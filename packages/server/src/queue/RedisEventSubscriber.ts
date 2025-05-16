@@ -15,7 +15,11 @@ export class RedisEventSubscriber {
                         process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
                             ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
                             : undefined
-                }
+                },
+                pingInterval:
+                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                        : undefined
             })
         } else {
             this.redisSubscriber = createClient({
@@ -32,7 +36,11 @@ export class RedisEventSubscriber {
                         process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
                             ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
                             : undefined
-                }
+                },
+                pingInterval:
+                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                        : undefined
             })
         }
         this.sseStreamer = sseStreamer
