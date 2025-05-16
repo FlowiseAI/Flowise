@@ -524,7 +524,8 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                         sx: {
                             gap: 1,
                             display: 'flex',
-                            paddingBottom: 1
+                            paddingBottom: 1,
+                            maxHeight: '300px'
                         },
                         startAdornment: (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1 }}>
