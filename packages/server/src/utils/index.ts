@@ -541,6 +541,7 @@ export const buildFlow = async ({
         chatHistory,
         ...overrideConfig
     }
+    const chatflow = await appDataSource.getRepository(ChatFlow).findOne({ where: { id: chatflowid } })
     while (nodeQueue.length) {
         const { nodeId, depth } = nodeQueue.shift() as INodeQueue
 
@@ -589,7 +590,8 @@ export const buildFlow = async ({
                     dynamicVariables,
                     uploads,
                     baseURL,
-                    user
+                    user,
+                    organizationId: chatflow?.organizationId
                 })
                 if (indexResult) upsertHistory['result'] = indexResult
                 logger.debug(`[server]: Finished upserting ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
@@ -617,7 +619,8 @@ export const buildFlow = async ({
                     uploads,
                     baseURL,
                     componentNodes: componentNodes as ICommonObject,
-                    user
+                    user,
+                    organizationId: chatflow?.organizationId
                 })
 
                 // Save dynamic variables
