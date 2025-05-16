@@ -51,6 +51,7 @@ interface MessageExtra {
     isLoading?: boolean
     fileUploads?: string | FileUpload[]
     content: undefined | string | any
+    usedTools?: any[]
 }
 interface MessageCardProps extends Partial<Message>, MessageExtra {
     error?: AxiosError<MessageExtra>
@@ -134,6 +135,7 @@ export const MessageCard = ({
     chatId,
     chatflowid,
     id: messageId,
+    usedTools,
     ...other
 }: MessageCardProps) => {
     other = { ...other, role, user } as any
@@ -1090,6 +1092,53 @@ export const MessageCard = ({
                     </Box>
                 </>
             ) : null}
+            {/* Tools used section */}
+
+            {usedTools?.map(({ tool, toolInput, toolOutput }: any, idx) => {
+                if (!tool) return null
+                return (
+                    <CustomAccordion
+                        key={`tool-${idx}`}
+                        sx={{
+                            p: 0,
+                            borderRadius: 1,
+                            boxShadow: 'none',
+                            '&:before': { display: 'none' },
+
+                            mb: '8px!important',
+                            mt: '8px!important'
+                        }}
+                    >
+                        <CustomAccordionSummary
+                            expandIcon={<ExpandMoreIcon sx={{ color: '#e0e0e0' }} width={16} height={16} />}
+                            sx={{
+                                p: 0,
+                                minHeight: '36px'
+                            }}
+                        >
+                            <Typography
+                                variant='body2'
+                                color='text.secondary'
+                                sx={{
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                }}
+                            >
+                                {`${tool} ${Object.entries(toolInput)
+                                    .map(([key, value]) => `"${value}"`)
+                                    .join(', ')}`}
+                            </Typography>
+                        </CustomAccordionSummary>
+                        <CustomAccordionDetails sx={{ p: 0 }}>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                <Typography variant='body2'>
+                                    <pre>{JSON.stringify(toolOutput, null, 2)}</pre>
+                                </Typography>
+                            </Box>
+                        </CustomAccordionDetails>
+                    </CustomAccordion>
+                )
+            })}
         </Box>
     )
 }
