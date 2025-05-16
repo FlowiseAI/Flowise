@@ -11,6 +11,7 @@ import { UsageCacheManager } from '../UsageCacheManager'
 import logger from '../utils/logger'
 import { generateAgentflowv2 as generateAgentflowv2_json } from 'flowise-components'
 import { databaseEntities } from '../utils'
+import { executeCustomNodeFunction } from '../utils/executeCustomNodeFunction'
 
 interface PredictionQueueOptions {
     appDataSource: DataSource
@@ -70,7 +71,7 @@ export class PredictionQueue extends BaseQueue {
         if (this.redisPublisher) data.sseStreamer = this.redisPublisher
 
         if (Object.prototype.hasOwnProperty.call(data, 'isAgentFlowGenerator')) {
-            logger.info('Generating Agentflow...')
+            logger.info(`Generating Agentflow...`)
             const { prompt, componentNodes, toolNodes, selectedChatModel, question } = data as IGenerateAgentflowv2Params
             const options: Record<string, any> = {
                 appDataSource: this.appDataSource,
@@ -78,6 +79,16 @@ export class PredictionQueue extends BaseQueue {
                 logger: logger
             }
             return await generateAgentflowv2_json({ prompt, componentNodes, toolNodes, selectedChatModel }, question, options)
+        }
+
+        if (Object.prototype.hasOwnProperty.call(data, 'isExecuteCustomFunction')) {
+            const executeCustomFunctionData = data as any
+            logger.info(`[${executeCustomFunctionData.orgId}]: Executing Custom Function...`)
+            return await executeCustomNodeFunction({
+                appDataSource: this.appDataSource,
+                componentNodes: this.componentNodes,
+                data: executeCustomFunctionData.data
+            })
         }
 
         if (this.abortControllerPool) {

@@ -85,7 +85,8 @@ const executeCustomFunction = async (req: Request, res: Response, next: NextFunc
                 `Error: nodesController.executeCustomFunction - body not provided!`
             )
         }
-        const apiResponse = await nodesService.executeCustomFunction(req.body)
+        const orgId = req.user?.activeOrganizationId
+        const apiResponse = await nodesService.executeCustomFunction(req.body, orgId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
