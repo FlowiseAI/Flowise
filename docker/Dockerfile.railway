@@ -54,17 +54,19 @@ RUN npm install --production
 
 WORKDIR /app
 
-# Set default environment variables
+# Set environment variables
 ENV PORT=3000
 ENV HOST=0.0.0.0
-ENV DATABASE_PATH=/app/packages/server/.flowise
-ENV APIKEY_PATH=/app/packages/server/.flowise
-ENV SECRETKEY_PATH=/app/packages/server/.flowise
-ENV LOG_PATH=/app/packages/server/logs
-ENV EXECUTION_PATH=/app/packages/server/dist
+ENV FLOWISE_USERNAME=${FLOWISE_USERNAME}
+ENV FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+ENV DATABASE_PATH=${DATABASE_PATH:-/app/packages/server/.flowise}
+ENV APIKEY_PATH=${APIKEY_PATH:-/app/packages/server/.flowise}
+ENV SECRETKEY_PATH=${SECRETKEY_PATH:-/app/packages/server/.flowise}
+ENV LOG_PATH=${LOG_PATH:-/app/packages/server/logs}
+ENV EXECUTION_PATH=${EXECUTION_PATH:-/app/packages/server/dist}
 
 # Expose port
 EXPOSE 3000
 
 # Start the server
-ENTRYPOINT ["node", "packages/server/dist/index.js"]
+CMD ["node", "packages/server/dist/index.js"]
