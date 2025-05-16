@@ -99,7 +99,8 @@ class GoogleVertexAI_ChatModels implements INode {
                 type: 'string',
                 placeholder: 'gemini-1.5-pro-exp-0801',
                 description: 'Custom model name to use. If provided, it will override the model selected',
-                additionalParams: true
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Temperature',
