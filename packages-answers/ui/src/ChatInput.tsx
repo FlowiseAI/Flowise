@@ -525,7 +525,12 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                             gap: 1,
                             display: 'flex',
                             paddingBottom: 1,
-                            maxHeight: '300px'
+                            maxHeight: '30vh',
+                            overflowY: 'auto',
+                            textarea: {
+                                maxHeight: '30vh',
+                                overflowY: 'auto!important'
+                            }
                         },
                         startAdornment: (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1 }}>
@@ -562,7 +567,11 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                         sx: {
                             gap: 1,
                             display: 'flex',
-                            paddingBottom: 2
+                            paddingBottom: 2,
+                            textarea: {
+                                maxHeight: '30vh',
+                                overflowY: 'auto!important'
+                            }
                         },
                         startAdornment: constraints?.isImageUploadAllowed && (
                             <Tooltip title='Attach image'>
