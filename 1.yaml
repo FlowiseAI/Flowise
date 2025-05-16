@@ -1,0 +1,690 @@
+---
+schemes: []
+swagger: '2.0'
+info:
+    description: Authentication service for Insly
+    title: Identifier Service
+    contact:
+        name: Insly OÜ
+        url: https://www.insly.com
+        email: support@insly.com
+    version: '1.0'
+host: ''
+basePath: '/api/v1/identifier'
+paths:
+    '/auth/challenge/{tenant_tag}':
+        post:
+            description: In case asked for a challenge, use it to respond.
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            parameters:
+                - type: string
+                  description: Tenant Tag
+                  name: tenant_tag
+                  in: path
+                  required: true
+                - description: Challenge request params
+                  name: ChallengeRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.ChallengeRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        '$ref': '#/definitions/contract.ChallengeResult'
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/login/{tenant_tag}':
+        post:
+            description: Authenticates user and returns tokens or challenge in case of success.
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            parameters:
+                - type: string
+                  description: Tenant Tag
+                  name: tenant_tag
+                  in: path
+                  required: true
+                - description: Login request params
+                  name: LoginRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.LoginRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        '$ref': '#/definitions/contract.LoginResult'
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/logout':
+        get:
+            security:
+                - BearerToken: []
+            description: log out
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        type: string
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/mfa/totp/disable':
+        post:
+            description: disable TOTP for user
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            parameters:
+                - description: DisableTOTP request params
+                  name: DisableTOTPRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.DisableTOTPRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        type: string
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/mfa/totp/enable':
+        post:
+            description: enable TOTP for user
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            parameters:
+                - description: EnableTOTP request params
+                  name: EnableTOTPRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.EnableTOTPRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        '$ref': '#/definitions/contract.EnableTOTPResult'
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/mfa/totp/verify':
+        post:
+            description: verify TOTP for user
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            parameters:
+                - description: VerifyTOTP request params
+                  name: EnableTOTPRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.VerifyTOTPRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        '$ref': '#/definitions/contract.VerifyTOTPResult'
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/password/force_reset/{tenant_tag}':
+        post:
+            description: force reset password for user
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            parameters:
+                - description: Force reset password request
+                  name: ForceResetPasswordRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.ForceResetPasswordRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        type: string
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/password/reset/{tenant_tag}':
+        post:
+            description: Start a forgot password process
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            parameters:
+                - type: string
+                  description: Tenant Tag
+                  name: tenant_tag
+                  in: path
+                  required: true
+                - description: Forgot password request params
+                  name: ForgotPasswordRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.ForgotPasswordRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        '$ref': '#/definitions/contract.ChallengeResult'
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/password/update/{tenant_tag}':
+        post:
+            description: Provide the confirmation code and update password
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            parameters:
+                - type: string
+                  description: Tenant Tag
+                  name: tenant_tag
+                  in: path
+                  required: true
+                - description: Confirm forgot password request params
+                  name: ConfirmForgotPasswordRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.ConfirmForgotPasswordRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        type: string
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/token/client/{tenant_tag}':
+        post:
+            description: Generate an access token for app client
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            parameters:
+                - type: string
+                  description: Tenant Tag
+                  name: tenant_tag
+                  in: path
+                  required: true
+                - description: ClientToken request params
+                  name: ClientTokenRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.ClientTokenRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        '$ref': '#/definitions/contract.ClientCredentialsResult'
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/token/refresh/{tenant_tag}':
+        post:
+            description: refresh AccessToken
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Token
+            parameters:
+                - type: string
+                  description: Tenant Tag
+                  name: tenant_tag
+                  in: path
+                  required: true
+                - description: RefreshToken request params
+                  name: RefreshTokenRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.RefreshTokenRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        '$ref': '#/definitions/contract.RefreshTokenResult'
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/token/validate/{tenant_tag}':
+        post:
+            description: Parses and validates the token
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Token
+            parameters:
+                - type: string
+                  description: Tenant Tag
+                  name: tenant_tag
+                  in: path
+                  required: true
+                - description: Validate JWT
+                  name: ValidateTokenRequest
+                  in: body
+                  required: true
+                  schema:
+                      '$ref': '#/definitions/request.ValidateTokenRequest'
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        type: string
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/user':
+        get:
+            security:
+                - BearerToken: []
+            description: get user's identity using access token. This is the previous version
+                which fetches the data from Cognito
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        '$ref': '#/definitions/contract.Identity'
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+    '/user/{tenant_tag}':
+        get:
+            security:
+                - BearerToken: []
+            description: get user's identity using access token and tenant, either from
+                DB or from Cognito
+            consumes:
+                - application/json
+            produces:
+                - application/json
+            tags:
+                - Authentication
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        '$ref': '#/definitions/contract.Identity'
+                '400':
+                    description: Bad request
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+                '500':
+                    description: Internal server error
+                    schema:
+                        '$ref': '#/definitions/response.ErrorResponse'
+definitions:
+    contract.AuthenticationResultType:
+        type: object
+        properties:
+            access_token:
+                type: string
+            expires_in:
+                type: integer
+            id_token:
+                type: string
+            refresh_token:
+                type: string
+            token_type:
+                type: string
+    contract.ChallengeResponsesParam:
+        type: object
+        properties:
+            new_password:
+                type: string
+            software_token_mfa_code:
+                type: string
+            user_attributes:
+                type: object
+                additionalProperties:
+                    type: string
+            username:
+                type: string
+    contract.ChallengeResult:
+        type: object
+        properties:
+            authentication_result:
+                '$ref': '#/definitions/contract.AuthenticationResultType'
+            challenge_name:
+                type: string
+            challenge_parameters:
+                '$ref': '#/definitions/contract.ChallengeResultParameters'
+            data:
+                type: object
+                additionalProperties:
+                    type: string
+    contract.ChallengeResultParameters:
+        type: object
+        properties:
+            required_attributes:
+                type: array
+                items:
+                    type: string
+            user_attributes:
+                type: object
+                additionalProperties:
+                    type: string
+            user_id_for_srp:
+                type: string
+    contract.ClientCredentialsResult:
+        type: object
+        properties:
+            access_token:
+                type: string
+            expires_in:
+                type: integer
+            token_type:
+                type: string
+    contract.EnableTOTPResult:
+        type: object
+        properties:
+            qr_code:
+                type: string
+            secret_code:
+                type: string
+            session:
+                type: string
+    contract.Identity:
+        type: object
+    contract.LoginResult:
+        type: object
+        properties:
+            authentication_result:
+                '$ref': '#/definitions/contract.AuthenticationResultType'
+            challenge_name:
+                type: string
+            challenge_parameters:
+                '$ref': '#/definitions/contract.ChallengeResultParameters'
+            data:
+                type: object
+                additionalProperties:
+                    type: string
+    contract.RefreshTokenResult:
+        type: object
+        properties:
+            authentication_result:
+                '$ref': '#/definitions/contract.AuthenticationResultType'
+            challenge_name:
+                type: string
+            challenge_parameters:
+                '$ref': '#/definitions/contract.ChallengeResultParameters'
+            data:
+                type: object
+                additionalProperties:
+                    type: string
+    contract.VerifyTOTPResult:
+        type: object
+        properties:
+            session:
+                type: string
+            status:
+                type: string
+    request.ChallengeRequest:
+        type: object
+        required:
+            - challenge_name
+            - challenge_responses
+            - session
+        properties:
+            challenge_name:
+                type: string
+            challenge_responses:
+                '$ref': '#/definitions/contract.ChallengeResponsesParam'
+            session:
+                type: string
+    request.ClientTokenRequest:
+        type: object
+        required:
+            - client_id
+            - client_secret
+        properties:
+            client_id:
+                type: string
+            client_secret:
+                type: string
+            scope:
+                type: string
+    request.ConfirmForgotPasswordRequest:
+        type: object
+        required:
+            - confirmation_code
+            - password
+            - username
+        properties:
+            confirmation_code:
+                type: string
+            password:
+                type: string
+            username:
+                type: string
+    request.DisableTOTPRequest:
+        type: object
+        required:
+            - access_token
+        properties:
+            access_token:
+                type: string
+    request.EnableTOTPRequest:
+        type: object
+        required:
+            - qr_code_label
+        properties:
+            access_token:
+                type: string
+            qr_code_label:
+                type: string
+            qr_code_size:
+                type: integer
+            session:
+                type: string
+    request.ForceResetPasswordRequest:
+        type: object
+        properties:
+            username:
+                type: string
+    request.ForgotPasswordRequest:
+        type: object
+        required:
+            - username
+        properties:
+            username:
+                type: string
+    request.LoginRequest:
+        type: object
+        required:
+            - password
+            - username
+        properties:
+            meta_data:
+                type: object
+                additionalProperties:
+                    type: string
+            password:
+                type: string
+            username:
+                type: string
+    request.RefreshTokenRequest:
+        type: object
+        required:
+            - refresh_token
+            - username
+        properties:
+            refresh_token:
+                type: string
+            username:
+                description: Username same as the "username" field inside JWT token
+                type: string
+    request.ValidateTokenRequest:
+        type: object
+        required:
+            - access_token
+        properties:
+            access_token:
+                type: string
+    request.VerifyTOTPRequest:
+        type: object
+        required:
+            - user_code
+        properties:
+            access_token:
+                type: string
+            session:
+                type: string
+            user_code:
+                type: string
+    response.ErrorMessage:
+        type: object
+        properties:
+            code:
+                type: string
+            message:
+                type: string
+            params:
+                type: object
+                additionalProperties: true
+    response.ErrorResponse:
+        type: object
+        properties:
+            errors:
+                type: array
+                items:
+                    '$ref': '#/definitions/response.ErrorMessage'
+securityDefinitions:
+    BearerToken:
+        type: apiKey
+        name: Authorization
+        in: header
+    OAuth2Implicit:
+        type: oauth2
+        flow: implicit
+        authorizationUrl: '/login/:tenant_tag'
+        scopes:
+            aws.cognito.signin.user.admin: ' Grants read and write access to administrative
+                information'
