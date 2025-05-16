@@ -77,11 +77,12 @@ export class PredictionQueue extends BaseQueue {
         }
 
         if (Object.prototype.hasOwnProperty.call(data, 'isExecuteCustomFunction')) {
+            const executeCustomFunctionData = data as any
             logger.info(`Executing Custom Function...`)
             return await executeCustomNodeFunction({
                 appDataSource: this.appDataSource,
                 componentNodes: this.componentNodes,
-                data
+                data: executeCustomFunctionData.data
             })
         }
 
