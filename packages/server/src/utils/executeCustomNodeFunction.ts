@@ -17,9 +17,10 @@ export const executeCustomNodeFunction = async ({
 }) => {
     try {
         const body = data
-        const functionInputVariables = Object.fromEntries(
-            [...(body?.javascriptFunction ?? '').matchAll(/\$([a-zA-Z0-9_]+)/g)].map((g) => [g[1], undefined])
-        )
+        const jsFunction = typeof body?.javascriptFunction === 'string' ? body.javascriptFunction : ''
+        const matches = jsFunction.matchAll(/\$([a-zA-Z0-9_]+)/g)
+        const matchesArray: RegExpMatchArray[] = Array.from(matches)
+        const functionInputVariables = Object.fromEntries(matchesArray.map((g) => [g[1], undefined]))
         if (functionInputVariables && Object.keys(functionInputVariables).length) {
             for (const key in functionInputVariables) {
                 if (key.includes('vars')) {
