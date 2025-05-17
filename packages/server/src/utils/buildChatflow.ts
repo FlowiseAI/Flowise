@@ -14,7 +14,8 @@ import {
     mapMimeTypeToInputField,
     mapExtToInputField,
     getFileFromUpload,
-    removeSpecificFileFromUpload
+    removeSpecificFileFromUpload,
+    handleEscapeCharacters
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -62,6 +63,7 @@ import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
 import { OMIT_QUEUE_JOB_DATA } from './constants'
+import { executeAgentFlow } from './buildAgentflow'
 
 /*
  * Initialize the ending node to be executed
@@ -235,7 +237,8 @@ export const executeFlow = async ({
     baseURL,
     isInternal,
     files,
-    signal
+    signal,
+    isTool
 }: IExecuteFlowParams) => {
     // Ensure incomingInput has all required properties with default values
     incomingInput = {
@@ -244,7 +247,7 @@ export const executeFlow = async ({
         ...incomingInput
     }
 
-    const question = incomingInput.question || '' // Ensure question is never undefined
+    let question = incomingInput.question || '' // Ensure question is never undefined
     let overrideConfig = incomingInput.overrideConfig ?? {}
     const uploads = incomingInput.uploads
     const prependMessages = incomingInput.history ?? []
@@ -259,8 +262,8 @@ export const executeFlow = async ({
      */
     let fileUploads: IFileUpload[] = []
     let uploadedFilesContent = ''
-    if (incomingInput.uploads) {
-        fileUploads = incomingInput.uploads
+    if (uploads) {
+        fileUploads = uploads
         for (let i = 0; i < fileUploads.length; i += 1) {
             const upload = fileUploads[i]
 
@@ -308,6 +311,7 @@ export const executeFlow = async ({
                     logger.debug(`Speech to text result: ${speechToTextResult}`)
                     if (speechToTextResult) {
                         incomingInput.question = speechToTextResult
+                        question = speechToTextResult
                     }
                 }
             }
@@ -369,6 +373,26 @@ export const executeFlow = async ({
             overrideConfig,
             chatId
         }
+    }
+
+    const isAgentFlowV2 = chatflow.type === 'AGENTFLOW'
+    if (isAgentFlowV2) {
+        return executeAgentFlow({
+            componentNodes,
+            incomingInput,
+            chatflow,
+            chatId,
+            appDataSource,
+            telemetry,
+            cachePool,
+            sseStreamer,
+            baseURL,
+            isInternal,
+            uploadedFilesContent,
+            fileUploads,
+            signal,
+            isTool
+        })
     }
 
     /*** Get chatflows and prepare data  ***/
@@ -496,7 +520,7 @@ export const executeFlow = async ({
                 memoryType,
                 sessionId,
                 createdDate: userMessageDateTime,
-                fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
+                fileUploads: uploads ? JSON.stringify(fileUploads) : undefined,
                 leadEmail: incomingInput.leadEmail
             }
             await utilAddChatMessage(userMessage, appDataSource)
@@ -664,6 +688,7 @@ export const executeFlow = async ({
                     const postProcessingFunction = JSON.parse(chatflowConfig?.postProcessing?.customFunction)
                     const nodeInstanceFilePath = componentNodes['customFunction'].filePath as string
                     const nodeModule = await import(nodeInstanceFilePath)
+                    //set the outputs.output to EndingNode to prevent json escaping of content...
                     const nodeData = {
                         inputs: { javascriptFunction: postProcessingFunction },
                         outputs: { output: 'output' }
@@ -680,7 +705,13 @@ export const executeFlow = async ({
                     }
                     const customFuncNodeInstance = new nodeModule.nodeClass()
                     let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
-                    result.text = moderatedResponse
+                    if (typeof moderatedResponse === 'string') {
+                        result.text = handleEscapeCharacters(moderatedResponse, true)
+                    } else if (typeof moderatedResponse === 'object') {
+                        result.text = '```json\n' + JSON.stringify(moderatedResponse, null, 2) + '\n```'
+                    } else {
+                        result.text = moderatedResponse
+                    }
                     resultText = result.text
                 } catch (e) {
                     logger.log('[server]: Post Processing Error:', e)
@@ -810,12 +841,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     }
 
     const isAgentFlow = chatflow.type === 'MULTIAGENT'
+
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
     const incomingInput: IncomingInput = req.body || {} // Ensure incomingInput is never undefined
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const files = (req.files as Express.Multer.File[]) || []
     const abortControllerId = `${chatflow.id}_${chatId}`
+    const isTool = req.get('flowise-tool') === 'true'
 
     try {
         // Validate API Key if its external API request
@@ -837,7 +870,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             sseStreamer: appServer.sseStreamer,
             telemetry: appServer.telemetry,
             cachePool: appServer.cachePool,
-            componentNodes: appServer.nodesPool.componentNodes
+            componentNodes: appServer.nodesPool.componentNodes,
+            isTool // used to disable streaming if incoming request its from ChatflowTool
         }
 
         if (process.env.MODE === MODE.QUEUE) {
@@ -859,7 +893,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const signal = new AbortController()
             appServer.abortControllerPool.add(abortControllerId, signal)
             executeData.signal = signal
-
             const result = await executeFlow(executeData)
 
             appServer.abortControllerPool.remove(abortControllerId)

@@ -78,14 +78,18 @@ export const exportData = (exportAllData) => {
     try {
         return {
             AgentFlow: sanitizeChatflow(exportAllData.AgentFlow),
+            AgentFlowV2: sanitizeChatflow(exportAllData.AgentFlowV2),
             AssistantFlow: sanitizeChatflow(exportAllData.AssistantFlow),
-            Assistant: sanitizeAssistant(exportAllData.Assistant),
+            AssistantCustom: sanitizeAssistant(exportAllData.AssistantCustom),
+            AssistantOpenAI: sanitizeAssistant(exportAllData.AssistantOpenAI),
+            AssistantAzure: sanitizeAssistant(exportAllData.AssistantAzure),
             ChatFlow: sanitizeChatflow(exportAllData.ChatFlow),
             ChatMessage: exportAllData.ChatMessage,
             ChatMessageFeedback: exportAllData.ChatMessageFeedback,
             CustomTemplate: exportAllData.CustomTemplate,
             DocumentStore: exportAllData.DocumentStore,
             DocumentStoreFileChunk: exportAllData.DocumentStoreFileChunk,
+            Execution: exportAllData.Execution,
             Tool: sanitizeTool(exportAllData.Tool),
             Variable: sanitizeVariable(exportAllData.Variable)
         }

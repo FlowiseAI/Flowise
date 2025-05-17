@@ -24,7 +24,7 @@ const getAssistantVectorStore = async (credentialId: string, vectorStoreId: stri
         }
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
-        const dbResponse = await openai.beta.vectorStores.retrieve(vectorStoreId)
+        const dbResponse = await openai.vectorStores.retrieve(vectorStoreId)
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -51,7 +51,7 @@ const listAssistantVectorStore = async (credentialId: string) => {
         }
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
-        const dbResponse = await openai.beta.vectorStores.list()
+        const dbResponse = await openai.vectorStores.list()
         return dbResponse.data
     } catch (error) {
         throw new InternalFlowiseError(
@@ -61,7 +61,7 @@ const listAssistantVectorStore = async (credentialId: string) => {
     }
 }
 
-const createAssistantVectorStore = async (credentialId: string, obj: OpenAI.Beta.VectorStores.VectorStoreCreateParams) => {
+const createAssistantVectorStore = async (credentialId: string, obj: OpenAI.VectorStores.VectorStoreCreateParams) => {
     try {
         const appServer = getRunningExpressApp()
         const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({
@@ -78,7 +78,7 @@ const createAssistantVectorStore = async (credentialId: string, obj: OpenAI.Beta
         }
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
-        const dbResponse = await openai.beta.vectorStores.create(obj)
+        const dbResponse = await openai.vectorStores.create(obj)
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -91,7 +91,7 @@ const createAssistantVectorStore = async (credentialId: string, obj: OpenAI.Beta
 const updateAssistantVectorStore = async (
     credentialId: string,
     vectorStoreId: string,
-    obj: OpenAI.Beta.VectorStores.VectorStoreUpdateParams
+    obj: OpenAI.VectorStores.VectorStoreUpdateParams
 ) => {
     try {
         const appServer = getRunningExpressApp()
@@ -109,8 +109,8 @@ const updateAssistantVectorStore = async (
         }
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
-        const dbResponse = await openai.beta.vectorStores.update(vectorStoreId, obj)
-        const vectorStoreFiles = await openai.beta.vectorStores.files.list(vectorStoreId)
+        const dbResponse = await openai.vectorStores.update(vectorStoreId, obj)
+        const vectorStoreFiles = await openai.vectorStores.files.list(vectorStoreId)
         if (vectorStoreFiles.data?.length) {
             const files = []
             for (const file of vectorStoreFiles.data) {
@@ -145,7 +145,7 @@ const deleteAssistantVectorStore = async (credentialId: string, vectorStoreId: s
         }
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
-        const dbResponse = await openai.beta.vectorStores.del(vectorStoreId)
+        const dbResponse = await openai.vectorStores.del(vectorStoreId)
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -190,7 +190,7 @@ const uploadFilesToAssistantVectorStore = async (
 
         const file_ids = [...uploadedFiles.map((file) => file.id)]
 
-        const res = await openai.beta.vectorStores.fileBatches.createAndPoll(vectorStoreId, {
+        const res = await openai.vectorStores.fileBatches.createAndPoll(vectorStoreId, {
             file_ids
         })
         if (res.status === 'completed' && res.file_counts.completed === uploadedFiles.length) return uploadedFiles
@@ -232,7 +232,7 @@ const deleteFilesFromAssistantVectorStore = async (credentialId: string, vectorS
         const deletedFileIds = []
         let count = 0
         for (const file of file_ids) {
-            const res = await openai.beta.vectorStores.files.del(vectorStoreId, file)
+            const res = await openai.vectorStores.files.del(vectorStoreId, file)
             if (res.deleted) {
                 deletedFileIds.push(file)
                 count += 1

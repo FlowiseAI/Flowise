@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "2.2.7-patch.1",
+    "version": "3.0.0",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -22,7 +22,13 @@
         "@mui/material": "5.15.0",
         "@mui/system": "^6.4.3",
         "@mui/x-data-grid": "6.8.0",
+        "@mui/x-tree-view": "^7.25.0",
         "@tabler/icons-react": "^3.30.0",
+        "@tiptap/extension-mention": "^2.11.5",
+        "@tiptap/extension-placeholder": "^2.11.5",
+        "@tiptap/pm": "^2.11.5",
+        "@tiptap/react": "^2.11.5",
+        "@tiptap/starter-kit": "^2.11.5",
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
@@ -49,6 +55,7 @@
         "react-markdown": "^8.0.6",
         "react-perfect-scrollbar": "^1.5.8",
         "react-redux": "^8.0.5",
+        "react-rewards": "^2.1.0",
         "react-router": "~6.3.0",
         "react-router-dom": "~6.3.0",
         "react-syntax-highlighter": "^15.5.0",
@@ -58,6 +65,7 @@
         "rehype-raw": "^7.0.0",
         "remark-gfm": "^3.0.1",
         "remark-math": "^5.1.1",
+        "tippy.js": "^6.3.7",
         "uuid": "^9.0.1",
         "yup": "^0.32.9"
     },

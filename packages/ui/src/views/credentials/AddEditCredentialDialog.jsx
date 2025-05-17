@@ -29,6 +29,7 @@ import { initializeDefaultNodeData } from '@/utils/genericHelper'
 // const
 import { baseURL, REDACTED_CREDENTIAL_VALUE } from '@/store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import keySVG from '@/assets/images/key.svg'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
@@ -237,6 +238,11 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                                 }}
                                 alt={componentCredential.name}
                                 src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
+                                onError={(e) => {
+                                    e.target.onerror = null
+                                    e.target.style.padding = '5px'
+                                    e.target.src = keySVG
+                                }}
                             />
                         </div>
                         {componentCredential.label}
