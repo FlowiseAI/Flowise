@@ -18,16 +18,17 @@ import {
     TableHead,
     TableRow,
     Paper,
-    IconButton,
     useTheme
 } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
+import { PermissionIconButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import CredentialListDialog from './CredentialListDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import AddEditCredentialDialog from './AddEditCredentialDialog'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 
 // API
 import credentialsApi from '@/api/credentials'
@@ -40,15 +41,15 @@ import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
 
 // Icons
-import { IconTrash, IconEdit, IconX, IconPlus } from '@tabler/icons-react'
+import { IconTrash, IconEdit, IconX, IconPlus, IconShare } from '@tabler/icons-react'
 import CredentialEmptySVG from '@/assets/images/credential_empty.svg'
 import keySVG from '@/assets/images/key.svg'
 
 // const
 import { baseURL } from '@/store/constant'
 import { SET_COMPONENT_CREDENTIALS } from '@/store/actions'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
+import { useError } from '@/store/context/ErrorContext'
+import ShareWithWorkspaceDialog from '@/ui-component/dialog/ShareWithWorkspaceDialog'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -77,18 +78,21 @@ const Credentials = () => {
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
     useNotifier()
+    const { error, setError } = useError()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [isLoading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
     const [showCredentialListDialog, setShowCredentialListDialog] = useState(false)
     const [credentialListDialogProps, setCredentialListDialogProps] = useState({})
     const [showSpecificCredentialDialog, setShowSpecificCredentialDialog] = useState(false)
     const [specificCredentialDialogProps, setSpecificCredentialDialogProps] = useState({})
     const [credentials, setCredentials] = useState([])
     const [componentsCredentials, setComponentsCredentials] = useState([])
+
+    const [showShareCredentialDialog, setShowShareCredentialDialog] = useState(false)
+    const [shareCredentialDialogProps, setShareCredentialDialogProps] = useState({})
 
     const { confirm } = useConfirm()
 
@@ -134,6 +138,22 @@ const Credentials = () => {
         setShowSpecificCredentialDialog(true)
     }
 
+    const share = (credential) => {
+        const dialogProps = {
+            type: 'EDIT',
+            cancelButtonName: 'Cancel',
+            confirmButtonName: 'Share',
+            data: {
+                id: credential.id,
+                name: credential.name,
+                title: 'Share Credential',
+                itemType: 'credential'
+            }
+        }
+        setShareCredentialDialogProps(dialogProps)
+        setShowShareCredentialDialog(true)
+    }
+
     const deleteCredential = async (credential) => {
         const confirmPayload = {
             title: `Delete`,
@@ -177,7 +197,6 @@ const Credentials = () => {
                         )
                     }
                 })
-                onCancel()
             }
         }
     }
@@ -210,12 +229,6 @@ const Credentials = () => {
     }, [getAllCredentialsApi.data])
 
     useEffect(() => {
-        if (getAllCredentialsApi.error) {
-            setError(getAllCredentialsApi.error)
-        }
-    }, [getAllCredentialsApi.error])
-
-    useEffect(() => {
         if (getAllComponentsCredentialsApi.data) {
             setComponentsCredentials(getAllComponentsCredentialsApi.data)
             dispatch({ type: SET_COMPONENT_CREDENTIALS, componentsCredentials: getAllComponentsCredentialsApi.data })
@@ -236,14 +249,15 @@ const Credentials = () => {
                             title='Credentials'
                             description='API keys, tokens, and secrets for 3rd party integrations'
                         >
-                            <StyledButton
+                            <StyledPermissionButton
+                                permissionId='credentials:create'
                                 variant='contained'
                                 sx={{ borderRadius: 2, height: '100%' }}
                                 onClick={listCredential}
                                 startIcon={<IconPlus />}
                             >
                                 Add Credential
-                            </StyledButton>
+                            </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && credentials.length <= 0 ? (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
@@ -274,8 +288,9 @@ const Credentials = () => {
                                             <StyledTableCell>Name</StyledTableCell>
                                             <StyledTableCell>Last Updated</StyledTableCell>
                                             <StyledTableCell>Created</StyledTableCell>
-                                            <StyledTableCell> </StyledTableCell>
-                                            <StyledTableCell> </StyledTableCell>
+                                            <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
+                                            <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
+                                            <StyledTableCell style={{ width: '5%' }}> </StyledTableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -297,8 +312,14 @@ const Credentials = () => {
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
                                                 </StyledTableRow>
                                                 <StyledTableRow>
+                                                    <StyledTableCell>
+                                                        <Skeleton variant='text' />
+                                                    </StyledTableCell>
                                                     <StyledTableCell>
                                                         <Skeleton variant='text' />
                                                     </StyledTableCell>
@@ -364,20 +385,46 @@ const Credentials = () => {
                                                         <StyledTableCell>
                                                             {moment(credential.createdDate).format('MMMM Do, YYYY HH:mm:ss')}
                                                         </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <IconButton title='Edit' color='primary' onClick={() => edit(credential)}>
-                                                                <IconEdit />
-                                                            </IconButton>
-                                                        </StyledTableCell>
-                                                        <StyledTableCell>
-                                                            <IconButton
-                                                                title='Delete'
-                                                                color='error'
-                                                                onClick={() => deleteCredential(credential)}
-                                                            >
-                                                                <IconTrash />
-                                                            </IconButton>
-                                                        </StyledTableCell>
+                                                        {!credential.shared && (
+                                                            <>
+                                                                <StyledTableCell>
+                                                                    <PermissionIconButton
+                                                                        permissionId={'credentials:share'}
+                                                                        display={'feat:workspaces'}
+                                                                        title='Share'
+                                                                        color='primary'
+                                                                        onClick={() => share(credential)}
+                                                                    >
+                                                                        <IconShare />
+                                                                    </PermissionIconButton>
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    <PermissionIconButton
+                                                                        permissionId={'credentials:create,credentials:update'}
+                                                                        title='Edit'
+                                                                        color='primary'
+                                                                        onClick={() => edit(credential)}
+                                                                    >
+                                                                        <IconEdit />
+                                                                    </PermissionIconButton>
+                                                                </StyledTableCell>
+                                                                <StyledTableCell>
+                                                                    <PermissionIconButton
+                                                                        permissionId={'credentials:delete'}
+                                                                        title='Delete'
+                                                                        color='error'
+                                                                        onClick={() => deleteCredential(credential)}
+                                                                    >
+                                                                        <IconTrash />
+                                                                    </PermissionIconButton>
+                                                                </StyledTableCell>
+                                                            </>
+                                                        )}
+                                                        {credential.shared && (
+                                                            <>
+                                                                <StyledTableCell colSpan={'3'}>Shared Credential</StyledTableCell>
+                                                            </>
+                                                        )}
                                                     </StyledTableRow>
                                                 ))}
                                             </>
@@ -395,13 +442,23 @@ const Credentials = () => {
                 onCancel={() => setShowCredentialListDialog(false)}
                 onCredentialSelected={onCredentialSelected}
             ></CredentialListDialog>
-            <AddEditCredentialDialog
-                show={showSpecificCredentialDialog}
-                dialogProps={specificCredentialDialogProps}
-                onCancel={() => setShowSpecificCredentialDialog(false)}
-                onConfirm={onConfirm}
-                setError={setError}
-            ></AddEditCredentialDialog>
+            {showSpecificCredentialDialog && (
+                <AddEditCredentialDialog
+                    show={showSpecificCredentialDialog}
+                    dialogProps={specificCredentialDialogProps}
+                    onCancel={() => setShowSpecificCredentialDialog(false)}
+                    onConfirm={onConfirm}
+                    setError={setError}
+                ></AddEditCredentialDialog>
+            )}
+            {showShareCredentialDialog && (
+                <ShareWithWorkspaceDialog
+                    show={showShareCredentialDialog}
+                    dialogProps={shareCredentialDialogProps}
+                    onCancel={() => setShowShareCredentialDialog(false)}
+                    setError={setError}
+                ></ShareWithWorkspaceDialog>
+            )}
             <ConfirmDialog />
         </>
     )

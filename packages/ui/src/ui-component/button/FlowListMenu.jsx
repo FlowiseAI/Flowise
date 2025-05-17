@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 
 import { styled, alpha } from '@mui/material/styles'
 import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
+import { PermissionMenuItem } from '@/ui-component/button/RBACButtons'
 import EditIcon from '@mui/icons-material/Edit'
 import Divider from '@mui/material/Divider'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
@@ -317,48 +317,84 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
                 open={open}
                 onClose={handleClose}
             >
-                <MenuItem onClick={handleFlowRename} disableRipple>
+                <PermissionMenuItem
+                    permissionId={isAgentCanvas ? 'agentflows:update' : 'chatflows:update'}
+                    onClick={handleFlowRename}
+                    disableRipple
+                >
                     <EditIcon />
                     Rename
-                </MenuItem>
-                <MenuItem onClick={handleDuplicate} disableRipple>
+                </PermissionMenuItem>
+                <PermissionMenuItem
+                    permissionId={isAgentCanvas ? 'agentflows:duplicate' : 'chatflows:duplicate'}
+                    onClick={handleDuplicate}
+                    disableRipple
+                >
                     <FileCopyIcon />
                     Duplicate
-                </MenuItem>
-                <MenuItem onClick={handleExport} disableRipple>
+                </PermissionMenuItem>
+                <PermissionMenuItem
+                    permissionId={isAgentCanvas ? 'agentflows:export' : 'chatflows:export'}
+                    onClick={handleExport}
+                    disableRipple
+                >
                     <FileDownloadIcon />
                     Export
-                </MenuItem>
-                <MenuItem onClick={handleExportTemplate} disableRipple>
+                </PermissionMenuItem>
+                <PermissionMenuItem permissionId={'templates:flowexport'} onClick={handleExportTemplate} disableRipple>
                     <ExportTemplateOutlinedIcon />
                     Save As Template
-                </MenuItem>
+                </PermissionMenuItem>
                 <Divider sx={{ my: 0.5 }} />
-                <MenuItem onClick={handleFlowStarterPrompts} disableRipple>
+                <PermissionMenuItem
+                    permissionId={isAgentCanvas ? 'agentflows:config' : 'chatflows:config'}
+                    onClick={handleFlowStarterPrompts}
+                    disableRipple
+                >
                     <PictureInPictureAltIcon />
                     Starter Prompts
-                </MenuItem>
-                <MenuItem onClick={handleFlowChatFeedback} disableRipple>
+                </PermissionMenuItem>
+                <PermissionMenuItem
+                    permissionId={isAgentCanvas ? 'agentflows:config' : 'chatflows:config'}
+                    onClick={handleFlowChatFeedback}
+                    disableRipple
+                >
                     <ThumbsUpDownOutlinedIcon />
                     Chat Feedback
-                </MenuItem>
-                <MenuItem onClick={handleAllowedDomains} disableRipple>
+                </PermissionMenuItem>
+                <PermissionMenuItem
+                    permissionId={isAgentCanvas ? 'agentflows:domains' : 'chatflows:domains'}
+                    onClick={handleAllowedDomains}
+                    disableRipple
+                >
                     <VpnLockOutlinedIcon />
                     Allowed Domains
-                </MenuItem>
-                <MenuItem onClick={handleSpeechToText} disableRipple>
+                </PermissionMenuItem>
+                <PermissionMenuItem
+                    permissionId={isAgentCanvas ? 'agentflows:config' : 'chatflows:config'}
+                    onClick={handleSpeechToText}
+                    disableRipple
+                >
                     <MicNoneOutlinedIcon />
                     Speech To Text
-                </MenuItem>
-                <MenuItem onClick={handleFlowCategory} disableRipple>
+                </PermissionMenuItem>
+                <PermissionMenuItem
+                    permissionId={isAgentCanvas ? 'agentflows:update' : 'chatflows:update'}
+                    onClick={handleFlowCategory}
+                    disableRipple
+                >
                     <FileCategoryIcon />
                     Update Category
-                </MenuItem>
+                </PermissionMenuItem>
                 <Divider sx={{ my: 0.5 }} />
-                <MenuItem onClick={handleDelete} disableRipple>
+                <PermissionMenuItem
+                    permissionId={isAgentCanvas ? 'agentflows:delete' : 'chatflows:delete'}
+                    onClick={handleDelete}
+                    disableRipple
+                >
                     <FileDeleteIcon />
                     Delete
-                </MenuItem>
+                </PermissionMenuItem>
             </StyledMenu>
             <SaveChatflowDialog
                 show={flowDialogOpen}

@@ -87,10 +87,11 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 })
                 onConfirm(createResp.data.id)
             }
-        } catch (err) {
-            const errorData = typeof err === 'string' ? err : err.response?.data || `${err.response.data.message}`
+        } catch (error) {
             enqueueSnackbar({
-                message: `Failed to add new Document Store: ${errorData}`,
+                message: `Failed to add new Document Store: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -130,9 +131,10 @@ const AddDocStoreDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
-            const errorData = error.response?.data || `${error.response?.status}: ${error.response?.statusText}`
             enqueueSnackbar({
-                message: `Failed to update Document Store: ${errorData}`,
+                message: `Failed to update Document Store: ${
+                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',

@@ -21,11 +21,13 @@ import {
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import { useTheme } from '@mui/material/styles'
+import { useAuth } from '@/hooks/useAuth'
 
 // Project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import ShareChatbot from './ShareChatbot'
 import EmbedChat from './EmbedChat'
+import { Available } from '@/ui-component/rbac/available'
 
 // Const
 import { baseURL } from '@/store/constant'
@@ -108,7 +110,8 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const getIsChatflowStreamingApi = useApi(chatflowsApi.getIsChatflowStreaming)
     const getConfigApi = useApi(configApi.getConfig)
     const getAllVariablesApi = useApi(variablesApi.getAllVariables)
-
+    const isGlobal = useSelector((state) => state.auth.isGlobal)
+    const { hasPermission } = useAuth()
     const onCheckBoxChanged = (newVal) => {
         setCheckbox(newVal)
         if (newVal) {
@@ -640,10 +643,13 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                     name: key.id
                 })
             }
-            options.push({
-                label: '- Add New Key -',
-                name: 'addnewkey'
-            })
+
+            if (isGlobal || hasPermission('apikeys:create')) {
+                options.push({
+                    label: '- Add New Key -',
+                    name: 'addnewkey'
+                })
+            }
             setKeyOptions(options)
             setAPIKeys(getAllAPIKeysApi.data)
 
@@ -652,7 +658,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                 setSelectedApiKey(getAllAPIKeysApi.data.find((key) => key.id === dialogProps.chatflowApiKeyId))
             }
         }
-    }, [dialogProps, getAllAPIKeysApi.data])
+    }, [dialogProps, getAllAPIKeysApi.data, hasPermission, isGlobal])
 
     useEffect(() => {
         if (show) {
@@ -693,13 +699,15 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                         </Tabs>
                     </div>
                     <div style={{ flex: 20 }}>
-                        <Dropdown
-                            name='SelectKey'
-                            disableClearable={true}
-                            options={keyOptions}
-                            onSelect={(newValue) => onApiKeySelected(newValue)}
-                            value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
-                        />
+                        <Available permission={'chatflows:update,agentflows:update'}>
+                            <Dropdown
+                                name='SelectKey'
+                                disableClearable={true}
+                                options={keyOptions}
+                                onSelect={(newValue) => onApiKeySelected(newValue)}
+                                value={dialogProps.chatflowApiKeyId ?? chatflowApiKeyId ?? 'Choose an API key'}
+                            />
+                        </Available>
                     </div>
                 </div>
                 <div style={{ marginTop: 10 }}></div>

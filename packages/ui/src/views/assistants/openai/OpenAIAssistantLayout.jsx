@@ -2,16 +2,16 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Box, Stack, Button, Skeleton } from '@mui/material'
+import { Box, Stack, Skeleton } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import AssistantDialog from './AssistantDialog'
 import LoadAssistantDialog from './LoadAssistantDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 
 // API
 import assistantsApi from '@/api/assistants'
@@ -123,22 +123,24 @@ const OpenAIAssistantLayout = () => {
                             description='Create assistants using OpenAI Assistant API'
                             onBack={() => navigate(-1)}
                         >
-                            <Button
+                            <PermissionButton
+                                permissionId={'assistants:create'}
                                 variant='outlined'
                                 onClick={loadExisting}
                                 startIcon={<IconFileUpload />}
                                 sx={{ borderRadius: 2, height: 40 }}
                             >
                                 Load
-                            </Button>
-                            <StyledButton
+                            </PermissionButton>
+                            <StyledPermissionButton
+                                permissionId={'assistants:create'}
                                 variant='contained'
                                 sx={{ borderRadius: 2, height: 40 }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
                                 Add
-                            </StyledButton>
+                            </StyledPermissionButton>
                         </ViewHeader>
                         {isLoading ? (
                             <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
