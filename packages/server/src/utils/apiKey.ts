@@ -41,6 +41,9 @@ export const generateSecretHash = (apiKey: string): string => {
  * @returns {boolean}
  */
 export const compareKeys = (storedKey: string, suppliedKey: string): boolean => {
+    if (!storedKey || !suppliedKey) {
+        return false
+    }
     const [hashedPassword, salt] = storedKey.split('.')
     const buffer = scryptSync(suppliedKey, salt, 64) as Buffer
     return timingSafeEqual(Buffer.from(hashedPassword, 'hex'), buffer)

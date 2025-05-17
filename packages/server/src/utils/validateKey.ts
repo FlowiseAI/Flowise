@@ -19,6 +19,7 @@ export const validateChatflowAPIKey = async (req: Request, chatflow: ChatFlow) =
     if (suppliedKey) {
         const keys = await apikeyService.getAllApiKeys()
         const apiSecret = keys.find((key: any) => key.id === chatFlowApiKeyId)?.apiSecret
+        if (!apiSecret) return false
         if (!compareKeys(apiSecret, suppliedKey)) return false
         return true
     }
