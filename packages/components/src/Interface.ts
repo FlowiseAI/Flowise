@@ -265,6 +265,8 @@ export interface IFileUpload {
 export interface IMultiModalOption {
     image?: Record<string, any>
     audio?: Record<string, any>
+    pdf?: Record<string, any>
+    video?: Record<string, any>
 }
 
 export type MessageContentText = {
@@ -281,6 +283,23 @@ export type MessageContentImageUrl = {
               detail?: ImageDetail
           }
 }
+
+export type MessageContentDocument = {
+    type: 'document'
+    source: {
+        type: string
+        data: string
+        mediaType: string
+    }
+}
+
+export type MessageContentMedia = {
+    type: 'media'
+    mimeType: string
+    data: string
+}
+
+export type MessageContent = MessageContentText | MessageContentImageUrl | MessageContentDocument | MessageContentMedia
 
 export interface IDocument<Metadata extends Record<string, any> = Record<string, any>> {
     pageContent: string
