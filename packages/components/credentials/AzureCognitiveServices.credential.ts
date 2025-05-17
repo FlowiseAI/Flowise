@@ -4,12 +4,15 @@ class AzureCognitiveServices implements INodeCredential {
     label: string
     name: string
     version: number
+    description: string
     inputs: INodeParams[]
 
     constructor() {
         this.label = 'Azure Cognitive Services'
         this.name = 'azureCognitiveServices'
         this.version = 1.0
+        this.description =
+            'Enter your Azure Cognitive Services credentials for Speech to Text and other Cognitive Services.'
         this.inputs = [
             {
                 label: 'Azure Subscription Key',
