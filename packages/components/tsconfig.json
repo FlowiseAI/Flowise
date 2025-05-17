@@ -16,6 +16,6 @@
         "declaration": true,
         "module": "commonjs"
     },
-    "include": ["src", "nodes", "credentials"],
+    "include": ["src", "nodes", "credentials", "../server/test/masModeration.spec.ts"],
     "exclude": ["gulpfile.ts", "node_modules", "dist"]
 }
