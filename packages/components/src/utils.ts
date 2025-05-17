@@ -48,6 +48,7 @@ export const availableDependencies = [
     '@aws-sdk/client-bedrock-runtime',
     '@aws-sdk/client-dynamodb',
     '@aws-sdk/client-s3',
+    '@azure/search-documents',
     '@elastic/elasticsearch',
     '@dqbd/tiktoken',
     '@getzep/zep-js',
