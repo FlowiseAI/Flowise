@@ -32,4 +32,8 @@ router.post('/cancel-subscription', accountController.cancelPreviousCloudSubscrp
 
 router.get('/billing', accountController.createStripeCustomerPortalSession)
 
+router.get('/basic-auth', accountController.getBasicAuth)
+
+router.post('/basic-auth', accountController.checkBasicAuth)
+
 export default router

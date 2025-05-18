@@ -1,4 +1,4 @@
-The FlowiseAI Inc Commercial License (the “Commercial License”)
+The FlowiseAI Inc Commercial License (the "Commercial License")
 Copyright (c) 2023-present FlowiseAI, Inc
 
 With regard to the FlowiseAI Inc Software:
@@ -23,10 +23,14 @@ Subject to the foregoing, it is forbidden to copy, merge, publish, distribute, s
 and/or sell the Software.
 
 This Commercial License applies only to the part of this Software that is not distributed under
-the AGPLv3 license. Any part of this Software distributed under the MIT license or which
-is served client-side as an image, font, cascading stylesheet (CSS), file which produces
-or is compiled, arranged, augmented, or combined into client-side JavaScript, in whole or
-in part, is copyrighted under the AGPLv3 license. The full text of this Commercial License shall
+the Apache 2.0 license. The Open Source version of Flowise is licensed under the Apache License, Version 2.0.
+Unauthorized copying, modification, distribution, or use of the Enterprise and Cloud versions
+is strictly prohibited without a valid license agreement from FlowiseAI, Inc.
+
+For information about licensing of the Enterprise and Cloud versions, please contact:
+security@flowiseai.com
+
+The full text of this Commercial License shall
 be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

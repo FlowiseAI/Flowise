@@ -9,6 +9,8 @@ const resetPassword = (body) => client.post('/account/reset-password', body)
 const getBillingData = () => client.get('/account/billing')
 const cancelSubscription = (body) => client.post('/account/cancel-subscription', body)
 const logout = () => client.post('/account/logout')
+const getBasicAuth = () => client.get('/account/basic-auth')
+const checkBasicAuth = (body) => client.post('/account/basic-auth', body)
 
 export default {
     getBillingData,
@@ -19,5 +21,7 @@ export default {
     forgotPassword,
     resetPassword,
     cancelSubscription,
-    logout
+    logout,
+    getBasicAuth,
+    checkBasicAuth
 }

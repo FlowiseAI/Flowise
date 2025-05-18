@@ -1,9 +1,26 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
+import PropTypes from 'prop-types'
 
 // material-ui
-import { Alert, Box, Button, Chip, Divider, Icon, List, ListItemText, Stack, Typography } from '@mui/material'
+import {
+    Alert,
+    Box,
+    Button,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Divider,
+    Icon,
+    List,
+    ListItemText,
+    Stack,
+    TextField,
+    Typography
+} from '@mui/material'
 
 // project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -47,6 +64,98 @@ const OrgSetupSchema = z
         message: "Passwords don't match",
         path: ['confirmPassword']
     })
+
+const BasicAuthDialog = ({ open, onAuthenticate }) => {
+    const [basicAuthUsername, setBasicAuthUsername] = useState('')
+    const [basicAuthPassword, setBasicAuthPassword] = useState('')
+    const [authError, setAuthError] = useState('')
+    const [loading, setLoading] = useState(false)
+
+    const checkBasicAuthApi = useApi(accountApi.checkBasicAuth)
+
+    const handleAuthenticate = async () => {
+        setLoading(true)
+        setAuthError('')
+
+        await checkBasicAuthApi.request({
+            username: basicAuthUsername,
+            password: basicAuthPassword
+        })
+    }
+
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter' && basicAuthUsername && basicAuthPassword && !loading) {
+            handleAuthenticate()
+        }
+    }
+
+    useEffect(() => {
+        if (checkBasicAuthApi.data) {
+            if (checkBasicAuthApi.data.message === 'Authentication successful') {
+                onAuthenticate(true)
+            } else {
+                setAuthError('Authentication failed')
+                setLoading(false)
+            }
+        }
+    }, [checkBasicAuthApi.data, onAuthenticate])
+
+    useEffect(() => {
+        if (checkBasicAuthApi.error) {
+            setAuthError('Authentication failed')
+            setLoading(false)
+        }
+    }, [checkBasicAuthApi.error])
+
+    return (
+        <Dialog
+            open={open}
+            disableEscapeKeyDown
+            maxWidth='xs'
+            fullWidth
+            PaperProps={{
+                sx: { borderRadius: 2 }
+            }}
+        >
+            <DialogTitle>Authentication Required</DialogTitle>
+            <DialogContent>
+                <Typography sx={{ mb: 2 }} variant='body1'>
+                    Application authentication now requires email and password. Please contact administrator to authenticate using existing
+                    username and password in order to continue.
+                </Typography>
+                <Stack spacing={2} sx={{ mt: 1 }}>
+                    {authError && <Alert severity='error'>{authError}</Alert>}
+                    <TextField
+                        label='Username'
+                        fullWidth
+                        value={basicAuthUsername}
+                        onChange={(e) => setBasicAuthUsername(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                    />
+                    <TextField
+                        label='Password'
+                        type='password'
+                        fullWidth
+                        value={basicAuthPassword}
+                        onChange={(e) => setBasicAuthPassword(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                    />
+                </Stack>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleAuthenticate} variant='contained' disabled={!basicAuthUsername || !basicAuthPassword || loading}>
+                    Authenticate
+                </Button>
+            </DialogActions>
+            {loading && <BackdropLoader open={loading} />}
+        </Dialog>
+    )
+}
+
+BasicAuthDialog.propTypes = {
+    open: PropTypes.bool,
+    onAuthenticate: PropTypes.func
+}
 
 const OrganizationSetupPage = () => {
     useNotifier()
@@ -99,10 +208,13 @@ const OrganizationSetupPage = () => {
 
     const loginApi = useApi(authApi.login)
     const registerAccountApi = useApi(accountApi.registerAccount)
+    const getBasicAuthApi = useApi(accountApi.getBasicAuth)
     const navigate = useNavigate()
 
     const getDefaultProvidersApi = useApi(loginMethodApi.getLoginMethods)
     const [configuredSsoProviders, setConfiguredSsoProviders] = useState([])
+
+    const [showBasicAuthDialog, setShowBasicAuthDialog] = useState(false)
 
     const register = async (event) => {
         event.preventDefault()
@@ -155,8 +267,16 @@ const OrganizationSetupPage = () => {
     }, [registerAccountApi.error])
 
     useEffect(() => {
+        if (getBasicAuthApi.data && getBasicAuthApi.data.isUsernamePasswordSet === true) {
+            setShowBasicAuthDialog(true)
+        }
+    }, [getBasicAuthApi.data])
+
+    useEffect(() => {
         if (!isOpenSource) {
             getDefaultProvidersApi.request()
+        } else {
+            getBasicAuthApi.request()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -387,6 +507,14 @@ const OrganizationSetupPage = () => {
                 </Stack>
             </MainCard>
             {loading && <BackdropLoader open={loading} />}
+            <BasicAuthDialog
+                open={showBasicAuthDialog}
+                onAuthenticate={(success) => {
+                    if (success) {
+                        setShowBasicAuthDialog(false)
+                    }
+                }}
+            />
         </>
     )
 }
