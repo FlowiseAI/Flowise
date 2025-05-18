@@ -7,7 +7,6 @@ import { Alert, Box, Button, Divider, Icon, List, ListItemText, OutlinedInput, S
 
 // project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
-import MainCard from '@/ui-component/cards/MainCard'
 import { Input } from '@/ui-component/input/Input'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
@@ -245,7 +244,17 @@ const RegisterPage = () => {
 
     return (
         <>
-            <MainCard>
+            <Box
+                sx={{
+                    width: '100%',
+                    maxHeight: '100vh',
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: '24px'
+                }}
+            >
                 <Stack flexDirection='column' sx={{ width: '480px', gap: 3 }}>
                     {authError && (
                         <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
@@ -449,7 +458,7 @@ const RegisterPage = () => {
                         </Stack>
                     </form>
                 </Stack>
-            </MainCard>
+            </Box>
             {loading && <BackdropLoader open={loading} />}
         </>
     )

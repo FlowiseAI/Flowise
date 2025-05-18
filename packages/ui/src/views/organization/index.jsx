@@ -1,30 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { z } from 'zod'
-import PropTypes from 'prop-types'
 
 // material-ui
-import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Divider,
-    Icon,
-    List,
-    ListItemText,
-    Stack,
-    TextField,
-    Typography
-} from '@mui/material'
+import { Alert, Box, Button, Chip, Divider, Icon, List, ListItemText, Stack, TextField, Typography } from '@mui/material'
 
 // project imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
-import MainCard from '@/ui-component/cards/MainCard'
 import { Input } from '@/ui-component/input/Input'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 
@@ -64,98 +46,6 @@ const OrgSetupSchema = z
         message: "Passwords don't match",
         path: ['confirmPassword']
     })
-
-const BasicAuthDialog = ({ open, onAuthenticate }) => {
-    const [basicAuthUsername, setBasicAuthUsername] = useState('')
-    const [basicAuthPassword, setBasicAuthPassword] = useState('')
-    const [authError, setAuthError] = useState('')
-    const [loading, setLoading] = useState(false)
-
-    const checkBasicAuthApi = useApi(accountApi.checkBasicAuth)
-
-    const handleAuthenticate = async () => {
-        setLoading(true)
-        setAuthError('')
-
-        await checkBasicAuthApi.request({
-            username: basicAuthUsername,
-            password: basicAuthPassword
-        })
-    }
-
-    const handleKeyPress = (event) => {
-        if (event.key === 'Enter' && basicAuthUsername && basicAuthPassword && !loading) {
-            handleAuthenticate()
-        }
-    }
-
-    useEffect(() => {
-        if (checkBasicAuthApi.data) {
-            if (checkBasicAuthApi.data.message === 'Authentication successful') {
-                onAuthenticate(true)
-            } else {
-                setAuthError('Authentication failed')
-                setLoading(false)
-            }
-        }
-    }, [checkBasicAuthApi.data, onAuthenticate])
-
-    useEffect(() => {
-        if (checkBasicAuthApi.error) {
-            setAuthError('Authentication failed')
-            setLoading(false)
-        }
-    }, [checkBasicAuthApi.error])
-
-    return (
-        <Dialog
-            open={open}
-            disableEscapeKeyDown
-            maxWidth='xs'
-            fullWidth
-            PaperProps={{
-                sx: { borderRadius: 2 }
-            }}
-        >
-            <DialogTitle>Authentication Required</DialogTitle>
-            <DialogContent>
-                <Typography sx={{ mb: 2 }} variant='body1'>
-                    Application authentication now requires email and password. Please contact administrator to authenticate using existing
-                    username and password in order to continue.
-                </Typography>
-                <Stack spacing={2} sx={{ mt: 1 }}>
-                    {authError && <Alert severity='error'>{authError}</Alert>}
-                    <TextField
-                        label='Username'
-                        fullWidth
-                        value={basicAuthUsername}
-                        onChange={(e) => setBasicAuthUsername(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                    />
-                    <TextField
-                        label='Password'
-                        type='password'
-                        fullWidth
-                        value={basicAuthPassword}
-                        onChange={(e) => setBasicAuthPassword(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                    />
-                </Stack>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={handleAuthenticate} variant='contained' disabled={!basicAuthUsername || !basicAuthPassword || loading}>
-                    Authenticate
-                </Button>
-            </DialogActions>
-            {loading && <BackdropLoader open={loading} />}
-        </Dialog>
-    )
-}
-
-BasicAuthDialog.propTypes = {
-    open: PropTypes.bool,
-    onAuthenticate: PropTypes.func
-}
 
 const OrganizationSetupPage = () => {
     useNotifier()
@@ -201,20 +91,22 @@ const OrganizationSetupPage = () => {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [username, setUsername] = useState('')
     const [orgName, setOrgName] = useState('')
+    const [existingUsername, setExistingUsername] = useState('')
+    const [existingPassword, setExistingPassword] = useState('')
 
     const [loading, setLoading] = useState(false)
     const [authError, setAuthError] = useState('')
     const [successMsg, setSuccessMsg] = useState(undefined)
+    const [requiresAuthentication, setRequiresAuthentication] = useState(false)
 
     const loginApi = useApi(authApi.login)
     const registerAccountApi = useApi(accountApi.registerAccount)
     const getBasicAuthApi = useApi(accountApi.getBasicAuth)
+    const checkBasicAuthApi = useApi(accountApi.checkBasicAuth)
     const navigate = useNavigate()
 
     const getDefaultProvidersApi = useApi(loginMethodApi.getLoginMethods)
     const [configuredSsoProviders, setConfiguredSsoProviders] = useState([])
-
-    const [showBasicAuthDialog, setShowBasicAuthDialog] = useState(false)
 
     const register = async (event) => {
         event.preventDefault()
@@ -227,6 +119,29 @@ const OrganizationSetupPage = () => {
         })
         if (result.success) {
             setLoading(true)
+            setAuthError('')
+
+            // Check authentication first if required
+            if (requiresAuthentication) {
+                try {
+                    const authResult = await checkBasicAuthApi.request({
+                        username: existingUsername,
+                        password: existingPassword
+                    })
+
+                    if (!authResult || authResult.message !== 'Authentication successful') {
+                        setAuthError('Authentication failed. Please check your existing credentials.')
+                        setLoading(false)
+                        return
+                    }
+                } catch (error) {
+                    setAuthError('Authentication failed. Please check your existing credentials.')
+                    setLoading(false)
+                    return
+                }
+            }
+
+            // Proceed with registration after successful authentication
             const body = {
                 user: {
                     name: username,
@@ -268,7 +183,7 @@ const OrganizationSetupPage = () => {
 
     useEffect(() => {
         if (getBasicAuthApi.data && getBasicAuthApi.data.isUsernamePasswordSet === true) {
-            setShowBasicAuthDialog(true)
+            setRequiresAuthentication(true)
         }
     }, [getBasicAuthApi.data])
 
@@ -324,7 +239,17 @@ const OrganizationSetupPage = () => {
 
     return (
         <>
-            <MainCard>
+            <Box
+                sx={{
+                    width: '100%',
+                    maxHeight: '100vh',
+                    overflowY: 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: '24px'
+                }}
+            >
                 <Stack flexDirection='column' sx={{ width: '480px', gap: 3 }}>
                     {authError && (
                         <Alert icon={<IconExclamationCircle />} variant='filled' severity='error'>
@@ -347,8 +272,55 @@ const OrganizationSetupPage = () => {
                     <Stack sx={{ gap: 1 }}>
                         <Typography variant='h1'>Setup Account</Typography>
                     </Stack>
+                    {requiresAuthentication && (
+                        <Alert severity='info'>
+                            Application authentication now requires email and password. Contact administrator to setup an account.
+                        </Alert>
+                    )}
                     <form onSubmit={register}>
                         <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 2 }}>
+                            {requiresAuthentication && (
+                                <>
+                                    <Box>
+                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                            <Typography>
+                                                Existing Username<span style={{ color: 'red' }}>&nbsp;*</span>
+                                            </Typography>
+                                            <div style={{ flexGrow: 1 }}></div>
+                                        </div>
+                                        <TextField
+                                            fullWidth
+                                            placeholder='Existing Username'
+                                            value={existingUsername}
+                                            onChange={(e) => setExistingUsername(e.target.value)}
+                                        />
+                                        <Typography variant='caption'>
+                                            <i>Existing username that was set as FLOWISE_USERNAME environment variable</i>
+                                        </Typography>
+                                    </Box>
+                                    <Box>
+                                        <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                            <Typography>
+                                                Existing Password<span style={{ color: 'red' }}>&nbsp;*</span>
+                                            </Typography>
+                                            <div style={{ flexGrow: 1 }}></div>
+                                        </div>
+                                        <TextField
+                                            fullWidth
+                                            type='password'
+                                            placeholder='Existing Password'
+                                            value={existingPassword}
+                                            onChange={(e) => setExistingPassword(e.target.value)}
+                                        />
+                                        <Typography variant='caption'>
+                                            <i>Existing password that was set as FLOWISE_PASSWORD environment variable</i>
+                                        </Typography>
+                                    </Box>
+                                    <Divider>
+                                        <Chip label='New Account Details' size='small' />
+                                    </Divider>
+                                </>
+                            )}
                             {isEnterpriseLicensed && (
                                 <>
                                     <Box>
@@ -440,7 +412,12 @@ const OrganizationSetupPage = () => {
                                     <i>Reconfirm your password. Must match the password typed above.</i>
                                 </Typography>
                             </Box>
-                            <StyledButton variant='contained' style={{ borderRadius: 12, height: 40, marginRight: 5 }} type='submit'>
+                            <StyledButton
+                                variant='contained'
+                                style={{ borderRadius: 12, height: 40, marginRight: 5 }}
+                                type='submit'
+                                disabled={requiresAuthentication && (!existingUsername || !existingPassword)}
+                            >
                                 Sign Up
                             </StyledButton>
                             {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
@@ -505,16 +482,8 @@ const OrganizationSetupPage = () => {
                         </Stack>
                     </form>
                 </Stack>
-            </MainCard>
+            </Box>
             {loading && <BackdropLoader open={loading} />}
-            <BasicAuthDialog
-                open={showBasicAuthDialog}
-                onAuthenticate={(success) => {
-                    if (success) {
-                        setShowBasicAuthDialog(false)
-                    }
-                }}
-            />
         </>
     )
 }
