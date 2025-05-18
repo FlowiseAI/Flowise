@@ -20,7 +20,7 @@ The Dall-E Post Tool allows you to generate images using OpenAI's Dall-E AI mode
 2. Connect your OpenAI API credential to the tool.
 3. Configure the tool's inputs:
     - **Prompt**: Enter the text description of the image you want to generate.
-    - **Model**: Choose the Dall-E model version (default is 'dall-e-2').
+    - **Model**: Choose the model. Select **dall-e-3** for a direct URL response or **gpt-image-1** to upload the generated image to your S3 storage and get its URL.
 4. Connect the tool to other nodes in your workflow as needed.
 5. Run your workflow to generate the image based on your prompt.
 

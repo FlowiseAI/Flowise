@@ -1,9 +1,10 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { addSingleFileToStorage } from '../../../src/storageUtils'
 import { Tool } from '@langchain/core/tools'
 import fetch from 'node-fetch'
 
-export const desc = `Use this when you want to create an image using Dall-E. The prompt should be a string. The model is optional and defaults to 'dall-e-2'.`
+export const desc = `Use this when you want to create an image with OpenAI. The prompt should be a string. Choose between 'dall-e-3' for a direct URL response or 'gpt-image-1' to upload the generated image to storage.`
 
 export interface Headers {
     [key: string]: string
@@ -23,7 +24,7 @@ export class DallePostTool extends Tool {
     name = 'create_dalle_image'
     description = desc
     prompt = ''
-    model = 'dall-e-2'
+    model = 'dall-e-3'
     apiKey = ''
 
     constructor(args?: RequestParameters) {
@@ -36,7 +37,7 @@ export class DallePostTool extends Tool {
     /** @ignore */
     async _call(input: string) {
         try {
-            let inputBody = {
+            const inputBody = {
                 prompt: input || this.prompt,
                 model: this.model
             }
@@ -50,8 +51,24 @@ export class DallePostTool extends Tool {
                 body: JSON.stringify(inputBody)
             })
 
-            const text = await res.text()
-            return text
+            if (!res.ok) {
+                const text = await res.text()
+                throw new Error(text)
+            }
+
+            if (this.model === 'gpt-image-1') {
+                const json = await res.json()
+                const base64 = json?.data?.[0]?.b64_json
+                if (!base64) return JSON.stringify(json)
+
+                const bf = Buffer.from(base64, 'base64')
+                const fileName = `dalle_${Date.now()}.png`
+                const url = await addSingleFileToStorage('image/png', bf, fileName, 'dalle-images')
+                return url
+            } else {
+                const text = await res.text()
+                return text
+            }
         } catch (error) {
             return `${error}`
         }
@@ -95,8 +112,18 @@ class DallePost_Tool implements INode {
             {
                 label: 'Model',
                 name: 'model',
-                type: 'string',
-                default: 'dall-e-2',
+                type: 'options',
+                options: [
+                    {
+                        label: 'dall-e-3',
+                        name: 'dall-e-3'
+                    },
+                    {
+                        label: 'gpt-image-1',
+                        name: 'gpt-image-1'
+                    }
+                ],
+                default: 'dall-e-3',
                 description: 'The model to use for generating the image.'
             }
         ]
