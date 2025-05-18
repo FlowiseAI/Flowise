@@ -92,7 +92,7 @@ class Youtube_MCP implements INode {
             throw new Error('Missing Youtube API Key')
         }
 
-        const packagePath = getNodeModulesPackagePath('zubeid-youtube-mcp-server/dist/index.js')
+        const packagePath = getNodeModulesPackagePath('youtube-data-mcp-server/dist/index.js')
 
         const serverParams = {
             command: process.execPath,

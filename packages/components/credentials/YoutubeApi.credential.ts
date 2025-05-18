@@ -11,7 +11,8 @@ class YoutubeApi implements INodeCredential {
         this.label = 'Youtube API'
         this.name = 'youtubeApi'
         this.version = 1.0
-        this.description = 'Provide your Youtube API key'
+        this.description =
+            'Provide your Youtube API key more information <a target="_blank" href="https://developers.google.com/youtube/v3/getting-started">here</a>'
         this.inputs = [
             {
                 label: 'API Key',
