@@ -140,8 +140,12 @@ export const replaceBase64ImagesWithFileReferences = (
 ): BaseMessageLike[] => {
     // Create a deep copy to avoid mutating the original
     const updatedMessages = JSON.parse(JSON.stringify(messages))
-    let uniqueImagesIndex = 0
-    let pastImagesIndex = 0
+
+    // Track positions in replacement arrays
+    let pastMessageIndex = 0
+    let pastContentIndex = 0
+    let uniqueMessageIndex = 0
+    let uniqueContentIndex = 0
 
     for (let i = 0; i < updatedMessages.length; i++) {
         const message = updatedMessages[i]
@@ -149,27 +153,73 @@ export const replaceBase64ImagesWithFileReferences = (
             for (let j = 0; j < message.content.length; j++) {
                 const item = message.content[j]
                 if (item.type === 'image_url') {
-                    // First try to get a replacement from pastImageMessages
+                    // Try past images first
                     let replacement = null
 
-                    if (pastImagesIndex < pastImageMessages.length) {
-                        const pastMessage = pastImageMessages[pastImagesIndex] as BaseMessage | undefined
-                        if (pastMessage && Array.isArray(pastMessage.content) && pastMessage.content[j]) {
-                            replacement = pastMessage.content[j]
-                            pastImagesIndex++
+                    if (pastMessageIndex < pastImageMessages.length) {
+                        const pastMessage = pastImageMessages[pastMessageIndex] as BaseMessage | undefined
+                        if (pastMessage && Array.isArray(pastMessage.content)) {
+                            if (pastContentIndex < pastMessage.content.length) {
+                                replacement = pastMessage.content[pastContentIndex]
+                                pastContentIndex++
+
+                                // Move to next message if we've used all content in current one
+                                if (pastContentIndex >= pastMessage.content.length) {
+                                    pastMessageIndex++
+                                    pastContentIndex = 0
+                                }
+                            } else {
+                                // Current message has no more content, move to next
+                                pastMessageIndex++
+                                pastContentIndex = 0
+
+                                // Try again with the next message
+                                if (pastMessageIndex < pastImageMessages.length) {
+                                    const nextPastMessage = pastImageMessages[pastMessageIndex] as BaseMessage | undefined
+                                    if (nextPastMessage && Array.isArray(nextPastMessage.content) && nextPastMessage.content.length > 0) {
+                                        replacement = nextPastMessage.content[0]
+                                        pastContentIndex = 1
+                                    }
+                                }
+                            }
                         }
                     }
 
-                    // If no replacement found in pastImageMessages, try uniqueImageMessages
-                    if (!replacement && uniqueImagesIndex < uniqueImageMessages.length) {
-                        const uniqueMessage = uniqueImageMessages[uniqueImagesIndex] as BaseMessage | undefined
-                        if (uniqueMessage && Array.isArray(uniqueMessage.content) && uniqueMessage.content[j]) {
-                            replacement = uniqueMessage.content[j]
-                            uniqueImagesIndex++
+                    // Try unique images if no past image replacement found
+                    if (!replacement && uniqueMessageIndex < uniqueImageMessages.length) {
+                        const uniqueMessage = uniqueImageMessages[uniqueMessageIndex] as BaseMessage | undefined
+                        if (uniqueMessage && Array.isArray(uniqueMessage.content)) {
+                            if (uniqueContentIndex < uniqueMessage.content.length) {
+                                replacement = uniqueMessage.content[uniqueContentIndex]
+                                uniqueContentIndex++
+
+                                // Move to next message if we've used all content in current one
+                                if (uniqueContentIndex >= uniqueMessage.content.length) {
+                                    uniqueMessageIndex++
+                                    uniqueContentIndex = 0
+                                }
+                            } else {
+                                // Current message has no more content, move to next
+                                uniqueMessageIndex++
+                                uniqueContentIndex = 0
+
+                                // Try again with the next message
+                                if (uniqueMessageIndex < uniqueImageMessages.length) {
+                                    const nextUniqueMessage = uniqueImageMessages[uniqueMessageIndex] as BaseMessage | undefined
+                                    if (
+                                        nextUniqueMessage &&
+                                        Array.isArray(nextUniqueMessage.content) &&
+                                        nextUniqueMessage.content.length > 0
+                                    ) {
+                                        replacement = nextUniqueMessage.content[0]
+                                        uniqueContentIndex = 1
+                                    }
+                                }
+                            }
                         }
                     }
 
-                    // Apply the replacement if found
+                    // Apply replacement if found
                     if (replacement) {
                         message.content[j] = {
                             ...replacement
