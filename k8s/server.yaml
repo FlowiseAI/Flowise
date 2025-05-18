@@ -4,7 +4,7 @@ metadata:
   name: flowise
   namespace: xheal-prod
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: flowise
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: app
-          image: 050451365515.dkr.ecr.eu-central-1.amazonaws.com/xheal/flowise:latest
+          image: 050451365515.dkr.ecr.eu-central-1.amazonaws.com/xheal/flowise:v3
           command:
             - pnpm
           args:
@@ -71,6 +71,8 @@ spec:
                   key: s3_storage_secret_access_key
             - name: S3_STORAGE_REGION
               value: "eu-central-1"
+            - name: SECRETKEY_PATH
+              value: "/usr/src/packages/server"
             # - name: MODE
             #   value: "queue"
             # - name: QUEUE_NAME
@@ -86,13 +88,17 @@ spec:
             mountPath: /usr/src/packages/server/api.json
             subPath: "api.json"
             readOnly: false
+          - name: settings-keys-config
+            mountPath: /usr/src/packages/server/settings.json
+            subPath: "settings.json"
+            readOnly: true
           resources:
             limits:
               cpu: 2000m
-              memory: 4012Mi
+              memory: 3012Mi
             requests:
               cpu: 1000m
-              memory: 4012Mi
+              memory: 3012Mi
           readinessProbe:
             httpGet:
               path: /api/v1/ping
@@ -115,6 +121,9 @@ spec:
       - name: api-keys-config
         configMap:
           name: api-keys-config
+      - name: settings-keys-config
+        configMap:
+          name: settings-keys-config
       terminationGracePeriodSeconds: 360
 
 ---
