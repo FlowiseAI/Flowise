@@ -26,7 +26,7 @@
                 },
                 {
                     "label": "anthropic.claude-3.5-sonnet-20240620-v1:0",
-                    "name": "anthropic.claude-3-5-sonnet-20240620-v1:0",
+                    "name": "anthropic.claude-3.5-sonnet-20240620-v1:0",
                     "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5 - most intelligent model",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
@@ -669,6 +669,22 @@
             "name": "groqChat",
             "models": [
                 {
+                    "label": "meta-llama/llama-4-maverick-17b-128e-instruct",
+                    "name": "meta-llama/llama-4-maverick-17b-128e-instruct"
+                },
+                {
+                    "label": "meta-llama/llama-4-scout-17b-16e-instruct",
+                    "name": "meta-llama/llama-4-scout-17b-16e-instruct"
+                },
+                {
+                    "label": "coumpound-beta",
+                    "name": "compound-beta"
+                },
+                {
+                    "label": "compound-beta-mini",
+                    "name": "compound-beta-mini"
+                },
+                {
                     "label": "deepseek-r1-distill-llama-70b",
                     "name": "deepseek-r1-distill-llama-70b"
                 },
@@ -697,28 +713,12 @@
                     "name": "llama-3.2-90b-text-preview"
                 },
                 {
-                    "label": "llama-3.1-405b-reasoning",
-                    "name": "llama-3.1-405b-reasoning"
-                },
-                {
-                    "label": "llama-3.1-70b-versatile",
-                    "name": "llama-3.1-70b-versatile"
-                },
-                {
                     "label": "llama-3.1-8b-instant",
                     "name": "llama-3.1-8b-instant"
                 },
                 {
-                    "label": "llama3-groq-70b-8192-tool-use-preview",
-                    "name": "llama3-groq-70b-8192-tool-use-preview"
-                },
-                {
-                    "label": "llama3-groq-8b-8192-tool-use-preview",
-                    "name": "llama3-groq-8b-8192-tool-use-preview"
-                },
-                {
-                    "label": "gemma-7b-it",
-                    "name": "gemma-7b-it"
+                    "label": "gemma-2-9b-it",
+                    "name": "gemma-2-9b-it"
                 },
                 {
                     "label": "llama3-70b-8192",
@@ -729,16 +729,16 @@
                     "name": "llama3-8b-8192"
                 },
                 {
-                    "label": "mixtral-8x7b-32768",
-                    "name": "mixtral-8x7b-32768"
+                    "label": "mixtral-saba-24b",
+                    "name": "mixtral-saba-24b"
                 },
                 {
-                    "label": "meta-llama/llama-4-maverick-17b-128e-instruct",
-                    "name": "meta-llama/llama-4-maverick-17b-128e-instruct"
+                    "label": "qwen-qwq-32b",
+                    "name": "qwen-qwq-32b"
                 },
                 {
-                    "label": "meta-llama/llama-4-scout-17b-16e-instruct",
-                    "name": "meta-llama/llama-4-scout-17b-16e-instruct"
+                    "label": "allam-2-7b",
+                    "name": "allam-2-7b"
                 }
             ]
         },
@@ -970,6 +970,12 @@
                     "name": "gpt-3.5-turbo-16k-0613",
                     "input_cost": 0.000003,
                     "output_cost": 0.000004
+                },
+                {
+                    "label": "o4-mini",
+                    "name": "o4-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
                 }
             ]
         },
@@ -1069,67 +1075,138 @@
             ]
         },
         {
+            "name": "chatPerplexity",
+            "models": [
+                {
+                    "label": "sonar",
+                    "name": "sonar",
+                    "input_cost": 1e-6,
+                    "output_cost": 1e-6
+                },
+                {
+                    "label": "sonar-pro",
+                    "name": "sonar-pro",
+                    "input_cost": 3e-6,
+                    "output_cost": 1.5e-5
+                },
+                {
+                    "label": "sonar-reasoning",
+                    "name": "sonar-reasoning",
+                    "input_cost": 1e-6,
+                    "output_cost": 5e-6
+                },
+                {
+                    "label": "sonar-reasoning-pro",
+                    "name": "sonar-reasoning-pro",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "sonar-deep-research",
+                    "name": "sonar",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "r1-1776",
+                    "name": "r1-1776",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                }
+            ]
+        },
+        {
             "name": "chatMistralAI",
             "models": [
                 {
                     "label": "open-mistral-nemo",
-                    "name": "open-mistral-nemo"
+                    "name": "open-mistral-nemo",
+                    "input_cost": 0.00015,
+                    "output_cost": 0.00015
                 },
                 {
                     "label": "open-mistral-7b",
-                    "name": "open-mistral-7b"
+                    "name": "open-mistral-7b",
+                    "input_cost": 0.00025,
+                    "output_cost": 0.00025
                 },
                 {
                     "label": "mistral-tiny-2312",
-                    "name": "mistral-tiny-2312"
+                    "name": "mistral-tiny-2312",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "mistral-tiny",
-                    "name": "mistral-tiny"
+                    "name": "mistral-tiny",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "open-mixtral-8x7b",
-                    "name": "open-mixtral-8x7b"
+                    "name": "open-mixtral-8x7b",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "open-mixtral-8x22b",
-                    "name": "open-mixtral-8x22b"
+                    "name": "open-mixtral-8x22b",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
                 },
                 {
                     "label": "mistral-small-2312",
-                    "name": "mistral-small-2312"
+                    "name": "mistral-small-2312",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-small",
-                    "name": "mistral-small"
+                    "name": "mistral-small",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-small-2402",
-                    "name": "mistral-small-2402"
+                    "name": "mistral-small-2402",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-small-latest",
-                    "name": "mistral-small-latest"
+                    "name": "mistral-small-latest",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-medium-latest",
-                    "name": "mistral-medium-latest"
+                    "name": "mistral-medium-latest",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
                 },
                 {
                     "label": "mistral-medium-2312",
-                    "name": "mistral-medium-2312"
+                    "name": "mistral-medium-2312",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
                 },
                 {
                     "label": "mistral-medium",
-                    "name": "mistral-medium"
+                    "name": "mistral-medium",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
                 },
                 {
                     "label": "mistral-large-latest",
-                    "name": "mistral-large-latest"
+                    "name": "mistral-large-latest",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
                 },
                 {
                     "label": "mistral-large-2402",
-                    "name": "mistral-large-2402"
+                    "name": "mistral-large-2402",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
                 }
             ]
         },
@@ -1138,15 +1215,21 @@
             "models": [
                 {
                     "label": "mistral-tiny",
-                    "name": "mistral-tiny"
+                    "name": "mistral-tiny",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
                 },
                 {
                     "label": "mistral-small",
-                    "name": "mistral-small"
+                    "name": "mistral-small",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 },
                 {
                     "label": "mistral-medium",
-                    "name": "mistral-medium"
+                    "name": "mistral-medium",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
                 }
             ]
         }

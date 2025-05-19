@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "2.2.7-patch.1",
+    "version": "3.0.0",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -87,7 +87,7 @@
         "@grpc/grpc-js": "^1.10.10",
         "@langchain/core": "0.3.37",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
-        "openai": "4.82.0",
+        "openai": "4.96.0",
         "protobufjs": "7.4.0"
     },
     "eslintIgnore": [
