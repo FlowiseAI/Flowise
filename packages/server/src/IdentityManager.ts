@@ -259,7 +259,6 @@ export class IdentityManager {
 
     public async getFeaturesByPlan(subscriptionId: string, withoutCache: boolean = false) {
         if (this.isEnterprise()) {
-            // TODO: call engine to get feature flags when its not OFFLINE
             const features: Record<string, string> = {}
             for (const feature of ENTERPRISE_FEATURE_FLAGS) {
                 features[feature] = 'true'

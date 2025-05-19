@@ -142,7 +142,7 @@ class Jsonlines_DocumentLoaders implements INode {
                 if (!file) continue
                 const fileData = await getFileFromStorage(file, orgId, chatflowid)
                 const blob = new Blob([fileData])
-                const loader = new JSONLinesLoader(blob, pointer)
+                const loader = new JSONLinesLoader(blob, pointer, metadata)
 
                 if (textSplitter) {
                     let splittedDocs = await loader.load()
@@ -165,7 +165,7 @@ class Jsonlines_DocumentLoaders implements INode {
                 splitDataURI.pop()
                 const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
                 const blob = new Blob([bf])
-                const loader = new JSONLinesLoader(blob, pointer)
+                const loader = new JSONLinesLoader(blob, pointer, metadata)
 
                 if (textSplitter) {
                     let splittedDocs = await loader.load()

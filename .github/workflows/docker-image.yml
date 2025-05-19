@@ -78,7 +78,6 @@ jobs:
             # -------------------------
             # Build and push (conditional tags)
             # -------------------------
-            # TODO - change the tag when merged into open source
             - name: Build and push
               uses: docker/build-push-action@v5.3.0
               with:
@@ -89,4 +88,4 @@ jobs:
                   platforms: linux/amd64,linux/arm64
                   push: true
                   tags: |
-                      ${{ steps.defaults.outputs.registry == 'docker_hub' && format('flowiseai/flowise_enterprise:{0}', steps.defaults.outputs.tag_version) || format('{0}.dkr.ecr.{1}.amazonaws.com/flowise:{2}', secrets.AWS_ACCOUNT_ID, secrets.AWS_REGION, steps.defaults.outputs.tag_version) }}
+                      ${{ steps.defaults.outputs.registry == 'docker_hub' && format('flowiseai/flowise:{0}', steps.defaults.outputs.tag_version) || format('{0}.dkr.ecr.{1}.amazonaws.com/flowise:{2}', secrets.AWS_ACCOUNT_ID, secrets.AWS_REGION, steps.defaults.outputs.tag_version) }}
