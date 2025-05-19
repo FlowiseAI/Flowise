@@ -220,7 +220,9 @@ const EvalsEvaluation = () => {
             // Change to Notifstack
             enqueueSnackbar({
                 message: `Failed to create new evaluation: ${
-                    typeof error.response.data === 'object' ? error.response.data.message : error.response.data
+                    typeof createNewEvaluation.error.response?.data === 'object'
+                        ? createNewEvaluation.error.response.data.message
+                        : createNewEvaluation.error.response?.data || createNewEvaluation.error.message || 'Unknown error'
                 }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
@@ -557,7 +559,7 @@ function EvaluationRunRow(props) {
                             backgroundColor: getStatusColor(props.item.status),
                             borderRadius: '50%'
                         }}
-                        title={props.item.status === 'error' ? props.item.average_metrics.error : ''}
+                        title={props.item?.status === 'error' ? props.item?.average_metrics?.error : ''}
                     ></div>
                 </StyledTableCell>
                 <StyledTableCell>{props.item.name}</StyledTableCell>

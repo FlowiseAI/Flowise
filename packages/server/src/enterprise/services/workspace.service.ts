@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import { DataSource, EntityManager, In, QueryRunner } from 'typeorm'
+import { DataSource, EntityManager, In, IsNull, QueryRunner, UpdateResult } from 'typeorm'
 import { ApiKey } from '../../database/entities/ApiKey'
 import { Assistant } from '../../database/entities/Assistant'
 import { ChatFlow } from '../../database/entities/ChatFlow'
@@ -296,5 +296,32 @@ export class WorkspaceService {
         })
 
         return { message: GeneralSuccessMessage.UPDATED }
+    }
+
+    /**
+     * Updates all entities with null workspaceId to the specified workspaceId
+     * Used for migrating legacy data that was created before workspace implementation
+     * This function is guaranteed to return meaningful results with affected row counts
+     * @param queryRunner The TypeORM query runner to execute database operations
+     * @param workspaceId The target workspaceId to assign to records with null workspaceId
+     * @returns An array of update results, each containing the count of affected rows.
+     * The array will always contain results for each entity type in the following order:
+     * [ApiKey, Assistant, ChatFlow, Credential, CustomTemplate, Dataset, DocumentStore, Evaluation, Evaluator, Tool, Variable]
+     */
+    public async setNullWorkspaceId(queryRunner: QueryRunner, workspaceId: string): Promise<UpdateResult[]> {
+        return await Promise.all([
+            queryRunner.manager.update(ApiKey, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(Assistant, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(ChatFlow, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(Credential, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(CustomTemplate, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(Dataset, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(DocumentStore, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(Evaluation, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(Evaluator, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(Execution, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(Tool, { workspaceId: IsNull() }, { workspaceId }),
+            queryRunner.manager.update(Variable, { workspaceId: IsNull() }, { workspaceId })
+        ])
     }
 }

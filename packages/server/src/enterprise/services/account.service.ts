@@ -229,6 +229,8 @@ export class AccountService {
     private async saveRegisterAccount(data: AccountDTO) {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
+        const platform = this.identityManager.getPlatformType()
+        const ownerRole = await this.roleService.readGeneralRoleByName(GeneralRole.OWNER, queryRunner)
 
         try {
             data = await this.createRegisterAccount(data, queryRunner)
@@ -239,6 +241,13 @@ export class AccountService {
             data.organizationUser = await this.organizationUserService.saveOrganizationUser(data.organizationUser, queryRunner)
             data.workspace = await this.workspaceService.saveWorkspace(data.workspace, queryRunner)
             data.workspaceUser = await this.workspaceUserService.saveWorkspaceUser(data.workspaceUser, queryRunner)
+            if (
+                data.workspace.id &&
+                (platform === Platform.OPEN_SOURCE || platform === Platform.ENTERPRISE) &&
+                ownerRole.id === data.organizationUser.roleId
+            ) {
+                await this.workspaceService.setNullWorkspaceId(queryRunner, data.workspace.id)
+            }
             await queryRunner.commitTransaction()
 
             delete data.user.credential

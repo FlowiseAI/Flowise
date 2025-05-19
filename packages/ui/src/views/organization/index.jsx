@@ -102,7 +102,6 @@ const OrganizationSetupPage = () => {
     const loginApi = useApi(authApi.login)
     const registerAccountApi = useApi(accountApi.registerAccount)
     const getBasicAuthApi = useApi(accountApi.getBasicAuth)
-    const checkBasicAuthApi = useApi(accountApi.checkBasicAuth)
     const navigate = useNavigate()
 
     const getDefaultProvidersApi = useApi(loginMethodApi.getLoginMethods)
@@ -124,12 +123,12 @@ const OrganizationSetupPage = () => {
             // Check authentication first if required
             if (requiresAuthentication) {
                 try {
-                    const authResult = await checkBasicAuthApi.request({
+                    const authResult = await accountApi.checkBasicAuth({
                         username: existingUsername,
                         password: existingPassword
                     })
 
-                    if (!authResult || authResult.message !== 'Authentication successful') {
+                    if (!authResult || !authResult.data || authResult.data.message !== 'Authentication successful') {
                         setAuthError('Authentication failed. Please check your existing credentials.')
                         setLoading(false)
                         return
