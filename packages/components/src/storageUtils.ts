@@ -276,33 +276,171 @@ export const getFileFromStorage = async (file: string, ...paths: string[]): Prom
             Key = Key.substring(1)
         }
 
-        const getParams = {
-            Bucket,
-            Key
-        }
+        try {
+            const getParams = {
+                Bucket,
+                Key
+            }
 
-        const response = await s3Client.send(new GetObjectCommand(getParams))
-        const body = response.Body
-        if (body instanceof Readable) {
-            const streamToString = await body.transformToString('base64')
-            if (streamToString) {
-                return Buffer.from(streamToString, 'base64')
+            const response = await s3Client.send(new GetObjectCommand(getParams))
+            const body = response.Body
+            if (body instanceof Readable) {
+                const streamToString = await body.transformToString('base64')
+                if (streamToString) {
+                    return Buffer.from(streamToString, 'base64')
+                }
+            }
+            // @ts-ignore
+            const buffer = Buffer.concat(response.Body.toArray())
+            return buffer
+        } catch (error) {
+            // Fallback: Check if file exists without the first path element (likely orgId)
+            if (paths.length > 1) {
+                const fallbackPaths = paths.slice(1)
+                let fallbackKey = fallbackPaths.reduce((acc, cur) => acc + '/' + cur, '') + '/' + sanitizedFilename
+                if (fallbackKey.startsWith('/')) {
+                    fallbackKey = fallbackKey.substring(1)
+                }
+
+                try {
+                    const fallbackParams = {
+                        Bucket,
+                        Key: fallbackKey
+                    }
+                    const fallbackResponse = await s3Client.send(new GetObjectCommand(fallbackParams))
+                    const fallbackBody = fallbackResponse.Body
+
+                    // Get the file content
+                    let fileContent: Buffer
+                    if (fallbackBody instanceof Readable) {
+                        const streamToString = await fallbackBody.transformToString('base64')
+                        if (streamToString) {
+                            fileContent = Buffer.from(streamToString, 'base64')
+                        } else {
+                            // @ts-ignore
+                            fileContent = Buffer.concat(fallbackBody.toArray())
+                        }
+                    } else {
+                        // @ts-ignore
+                        fileContent = Buffer.concat(fallbackBody.toArray())
+                    }
+
+                    // Move to correct location with orgId
+                    const putObjCmd = new PutObjectCommand({
+                        Bucket,
+                        Key,
+                        Body: fileContent
+                    })
+                    await s3Client.send(putObjCmd)
+
+                    // Delete the old file
+                    await s3Client.send(
+                        new DeleteObjectsCommand({
+                            Bucket,
+                            Delete: {
+                                Objects: [{ Key: fallbackKey }],
+                                Quiet: false
+                            }
+                        })
+                    )
+
+                    // Check if the directory is empty and delete recursively if needed
+                    if (fallbackPaths.length > 0) {
+                        await _cleanEmptyS3Folders(s3Client, Bucket, fallbackPaths[0])
+                    }
+
+                    return fileContent
+                } catch (fallbackError) {
+                    // Throw the original error since the fallback also failed
+                    throw error
+                }
+            } else {
+                throw error
             }
         }
-        // @ts-ignore
-        const buffer = Buffer.concat(response.Body.toArray())
-        return buffer
     } else if (storageType === 'gcs') {
         const { bucket } = getGcsClient()
         const normalizedPaths = paths.map((p) => p.replace(/\\/g, '/'))
         const normalizedFilename = sanitizedFilename.replace(/\\/g, '/')
         const filePath = [...normalizedPaths, normalizedFilename].join('/')
-        const file = bucket.file(filePath)
-        const [buffer] = await file.download()
-        return buffer
+
+        try {
+            const file = bucket.file(filePath)
+            const [buffer] = await file.download()
+            return buffer
+        } catch (error) {
+            // Fallback: Check if file exists without the first path element (likely orgId)
+            if (normalizedPaths.length > 1) {
+                const fallbackPaths = normalizedPaths.slice(1)
+                const fallbackPath = [...fallbackPaths, normalizedFilename].join('/')
+
+                try {
+                    const fallbackFile = bucket.file(fallbackPath)
+                    const [buffer] = await fallbackFile.download()
+
+                    // Move to correct location with orgId
+                    const file = bucket.file(filePath)
+                    await new Promise<void>((resolve, reject) => {
+                        file.createWriteStream()
+                            .on('error', (err) => reject(err))
+                            .on('finish', () => resolve())
+                            .end(buffer)
+                    })
+
+                    // Delete the old file
+                    await fallbackFile.delete()
+
+                    // Check if the directory is empty and delete recursively if needed
+                    if (fallbackPaths.length > 0) {
+                        await _cleanEmptyGCSFolders(bucket, fallbackPaths[0])
+                    }
+
+                    return buffer
+                } catch (fallbackError) {
+                    // Throw the original error since the fallback also failed
+                    throw error
+                }
+            } else {
+                throw error
+            }
+        }
     } else {
-        const fileInStorage = path.join(getStoragePath(), ...paths.map(_sanitizeFilename), sanitizedFilename)
-        return fs.readFileSync(fileInStorage)
+        try {
+            const fileInStorage = path.join(getStoragePath(), ...paths.map(_sanitizeFilename), sanitizedFilename)
+            return fs.readFileSync(fileInStorage)
+        } catch (error) {
+            // Fallback: Check if file exists without the first path element (likely orgId)
+            if (paths.length > 1) {
+                const fallbackPaths = paths.slice(1)
+                const fallbackPath = path.join(getStoragePath(), ...fallbackPaths.map(_sanitizeFilename), sanitizedFilename)
+
+                if (fs.existsSync(fallbackPath)) {
+                    // Create directory if it doesn't exist
+                    const targetPath = path.join(getStoragePath(), ...paths.map(_sanitizeFilename), sanitizedFilename)
+                    const dir = path.dirname(targetPath)
+                    if (!fs.existsSync(dir)) {
+                        fs.mkdirSync(dir, { recursive: true })
+                    }
+
+                    // Copy file to correct location with orgId
+                    fs.copyFileSync(fallbackPath, targetPath)
+
+                    // Delete the old file
+                    fs.unlinkSync(fallbackPath)
+
+                    // Clean up empty directories recursively
+                    if (fallbackPaths.length > 0) {
+                        _cleanEmptyLocalFolders(path.join(getStoragePath(), ...fallbackPaths.map(_sanitizeFilename).slice(0, -1)))
+                    }
+
+                    return fs.readFileSync(targetPath)
+                } else {
+                    throw error
+                }
+            } else {
+                throw error
+            }
+        }
     }
 }
 
@@ -602,20 +740,105 @@ export const streamStorageFile = async (
             Bucket,
             Key
         }
-        const response = await s3Client.send(new GetObjectCommand(getParams))
-        const body = response.Body
-        if (body instanceof Readable) {
-            const blob = await body.transformToByteArray()
-            return Buffer.from(blob)
+        try {
+            const response = await s3Client.send(new GetObjectCommand(getParams))
+            const body = response.Body
+            if (body instanceof Readable) {
+                const blob = await body.transformToByteArray()
+                return Buffer.from(blob)
+            }
+        } catch (error) {
+            // Fallback: Check if file exists without orgId
+            const fallbackKey = chatflowId + '/' + chatId + '/' + sanitizedFilename
+            try {
+                const fallbackParams = {
+                    Bucket,
+                    Key: fallbackKey
+                }
+                const fallbackResponse = await s3Client.send(new GetObjectCommand(fallbackParams))
+                const fallbackBody = fallbackResponse.Body
+
+                // If found, copy to correct location with orgId
+                if (fallbackBody) {
+                    // Get the file content
+                    let fileContent: Buffer
+                    if (fallbackBody instanceof Readable) {
+                        const blob = await fallbackBody.transformToByteArray()
+                        fileContent = Buffer.from(blob)
+                    } else {
+                        // @ts-ignore
+                        fileContent = Buffer.concat(fallbackBody.toArray())
+                    }
+
+                    // Move to correct location with orgId
+                    const putObjCmd = new PutObjectCommand({
+                        Bucket,
+                        Key,
+                        Body: fileContent
+                    })
+                    await s3Client.send(putObjCmd)
+
+                    // Delete the old file
+                    await s3Client.send(
+                        new DeleteObjectsCommand({
+                            Bucket,
+                            Delete: {
+                                Objects: [{ Key: fallbackKey }],
+                                Quiet: false
+                            }
+                        })
+                    )
+
+                    // Check if the directory is empty and delete recursively if needed
+                    await _cleanEmptyS3Folders(s3Client, Bucket, chatflowId)
+
+                    return fileContent
+                }
+            } catch (fallbackError) {
+                // File not found in fallback location either
+                throw new Error(`File ${fileName} not found`)
+            }
         }
     } else if (storageType === 'gcs') {
         const { bucket } = getGcsClient()
         const normalizedChatflowId = chatflowId.replace(/\\/g, '/')
         const normalizedChatId = chatId.replace(/\\/g, '/')
         const normalizedFilename = sanitizedFilename.replace(/\\/g, '/')
-        const filePath = `${normalizedChatflowId}/${normalizedChatId}/${normalizedFilename}`
-        const [buffer] = await bucket.file(filePath).download()
-        return buffer
+        const filePath = `${orgId}/${normalizedChatflowId}/${normalizedChatId}/${normalizedFilename}`
+
+        try {
+            const [buffer] = await bucket.file(filePath).download()
+            return buffer
+        } catch (error) {
+            // Fallback: Check if file exists without orgId
+            const fallbackPath = `${normalizedChatflowId}/${normalizedChatId}/${normalizedFilename}`
+            try {
+                const fallbackFile = bucket.file(fallbackPath)
+                const [buffer] = await fallbackFile.download()
+
+                // If found, copy to correct location with orgId
+                if (buffer) {
+                    const file = bucket.file(filePath)
+                    await new Promise<void>((resolve, reject) => {
+                        file.createWriteStream()
+                            .on('error', (err) => reject(err))
+                            .on('finish', () => resolve())
+                            .end(buffer)
+                    })
+
+                    // Delete the old file
+                    await fallbackFile.delete()
+
+                    // Check if the directory is empty and delete recursively if needed
+                    await _cleanEmptyGCSFolders(bucket, normalizedChatflowId)
+
+                    return buffer
+                }
+            } catch (fallbackError) {
+                // File not found in fallback location either
+                throw new Error(`File ${fileName} not found`)
+            }
+        }
     } else {
         const filePath = path.join(getStoragePath(), orgId, chatflowId, chatId, sanitizedFilename)
         //raise error if file path is not absolute
@@ -628,8 +851,137 @@ export const streamStorageFile = async (
         if (fs.existsSync(filePath)) {
             return fs.createReadStream(filePath)
         } else {
-            throw new Error(`File ${fileName} not found`)
+            // Fallback: Check if file exists without orgId
+            const fallbackPath = path.join(getStoragePath(), chatflowId, chatId, sanitizedFilename)
+
+            if (fs.existsSync(fallbackPath)) {
+                // Create directory if it doesn't exist
+                const dir = path.dirname(filePath)
+                if (!fs.existsSync(dir)) {
+                    fs.mkdirSync(dir, { recursive: true })
+                }
+
+                // Copy file to correct location with orgId
+                fs.copyFileSync(fallbackPath, filePath)
+
+                // Delete the old file
+                fs.unlinkSync(fallbackPath)
+
+                // Clean up empty directories recursively
+                _cleanEmptyLocalFolders(path.join(getStoragePath(), chatflowId, chatId))
+
+                return fs.createReadStream(filePath)
+            } else {
+                throw new Error(`File ${fileName} not found`)
+            }
         }
+    }
+}
+
+/**
+ * Check if a local directory is empty and delete it if so,
+ * then check parent directories recursively
+ */
+const _cleanEmptyLocalFolders = (dirPath: string) => {
+    try {
+        // Stop if we reach the storage root
+        if (dirPath === getStoragePath()) return
+
+        // Check if directory exists
+        if (!fs.existsSync(dirPath)) return
+
+        // Read directory contents
+        const files = fs.readdirSync(dirPath)
+
+        // If directory is empty, delete it and check parent
+        if (files.length === 0) {
+            fs.rmdirSync(dirPath)
+            // Recursively check parent directory
+            _cleanEmptyLocalFolders(path.dirname(dirPath))
+        }
+    } catch (error) {
+        // Ignore errors during cleanup
+        console.error('Error cleaning empty folders:', error)
+    }
+}
+
+/**
+ * Check if an S3 "folder" is empty and delete it recursively
+ */
+const _cleanEmptyS3Folders = async (s3Client: S3Client, Bucket: string, prefix: string) => {
+    try {
+        // Skip if prefix is empty
+        if (!prefix) return
+
+        // List objects in this "folder"
+        const listCmd = new ListObjectsV2Command({
+            Bucket,
+            Prefix: prefix + '/',
+            Delimiter: '/'
+        })
+
+        const response = await s3Client.send(listCmd)
+
+        // If folder is empty (only contains common prefixes but no files)
+        if (
+            (response.Contents?.length === 0 || !response.Contents) &&
+            (response.CommonPrefixes?.length === 0 || !response.CommonPrefixes)
+        ) {
+            // Delete the folder marker if it exists
+            await s3Client.send(
+                new DeleteObjectsCommand({
+                    Bucket,
+                    Delete: {
+                        Objects: [{ Key: prefix + '/' }],
+                        Quiet: true
+                    }
+                })
+            )
+
+            // Recursively check parent folder
+            const parentPrefix = prefix.substring(0, prefix.lastIndexOf('/'))
+            if (parentPrefix) {
+                await _cleanEmptyS3Folders(s3Client, Bucket, parentPrefix)
+            }
+        }
+    } catch (error) {
+        // Ignore errors during cleanup
+        console.error('Error cleaning empty S3 folders:', error)
+    }
+}
+
+/**
+ * Check if a GCS "folder" is empty and delete recursively if so
+ */
+const _cleanEmptyGCSFolders = async (bucket: any, prefix: string) => {
+    try {
+        // Skip if prefix is empty
+        if (!prefix) return
+
+        // List files with this prefix
+        const [files] = await bucket.getFiles({
+            prefix: prefix + '/',
+            delimiter: '/'
+        })
+
+        // If folder is empty (no files)
+        if (files.length === 0) {
+            // Delete the folder marker if it exists
+            try {
+                await bucket.file(prefix + '/').delete()
+            } catch (err) {
+                // Folder marker might not exist, ignore
+            }
+
+            // Recursively check parent folder
+            const parentPrefix = prefix.substring(0, prefix.lastIndexOf('/'))
+            if (parentPrefix) {
+                await _cleanEmptyGCSFolders(bucket, parentPrefix)
+            }
+        }
+    } catch (error) {
+        // Ignore errors during cleanup
+        console.error('Error cleaning empty GCS folders:', error)
     }
 }
 
