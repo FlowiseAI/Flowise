@@ -1,15 +1,15 @@
-import { DeleteResult, FindOptionsWhere } from 'typeorm'
-import { StatusCodes } from 'http-status-codes'
-import { ChatMessageRatingType, ChatType, IChatMessage, MODE } from '../../Interface'
-import { utilGetChatMessage } from '../../utils/getChatMessage'
-import { utilAddChatMessage } from '../../utils/addChatMesage'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { removeFilesFromStorage } from 'flowise-components'
-import logger from '../../utils/logger'
+import { StatusCodes } from 'http-status-codes'
+import { DeleteResult, FindOptionsWhere } from 'typeorm'
 import { ChatMessage } from '../../database/entities/ChatMessage'
+import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { ChatMessageRatingType, ChatType, IChatMessage, MODE } from '../../Interface'
+import { utilAddChatMessage } from '../../utils/addChatMesage'
+import { utilGetChatMessage } from '../../utils/getChatMessage'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import logger from '../../utils/logger'
 
 // Add chatmessages for chatflowid
 const createChatMessage = async (chatMessage: Partial<IChatMessage>) => {
@@ -118,6 +118,7 @@ const removeAllChatMessages = async (
                 logger.error(`[server]: Error deleting file storage for chatflow ${chatflowid}, chatId ${chatId}: ${e}`)
             }
         }
+
         const dbResponse = await appServer.AppDataSource.getRepository(ChatMessage).delete(deleteOptions)
         return dbResponse
     } catch (error) {
@@ -136,6 +137,10 @@ const removeChatMessagesByMessageIds = async (
     try {
         const appServer = getRunningExpressApp()
 
+        // Get messages before deletion to check for executionId
+        const messages = await appServer.AppDataSource.getRepository(ChatMessage).findByIds(messageIds)
+        const executionIds = messages.map((msg) => msg.executionId).filter(Boolean)
+
         for (const [composite_key] of chatIdMap) {
             const [chatId] = composite_key.split('_')
 
@@ -145,6 +150,11 @@ const removeChatMessagesByMessageIds = async (
 
             // Delete all uploads corresponding to this chatflow/chatId
             await removeFilesFromStorage(chatflowid, chatId)
+        }
+
+        // Delete executions if they exist
+        if (executionIds.length > 0) {
+            await appServer.AppDataSource.getRepository('Execution').delete(executionIds)
         }
 
         const dbResponse = await appServer.AppDataSource.getRepository(ChatMessage).delete(messageIds)
@@ -178,11 +188,23 @@ const abortChatMessage = async (chatId: string, chatflowid: string) => {
     }
 }
 
+async function getAllMessages(): Promise<ChatMessage[]> {
+    const appServer = getRunningExpressApp()
+    return await appServer.AppDataSource.getRepository(ChatMessage).find()
+}
+
+async function getAllMessagesFeedback(): Promise<ChatMessageFeedback[]> {
+    const appServer = getRunningExpressApp()
+    return await appServer.AppDataSource.getRepository(ChatMessageFeedback).find()
+}
+
 export default {
     createChatMessage,
     getAllChatMessages,
     getAllInternalChatMessages,
     removeAllChatMessages,
     removeChatMessagesByMessageIds,
-    abortChatMessage
+    abortChatMessage,
+    getAllMessages,
+    getAllMessagesFeedback
 }

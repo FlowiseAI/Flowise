@@ -224,7 +224,7 @@ class OpenAIAssistant_Agents implements INode {
         const openai = new OpenAI({ apiKey: openAIApiKey })
 
         // Start analytics
-        const analyticHandlers = new AnalyticHandler(nodeData, options)
+        const analyticHandlers = AnalyticHandler.getInstance(nodeData, options)
         await analyticHandlers.init()
         const parentIds = await analyticHandlers.onChainStart('OpenAIAssistant', input)
 
@@ -743,7 +743,7 @@ class OpenAIAssistant_Agents implements INode {
                     state = await promise(threadId, newRunThread.id)
                 } else {
                     const errMsg = `Error processing thread: ${state}, Thread ID: ${threadId}`
-                    await analyticHandlers.onChainError(parentIds, errMsg)
+                    await analyticHandlers.onChainError(parentIds, errMsg, true)
                     throw new Error(errMsg)
                 }
             }

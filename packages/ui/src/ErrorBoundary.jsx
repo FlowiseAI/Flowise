@@ -16,7 +16,7 @@ const ErrorBoundary = ({ error }) => {
             <Stack flexDirection='column' sx={{ alignItems: 'center', gap: 3 }}>
                 <Stack flexDirection='column' sx={{ alignItems: 'center', gap: 1 }}>
                     <Typography variant='h2'>Oh snap!</Typography>
-                    <Typography variant='h3'>The following error occured when loading this page.</Typography>
+                    <Typography variant='h3'>The following error occurred when loading this page.</Typography>
                 </Stack>
                 <Card variant='outlined'>
                     <Box sx={{ position: 'relative', px: 2, py: 3 }}>
@@ -27,7 +27,7 @@ const ErrorBoundary = ({ error }) => {
                         >
                             <IconCopy />
                         </IconButton>
-                        <pre style={{ margin: 0 }}>
+                        <pre style={{ margin: 0, overflowWrap: 'break-word', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
                             <code>{`Status: ${error.response.status}`}</code>
                             <br />
                             <code>{error.response.data.message}</code>

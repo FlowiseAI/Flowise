@@ -54,7 +54,7 @@ const ViewHeader = ({
                     <Box sx={{ display: 'flex', alignItems: 'start', flexDirection: 'column' }}>
                         <Typography
                             sx={{
-                                fontSize: '2rem',
+                                fontSize: '1.8rem',
                                 fontWeight: 600,
                                 display: '-webkit-box',
                                 WebkitLineClamp: 3,

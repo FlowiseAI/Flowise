@@ -16,6 +16,7 @@ import { ICommonObject } from 'flowise-components'
 import logger from '../../utils/logger'
 import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
 import { INPUT_PARAMS_TYPE } from '../../utils/constants'
+import { validate } from 'uuid'
 
 const createAssistant = async (requestBody: any): Promise<Assistant> => {
     try {
@@ -339,6 +340,12 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
 
 const importAssistants = async (newAssistants: Partial<Assistant>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
+        for (const data of newAssistants) {
+            if (data.id && !validate(data.id)) {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: importAssistants - invalid id!`)
+            }
+        }
+
         const appServer = getRunningExpressApp()
         const repository = queryRunner ? queryRunner.manager.getRepository(Assistant) : appServer.AppDataSource.getRepository(Assistant)
 
@@ -426,9 +433,10 @@ const getDocumentStores = async (): Promise<any> => {
 const getTools = async (): Promise<any> => {
     try {
         const tools = await nodesService.getAllNodesForCategory('Tools')
+        const mcpTools = await nodesService.getAllNodesForCategory('Tools (MCP)')
 
         // filter out those tools that input params type are not in the list
-        const filteredTools = tools.filter((tool) => {
+        const filteredTools = [...tools, ...mcpTools].filter((tool) => {
             const inputs = tool.inputs || []
             return inputs.every((input) => INPUT_PARAMS_TYPE.includes(input.type))
         })
