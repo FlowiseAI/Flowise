@@ -259,7 +259,9 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         const handleMessage = (event) => {
             if (event.data?.type === 'AUTH_SUCCESS' && event.data.user) {
                 setCredentialData(event.data.user)
-
+                if (!name) {
+                    setName(`${event.data.user.fullName} (${event.data.user.email})`)
+                }
                 // Show success message
                 enqueueSnackbar({
                     message: 'Successfully authenticated with Google',
@@ -372,11 +374,6 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                         />
                     </Box>
                 )}
-                {componentCredential &&
-                    componentCredential.inputs &&
-                    componentCredential.inputs.map((inputParam, index) => (
-                        <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />
-                    ))}
                 {componentCredential && (
                     <GoogleAuthButton
                         componentCredential={componentCredential}
@@ -385,6 +382,12 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                         baseURL={baseURL}
                     />
                 )}
+                {componentCredential &&
+                    componentCredential.inputs &&
+                    componentCredential.inputs.map((inputParam, index) => (
+                        <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />
+                    ))}
+
                 <Box sx={{ p: 2 }}>
                     <Typography variant='h4' sx={{ mb: 1 }}>
                         Credential visibility
@@ -421,11 +424,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             </DialogContent>
             <DialogActions>
                 <StyledButton
-                    disabled={
-                        componentCredential.name === 'googleOAuth'
-                            ? !(credentialData && Object.keys(credentialData).length > 0 && name)
-                            : !name
-                    }
+                    disabled={!name}
                     variant='contained'
                     onClick={() => (dialogProps.type === 'ADD' ? addNewCredential() : saveCredential())}
                 >

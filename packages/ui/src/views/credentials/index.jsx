@@ -534,6 +534,7 @@ const Credentials = () => {
                 onCredentialSelected={onCredentialSelected}
             ></CredentialListDialog>
             <AddEditCredentialDialog
+                key={specificCredentialDialogProps.name}
                 show={showSpecificCredentialDialog}
                 dialogProps={specificCredentialDialogProps}
                 onCancel={() => setShowSpecificCredentialDialog(false)}
