@@ -5,7 +5,7 @@
 # docker run -d -p 3000:3000 flowise
 
 FROM node:20-alpine
-RUN apk add --update libc6-compat python3 make g++
+RUN apk add --update libc6-compat python3 make g++ openssl-dev
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev
 
