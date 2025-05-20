@@ -123,7 +123,7 @@ async function testFireCrawl() {
         console.error('Extraction Error:', error)
     }
 
-    // // Test 4: Get Extract Status
+    // Test 4: Get Extract Status
     console.log('\n=== Testing Get Extract Status ===')
     try {
         const statusLoader = new FireCrawlLoader({
@@ -141,7 +141,7 @@ async function testFireCrawl() {
 }
 
 // Run the tests
-testFireCrawl().catch((error) => {
-    console.error('Fatal error:', error)
-    process.exit(1)
-})
+// testFireCrawl().catch((error) => {
+//     console.error('Fatal error:', error)
+//     process.exit(1)
+// })

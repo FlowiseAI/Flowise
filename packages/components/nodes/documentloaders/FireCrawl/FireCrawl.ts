@@ -5,7 +5,6 @@ import { INode, INodeData, INodeParams, ICommonObject, INodeOutputsValue } from 
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import axios, { AxiosResponse, AxiosRequestHeaders } from 'axios'
 import { z } from 'zod'
-import { zodToJsonSchema } from 'zod-to-json-schema'
 
 // FirecrawlApp interfaces
 interface FirecrawlAppConfig {
@@ -48,6 +47,7 @@ interface CrawlResponse {
     id: string
     url: string
     error?: string
+    data?: FirecrawlDocument
 }
 
 interface CrawlStatusResponse {
@@ -87,14 +87,17 @@ interface ExtractRequest {
     includeSubdomains?: boolean
     showSources?: boolean
     scrapeOptions?: {
-        formats: Format[]
+        formats?: string[]
         onlyMainContent?: boolean
-        includeTags?: string[]
-        excludeTags?: string[]
+        includeTags?: string | string[]
+        excludeTags?: string | string[]
         mobile?: boolean
         skipTlsVerification?: boolean
         timeout?: number
-        [key: string]: any
+        jsonOptions?: {
+            schema?: Record<string, any>
+            prompt?: string
+        }
     }
 }
 
@@ -120,34 +123,70 @@ class FirecrawlApp {
 
     async scrapeUrl(url: string, params: Params | null = null): Promise<ScrapeResponse> {
         const headers = this.prepareHeaders()
-        let jsonData: Params = { url, ...params }
-        if (params?.extractorOptions?.extractionSchema) {
-            let schema = params.extractorOptions.extractionSchema
-            if (schema instanceof z.ZodSchema) {
-                schema = zodToJsonSchema(schema)
+
+        // Create a clean payload with only valid parameters
+        const validParams: any = {
+            url,
+            formats: ['markdown'],
+            onlyMainContent: true
+        }
+
+        // Add optional parameters if they exist
+        if (params?.scrapeOptions) {
+            if (params.scrapeOptions.includeTags) {
+                validParams.includeTags = Array.isArray(params.scrapeOptions.includeTags)
+                    ? params.scrapeOptions.includeTags
+                    : params.scrapeOptions.includeTags.split(',')
             }
-            jsonData = {
-                ...jsonData,
-                extractorOptions: {
-                    ...params.extractorOptions,
-                    extractionSchema: schema,
-                    mode: params.extractorOptions.mode || 'llm-extraction'
-                }
+            if (params.scrapeOptions.excludeTags) {
+                validParams.excludeTags = Array.isArray(params.scrapeOptions.excludeTags)
+                    ? params.scrapeOptions.excludeTags
+                    : params.scrapeOptions.excludeTags.split(',')
+            }
+            if (params.scrapeOptions.mobile !== undefined) {
+                validParams.mobile = params.scrapeOptions.mobile
+            }
+            if (params.scrapeOptions.skipTlsVerification !== undefined) {
+                validParams.skipTlsVerification = params.scrapeOptions.skipTlsVerification
+            }
+            if (params.scrapeOptions.timeout) {
+                validParams.timeout = params.scrapeOptions.timeout
             }
         }
+
+        // Add JSON options if they exist
+        if (params?.extractorOptions) {
+            validParams.jsonOptions = {
+                schema: params.extractorOptions.extractionSchema,
+                prompt: params.extractorOptions.extractionPrompt
+            }
+        }
+
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/scrape', jsonData, headers)
+            if (process.env.DEBUG === 'true') console.log('Firecrawl: Scraping URL with params:', { url, params: validParams })
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/scrape', validParams, headers)
             if (response.status === 200) {
                 const responseData = response.data
                 if (responseData.success) {
+                    if (process.env.DEBUG === 'true') console.log('Firecrawl: Scrape successful')
                     return responseData
                 } else {
+                    if (process.env.DEBUG === 'true') console.error('Firecrawl: Scrape failed with error:', responseData.error)
                     throw new Error(`Failed to scrape URL. Error: ${responseData.error}`)
                 }
             } else {
+                if (process.env.DEBUG === 'true')
+                    console.error(
+                        'Firecrawl: Scrape failed with status:',
+                        response.status,
+                        'Response:',
+                        JSON.stringify(response.data, null, 2)
+                    )
                 this.handleError(response, 'scrape URL')
             }
         } catch (error: any) {
+            if (process.env.DEBUG === 'true')
+                console.error('Firecrawl: Scrape error:', error.message, 'Response:', JSON.stringify(error.response?.data, null, 2))
             throw new Error(error.message)
         }
         return { success: false, error: 'Internal server error.' }
@@ -161,28 +200,118 @@ class FirecrawlApp {
         idempotencyKey?: string
     ): Promise<CrawlResponse | CrawlStatusResponse> {
         const headers = this.prepareHeaders(idempotencyKey)
-        let jsonData: Params = { url, ...params }
+
+        // Create a clean payload with only valid parameters
+        const validParams: any = {
+            url
+        }
+
+        // Add scrape options with only non-empty values
+        const scrapeOptions: any = {
+            formats: ['markdown'],
+            onlyMainContent: true
+        }
+
+        // Add crawl-specific parameters if they exist and are not empty
+        if (params) {
+            const validCrawlParams = [
+                'excludePaths',
+                'includePaths',
+                'maxDepth',
+                'maxDiscoveryDepth',
+                'ignoreSitemap',
+                'ignoreQueryParameters',
+                'limit',
+                'allowBackwardLinks',
+                'allowExternalLinks',
+                'delay'
+            ]
+
+            validCrawlParams.forEach((param) => {
+                if (params[param] !== undefined && params[param] !== null && params[param] !== '') {
+                    validParams[param] = params[param]
+                }
+            })
+        }
+
+        // Add scrape options if they exist and are not empty
+        if (params?.scrapeOptions) {
+            if (params.scrapeOptions.includeTags) {
+                const includeTags = Array.isArray(params.scrapeOptions.includeTags)
+                    ? params.scrapeOptions.includeTags
+                    : params.scrapeOptions.includeTags.split(',')
+                if (includeTags.length > 0) {
+                    scrapeOptions.includeTags = includeTags
+                }
+            }
+
+            if (params.scrapeOptions.excludeTags) {
+                const excludeTags = Array.isArray(params.scrapeOptions.excludeTags)
+                    ? params.scrapeOptions.excludeTags
+                    : params.scrapeOptions.excludeTags.split(',')
+                if (excludeTags.length > 0) {
+                    scrapeOptions.excludeTags = excludeTags
+                }
+            }
+
+            const validScrapeParams = ['mobile', 'skipTlsVerification', 'timeout']
+
+            validScrapeParams.forEach((param) => {
+                if (params.scrapeOptions[param] !== undefined && params.scrapeOptions[param] !== null) {
+                    scrapeOptions[param] = params.scrapeOptions[param]
+                }
+            })
+        }
+
+        // Add JSON options if they exist and are not empty
+        if (params?.extractorOptions?.extractionSchema || params?.extractorOptions?.extractionPrompt) {
+            scrapeOptions.jsonOptions = {}
+            if (params.extractorOptions.extractionSchema) {
+                scrapeOptions.jsonOptions.schema = params.extractorOptions.extractionSchema
+            }
+            if (params.extractorOptions.extractionPrompt) {
+                scrapeOptions.jsonOptions.prompt = params.extractorOptions.extractionPrompt
+            }
+        }
+
+        // Only add scrapeOptions if it has more than just the default values
+        if (Object.keys(scrapeOptions).length > 2) {
+            validParams.scrapeOptions = scrapeOptions
+        }
+
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/crawl', jsonData, headers)
+            if (process.env.DEBUG === 'true') console.log('Firecrawl: Crawling URL with params:', { url, params: validParams })
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/crawl', validParams, headers)
             if (response.status === 200) {
                 const crawlResponse = response.data as CrawlResponse
                 if (!crawlResponse.success) {
+                    if (process.env.DEBUG === 'true') console.error('Firecrawl: Crawl request failed:', crawlResponse.error)
                     throw new Error(`Crawl request failed: ${crawlResponse.error || 'Unknown error'}`)
                 }
 
                 if (waitUntilDone) {
+                    if (process.env.DEBUG === 'true') console.log('Firecrawl: Waiting for crawl job to complete')
                     return this.monitorJobStatus(crawlResponse.id, headers, pollInterval)
                 } else {
+                    if (process.env.DEBUG === 'true') console.log('Firecrawl: Crawl job started successfully')
                     return crawlResponse
                 }
             } else {
+                if (process.env.DEBUG === 'true')
+                    console.error(
+                        'Firecrawl: Crawl failed with status:',
+                        response.status,
+                        'Response:',
+                        JSON.stringify(response.data, null, 2)
+                    )
                 this.handleError(response, 'start crawl job')
             }
         } catch (error: any) {
+            if (process.env.DEBUG === 'true')
+                console.error('Firecrawl: Crawl error:', error.message, 'Response:', JSON.stringify(error.response?.data, null, 2))
             if (error.response?.data?.error) {
                 throw new Error(`Crawl failed: ${error.response.data.error}`)
             }
-
             throw new Error(`Crawl failed: ${error.message}`)
         }
 
@@ -195,8 +324,85 @@ class FirecrawlApp {
         pollInterval: number = 2
     ): Promise<ExtractResponse | ExtractStatusResponse> {
         const headers = this.prepareHeaders()
+
+        // Create a clean payload with only valid parameters
+        const validParams: any = {
+            urls: request.urls
+        }
+
+        // Add optional parameters if they exist and are not empty
+        if (request.prompt) {
+            validParams.prompt = request.prompt
+        }
+
+        if (request.schema) {
+            validParams.schema = request.schema
+        }
+
+        const validExtractParams = ['enableWebSearch', 'ignoreSitemap', 'includeSubdomains', 'showSources'] as const
+
+        validExtractParams.forEach((param) => {
+            if (request[param] !== undefined && request[param] !== null) {
+                validParams[param] = request[param]
+            }
+        })
+
+        // Add scrape options if they exist
+        if (request.scrapeOptions) {
+            const scrapeOptions: any = {
+                formats: ['markdown'],
+                onlyMainContent: true
+            }
+
+            // Handle includeTags
+            if (request.scrapeOptions.includeTags) {
+                const includeTags = Array.isArray(request.scrapeOptions.includeTags)
+                    ? request.scrapeOptions.includeTags
+                    : request.scrapeOptions.includeTags.split(',')
+                if (includeTags.length > 0) {
+                    scrapeOptions.includeTags = includeTags
+                }
+            }
+
+            // Handle excludeTags
+            if (request.scrapeOptions.excludeTags) {
+                const excludeTags = Array.isArray(request.scrapeOptions.excludeTags)
+                    ? request.scrapeOptions.excludeTags
+                    : request.scrapeOptions.excludeTags.split(',')
+                if (excludeTags.length > 0) {
+                    scrapeOptions.excludeTags = excludeTags
+                }
+            }
+
+            // Add other scrape options if they exist and are not empty
+            const validScrapeParams = ['mobile', 'skipTlsVerification', 'timeout'] as const
+
+            validScrapeParams.forEach((param) => {
+                if (request.scrapeOptions?.[param] !== undefined && request.scrapeOptions?.[param] !== null) {
+                    scrapeOptions[param] = request.scrapeOptions[param]
+                }
+            })
+
+            // Add JSON options if they exist
+            if (request.scrapeOptions.jsonOptions) {
+                scrapeOptions.jsonOptions = {}
+                if (request.scrapeOptions.jsonOptions.schema) {
+                    scrapeOptions.jsonOptions.schema = request.scrapeOptions.jsonOptions.schema
+                }
+                if (request.scrapeOptions.jsonOptions.prompt) {
+                    scrapeOptions.jsonOptions.prompt = request.scrapeOptions.jsonOptions.prompt
+                }
+            }
+
+            // Only add scrapeOptions if it has more than just the default values
+            if (Object.keys(scrapeOptions).length > 2) {
+                validParams.scrapeOptions = scrapeOptions
+            }
+        }
+
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/extract', request, headers)
+            if (process.env.DEBUG === 'true') console.log('Firecrawl: Extracting with params:', validParams)
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/extract', validParams, headers)
             if (response.status === 200) {
                 const extractResponse = response.data as ExtractResponse
                 if (waitUntilDone) {
@@ -205,9 +411,18 @@ class FirecrawlApp {
                     return extractResponse
                 }
             } else {
+                if (process.env.DEBUG === 'true')
+                    console.error(
+                        'Firecrawl: Extract failed with status:',
+                        response.status,
+                        'Response:',
+                        JSON.stringify(response.data, null, 2)
+                    )
                 this.handleError(response, 'start extract job')
             }
         } catch (error: any) {
+            if (process.env.DEBUG === 'true')
+                console.error('Firecrawl: Extract error:', error.message, 'Response:', JSON.stringify(error.response?.data, null, 2))
             throw new Error(error.message)
         }
         return { success: false, id: '', url: '' }
@@ -249,24 +464,36 @@ class FirecrawlApp {
     private async monitorJobStatus(jobId: string, headers: AxiosRequestHeaders, checkInterval: number): Promise<CrawlStatusResponse> {
         let isJobCompleted = false
         while (!isJobCompleted) {
+            if (process.env.DEBUG === 'true') console.log('Firecrawl: Checking job status for ID:', jobId)
             const statusResponse: AxiosResponse = await this.getRequest(this.apiUrl + `/v1/crawl/${jobId}`, headers)
             if (statusResponse.status === 200) {
                 const statusData = statusResponse.data as CrawlStatusResponse
+                if (process.env.DEBUG === 'true') console.log('Firecrawl: Job status:', statusData.status)
                 switch (statusData.status) {
                     case 'completed':
                         isJobCompleted = true
+                        if (process.env.DEBUG === 'true') console.log('Firecrawl: Job completed successfully')
                         return statusData
                     case 'scraping':
                     case 'failed':
                         if (statusData.status === 'failed') {
+                            if (process.env.DEBUG === 'true') console.error('Firecrawl: Job failed')
                             throw new Error('Crawl job failed')
                         }
                         await new Promise((resolve) => setTimeout(resolve, Math.max(checkInterval, 2) * 1000))
                         break
                     default:
+                        if (process.env.DEBUG === 'true') console.error('Firecrawl: Unknown job status:', statusData.status)
                         throw new Error(`Unknown crawl status: ${statusData.status}`)
                 }
             } else {
+                if (process.env.DEBUG === 'true')
+                    console.error(
+                        'Firecrawl: Status check failed with status:',
+                        statusResponse.status,
+                        'Response:',
+                        JSON.stringify(statusResponse.data, null, 2)
+                    )
                 this.handleError(statusResponse, 'check crawl status')
             }
         }
@@ -303,8 +530,21 @@ class FirecrawlApp {
     private handleError(response: AxiosResponse, action: string): void {
         if ([402, 408, 409, 500].includes(response.status)) {
             const errorMessage: string = response.data.error || 'Unknown error occurred'
+            if (process.env.DEBUG === 'true')
+                console.error('Firecrawl: API error:', {
+                    status: response.status,
+                    action,
+                    error: errorMessage,
+                    response: response.data
+                })
             throw new Error(`Failed to ${action}. Status code: ${response.status}. Error: ${errorMessage}`)
         } else {
+            if (process.env.DEBUG === 'true')
+                console.error('Firecrawl: Unexpected error:', {
+                    status: response.status,
+                    action,
+                    response: response.data
+                })
             throw new Error(`Unexpected error occurred while trying to ${action}. Status code: ${response.status}`)
         }
     }
@@ -344,52 +584,134 @@ export class FireCrawlLoader extends BaseDocumentLoader {
         const app = new FirecrawlApp({ apiKey: this.apiKey, apiUrl: this.apiUrl })
         let firecrawlDocs: FirecrawlDocument[]
 
+        if (process.env.DEBUG === 'true') console.log('Firecrawl: Starting load with mode:', this.mode)
+
         if (this.mode === 'scrape') {
+            if (process.env.DEBUG === 'true') console.log('Firecrawl: Scraping URL:', this.url)
             const response = await app.scrapeUrl(this.url, this.params)
             if (!response.success) {
+                if (process.env.DEBUG === 'true') console.error('Firecrawl: Scrape failed:', response.error)
                 throw new Error(`Firecrawl: Failed to scrape URL. Error: ${response.error}`)
             }
             firecrawlDocs = [response.data as FirecrawlDocument]
         } else if (this.mode === 'crawl') {
-            const response = await app.crawlUrl(this.url, this.params, true)
-            if ('data' in response) {
+            if (process.env.DEBUG === 'true') console.log('Firecrawl: Crawling URL:', this.url)
+            const response = await app.crawlUrl(this.url, {
+                ...this.params,
+                scrapeOptions: {
+                    ...(this.params?.scrapeOptions || {}),
+                    onlyMainContent: true
+                }
+            })
+
+            if ('status' in response) {
+                // This is a CrawlStatusResponse
+                if (response.status === 'failed') {
+                    if (process.env.DEBUG === 'true') console.error('Firecrawl: Crawl job failed')
+                    throw new Error('Firecrawl: Crawl job failed')
+                }
                 firecrawlDocs = response.data || []
             } else {
-                throw new Error('Crawl completed but no data was returned')
+                // This is a CrawlResponse
+                if (!response.success) {
+                    if (process.env.DEBUG === 'true') console.error('Firecrawl: Crawl failed:', response.error)
+                    throw new Error(`Firecrawl: Failed to scrape URL. Error: ${response.error}`)
+                }
+                firecrawlDocs = [response.data as FirecrawlDocument]
             }
         } else if (this.mode === 'extract') {
+            if (process.env.DEBUG === 'true') console.log('Firecrawl: Extracting from URL:', this.url)
             this.params!.urls = [this.url]
             const response = await app.extract(this.params as any as ExtractRequest)
             if (!response.success) {
+                if (process.env.DEBUG === 'true') console.error('Firecrawl: Extract failed')
                 throw new Error(`Firecrawl: Failed to extract URL.`)
             }
-            firecrawlDocs = [response.data as FirecrawlDocument]
+
+            // Convert extract response to document format
+            if ('data' in response && response.data) {
+                // Create a document from the extracted data
+                const extractedData = response.data
+                const content = JSON.stringify(extractedData, null, 2)
+
+                const metadata: Record<string, any> = {
+                    source: this.url,
+                    type: 'extracted_data'
+                }
+
+                // Add status and expiresAt if they exist in the response
+                if ('status' in response) {
+                    metadata.status = response.status
+                }
+                if ('data' in response) {
+                    metadata.data = response.data
+                }
+                if ('expiresAt' in response) {
+                    metadata.expiresAt = response.expiresAt
+                }
+
+                return [
+                    new Document({
+                        pageContent: content,
+                        metadata
+                    })
+                ]
+            }
+            return []
         } else if (this.mode === 'getExtractStatus') {
             const jobId = this.params?.jobId as string
+            if (process.env.DEBUG === 'true') console.log('Firecrawl: Getting extract status for job:', jobId)
             const response = await app.getExtractStatus(jobId)
             if (!response.success) {
+                if (process.env.DEBUG === 'true') console.error('Firecrawl: Get extract status failed')
                 throw new Error(`Firecrawl: Failed to get extract status.`)
             }
-            return response.data
+
+            // Convert extract status response to document format
+            if ('data' in response && response.data) {
+                const content = JSON.stringify(response.data, null, 2)
+                return [
+                    new Document({
+                        pageContent: content,
+                        metadata: {
+                            type: 'extract_status',
+                            status: response.status,
+                            expiresAt: response.expiresAt
+                        }
+                    })
+                ]
+            }
+            return []
         } else {
+            if (process.env.DEBUG === 'true') console.error('Firecrawl: Invalid mode:', this.mode)
             throw new Error(`Unrecognized mode '${this.mode}'. Expected one of 'crawl', 'scrape', 'extract'.`)
         }
 
-        if (this.mode === 'extract') {
-            const newDoc = new Document({
-                pageContent: JSON.stringify(firecrawlDocs),
-                metadata: {}
-            })
-            return [newDoc]
-        }
+        if (process.env.DEBUG === 'true') console.log('Firecrawl: Converting documents, count:', firecrawlDocs.length)
 
-        return firecrawlDocs.map(
-            (doc) =>
-                new Document({
-                    pageContent: doc.markdown || '',
-                    metadata: doc.metadata || {}
-                })
-        )
+        // Convert Firecrawl documents to LangChain documents
+        const documents = firecrawlDocs.map((doc) => {
+            // Use markdown content if available, otherwise fallback to HTML or empty string
+            const content = doc.markdown || doc.html || doc.rawHtml || ''
+
+            if (process.env.DEBUG === 'true') console.log('Firecrawl: Document metadata:', doc.metadata)
+
+            // Create a standard LangChain document
+            return new Document({
+                pageContent: content,
+                metadata: {
+                    ...doc.metadata,
+                    source: doc.metadata?.sourceURL || this.url,
+                    title: doc.metadata?.title,
+                    description: doc.metadata?.description,
+                    language: doc.metadata?.language,
+                    statusCode: doc.metadata?.statusCode
+                }
+            })
+        })
+
+        if (process.env.DEBUG === 'true') console.log('Firecrawl: Load completed, returning documents:', documents.length)
+        return documents
     }
 }
 
@@ -582,40 +904,46 @@ class FireCrawl_DocumentLoaders implements INode {
                 prompt: extractPrompt ?? undefined
             }
         }
-        const loader = new FireCrawlLoader(input)
 
-        let docs = []
+        try {
+            const loader = new FireCrawlLoader(input)
+            let docs = []
 
-        if (textSplitter) {
-            docs = await loader.loadAndSplit(textSplitter)
-        } else {
+            // Load documents
             docs = await loader.load()
-        }
 
-        if (metadata) {
-            const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
-            let finaldocs = []
-            for (const doc of docs) {
-                const newdoc = {
+            // Apply text splitting if configured
+            if (textSplitter && docs.length > 0) {
+                docs = await textSplitter.splitDocuments(docs)
+            }
+
+            // Apply metadata if provided
+            if (metadata) {
+                const parsedMetadata = typeof metadata === 'object' ? metadata : JSON.parse(metadata)
+                docs = docs.map((doc) => ({
                     ...doc,
                     metadata: {
                         ...doc.metadata,
                         ...parsedMetadata
                     }
-                }
-                finaldocs.push(newdoc)
+                }))
             }
-            return finaldocs
-        }
 
-        if (output === 'document') {
-            return docs
-        } else {
-            let finaltext = ''
-            for (const doc of docs) {
-                finaltext += `${doc.pageContent}\n`
+            // Return based on output type
+            if (output === 'document') {
+                return docs
+            } else {
+                let finaltext = ''
+                for (const doc of docs) {
+                    finaltext += `${doc.pageContent}\n`
+                }
+                return handleEscapeCharacters(finaltext, false)
             }
-            return handleEscapeCharacters(finaltext, false)
+        } catch (error) {
+            if (process.env.DEBUG === 'true') {
+                options.logger.error(`Error in FireCrawl loader: ${error.message}`)
+            }
+            throw error
         }
     }
 }
