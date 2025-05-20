@@ -1442,6 +1442,8 @@ class Agent_Agentflow implements INode {
                         toolOutput: '',
                         error: getErrorMessage(e)
                     })
+                    sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
+                    throw new Error(getErrorMessage(e))
                 }
             }
         }
@@ -1678,6 +1680,8 @@ class Agent_Agentflow implements INode {
                             toolOutput: '',
                             error: getErrorMessage(e)
                         })
+                        sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
+                        throw new Error(getErrorMessage(e))
                     }
                 }
             }
