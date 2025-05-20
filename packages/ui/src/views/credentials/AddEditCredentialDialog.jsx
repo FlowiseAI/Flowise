@@ -274,6 +274,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                     }
                 })
                 // authWindow?.close()
+                window.removeEventListener('message', handleMessage)
             }
             if (event.data?.type === 'AUTH_ERROR') {
                 console.error('Authentication error:', event.data.error)
@@ -291,8 +292,6 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                     }
                 })
             }
-
-            window.removeEventListener('message', handleMessage)
         }
 
         // Add the event listener
