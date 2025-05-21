@@ -2,7 +2,7 @@ import { Box } from '@mui/material'
 import { StyledButton } from './StyledButton'
 import PropTypes from 'prop-types'
 
-export const GoogleAuthButton = ({ componentCredential, name, handleGoogleOAuth, baseURL }) => {
+export const GoogleAuthButton = ({ componentCredential, handleGoogleOAuth, baseURL }) => {
     if (!componentCredential || componentCredential.name !== 'googleOAuth') return null
 
     return (
@@ -10,7 +10,7 @@ export const GoogleAuthButton = ({ componentCredential, name, handleGoogleOAuth,
             <StyledButton
                 variant='contained'
                 onClick={handleGoogleOAuth}
-                disabled={!name}
+                // disabled={!name}
                 startIcon={
                     <img
                         alt={componentCredential.name}

@@ -147,6 +147,7 @@
         "weaviate-ts-client": "^1.1.0",
         "winston": "^3.9.0",
         "ws": "^8.18.0",
+        "youtube-data-mcp-server": "^1.0.16",
         "youtube-transcript": "^1.1.0",
         "zod": "3.22.4",
         "zod-to-json-schema": "^3.21.4"
