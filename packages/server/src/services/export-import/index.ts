@@ -564,6 +564,7 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
     importData.CustomTemplate = importData.CustomTemplate || []
     importData.DocumentStore = importData.DocumentStore || []
     importData.DocumentStoreFileChunk = importData.DocumentStoreFileChunk || []
+    importData.Execution = importData.Execution || []
     importData.Tool = importData.Tool || []
     importData.Variable = importData.Variable || []
 
