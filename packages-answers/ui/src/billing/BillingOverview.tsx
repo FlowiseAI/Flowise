@@ -42,8 +42,7 @@ const BillingOverview: React.FC<BillingOverviewProps> = ({
     const [loading, setLoading] = useState(false)
 
     // Determine if we should show a warning (for free accounts at 80% or more usage)
-    const showWarning = currentPlan?.name === 'Free' && usagePercentage >= 80
-
+    const showWarning = usagePercentage >= 80 && (!currentPlan || currentPlan?.name === 'Free')
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'active':
@@ -127,7 +126,7 @@ const BillingOverview: React.FC<BillingOverviewProps> = ({
                     <Typography variant='h5' sx={{ fontWeight: 600, color: '#fff' }}>
                         Billing Overview
                     </Typography>
-                    <Button
+                    {/* <Button
                         onClick={handleUpgrade}
                         disabled={loading}
                         variant='outlined'
@@ -141,7 +140,7 @@ const BillingOverview: React.FC<BillingOverviewProps> = ({
                         }}
                     >
                         CHANGE PLAN
-                    </Button>
+                    </Button> */}
                 </Box>
 
                 <Box sx={{ px: 3, pb: 3 }}>
