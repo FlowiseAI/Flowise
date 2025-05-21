@@ -5,7 +5,7 @@
 # docker run -d -p 3000:3000 flowise
 
 FROM node:20-alpine
-RUN apk add --update libc6-compat python3 make g++
+RUN apk add --update libc6-compat python3 py3-pip make g++ openssl-dev gfortran libffi-dev openblas-dev cargo wget
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev
 
@@ -32,6 +32,14 @@ COPY . .
 RUN pnpm install
 
 RUN pnpm build
+
+# Install vectorbt.pro and its Python dependencies
+RUN echo "Downloading vectorbt.pro..." && \
+    wget -O /tmp/vectorbt.pro.whl 'https://drive.google.com/uc?export=download&id=1ktNSdLunLOk_C4tUOBROtmE2Mw7spyJ9' && \
+    echo "Installing vectorbt.pro..." && \
+    pip3 install /tmp/vectorbt.pro.whl --no-cache-dir && \
+    echo "Cleaning up vectorbt.pro download..." && \
+    rm /tmp/vectorbt.pro.whl
 
 EXPOSE 3000
 
