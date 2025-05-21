@@ -971,7 +971,9 @@ const validateAndSaveChat = async (
                 // TODO: Add better error throwing for billing status (account not found, subscription not found, etc.)
                 // Determine plan type and limits
                 const isPro =
-                    subscription?.status === 'active' && subscription.items.data[0]?.price.id === BILLING_CONFIG.PRICE_IDS.PAID_MONTHLY
+                    subscription?.status === 'active' &&
+                    subscription.items.data?.length &&
+                    subscription.items.data[0]?.price.id !== BILLING_CONFIG.PRICE_IDS.FREE_MONTHLY
                 const planLimits = isPro ? BILLING_CONFIG.PLAN_LIMITS.PRO : BILLING_CONFIG.PLAN_LIMITS.FREE
 
                 // Calculate total usage

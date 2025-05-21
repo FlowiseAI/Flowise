@@ -280,7 +280,10 @@ const getUsageSummary = async (req: Request, res: Response, next: NextFunction) 
             // next(error)
         }
         // Determine plan type
-        const isPro = subscription?.status === 'active' && subscription.items.data[0]?.price.id === BILLING_CONFIG.PRICE_IDS.PAID_MONTHLY
+        const isPro =
+            subscription?.status === 'active' &&
+            subscription.items.data?.length &&
+            subscription.items.data[0]?.price.id !== BILLING_CONFIG.PRICE_IDS.FREE_MONTHLY
         const planLimits = isPro ? BILLING_CONFIG.PLAN_LIMITS.PRO : BILLING_CONFIG.PLAN_LIMITS.FREE
 
         // Calculate total usage
