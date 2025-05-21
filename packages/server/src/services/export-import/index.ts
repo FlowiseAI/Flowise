@@ -504,6 +504,23 @@ function reduceSpaceForChatflowFlowData(chatflows: ChatFlow[]) {
 }
 
 const importData = async (importData: ExportData) => {
+    // Initialize missing properties with empty arrays to avoid "undefined" errors
+    importData.AgentFlow = importData.AgentFlow || []
+    importData.AgentFlowV2 = importData.AgentFlowV2 || []
+    importData.AssistantCustom = importData.AssistantCustom || []
+    importData.AssistantFlow = importData.AssistantFlow || []
+    importData.AssistantOpenAI = importData.AssistantOpenAI || []
+    importData.AssistantAzure = importData.AssistantAzure || []
+    importData.ChatFlow = importData.ChatFlow || []
+    importData.ChatMessage = importData.ChatMessage || []
+    importData.ChatMessageFeedback = importData.ChatMessageFeedback || []
+    importData.CustomTemplate = importData.CustomTemplate || []
+    importData.DocumentStore = importData.DocumentStore || []
+    importData.DocumentStoreFileChunk = importData.DocumentStoreFileChunk || []
+    importData.Execution = importData.Execution || []
+    importData.Tool = importData.Tool || []
+    importData.Variable = importData.Variable || []
+
     let queryRunner
     try {
         queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
