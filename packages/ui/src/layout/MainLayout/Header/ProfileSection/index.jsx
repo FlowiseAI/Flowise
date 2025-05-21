@@ -168,6 +168,41 @@ ExportDialog.propTypes = {
     onExport: PropTypes.func
 }
 
+const ImportDialog = ({ show, onCancel }) => {
+    const portalElement = document.getElementById('portal')
+
+    const component = show ? (
+        <Dialog open={show} fullWidth maxWidth='sm' aria-labelledby='import-dialog-title' aria-describedby='import-dialog-description'>
+            <DialogTitle sx={{ fontSize: '1rem' }} id='import-dialog-title'>
+                Importing...
+            </DialogTitle>
+            <DialogContent>
+                <Box sx={{ height: 'auto', display: 'flex', justifyContent: 'center', mb: 3 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <img
+                            style={{
+                                objectFit: 'cover',
+                                height: 'auto',
+                                width: 'auto'
+                            }}
+                            src={ExportingGIF}
+                            alt='ImportingGIF'
+                        />
+                        <span>Importing data might takes a while</span>
+                    </div>
+                </Box>
+            </DialogContent>
+        </Dialog>
+    ) : null
+
+    return createPortal(component, portalElement)
+}
+
+ImportDialog.propTypes = {
+    show: PropTypes.bool,
+    onCancel: PropTypes.func
+}
+
 // ==============================|| PROFILE MENU ||============================== //
 
 const ProfileSection = ({ handleLogout }) => {
@@ -180,6 +215,7 @@ const ProfileSection = ({ handleLogout }) => {
     const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
 
     const [exportDialogOpen, setExportDialogOpen] = useState(false)
+    const [importDialogOpen, setImportDialogOpen] = useState(false)
 
     const anchorRef = useRef(null)
     const inputRef = useRef()
@@ -230,6 +266,7 @@ const ProfileSection = ({ handleLogout }) => {
         if (!e.target.files) return
 
         const file = e.target.files[0]
+        setImportDialogOpen(true)
 
         const reader = new FileReader()
         reader.onload = (evt) => {
@@ -243,6 +280,7 @@ const ProfileSection = ({ handleLogout }) => {
     }
 
     const importAllSuccess = () => {
+        setImportDialogOpen(false)
         dispatch({ type: REMOVE_DIRTY })
         enqueueSnackbar({
             message: `Import All successful`,
@@ -291,6 +329,7 @@ const ProfileSection = ({ handleLogout }) => {
 
     useEffect(() => {
         if (importAllApi.error) {
+            setImportDialogOpen(false)
             let errMsg = 'Invalid Imported File'
             let error = importAllApi.error
             if (error?.response?.data) {
@@ -489,6 +528,7 @@ const ProfileSection = ({ handleLogout }) => {
             </Popper>
             <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
             <ExportDialog show={exportDialogOpen} onCancel={() => setExportDialogOpen(false)} onExport={(data) => onExport(data)} />
+            <ImportDialog show={importDialogOpen} onCancel={() => setImportDialogOpen(false)} />
         </>
     )
 }

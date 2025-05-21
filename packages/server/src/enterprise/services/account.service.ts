@@ -124,10 +124,12 @@ export class AccountService {
                     throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_EMAIL_ALREADY_EXISTS)
 
                 if (!data.user.email) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_EMAIL)
-                const { customerId, subscriptionId } = await this.identityManager.createStripeUserAndSubscribe(
-                    data.user.email,
-                    UserPlan.FREE
-                )
+                const { customerId, subscriptionId } = await this.identityManager.createStripeUserAndSubscribe({
+                    email: data.user.email,
+                    userPlan: UserPlan.FREE,
+                    // @ts-ignore
+                    referral: data.user.referral || ''
+                })
                 data.organization.customerId = customerId
                 data.organization.subscriptionId = subscriptionId
 

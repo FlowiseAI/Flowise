@@ -33,6 +33,7 @@ import { UsageCacheManager } from './UsageCacheManager'
 import { GeneralErrorMessage, LICENSE_QUOTAS } from './utils/constants'
 import { getRunningExpressApp } from './utils/getRunningExpressApp'
 import { ENTERPRISE_FEATURE_FLAGS } from './utils/quotaUsage'
+import Stripe from 'stripe'
 
 const allSSOProviders = ['azure', 'google', 'auth0', 'github']
 export class IdentityManager {
@@ -460,16 +461,26 @@ export class IdentityManager {
         }
     }
 
-    public async createStripeUserAndSubscribe(email: string, userPlan: UserPlan) {
+    public async createStripeUserAndSubscribe({ email, userPlan, referral }: { email: string; userPlan: UserPlan; referral?: string }) {
         if (!this.stripeManager) {
             throw new Error('Stripe manager is not initialized')
         }
 
         try {
             // Create a customer in Stripe
-            const customer = await this.stripeManager.getStripe().customers.create({
-                email: email
-            })
+            let customer: Stripe.Response<Stripe.Customer>
+            if (referral) {
+                customer = await this.stripeManager.getStripe().customers.create({
+                    email: email,
+                    metadata: {
+                        referral
+                    }
+                })
+            } else {
+                customer = await this.stripeManager.getStripe().customers.create({
+                    email: email
+                })
+            }
 
             let productId = ''
             switch (userPlan) {

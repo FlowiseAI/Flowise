@@ -144,6 +144,8 @@ const RegisterPage = () => {
                 setAuthError(errorMessages.join(', '))
             }
         } else if (isCloud) {
+            const formData = new FormData(event.target)
+            const referral = formData.get('referral')
             const result = RegisterCloudUserSchema.safeParse({
                 username,
                 email,
@@ -158,6 +160,9 @@ const RegisterPage = () => {
                         email,
                         credential: password
                     }
+                }
+                if (referral) {
+                    body.user.referral = referral
                 }
                 await registerApi.request(body)
             } else {
@@ -284,7 +289,7 @@ const RegisterPage = () => {
                             .
                         </Typography>
                     </Stack>
-                    <form onSubmit={register}>
+                    <form onSubmit={register} data-rewardful>
                         <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 2 }}>
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>

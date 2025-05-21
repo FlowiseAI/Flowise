@@ -4,7 +4,7 @@ import cors from 'cors'
 import http from 'http'
 import cookieParser from 'cookie-parser'
 import { DataSource, IsNull } from 'typeorm'
-import { MODE } from './Interface'
+import { MODE, Platform } from './Interface'
 import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
 import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
@@ -199,9 +199,11 @@ export class App {
                     } else if (req.headers['x-request-from'] === 'internal') {
                         verifyToken(req, res, next)
                     } else {
-                        // Check if license is valid
-                        if (!this.identityManager.isLicenseValid()) {
-                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        // Only check license validity for non-open-source platforms
+                        if (this.identityManager.getPlatformType() !== Platform.OPEN_SOURCE) {
+                            if (!this.identityManager.isLicenseValid()) {
+                                return res.status(401).json({ error: 'Unauthorized Access' })
+                            }
                         }
                         const isKeyValidated = await validateAPIKey(req)
                         if (!isKeyValidated) {
