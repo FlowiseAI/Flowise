@@ -460,7 +460,11 @@ class LLM_Agentflow implements INode {
                 // Stream whole response back to UI if this is the last node
                 if (isLastNode && options.sseStreamer) {
                     const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
-                    sseStreamer.streamTokenEvent(chatId, JSON.stringify(response, null, 2))
+                    let responseContent = JSON.stringify(response, null, 2)
+                    if (typeof response.content === 'string') {
+                        responseContent = response.content
+                    }
+                    sseStreamer.streamTokenEvent(chatId, responseContent)
                 }
             }
 

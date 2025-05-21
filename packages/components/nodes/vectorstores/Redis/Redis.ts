@@ -147,7 +147,15 @@ class Redis_VectorStores implements INode {
             }
 
             try {
-                const redisClient = createClient({ url: redisUrl })
+                const redisClient = createClient({
+                    url: redisUrl,
+                    socket: {
+                        keepAlive:
+                            process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                                ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                                : undefined // milliseconds
+                    }
+                })
                 await redisClient.connect()
 
                 const storeConfig: RedisVectorStoreConfig = {
@@ -212,7 +220,15 @@ class Redis_VectorStores implements INode {
             redisUrl = 'redis://' + username + ':' + password + '@' + host + ':' + portStr
         }
 
-        const redisClient = createClient({ url: redisUrl })
+        const redisClient = createClient({
+            url: redisUrl,
+            socket: {
+                keepAlive:
+                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                        : undefined // milliseconds
+            }
+        })
 
         const storeConfig: RedisVectorStoreConfig = {
             redisClient: redisClient,

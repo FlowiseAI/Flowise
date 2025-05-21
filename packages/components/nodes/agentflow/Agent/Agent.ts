@@ -903,7 +903,11 @@ class Agent_Agentflow implements INode {
                 }
             } else if (!humanInput && !isStreamable && isLastNode && sseStreamer) {
                 // Stream whole response back to UI if not streaming and no tool calls
-                sseStreamer.streamTokenEvent(chatId, JSON.stringify(response, null, 2))
+                let responseContent = JSON.stringify(response, null, 2)
+                if (typeof response.content === 'string') {
+                    responseContent = response.content
+                }
+                sseStreamer.streamTokenEvent(chatId, responseContent)
             }
 
             // Calculate execution time
@@ -1438,6 +1442,8 @@ class Agent_Agentflow implements INode {
                         toolOutput: '',
                         error: getErrorMessage(e)
                     })
+                    sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
+                    throw new Error(getErrorMessage(e))
                 }
             }
         }
@@ -1473,7 +1479,11 @@ class Agent_Agentflow implements INode {
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer) {
-                sseStreamer.streamTokenEvent(chatId, JSON.stringify(newResponse, null, 2))
+                let responseContent = JSON.stringify(newResponse, null, 2)
+                if (typeof newResponse.content === 'string') {
+                    responseContent = newResponse.content
+                }
+                sseStreamer.streamTokenEvent(chatId, responseContent)
             }
         }
 
@@ -1670,6 +1680,8 @@ class Agent_Agentflow implements INode {
                             toolOutput: '',
                             error: getErrorMessage(e)
                         })
+                        sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
+                        throw new Error(getErrorMessage(e))
                     }
                 }
             }
@@ -1715,7 +1727,11 @@ class Agent_Agentflow implements INode {
 
             // Stream non-streaming response if this is the last node
             if (isLastNode && sseStreamer) {
-                sseStreamer.streamTokenEvent(chatId, JSON.stringify(newResponse, null, 2))
+                let responseContent = JSON.stringify(newResponse, null, 2)
+                if (typeof newResponse.content === 'string') {
+                    responseContent = newResponse.content
+                }
+                sseStreamer.streamTokenEvent(chatId, responseContent)
             }
         }
 

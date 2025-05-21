@@ -18,20 +18,12 @@ class TavilyAPI_Tools implements INode {
     constructor() {
         this.label = 'Tavily API'
         this.name = 'tavilyAPI'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'TavilyAPI'
         this.icon = 'tavily.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around TavilyAPI - A specialized search engine designed for LLMs and AI agents'
         this.inputs = [
-            {
-                label: 'Query',
-                name: 'query',
-                type: 'string',
-                optional: false,
-                description: 'The search query to execute with Tavily',
-                additionalParams: true
-            },
             {
                 label: 'Topic',
                 name: 'topic',
@@ -165,7 +157,6 @@ class TavilyAPI_Tools implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const tavilyApiKey = getCredentialParam('tavilyApiKey', credentialData, nodeData)
 
-        const query = nodeData.inputs?.query as string
         const topic = nodeData.inputs?.topic as string
         const searchDepth = nodeData.inputs?.searchDepth as string
         const chunksPerSource = nodeData.inputs?.chunksPerSource as number
@@ -181,14 +172,13 @@ class TavilyAPI_Tools implements INode {
 
         const config: any = {
             apiKey: tavilyApiKey,
-            query,
             topic,
             searchDepth,
             maxResults,
-            includeAnswer,
-            includeRawContent,
-            includeImages,
-            includeImageDescriptions
+            includeAnswer: includeAnswer || undefined,
+            includeRawContent: includeRawContent || undefined,
+            includeImages: includeImages || undefined,
+            includeImageDescriptions: includeImageDescriptions || undefined
         }
 
         if (chunksPerSource) config.chunksPerSource = chunksPerSource

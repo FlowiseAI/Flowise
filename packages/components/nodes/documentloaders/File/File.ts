@@ -47,7 +47,7 @@ class File_DocumentLoaders implements INode {
             },
             {
                 label: 'Pdf Usage',
-                name: 'pdfUsage',
+                name: 'usage',
                 type: 'options',
                 description: 'Only when loading PDF files',
                 options: [
@@ -61,6 +61,14 @@ class File_DocumentLoaders implements INode {
                     }
                 ],
                 default: 'perPage',
+                optional: true,
+                additionalParams: true
+            },
+            {
+                label: 'Use Legacy Build',
+                name: 'legacyBuild',
+                type: 'boolean',
+                description: 'Use legacy build for PDF compatibility issues',
                 optional: true,
                 additionalParams: true
             },
@@ -113,7 +121,8 @@ class File_DocumentLoaders implements INode {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const fileBase64 = nodeData.inputs?.file as string
         const metadata = nodeData.inputs?.metadata
-        const pdfUsage = nodeData.inputs?.pdfUsage
+        const pdfUsage = nodeData.inputs?.pdfUsage || nodeData.inputs?.usage
+        const legacyBuild = nodeData.inputs?.legacyBuild as boolean
         const pointerName = nodeData.inputs?.pointerName as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
@@ -173,10 +182,21 @@ class File_DocumentLoaders implements INode {
                 const match = file.match(/^data:([A-Za-z-+\/]+);base64,/)
 
                 if (!match) {
-                    fileBlobs.push({
-                        blob,
-                        ext: extension
-                    })
+                    // Fallback: check if there's a filename pattern at the end
+                    const filenameMatch = file.match(/,filename:(.+\.\w+)$/)
+                    if (filenameMatch && filenameMatch[1]) {
+                        const filename = filenameMatch[1]
+                        const fileExt = filename.split('.').pop() || ''
+                        fileBlobs.push({
+                            blob,
+                            ext: fileExt
+                        })
+                    } else {
+                        fileBlobs.push({
+                            blob,
+                            ext: extension
+                        })
+                    }
                 } else {
                     const mimeType = match[1]
                     fileBlobs.push({
@@ -199,9 +219,18 @@ class File_DocumentLoaders implements INode {
             pdf: (blob) =>
                 pdfUsage === 'perFile'
                     ? // @ts-ignore
-                      new PDFLoader(blob, { splitPages: false, pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') })
+                      new PDFLoader(blob, {
+                          splitPages: false,
+                          pdfjs: () =>
+                              // @ts-ignore
+                              legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                      })
                     : // @ts-ignore
-                      new PDFLoader(blob, { pdfjs: () => import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js') }),
+                      new PDFLoader(blob, {
+                          pdfjs: () =>
+                              // @ts-ignore
+                              legacyBuild ? import('pdfjs-dist/legacy/build/pdf.js') : import('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js')
+                      }),
             '': (blob) => new TextLoader(blob)
         })
         let docs = []
