@@ -968,7 +968,7 @@ const validateAndSaveChat = async (
                 const billingService = new BillingService()
                 const usage = await billingService.getUsageSummary(user.stripeCustomerId)
                 const subscription = await billingService.getActiveSubscription(user.stripeCustomerId)
-
+                // TODO: Add better error throwing for billing status (account not found, subscription not found, etc.)
                 // Determine plan type and limits
                 const isPro =
                     subscription?.status === 'active' && subscription.items.data[0]?.price.id === BILLING_CONFIG.PRICE_IDS.PAID_MONTHLY
@@ -991,11 +991,13 @@ const validateAndSaveChat = async (
             } catch (billingError) {
                 logger.error(`Error checking billing information: ${getErrorMessage(billingError)}`)
                 // Allow operation to continue even if billing check fails
+                throw billingError
             }
         }
     } catch (error) {
         logger.error(`Error in billing validation: ${getErrorMessage(error)}`)
         // Continue without enforcing billing restrictions if there's an error
+        throw error
     }
 }
 
