@@ -1,13 +1,15 @@
 'use client'
 
 import React from 'react'
-import { Box, Stack, Typography, CircularProgress } from '@mui/material'
+import { Box, Stack, Typography, CircularProgress, Button } from '@mui/material'
 import TotalCreditsProgress from './TotalCreditsProgress'
 import { useBillingData } from './hooks/useBillingData'
 import BillingOverview from './BillingOverview'
+import { useSubscriptionDialog } from '../SubscriptionDialogContext'
 
 const BillingDashboard: React.FC = () => {
     const { billingData, isLoading, isError } = useBillingData()
+    const { openDialog } = useSubscriptionDialog()
 
     // Calculate usage percentage
     const calculateUsagePercentage = () => {
@@ -50,6 +52,9 @@ const BillingDashboard: React.FC = () => {
                     <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.875rem' }}>
                         Manage your subscription and monitor your usage
                     </Typography>
+                    <Button onClick={openDialog} variant='contained' sx={{ mt: 2 }}>
+                        Upgrade Plan
+                    </Button>
                 </Box>
 
                 <TotalCreditsProgress usageSummary={billingData} isLoading={isLoading} isError={isError} />

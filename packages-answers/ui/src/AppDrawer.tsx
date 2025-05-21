@@ -31,14 +31,11 @@ import ContactSupport from '@mui/icons-material/ContactSupport'
 import AssessmentIcon from '@mui/icons-material/Assessment'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 import { ExportImportMenuItems } from './components/ExportImportComponent'
+import { useSubscriptionDialog } from './SubscriptionDialogContext'
 
 import dynamic from 'next/dynamic'
 import ChatDrawer from './ChatDrawer'
-
-const PurchaseSubscription = dynamic(() => import('./billing/PurchaseSubscription'), { ssr: false })
-const Dialog = dynamic(() => import('@mui/material/Dialog'), { ssr: false })
-const DialogContent = dynamic(() => import('@mui/material/DialogContent'), { ssr: false })
-const DialogTitle = dynamic(() => import('@mui/material/DialogTitle'), { ssr: false })
+import StarIcon from '@mui/icons-material/Star'
 
 const drawerWidth = 240
 
@@ -89,7 +86,7 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
     const user = session?.user
     const [drawerOpen, setDrawerOpen] = useState(false)
     const [submenuOpen, setSubmenuOpen] = useState('')
-    const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState(false)
+    const { openDialog: openSubscriptionDialog, closeDialog: closeSubscriptionDialog } = useSubscriptionDialog()
     const pathname = usePathname()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
@@ -199,12 +196,8 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
     }
 
     const handleSubscriptionOpen = () => {
-        setSubscriptionDialogOpen(true)
+        openSubscriptionDialog()
         handleClose()
-    }
-
-    const handleSubscriptionClose = () => {
-        setSubscriptionDialogOpen(false)
     }
 
     return (
@@ -355,30 +348,33 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                         </Box>
                     ))}
 
-                    {/* <ListItem disablePadding>
-                        <ListItemButton
-                            onClick={handleSubscriptionOpen}
-                            sx={{ bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' }, borderRadius: 1, mb: 1 }}
-                        >
-                            <ListItemIcon>
-                                <StarIcon sx={{ color: '#fff' }} />
-                            </ListItemIcon>
-                            <Typography
-                                sx={{
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    textTransform: 'capitalize',
-                                    display: '-webkit-box',
-                                    WebkitBoxOrient: 'vertical',
-                                    WebkitLineClamp: '1',
-                                    flex: '1',
-                                    color: '#fff'
-                                }}
+
+                    {!user?.subscription && (
+                        <ListItem disablePadding>
+                            <ListItemButton
+                                onClick={handleSubscriptionOpen}
+                                sx={{ bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' }, borderRadius: 1, mb: 1 }}
                             >
-                                Buy Credits
-                            </Typography>
-                        </ListItemButton>
-                    </ListItem> */}
+                                <ListItemIcon>
+                                    <StarIcon sx={{ color: '#fff' }} />
+                                </ListItemIcon>
+                                <Typography
+                                    sx={{
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        textTransform: 'capitalize',
+                                        display: '-webkit-box',
+                                        WebkitBoxOrient: 'vertical',
+                                        WebkitLineClamp: '1',
+                                        flex: '1',
+                                        color: '#fff'
+                                    }}
+                                >
+                                    Upgrade Plan
+                                </Typography>
+                            </ListItemButton>
+                        </ListItem>
+                    )}
 
                     <ListItem disablePadding sx={{ display: 'block' }}>
                         <Box
@@ -483,20 +479,6 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                     </ListItem>
                 </List>
             </Drawer>
-            <Dialog
-                open={subscriptionDialogOpen}
-                onClose={handleSubscriptionClose}
-                fullWidth
-                maxWidth='md'
-                aria-labelledby='subscription-dialog-title'
-            >
-                <DialogTitle sx={{ fontSize: '1rem' }} id='subscription-dialog-title'>
-                    Upgrade your plan
-                </DialogTitle>
-                <DialogContent>
-                    <PurchaseSubscription />
-                </DialogContent>
-            </Dialog>
         </>
     )
 }
