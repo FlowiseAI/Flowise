@@ -185,7 +185,7 @@ importers:
                 version: 1.7.9(debug@4.4.0)
             chromadb:
                 specifier: ^1.5.5
-                version: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
+                version: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2))
             cohere-ai:
                 specifier: ^6.2.2
                 version: 6.2.2
@@ -224,7 +224,7 @@ importers:
                 version: 3.0.5
             langchain:
                 specifier: ^0.0.116
-                version: 0.0.116(5suukz2kcriwjfh5ud7y6zqsle)
+                version: 0.0.116(iivuttr355pah5s6ksk5arzbra)
             next:
                 specifier: ^14.2.5
                 version: 14.2.24(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.51.0)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)(sass@1.85.1)
@@ -233,7 +233,7 @@ importers:
                 version: 4.24.11(next@14.2.24(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.51.0)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)(sass@1.85.1))(nodemailer@6.9.16)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)
             openai:
                 specifier: 4.82.0
-                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
+                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
             react:
                 specifier: ^18.2.0
                 version: 18.2.0
@@ -677,7 +677,7 @@ importers:
                 version: 22.1.0(bufferutil@4.0.9)(canvas@2.11.2(encoding@0.1.13))(utf-8-validate@6.0.5)
             langchain:
                 specifier: ^0.0.116
-                version: 0.0.116(rmsgxtkmqmi5hmutb5dbcho4o4)
+                version: 0.0.116(rizdvp72vz3v3udbn5mmuawvfu)
             mammoth:
                 specifier: ^1.6.0
                 version: 1.9.0
@@ -695,7 +695,7 @@ importers:
                 version: 1.3.0
             openai:
                 specifier: 4.82.0
-                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
+                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
             openapi-typescript:
                 specifier: ^6.3.7
                 version: 6.7.6
@@ -1175,6 +1175,9 @@ importers:
             ws:
                 specifier: ^8.18.0
                 version: 8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5)
+            youtube-data-mcp-server:
+                specifier: ^1.0.16
+                version: 1.0.16(encoding@0.1.13)
             youtube-transcript:
                 specifier: ^1.1.0
                 version: 1.2.1
@@ -13402,6 +13405,10 @@ packages:
         resolution: { integrity: sha512-/fhDZEJZvOV3X5jmD+fKxMqma5q2Q9nZNSF3kn1F18tpxmA86BcTxAGBQdM0N89Z3bEaIs+HVznSmFJEAmMTjA== }
         engines: { node: '>=14.0.0' }
 
+    googleapis@129.0.0:
+        resolution: { integrity: sha512-gFatrzby+oh/GxEeMhJOKzgs9eG7yksRcTon9b+kPie4ZnDSgGQ85JgtUaBtLSBkcKpUKukdSP6Km1aCjs4y4Q== }
+        engines: { node: '>=14.0.0' }
+
     googleapis@144.0.0:
         resolution: { integrity: sha512-ELcWOXtJxjPX4vsKMh+7V+jZvgPwYMlEhQFiu2sa9Qmt5veX8nwXPksOWGGN6Zk4xCiLygUyaz7xGtcMO+Onxw== }
         engines: { node: '>=14.0.0' }
@@ -17983,6 +17990,11 @@ packages:
         resolution: { integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA== }
         engines: { node: '>=4' }
 
+    pnpm@10.11.0:
+        resolution: { integrity: sha512-ZUBYP0HMX2KOs9l3Ps7oAvT575kjzEW2mJD7R5kdSwkpZGlOw6T3OKQgyRijMwYsi5JdMS9C5PDCY+tgNVH5dw== }
+        engines: { node: '>=18.12' }
+        hasBin: true
+
     popmotion@9.3.6:
         resolution: { integrity: sha512-ZTbXiu6zIggXzIliMi8LGxXBF5ST+wkpXGEjeTUDUOCdSQ356hij/xjeUdv0F8zCQNeqB1+PR5/BB+gC+QLAPw== }
 
@@ -20965,6 +20977,9 @@ packages:
         resolution: { integrity: sha512-aT2BU9KkizY9SATf14WhhYVv2uOapBWX0OFWF4xvcj1mPaNotlSc2CsxpS4DS46ZueSppmCF5BX1sNYBtwBvfw== }
         engines: { node: '>=12.*' }
 
+    striptags@3.2.0:
+        resolution: { integrity: sha512-g45ZOGzHDMe2bdYMdIvdAfCQkCTDMGBazSw1ypMowwGIee7ZQ5dU0rBJ8Jqgl+jAKIv4dbeE1jscZq9wid1Tkw== }
+
     strnum@1.1.2:
         resolution: { integrity: sha512-vrN+B7DBIoTTZjnPNewwhx6cBA/H+IS7rfW68n7XxC1y7uoiGQBxaKzqucGUgavX15dJgiGztLJ8vxuEzwqBdA== }
 
@@ -23066,6 +23081,14 @@ packages:
     yocto-queue@1.2.0:
         resolution: { integrity: sha512-KHBC7z61OJeaMGnF3wqNZj+GGNXOyypZviiKpQeiHirG5Ib1ImwcLBH70rbMSkKfSmUNBsdf2PwaEJtKvgmkNw== }
         engines: { node: '>=12.20' }
+
+    youtube-captions-scraper@2.0.3:
+        resolution: { integrity: sha512-XT6U5wFq35P5G99M+2uwNzJFkmGUrb38u8lMMQkv9PpfTOtG8Lpotka7jEqbDnQBshDw6/hgLQV597/tldiyUg== }
+
+    youtube-data-mcp-server@1.0.16:
+        resolution: { integrity: sha512-Vr3mwvARttK2riti8U7RHVZaRRDJwkCRQGcBG3gU03e9MBaQhc8nC/zvYZAeDcfCzugLCbdeHNzgbAc1QBfkpw== }
+        engines: { node: '>=18.0.0' }
+        hasBin: true
 
     youtube-transcript@1.2.1:
         resolution: { integrity: sha512-TvEGkBaajKw+B6y91ziLuBLsa5cawgowou+Bk0ciGpjELDfAzSzTGXaZmeSSkUeknCPpEr/WGApOHDwV7V+Y9Q== }
@@ -34958,7 +34981,7 @@ snapshots:
 
     chownr@2.0.0: {}
 
-    chromadb@1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)):
+    chromadb@1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)):
         dependencies:
             cliui: 8.0.1
             isomorphic-fetch: 3.0.0(encoding@0.1.13)
@@ -34966,7 +34989,7 @@ snapshots:
             '@google/generative-ai': 0.22.0
             cohere-ai: 6.2.2
             ollama: 0.5.14
-            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
+            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
         transitivePeerDependencies:
             - encoding
 
@@ -34981,19 +35004,6 @@ snapshots:
             openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
-
-    chromadb@1.10.5(@google/generative-ai@0.22.0)(cohere-ai@7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13))(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)):
-        dependencies:
-            cliui: 8.0.1
-            isomorphic-fetch: 3.0.0(encoding@0.1.13)
-        optionalDependencies:
-            '@google/generative-ai': 0.22.0
-            cohere-ai: 7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13)
-            ollama: 0.5.14
-            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
-        transitivePeerDependencies:
-            - encoding
-        optional: true
 
     chromadb@1.8.1(@google/generative-ai@0.22.0)(cohere-ai@7.9.5(encoding@0.1.13))(encoding@0.1.13)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)):
         dependencies:
@@ -37394,7 +37404,7 @@ snapshots:
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
             eslint-import-resolver-typescript: 3.8.7(eslint-plugin-import@2.31.0)(eslint@7.32.0)
-            eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint@7.32.0)
+            eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.8.7)(eslint@7.32.0)
             eslint-plugin-jsx-a11y: 6.10.2(eslint@7.32.0)
             eslint-plugin-react: 7.37.4(eslint@7.32.0)
             eslint-plugin-react-hooks: 4.6.2(eslint@7.32.0)
@@ -37468,7 +37478,7 @@ snapshots:
             stable-hash: 0.0.4
             tinyglobby: 0.2.12
         optionalDependencies:
-            eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint@7.32.0)
+            eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.8.7)(eslint@7.32.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -37498,13 +37508,14 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    eslint-module-utils@2.12.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint@7.32.0):
+    eslint-module-utils@2.12.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.7(eslint-plugin-import@2.31.0)(eslint@7.32.0))(eslint@7.32.0):
         dependencies:
             debug: 3.2.7(supports-color@5.5.0)
         optionalDependencies:
             '@typescript-eslint/parser': 5.62.0(eslint@8.37.0)(typescript@5.5.4)
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
+            eslint-import-resolver-typescript: 3.8.7(eslint-plugin-import@2.31.0)(eslint@7.32.0)
         transitivePeerDependencies:
             - supports-color
 
@@ -37555,7 +37566,7 @@ snapshots:
             - eslint-import-resolver-webpack
             - supports-color
 
-    eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint@7.32.0):
+    eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.8.7)(eslint@7.32.0):
         dependencies:
             '@rtsao/scc': 1.1.0
             array-includes: 3.1.8
@@ -37566,7 +37577,7 @@ snapshots:
             doctrine: 2.1.0
             eslint: 7.32.0
             eslint-import-resolver-node: 0.3.9
-            eslint-module-utils: 2.12.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint@7.32.0)
+            eslint-module-utils: 2.12.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.7(eslint-plugin-import@2.31.0)(eslint@7.32.0))(eslint@7.32.0)
             hasown: 2.0.2
             is-core-module: 2.16.1
             is-glob: 4.0.3
@@ -39307,6 +39318,14 @@ snapshots:
             - encoding
             - supports-color
 
+    googleapis@129.0.0(encoding@0.1.13):
+        dependencies:
+            google-auth-library: 9.15.1(encoding@0.1.13)
+            googleapis-common: 7.2.0(encoding@0.1.13)
+        transitivePeerDependencies:
+            - encoding
+            - supports-color
+
     googleapis@144.0.0(encoding@0.1.13):
         dependencies:
             google-auth-library: 9.15.1(encoding@0.1.13)
@@ -40055,7 +40074,7 @@ snapshots:
             isstream: 0.1.2
             jsonwebtoken: 9.0.2
             mime-types: 2.1.35
-            retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
+            retry-axios: 2.6.0(axios@1.7.9)
             tough-cookie: 4.1.4
         transitivePeerDependencies:
             - supports-color
@@ -41909,7 +41928,7 @@ snapshots:
 
     kuler@2.0.0: {}
 
-    langchain@0.0.116(5suukz2kcriwjfh5ud7y6zqsle):
+    langchain@0.0.116(iivuttr355pah5s6ksk5arzbra):
         dependencies:
             '@anthropic-ai/sdk': 0.5.10(encoding@0.1.13)
             ansi-styles: 5.2.0
@@ -41950,7 +41969,7 @@ snapshots:
             apify-client: 2.12.1
             axios: 1.7.9(debug@4.4.0)
             cheerio: 1.0.0
-            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
+            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2))
             cohere-ai: 6.2.2
             d3-dsv: 2.0.0
             epub2: 3.0.2(ts-toolbelt@9.6.0)
@@ -41972,7 +41991,7 @@ snapshots:
             - encoding
             - ws
 
-    langchain@0.0.116(rmsgxtkmqmi5hmutb5dbcho4o4):
+    langchain@0.0.116(rizdvp72vz3v3udbn5mmuawvfu):
         dependencies:
             '@anthropic-ai/sdk': 0.5.10(encoding@0.1.13)
             ansi-styles: 5.2.0
@@ -42013,7 +42032,7 @@ snapshots:
             apify-client: 2.12.1
             axios: 1.7.9(debug@4.4.0)
             cheerio: 1.0.0
-            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13))(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2))
+            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13))(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             cohere-ai: 7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13)
             d3-dsv: 2.0.0
             epub2: 3.0.2(ts-toolbelt@9.6.0)
@@ -45559,6 +45578,8 @@ snapshots:
 
     pluralize@8.0.0: {}
 
+    pnpm@10.11.0: {}
+
     popmotion@9.3.6:
         dependencies:
             framesync: 5.3.0
@@ -48049,7 +48070,7 @@ snapshots:
 
     ret@0.1.15: {}
 
-    retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
+    retry-axios@2.6.0(axios@1.7.9):
         dependencies:
             axios: 1.7.9(debug@4.4.0)
 
@@ -49309,6 +49330,8 @@ snapshots:
         dependencies:
             '@types/node': 18.15.11
             qs: 6.14.0
+
+    striptags@3.2.0: {}
 
     strnum@1.1.2: {}
 
@@ -51991,6 +52014,28 @@ snapshots:
     yocto-queue@0.1.0: {}
 
     yocto-queue@1.2.0: {}
+
+    youtube-captions-scraper@2.0.3:
+        dependencies:
+            axios: 1.7.9(debug@4.4.0)
+            he: 1.2.0
+            lodash: 4.17.21
+            striptags: 3.2.0
+        transitivePeerDependencies:
+            - debug
+
+    youtube-data-mcp-server@1.0.16(encoding@0.1.13):
+        dependencies:
+            '@modelcontextprotocol/sdk': 1.11.0
+            dotenv: 16.4.7
+            googleapis: 129.0.0(encoding@0.1.13)
+            pnpm: 10.11.0
+            youtube-captions-scraper: 2.0.3
+            zod: 3.24.2
+        transitivePeerDependencies:
+            - debug
+            - encoding
+            - supports-color
 
     youtube-transcript@1.2.1: {}
 
