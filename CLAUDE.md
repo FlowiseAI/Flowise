@@ -46,6 +46,19 @@ pnpm start
 pnpm start-worker
 ```
 
+### Testing
+
+```bash
+# Run unit tests (Jest)
+cd packages/server && pnpm test
+
+# Run e2e tests (Cypress)
+cd packages/server && pnpm e2e
+
+# Open Cypress UI for interactive testing
+cd packages/server && pnpm cypress:open
+```
+
 ### Cleaning and Maintenance
 
 ```bash
