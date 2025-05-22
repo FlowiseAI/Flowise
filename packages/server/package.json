@@ -139,7 +139,7 @@
         "@jest/globals": "^29.7.0",
         "@jest/types": "^29.6.3",
         "@types/content-disposition": "0.5.8",
-        "@types/cors": "^2.8.12",
+        "@types/cors": "^2.8.18",
         "@types/crypto-js": "^4.1.1",
         "@types/express": "^4.17.13",
         "@types/express-session": "^1.18.1",
