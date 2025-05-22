@@ -1,9 +1,9 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "docker/Dockerfile.railway"
+dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "node packages/server/dist/index.js"
+startCommand = "pnpm start"
 healthcheckPath = "/api/v1/health"
 healthcheckTimeout = 100
 restartPolicyType = "ON_FAILURE"
@@ -13,8 +13,8 @@ restartPolicyMaxRetries = 10
 FLOWISE_USERNAME = "${FLOWISE_USERNAME}"
 FLOWISE_PASSWORD = "${FLOWISE_PASSWORD}"
 PORT = "3000"
-DATABASE_PATH = "/data/.flowise"
-APIKEY_PATH = "/data/.flowise"
-SECRETKEY_PATH = "/data/.flowise"
-LOG_PATH = "/data/logs"
-EXECUTION_PATH = "/app/packages/server/dist"
+DATABASE_PATH = "/usr/src/packages/server/.flowise"
+APIKEY_PATH = "/usr/src/packages/server/.flowise"
+SECRETKEY_PATH = "/usr/src/packages/server/.flowise"
+LOG_PATH = "/usr/src/packages/server/logs"
+EXECUTION_PATH = "/usr/src/packages/server/dist"
