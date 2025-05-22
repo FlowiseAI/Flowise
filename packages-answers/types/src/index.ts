@@ -18,6 +18,7 @@ export interface Sidekick extends DB.Sidekick {
     }
     favoritedBy?: Array<User>
     sharedWith?: string
+    categories?: string[]
 }
 export type PineconeObject = {
     vectors: PineconeVector[]
@@ -525,6 +526,16 @@ export interface SidekickListItem extends Pick<DB.Sidekick, 'id' | 'placeholder'
 // Add the Sidekicks type
 export type Sidekicks = SidekickListItem[]
 
+export interface FeedbackPayload {
+    id?: string
+    chatflowid: string
+    chatId: string
+    messageId: string
+    rating: string
+    content: string
+    domain?: string
+    accessToken?: string
+}
 export interface Chatflow {
     id: string
     name: string

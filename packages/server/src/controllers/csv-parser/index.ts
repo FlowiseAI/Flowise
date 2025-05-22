@@ -51,8 +51,27 @@ const createCsvParseRun = async (req: Request, res: Response, next: NextFunction
     }
 }
 
+const getProcessedCsvSignedUrl = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: csvParserController.getProcessedCsvSignedUrl - Unauthorized')
+        }
+        if (!req.params.id) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                'Error: csvParserController.getProcessedCsvSignedUrl - Missing csvParseRun ID'
+            )
+        }
+        const apiResponse = await csvParserService.getProcessedCsvSignedUrl(req.params.id, req.user)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     getAllCsvParseRuns,
     getCsvParseRunById,
-    createCsvParseRun
+    createCsvParseRun,
+    getProcessedCsvSignedUrl
 }

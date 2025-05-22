@@ -106,7 +106,10 @@ class DocStore_VectorStores implements INode {
 
         // Finally create the Vector Store or Retriever object (data.output)
         const vectorStoreObj = await _createVectorStoreObject(options.componentNodes, data)
-        const retrieverOrVectorStore = await vectorStoreObj.init(vStoreNodeData, '', options)
+        const retrieverOrVectorStore = await vectorStoreObj.init(vStoreNodeData, '', {
+            ...options,
+            chatflowid: entity.id
+        })
         if (!retrieverOrVectorStore) {
             return { error: 'Failed to create vectorStore' }
         }

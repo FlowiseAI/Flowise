@@ -43,8 +43,8 @@ const googleAuthCallback = async (req: Request, res: Response) => {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Error: authController.googleAuthCallback - Authentication failed')
         }
 
-        const allowedOrigin = process.env.NODE_ENV === 'production' ? process.env.PRODUCTION_URL : 'http://localhost:3000'
-
+        // Using "*" as the target origin allows the message to be received by any window
+        // The opener window will still need to validate the message source for security
         res.setHeader('Content-Type', 'text/html')
         res.send(`
             <html>
@@ -54,7 +54,7 @@ const googleAuthCallback = async (req: Request, res: Response) => {
                     window.opener.postMessage({ 
                       type: 'AUTH_SUCCESS',
                       user: ${JSON.stringify(req.user)}
-                    }, '${allowedOrigin}');
+                    }, '*');
                     window.close();
                   }
                 </script>
@@ -63,16 +63,17 @@ const googleAuthCallback = async (req: Request, res: Response) => {
         `)
     } catch (error) {
         console.error('Auth callback error:', error)
-        const allowedOrigin = process.env.NODE_ENV === 'production' ? process.env.PRODUCTION_URL : 'http://localhost:3000'
         res.send(`
             <html>
               <body>
                 <script>
-                  window.opener.postMessage({
-                    type: 'AUTH_ERROR',
-                    error: ${JSON.stringify(error)}
-                  }, '${allowedOrigin}');
-                  window.close();
+                  if (window.opener) {
+                    window.opener.postMessage({
+                      type: 'AUTH_ERROR',
+                      error: ${JSON.stringify(error)}
+                    }, '*');
+                    window.close();
+                  }
                 </script>
               </body>
             </html>

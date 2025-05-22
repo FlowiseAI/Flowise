@@ -164,6 +164,14 @@ class Retriever_Tools implements INode {
                 optional: true
             },
             {
+                label: 'Include Metadata',
+                name: 'includeMetadata',
+                type: 'boolean',
+                optional: true,
+                description:
+                    'If true, returns the full stringified document objects. If false, returns page content and optionally appends source documents based on "Return Source Documents" flag.'
+            },
+            {
                 label: 'Additional Metadata Filter',
                 name: 'retrieverToolMetadataFilter',
                 type: 'json',
@@ -183,6 +191,7 @@ class Retriever_Tools implements INode {
         const description = nodeData.inputs?.description as string
         const retriever = nodeData.inputs?.retriever as BaseRetriever
         const returnSourceDocuments = nodeData.inputs?.returnSourceDocuments as boolean
+        const includeMetadata = nodeData.inputs?.includeMetadata as boolean
         const retrieverToolMetadataFilter = nodeData.inputs?.retrieverToolMetadataFilter
 
         const input = {
@@ -204,9 +213,14 @@ class Retriever_Tools implements INode {
                 vectorStore.filter = newMetadataFilter
             }
             const docs = await retriever.invoke(input)
-            const content = docs.map((doc) => doc.pageContent).join('\n\n')
-            const sourceDocuments = JSON.stringify(docs)
-            return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments : content
+            const stringifiedDocs = JSON.stringify(docs)
+
+            if (includeMetadata) {
+                return stringifiedDocs
+            } else {
+                const content = docs.map((doc) => doc.pageContent).join('\n\n')
+                return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + stringifiedDocs : content
+            }
         }
 
         const schema = z.object({

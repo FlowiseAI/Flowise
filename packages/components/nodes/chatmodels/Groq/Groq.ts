@@ -15,10 +15,11 @@ class Groq_ChatModels implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
-
+    tags: string[]
     constructor() {
         this.label = 'GroqChat'
         this.name = 'groqChat'
+        this.tags = ['AAI']
         this.version = 4.0
         this.type = 'GroqChat'
         this.icon = 'groq.png'

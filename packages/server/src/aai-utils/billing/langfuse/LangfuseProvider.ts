@@ -62,6 +62,18 @@ export class LangfuseProvider {
 
     private async fetchUsageData(traceId?: string): Promise<GetLangfuseTracesResponse['data']> {
         try {
+            if (traceId) {
+                const trace = await langfuse.fetchTrace(traceId)
+                if (trace.data) {
+                    return [
+                        {
+                            ...trace.data,
+                            observations: trace.data.observations?.map((obs: any) => obs?.id)
+                        } as any
+                    ]
+                }
+            }
+
             const startOfMonth = new Date()
             startOfMonth.setDate(1)
             startOfMonth.setHours(0, 0, 0, 0)
@@ -78,6 +90,9 @@ export class LangfuseProvider {
 
             // Process initial response
             const validInitialTraces = initialResponse.data.filter((trace) => {
+                if (traceId && trace.id !== traceId) {
+                    return false
+                }
                 const hasTokenCost = trace.totalCost > 0
                 const hasComputeTime = trace.latency > 0
                 const metadata = (trace.metadata as TraceMetadata) || {}
@@ -106,6 +121,9 @@ export class LangfuseProvider {
 
                 responses.forEach((response) => {
                     const validTraces = response.data.filter((trace) => {
+                        if (traceId && trace.id !== traceId) {
+                            return false
+                        }
                         const hasTokenCost = trace.totalCost > 0
                         const hasComputeTime = trace.latency > 0
                         const metadata = (trace.metadata as TraceMetadata) || {}
@@ -132,10 +150,8 @@ export class LangfuseProvider {
     private async validateUsageData(trace: Trace): Promise<boolean> {
         const metadata = (trace.metadata as TraceMetadata) || {}
         return !!(
-            trace.id &&
-            typeof trace.totalCost === 'number' &&
-            typeof trace.latency === 'number' &&
-            metadata.billing_status !== 'processed'
+            (trace.id && typeof trace.totalCost === 'number' && typeof trace.latency === 'number')
+            // && metadata.billing_status !== 'processed'
         )
     }
     private async convertUsageToCredits(usageData: Trace[]): Promise<Array<{ creditsData: CreditsData; fullTrace: any }>> {
@@ -228,9 +244,9 @@ export class LangfuseProvider {
 
     private convertCostsToCredits(costs: { ai: number; compute: number; storage: number; withMargin: number }) {
         return {
-            ai_tokens: Math.ceil(costs.ai * BILLING_CONFIG.MARGIN_MULTIPLIER * BILLING_CONFIG.CREDIT_TO_USD),
-            compute: Math.ceil(costs.compute * BILLING_CONFIG.MARGIN_MULTIPLIER * BILLING_CONFIG.CREDIT_TO_USD),
-            storage: Math.ceil(costs.storage * BILLING_CONFIG.MARGIN_MULTIPLIER * BILLING_CONFIG.CREDIT_TO_USD)
+            ai_tokens: Math.ceil((costs.ai * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.CREDIT_TO_USD),
+            compute: Math.ceil((costs.compute * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.CREDIT_TO_USD),
+            storage: Math.ceil((costs.storage * BILLING_CONFIG.MARGIN_MULTIPLIER) / BILLING_CONFIG.CREDIT_TO_USD)
         }
     }
 

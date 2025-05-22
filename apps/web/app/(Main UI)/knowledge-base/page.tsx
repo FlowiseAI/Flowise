@@ -3,7 +3,7 @@ import React from 'react'
 import SyncStatusLists from '@ui/SyncStatusLists'
 
 export const metadata = {
-    title: 'Document Sync Status | Answers AI',
+    title: 'Document Sync Status | Answer Agent',
     description: 'Document Sync Status'
 }
 

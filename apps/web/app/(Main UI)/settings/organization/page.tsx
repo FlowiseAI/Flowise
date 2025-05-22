@@ -4,7 +4,7 @@ import OrganizationForm from '@ui/OrganizationForm'
 import getCachedSession from '@ui/getCachedSession'
 
 export const metadata = {
-    title: 'Organization Settings | Answers AI',
+    title: 'Organization Settings | Answer Agent',
     description: 'Organization Settings'
 }
 

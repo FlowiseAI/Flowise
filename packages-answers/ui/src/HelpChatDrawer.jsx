@@ -214,7 +214,7 @@ const HelpChatDrawer = ({ apiHost, chatflowid }) => {
                                 key='aai-chatbot-script'
                                 id='aai-chatbot-script'
                                 type='module'
-                                src='https://cdn.jsdelivr.net/npm/aai-embed@2/dist/web.js'
+                                src='https://cdn.jsdelivr.net/npm/aai-embed@3.0.4/dist/web.js'
                                 onReady={() => {
                                     Chatbot.initFull({
                                         chatflowid: chatflowid,

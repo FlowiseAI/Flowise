@@ -13,10 +13,12 @@ class AAIEmbedding_Embeddings implements INode {
     description: string
     baseClasses: string[]
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'AAI Embeddings'
         this.name = 'AAIEmbeddings'
+        this.tags = ['AAI']
         this.version = 1.0
         this.type = 'AAIEmbeddings'
         this.icon = 'answerai-square-black.png'

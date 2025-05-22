@@ -13,7 +13,6 @@ import { cloneDeep } from 'lodash'
 // material-ui
 import {
     Button,
-    Tooltip,
     ListItemButton,
     Box,
     Stack,
@@ -38,7 +37,7 @@ import userPNG from '@/assets/images/account.png'
 import msgEmptySVG from '@/assets/images/message_empty.svg'
 import multiagent_supervisorPNG from '@/assets/images/multiagent_supervisor.png'
 import multiagent_workerPNG from '@/assets/images/multiagent_worker.png'
-import { IconTool, IconDeviceSdCard, IconFileExport, IconEraser, IconX, IconDownload, IconPaperclip } from '@tabler/icons-react'
+import { IconTool, IconDeviceSdCard, IconFileExport, IconX, IconDownload, IconPaperclip } from '@tabler/icons-react'
 
 // Project import
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
@@ -953,11 +952,12 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             />
                         </div>
                         <div style={{ flex: 1 }}></div>
-                        {stats.totalMessages > 0 && (
+                        {/* TODO: Add this back in when we have a better use case for it
+                         {stats.totalMessages > 0 && (
                             <Button color='error' variant='outlined' onClick={() => onDeleteMessages()} startIcon={<IconEraser />}>
                                 Delete Messages
                             </Button>
-                        )}
+                        )} */}
                     </div>
                     <div
                         style={{
@@ -1070,7 +1070,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                 </div>
                                             )}
                                         </div>
-                                        <div
+                                        {/* <div
                                             style={{
                                                 display: 'flex',
                                                 flexDirection: 'column',
@@ -1100,7 +1100,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                                     </h5>
                                                 </Tooltip>
                                             )}
-                                        </div>
+                                        </div> */}
                                     </div>
                                 )}
                                 <div

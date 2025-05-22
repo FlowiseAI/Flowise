@@ -41,6 +41,7 @@ import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons-react'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 import LangChainPNG from '@/assets/images/langchain.png'
 import utilNodesPNG from '@/assets/images/utilNodes.png'
+import AAIPNG from '@/assets/images/aai.png'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -57,7 +58,7 @@ function a11yProps(index) {
 
 const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager', 'Utilities']
 
-const agentMemoryNodes = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory']
+const agentMemoryNodes = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory', 'answerAiAgentMemory']
 
 // Show blacklisted nodes (exceptions) for agent canvas
 const exceptionsForAgentCanvas = {
@@ -154,12 +155,15 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     }
 
     const groupByTags = (nodes, newTabValue = 0) => {
-        const langchainNodes = nodes.filter((nd) => !nd.tags)
+        const aaiNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('AAI'))
+        const langchainNodes = nodes.filter((nd) => !nd.tags || !nd.tags.includes('AAI'))
         const llmaindexNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('LlamaIndex'))
         const utilitiesNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('Utilities'))
         if (newTabValue === 0) {
-            return langchainNodes
+            return aaiNodes
         } else if (newTabValue === 1) {
+            return langchainNodes
+        } else if (newTabValue === 2) {
             return llmaindexNodes
         } else {
             return utilitiesNodes
@@ -248,8 +252,10 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
     const getImage = (tabValue) => {
         if (tabValue === 0) {
-            return LangChainPNG
+            return AAIPNG
         } else if (tabValue === 1) {
+            return LangChainPNG
+        } else if (tabValue === 2) {
             return LlamaindexPNG
         } else {
             return utilNodesPNG
@@ -366,7 +372,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                 onChange={handleTabChange}
                                                 aria-label='tabs'
                                             >
-                                                {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
+                                                {['AAI', 'All', 'LlamaIndex', 'Utilities'].map((item, index) => (
                                                     <Tab
                                                         icon={
                                                             <div
@@ -412,7 +418,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                             <List
                                                 sx={{
                                                     width: '100%',
-                                                    maxWidth: 370,
+                                                    maxWidth: 455,
                                                     py: 0,
                                                     borderRadius: '10px',
                                                     [theme.breakpoints.down('md')]: {
@@ -433,7 +439,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                     .sort()
                                                     .map((category) => (
                                                         <Accordion
-                                                            expanded={categoryExpanded[category] || false}
+                                                            expanded={categoryExpanded[category] || tabValue === 0 || false}
                                                             onChange={handleAccordionChange(category)}
                                                             key={category}
                                                             disableGutters

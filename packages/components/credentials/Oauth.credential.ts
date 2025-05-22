@@ -32,6 +32,7 @@ class Oauth implements INodeCredential {
                 name: 'provider',
                 type: 'string',
                 optional: false,
+                hidden: true,
                 disabled: true
             },
             {
@@ -39,6 +40,7 @@ class Oauth implements INodeCredential {
                 name: 'providerId',
                 type: 'string',
                 optional: false,
+                hidden: true,
                 disabled: true
             },
             {
@@ -46,6 +48,7 @@ class Oauth implements INodeCredential {
                 name: 'googleAccessToken',
                 type: 'string',
                 optional: false,
+                hidden: true,
                 disabled: true
             }
         ]

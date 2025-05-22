@@ -64,7 +64,12 @@ const getDocumentStoreById = async (req: Request, res: Response, next: NextFunct
                 `Error: documentStoreController.getDocumentStoreById - id not provided!`
             )
         }
-        const apiResponse = await documentStoreService.getDocumentStoreById(req.params.id, req.user?.id!, req.user?.organizationId!)
+        const apiResponse = await documentStoreService.getDocumentStoreById(
+            req.params.id,
+            req.user?.id!,
+            req.user?.organizationId!,
+            req.user
+        )
         if (apiResponse && apiResponse.whereUsed) {
             apiResponse.whereUsed = JSON.stringify(
                 await documentStoreService.getUsedChatflowNames(apiResponse, req.user?.id!, req.user?.organizationId!)
@@ -512,7 +517,12 @@ const generateDocStoreToolDesc = async (req: Request, res: Response, next: NextF
         if (typeof req.body === 'undefined') {
             throw new Error('Error: documentStoreController.generateDocStoreToolDesc - body not provided!')
         }
-        const apiResponse = await documentStoreService.generateDocStoreToolDesc(req.params.id, req.body.selectedChatModel)
+        const apiResponse = await documentStoreService.generateDocStoreToolDesc(
+            req.params.id,
+            req.body.selectedChatModel,
+            req.user?.id!,
+            req.user?.organizationId!
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)

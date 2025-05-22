@@ -1,7 +1,10 @@
 import React from 'react'
 import { Box, Button, IconButton } from '@mui/material'
 import type { Message, Sidekick } from 'types'
+import ChatFeedbackContentDialog from './../../../packages/ui/src/ui-component/dialog/ChatFeedbackContentDialog'
+import { useAnswers } from './AnswersContext'
 import RefreshIcon from '@mui/icons-material/Refresh'
+import { useSubscriptionDialog } from './SubscriptionDialogContext'
 
 import dynamic from 'next/dynamic'
 
@@ -34,6 +37,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     setPreviewCode
 }) => {
     const openLinksInNewTab = chatbotConfig?.chatLinksInNewTab?.status ?? false
+    const { showFeedbackContentDialog, setShowFeedbackContentDialog, feedbackId, submitFeedbackContent } = useAnswers()
+    const { openDialog: openSubscriptionDialog } = useSubscriptionDialog()
+
     return (
         <Box
             sx={{
@@ -48,6 +54,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
             </Box>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <ChatFeedbackContentDialog
+                    show={showFeedbackContentDialog}
+                    onCancel={() => setShowFeedbackContentDialog(false)}
+                    onConfirm={submitFeedbackContent}
+                />
                 {messages?.map((message, index) => (
                     <MessageCard
                         {...message}
@@ -55,16 +66,23 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                         setSelectedDocuments={setSelectedDocuments}
                         setPreviewCode={setPreviewCode}
                         openLinksInNewTab={openLinksInNewTab}
+                        role={message.role}
+                        isFeedbackAllowed={chatbotConfig?.chatFeedback?.status}
                     />
                 ))}
 
                 {error ? (
                     <>
-                        <MessageCard id='error' role='status' content={`${error.message} `} error={error} />
-                        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                        <MessageCard id='error' role='status' content={`${typeof error === 'string' ? error : error.message} `} error={error} />
+                        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 1 }}>
                             <Button onClick={regenerateAnswer} variant='contained' color='primary' sx={{ margin: 'auto' }}>
                                 Retry
                             </Button>
+                            {typeof error === 'string' && error.toLowerCase().includes('usage limit') && (
+                                <Button onClick={openSubscriptionDialog} variant='contained' color='secondary' sx={{ margin: 'auto' }}>
+                                    Upgrade Plan
+                                </Button>
+                            )}
                         </Box>
                     </>
                 ) : null}

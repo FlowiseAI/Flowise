@@ -89,7 +89,7 @@ const getSingleNodeIcon = async (nodeName: string) => {
 const getSingleNodeAsyncOptions = async (
     nodeName: string,
     requestBody: any,
-    user: { id: string; organizationId?: string; roles?: string[] } | undefined
+    user: { id: string; organizationId?: string; roles?: string[]; permissions?: string[] } | undefined
 ): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
@@ -104,7 +104,8 @@ const getSingleNodeAsyncOptions = async (
                     databaseEntities: databaseEntities,
                     userId: user?.id,
                     organizationId: user?.organizationId,
-                    isAdmin: user?.roles?.includes('Admin')
+                    isAdmin: user?.roles?.includes('Admin'),
+                    isOrgAdmin: user?.permissions?.includes('org:manage')
                 })
 
                 return dbResponse
@@ -123,7 +124,7 @@ const getSingleNodeAsyncOptions = async (
 }
 
 // execute custom function node
-const executeCustomFunction = async (requestBody: any) => {
+const executeCustomFunction = async (requestBody: any, userId: string, organizationId: string, user?: { permissions?: string[] }) => {
     try {
         const appServer = getRunningExpressApp()
         const body = requestBody
@@ -147,7 +148,10 @@ const executeCustomFunction = async (requestBody: any) => {
                 const options: ICommonObject = {
                     appDataSource: appServer.AppDataSource,
                     databaseEntities,
-                    logger
+                    logger,
+                    userId,
+                    organizationId,
+                    isOrgAdmin: user?.permissions?.includes('org:manage')
                 }
 
                 const returnData = await newNodeInstance.init(nodeData, '', options)

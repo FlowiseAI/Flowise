@@ -49,6 +49,7 @@ import billingRouter from './billing'
 import nvidiaNimRouter from './nvidia-nim'
 import gmailRouter from './gmail'
 import csvParserRouter from './csv-parser'
+import browserExtensionRouter from './browser-extension'
 
 const router = express.Router()
 
@@ -102,5 +103,6 @@ router.use('/billing', billingRouter)
 router.use('/nvidia-nim', nvidiaNimRouter)
 router.use('/gmail', gmailRouter)
 router.use('/csv-parser', csvParserRouter)
+router.use('/browser-extension', browserExtensionRouter)
 
 export default router

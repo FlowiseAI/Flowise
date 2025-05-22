@@ -17,7 +17,7 @@ import checkOwnership from '../../utils/checkOwnership'
 import { Organization } from '../../database/entities/Organization'
 import { Chat } from '../../database/entities/Chat'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
-import { QueryRunner } from 'typeorm'
+import { IsNull, QueryRunner } from 'typeorm'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -96,7 +96,10 @@ const deleteChatflow = async (chatflowId: string, user: IUser | undefined): Prom
 
         // First, try to find the chatflow
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
-            where: { id: chatflowId, ...(permissions?.includes('org:manage') ? { organizationId } : { userId, organizationId }) }
+            where: {
+                id: chatflowId,
+                ...(permissions?.includes('org:manage') ? [{ organizationId }, { organizationId: IsNull() }] : { userId, organizationId })
+            }
         })
 
         if (!chatflow) {
@@ -181,7 +184,8 @@ const getAllChatflows = async (type?: ChatflowType, filter?: ChatflowsFilter, us
                 : chatflow?.visibility?.includes(ChatflowVisibility.ORGANIZATION)
                 ? 'ORGANIZATION'
                 : '',
-            isOwner: chatflow.userId === userId
+            isOwner: chatflow.userId === userId,
+            canEdit: chatflow.userId === userId || permissions?.includes('org:manage')
         }))
 
         if (!(await checkOwnership(dbResponse, user))) {
@@ -245,7 +249,8 @@ const getChatflowById = async (chatflowId: string, user?: IUser): Promise<any> =
 
         // For authenticated users, check permissions
         if (user) {
-            const isUserOrgAdmin = user.permissions?.includes('org:manage') && user.organizationId === dbResponse.organizationId
+            const isUserOrgAdmin = user.permissions?.includes('org:manage')
+            // && (user.organizationId === dbResponse.organizationId || !!dbResponse.organizationId)
             const isUsersChatflow = dbResponse.userId === user.id
             const isChatflowPublic = dbResponse.isPublic
             const hasChatflowOrgVisibility = dbResponse.visibility?.includes(ChatflowVisibility.ORGANIZATION)
@@ -347,7 +352,7 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
     }
 }
 
-const importChatflows = async (newChatflows: Partial<ChatFlow>[], queryRunner?: QueryRunner): Promise<any> => {
+const importChatflows = async (user: IUser, newChatflows: Partial<ChatFlow>[], queryRunner?: QueryRunner): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const repository = queryRunner ? queryRunner.manager.getRepository(ChatFlow) : appServer.AppDataSource.getRepository(ChatFlow)
@@ -382,6 +387,8 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[], queryRunner?: 
                 newChatflow.name += ' (1)'
             }
             newChatflow.flowData = JSON.stringify(JSON.parse(flowData))
+            newChatflow.userId = user?.id
+            newChatflow.organizationId = user?.organizationId
             return newChatflow
         })
 
@@ -397,7 +404,7 @@ const importChatflows = async (newChatflows: Partial<ChatFlow>[], queryRunner?: 
     }
 }
 
-const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Promise<any> => {
+const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow, user: IUser): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
 
@@ -411,10 +418,10 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
         // Update chatbotConfig with new displayMode and embeddedUrl if provided
         if (updateChatFlow.chatbotConfig) {
             const updatedConfig = JSON.parse(updateChatFlow.chatbotConfig)
-            if (updatedConfig.displayMode !== undefined) {
+            if (updatedConfig?.displayMode !== undefined) {
                 existingChatbotConfig.displayMode = updatedConfig.displayMode
             }
-            if (updatedConfig.embeddedUrl !== undefined) {
+            if (updatedConfig?.embeddedUrl !== undefined) {
                 existingChatbotConfig.embeddedUrl = updatedConfig.embeddedUrl
             }
         }
@@ -424,7 +431,10 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow): Pro
         updateChatFlow.visibility = Array.from(
             new Set([...(updateChatFlow.visibility ?? []), ChatflowVisibility.PRIVATE, ChatflowVisibility.ANSWERAI])
         )
-        const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
+        const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, {
+            ...updateChatFlow,
+            organizationId: user.organizationId
+        })
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
 
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)

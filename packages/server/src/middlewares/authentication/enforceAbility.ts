@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { EntityTarget } from 'typeorm'
+import { EntityTarget, IsNull } from 'typeorm'
 import path from 'path'
 
 // Define interfaces for better type safety
@@ -169,10 +169,16 @@ async function adminHasAccess(repository: any, resourceId: string, organizationI
     // Use more efficient query but maintain original behavior
     return (
         (await repository.findOne({
-            where: {
-                id: resourceId,
-                organizationId
-            },
+            where: [
+                {
+                    id: resourceId,
+                    organizationId
+                },
+                {
+                    id: resourceId,
+                    organizationId: IsNull()
+                }
+            ],
             select: ['id'] // Only need to check existence
         })) !== null
     )

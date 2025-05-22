@@ -33,8 +33,8 @@ const GeneralSettings = ({ dialogProps }) => {
 
             // Parse chatbotConfig to get displayMode and embeddedUrl
             const chatbotConfig = dialogProps.chatflow.chatbotConfig ? JSON.parse(dialogProps.chatflow.chatbotConfig) : {}
-            setDisplayMode(chatbotConfig.displayMode || DISPLAY_MODES.CHATBOT)
-            setEmbeddedUrl(chatbotConfig.embeddedUrl || '')
+            setDisplayMode(chatbotConfig?.displayMode || DISPLAY_MODES.CHATBOT)
+            setEmbeddedUrl(chatbotConfig?.embeddedUrl || '')
         }
     }, [dialogProps])
 

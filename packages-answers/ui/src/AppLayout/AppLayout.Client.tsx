@@ -18,6 +18,9 @@ const HelpChatProvider = dynamic(() => import('../HelpChatContext').then((mod) =
     ssr: false
 })
 const AppDrawer = dynamic(() => import('../AppDrawer'))
+const SubscriptionDialogProvider = dynamic(() => import('../SubscriptionDialogContext').then((mod) => mod.SubscriptionDialogProvider), {
+    ssr: false
+})
 
 import React from 'react'
 
@@ -64,20 +67,22 @@ export default function AppLayout({
                     <ThemeProvider theme={darkModeTheme}>
                         <CssBaseline enableColorScheme />
                         <GlobalStyles />
-                        <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', overflowY: 'auto' }}>
-                            {!noDrawer && <AppDrawer params={params} session={session} flagsmithState={flagsmithState} />}
-                            <div style={{ flex: 1, position: 'relative', overflow: 'auto' }}>
-                                <div style={{ width: '100%', position: 'relative' }}>{children}</div>
+                        <SubscriptionDialogProvider>
+                            <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', overflowY: 'auto' }}>
+                                {!noDrawer && <AppDrawer params={params} session={session} flagsmithState={flagsmithState} />}
+                                <div style={{ flex: 1, position: 'relative', overflow: 'auto' }}>
+                                    <div style={{ width: '100%', position: 'relative' }}>{children}</div>
+                                </div>
+                                <React.Suspense fallback={<div>Loading...</div>}>
+                                    <HelpChatProvider>
+                                        <HelpChatDrawer
+                                            apiHost='https://lr-production.studio.theanswer.ai'
+                                            chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d'
+                                        />
+                                    </HelpChatProvider>
+                                </React.Suspense>
                             </div>
-                            <React.Suspense fallback={<div>Loading...</div>}>
-                                <HelpChatProvider>
-                                    <HelpChatDrawer
-                                        apiHost='https://lr-production.studio.theanswer.ai'
-                                        chatflowid='e24d5572-a27a-40b9-83fe-19a376535b9d'
-                                    />
-                                </HelpChatProvider>
-                            </React.Suspense>
-                        </div>
+                        </SubscriptionDialogProvider>
                     </ThemeProvider>
                     {/* </Auth0Provider> */}
                 </FlagsmithProvider>
