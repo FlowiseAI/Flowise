@@ -23,7 +23,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@v4
             - name: Set up QEMU
-              uses: docker/setup-qemu-action@v3.0.0
+              uses: docker/setup-qemu-action@v3.6.0
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3.10.0
             - name: Login to Docker Hub
