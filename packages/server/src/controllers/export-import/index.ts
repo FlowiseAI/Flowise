@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
-import exportImportService from '../../services/export-import'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import exportImportService from '../../services/export-import'
 
 const exportData = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -32,7 +32,12 @@ const importData = async (req: Request, res: Response, next: NextFunction) => {
             )
         }
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
+
         const importData = req.body
+        if (!importData) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Error: exportImportController.importData - importData is required!')
+        }
+
         await exportImportService.importData(importData, orgId, workspaceId, subscriptionId)
         return res.json({ message: 'success' })
     } catch (error) {
