@@ -165,13 +165,13 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                               text: 'Billing',
                               link: '/billing',
                               icon: <AssessmentIcon color='primary' />
+                          },
+                          {
+                              id: 'apps',
+                              text: 'Apps',
+                              link: '/sidekick-studio/apps',
+                              icon: <AppsOutlinedIcon color='primary' />
                           }
-                          //   {
-                          //       id: 'apps',
-                          //       text: 'Apps',
-                          //       link: '/sidekick-studio/apps',
-                          //       icon: <AppsOutlinedIcon color='primary' />
-                          //   }
                       ]
                   }
                 : {})
@@ -304,7 +304,7 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                                         href={item.link}
                                         component={item.link ? NextLink : 'button'}
                                         sx={{ flex: 1, display: 'flex', width: '100%' }}
-                                        onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : item.text ?? '')}
+                                        onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : (item.text ?? ''))}
                                     >
                                         <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
                                         <Typography
