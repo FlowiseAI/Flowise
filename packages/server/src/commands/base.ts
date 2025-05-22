@@ -18,8 +18,6 @@ export abstract class BaseCommand extends Command {
         IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         BLOB_STORAGE_PATH: Flags.string(),
-        APIKEY_STORAGE_TYPE: Flags.string(),
-        APIKEY_PATH: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
@@ -130,11 +128,6 @@ export abstract class BaseCommand extends Command {
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
         if (flags.SHOW_COMMUNITY_NODES) process.env.SHOW_COMMUNITY_NODES = flags.SHOW_COMMUNITY_NODES
         if (flags.DISABLED_NODES) process.env.DISABLED_NODES = flags.DISABLED_NODES
-
-        if (flags.APIKEY_STORAGE_TYPE) process.env.APIKEY_STORAGE_TYPE = flags.APIKEY_STORAGE_TYPE
-        if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
-
-        // API Configuration
         if (flags.FLOWISE_FILE_SIZE_LIMIT) process.env.FLOWISE_FILE_SIZE_LIMIT = flags.FLOWISE_FILE_SIZE_LIMIT
 
         // Credentials

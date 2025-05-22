@@ -130,8 +130,6 @@ Flowise support different environment variables to configure your instance. You 
 | LOG_PATH                           | Location where log files are stored                                              | String                                           | `your-path/Flowise/logs`            |
 | LOG_LEVEL                          | Different levels of logs                                                         | Enum String: `error`, `info`, `verbose`, `debug` | `info`                              |
 | LOG_JSON_SPACES                    | Spaces to beautify JSON logs                                                     |                                                  | 2                                   |
-| APIKEY_STORAGE_TYPE                | To store api keys on a JSON file or database. Default is `json`                  | Enum String: `json`, `db`                        | `json`                              |
-| APIKEY_PATH                        | Location where api keys are saved when `APIKEY_STORAGE_TYPE` is `json`           | String                                           | `your-path/Flowise/packages/server` |
 | TOOL_FUNCTION_BUILTIN_DEP          | NodeJS built-in modules to be used for Tool Function                             | String                                           |                                     |
 | TOOL_FUNCTION_EXTERNAL_DEP         | External modules to be used for Tool Function                                    | String                                           |                                     |
 | DATABASE_TYPE                      | Type of database to store the flowise data                                       | Enum String: `sqlite`, `mysql`, `postgres`       | `sqlite`                            |

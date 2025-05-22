@@ -168,7 +168,7 @@ ExportDialog.propTypes = {
     onExport: PropTypes.func
 }
 
-const ImportDialog = ({ show, onCancel }) => {
+const ImportDialog = ({ show }) => {
     const portalElement = document.getElementById('portal')
 
     const component = show ? (
@@ -199,8 +199,7 @@ const ImportDialog = ({ show, onCancel }) => {
 }
 
 ImportDialog.propTypes = {
-    show: PropTypes.bool,
-    onCancel: PropTypes.func
+    show: PropTypes.bool
 }
 
 // ==============================|| PROFILE MENU ||============================== //
@@ -528,7 +527,7 @@ const ProfileSection = ({ handleLogout }) => {
             </Popper>
             <AboutDialog show={aboutDialogOpen} onCancel={() => setAboutDialogOpen(false)} />
             <ExportDialog show={exportDialogOpen} onCancel={() => setExportDialogOpen(false)} onExport={(data) => onExport(data)} />
-            <ImportDialog show={importDialogOpen} onCancel={() => setImportDialogOpen(false)} />
+            <ImportDialog show={importDialogOpen} />
         </>
     )
 }
