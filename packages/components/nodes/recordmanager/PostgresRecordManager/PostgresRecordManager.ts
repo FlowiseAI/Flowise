@@ -227,8 +227,6 @@ class PostgresRecordManager implements RecordManagerInterface {
             const queryRunner = dataSource.createQueryRunner()
             const tableName = this.sanitizeTableName(this.tableName)
 
-            await queryRunner.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;')
-
             await queryRunner.manager.query(`
   CREATE TABLE IF NOT EXISTS "${tableName}" (
     uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -260,9 +258,9 @@ class PostgresRecordManager implements RecordManagerInterface {
         const dataSource = await this.getDataSource()
         try {
             const queryRunner = dataSource.createQueryRunner()
-            const res = await queryRunner.manager.query('SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) AS now')
+            const res = await queryRunner.manager.query('SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) AS extract')
             await queryRunner.release()
-            return Number.parseFloat(res[0].now)
+            return Number.parseFloat(res[0].extract)
         } catch (error) {
             console.error('Error getting time in PostgresRecordManager:')
             throw error
