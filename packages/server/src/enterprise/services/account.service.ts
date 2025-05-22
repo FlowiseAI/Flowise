@@ -25,7 +25,6 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
-import apikeyService from '../../services/apikey'
 
 type AccountDTO = {
     user: Partial<User>
@@ -249,7 +248,6 @@ export class AccountService {
                 (platform === Platform.OPEN_SOURCE || platform === Platform.ENTERPRISE) &&
                 ownerRole.id === data.organizationUser.roleId
             ) {
-                await apikeyService.migrateApiKeysFromJsonToDb()
                 await this.workspaceService.setNullWorkspaceId(queryRunner, data.workspace.id)
             }
             await queryRunner.commitTransaction()

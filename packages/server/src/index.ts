@@ -33,6 +33,7 @@ import { UsageCacheManager } from './UsageCacheManager'
 import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { Organization } from './enterprise/database/entities/organization.entity'
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
+import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 
 declare global {
     namespace Express {
@@ -129,6 +130,9 @@ export class App {
                 this.redisSubscriber = new RedisEventSubscriber(this.sseStreamer)
                 await this.redisSubscriber.connect()
             }
+
+            // TODO: Remove this by end of 2025
+            await migrateApiKeysFromJsonToDb(this.AppDataSource, this.identityManager.getPlatformType())
 
             logger.info('📦 [server]: Data Source has been initialized!')
         } catch (error) {

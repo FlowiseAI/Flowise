@@ -1,14 +1,12 @@
 import { StatusCodes } from 'http-status-codes'
-import { generateAPIKey, generateSecretHash, getAPIKeys as getAPIKeys_json, getAPIKeyPath } from '../../utils/apiKey'
+import { generateAPIKey, generateSecretHash } from '../../utils/apiKey'
 import { addChatflowsCount } from '../../utils/addChatflowsCount'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ApiKey } from '../../database/entities/ApiKey'
-import { ChatFlow } from '../../database/entities/ChatFlow'
 import { Not, IsNull } from 'typeorm'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
-import fs from 'fs'
 import { v4 as uuidv4 } from 'uuid'
 
 const getAllApiKeysFromDB = async (workspaceId?: string) => {
@@ -16,57 +14,6 @@ const getAllApiKeysFromDB = async (workspaceId?: string) => {
     const keys = await appServer.AppDataSource.getRepository(ApiKey).findBy(getWorkspaceSearchOptions(workspaceId))
     const keysWithChatflows = await addChatflowsCount(keys)
     return keysWithChatflows
-}
-
-const migrateApiKeysFromJsonToDb = async () => {
-    if (!process.env.APIKEY_STORAGE_TYPE || process.env.APIKEY_STORAGE_TYPE === 'json') {
-        const keys = await getAPIKeys_json()
-        if (keys.length > 0) {
-            try {
-                const appServer = getRunningExpressApp()
-                let count = 0
-
-                for (const key of keys) {
-                    const existingKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-                        apiKey: key.apiKey
-                    })
-
-                    // Only add if key doesn't already exist in DB
-                    if (!existingKey) {
-                        const newKey = new ApiKey()
-                        newKey.id = uuidv4()
-                        newKey.apiKey = key.apiKey
-                        newKey.apiSecret = key.apiSecret
-                        newKey.keyName = key.keyName
-                        const keyEntity = appServer.AppDataSource.getRepository(ApiKey).create(newKey)
-                        await appServer.AppDataSource.getRepository(ApiKey).save(keyEntity)
-                        count++
-
-                        const chatflows = await appServer.AppDataSource.getRepository(ChatFlow).findBy({
-                            apikeyid: key.id
-                        })
-
-                        // update chatflows apikeyid to new key id
-                        for (const chatflow of chatflows) {
-                            chatflow.apikeyid = newKey.id
-                            await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
-                        }
-
-                        await addChatflowsCount(chatflows)
-                    }
-                }
-
-                if (keys.length === count) {
-                    // Delete the JSON file
-                    if (fs.existsSync(getAPIKeyPath())) {
-                        fs.unlinkSync(getAPIKeyPath())
-                    }
-                }
-            } catch (error) {
-                console.error('Error migrating API keys from JSON to DB', error)
-            }
-        }
-    }
 }
 
 const getAllApiKeys = async (workspaceId?: string, autoCreateNewKey?: boolean) => {
@@ -247,6 +194,5 @@ export default {
     updateApiKey,
     verifyApiKey,
     getApiKey,
-    importKeys,
-    migrateApiKeysFromJsonToDb
+    importKeys
 }
