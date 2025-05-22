@@ -13,7 +13,6 @@ import { ChatFlow } from './database/entities/ChatFlow'
 import { CachePool } from './CachePool'
 import { AbortControllerPool } from './AbortControllerPool'
 import { RateLimiterManager } from './utils/rateLimit'
-import { getAPIKeys } from './utils/apiKey'
 import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
@@ -95,9 +94,6 @@ export class App {
 
             // Initialize abort controllers pool
             this.abortControllerPool = new AbortControllerPool()
-
-            // Initialize API keys
-            await getAPIKeys()
 
             // Initialize encryption key
             await getEncryptionKey()

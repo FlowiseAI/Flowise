@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 
@@ -95,7 +95,6 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
 
     const codes = ['Embed', 'Python', 'JavaScript', 'cURL', 'Share Chatbot']
     const [value, setValue] = useState(0)
-    const [keyOptions, setKeyOptions] = useState([])
     const [apiKeys, setAPIKeys] = useState([])
     const [chatflowApiKeyId, setChatflowApiKeyId] = useState('')
     const [selectedApiKey, setSelectedApiKey] = useState({})
@@ -112,6 +111,35 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
     const getAllVariablesApi = useApi(variablesApi.getAllVariables)
     const isGlobal = useSelector((state) => state.auth.isGlobal)
     const { hasPermission } = useAuth()
+
+    // Memoize keyOptions to prevent recreation on hover
+    const keyOptions = useMemo(() => {
+        if (!getAllAPIKeysApi.data) return []
+
+        const options = [
+            {
+                label: 'No Authorization',
+                name: ''
+            }
+        ]
+
+        for (const key of getAllAPIKeysApi.data) {
+            options.push({
+                label: key.keyName,
+                name: key.id
+            })
+        }
+
+        if (isGlobal || hasPermission('apikeys:create')) {
+            options.push({
+                label: '- Add New Key -',
+                name: 'addnewkey'
+            })
+        }
+
+        return options
+    }, [getAllAPIKeysApi.data, isGlobal, hasPermission])
+
     const onCheckBoxChanged = (newVal) => {
         setCheckbox(newVal)
         if (newVal) {
@@ -126,7 +154,8 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
             return
         }
         setChatflowApiKeyId(keyValue)
-        setSelectedApiKey(apiKeys.find((key) => key.id === keyValue))
+        const selectedKey = apiKeys.find((key) => key.id === keyValue)
+        setSelectedApiKey(selectedKey || {})
         const updateBody = {
             apikeyid: keyValue
         }
@@ -631,26 +660,6 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
 
     useEffect(() => {
         if (getAllAPIKeysApi.data) {
-            const options = [
-                {
-                    label: 'No Authorization',
-                    name: ''
-                }
-            ]
-            for (const key of getAllAPIKeysApi.data) {
-                options.push({
-                    label: key.keyName,
-                    name: key.id
-                })
-            }
-
-            if (isGlobal || hasPermission('apikeys:create')) {
-                options.push({
-                    label: '- Add New Key -',
-                    name: 'addnewkey'
-                })
-            }
-            setKeyOptions(options)
             setAPIKeys(getAllAPIKeysApi.data)
 
             if (dialogProps.chatflowApiKeyId) {
@@ -658,7 +667,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                 setSelectedApiKey(getAllAPIKeysApi.data.find((key) => key.id === dialogProps.chatflowApiKeyId))
             }
         }
-    }, [dialogProps, getAllAPIKeysApi.data, hasPermission, isGlobal])
+    }, [dialogProps, getAllAPIKeysApi.data])
 
     useEffect(() => {
         if (show) {

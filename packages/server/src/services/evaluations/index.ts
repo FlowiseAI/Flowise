@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes'
-import fs from 'fs'
 import { EvaluationRunner, ICommonObject } from 'flowise-components'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
@@ -20,8 +19,6 @@ import { calculateCost } from './CostCalculator'
 import { runAdditionalEvaluators } from './EvaluatorRunner'
 import evaluatorsService from '../evaluator'
 import { LLMEvaluationRunner } from './LLMEvaluationRunner'
-import { appConfig } from '../../AppConfig'
-import { getAPIKeyPath } from '../../utils/apiKey'
 
 const runAgain = async (id: string, baseURL: string, orgId: string) => {
     try {
@@ -127,30 +124,14 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                 id: chatflowId
             })
             if (cFlow && cFlow.apikeyid) {
-                if (appConfig.apiKeys.storageType === 'db') {
-                    const apikeyObj = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-                        id: cFlow.apikeyid
+                const apikeyObj = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
+                    id: cFlow.apikeyid
+                })
+                if (apikeyObj) {
+                    apiKeys.push({
+                        chatflowId: chatflowId,
+                        apiKey: apikeyObj.apiKey
                     })
-                    if (apikeyObj) {
-                        apiKeys.push({
-                            chatflowId: chatflowId,
-                            apiKey: apikeyObj.apiKey
-                        })
-                    }
-                } else {
-                    try {
-                        const content = await fs.promises.readFile(getAPIKeyPath(), 'utf8')
-                        const apikeys = JSON.parse(content)
-                        const key = apikeys.find((key: any) => key.id === cFlow.apikeyid)
-                        if (key) {
-                            apiKeys.push({
-                                chatflowId: chatflowId,
-                                apiKey: key.apiKey
-                            })
-                        }
-                    } catch (error) {
-                        console.error('Error reading API keys file', error)
-                    }
                 }
             }
         }
