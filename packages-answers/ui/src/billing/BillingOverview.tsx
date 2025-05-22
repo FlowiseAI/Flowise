@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { Box, Card, Typography, Button, Chip, Grid, Stack, Divider, useTheme, Alert, AlertTitle } from '@mui/material'
 import WarningIcon from '@mui/icons-material/Warning'
-import billingApi from '@/api/billing'
+import { useSubscriptionDialog } from '../SubscriptionDialogContext'
 
 // Define BillingPlan interface here since we can't find the module
 type PricingTierName = 'Free' | 'Plus' | 'Pro' | 'Plus+Overage'
@@ -39,11 +39,10 @@ const BillingOverview: React.FC<BillingOverviewProps> = ({
     usagePercentage = 0
 }) => {
     const theme = useTheme()
-    const [loading, setLoading] = useState(false)
+    const { openDialog } = useSubscriptionDialog()
 
     // Determine if we should show a warning (for free accounts at 80% or more usage)
-    const showWarning = currentPlan?.name === 'Free' && usagePercentage >= 80
-
+    const showWarning = usagePercentage >= 80 && (!currentPlan || currentPlan?.name === 'Free')
     const getStatusColor = (status: string) => {
         switch (status) {
             case 'active':
@@ -55,22 +54,9 @@ const BillingOverview: React.FC<BillingOverviewProps> = ({
         }
     }
 
-    // Handle direct checkout instead of opening dialog
-    const handleUpgrade = async () => {
-        setLoading(true)
-        try {
-            const response = await billingApi.createSubscription({
-                priceId: 'price_1QdEegFeRAHyP6by6yTOvbwj' // Plus tier price ID
-            })
-
-            if (response.data?.url) {
-                window.location.assign(response.data.url)
-            }
-        } catch (error) {
-            console.error('Failed to initiate subscription:', error)
-        } finally {
-            setLoading(false)
-        }
+    // Open subscription dialog instead of redirecting directly
+    const handleUpgrade = () => {
+        openDialog()
     }
 
     return (
@@ -100,7 +86,6 @@ const BillingOverview: React.FC<BillingOverviewProps> = ({
                     <Button
                         variant='contained'
                         onClick={handleUpgrade}
-                        disabled={loading}
                         sx={{
                             bgcolor: theme.palette.warning.main,
                             '&:hover': {
@@ -127,9 +112,8 @@ const BillingOverview: React.FC<BillingOverviewProps> = ({
                     <Typography variant='h5' sx={{ fontWeight: 600, color: '#fff' }}>
                         Billing Overview
                     </Typography>
-                    <Button
+                    {/* <Button
                         onClick={handleUpgrade}
-                        disabled={loading}
                         variant='outlined'
                         sx={{
                             borderColor: 'rgba(255, 255, 255, 0.1)',
@@ -141,7 +125,7 @@ const BillingOverview: React.FC<BillingOverviewProps> = ({
                         }}
                     >
                         CHANGE PLAN
-                    </Button>
+                    </Button> */}
                 </Box>
 
                 <Box sx={{ px: 3, pb: 3 }}>
