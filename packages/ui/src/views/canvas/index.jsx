@@ -94,7 +94,7 @@ const Canvas = () => {
     const [selectedNode, setSelectedNode] = useState(null)
     const [isUpsertButtonEnabled, setIsUpsertButtonEnabled] = useState(false)
     const [isSyncNodesButtonEnabled, setIsSyncNodesButtonEnabled] = useState(false)
-    const [isSnappingEnabled, setIsSnappingEnabled] = useState(false);
+    const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
 
     const reactFlowWrapper = useRef(null)
 

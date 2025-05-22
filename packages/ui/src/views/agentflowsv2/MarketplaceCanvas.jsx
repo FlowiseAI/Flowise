@@ -18,6 +18,9 @@ import StickyNote from './StickyNote'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
+// icons
+import { IconMagnetFilled, IconMagnetOff } from '@tabler/icons-react'
+
 const nodeTypes = { agentFlow: AgentFlowNode, stickyNote: StickyNote, iteration: IterationNode }
 const edgeTypes = { agentFlow: AgentFlowEdge }
 
@@ -36,6 +39,7 @@ const MarketplaceCanvasV2 = () => {
     const [edges, setEdges, onEdgesChange] = useEdgesState()
     const [editNodeDialogOpen, setEditNodeDialogOpen] = useState(false)
     const [editNodeDialogProps, setEditNodeDialogProps] = useState({})
+    const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
 
     const reactFlowWrapper = useRef(null)
     const { setReactFlowInstance } = useContext(flowContext)
@@ -108,6 +112,8 @@ const MarketplaceCanvasV2 = () => {
                                 edgeTypes={edgeTypes}
                                 fitView
                                 minZoom={0.1}
+                                snapGrid={[25, 25]}
+                                snapToGrid={isSnappingEnabled}
                             >
                                 <Controls
                                     style={{
@@ -116,7 +122,16 @@ const MarketplaceCanvasV2 = () => {
                                         left: '50%',
                                         transform: 'translate(-50%, -50%)'
                                     }}
-                                />
+                                >
+                                    <button
+                                        className='react-flow__controls-button react-flow__controls-interactive'
+                                        onClick={() => { setIsSnappingEnabled(!isSnappingEnabled) }}
+                                        title='toggle snapping'
+                                        aria-label='toggle snapping'
+                                    >
+                                        {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
+                                    </button>
+                                </Controls>
                                 <Background color='#aaa' gap={16} />
                                 <EditNodeDialog
                                     show={editNodeDialogOpen}
