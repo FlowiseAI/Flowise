@@ -5,9 +5,11 @@ import { Box, Stack, Typography, CircularProgress } from '@mui/material'
 import TotalCreditsProgress from './TotalCreditsProgress'
 import { useBillingData } from './hooks/useBillingData'
 import BillingOverview from './BillingOverview'
+import { useSubscriptionDialog } from '../SubscriptionDialogContext'
 
 const BillingDashboard: React.FC = () => {
     const { billingData, isLoading, isError } = useBillingData()
+    const { openDialog } = useSubscriptionDialog()
 
     // Calculate usage percentage
     const calculateUsagePercentage = () => {
