@@ -281,6 +281,17 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
             newChatFlow = chatflowWithoutId
         }
 
+        // Set default chatFeedback to true if chatbotConfig exists or create it if it doesn't
+        if (newChatFlow.chatbotConfig) {
+            const config = JSON.parse(newChatFlow.chatbotConfig)
+            if (!config.chatFeedback) {
+                config.chatFeedback = { status: true }
+                newChatFlow.chatbotConfig = JSON.stringify(config)
+            }
+        } else {
+            newChatFlow.chatbotConfig = JSON.stringify({ chatFeedback: { status: true } })
+        }
+
         // Check if the chatflow already exists
         if (newChatFlow.id) {
             const existingChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
@@ -424,6 +435,20 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow, user
             if (updatedConfig?.embeddedUrl !== undefined) {
                 existingChatbotConfig.embeddedUrl = updatedConfig.embeddedUrl
             }
+
+            // Preserve other chatbot config settings from the update
+            Object.keys(updatedConfig).forEach((key) => {
+                if (key !== 'displayMode' && key !== 'embeddedUrl') {
+                    existingChatbotConfig[key] = updatedConfig[key]
+                }
+            })
+        }
+
+        // Ensure chatFeedback.status is set to true if it's undefined
+        if (!existingChatbotConfig.chatFeedback) {
+            existingChatbotConfig.chatFeedback = { status: true }
+        } else if (existingChatbotConfig.chatFeedback.status === undefined) {
+            existingChatbotConfig.chatFeedback.status = true
         }
 
         // Update the chatbotConfig in the chatflow object
