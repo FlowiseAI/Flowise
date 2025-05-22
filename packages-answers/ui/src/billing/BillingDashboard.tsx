@@ -4,9 +4,12 @@ import React from 'react'
 import { Box, Stack, Typography, CircularProgress } from '@mui/material'
 import TotalCreditsProgress from './TotalCreditsProgress'
 import { useBillingData } from './hooks/useBillingData'
+import BillingOverview from './BillingOverview'
+import { useSubscriptionDialog } from '../SubscriptionDialogContext'
 
 const BillingDashboard: React.FC = () => {
     const { billingData, isLoading, isError } = useBillingData()
+    const { openDialog } = useSubscriptionDialog()
 
     // Calculate usage percentage
     const calculateUsagePercentage = () => {
@@ -52,26 +55,11 @@ const BillingDashboard: React.FC = () => {
                 </Box>
 
                 <TotalCreditsProgress usageSummary={billingData} isLoading={isLoading} isError={isError} />
-
-                {/* <Card
-                    elevation={0}
-                    sx={{
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '12px',
-                        bgcolor: 'rgba(0, 0, 0, 0.2)',
-                        backdropFilter: 'blur(20px)',
-                        overflow: 'hidden'
-                    }}
-                >
-                    <Stack spacing={0} divider={<Box sx={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)' }} />}>
-                        <BillingOverview
-                            currentPlan={billingData?.currentPlan}
-                            billingPeriod={billingData?.billingPeriod}
-                            usagePercentage={usagePercentage}
-                        />
-                        <UsageStats usageSummary={billingData} />
-                    </Stack>
-                </Card> */}
+                <BillingOverview
+                    currentPlan={billingData?.currentPlan}
+                    billingPeriod={billingData?.billingPeriod}
+                    usagePercentage={usagePercentage}
+                />
             </Stack>
         </Box>
     )

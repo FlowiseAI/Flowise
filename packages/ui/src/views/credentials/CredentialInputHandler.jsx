@@ -45,7 +45,7 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
 
     return (
         <div ref={ref}>
-            {inputParam && (
+            {inputParam && !inputParam.hidden ? (
                 <>
                     <Box sx={{ p: 2 }}>
                         <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -126,7 +126,7 @@ const CredentialInputHandler = ({ inputParam, data, disabled = false }) => {
                         )}
                     </Box>
                 </>
-            )}
+            ) : null}
         </div>
     )
 }

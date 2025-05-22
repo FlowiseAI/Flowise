@@ -4,7 +4,7 @@ import Chat from '@ui/Chat'
 import getCachedSession from '@ui/getCachedSession'
 
 export const metadata = {
-    title: 'Journey | Answers AI',
+    title: 'Journey | Answer Agent',
     description: 'Your journey'
 }
 

@@ -90,8 +90,9 @@ export const ChatPopUp = ({ chatflowid, isAgentCanvas }) => {
         if (isConfirmed) {
             try {
                 const objChatDetails = getLocalStorageChatflow(chatflowid)
-                if (!objChatDetails.chatId) return
                 await chatmessageApi.deleteChatmessage(chatflowid, { chatId: objChatDetails.chatId, chatType: 'INTERNAL' })
+                localStorage.removeItem(`${chatflowid}_INTERNAL_chatId`)
+                if (!objChatDetails.chatId) return
                 removeLocalStorageChatHistory(chatflowid)
                 resetChatDialog()
                 enqueueSnackbar({

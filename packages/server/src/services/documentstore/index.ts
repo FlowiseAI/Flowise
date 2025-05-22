@@ -33,7 +33,8 @@ import {
     MODE,
     IOverrideConfig,
     IExecutePreviewLoader,
-    DocumentStoreDTO
+    DocumentStoreDTO,
+    IUser
 } from '../../Interface'
 import { DocumentStoreFileChunk } from '../../database/entities/DocumentStoreFileChunk'
 import { v4 as uuidv4 } from 'uuid'
@@ -48,7 +49,7 @@ import { Document } from '@langchain/core/documents'
 import { UpsertHistory } from '../../database/entities/UpsertHistory'
 import { cloneDeep, omit } from 'lodash'
 import { DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR } from '../../utils/prompt'
-import { DataSource } from 'typeorm'
+import { DataSource, FindOptionsWhere } from 'typeorm'
 import { Telemetry } from '../../utils/telemetry'
 import { INPUT_PARAMS_TYPE, OMIT_QUEUE_JOB_DATA } from '../../utils/constants'
 
@@ -68,12 +69,15 @@ const createDocumentStore = async (newDocumentStore: DocumentStore, userId: stri
     }
 }
 
-const getAllDocumentStores = async (userId: string, organizationId: string) => {
+const getAllDocumentStores = async (userId: string, organizationId: string, _user?: IUser) => {
     try {
         const appServer = getRunningExpressApp()
-        const entities = await appServer.AppDataSource.getRepository(DocumentStore).find({
+        let entities
+
+        entities = await appServer.AppDataSource.getRepository(DocumentStore).find({
             where: { userId, organizationId }
         })
+
         return entities
     } catch (error) {
         throw new InternalFlowiseError(
@@ -145,14 +149,30 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string, 
     }
 }
 
-const getDocumentStoreById = async (storeId: string, userId: string, organizationId: string) => {
+const getDocumentStoreById = async (storeId: string, userId: string, organizationId: string, user?: IUser) => {
     try {
         const appServer = getRunningExpressApp()
-        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
-            id: storeId,
-            userId,
-            organizationId
-        })
+        let queryOptions: FindOptionsWhere<DocumentStore> = {
+            id: storeId
+        }
+
+        if (!user?.permissions?.includes('org:manage')) {
+            // Regular users can only see their own document stores
+            queryOptions = {
+                ...queryOptions,
+                userId,
+                organizationId
+            }
+        } else {
+            // Admin users can see all document stores in their organization
+            queryOptions = {
+                ...queryOptions,
+                organizationId
+            }
+        }
+
+        const entity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy(queryOptions)
+
         if (!entity) {
             throw new InternalFlowiseError(
                 StatusCodes.NOT_FOUND,

@@ -4,6 +4,7 @@ import type { Message, Sidekick } from 'types'
 import ChatFeedbackContentDialog from './../../../packages/ui/src/ui-component/dialog/ChatFeedbackContentDialog'
 import { useAnswers } from './AnswersContext'
 import RefreshIcon from '@mui/icons-material/Refresh'
+import { useSubscriptionDialog } from './SubscriptionDialogContext'
 
 import dynamic from 'next/dynamic'
 
@@ -37,6 +38,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 }) => {
     const openLinksInNewTab = chatbotConfig?.chatLinksInNewTab?.status ?? false
     const { showFeedbackContentDialog, setShowFeedbackContentDialog, feedbackId, submitFeedbackContent } = useAnswers()
+    const { openDialog: openSubscriptionDialog } = useSubscriptionDialog()
 
     return (
         <Box
@@ -71,11 +73,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
                 {error ? (
                     <>
-                        <MessageCard id='error' role='status' content={`${error.message} `} error={error} />
-                        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                        <MessageCard id='error' role='status' content={`${typeof error === 'string' ? error : error.message} `} error={error} />
+                        <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 1 }}>
                             <Button onClick={regenerateAnswer} variant='contained' color='primary' sx={{ margin: 'auto' }}>
                                 Retry
                             </Button>
+                            {typeof error === 'string' && error.toLowerCase().includes('usage limit') && (
+                                <Button onClick={openSubscriptionDialog} variant='contained' color='secondary' sx={{ margin: 'auto' }}>
+                                    Upgrade Plan
+                                </Button>
+                            )}
                         </Box>
                     </>
                 ) : null}

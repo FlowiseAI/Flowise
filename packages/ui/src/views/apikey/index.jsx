@@ -33,6 +33,7 @@ import APIKeyDialog from './APIKeyDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import { baseURL, uiBaseURL } from '@/store/constant'
 
 // API
 import apiKeyApi from '@/api/apikey'
@@ -210,8 +211,10 @@ const APIKey = () => {
     const [dialogProps, setDialogProps] = useState({})
     const [apiKeys, setAPIKeys] = useState([])
     const [anchorEl, setAnchorEl] = useState(null)
+    const [urlAnchorEl, setUrlAnchorEl] = useState(null)
     const [showApiKeys, setShowApiKeys] = useState([])
     const openPopOver = Boolean(anchorEl)
+    const openUrlPopOver = Boolean(urlAnchorEl)
 
     const [showUploadDialog, setShowUploadDialog] = useState(false)
     const [uploadDialogProps, setUploadDialogProps] = useState({})
@@ -243,6 +246,10 @@ const APIKey = () => {
 
     const handleClosePopOver = () => {
         setAnchorEl(null)
+    }
+
+    const handleCloseUrlPopOver = () => {
+        setUrlAnchorEl(null)
     }
 
     const addNew = () => {
@@ -388,6 +395,57 @@ const APIKey = () => {
                                 Create Key
                             </StyledButton>
                         </ViewHeader>
+                        <Stack direction='row' spacing={2} sx={{ flexWrap: 'wrap' }}>
+                            <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+                                <Typography variant='subtitle1'>API Host:</Typography>
+                                <Typography variant='subtitle1' sx={{ wordBreak: 'break-all' }}>
+                                    {baseURL}
+                                </Typography>
+                                <IconButton
+                                    title='Copy'
+                                    color='success'
+                                    onClick={(event) => {
+                                        navigator.clipboard.writeText(baseURL)
+                                        setUrlAnchorEl(event.currentTarget)
+                                        setTimeout(() => {
+                                            handleCloseUrlPopOver()
+                                        }, 1500)
+                                    }}
+                                >
+                                    <IconCopy />
+                                </IconButton>
+                            </Stack>
+                            <Stack direction='row' spacing={1} sx={{ alignItems: 'center' }}>
+                                <Typography variant='subtitle1'>Client URL:</Typography>
+                                <Typography variant='subtitle1' sx={{ wordBreak: 'break-all' }}>
+                                    {uiBaseURL}
+                                </Typography>
+                                <IconButton
+                                    title='Copy'
+                                    color='success'
+                                    onClick={(event) => {
+                                        navigator.clipboard.writeText(uiBaseURL)
+                                        setUrlAnchorEl(event.currentTarget)
+                                        setTimeout(() => {
+                                            handleCloseUrlPopOver()
+                                        }, 1500)
+                                    }}
+                                >
+                                    <IconCopy />
+                                </IconButton>
+                            </Stack>
+                            <Popover
+                                open={openUrlPopOver}
+                                anchorEl={urlAnchorEl}
+                                onClose={handleCloseUrlPopOver}
+                                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                            >
+                                <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: theme.palette.success.dark }}>
+                                    Copied!
+                                </Typography>
+                            </Popover>
+                        </Stack>
                         {!isLoading && apiKeys.length <= 0 ? (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>

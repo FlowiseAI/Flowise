@@ -13,7 +13,7 @@ const exportData = async (req: Request, res: Response, next: NextFunction) => {
 const importData = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const importData = req.body
-        await exportImportService.importData(importData)
+        await exportImportService.importData(importData, req.user!)
         return res.json({ message: 'success' })
     } catch (error) {
         next(error)

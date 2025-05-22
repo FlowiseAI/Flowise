@@ -2,7 +2,7 @@ import React from 'react'
 import getCachedSession from '@ui/getCachedSession'
 
 export const metadata = {
-    title: 'Sidekick Studio | Answers AI',
+    title: 'Sidekick Studio | Answer Agent',
     description: 'Sidekick Studio'
 }
 

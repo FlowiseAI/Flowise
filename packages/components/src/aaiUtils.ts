@@ -7,12 +7,12 @@ import { ICommonObject } from './Interface'
  * @param namespace Optional custom namespace
  * @returns A formatted namespace string
  */
-export function generateSecureNamespace(options: ICommonObject, namespace?: string): string {
+export function generateSecureNamespace(options: ICommonObject, baseNamespace: string = 'default'): string {
     const chatflowPrefix = `chatflow:${options.chatflowid}_`
     let orgPrefix = options.user?.organizationId ? `org:${options.user.organizationId}_` : ''
     if (options.organizationId) {
         orgPrefix = `org:${options.organizationId}_`
     }
-    const baseNamespace = namespace || 'default'
-    return `${orgPrefix}${chatflowPrefix}${baseNamespace}`
+    const namespace = `${orgPrefix}${chatflowPrefix}${baseNamespace}`
+    return namespace
 }

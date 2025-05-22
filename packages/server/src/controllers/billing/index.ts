@@ -168,7 +168,7 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
 const importChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const chatflows: Partial<ChatFlow>[] = req.body.Chatflows
-        const apiResponse = await chatflowsService.importChatflows(chatflows)
+        const apiResponse = await chatflowsService.importChatflows(req.user!, chatflows)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -201,7 +201,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         const rateLimiterManager = RateLimiterManager.getInstance()
         await rateLimiterManager.updateRateLimiter(updateChatFlow)
 
-        const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow)
+        const apiResponse = await chatflowsService.updateChatflow(chatflow, updateChatFlow, req.user!)
 
         // TODO: Abstract sending to AnswerAI through events endpoint and move to service
         const ANSWERAI_DOMAIN = req.auth?.payload.answersDomain ?? process.env.ANSWERAI_DOMAIN ?? 'https://beta.theanswer.ai'
@@ -280,7 +280,10 @@ const getUsageSummary = async (req: Request, res: Response, next: NextFunction) 
             // next(error)
         }
         // Determine plan type
-        const isPro = subscription?.status === 'active' && subscription.items.data[0]?.price.id === BILLING_CONFIG.PRICE_IDS.PAID_MONTHLY
+        const isPro =
+            subscription?.status === 'active' &&
+            subscription.items.data?.length &&
+            subscription.items.data[0]?.price.id !== BILLING_CONFIG.PRICE_IDS.FREE_MONTHLY
         const planLimits = isPro ? BILLING_CONFIG.PLAN_LIMITS.PRO : BILLING_CONFIG.PLAN_LIMITS.FREE
 
         // Calculate total usage

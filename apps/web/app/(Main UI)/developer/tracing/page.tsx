@@ -1,7 +1,7 @@
 import React from 'react'
 
 export const metadata = {
-    title: 'Tracing | Answers AI'
+    title: 'Tracing | Answer Agent'
 }
 
 const StoreTracingPage = () => {
