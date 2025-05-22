@@ -85,9 +85,9 @@ const UpsertResultDialog = ({ show, dialogProps, onCancel, onGoToRetrievalQuery 
                             sx={{
                                 borderRadius: 2,
                                 height: '100%',
-                                backgroundImage: `linear-gradient(to right, #3f5efb, #fc466b)`,
+                                backgroundImage: `linear-gradient(to right, #ff8f00, #fc466b)`,
                                 '&:hover': {
-                                    backgroundImage: `linear-gradient(to right, #2b4efb, #fe2752)`
+                                    backgroundImage: `linear-gradient(to right, #ff7d00, #fe2752)`
                                 },
                                 mb: 2
                             }}

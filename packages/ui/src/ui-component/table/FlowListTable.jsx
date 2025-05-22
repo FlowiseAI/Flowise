@@ -178,7 +178,7 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                                         overflow: 'hidden'
                                                     }}
                                                 >
-                                                    <Link to={onFlowClick(row)} style={{ color: '#2196f3', textDecoration: 'none' }}>
+                                                    <Link to={onFlowClick(row)} style={{ color: '#ff9800', textDecoration: 'none' }}>
                                                         {row.templateName || row.name}
                                                     </Link>
                                                 </Typography>

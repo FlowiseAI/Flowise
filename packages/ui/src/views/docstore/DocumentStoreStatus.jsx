@@ -34,8 +34,8 @@ const DocumentStoreStatus = ({ status, isTableView }) => {
                     : ['#e0f2f1', '#4db6ac', '#00897b']
             case 'NEW':
                 return customization.isDarkMode
-                    ? ['#0d47a1', '#1565c0', '#ffffff'] // Blue
-                    : ['#e3f2fd', '#64b5f6', '#ff7d00']
+                    ? ['#e65100', '#ff8f00', '#ffffff'] // Orange
+                    : ['#fff3e0', '#ffb74d', '#ff7d00']
             default:
                 return customization.isDarkMode
                     ? [theme.palette.grey[300], theme.palette.grey[500], theme.palette.grey[700]]
