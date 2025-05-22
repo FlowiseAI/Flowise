@@ -87,7 +87,7 @@
         "axios": "1.7.9",
         "bull-board": "^2.1.3",
         "bullmq": "^5.13.2",
-        "connect-redis": "^8.0.2",
+        "connect-redis": "^8.1.0",
         "content-disposition": "0.5.4",
         "contentful-management": "^11.7.3",
         "cors": "^2.8.5",
