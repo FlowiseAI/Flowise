@@ -35,6 +35,7 @@ import { AddSeqNoToDatasetRow1733752119696 } from './1733752119696-AddSeqNoToDat
 import { AddExecutionEntity1738090872625 } from './1738090872625-AddExecutionEntity'
 import { FixOpenSourceAssistantTable1743758056188 } from './1743758056188-FixOpenSourceAssistantTable'
 import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorToEvaluationRun'
+import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-ModifyExecutionDataColumnType'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mariadb/1720230151482-AddAuthTables'
 import { AddWorkspace1725437498242 } from '../../../enterprise/database/migrations/mariadb/1725437498242-AddWorkspace'
@@ -96,5 +97,6 @@ export const mariadbMigrations = [
     AddExecutionEntity1738090872625,
     FixOpenSourceAssistantTable1743758056188,
     AddErrorToEvaluationRun1744964560174,
-    ExecutionLinkWorkspaceId1746862866554
+    ExecutionLinkWorkspaceId1746862866554,
+    ModifyExecutionDataColumnType1747902489801
 ]
