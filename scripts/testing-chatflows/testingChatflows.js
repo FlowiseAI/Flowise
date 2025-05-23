@@ -34,7 +34,6 @@
  * TESTING_CHATFLOWS_AUTH_TOKEN=your-bearer-token-here
  * TESTING_CHATFLOWS_QUESTION=Hey, how are you?
  * TESTING_CHATFLOWS_REQUEST_DELAY_MS=500
- * TESTING_CHATFLOWS_FLOWISE_URL=https://lr-staging.studio.theanswer.ai
  */
 
 const fs = require('fs')
