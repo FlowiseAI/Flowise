@@ -10,7 +10,6 @@
  * TESTING_CHATFLOWS_AUTH_TOKEN - Bearer token for authentication
  * TESTING_CHATFLOWS_QUESTION - The question to send to each chatflow
  * TESTING_CHATFLOWS_REQUEST_DELAY_MS - Delay between requests in milliseconds (e.g., 500)
- * TESTING_CHATFLOWS_FLOWISE_URL - Base URL for Flowise API (e.g., https://lr-staging.studio.theanswer.ai)
  *
  * Command Line Options:
  * -------------------
