@@ -1,11 +1,28 @@
 'use client'
 import { useState } from 'react'
-import { Stack, TextField, Typography, Button, FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material'
+import {
+    Stack,
+    TextField,
+    Typography,
+    Button,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Box,
+    Dialog,
+    DialogContent,
+    IconButton,
+    Skeleton
+} from '@mui/material'
+import { IconDownload, IconX } from '@tabler/icons-react'
 import type { User } from 'types'
 
 interface Message {
+    id: string
     prompt: string
     images: Array<{ type: 'url' | 'base64'; data: string }>
+    isGenerating?: boolean
 }
 
 const ImageCreator = ({ user }: { user: User }) => {
@@ -19,10 +36,12 @@ const ImageCreator = ({ user }: { user: User }) => {
     const [style, setStyle] = useState('vivid')
     const [messages, setMessages] = useState<Message[]>([])
     const [loading, setLoading] = useState(false)
+    const [fullSizeImage, setFullSizeImage] = useState<string | null>(null)
 
     // Get available options based on selected model
-    const getSizeOptions = () => {
-        switch (model) {
+    const getSizeOptions = (modelType?: string) => {
+        const currentModel = modelType || model
+        switch (currentModel) {
             case 'dall-e-2':
                 return ['256x256', '512x512', '1024x1024']
             case 'dall-e-3':
@@ -34,8 +53,9 @@ const ImageCreator = ({ user }: { user: User }) => {
         }
     }
 
-    const getQualityOptions = () => {
-        switch (model) {
+    const getQualityOptions = (modelType?: string) => {
+        const currentModel = modelType || model
+        switch (currentModel) {
             case 'dall-e-2':
                 return ['standard']
             case 'dall-e-3':
@@ -47,13 +67,78 @@ const ImageCreator = ({ user }: { user: User }) => {
         }
     }
 
-    const getMaxImages = () => {
-        return model === 'dall-e-3' ? 1 : 10
+    const getMaxImages = (modelType?: string) => {
+        const currentModel = modelType || model
+        return currentModel === 'dall-e-3' ? 1 : 10
+    }
+
+    const getDefaultQuality = (modelType: string) => {
+        switch (modelType) {
+            case 'dall-e-2':
+                return 'standard'
+            case 'dall-e-3':
+                return 'standard'
+            case 'gpt-image-1':
+                return 'low'
+            default:
+                return 'standard'
+        }
+    }
+
+    const getDefaultSize = (modelType: string) => {
+        const sizes = getSizeOptions(modelType)
+        return sizes[0] // Always return the first available size as default
+    }
+
+    // Get image dimensions for placeholders
+    const getImageDimensions = () => {
+        const [width, height] = size.split('x').map(Number)
+        const maxDisplayWidth = 256
+        if (width && height) {
+            const aspectRatio = width / height
+            const displayWidth = Math.min(width, maxDisplayWidth)
+            const displayHeight = displayWidth / aspectRatio
+            return { width: displayWidth, height: displayHeight }
+        }
+        return { width: 256, height: 256 }
+    }
+
+    const downloadImage = async (imageSrc: string, fileName: string) => {
+        try {
+            const response = await fetch(imageSrc)
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = fileName
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+            window.URL.revokeObjectURL(url)
+        } catch (error) {
+            console.error('Download failed:', error)
+        }
     }
 
     const generate = async () => {
         if (!prompt) return
         setLoading(true)
+
+        // Create a temporary message with loading placeholders
+        const tempMessageId = Date.now().toString()
+        const tempMessage: Message = {
+            id: tempMessageId,
+            prompt,
+            images: Array.from({ length: Math.min(n, getMaxImages()) }, (_, i) => ({
+                type: 'url' as const,
+                data: `placeholder-${i}`
+            })),
+            isGenerating: true
+        }
+
+        // Add the temporary message at the top
+        setMessages((prev) => [tempMessage, ...prev])
+
         try {
             // Build request body based on model
             const requestBody: {
@@ -96,6 +181,8 @@ const ImageCreator = ({ user }: { user: User }) => {
             if (!res.ok) {
                 const errorData = await res.json()
                 console.error('Error generating image:', errorData)
+                // Remove the temporary message on error
+                setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId))
                 return
             }
 
@@ -109,10 +196,14 @@ const ImageCreator = ({ user }: { user: User }) => {
                     // Fallback to base64 if storage upload failed
                     return { type: 'base64', data: d.b64_json }
                 }) || []
-            setMessages((prev) => [...prev, { prompt, images: imgs }])
+
+            // Replace the temporary message with the actual images
+            setMessages((prev) => prev.map((msg) => (msg.id === tempMessageId ? { ...msg, images: imgs, isGenerating: false } : msg)))
             setPrompt('')
         } catch (err) {
             console.error(err)
+            // Remove the temporary message on error
+            setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId))
         } finally {
             setLoading(false)
         }
@@ -122,23 +213,61 @@ const ImageCreator = ({ user }: { user: User }) => {
     const handleModelChange = (newModel: string) => {
         setModel(newModel)
 
-        // Reset size if current size is not valid for new model
-        const validSizes = getSizeOptions()
+        // Always set proper defaults for the new model to avoid empty states
+
+        // Reset size - always set a valid default for the new model
+        const validSizes = getSizeOptions(newModel)
         if (!validSizes.includes(size)) {
-            setSize(validSizes[0])
+            setSize(getDefaultSize(newModel))
         }
 
-        // Reset quality if current quality is not valid for new model
-        const validQualities = getQualityOptions()
+        // Reset quality - always set a valid default for the new model
+        const validQualities = getQualityOptions(newModel)
         if (!validQualities.includes(quality)) {
-            setQuality(validQualities[0])
+            setQuality(getDefaultQuality(newModel))
         }
 
-        // Reset n if current n exceeds max for new model
-        const maxImages = getMaxImages()
+        // Reset number of images if it exceeds the max for the new model
+        const maxImages = getMaxImages(newModel)
         if (n > maxImages) {
-            setN(maxImages)
+            setN(1) // Always default to 1 image when switching to a more restrictive model
         }
+
+        // Reset model-specific settings to defaults
+        if (newModel === 'dall-e-3') {
+            // Ensure DALL-E 3 specific settings are set
+            if (!['vivid', 'natural'].includes(style)) {
+                setStyle('vivid')
+            }
+        }
+
+        if (newModel === 'gpt-image-1') {
+            // Ensure GPT Image 1 specific settings are set
+            if (!['png', 'jpeg', 'webp'].includes(format)) {
+                setFormat('png')
+            }
+            if (!['auto', 'transparent', 'opaque'].includes(background)) {
+                setBackground('auto')
+            }
+        }
+    }
+
+    const renderImagePlaceholder = (index: number) => {
+        const { width, height } = getImageDimensions()
+        return (
+            <Box
+                key={`placeholder-${index}`}
+                sx={{
+                    width,
+                    height,
+                    borderRadius: 1,
+                    overflow: 'hidden',
+                    position: 'relative'
+                }}
+            >
+                <Skeleton variant='rectangular' width='100%' height='100%' animation='wave' />
+            </Box>
+        )
     }
 
     return (
@@ -238,32 +367,109 @@ const ImageCreator = ({ user }: { user: User }) => {
 
             <Stack spacing={4}>
                 {messages.map((msg, idx) => (
-                    <Box key={`message-${idx}-${msg.prompt.slice(0, 20)}`}>
+                    <Box key={msg.id}>
                         <Typography variant='subtitle1' gutterBottom>
                             {msg.prompt}
                         </Typography>
                         <Stack direction='row' spacing={2} flexWrap='wrap'>
-                            {msg.images.map((img, i) => {
-                                // Determine the image source based on type
-                                const imageSrc =
-                                    img.type === 'url'
-                                        ? `${process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'}${img.data}`
-                                        : `data:image/png;base64,${img.data}`
+                            {msg.isGenerating
+                                ? msg.images.map((_, i) => renderImagePlaceholder(i))
+                                : msg.images.map((img, i) => {
+                                      // Determine the image source based on type
+                                      const imageSrc =
+                                          img.type === 'url'
+                                              ? `${process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'}${img.data}`
+                                              : `data:image/png;base64,${img.data}`
 
-                                return (
-                                    <Box
-                                        key={`image-${msg.prompt.slice(0, 10)}-${i}`}
-                                        component='img'
-                                        src={imageSrc}
-                                        alt={`Generated image ${i + 1}`}
-                                        sx={{ maxWidth: 256, borderRadius: 1 }}
-                                    />
-                                )
-                            })}
+                                      const fileName = `generated-image-${Date.now()}-${i + 1}.${format || 'png'}`
+
+                                      return (
+                                          <Box key={`image-${msg.id}-${i}`} sx={{ position: 'relative', display: 'inline-block' }}>
+                                              <Box
+                                                  component='img'
+                                                  src={imageSrc}
+                                                  alt={`Generated image ${i + 1}`}
+                                                  sx={{
+                                                      maxWidth: 256,
+                                                      borderRadius: 1,
+                                                      cursor: 'pointer',
+                                                      transition: 'transform 0.2s',
+                                                      '&:hover': {
+                                                          transform: 'scale(1.02)'
+                                                      }
+                                                  }}
+                                                  onClick={() => setFullSizeImage(imageSrc)}
+                                              />
+                                              <IconButton
+                                                  size='small'
+                                                  sx={{
+                                                      position: 'absolute',
+                                                      top: 8,
+                                                      right: 8,
+                                                      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                                      color: 'white',
+                                                      '&:hover': {
+                                                          backgroundColor: 'rgba(0, 0, 0, 0.9)'
+                                                      }
+                                                  }}
+                                                  onClick={() => downloadImage(imageSrc, fileName)}
+                                              >
+                                                  <IconDownload size={16} />
+                                              </IconButton>
+                                          </Box>
+                                      )
+                                  })}
                         </Stack>
                     </Box>
                 ))}
             </Stack>
+
+            {/* Full size image dialog */}
+            <Dialog
+                open={!!fullSizeImage}
+                onClose={() => setFullSizeImage(null)}
+                maxWidth='lg'
+                fullWidth
+                sx={{
+                    '& .MuiDialog-paper': {
+                        backgroundColor: 'transparent',
+                        boxShadow: 'none',
+                        overflow: 'visible'
+                    }
+                }}
+            >
+                <DialogContent sx={{ p: 0, position: 'relative', display: 'flex', justifyContent: 'center' }}>
+                    <IconButton
+                        onClick={() => setFullSizeImage(null)}
+                        sx={{
+                            position: 'absolute',
+                            top: 16,
+                            right: 16,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            color: 'white',
+                            zIndex: 1,
+                            '&:hover': {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)'
+                            }
+                        }}
+                    >
+                        <IconX />
+                    </IconButton>
+                    {fullSizeImage && (
+                        <Box
+                            component='img'
+                            src={fullSizeImage}
+                            alt='Full size image'
+                            sx={{
+                                maxWidth: '100%',
+                                maxHeight: '90vh',
+                                objectFit: 'contain',
+                                borderRadius: 1
+                            }}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
         </Stack>
     )
 }
