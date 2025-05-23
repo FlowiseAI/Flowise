@@ -1,12 +1,12 @@
 <!-- markdownlint-disable MD030 -->
 
-# Flowise - 低代码 LLM 应用程序构建器
+# Flowise
 
 [English](./README.md) | 中文
 
-![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
+<h3>以可视化方式构建 AI Agents</h3>
 
-拖放界面来构建自定义的 LLM 流程
+![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true)
 
 ## ⚡ 快速入门
 

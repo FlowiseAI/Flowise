@@ -125,9 +125,11 @@ const MarketplaceCanvasNode = ({ data }) => {
                     {data.inputAnchors.map((inputAnchor, index) => (
                         <NodeInputHandler disabled={true} key={index} inputAnchor={inputAnchor} data={data} />
                     ))}
-                    {data.inputParams.map((inputParam, index) => (
-                        <NodeInputHandler disabled={true} key={index} inputParam={inputParam} data={data} />
-                    ))}
+                    {data.inputParams
+                        .filter((inputParam) => inputParam.display !== false)
+                        .map((inputParam, index) => (
+                            <NodeInputHandler disabled={true} key={index} inputParam={inputParam} data={data} />
+                        ))}
                     {data.inputParams.find((param) => param.additionalParams) && (
                         <div
                             style={{
