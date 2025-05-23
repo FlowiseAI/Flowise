@@ -524,6 +524,12 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
+                    "label": "gemini-2.5-flash-preview-05-20",
+                    "name": "gemini-2.5-flash-preview-05-20",
+                    "input_cost": 0.15e-6,
+                    "output_cost": 6e-7
+                },
+                {
                     "label": "gemini-2.5-pro-preview-03-25",
                     "name": "gemini-2.5-pro-preview-03-25",
                     "input_cost": 1.25e-6,
