@@ -3,6 +3,7 @@ export const WHITELIST_URLS = [
     '/api/v1/chatflows/apikey/',
     '/api/v1/public-chatflows',
     '/api/v1/public-chatbotConfig',
+    '/api/v1/public-executions',
     '/api/v1/prediction/',
     '/api/v1/vector/upsert/',
     '/api/v1/node-icon/',
@@ -17,15 +18,18 @@ export const WHITELIST_URLS = [
     '/api/v1/ping',
     '/api/v1/version',
     '/api/v1/attachments',
-    '/api/v1/metrics'
+    '/api/v1/metrics',
+    '/api/v1/nvidia-nim'
 ]
 
 export const OMIT_QUEUE_JOB_DATA = ['componentNodes', 'appDataSource', 'sseStreamer', 'telemetry', 'cachePool']
 
 export const INPUT_PARAMS_TYPE = [
     'asyncOptions',
+    'asyncMultiOptions',
     'options',
     'multiOptions',
+    'array',
     'datagrid',
     'string',
     'number',

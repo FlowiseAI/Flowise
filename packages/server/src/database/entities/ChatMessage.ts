@@ -1,6 +1,7 @@
 /* eslint-disable */
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index } from 'typeorm'
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, Index, JoinColumn, OneToOne } from 'typeorm'
 import { IChatMessage, MessageType } from '../../Interface'
+import { Execution } from './Execution'
 
 @Entity()
 export class ChatMessage implements IChatMessage {
@@ -13,6 +14,13 @@ export class ChatMessage implements IChatMessage {
     @Index()
     @Column({ type: 'uuid' })
     chatflowid: string
+
+    @Column({ nullable: true, type: 'uuid' })
+    executionId?: string
+
+    @OneToOne(() => Execution)
+    @JoinColumn({ name: 'executionId' })
+    execution: Execution
 
     @Column({ type: 'text' })
     content: string

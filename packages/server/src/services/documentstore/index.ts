@@ -740,7 +740,7 @@ export const processLoader = async ({ appDataSource, componentNodes, data, docLo
     return getDocumentStoreFileChunks(appDataSource, data.storeId as string, docLoaderId)
 }
 
-const processLoaderMiddleware = async (data: IDocumentStoreLoaderForPreview, docLoaderId: string) => {
+const processLoaderMiddleware = async (data: IDocumentStoreLoaderForPreview, docLoaderId: string, isInternalRequest = false) => {
     try {
         const appServer = getRunningExpressApp()
         const appDataSource = appServer.AppDataSource
@@ -760,6 +760,12 @@ const processLoaderMiddleware = async (data: IDocumentStoreLoaderForPreview, doc
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
             logger.debug(`[server]: Job added to queue: ${job.id}`)
+
+            if (isInternalRequest) {
+                return {
+                    jobId: job.id
+                }
+            }
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -843,7 +849,7 @@ const _saveChunksToStorage = async (
                         filesWithMetadata.push(fileMetadata)
                     }
                 }
-                data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
+                if (fileNames.length) data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
             } else if (re.test(input)) {
                 const fileNames: string[] = []
                 const fileMetadata = await _saveFileToStorage(input, entity)

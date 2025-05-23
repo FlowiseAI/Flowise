@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import { Box, Button, FormControl, ListItem, ListItemAvatar, ListItemText, MenuItem, Select, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { useTheme } from '@mui/material/styles'
 
 // Project Imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -270,6 +271,14 @@ const followUpPromptsOptions = {
         icon: ollamaIcon,
         inputs: [
             {
+                label: 'Base URL',
+                name: 'baseUrl',
+                type: 'string',
+                placeholder: 'http://127.0.0.1:11434',
+                description: 'Base URL of your Ollama instance',
+                default: 'http://127.0.0.1:11434'
+            },
+            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
@@ -302,6 +311,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
     const dispatch = useDispatch()
 
     useNotifier()
+    const theme = useTheme()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -465,7 +475,16 @@ const FollowUpPrompts = ({ dialogProps }) => {
                     <>
                         <Typography variant='h5'>Providers</Typography>
                         <FormControl fullWidth>
-                            <Select size='small' value={selectedProvider} onChange={handleSelectedProviderChange}>
+                            <Select
+                                size='small'
+                                value={selectedProvider}
+                                onChange={handleSelectedProviderChange}
+                                sx={{
+                                    '& .MuiSvgIcon-root': {
+                                        color: theme?.customization?.isDarkMode ? '#fff' : 'inherit'
+                                    }
+                                }}
+                            >
                                 {Object.values(followUpPromptsOptions).map((provider) => (
                                     <MenuItem key={provider.name} value={provider.name}>
                                         {provider.label}
