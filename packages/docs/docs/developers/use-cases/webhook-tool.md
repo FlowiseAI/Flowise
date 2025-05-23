@@ -111,7 +111,7 @@ Go to the Discord channel, and you will be able to see the message:
 
 That's it! OpenAI Function Agent will be able to automatically figure out what to pass as the message and send it over to Discord. This is just a quick example of how to trigger a webhook workflow with dynamic body. The same idea can be applied to workflow that has a webhook and Gmail, GoogleSheets etc.
 
-You can read more on how to pass chat information like `sessionId`, `flowid` and `variables` to custom tool - [#additional](../../using-answerai/sidekick-studio/nodes/tools/custom-tool.md)
+You can read more on how to pass chat information like `sessionId`, `flowid` and `variables` to custom tool - [#additional](../../sidekick-studio/chatflows/tools/custom-tool.md)
 
 ## Tutorials
 

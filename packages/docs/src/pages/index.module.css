@@ -104,6 +104,34 @@
     margin: auto 0;
 }
 
+.heroCTAs {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.ctaButton {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    background-color: #00ffff;
+    color: #000;
+    border: 2px solid #00ffff;
+}
+
+.ctaButton:hover {
+    background-color: transparent;
+    color: #00ffff;
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
 .visionSection,
 .missionSection {
     background-color: rgba(0, 0, 0, 0.8);
@@ -141,5 +169,16 @@
     .heroChatTypeAhead {
         font-size: 2rem;
         top: 20px;
+    }
+
+    .heroCTAs {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .ctaButton {
+        width: 80%;
+        text-align: center;
     }
 }
