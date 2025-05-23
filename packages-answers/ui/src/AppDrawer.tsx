@@ -29,6 +29,7 @@ import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/Integration
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
 import AssessmentIcon from '@mui/icons-material/Assessment'
+import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 import { ExportImportMenuItems } from './components/ExportImportComponent'
 import { useSubscriptionDialog } from './SubscriptionDialogContext'
@@ -81,7 +82,18 @@ interface MenuConfig {
     subMenu?: MenuConfig[]
 }
 
-export const AppDrawer = ({ session, flagsmithState }: any) => {
+interface AppDrawerProps {
+    session: {
+        user: {
+            picture?: string
+            email?: string
+            org_name?: string
+        }
+    }
+    flagsmithState: unknown
+}
+
+export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
     const { helpChatOpen, setHelpChatOpen } = useHelpChatContext()
     const user = session?.user
     const [drawerOpen, setDrawerOpen] = useState(false)
@@ -162,13 +174,13 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                               text: 'Billing',
                               link: '/billing',
                               icon: <AssessmentIcon color='primary' />
+                          },
+                          {
+                              id: 'apps',
+                              text: 'Apps',
+                              link: '/sidekick-studio/apps',
+                              icon: <AppsOutlinedIcon color='primary' />
                           }
-                          //   {
-                          //       id: 'apps',
-                          //       text: 'Apps',
-                          //       link: '/sidekick-studio/apps',
-                          //       icon: <AppsOutlinedIcon color='primary' />
-                          //   }
                       ]
                   }
                 : {})
@@ -297,7 +309,7 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                                         href={item.link}
                                         component={item.link ? NextLink : 'button'}
                                         sx={{ flex: 1, display: 'flex', width: '100%' }}
-                                        onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : item.text ?? '')}
+                                        onClick={() => setSubmenuOpen(item.text === submenuOpen ? '' : item.text ?? '')}
                                     >
                                         <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
                                         <Typography
