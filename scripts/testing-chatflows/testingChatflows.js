@@ -1,4 +1,39 @@
-// This script is used to test the chatflows API with a chatflowid csv file automatically. It should be able to run the csv file as line separated chatflowids or comma separated chatflowids.
+/**
+ * Chatflow Testing Script
+ *
+ * This script tests chatflows by making API requests to each chatflow ID listed in a CSV file.
+ * It supports both UUID-only and full URL formats in the CSV.
+ *
+ * Required Environment Variables (.env file):
+ * ----------------------------------------
+ * TESTING_CHATFLOWS_API_URL - Base URL for the API (e.g., https://lr-staging.studio.theanswer.ai/api/v1/prediction)
+ * TESTING_CHATFLOWS_AUTH_TOKEN - Bearer token for authentication
+ * TESTING_CHATFLOWS_QUESTION - The question to send to each chatflow
+ * TESTING_CHATFLOWS_REQUEST_DELAY_MS - Delay between requests in milliseconds (e.g., 500)
+ *
+ * Command Line Options:
+ * -------------------
+ * --csv, -c: Path to CSV file (default: ./chatflows.csv)
+ * --no-delay: Disable delay between requests
+ * --retries, -r: Number of retry attempts (default: 2)
+ * --timeout, -t: Request timeout in milliseconds (default: 30000)
+ * --output, -o: Save results to JSON file
+ * --verbose, -v: Enable detailed logging
+ * --help, -h: Show help
+ *
+ * CSV File Format:
+ * --------------
+ * One chatflow ID per line, either as:
+ * - UUID only: 8ef0e7d2-7c31-496d-8666-60133a246e15
+ * - Full URL: https://staging.theanswer.ai/chat/8ef0e7d2-7c31-496d-8666-60133a246e15
+ *
+ * Example .env file:
+ * -----------------
+ * TESTING_CHATFLOWS_API_URL=https://lr-staging.studio.theanswer.ai/api/v1/prediction
+ * TESTING_CHATFLOWS_AUTH_TOKEN=your-bearer-token-here
+ * TESTING_CHATFLOWS_QUESTION=Hey, how are you?
+ * TESTING_CHATFLOWS_REQUEST_DELAY_MS=500
+ */
 
 const fs = require('fs')
 const path = require('path')
@@ -54,6 +89,14 @@ const formatDuration = (ms) => {
     const seconds = Math.floor(ms / 1000)
     const minutes = Math.floor(seconds / 60)
     return `${minutes}m ${seconds % 60}s`
+}
+
+// Utility function to extract UUID from URL or string
+const extractUUID = (input) => {
+    // UUID regex pattern
+    const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+    const match = input.match(uuidPattern)
+    return match ? match[0] : input
 }
 
 async function testChatflow(chatflowId, retryCount = 0) {
@@ -115,6 +158,13 @@ async function main() {
             .split('\n')
             .map((line) => line.trim())
             .filter((line) => line && !line.startsWith('#'))
+            .map(extractUUID) // Extract UUIDs from URLs or strings
+
+        if (argv.verbose) {
+            console.log('🔍 Extracted UUIDs from input:')
+            chatflowIds.forEach((id) => console.log(id))
+            console.log('')
+        }
 
         console.log('🚀 Starting chatflow testing...\n')
         console.log(`📊 Total chatflows to test: ${chatflowIds.length}`)
