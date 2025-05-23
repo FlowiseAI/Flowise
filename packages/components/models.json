@@ -4,51 +4,62 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-sonnet-4-20250514-v1:0",
+                    "name": "anthropic.claude-sonnet-4-20250514-v1:0",
+                    "description": "Claude 4 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "anthropic.claude-opus-4-20250514-v1:0",
+                    "name": "anthropic.claude-opus-4-20250514-v1:0",
+                    "description": "Claude 4 Opus",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
                     "label": "anthropic.claude-3-7-sonnet-20250219-v1:0",
                     "name": "anthropic.claude-3-7-sonnet-20250219-v1:0",
-                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model",
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
                 },
                 {
                     "label": "anthropic.claude-3-5-haiku-20241022-v1:0",
                     "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
-                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model",
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5",
                     "input_cost": 8e-7,
                     "output_cost": 4e-6
                 },
                 {
                     "label": "anthropic.claude-3.5-sonnet-20241022-v2:0",
                     "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
-                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model",
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
                 },
                 {
                     "label": "anthropic.claude-3.5-sonnet-20240620-v1:0",
                     "name": "anthropic.claude-3.5-sonnet-20240620-v1:0",
-                    "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5 - most intelligent model",
+                    "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
                 },
                 {
                     "label": "anthropic.claude-3-opus",
                     "name": "anthropic.claude-3-opus-20240229-v1:0",
-                    "description": "Powerful model for highly complex tasks, reasoning and analysis",
                     "input_cost": 0.000015,
                     "output_cost": 0.000075
                 },
                 {
                     "label": "anthropic.claude-3-sonnet",
                     "name": "anthropic.claude-3-sonnet-20240229-v1:0",
-                    "description": "Balance of intelligence and speed",
                     "input_cost": 0.000003,
                     "output_cost": 0.000015
                 },
                 {
                     "label": "anthropic.claude-3-haiku",
                     "name": "anthropic.claude-3-haiku-20240307-v1:0",
-                    "description": "Fastest and most compact model for near-instant responsiveness",
                     "input_cost": 2.5e-7,
                     "output_cost": 1.25e-6
                 },
@@ -412,37 +423,37 @@
             "name": "chatAnthropic",
             "models": [
                 {
+                    "label": "claude-sonnet-4-0",
+                    "name": "claude-sonnet-4-0",
+                    "description": "Claude 4 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-opus-4-0",
+                    "name": "claude-opus-4-0",
+                    "description": "Claude 4 Opus",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
                     "label": "claude-3-7-sonnet-latest",
                     "name": "claude-3-7-sonnet-latest",
-                    "description": "Most recent snapshot version of Claude Sonnet 3.7 model - hybrid reasoning model",
+                    "description": "Most recent snapshot version of Claude Sonnet 3.7",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-5-haiku-latest",
                     "name": "claude-3-5-haiku-latest",
-                    "description": "Most recent snapshot version of Claude Haiku 3.5 - fastest model",
+                    "description": "Most recent snapshot version of Claude Haiku 3.5",
                     "input_cost": 8e-7,
                     "output_cost": 4e-6
                 },
                 {
                     "label": "claude-3.5-sonnet-latest",
                     "name": "claude-3-5-sonnet-latest",
-                    "description": "Most recent snapshot version of Claude Sonnet 3.5 model - most intelligent model",
-                    "input_cost": 3e-6,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "claude-3.5-sonnet-20241022",
-                    "name": "claude-3-5-sonnet-20241022",
-                    "description": "(20241022) specific version of Claude Sonnet 3.5 - most intelligent model",
-                    "input_cost": 3e-6,
-                    "output_cost": 0.000015
-                },
-                {
-                    "label": "claude-3.5-sonnet-20240620",
-                    "name": "claude-3-5-sonnet-20240620",
-                    "description": "(20240620) specific version of Claude Sonnet 3.5 - most intelligent model",
+                    "description": "Most recent snapshot version of Claude Sonnet 3.5 model",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
                 },
@@ -466,27 +477,6 @@
                     "description": "Fastest and most compact model, designed for near-instant responsiveness",
                     "input_cost": 2.5e-7,
                     "output_cost": 1.25e-6
-                },
-                {
-                    "label": "claude-2.0 (legacy)",
-                    "name": "claude-2.0",
-                    "description": "Claude 2 latest major version, automatically get updates to the model as they are released",
-                    "input_cost": 0.000008,
-                    "output_cost": 0.000024
-                },
-                {
-                    "label": "claude-2.1 (legacy)",
-                    "name": "claude-2.1",
-                    "description": "Claude 2 latest full version",
-                    "input_cost": 0.000008,
-                    "output_cost": 0.000024
-                },
-                {
-                    "label": "claude-instant-1.2 (legacy)",
-                    "name": "claude-instant-1.2",
-                    "description": "Claude Instant latest major version, automatically get updates to the model as they are released",
-                    "input_cost": 0.000008,
-                    "output_cost": 0.000024
                 }
             ]
         },
@@ -533,6 +523,12 @@
         {
             "name": "chatGoogleGenerativeAI",
             "models": [
+                {
+                    "label": "gemini-2.5-flash-preview-05-20",
+                    "name": "gemini-2.5-flash-preview-05-20",
+                    "input_cost": 0.15e-6,
+                    "output_cost": 6e-7
+                },
                 {
                     "label": "gemini-2.5-pro-preview-03-25",
                     "name": "gemini-2.5-pro-preview-03-25",
@@ -622,23 +618,37 @@
                     "output_cost": 3.75e-7
                 },
                 {
+                    "label": "claude-sonnet-4@20250514",
+                    "name": "claude-sonnet-4@20250514",
+                    "description": "Claude 4 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-opus-4@20250514",
+                    "name": "claude-opus-4@20250514",
+                    "description": "Claude 4 Opus",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
                     "label": "claude-3-7-sonnet@20250219",
                     "name": "claude-3-7-sonnet@20250219",
-                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7 - hybrid reasoning model",
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
                 },
                 {
                     "label": "claude-3-5-haiku@20241022",
                     "name": "claude-3-5-haiku@20241022",
-                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5 - fastest model",
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5",
                     "input_cost": 8e-7,
                     "output_cost": 4e-6
                 },
                 {
                     "label": "claude-3-5-sonnet-v2@20241022",
                     "name": "claude-3-5-sonnet-v2@20241022",
-                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5 - most intelligent model",
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5",
                     "input_cost": 3e-6,
                     "output_cost": 0.000015
                 },
