@@ -10,6 +10,7 @@
  * TESTING_CHATFLOWS_AUTH_TOKEN - Bearer token for authentication
  * TESTING_CHATFLOWS_QUESTION - The question to send to each chatflow
  * TESTING_CHATFLOWS_REQUEST_DELAY_MS - Delay between requests in milliseconds (e.g., 500)
+ * TESTING_CHATFLOWS_FLOWISE_URL - Base URL for Flowise API (e.g., https://lr-staging.studio.theanswer.ai)
  *
  * Command Line Options:
  * -------------------
@@ -33,6 +34,7 @@
  * TESTING_CHATFLOWS_AUTH_TOKEN=your-bearer-token-here
  * TESTING_CHATFLOWS_QUESTION=Hey, how are you?
  * TESTING_CHATFLOWS_REQUEST_DELAY_MS=500
+ * TESTING_CHATFLOWS_FLOWISE_URL=https://lr-staging.studio.theanswer.ai
  */
 
 const fs = require('fs')
@@ -97,6 +99,32 @@ const extractUUID = (input) => {
     const uuidPattern = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
     const match = input.match(uuidPattern)
     return match ? match[0] : input
+}
+
+// Function to fetch chatflow name from Flowise API
+async function getChatflowName(chatflowId) {
+    try {
+        // Extract base URL from the prediction API URL
+        const baseUrl = process.env.TESTING_CHATFLOWS_API_URL.split('/api/v1/prediction')[0]
+        const response = await axios.get(
+            `${baseUrl}/api/v1/chatflows/${chatflowId}`, // Note: it's 'chatflows' not 'chatflow'
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.TESTING_CHATFLOWS_AUTH_TOKEN}`
+                },
+                timeout: argv.timeout
+            }
+        )
+        // The name is in the response.data.name field according to Flowise API docs
+        return response.data.name || 'Unknown Name'
+    } catch (error) {
+        if (error.response?.status === 404) {
+            console.error(`⚠️  Chatflow ${chatflowId} not found`)
+        } else {
+            console.error(`⚠️  Failed to fetch name for chatflow ${chatflowId}:`, error.message)
+        }
+        return 'Unknown Name'
+    }
 }
 
 async function testChatflow(chatflowId, retryCount = 0) {
@@ -178,12 +206,16 @@ async function main() {
         // Test each chatflow
         for (let i = 0; i < chatflowIds.length; i++) {
             const chatflowId = chatflowIds[i]
+            const chatflowName = await getChatflowName(chatflowId)
+
             if (argv.verbose) {
                 console.log(`\n📝 Testing chatflow ${i + 1}/${chatflowIds.length}`)
+                console.log(`Name: ${chatflowName}`)
                 console.log(`ID: ${chatflowId}`)
             }
 
             const result = await testChatflow(chatflowId)
+            result.name = chatflowName
             results.push(result)
 
             if (argv.verbose) {
@@ -197,7 +229,8 @@ async function main() {
                 console.log(`⏱️  Duration: ${formatDuration(result.duration)}`)
                 console.log('----------------------------------------')
             } else {
-                process.stdout.write(result.success ? '✅' : '❌')
+                // Show each result on a new line with name and status
+                console.log(`${result.success ? '✅' : '❌'} ${result.name} (${result.chatflowId})`)
             }
 
             // Add delay between requests (except for the last request)
@@ -215,6 +248,7 @@ async function main() {
             .filter((r) => !r.success)
             .map((r) => ({
                 id: r.chatflowId,
+                name: r.name,
                 error: r.error
             }))
 
@@ -228,8 +262,9 @@ async function main() {
 
         if (failed > 0) {
             console.log('\n❌ Failed Chatflows:')
-            failedChatflows.forEach(({ id, error }) => {
-                console.log(`\nID: ${id}`)
+            failedChatflows.forEach(({ id, name, error }) => {
+                console.log(`\nName: ${name}`)
+                console.log(`ID: ${id}`)
                 console.log('Error:', typeof error === 'string' ? error : JSON.stringify(error, null, 2))
             })
         }
