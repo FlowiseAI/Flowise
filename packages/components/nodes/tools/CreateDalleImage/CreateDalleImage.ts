@@ -1,6 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { addSingleFileToStorage } from '../../../src/storageUtils'
 import { Tool } from '@langchain/core/tools'
 import fetch from 'node-fetch'
 
@@ -26,6 +25,7 @@ export interface RequestParameters {
     format?: string
     output_compression?: number
     background?: string
+    baseURL?: string
 }
 
 export class DallePostTool extends Tool {
@@ -42,6 +42,7 @@ export class DallePostTool extends Tool {
     format = 'png'
     output_compression = 0
     background = 'auto'
+    baseURL = process.env.ANSWERAI_DOMAIN || 'http://localhost:3000'
 
     constructor(args?: RequestParameters) {
         super()
@@ -56,6 +57,7 @@ export class DallePostTool extends Tool {
         this.format = args?.format ?? this.format
         this.output_compression = args?.output_compression ?? this.output_compression
         this.background = args?.background ?? this.background
+        this.baseURL = args?.baseURL ?? this.baseURL
     }
 
     /** @ignore */
@@ -69,16 +71,15 @@ export class DallePostTool extends Tool {
                 quality: this.quality,
                 response_format: this.response_format,
                 style: this.style,
-                format: this.format,
+                output_format: this.format,
                 output_compression: this.output_compression,
                 background: this.background
             }
 
-            const res = await fetch('https://api.openai.com/v1/images/generations', {
+            const res = await fetch(`${this.baseURL}/api/images/generate`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${this.apiKey}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(inputBody)
             })
@@ -88,19 +89,8 @@ export class DallePostTool extends Tool {
                 throw new Error(text)
             }
 
-            if (this.model === 'gpt-image-1') {
-                const json = await res.json()
-                const base64 = json?.data?.[0]?.b64_json
-                if (!base64) return JSON.stringify(json)
-
-                const bf = Buffer.from(base64, 'base64')
-                const fileName = `dalle_${Date.now()}.png`
-                const url = await addSingleFileToStorage('image/png', bf, fileName, 'dalle-images')
-                return url
-            } else {
-                const text = await res.text()
-                return text
-            }
+            const text = await res.text()
+            return text
         } catch (error) {
             return `${error}`
         }
@@ -242,6 +232,14 @@ class DallePost_Tool implements INode {
                     { label: 'white', name: 'white' }
                 ],
                 default: 'auto'
+            },
+            {
+                label: 'Base URL',
+                name: 'baseURL',
+                type: 'string',
+                description: 'Base URL of the web application. Defaults to ANSWERAI_DOMAIN or http://localhost:3000',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -257,6 +255,7 @@ class DallePost_Tool implements INode {
         const format = nodeData.inputs?.format as string
         const output_compression = nodeData.inputs?.output_compression as string
         const background = nodeData.inputs?.background as string
+        const baseURL = (nodeData.inputs?.baseURL as string) || (options.baseURL as string)
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
@@ -273,6 +272,7 @@ class DallePost_Tool implements INode {
         if (output_compression) obj.output_compression = parseInt(output_compression, 10)
         if (background) obj.background = background
         if (openAIApiKey) obj.apiKey = openAIApiKey
+        if (baseURL) obj.baseURL = baseURL
 
         return new DallePostTool(obj)
     }
