@@ -196,6 +196,41 @@ export class DallePostTool extends Tool {
 
             const openaiResponse = (await response.json()) as { data: Array<{ url?: string; b64_json?: string }> }
 
+            // Add request metadata to the response for consistency with the service
+            const responseWithMetadata = openaiResponse as {
+                data: Array<{ url?: string; b64_json?: string }>
+                requestMetadata?: {
+                    prompt: string
+                    model: string
+                    size: string
+                    quality: string
+                    style?: string
+                    response_format?: string
+                    format?: string
+                    output_compression?: number
+                    background?: string
+                    timestamp: string
+                    userId: string
+                    userEmail: string
+                    organizationId: string
+                }
+            }
+            responseWithMetadata.requestMetadata = {
+                prompt: input || this.prompt,
+                model: this.model,
+                size: this.size,
+                quality: this.quality,
+                style: this.style,
+                response_format: this.response_format,
+                format: this.format,
+                output_compression: this.output_compression,
+                background: this.background,
+                timestamp: new Date().toISOString(),
+                userId: this.userId,
+                userEmail: this.userEmail,
+                organizationId: this.organizationId
+            }
+
             // Process the results and upload to storage
             const results = []
             if (openaiResponse.data && Array.isArray(openaiResponse.data)) {
@@ -218,7 +253,7 @@ export class DallePostTool extends Tool {
                             const uploadResponse = await this.uploadToStorage(
                                 base64Data,
                                 `dalle_image_${Date.now()}_${i + 1}.${this.format || 'png'}`,
-                                openaiResponse
+                                responseWithMetadata
                             )
 
                             if (uploadResponse.success && 'url' in uploadResponse) {

@@ -202,7 +202,7 @@ const uploadImageToStorage = async (data: {
 const uploadDalleImage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.body.base64Data || !req.body.filename) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Missing required fields: base64Data and filename')
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Missing required fields:base64Data and filename')
         }
 
         const { base64Data, filename, organizationId, userId, fullResponse } = req.body
