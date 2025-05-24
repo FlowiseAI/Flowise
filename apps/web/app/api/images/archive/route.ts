@@ -21,7 +21,8 @@ export async function GET(req: Request) {
         organizationId: session.user.organizationId,
         org_id: session.user.org_id,
         finalOrganizationId: organizationId,
-        email: session.user.email
+        email: session.user.email,
+        chatflowDomain: session.user.chatflowDomain
     })
 
     // Get user's access token for Flowise authentication
@@ -38,11 +39,10 @@ export async function GET(req: Request) {
         const page = url.searchParams.get('page') || '1'
         const limit = url.searchParams.get('limit') || '20'
 
-        // Call Flowise server API to get archived images
-        // The Flowise endpoint now gets user/org IDs from the authentication middleware
-        const flowiseDomain = process.env.DOMAIN || 'http://localhost:4000'
-
-        console.log('Making archive request to Flowise (user/org IDs will be resolved by Flowise auth middleware)')
+        // Use the same domain resolution as chat flow and generate API
+        const flowiseDomain =
+            session.user.chatflowDomain || process.env.CHATFLOW_DOMAIN_OVERRIDE || process.env.DOMAIN || 'http://localhost:4000'
+        console.log('Archive API - Using Flowise domain:', flowiseDomain)
 
         const response = await fetch(`${flowiseDomain}/api/v1/dalle-image/archive?page=${page}&limit=${limit}`, {
             method: 'GET',

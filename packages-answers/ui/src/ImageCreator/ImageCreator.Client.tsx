@@ -56,7 +56,7 @@ interface ArchiveResponse {
     }
 }
 
-const ImageCreator = ({ user }: { user: User }) => {
+const ImageCreator = ({ user, accessToken }: { user: User; accessToken?: string }) => {
     const [prompt, setPrompt] = useState('')
     const [n, setN] = useState(1)
     const [size, setSize] = useState('1024x1024')
@@ -165,7 +165,7 @@ const ImageCreator = ({ user }: { user: User }) => {
 
     const downloadMetadata = async (jsonUrl: string, sessionId: string) => {
         try {
-            const fullJsonUrl = `${process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'}${jsonUrl}`
+            const fullJsonUrl = `${user.chatflowDomain || process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'}${jsonUrl}`
             const response = await fetch(fullJsonUrl)
             const jsonData = await response.json()
 
@@ -193,8 +193,19 @@ const ImageCreator = ({ user }: { user: User }) => {
                 orgName: user.org_name
             })
 
-            // Use the same pattern as generate API - call our server-side API route
-            const response = await fetch(`/api/images/archive?page=${page}&limit=20`)
+            // Follow the same pattern as chat flow - make authenticated request directly to backend
+            const flowiseDomain = user.chatflowDomain || process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'
+
+            if (!accessToken) {
+                console.error('No access token available for authenticated request')
+                return
+            }
+
+            const response = await fetch(`${flowiseDomain}/api/v1/dalle-image/archive?page=${page}&limit=20`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`
+                }
+            })
 
             if (response.ok) {
                 const data: ArchiveResponse = await response.json()
@@ -255,13 +266,19 @@ const ImageCreator = ({ user }: { user: User }) => {
                 style?: string
                 output_format?: string
                 background?: string
+                organizationId?: string
+                userId?: string
+                userEmail?: string
             } = {
                 prompt,
                 model,
                 n: Math.min(n, getMaxImages()),
                 size,
                 quality,
-                response_format: 'b64_json'
+                response_format: 'b64_json',
+                organizationId: user.organizationId || user.org_id,
+                userId: user.id,
+                userEmail: user.email
             }
 
             // Add model-specific parameters
@@ -274,10 +291,21 @@ const ImageCreator = ({ user }: { user: User }) => {
                 requestBody.background = background
             }
 
-            const res = await fetch('/api/images/generate', {
+            // Follow the same pattern as chat flow - make authenticated request directly to backend
+            const flowiseDomain = user.chatflowDomain || process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'
+
+            if (!accessToken) {
+                console.error('No access token available for authenticated request')
+                // Remove the temporary message on error
+                setMessages((prev) => prev.filter((msg) => msg.id !== tempMessageId))
+                return
+            }
+
+            const res = await fetch(`${flowiseDomain}/api/v1/dalle-image/generate`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${accessToken}`
                 },
                 body: JSON.stringify(requestBody)
             })
@@ -542,9 +570,11 @@ const ImageCreator = ({ user }: { user: User }) => {
                                                   // Determine the image source based on type
                                                   const imageSrc =
                                                       img.type === 'url'
-                                                          ? `${process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'}${
-                                                                img.data
-                                                            }`
+                                                          ? `${
+                                                                user.chatflowDomain ||
+                                                                process.env.NEXT_PUBLIC_FLOWISE_DOMAIN ||
+                                                                'http://localhost:4000'
+                                                            }${img.data}`
                                                           : `data:image/png;base64,${img.data}`
 
                                                   const fileName = `generated-image-${img.sessionId || Date.now()}-${i + 1}.${
@@ -595,7 +625,7 @@ const ImageCreator = ({ user }: { user: User }) => {
                                                                               }
                                                                           }}
                                                                           onClick={() => {
-                                                                              if (img.jsonUrl) {
+                                                                              if (img.jsonUrl && img.sessionId) {
                                                                                   downloadMetadata(img.jsonUrl, img.sessionId)
                                                                               }
                                                                           }}
@@ -669,9 +699,9 @@ const ImageCreator = ({ user }: { user: User }) => {
                                     </Typography>
                                     <Grid container spacing={2}>
                                         {archivedImages.map((img) => {
-                                            const imageSrc = `${process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'}${
-                                                img.imageUrl
-                                            }`
+                                            const imageSrc = `${
+                                                user.chatflowDomain || process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'
+                                            }${img.imageUrl}`
                                             const fileName = `archived-${img.sessionId}.png`
 
                                             return (
@@ -718,7 +748,7 @@ const ImageCreator = ({ user }: { user: User }) => {
                                                                             }
                                                                         }}
                                                                         onClick={() => {
-                                                                            if (img.jsonUrl) {
+                                                                            if (img.jsonUrl && img.sessionId) {
                                                                                 downloadMetadata(img.jsonUrl, img.sessionId)
                                                                             }
                                                                         }}

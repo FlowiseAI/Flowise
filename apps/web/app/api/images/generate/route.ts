@@ -16,7 +16,8 @@ export async function POST(req: Request) {
         organizationId: session.user.organizationId,
         org_id: session.user.org_id,
         finalOrganizationId: organizationId,
-        email: session.user.email
+        email: session.user.email,
+        chatflowDomain: session.user.chatflowDomain
     })
 
     // Get user's access token for Flowise authentication
@@ -38,8 +39,11 @@ export async function POST(req: Request) {
             userEmail: session.user.email
         }
 
-        // Call the new Flowise server endpoint with user context
-        const flowiseDomain = process.env.DOMAIN || 'http://localhost:4000'
+        // Use the same domain resolution as chat flow - user's chatflowDomain or fallback
+        const flowiseDomain =
+            session.user.chatflowDomain || process.env.CHATFLOW_DOMAIN_OVERRIDE || process.env.DOMAIN || 'http://localhost:4000'
+        console.log('Using Flowise domain:', flowiseDomain)
+
         const response = await fetch(`${flowiseDomain}/api/v1/dalle-image/generate`, {
             method: 'POST',
             headers: {
