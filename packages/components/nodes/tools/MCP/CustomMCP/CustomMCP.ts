@@ -7,6 +7,11 @@ const mcpServerConfig = `{
     "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/files"]
 }`
 
+interface IMCPInputVariables {
+    variableName: string
+    variableValue: string
+}
+
 class Custom_MCP implements INode {
     label: string
     name: string
@@ -30,6 +35,27 @@ class Custom_MCP implements INode {
         this.description = 'Custom MCP Config'
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search'
         this.inputs = [
+            {
+                label: 'Input Variables',
+                name: 'mcpInputVariables',
+                description: 'Input variables can be used in the MCP Server Config with prefix $. For example: $var',
+                type: 'array',
+                optional: true,
+                acceptVariable: true,
+                array: [
+                    {
+                        label: 'Variable Name',
+                        name: 'variableName',
+                        type: 'string'
+                    },
+                    {
+                        label: 'Variable Value',
+                        name: 'variableValue',
+                        type: 'string',
+                        acceptVariable: true
+                    }
+                ]
+            },
             {
                 label: 'MCP Server Config',
                 name: 'mcpServerConfig',
@@ -95,12 +121,22 @@ class Custom_MCP implements INode {
             throw new Error('MCP Server Config is required')
         }
 
+        const mcpInputVariables = (nodeData.inputs?.mcpInputVariables as IMCPInputVariables[]) ?? []
+
+        let sandbox: Record<string, string> = {}
+        for (const item of mcpInputVariables) {
+            const variableName = item.variableName
+            const variableValue = stripHtmlTags(item.variableValue)
+            sandbox[`$${variableName}`] = variableValue
+        }
+
         try {
             let serverParams
             if (typeof mcpServerConfig === 'object') {
-                serverParams = mcpServerConfig
+                serverParams = substituteVariablesInObject(mcpServerConfig, sandbox)
             } else if (typeof mcpServerConfig === 'string') {
-                const serverParamsString = convertToValidJSONString(mcpServerConfig)
+                const substitutedString = substituteVariablesInString(mcpServerConfig, sandbox)
+                const serverParamsString = convertToValidJSONString(substitutedString)
                 serverParams = JSON.parse(serverParamsString)
             }
 
@@ -123,6 +159,33 @@ class Custom_MCP implements INode {
     }
 }
 
+function substituteVariablesInObject(obj: any, sandbox: any): any {
+    if (typeof obj === 'string') {
+        // Replace variables in string values
+        return substituteVariablesInString(obj, sandbox)
+    } else if (Array.isArray(obj)) {
+        // Recursively process arrays
+        return obj.map((item) => substituteVariablesInObject(item, sandbox))
+    } else if (obj !== null && typeof obj === 'object') {
+        // Recursively process object properties
+        const result: any = {}
+        for (const [key, value] of Object.entries(obj)) {
+            result[key] = substituteVariablesInObject(value, sandbox)
+        }
+        return result
+    }
+    // Return primitive values as-is
+    return obj
+}
+
+function substituteVariablesInString(str: string, sandbox: any): string {
+    // Use regex to find $variableName patterns and replace with sandbox values
+    return str.replace(/\$(\w+)/g, (match, variableName) => {
+        const sandboxKey = `$${variableName}`
+        return Object.keys(sandbox).includes(sandboxKey) ? sandbox[sandboxKey] : match
+    })
+}
+
 function convertToValidJSONString(inputString: string) {
     try {
         const jsObject = Function('return ' + inputString)()
@@ -131,6 +194,10 @@ function convertToValidJSONString(inputString: string) {
         console.error('Error converting to JSON:', error)
         return ''
     }
+}
+
+function stripHtmlTags(inputString: string): string {
+    return inputString.replace(/<[^>]*>/g, '')
 }
 
 module.exports = { nodeClass: Custom_MCP }
