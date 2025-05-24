@@ -810,8 +810,8 @@ importers:
                 specifier: ^1.0.2
                 version: 1.0.2
             '@apidevtools/json-schema-ref-parser':
-                specifier: ^11.7.0
-                version: 11.9.3
+                specifier: ^12.0.2
+                version: 12.0.2
             '@arizeai/openinference-instrumentation-langchain':
                 specifier: ^2.0.0
                 version: 2.0.0(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))
@@ -1074,8 +1074,8 @@ importers:
                 specifier: 3.32.0
                 version: 3.32.0
             langfuse-langchain:
-                specifier: 3.37.2
-                version: 3.37.2(langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi))
+                specifier: 3.32.0
+                version: 3.32.0(langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi))
             langsmith:
                 specifier: 0.1.6
                 version: 0.1.6
@@ -2256,6 +2256,10 @@ packages:
 
     '@apidevtools/json-schema-ref-parser@11.9.3':
         resolution: { integrity: sha512-60vepv88RwcJtSHrD6MjIL6Ta3SOYbgfnkHb+ppAVK+o9mXprRtulx7VlRl3lN3bbvysAfCS7WMVfhUYemB0IQ== }
+        engines: { node: '>= 16' }
+
+    '@apidevtools/json-schema-ref-parser@12.0.2':
+        resolution: { integrity: sha512-SoZWqQz4YMKdw4kEMfG5w6QAy+rntjsoAT1FtvZAnVEnCR4uy9YSuDBNoVAFHgzSz0dJbISLLCSrGR2Zd7bcvA== }
         engines: { node: '>= 16' }
 
     '@apidevtools/json-schema-ref-parser@9.1.2':
@@ -15621,22 +15625,14 @@ packages:
         resolution: { integrity: sha512-8wWnPtmhMBBgVicLR9SjQ1O29fgvTJyRDE5kaF8b908TvE0PXZmxs068GGhLCCdTMUGpU6WXqKRHTZfXAuIzXA== }
         engines: { node: '>=18' }
 
-    langfuse-core@3.37.2:
-        resolution: { integrity: sha512-3iFz1UZzKDi9GEjIRRSSqcKbusmB17uR9qYxMR1BHQYuBkQv2wIV+HI793hWh3tmc6q2pmqPMjtJdoFVBhucDA== }
-        engines: { node: '>=18' }
-
-    langfuse-langchain@3.37.2:
-        resolution: { integrity: sha512-hVxoDitHXzlZ4Hrb6IpSOvd2dZSK1iOlK1KWBZsOAHAr451GGdGYm1WFLpk5T2CIt2yl1iXYAzk/NvUwU6C/uA== }
+    langfuse-langchain@3.32.0:
+        resolution: { integrity: sha512-Dtl5r8SeBUrOV1f4715mC3Giey6KPhJWYkgh5qaQm+sONgiaqqDl5QfLFxmy7C5tFW7xSgGwo6DfbD7VY+dFnQ== }
         engines: { node: '>=18' }
         peerDependencies:
             langchain: '>=0.0.157 <0.4.0'
 
     langfuse@3.32.0:
         resolution: { integrity: sha512-Qto8+CW8ZulNaZ/gn4JgVe5v/yeKbvMyvQ/s2DXO5bP5o1PmqE6YOCHQ3Uep6W94B8kpXUgOHg7ZS5Wg8Xljsw== }
-        engines: { node: '>=18' }
-
-    langfuse@3.37.2:
-        resolution: { integrity: sha512-C4P56hJDNk8vWNJR102JhgyCYXbt3HG19PY0brurlrU4dh5pq91JPt44jyiT5RzUs+NFew//gCkgFEcQd3RogA== }
         engines: { node: '>=18' }
 
     langsmith@0.0.70:
@@ -23573,6 +23569,12 @@ snapshots:
             leven: 3.1.0
 
     '@apidevtools/json-schema-ref-parser@11.9.3':
+        dependencies:
+            '@jsdevtools/ono': 7.1.3
+            '@types/json-schema': 7.0.15
+            js-yaml: 4.1.0
+
+    '@apidevtools/json-schema-ref-parser@12.0.2':
         dependencies:
             '@jsdevtools/ono': 7.1.3
             '@types/json-schema': 7.0.15
@@ -42461,23 +42463,15 @@ snapshots:
         dependencies:
             mustache: 4.2.0
 
-    langfuse-core@3.37.2:
-        dependencies:
-            mustache: 4.2.0
-
-    langfuse-langchain@3.37.2(langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi)):
+    langfuse-langchain@3.32.0(langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi)):
         dependencies:
             langchain: 0.2.20(63fhjzssdndezkjjysn4v6y4yi)
-            langfuse: 3.37.2
-            langfuse-core: 3.37.2
+            langfuse: 3.32.0
+            langfuse-core: 3.32.0
 
     langfuse@3.32.0:
         dependencies:
             langfuse-core: 3.32.0
-
-    langfuse@3.37.2:
-        dependencies:
-            langfuse-core: 3.37.2
 
     langsmith@0.0.70:
         dependencies:
