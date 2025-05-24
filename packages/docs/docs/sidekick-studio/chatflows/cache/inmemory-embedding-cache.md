@@ -23,8 +23,8 @@ The InMemory Embedding Cache feature in AnswerAI allows you to store generated e
 
     - Connect an Embeddings node to the "Embeddings" input.
     - (Optional) Specify a "Namespace" for the cache.
-          <!-- TODO: Screenshot showing the configuration of the InMemory Embedding Cache node -->
-          <figure><img src="/.gitbook/assets/screenshots/inmemory embedding cache configuration.png" alt="" /><figcaption><p>In Memory Embedding Cache Configuration &#x26; Drop UI</p></figcaption></figure>
+      <!-- TODO: Screenshot showing the configuration of the InMemory Embedding Cache node -->
+      <figure><img src="/.gitbook/assets/screenshots/inmemory embedding cache configuration.png" alt="" /><figcaption><p>In Memory Embedding Cache Configuration &#x26; Drop UI</p></figcaption></figure>
 
 3. Connect the InMemory Embedding Cache node to other nodes in your workflow that require embeddings:
        <!-- TODO: Screenshot showing the connection between InMemory Embedding Cache and other relevant nodes -->

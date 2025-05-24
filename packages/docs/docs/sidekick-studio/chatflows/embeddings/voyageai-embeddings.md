@@ -26,15 +26,15 @@ To use VoyageAI Embeddings in AnswerAI, follow these steps:
 
     - Click on the VoyageAI Embeddings node to open its settings.
     - In the "Connect Credential" field, select your VoyageAI API credential or create a new one if you haven't already.
-          <!-- TODO: Screenshot of connecting VoyageAI API credential -->
-          <figure><img src="/.gitbook/assets/screenshots/voyageaiapicredentials.png" alt="" /><figcaption><p> VoyageAI Embedding Node &#x26; Drop UI</p></figcaption></figure>
+      <!-- TODO: Screenshot of connecting VoyageAI API credential -->
+      <figure><img src="/.gitbook/assets/screenshots/voyageaiapicredentials.png" alt="" /><figcaption><p> VoyageAI Embedding Node &#x26; Drop UI</p></figcaption></figure>
 
 3. Choose the model:
 
     - In the "Model Name" dropdown, select the desired VoyageAI model for generating embeddings.
     - The default model is "voyage-2", but you can choose other available models.
-          <!-- TODO: Screenshot of model selection dropdown -->
-          <figure><img src="/.gitbook/assets/screenshots/voyagemodelselection.png" alt="" /><figcaption><p> VoyageAI Embedding Node Model Selection &#x26; Drop UI</p></figcaption></figure>
+      <!-- TODO: Screenshot of model selection dropdown -->
+      <figure><img src="/.gitbook/assets/screenshots/voyagemodelselection.png" alt="" /><figcaption><p> VoyageAI Embedding Node Model Selection &#x26; Drop UI</p></figcaption></figure>
 
 4. Connect the VoyageAI Embeddings node to other nodes in your workflow as needed.
 

@@ -39,7 +39,7 @@ The Upstash Vector Store node allows you to store and retrieve vector embeddings
 2. In AnswerAI, create a new Upstash Vector credential:
     - Enter the Upstash Vector REST URL (UPSTASH_VECTOR_REST_URL)
     - Enter the Upstash Vector REST Token (UPSTASH_VECTOR_REST_TOKEN)
-        <!-- TODO: Screenshot of AnswerAI credential creation form -->
+          <!-- TODO: Screenshot of AnswerAI credential creation form -->
 
 <figure><img src="/.gitbook/assets/screenshots/upstashapipage.png" alt="" /><figcaption><p> Upstash Console Index form   &#x26; Drop UI</p></figcaption></figure>
 

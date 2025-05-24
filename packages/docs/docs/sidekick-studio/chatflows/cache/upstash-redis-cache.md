@@ -29,8 +29,8 @@ The Upstash Redis Cache feature in AnswerAI allows you to store Language Model (
     - Navigate to the credentials section in AnswerAI
     - Create a new credential of type 'upstashRedisApi'
     - Enter your Upstash Redis connection URL and token
-        <figure><img src="/.gitbook/assets/screenshots/upstash redis cache credentials.png" alt="" /><figcaption><p>Upstash Redis Cache API Credential &#x26; Drop UI</p></figcaption></figure>
-        <!-- TODO: Screenshot of creating Upstash Redis Cache credential -->
+          <figure><img src="/.gitbook/assets/screenshots/upstash redis cache credentials.png" alt="" /><figcaption><p>Upstash Redis Cache API Credential &#x26; Drop UI</p></figcaption></figure>
+          <!-- TODO: Screenshot of creating Upstash Redis Cache credential -->
 
 3. Add the Upstash Redis Cache node to your AnswerAI workflow:
        <!-- TODO: Screenshot of adding Upstash Redis Cache node to the workflow -->
@@ -39,7 +39,7 @@ The Upstash Redis Cache feature in AnswerAI allows you to store Language Model (
 4. Configure the Upstash Redis Cache node:
 
     - Connect the previously created credential to the node
-        <!-- TODO: Screenshot showing the configuration of the Upstash Redis Cache node -->
+          <!-- TODO: Screenshot showing the configuration of the Upstash Redis Cache node -->
 
 5. Connect the Upstash Redis Cache node to your LLM node:
     <!-- TODO: Screenshot showing the connection between Upstash Redis Cache and LLM nodes -->

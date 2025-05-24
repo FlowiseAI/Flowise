@@ -28,7 +28,7 @@ The Momento Cache feature in AnswerAI allows you to store Language Model (LLM) r
     - Navigate to the credentials section in AnswerAI
     - Create a new credential of type 'momentoCacheApi'
     - Enter your Momento API key and cache name
-        <figure><img src="/.gitbook/assets/screenshots/momento cache api credentials.png" alt="" /><figcaption><p>Momento Cache Node &#x26; Drop UI</p></figcaption></figure><!-- TODO: Screenshot of creating Momento Cache credential -->
+          <figure><img src="/.gitbook/assets/screenshots/momento cache api credentials.png" alt="" /><figcaption><p>Momento Cache Node &#x26; Drop UI</p></figcaption></figure><!-- TODO: Screenshot of creating Momento Cache credential -->
 
 3. Add the Momento Cache node to your AnswerAI workflow:
     <!-- TODO: Screenshot of adding Momento Cache node to the workflow -->
@@ -37,7 +37,7 @@ The Momento Cache feature in AnswerAI allows you to store Language Model (LLM) r
 4. Configure the Momento Cache node:
 
     - Connect the previously created credential to the node
-        <!-- TODO: Screenshot showing the configuration of the Momento Cache node -->
+          <!-- TODO: Screenshot showing the configuration of the Momento Cache node -->
 
 5. Connect the Momento Cache node to your LLM node:
      <!-- TODO: Screenshot showing the connection between Momento Cache and LLM nodes -->

@@ -24,6 +24,19 @@ const Apps = () => {
                             </Button>
                         </CardActions>
                     </Card>
+                    <Card variant='outlined'>
+                        <CardContent>
+                            <Typography variant='h5' component='div'>
+                                Image Creator
+                            </Typography>
+                            <Typography variant='body2'>Generate images with DALL·E.</Typography>
+                        </CardContent>
+                        <CardActions>
+                            <Button size='small' variant='contained' fullWidth component={Link} href='/sidekick-studio/media-creator'>
+                                Start
+                            </Button>
+                        </CardActions>
+                    </Card>
                 </Stack>
             </Stack>
         </Container>
