@@ -51,6 +51,7 @@ import gmailRouter from './gmail'
 import csvParserRouter from './csv-parser'
 import browserExtensionRouter from './browser-extension'
 import dalleImageUploadRouter from './dalle-image-upload'
+import dalleImageRouter from './dalle-image'
 
 const router = express.Router()
 
@@ -95,6 +96,7 @@ router.use('/public-chatflows', publicChatflowsRouter)
 router.use('/stats', statsRouter)
 router.use('/tools', toolsRouter)
 router.use('/upload-dalle-image', dalleImageUploadRouter)
+router.use('/dalle-image', dalleImageRouter)
 router.use('/variables', variablesRouter)
 router.use('/vector', vectorRouter)
 router.use('/verify', verifyRouter)

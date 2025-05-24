@@ -1,8 +1,7 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import type { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { addSingleFileToStorage } from '../../../src/storageUtils'
 import { Tool } from '@langchain/core/tools'
-import fetch from 'node-fetch'
+import type { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 
 export const desc = `Use this when you want to create an image with OpenAI. The prompt should be a string. Choose between 'dall-e-3' for a direct URL response or 'gpt-image-1' to upload the generated image to storage.`
 
@@ -11,7 +10,7 @@ export interface Headers {
 }
 
 export interface Body {
-    [key: string]: any
+    [key: string]: unknown
 }
 
 export interface RequestParameters {
@@ -26,6 +25,10 @@ export interface RequestParameters {
     format?: string
     output_compression?: number
     background?: string
+    baseURL?: string
+    organizationId?: string
+    userId?: string
+    userEmail?: string
 }
 
 export class DallePostTool extends Tool {
@@ -36,12 +39,18 @@ export class DallePostTool extends Tool {
     apiKey = ''
     n = 1
     size = '1024x1024'
-    quality = 'auto'
+    quality = 'standard'
     response_format = 'b64_json'
     style = 'vivid'
     format = 'png'
     output_compression = 0
     background = 'auto'
+    baseURL = 'http://localhost:4000' // Default fallback to Flowise server
+
+    // User context for uploading images
+    organizationId = ''
+    userId = ''
+    userEmail = ''
 
     constructor(args?: RequestParameters) {
         super()
@@ -56,53 +65,235 @@ export class DallePostTool extends Tool {
         this.format = args?.format ?? this.format
         this.output_compression = args?.output_compression ?? this.output_compression
         this.background = args?.background ?? this.background
+        this.baseURL = args?.baseURL ?? this.baseURL
+        this.organizationId = args?.organizationId ?? this.organizationId
+        this.userId = args?.userId ?? this.userId
+        this.userEmail = args?.userEmail ?? this.userEmail
+    }
+
+    async uploadToStorage(base64Data: string, filename: string, fullResponse: Record<string, unknown>) {
+        try {
+            // Import and use the storage utility directly
+            const { addSingleFileToStorage } = await import('../../../src/storageUtils')
+            const crypto = await import('node:crypto')
+
+            // Convert base64 to Buffer
+            const buffer = Buffer.from(base64Data, 'base64')
+
+            // Generate unique identifier for this image generation session
+            const timestamp = Date.now()
+            const randomSuffix = crypto.randomBytes(8).toString('hex')
+            const sessionId = `${timestamp}_${randomSuffix}`
+
+            // Create image filename with session ID
+            const imageFilename = `${sessionId}_${filename}`
+
+            // Use user context or fallback to system defaults
+            const orgId = this.organizationId || 'system-org'
+            const usrId = this.userId || 'tool-system'
+
+            // Store the image using organization/user folder structure
+            const imageStorageUrl = await addSingleFileToStorage('image/png', buffer, imageFilename, 'dalle-images', orgId, usrId)
+
+            // Store the full OpenAI response as JSON if provided
+            let jsonStorageUrl = null
+            if (fullResponse) {
+                const jsonFilename = `${sessionId}_response.json`
+                const jsonBuffer = Buffer.from(JSON.stringify(fullResponse, null, 2), 'utf8')
+                jsonStorageUrl = await addSingleFileToStorage('application/json', jsonBuffer, jsonFilename, 'dalle-images', orgId, usrId)
+            }
+
+            // Convert FILE-STORAGE:: reference to a full URL with domain
+            const domain = process.env.DOMAIN || process.env.FLOWISE_DOMAIN || this.baseURL || 'http://localhost:4000'
+            const imageFileName = imageStorageUrl.replace('FILE-STORAGE::', '')
+            const fullImageUrl = `${domain}/api/v1/get-upload-file?chatflowId=dalle-images&chatId=${orgId}%2F${usrId}&fileName=${imageFileName}`
+
+            const response = {
+                url: fullImageUrl,
+                success: true,
+                sessionId
+            } as { url: string; success: boolean; sessionId: string; jsonUrl?: string }
+
+            // Add JSON URL to response if JSON was stored
+            if (jsonStorageUrl) {
+                const jsonFileName = jsonStorageUrl.replace('FILE-STORAGE::', '')
+                response.jsonUrl = `${domain}/api/v1/get-upload-file?chatflowId=dalle-images&chatId=${orgId}%2F${usrId}&fileName=${jsonFileName}`
+            }
+
+            return response
+        } catch (error) {
+            console.warn('Upload error:', error)
+            return { success: false, error: String(error) }
+        }
     }
 
     /** @ignore */
-    async _call(input: string) {
+    async _call(input: string, _runManager?: CallbackManagerForToolRun | undefined) {
         try {
-            const inputBody: any = {
-                prompt: input || this.prompt,
-                model: this.model,
-                n: this.n,
-                size: this.size,
-                quality: this.quality,
-                response_format: this.response_format,
-                style: this.style,
-                format: this.format,
-                output_compression: this.output_compression,
-                background: this.background
+            // Get OpenAI API key from environment variable (same as other AAI tools)
+            const openaiApiKey = process.env.AAI_DEFAULT_OPENAI_API_KEY || this.apiKey
+            if (!openaiApiKey) {
+                throw new Error(
+                    'OpenAI API key not configured. Please set AAI_DEFAULT_OPENAI_API_KEY environment variable or provide credential.'
+                )
             }
 
-            const res = await fetch('https://api.openai.com/v1/images/generations', {
+            // Prepare request body based on model
+            const requestBody: Record<string, unknown> = {
+                prompt: input || this.prompt,
+                model: this.model,
+                n: this.model === 'dall-e-3' ? 1 : this.n, // dall-e-3 only supports n=1
+                size: this.size
+            }
+
+            // Set quality based on model
+            if (this.model === 'dall-e-3') {
+                // dall-e-3 supports: 'standard', 'hd'
+                requestBody.quality = this.quality === 'hd' ? 'hd' : 'standard'
+            } else if (this.model === 'dall-e-2') {
+                // dall-e-2 only supports: 'standard'
+                requestBody.quality = 'standard'
+            } else if (this.model === 'gpt-image-1') {
+                // gpt-image-1 supports: 'high', 'medium', 'low'
+                if (this.quality === 'standard') {
+                    requestBody.quality = 'high' // map standard to high for gpt-image-1
+                } else if (['medium', 'low'].includes(this.quality)) {
+                    requestBody.quality = this.quality
+                } else {
+                    requestBody.quality = 'high' // default for gpt-image-1
+                }
+            }
+
+            // Add model-specific parameters
+            if (this.model === 'dall-e-3') {
+                requestBody.style = this.style
+                requestBody.response_format = this.response_format
+            } else if (this.model === 'dall-e-2') {
+                requestBody.response_format = this.response_format
+            } else if (this.model === 'gpt-image-1') {
+                // gpt-image-1 specific parameters
+                if (this.format) requestBody.output_format = this.format
+                if (this.background) requestBody.background = this.background
+                if (this.output_compression) requestBody.output_compression = this.output_compression
+                // Note: gpt-image-1 doesn't support response_format parameter
+            }
+
+            // Call OpenAI API directly
+            const fetch = (await import('node-fetch')).default
+            const response = await fetch('https://api.openai.com/v1/images/generations', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${this.apiKey}`
+                    Authorization: `Bearer ${openaiApiKey}`
                 },
-                body: JSON.stringify(inputBody)
+                body: JSON.stringify(requestBody)
             })
 
-            if (!res.ok) {
-                const text = await res.text()
-                throw new Error(text)
+            if (!response.ok) {
+                const errorText = await response.text()
+                throw new Error(`OpenAI API Error: ${errorText}`)
             }
 
-            if (this.model === 'gpt-image-1') {
-                const json = await res.json()
-                const base64 = json?.data?.[0]?.b64_json
-                if (!base64) return JSON.stringify(json)
+            const openaiResponse = (await response.json()) as { data: Array<{ url?: string; b64_json?: string }> }
 
-                const bf = Buffer.from(base64, 'base64')
-                const fileName = `dalle_${Date.now()}.png`
-                const url = await addSingleFileToStorage('image/png', bf, fileName, 'dalle-images')
-                return url
-            } else {
-                const text = await res.text()
-                return text
+            // Add request metadata to the response for consistency with the service
+            const responseWithMetadata = openaiResponse as {
+                data: Array<{ url?: string; b64_json?: string }>
+                requestMetadata?: {
+                    prompt: string
+                    model: string
+                    size: string
+                    quality: string
+                    style?: string
+                    response_format?: string
+                    format?: string
+                    output_compression?: number
+                    background?: string
+                    timestamp: string
+                    userId: string
+                    userEmail: string
+                    organizationId: string
+                }
             }
+            responseWithMetadata.requestMetadata = {
+                prompt: input || this.prompt,
+                model: this.model,
+                size: this.size,
+                quality: this.quality,
+                style: this.style,
+                response_format: this.response_format,
+                format: this.format,
+                output_compression: this.output_compression,
+                background: this.background,
+                timestamp: new Date().toISOString(),
+                userId: this.userId,
+                userEmail: this.userEmail,
+                organizationId: this.organizationId
+            }
+
+            // Process the results and upload to storage
+            const results = []
+            if (openaiResponse.data && Array.isArray(openaiResponse.data)) {
+                for (let i = 0; i < openaiResponse.data.length; i++) {
+                    const item = openaiResponse.data[i]
+                    let base64Data = ''
+
+                    if (item.url) {
+                        // Download from URL and convert to base64
+                        const imageResponse = await fetch(item.url)
+                        const buffer = await imageResponse.arrayBuffer()
+                        base64Data = Buffer.from(buffer).toString('base64')
+                    } else if (item.b64_json) {
+                        base64Data = item.b64_json
+                    }
+
+                    if (base64Data) {
+                        try {
+                            // Upload to storage using the dalle upload service
+                            const uploadResponse = await this.uploadToStorage(
+                                base64Data,
+                                `dalle_image_${Date.now()}_${i + 1}.${this.format || 'png'}`,
+                                responseWithMetadata
+                            )
+
+                            if (uploadResponse.success && 'url' in uploadResponse) {
+                                results.push({
+                                    type: 'url',
+                                    data: uploadResponse.url,
+                                    sessionId: uploadResponse.sessionId,
+                                    jsonUrl: uploadResponse.jsonUrl
+                                })
+                            } else {
+                                // Fallback to base64 if upload fails
+                                results.push({
+                                    type: 'base64',
+                                    data: `data:image/${this.format || 'png'};base64,${base64Data}`
+                                })
+                            }
+                        } catch (uploadError) {
+                            console.warn('Failed to upload image to storage:', uploadError)
+                            // Fallback to base64
+                            results.push({
+                                type: 'base64',
+                                data: `data:image/${this.format || 'png'};base64,${base64Data}`
+                            })
+                        }
+                    }
+                }
+            }
+
+            return JSON.stringify({
+                success: true,
+                images: results,
+                prompt: input || this.prompt,
+                model: this.model,
+                message: `Generated ${results.length} image(s) using ${this.model}`
+            })
         } catch (error) {
-            return `${error}`
+            return JSON.stringify({
+                success: false,
+                error: `${error}`
+            })
         }
     }
 }
@@ -151,6 +342,10 @@ class DallePost_Tool implements INode {
                         name: 'dall-e-3'
                     },
                     {
+                        label: 'dall-e-2',
+                        name: 'dall-e-2'
+                    },
+                    {
                         label: 'gpt-image-1',
                         name: 'gpt-image-1'
                     }
@@ -169,31 +364,38 @@ class DallePost_Tool implements INode {
                     { label: '4', name: '4' }
                 ],
                 default: '1',
-                description: 'Number of images to generate.'
+                description: 'Number of images to generate. Note: dall-e-3 only supports n=1.'
             },
             {
                 label: 'Size',
                 name: 'size',
                 type: 'options',
                 options: [
-                    { label: '1024x1024', name: '1024x1024' },
-                    { label: '1536x1024', name: '1536x1024' },
-                    { label: '1024x1536', name: '1024x1536' },
-                    { label: 'auto', name: 'auto' }
+                    { label: '1024x1024 (all models)', name: '1024x1024' },
+                    { label: '1792x1024 (dall-e-3 only)', name: '1792x1024' },
+                    { label: '1024x1792 (dall-e-3 only)', name: '1024x1792' },
+                    { label: '1536x1024 (gpt-image-1 only)', name: '1536x1024' },
+                    { label: '1024x1536 (gpt-image-1 only)', name: '1024x1536' },
+                    { label: '512x512 (dall-e-2 only)', name: '512x512' },
+                    { label: '256x256 (dall-e-2 only)', name: '256x256' },
+                    { label: 'auto (gpt-image-1 only)', name: 'auto' }
                 ],
-                default: '1024x1024'
+                default: '1024x1024',
+                description: 'Image size varies by model. Use 1024x1024 for compatibility across all models.'
             },
             {
                 label: 'Quality',
                 name: 'quality',
                 type: 'options',
                 options: [
-                    { label: 'auto', name: 'auto' },
-                    { label: 'low', name: 'low' },
-                    { label: 'medium', name: 'medium' },
-                    { label: 'high', name: 'high' }
+                    { label: 'Standard (dall-e-2/3) / High (gpt-image-1)', name: 'standard' },
+                    { label: 'HD (dall-e-3 only)', name: 'hd' },
+                    { label: 'Medium (gpt-image-1 only)', name: 'medium' },
+                    { label: 'Low (gpt-image-1 only)', name: 'low' }
                 ],
-                default: 'auto'
+                default: 'standard',
+                description:
+                    'Quality setting varies by model: dall-e-3 (standard/hd), dall-e-2 (standard only), gpt-image-1 (high/medium/low)'
             },
             {
                 label: 'Response Format',
@@ -246,7 +448,7 @@ class DallePost_Tool implements INode {
         ]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<DallePostTool> {
         const prompt = nodeData.inputs?.prompt as string
         const model = nodeData.inputs?.model as string
         const n = nodeData.inputs?.n as string
@@ -261,18 +463,40 @@ class DallePost_Tool implements INode {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
+        // Determine the correct API base URL for the Flowise server
+        let baseURL: string
+        if (process.env.NODE_ENV === 'development') {
+            baseURL = 'http://localhost:4000'
+        } else {
+            // In production, use the current domain (Flowise server)
+            baseURL = process.env.FLOWISE_DOMAIN || process.env.DOMAIN || 'http://localhost:4000'
+        }
+
         const obj: RequestParameters = {}
         if (prompt) obj.prompt = prompt
         if (model) obj.model = model
-        if (n) obj.n = parseInt(n, 10)
+        if (n) obj.n = Number.parseInt(n, 10)
         if (size) obj.size = size
         if (quality) obj.quality = quality
         if (response_format) obj.response_format = response_format
         if (style) obj.style = style
         if (format) obj.format = format
-        if (output_compression) obj.output_compression = parseInt(output_compression, 10)
+        if (output_compression) obj.output_compression = Number.parseInt(output_compression, 10)
         if (background) obj.background = background
         if (openAIApiKey) obj.apiKey = openAIApiKey
+        obj.baseURL = baseURL
+
+        // Add user context from options
+        if (options.user) {
+            obj.organizationId = options.user.organizationId
+            obj.userId = options.user.id
+            obj.userEmail = options.user.email
+        } else if (options.organizationId && options.userId) {
+            // Fallback to direct organization/user IDs if user object not available
+            obj.organizationId = options.organizationId
+            obj.userId = options.userId
+            obj.userEmail = options.userEmail || 'unknown@system.local'
+        }
 
         return new DallePostTool(obj)
     }
