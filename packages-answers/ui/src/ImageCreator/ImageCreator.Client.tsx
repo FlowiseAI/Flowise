@@ -186,13 +186,25 @@ const ImageCreator = ({ user }: { user: User }) => {
     const fetchArchivedImages = async (page = 1) => {
         setArchiveLoading(true)
         try {
+            console.log('Fetching archived images for user:', {
+                userId: user.id,
+                organizationId: user.org_id,
+                email: user.email,
+                orgName: user.org_name
+            })
+
+            // Use the same pattern as generate API - call our server-side API route
             const response = await fetch(`/api/images/archive?page=${page}&limit=20`)
+
             if (response.ok) {
                 const data: ArchiveResponse = await response.json()
+                console.log('Archive response:', data)
                 setArchivedImages(data.images)
                 setArchivePagination(data.pagination)
             } else {
-                console.error('Failed to fetch archived images')
+                console.error('Failed to fetch archived images', response.status, response.statusText)
+                const errorText = await response.text()
+                console.error('Error response:', errorText)
             }
         } catch (error) {
             console.error('Error fetching archived images:', error)
@@ -582,7 +594,11 @@ const ImageCreator = ({ user }: { user: User }) => {
                                                                                   backgroundColor: 'rgba(25, 118, 210, 0.9)'
                                                                               }
                                                                           }}
-                                                                          onClick={() => downloadMetadata(img.jsonUrl, img.sessionId)}
+                                                                          onClick={() => {
+                                                                              if (img.jsonUrl) {
+                                                                                  downloadMetadata(img.jsonUrl, img.sessionId)
+                                                                              }
+                                                                          }}
                                                                       >
                                                                           <IconFileDescription size={16} />
                                                                       </IconButton>

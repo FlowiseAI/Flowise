@@ -1,3 +1,8 @@
+/*
+ * This route has been deprecated in favor of calling the Flowise archive endpoint directly from the client.
+ * See: ImageCreator.Client.tsx fetchArchivedImages function
+ */
+
 import { NextResponse } from 'next/server'
 import getCachedSession from '@ui/getCachedSession'
 import auth0 from '@utils/auth/auth0'
@@ -8,9 +13,20 @@ export async function GET(req: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Use org_id from Auth0 if organizationId is not properly set (same as generate API)
+    const organizationId = session.user.organizationId || session.user.org_id
+
+    console.log('Archive API - Session user data:', {
+        id: session.user.id,
+        organizationId: session.user.organizationId,
+        org_id: session.user.org_id,
+        finalOrganizationId: organizationId,
+        email: session.user.email
+    })
+
     // Get user's access token for Flowise authentication
     const { accessToken } = await auth0.getAccessToken({
-        authorizationParams: { organization: session.user.organizationId }
+        authorizationParams: { organization: organizationId }
     })
     if (!accessToken) {
         return NextResponse.json({ error: 'Failed to get access token' }, { status: 500 })
@@ -23,16 +39,17 @@ export async function GET(req: Request) {
         const limit = url.searchParams.get('limit') || '20'
 
         // Call Flowise server API to get archived images
+        // The Flowise endpoint now gets user/org IDs from the authentication middleware
         const flowiseDomain = process.env.DOMAIN || 'http://localhost:4000'
-        const response = await fetch(
-            `${flowiseDomain}/api/v1/upload-dalle-image/archive?organizationId=${session.user.organizationId}&userId=${session.user.id}&page=${page}&limit=${limit}`,
-            {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
+
+        console.log('Making archive request to Flowise (user/org IDs will be resolved by Flowise auth middleware)')
+
+        const response = await fetch(`${flowiseDomain}/api/v1/dalle-image/archive?page=${page}&limit=${limit}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${accessToken}`
             }
-        )
+        })
 
         if (!response.ok) {
             console.error('Failed to fetch archived images')
