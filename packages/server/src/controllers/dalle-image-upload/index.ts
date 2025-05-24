@@ -5,6 +5,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { ListObjectsV2Command, S3Client } from '@aws-sdk/client-s3'
 import fs from 'node:fs'
 import path from 'node:path'
+import crypto from 'node:crypto'
 
 // Import storage utilities from flowise-components
 const getStorageType = (): string => {
@@ -53,7 +54,7 @@ const uploadDalleImage = async (req: Request, res: Response, next: NextFunction)
 
         // Generate unique identifier for this image generation session
         const timestamp = Date.now()
-        const randomSuffix = Math.random().toString(36).substring(7)
+        const randomSuffix = crypto.randomBytes(8).toString('hex')
         const sessionId = `${timestamp}_${randomSuffix}`
 
         // Create image filename with session ID
