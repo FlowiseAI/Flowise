@@ -191,7 +191,12 @@ const listArchivedImages = async (req: Request, res: Response, next: NextFunctio
             })
         } else {
             // Local storage
-            const folderPath = path.join(getStoragePath(), 'dalle-images', organizationId as string, userId as string)
+            const rootPath = getStoragePath();
+            const folderPath = path.resolve(rootPath, 'dalle-images', organizationId as string, userId as string);
+
+            if (!folderPath.startsWith(rootPath)) {
+                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Invalid folder path');
+            }
 
             if (!fs.existsSync(folderPath)) {
                 return res.json({
@@ -210,8 +215,13 @@ const listArchivedImages = async (req: Request, res: Response, next: NextFunctio
             const imageSessions = new Map()
 
             files.forEach((fileName) => {
-                const filePath = path.join(folderPath, fileName)
-                const stats = fs.statSync(filePath)
+                const filePath = path.resolve(folderPath, fileName);
+
+                if (!filePath.startsWith(folderPath)) {
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Invalid file path');
+                }
+
+                const stats = fs.statSync(filePath);
 
                 const isImage = fileName.match(/\.(png|jpg|jpeg|webp)$/i)
                 const isJson = fileName.endsWith('_response.json')
