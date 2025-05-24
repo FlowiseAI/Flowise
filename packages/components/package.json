@@ -124,7 +124,7 @@
         "meilisearch": "^0.41.0",
         "moment": "^2.29.3",
         "mongodb": "6.3.0",
-        "mysql2": "^3.11.3",
+        "mysql2": "^3.14.1",
         "neo4j-driver": "^5.26.0",
         "node-fetch": "^2.6.11",
         "node-html-markdown": "^1.3.0",

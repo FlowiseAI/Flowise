@@ -185,7 +185,7 @@ importers:
                 version: 1.7.9(debug@4.4.1)
             chromadb:
                 specifier: ^1.5.5
-                version: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2))
+                version: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             cohere-ai:
                 specifier: ^6.2.2
                 version: 6.2.2
@@ -224,7 +224,7 @@ importers:
                 version: 3.0.5
             langchain:
                 specifier: ^0.0.116
-                version: 0.0.116(iivuttr355pah5s6ksk5arzbra)
+                version: 0.0.116(ns4wzvjghetuhmynbel22fwu3i)
             next:
                 specifier: ^14.2.5
                 version: 14.2.24(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.51.0)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)(sass@1.85.1)
@@ -233,7 +233,7 @@ importers:
                 version: 4.24.11(next@14.2.24(@babel/core@7.26.10)(@opentelemetry/api@1.9.0)(@playwright/test@1.51.0)(babel-plugin-macros@3.1.0)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)(sass@1.85.1))(nodemailer@6.9.16)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)
             openai:
                 specifier: 4.82.0
-                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
+                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
             react:
                 specifier: ^18.2.0
                 version: 18.2.0
@@ -251,7 +251,7 @@ importers:
                 version: 17.7.0
             typeorm:
                 specifier: ^0.3.17
-                version: 0.3.21(ioredis@5.6.0)(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@4.9.5))
+                version: 0.3.21(ioredis@5.6.0)(mysql2@3.14.1)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@4.9.5))
             ui:
                 specifier: workspace:*
                 version: link:../../packages-answers/ui
@@ -677,7 +677,7 @@ importers:
                 version: 22.1.0(bufferutil@4.0.9)(canvas@2.11.2(encoding@0.1.13))(utf-8-validate@6.0.5)
             langchain:
                 specifier: ^0.0.116
-                version: 0.0.116(rizdvp72vz3v3udbn5mmuawvfu)
+                version: 0.0.116(f3cgepn3ly2l5gydhepxjlfhq4)
             mammoth:
                 specifier: ^1.6.0
                 version: 1.9.0
@@ -695,7 +695,7 @@ importers:
                 version: 1.3.0
             openai:
                 specifier: 4.82.0
-                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
+                version: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
             openapi-typescript:
                 specifier: ^6.3.7
                 version: 6.7.6
@@ -850,7 +850,7 @@ importers:
                 version: 3.9.25
             '@getzep/zep-cloud':
                 specifier: ~1.0.7
-                version: 1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(uscjhhzb6x76455khkjgiwdghu))
+                version: 1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi))
             '@getzep/zep-js':
                 specifier: ^0.9.0
                 version: 0.9.0
@@ -883,7 +883,7 @@ importers:
                 version: 0.0.7(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             '@langchain/community':
                 specifier: ^0.3.34
-                version: 0.3.35(tv7kktsjwuoaotg6zyepqzx7ei)
+                version: 0.3.35(z4fbf4randzf6hzugukkidmtmy)
             '@langchain/core':
                 specifier: 0.3.37
                 version: 0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
@@ -1069,13 +1069,13 @@ importers:
                 version: 3.12.0
             langchain:
                 specifier: ^0.2.11
-                version: 0.2.20(uscjhhzb6x76455khkjgiwdghu)
+                version: 0.2.20(63fhjzssdndezkjjysn4v6y4yi)
             langfuse:
                 specifier: 3.32.0
                 version: 3.32.0
             langfuse-langchain:
                 specifier: 3.32.0
-                version: 3.32.0(langchain@0.2.20(uscjhhzb6x76455khkjgiwdghu))
+                version: 3.32.0(langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi))
             langsmith:
                 specifier: 0.1.6
                 version: 0.1.6
@@ -1107,8 +1107,8 @@ importers:
                 specifier: 6.3.0
                 version: 6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4)
             mysql2:
-                specifier: ^3.11.3
-                version: 3.13.0
+                specifier: ^3.14.1
+                version: 3.14.1
             neo4j-driver:
                 specifier: ^5.26.0
                 version: 5.28.1
@@ -1165,7 +1165,7 @@ importers:
                 version: 1.2.3
             typeorm:
                 specifier: ^0.3.6
-                version: 0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
+                version: 0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.14.1)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             weaviate-ts-client:
                 specifier: ^1.1.0
                 version: 1.6.0(encoding@0.1.13)(graphql@16.10.0)
@@ -1666,8 +1666,8 @@ importers:
                 specifier: ^3.0.1
                 version: 3.0.1(@aws-sdk/client-s3@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))
             mysql2:
-                specifier: ^3.11.3
-                version: 3.13.0
+                specifier: ^3.14.1
+                version: 3.14.1
             nim-container-manager:
                 specifier: ^1.0.4
                 version: 1.0.5
@@ -1712,7 +1712,7 @@ importers:
                 version: 17.7.0
             typeorm:
                 specifier: ^0.3.6
-                version: 0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
+                version: 0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.14.1)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             uuid:
                 specifier: ^9.0.1
                 version: 9.0.1
@@ -16901,8 +16901,8 @@ packages:
     mute-stream@0.0.8:
         resolution: { integrity: sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA== }
 
-    mysql2@3.13.0:
-        resolution: { integrity: sha512-M6DIQjTqKeqXH5HLbLMxwcK5XfXHw30u5ap6EZmu7QVmcF/gnh2wS/EOiQ4MTbXz/vQeoXrmycPlVRM00WSslg== }
+    mysql2@3.14.1:
+        resolution: { integrity: sha512-7ytuPQJjQB8TNAYX/H2yhL+iQOnIBjAMam361R7UAL0lOVXWjtdrmoL9HYKqKoLp/8UUTRcvo1QPvK9KL7wA8w== }
         engines: { node: '>= 8.0' }
 
     mz@2.7.0:
@@ -27728,7 +27728,7 @@ snapshots:
 
     '@gar/promisify@1.1.3': {}
 
-    '@getzep/zep-cloud@1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(uscjhhzb6x76455khkjgiwdghu))':
+    '@getzep/zep-cloud@1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi))':
         dependencies:
             form-data: 4.0.0
             node-fetch: 2.7.0(encoding@0.1.13)
@@ -27737,7 +27737,7 @@ snapshots:
             zod: 3.24.2
         optionalDependencies:
             '@langchain/core': 0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
-            langchain: 0.2.20(uscjhhzb6x76455khkjgiwdghu)
+            langchain: 0.2.20(63fhjzssdndezkjjysn4v6y4yi)
         transitivePeerDependencies:
             - encoding
 
@@ -28471,7 +28471,7 @@ snapshots:
             - encoding
             - openai
 
-    '@langchain/community@0.3.35(tv7kktsjwuoaotg6zyepqzx7ei)':
+    '@langchain/community@0.3.35(z4fbf4randzf6hzugukkidmtmy)':
         dependencies:
             '@browserbasehq/stagehand': 1.14.0(@playwright/test@1.51.0)(bufferutil@4.0.9)(deepmerge@4.3.1)(dotenv@16.4.7)(encoding@0.1.13)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))(utf-8-validate@6.0.5)(zod@3.22.4)
             '@ibm-cloud/watsonx-ai': 1.6.0(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))
@@ -28482,7 +28482,7 @@ snapshots:
             flat: 5.0.2
             ibm-cloud-sdk-core: 5.3.2
             js-yaml: 4.1.0
-            langchain: 0.2.20(uscjhhzb6x76455khkjgiwdghu)
+            langchain: 0.2.20(63fhjzssdndezkjjysn4v6y4yi)
             langsmith: 0.3.14(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
             uuid: 10.0.0
@@ -28499,7 +28499,7 @@ snapshots:
             '@browserbasehq/sdk': 2.3.0(encoding@0.1.13)
             '@datastax/astra-db-ts': 1.5.0
             '@elastic/elasticsearch': 8.17.1
-            '@getzep/zep-cloud': 1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(uscjhhzb6x76455khkjgiwdghu))
+            '@getzep/zep-cloud': 1.0.12(@langchain/core@0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi))
             '@getzep/zep-js': 0.9.0
             '@gomomento/sdk': 1.108.0(encoding@0.1.13)
             '@gomomento/sdk-core': 1.108.0
@@ -28538,7 +28538,7 @@ snapshots:
             lunary: 0.7.15(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))(react@18.2.0)
             mammoth: 1.9.0
             mongodb: 6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4)
-            mysql2: 3.13.0
+            mysql2: 3.14.1
             neo4j-driver: 5.28.1
             notion-to-md: 3.1.7(encoding@0.1.13)
             pdf-parse: 1.1.1
@@ -28550,7 +28550,7 @@ snapshots:
             redis: 4.7.0
             replicate: 0.31.1
             srt-parser-2: 1.2.3
-            typeorm: 0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
+            typeorm: 0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.14.1)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             weaviate-ts-client: 1.6.0(encoding@0.1.13)(graphql@16.10.0)
             ws: 8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5)
         transitivePeerDependencies:
@@ -35256,7 +35256,7 @@ snapshots:
 
     chownr@2.0.0: {}
 
-    chromadb@1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)):
+    chromadb@1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)):
         dependencies:
             cliui: 8.0.1
             isomorphic-fetch: 3.0.0(encoding@0.1.13)
@@ -35264,7 +35264,7 @@ snapshots:
             '@google/generative-ai': 0.22.0
             cohere-ai: 6.2.2
             ollama: 0.5.14
-            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
+            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
 
@@ -35279,6 +35279,19 @@ snapshots:
             openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
         transitivePeerDependencies:
             - encoding
+
+    chromadb@1.10.5(@google/generative-ai@0.22.0)(cohere-ai@7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13))(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)):
+        dependencies:
+            cliui: 8.0.1
+            isomorphic-fetch: 3.0.0(encoding@0.1.13)
+        optionalDependencies:
+            '@google/generative-ai': 0.22.0
+            cohere-ai: 7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13)
+            ollama: 0.5.14
+            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2)
+        transitivePeerDependencies:
+            - encoding
+        optional: true
 
     chromadb@1.8.1(@google/generative-ai@0.22.0)(cohere-ai@7.9.5(encoding@0.1.13))(encoding@0.1.13)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)):
         dependencies:
@@ -42217,7 +42230,7 @@ snapshots:
 
     kuler@2.0.0: {}
 
-    langchain@0.0.116(iivuttr355pah5s6ksk5arzbra):
+    langchain@0.0.116(f3cgepn3ly2l5gydhepxjlfhq4):
         dependencies:
             '@anthropic-ai/sdk': 0.5.10(encoding@0.1.13)
             ansi-styles: 5.2.0
@@ -42258,70 +42271,7 @@ snapshots:
             apify-client: 2.12.1
             axios: 1.7.9(debug@4.4.1)
             cheerio: 1.0.0
-            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2))
-            cohere-ai: 6.2.2
-            d3-dsv: 2.0.0
-            epub2: 3.0.2(ts-toolbelt@9.6.0)
-            html-to-text: 9.0.5
-            ignore: 5.3.2
-            ioredis: 5.6.0
-            mammoth: 1.9.0
-            mysql2: 3.13.0
-            notion-to-md: 3.1.7(encoding@0.1.13)
-            pdf-parse: 1.1.1
-            pg: 8.14.0
-            playwright: 1.51.0
-            puppeteer: 19.11.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@4.9.5)(utf-8-validate@6.0.5)
-            redis: 4.7.0
-            srt-parser-2: 1.2.3
-            typeorm: 0.3.21(ioredis@5.6.0)(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@4.9.5))
-            weaviate-ts-client: 1.6.0(encoding@0.1.13)(graphql@16.10.0)
-        transitivePeerDependencies:
-            - encoding
-            - ws
-
-    langchain@0.0.116(rizdvp72vz3v3udbn5mmuawvfu):
-        dependencies:
-            '@anthropic-ai/sdk': 0.5.10(encoding@0.1.13)
-            ansi-styles: 5.2.0
-            binary-extensions: 2.3.0
-            camelcase: 6.3.0
-            decamelize: 1.2.0
-            expr-eval: 2.0.2
-            flat: 5.0.2
-            js-tiktoken: 1.0.19
-            js-yaml: 4.1.0
-            jsonpointer: 5.0.1
-            langsmith: 0.0.70
-            ml-distance: 4.0.1
-            object-hash: 3.0.0
-            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
-            openapi-types: 12.1.3
-            p-queue: 6.6.2
-            p-retry: 4.6.2
-            uuid: 9.0.1
-            yaml: 2.7.0
-            zod: 3.22.4
-            zod-to-json-schema: 3.24.3(zod@3.22.4)
-        optionalDependencies:
-            '@aws-sdk/client-dynamodb': 3.767.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
-            '@aws-sdk/client-kendra': 3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
-            '@aws-sdk/client-s3': 3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
-            '@elastic/elasticsearch': 8.17.1
-            '@gomomento/sdk': 1.108.0(encoding@0.1.13)
-            '@huggingface/inference': 1.8.0
-            '@notionhq/client': 2.3.0(encoding@0.1.13)
-            '@opensearch-project/opensearch': 1.2.0
-            '@pinecone-database/pinecone': 0.0.5(@swc/core@1.11.9(@swc/helpers@0.5.15))
-            '@qdrant/js-client-rest': 1.13.0(typescript@4.9.5)
-            '@supabase/postgrest-js': 1.19.2
-            '@supabase/supabase-js': 2.49.1(bufferutil@4.0.9)(utf-8-validate@6.0.5)
-            '@upstash/redis': 1.22.1(encoding@0.1.13)
-            '@zilliz/milvus2-sdk-node': 2.5.5
-            apify-client: 2.12.1
-            axios: 1.7.9(debug@4.4.1)
-            cheerio: 1.0.0
-            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13))(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
+            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13))(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.24.2))
             cohere-ai: 7.16.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))(encoding@0.1.13)
             d3-dsv: 2.0.0
             epub2: 3.0.2(ts-toolbelt@9.6.0)
@@ -42329,7 +42279,7 @@ snapshots:
             ignore: 5.3.2
             ioredis: 5.6.0
             mammoth: 1.9.0
-            mysql2: 3.13.0
+            mysql2: 3.14.1
             notion-to-md: 3.1.7(encoding@0.1.13)
             pdf-parse: 1.1.1
             pg: 8.14.0
@@ -42337,13 +42287,76 @@ snapshots:
             puppeteer: 19.11.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@4.9.5)(utf-8-validate@6.0.5)
             redis: 4.7.0
             srt-parser-2: 1.2.3
-            typeorm: 0.3.21(ioredis@5.6.0)(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@4.9.5))
+            typeorm: 0.3.21(ioredis@5.6.0)(mysql2@3.14.1)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@4.9.5))
             weaviate-ts-client: 1.6.0(encoding@0.1.13)(graphql@16.10.0)
         transitivePeerDependencies:
             - encoding
             - ws
 
-    langchain@0.2.20(uscjhhzb6x76455khkjgiwdghu):
+    langchain@0.0.116(ns4wzvjghetuhmynbel22fwu3i):
+        dependencies:
+            '@anthropic-ai/sdk': 0.5.10(encoding@0.1.13)
+            ansi-styles: 5.2.0
+            binary-extensions: 2.3.0
+            camelcase: 6.3.0
+            decamelize: 1.2.0
+            expr-eval: 2.0.2
+            flat: 5.0.2
+            js-tiktoken: 1.0.19
+            js-yaml: 4.1.0
+            jsonpointer: 5.0.1
+            langsmith: 0.0.70
+            ml-distance: 4.0.1
+            object-hash: 3.0.0
+            openai: 4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4)
+            openapi-types: 12.1.3
+            p-queue: 6.6.2
+            p-retry: 4.6.2
+            uuid: 9.0.1
+            yaml: 2.7.0
+            zod: 3.22.4
+            zod-to-json-schema: 3.24.3(zod@3.22.4)
+        optionalDependencies:
+            '@aws-sdk/client-dynamodb': 3.767.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
+            '@aws-sdk/client-kendra': 3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
+            '@aws-sdk/client-s3': 3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
+            '@elastic/elasticsearch': 8.17.1
+            '@gomomento/sdk': 1.108.0(encoding@0.1.13)
+            '@huggingface/inference': 1.8.0
+            '@notionhq/client': 2.3.0(encoding@0.1.13)
+            '@opensearch-project/opensearch': 1.2.0
+            '@pinecone-database/pinecone': 0.0.5(@swc/core@1.11.9(@swc/helpers@0.5.15))
+            '@qdrant/js-client-rest': 1.13.0(typescript@4.9.5)
+            '@supabase/postgrest-js': 1.19.2
+            '@supabase/supabase-js': 2.49.1(bufferutil@4.0.9)(utf-8-validate@6.0.5)
+            '@upstash/redis': 1.22.1(encoding@0.1.13)
+            '@zilliz/milvus2-sdk-node': 2.5.5
+            apify-client: 2.12.1
+            axios: 1.7.9(debug@4.4.1)
+            cheerio: 1.0.0
+            chromadb: 1.10.5(@google/generative-ai@0.22.0)(cohere-ai@6.2.2)(encoding@0.1.13)(ollama@0.5.14)(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
+            cohere-ai: 6.2.2
+            d3-dsv: 2.0.0
+            epub2: 3.0.2(ts-toolbelt@9.6.0)
+            html-to-text: 9.0.5
+            ignore: 5.3.2
+            ioredis: 5.6.0
+            mammoth: 1.9.0
+            mysql2: 3.14.1
+            notion-to-md: 3.1.7(encoding@0.1.13)
+            pdf-parse: 1.1.1
+            pg: 8.14.0
+            playwright: 1.51.0
+            puppeteer: 19.11.1(bufferutil@4.0.9)(encoding@0.1.13)(typescript@4.9.5)(utf-8-validate@6.0.5)
+            redis: 4.7.0
+            srt-parser-2: 1.2.3
+            typeorm: 0.3.21(ioredis@5.6.0)(mysql2@3.14.1)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@4.9.5))
+            weaviate-ts-client: 1.6.0(encoding@0.1.13)(graphql@16.10.0)
+        transitivePeerDependencies:
+            - encoding
+            - ws
+
+    langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi):
         dependencies:
             '@langchain/core': 0.3.37(openai@4.82.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.22.4))
             '@langchain/openai': 0.2.11(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))
@@ -42401,7 +42414,7 @@ snapshots:
             pyodide: 0.27.3(bufferutil@4.0.9)(utf-8-validate@6.0.5)
             redis: 4.7.0
             srt-parser-2: 1.2.3
-            typeorm: 0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
+            typeorm: 0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.14.1)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4))
             weaviate-ts-client: 1.6.0(encoding@0.1.13)(graphql@16.10.0)
             ws: 8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5)
             youtube-transcript: 1.2.1
@@ -42415,9 +42428,9 @@ snapshots:
         dependencies:
             mustache: 4.2.0
 
-    langfuse-langchain@3.32.0(langchain@0.2.20(uscjhhzb6x76455khkjgiwdghu)):
+    langfuse-langchain@3.32.0(langchain@0.2.20(63fhjzssdndezkjjysn4v6y4yi)):
         dependencies:
-            langchain: 0.2.20(uscjhhzb6x76455khkjgiwdghu)
+            langchain: 0.2.20(63fhjzssdndezkjjysn4v6y4yi)
             langfuse: 3.32.0
             langfuse-core: 3.32.0
 
@@ -44482,7 +44495,7 @@ snapshots:
 
     mute-stream@0.0.8: {}
 
-    mysql2@3.13.0:
+    mysql2@3.14.1:
         dependencies:
             aws-ssl-profiles: 1.1.2
             denque: 2.1.0
@@ -50665,7 +50678,7 @@ snapshots:
 
     typedarray@0.0.6: {}
 
-    typeorm@0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)):
+    typeorm@0.3.21(ioredis@5.6.0)(mongodb@6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4))(mysql2@3.14.1)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@22.13.10)(typescript@5.5.4)):
         dependencies:
             '@sqltools/formatter': 1.2.5
             ansis: 3.17.0
@@ -50684,7 +50697,7 @@ snapshots:
         optionalDependencies:
             ioredis: 5.6.0
             mongodb: 6.3.0(@aws-sdk/credential-providers@3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5)))(socks@2.8.4)
-            mysql2: 3.13.0
+            mysql2: 3.14.1
             pg: 8.14.0
             redis: 4.7.0
             sqlite3: 5.1.7
@@ -50692,7 +50705,7 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
-    typeorm@0.3.21(ioredis@5.6.0)(mysql2@3.13.0)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@4.9.5)):
+    typeorm@0.3.21(ioredis@5.6.0)(mysql2@3.14.1)(pg@8.14.0)(redis@4.7.0)(reflect-metadata@0.1.14)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.11.9(@swc/helpers@0.5.15))(@types/node@18.15.11)(typescript@4.9.5)):
         dependencies:
             '@sqltools/formatter': 1.2.5
             ansis: 3.17.0
@@ -50710,7 +50723,7 @@ snapshots:
             yargs: 17.7.2
         optionalDependencies:
             ioredis: 5.6.0
-            mysql2: 3.13.0
+            mysql2: 3.14.1
             pg: 8.14.0
             redis: 4.7.0
             sqlite3: 5.1.7
