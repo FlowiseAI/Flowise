@@ -87,16 +87,23 @@ export async function POST(req: Request) {
             )
         }
 
-        // Upload all images to storage for consistency
-        const json = await res.json()
+        // Get the full OpenAI response
+        const openaiResponse = await res.json()
         const images = []
 
-        if (json.data && Array.isArray(json.data)) {
-            for (const item of json.data) {
+        if (openaiResponse.data && Array.isArray(openaiResponse.data)) {
+            for (let i = 0; i < openaiResponse.data.length; i++) {
+                const item = openaiResponse.data[i]
                 const base64 = item.b64_json
                 if (base64) {
                     try {
-                        // Call Flowise server API to upload the image
+                        // Generate a descriptive filename
+                        const timestamp = Date.now()
+                        const imageIndex = i + 1
+                        const fileExtension = body.output_format || 'png'
+                        const filename = `dalle_${body.model}_${timestamp}_${imageIndex}.${fileExtension}`
+
+                        // Call Flowise server API to upload the image with organization structure
                         const flowiseDomain = process.env.DOMAIN || 'http://localhost:4000'
                         const uploadResponse = await fetch(`${flowiseDomain}/api/v1/upload-dalle-image`, {
                             method: 'POST',
@@ -106,13 +113,36 @@ export async function POST(req: Request) {
                             },
                             body: JSON.stringify({
                                 base64Data: base64,
-                                filename: `dalle_${Date.now()}_${Math.random().toString(36).substring(7)}.png`
+                                filename: filename,
+                                organizationId: session.user.organizationId,
+                                userId: session.user.id,
+                                fullResponse: {
+                                    ...openaiResponse,
+                                    // Add request metadata for context
+                                    requestMetadata: {
+                                        prompt: body.prompt,
+                                        model: body.model,
+                                        size: body.size,
+                                        quality: body.quality,
+                                        style: body.style,
+                                        output_format: body.output_format,
+                                        background: body.background,
+                                        timestamp: new Date().toISOString(),
+                                        userId: session.user.id,
+                                        userEmail: session.user.email,
+                                        organizationId: session.user.organizationId
+                                    }
+                                }
                             })
                         })
 
                         if (uploadResponse.ok) {
                             const uploadResult = await uploadResponse.json()
-                            images.push({ url: uploadResult.url })
+                            images.push({
+                                url: uploadResult.url,
+                                sessionId: uploadResult.sessionId,
+                                jsonUrl: uploadResult.jsonUrl
+                            })
                         } else {
                             console.error('Failed to upload image to storage')
                             // Fallback to base64 if storage fails
