@@ -203,7 +203,7 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
     const [fullFileUpload, setFullFileUpload] = useState(false)
 
     // feedback
-    const [chatFeedbackStatus, setChatFeedbackStatus] = useState(false)
+    const [chatFeedbackStatus, setChatFeedbackStatus] = useState(true)
     const [feedbackId, setFeedbackId] = useState('')
     const [showFeedbackContentDialog, setShowFeedbackContentDialog] = useState(false)
 
@@ -1096,9 +1096,10 @@ export const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, preview
                     })
                     setStarterPrompts(inputFields.filter((field) => field.prompt !== ''))
                 }
-                if (config.chatFeedback) {
+                if (config.chatFeedback && config.chatFeedback.status !== undefined) {
                     setChatFeedbackStatus(config.chatFeedback.status)
                 }
+                // If chatFeedback is not defined or status is not set, keep the default (true)
 
                 if (config.leads) {
                     setLeadsConfig(config.leads)

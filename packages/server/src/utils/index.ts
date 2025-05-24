@@ -1792,11 +1792,14 @@ export const getUploadPath = (): string => {
 }
 
 const getOrgId = () => {
-    const settingsContent = fs.readFileSync(getUserSettingsFilePath(), 'utf8')
     try {
+        const settingsContent = fs.readFileSync(getUserSettingsFilePath(), 'utf8')
         const settings = JSON.parse(settingsContent)
         return settings.instanceId
     } catch (error) {
+        if (process.env.AUTH0_ORGANIZATION_ID) {
+            return process.env.AUTH0_ORGANIZATION_ID
+        }
         return ''
     }
 }

@@ -16,7 +16,7 @@ This guide will walk you through the process of creating a custom node for Answe
 
 ## Step 1: Set Up the Project Structure
 
-1. Navigate to the `packages/components/nodes/tools` directory in your AnswerAI project.
+1. Navigate to the `packages/componentschatflowstools` directory in your AnswerAI project.
 2. Create a new folder named `Calculator`.
 
 ## Step 2: Create the Base Class

@@ -12,7 +12,7 @@ Unlike previous examples like [Web Scrape QnA](web-scrape-qna.md) and [Multiple 
     - overview of the SQL database schema
     - example rows data
 2. Return a SQL query with few shot prompting
-3. Validate the SQL query using an [If Else](../../using-answerai/sidekick-studio/nodes/utilities/if-else.md) node
+3. Validate the SQL query using an [If Else](../../sidekick-studio/chatflows/utilities/if-else.md) node
 4. Create a custom function to execute the SQL query, and get the response
 5. Return a natural response from the executed SQL response
 
@@ -152,7 +152,7 @@ Since we are using 2 variables: \{schema\} and \{question\}, specify their value
 You can provide more examples to the prompt (i.e few-shot prompting) to let the LLM learns better. Or take reference from [dialect-specific prompting](https://js.langchain.com/docs/use_cases/sql/prompting#dialect-specific-prompting)
 :::
 
-## 3. Validate the SQL query using [If Else](../../using-answerai/sidekick-studio/nodes/utilities/if-else.md) node
+## 3. Validate the SQL query using [If Else](../../sidekick-studio/chatflows/utilities/if-else.md) node
 
 Sometimes the SQL query is invalid, and we do not want to waste resources the execute an invalid SQL query. For example, if a user is asking a general question that is irrelevant to the SQL database. We can use an `If Else` node to route to different path.
 
