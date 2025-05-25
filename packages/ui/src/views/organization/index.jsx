@@ -276,6 +276,11 @@ const OrganizationSetupPage = () => {
                             Application authentication now requires email and password. Contact administrator to setup an account.
                         </Alert>
                     )}
+                    {(isOpenSource || isEnterpriseLicensed) && (
+                        <Typography variant='caption'>
+                            Account setup does not make any external connections, your data stays securely on your locally hosted server.
+                        </Typography>
+                    )}
                     <form onSubmit={register}>
                         <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 2 }}>
                             {requiresAuthentication && (
