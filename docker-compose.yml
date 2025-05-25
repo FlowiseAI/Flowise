@@ -1,0 +1,29 @@
+version: '3.1'
+
+services:
+  flowise:
+    build: .
+    container_name: flowise
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DATABASE_TYPE=postgres
+      - DATABASE_URL=${DATABASE_URL}
+      - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+      - FLOWISE_API_KEY=${FLOWISE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - CORS_ORIGIN=*
+      - IFRAME_ORIGINS=*
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - GOOGLE_ADK_API_KEY=${GOOGLE_ADK_API_KEY}
+      - GOOGLE_ADK_PROJECT_ID=${GOOGLE_ADK_PROJECT_ID}
+      - COMPOSIO_API_KEY=${COMPOSIO_API_KEY}
+    volumes:
+      - flowise-data:/usr/src/app/.flowise
+
+volumes:
+  flowise-data:

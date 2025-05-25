@@ -9,7 +9,8 @@ import {
     IconRobot,
     IconVariable,
     IconFiles,
-    IconListCheck
+    IconListCheck,
+    IconCalendarEvent
 } from '@tabler/icons-react'
 
 // constant
@@ -23,7 +24,8 @@ const icons = {
     IconLock,
     IconRobot,
     IconVariable,
-    IconFiles
+    IconFiles,
+    IconCalendarEvent
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -55,6 +57,14 @@ const dashboard = {
             type: 'item',
             url: '/executions',
             icon: icons.IconListCheck,
+            breadcrumbs: true
+        },
+        {
+            id: 'calendar',
+            title: 'Calendar',
+            type: 'item',
+            url: '/calendar',
+            icon: icons.IconCalendarEvent,
             breadcrumbs: true
         },
         {

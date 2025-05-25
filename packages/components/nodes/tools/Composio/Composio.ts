@@ -9,19 +9,24 @@ class ComposioTool extends Tool {
     toolset: any
     appName: string
     actions: string[]
+    actionName: string
 
-    constructor(toolset: any, appName: string, actions: string[]) {
+    constructor(toolset: any, appName: string, actions: string[], actionName?: string) {
         super()
         this.toolset = toolset
         this.appName = appName
         this.actions = actions
+        this.actionName = actionName || 'composio'
+        this.name = actionName || 'composio'
     }
 
     async _call(input: string): Promise<string> {
         try {
-            return `Executed action on ${this.appName} with input: ${input}`
+            // In a real implementation, this would call the specific action on the Composio API
+            // For now, we'll just return a placeholder response
+            return `Executed action ${this.actionName} on ${this.appName} with input: ${input}`
         } catch (error) {
-            return 'Failed to execute action'
+            return `Failed to execute action ${this.actionName}: ${error}`
         }
     }
 }
@@ -77,6 +82,22 @@ class Composio_Tools implements INode {
                 loadMethod: 'listActions',
                 description: 'Select the actions you want to use',
                 refresh: true
+            },
+            {
+                label: 'Create Individual Tools',
+                name: 'createIndividualTools',
+                type: 'boolean',
+                description: 'Create a separate tool for each action (useful for specific action nodes)',
+                default: false,
+                optional: true
+            },
+            {
+                label: 'Custom Tool Name',
+                name: 'customToolName',
+                type: 'string',
+                description: 'Custom name for the tool (only used when not creating individual tools)',
+                placeholder: 'composio',
+                optional: true
             }
         ]
     }
@@ -226,9 +247,31 @@ class Composio_Tools implements INode {
             }
         }
 
+        const appName = nodeData.inputs?.appName as string
+        const createIndividualTools = nodeData.inputs?.createIndividualTools === true
+        const customToolName = nodeData.inputs?.customToolName as string || 'composio'
+
         const toolset = new LangchainToolSet({ apiKey: composioApiKey })
-        const tools = await toolset.getTools({ actions })
-        return tools
+        
+        if (createIndividualTools && actions.length > 0) {
+            // Create individual tools for each action
+            const tools = []
+            for (const action of actions) {
+                const tool = new ComposioTool(toolset, appName, [action], action)
+                tools.push(tool)
+            }
+            return tools
+        } else {
+            // Create a single tool with all actions
+            const tools = await toolset.getTools({ actions })
+            // Override the tool name if a custom name is provided
+            if (customToolName && customToolName !== 'composio') {
+                tools.forEach((tool: any) => {
+                    tool.name = customToolName
+                })
+            }
+            return tools
+        }
     }
 }
 

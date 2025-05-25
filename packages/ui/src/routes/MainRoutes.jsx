@@ -42,6 +42,9 @@ const VectorStoreQuery = Loadable(lazy(() => import('@/views/docstore/VectorStor
 // execution routing
 const Executions = Loadable(lazy(() => import('@/views/agentexecutions')))
 
+// calendar routing
+const Calendar = Loadable(lazy(() => import('@/views/calendar')))
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -75,6 +78,10 @@ const MainRoutes = {
         {
             path: '/tools',
             element: <Tools />
+        },
+        {
+            path: '/calendar',
+            element: <Calendar />
         },
         {
             path: '/assistants',

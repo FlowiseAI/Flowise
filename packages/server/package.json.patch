@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "node-cron": "^3.0.3",
+    "@supabase/supabase-js": "^2.39.7"
+  },
+  "devDependencies": {
+    "@types/node-cron": "^3.0.11"
+  }
+}

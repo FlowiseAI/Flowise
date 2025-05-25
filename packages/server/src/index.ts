@@ -27,6 +27,7 @@ import { OpenTelemetry } from './metrics/OpenTelemetry'
 import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import { WHITELIST_URLS } from './utils/constants'
+import { triggerSchedulerService } from './services/triggers/TriggerSchedulerService'
 import 'global-agent/bootstrap'
 
 declare global {
@@ -99,6 +100,9 @@ export class App {
 
             // Initialize SSE Streamer
             this.sseStreamer = new SSEStreamer()
+            
+            // Initialize trigger scheduler
+            await triggerSchedulerService.initialize()
 
             // Init Queues
             if (process.env.MODE === MODE.QUEUE) {
