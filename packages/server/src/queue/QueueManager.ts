@@ -10,6 +10,7 @@ import { QueueEventsProducer, RedisOptions } from 'bullmq'
 import { createBullBoard } from 'bull-board'
 import { BullMQAdapter } from 'bull-board/bullMQAdapter'
 import { Express } from 'express'
+import { UsageCacheManager } from '../UsageCacheManager'
 
 const QUEUE_NAME = process.env.QUEUE_NAME || 'flowise-queue'
 
@@ -96,13 +97,15 @@ export class QueueManager {
         telemetry,
         cachePool,
         appDataSource,
-        abortControllerPool
+        abortControllerPool,
+        usageCacheManager
     }: {
         componentNodes: IComponentNodes
         telemetry: Telemetry
         cachePool: CachePool
         appDataSource: DataSource
         abortControllerPool: AbortControllerPool
+        usageCacheManager: UsageCacheManager
     }) {
         const predictionQueueName = `${QUEUE_NAME}-prediction`
         const predictionQueue = new PredictionQueue(predictionQueueName, this.connection, {
@@ -110,7 +113,8 @@ export class QueueManager {
             telemetry,
             cachePool,
             appDataSource,
-            abortControllerPool
+            abortControllerPool,
+            usageCacheManager
         })
         this.registerQueue('prediction', predictionQueue)
         this.predictionQueueEventsProducer = new QueueEventsProducer(predictionQueue.getQueueName(), {
@@ -122,7 +126,8 @@ export class QueueManager {
             componentNodes,
             telemetry,
             cachePool,
-            appDataSource
+            appDataSource,
+            usageCacheManager
         })
         this.registerQueue('upsert', upsertionQueue)
 

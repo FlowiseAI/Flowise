@@ -31,12 +31,6 @@
     npx flowise start
     ```
 
-    ユーザー名とパスワードを入力
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
-    ```
-
 3. [http://localhost:3000](http://localhost:3000) を開く
 
 ## 🐳 Docker
@@ -126,15 +120,6 @@ Flowise には、3 つの異なるモジュールが 1 つの mono リポジト�
         ```
 
     コードの変更は [http://localhost:8080](http://localhost:8080) に自動的にアプリをリロードします
-
-## 🔒 認証
-
-アプリレベルの認証を有効にするには、 `FLOWISE_USERNAME` と `FLOWISE_PASSWORD` を `packages/server` の `.env` ファイルに追加します:
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
 
 ## 🌱 環境変数
 

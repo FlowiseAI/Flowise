@@ -34,6 +34,7 @@ export const validateAPIKey = async (req: Request) => {
     if (!authorizationHeader) return false
 
     const suppliedKey = authorizationHeader.split(`Bearer `).pop()
+
     if (suppliedKey) {
         const keys = await apikeyService.getAllApiKeys()
         const apiSecret = keys.find((key: any) => key.apiKey === suppliedKey)?.apiSecret
@@ -42,4 +43,20 @@ export const validateAPIKey = async (req: Request) => {
         return true
     }
     return false
+}
+
+/**
+ * Get API Key WorkspaceID
+ * @param {Request} req
+ */
+export const getAPIKeyWorkspaceID = async (req: Request) => {
+    const authorizationHeader = (req.headers['Authorization'] as string) ?? (req.headers['authorization'] as string) ?? ''
+    if (!authorizationHeader) return false
+
+    const suppliedKey = authorizationHeader.split(`Bearer `).pop()
+    if (suppliedKey) {
+        const key = await apikeyService.getApiKey(suppliedKey)
+        return key?.workspaceId
+    }
+    return undefined
 }

@@ -2,6 +2,7 @@ import { flatten } from 'lodash'
 import { MessageContentTextDetail, ChatMessage, AnthropicAgent, Anthropic } from 'llamaindex'
 import { getBaseClasses } from '../../../../src/utils'
 import { FlowiseMemory, ICommonObject, IMessage, INode, INodeData, INodeParams, IUsedTool } from '../../../../src/Interface'
+import { EvaluationRunTracerLlama } from '../../../../evaluation/EvaluationRunTracerLlama'
 
 class AnthropicAgent_LlamaIndex_Agents implements INode {
     label: string
@@ -96,13 +97,16 @@ class AnthropicAgent_LlamaIndex_Agents implements INode {
             tools,
             llm: model,
             chatHistory: chatHistory,
-            verbose: process.env.DEBUG === 'true'
+            verbose: process.env.DEBUG === 'true' ? true : false
         })
+
+        // these are needed for evaluation runs
+        await EvaluationRunTracerLlama.injectEvaluationMetadata(nodeData, options, agent)
 
         let text = ''
         const usedTools: IUsedTool[] = []
 
-        const response = await agent.chat({ message: input, chatHistory, verbose: process.env.DEBUG === 'true' })
+        const response = await agent.chat({ message: input, chatHistory, verbose: process.env.DEBUG === 'true' ? true : false })
 
         if (response.sources.length) {
             for (const sourceTool of response.sources) {

@@ -102,7 +102,7 @@ class CustomFunction_SeqAgents implements INode {
         if (!sequentialNodes || !sequentialNodes.length) throw new Error('Custom function must have a predecessor!')
 
         const executeFunc = async (state: ISeqAgentsState) => {
-            const variables = await getVars(appDataSource, databaseEntities, nodeData)
+            const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
             const flow = {
                 chatflowId: options.chatflowid,
                 sessionId: options.sessionId,

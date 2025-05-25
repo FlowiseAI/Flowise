@@ -12,6 +12,7 @@ import {
 import { DataSource } from 'typeorm'
 import { CachePool } from './CachePool'
 import { Telemetry } from './utils/telemetry'
+import { UsageCacheManager } from './UsageCacheManager'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
@@ -28,13 +29,27 @@ export enum MODE {
 
 export enum ChatType {
     INTERNAL = 'INTERNAL',
-    EXTERNAL = 'EXTERNAL'
+    EXTERNAL = 'EXTERNAL',
+    EVALUATION = 'EVALUATION'
 }
 
 export enum ChatMessageRatingType {
     THUMBS_UP = 'THUMBS_UP',
     THUMBS_DOWN = 'THUMBS_DOWN'
 }
+
+export enum Platform {
+    OPEN_SOURCE = 'open source',
+    CLOUD = 'cloud',
+    ENTERPRISE = 'enterprise'
+}
+
+export enum UserPlan {
+    STARTER = 'STARTER',
+    PRO = 'PRO',
+    FREE = 'FREE'
+}
+
 /**
  * Databases
  */
@@ -54,6 +69,7 @@ export interface IChatFlow {
     apiConfig?: string
     category?: string
     type?: ChatflowType
+    workspaceId?: string
 }
 
 export interface IChatMessage {
@@ -98,6 +114,7 @@ export interface ITool {
     func?: string
     updatedDate: Date
     createdDate: Date
+    workspaceId?: string
 }
 
 export interface IAssistant {
@@ -107,6 +124,7 @@ export interface IAssistant {
     iconSrc?: string
     updatedDate: Date
     createdDate: Date
+    workspaceId?: string
 }
 
 export interface ICredential {
@@ -116,6 +134,7 @@ export interface ICredential {
     encryptedData: string
     updatedDate: Date
     createdDate: Date
+    workspaceId?: string
 }
 
 export interface IVariable {
@@ -125,6 +144,7 @@ export interface IVariable {
     type: string
     updatedDate: Date
     createdDate: Date
+    workspaceId?: string
 }
 
 export interface ILead {
@@ -156,6 +176,7 @@ export interface IExecution {
     createdDate: Date
     updatedDate: Date
     stoppedDate: Date
+    workspaceId?: string
 }
 
 export interface IComponentNodes {
@@ -311,6 +332,7 @@ export interface ICredentialReqBody {
     name: string
     credentialName: string
     plainDataObj: ICredentialDataDecrypted
+    workspaceId?: string
 }
 
 // Decrypted credential object sent back to client
@@ -329,6 +351,7 @@ export interface IApiKey {
     apiKey: string
     apiSecret: string
     updatedDate: Date
+    workspaceId?: string
 }
 
 export interface ICustomTemplate {
@@ -342,6 +365,7 @@ export interface ICustomTemplate {
     badge?: string
     framework?: string
     usecases?: string
+    workspaceId?: string
 }
 
 export interface IFlowConfig {
@@ -361,14 +385,20 @@ export interface IPredictionQueueAppServer {
     sseStreamer: IServerSideEventStreamer
     telemetry: Telemetry
     cachePool: CachePool
+    usageCacheManager: UsageCacheManager
 }
 
 export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     incomingInput: IncomingInput
     chatflow: IChatFlow
     chatId: string
+    orgId: string
+    workspaceId: string
+    subscriptionId: string
     baseURL: string
     isInternal: boolean
+    isEvaluation?: boolean
+    evaluationRunId?: string
     signal?: AbortController
     files?: Express.Multer.File[]
     fileUploads?: IFileUpload[]
@@ -398,3 +428,6 @@ export interface IVariableOverride {
 
 // DocumentStore related
 export * from './Interface.DocumentStore'
+
+// Evaluations related
+export * from './Interface.Evaluation'

@@ -31,12 +31,6 @@ Download and Install [NodeJS](https://nodejs.org/en/download) >= 18.15.0
     npx flowise start
     ```
 
-    With username & password
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
-    ```
-
 3. Open [http://localhost:3000](http://localhost:3000)
 
 ## 🐳 Docker
@@ -137,15 +131,6 @@ Flowise has 3 different modules in a single mono repository.
         ```
 
     Any code changes will reload the app automatically on [http://localhost:8080](http://localhost:8080)
-
-## 🔒 Authentication
-
-To enable app level authentication, add `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `.env` file in `packages/server`:
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
 
 ## 🌱 Env Variables
 

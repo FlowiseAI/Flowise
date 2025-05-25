@@ -10,6 +10,7 @@ import {
     NodeWithScore
 } from 'llamaindex'
 import { reformatSourceDocuments } from '../EngineUtils'
+import { EvaluationRunTracerLlama } from '../../../evaluation/EvaluationRunTracerLlama'
 
 class QueryEngine_LlamaIndex implements INode {
     label: string
@@ -71,6 +72,8 @@ class QueryEngine_LlamaIndex implements INode {
         let sourceDocuments: ICommonObject[] = []
         let sourceNodes: NodeWithScore<Metadata>[] = []
         let isStreamingStarted = false
+
+        await EvaluationRunTracerLlama.injectEvaluationMetadata(nodeData, options, queryEngine)
 
         const shouldStreamResponse = options.shouldStreamResponse
         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer

@@ -21,7 +21,6 @@ import {
     OutlinedInput
 } from '@mui/material'
 
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import { MultiDropdown } from '@/ui-component/dropdown/MultiDropdown'
@@ -30,6 +29,7 @@ import { File } from '@/ui-component/file/File'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DeleteConfirmDialog from './DeleteConfirmDialog'
 import AssistantVectorStoreDialog from './AssistantVectorStoreDialog'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 
 // Icons
 import { IconX, IconPlus } from '@tabler/icons-react'
@@ -205,6 +205,7 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
 
     useEffect(() => {
         if (getSpecificAssistantApi.error) {
+            const error = getSpecificAssistantApi.error
             let errMsg = ''
             if (error?.response?.data) {
                 errMsg = typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -1035,22 +1036,33 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
             </DialogContent>
             <DialogActions sx={{ p: 3, pt: 0 }}>
                 {dialogProps.type === 'EDIT' && (
-                    <StyledButton color='secondary' variant='contained' onClick={() => onSyncClick()}>
+                    <StyledPermissionButton
+                        permissionId={'assistants:create,assistants:update'}
+                        color='secondary'
+                        variant='contained'
+                        onClick={() => onSyncClick()}
+                    >
                         Sync
-                    </StyledButton>
+                    </StyledPermissionButton>
                 )}
                 {dialogProps.type === 'EDIT' && (
-                    <StyledButton color='error' variant='contained' onClick={() => onDeleteClick()}>
+                    <StyledPermissionButton
+                        permissionId={'assistants:delete'}
+                        color='error'
+                        variant='contained'
+                        onClick={() => onDeleteClick()}
+                    >
                         Delete
-                    </StyledButton>
+                    </StyledPermissionButton>
                 )}
-                <StyledButton
+                <StyledPermissionButton
+                    permissionId={'assistants:create,assistants:update'}
                     disabled={!(assistantModel && assistantCredential)}
                     variant='contained'
                     onClick={() => (dialogProps.type === 'ADD' ? addNewAssistant() : saveAssistant())}
                 >
                     {dialogProps.confirmButtonName}
-                </StyledButton>
+                </StyledPermissionButton>
             </DialogActions>
             <DeleteConfirmDialog
                 show={deleteDialogOpen}

@@ -4,6 +4,9 @@ import contentDisposition from 'content-disposition'
 import { streamStorageFile } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { ChatFlow } from '../../database/entities/ChatFlow'
+import { Workspace } from '../../enterprise/database/entities/workspace.entity'
 
 const streamUploadedFile = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -13,8 +16,27 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
         const chatflowId = req.query.chatflowId as string
         const chatId = req.query.chatId as string
         const fileName = req.query.fileName as string
+
+        const appServer = getRunningExpressApp()
+
+        // This can be public API, so we can only get orgId from the chatflow
+        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowId
+        })
+        if (!chatflow) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+        }
+        const chatflowWorkspaceId = chatflow.workspaceId
+        const workspace = await appServer.AppDataSource.getRepository(Workspace).findOneBy({
+            id: chatflowWorkspaceId
+        })
+        if (!workspace) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Workspace ${chatflowWorkspaceId} not found`)
+        }
+        const orgId = workspace.organizationId as string
+
         res.setHeader('Content-Disposition', contentDisposition(fileName))
-        const fileStream = await streamStorageFile(chatflowId, chatId, fileName)
+        const fileStream = await streamStorageFile(chatflowId, chatId, fileName, orgId)
 
         if (!fileStream) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: streamStorageFile`)
 

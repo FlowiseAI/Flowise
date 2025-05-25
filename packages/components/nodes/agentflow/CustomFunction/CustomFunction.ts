@@ -152,7 +152,7 @@ class CustomFunction_Agentflow implements INode {
             newState = updateFlowState(state, _customFunctionUpdateState)
         }
 
-        const variables = await getVars(appDataSource, databaseEntities, nodeData)
+        const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
         const flow = {
             chatflowId: options.chatflowid,
             sessionId: options.sessionId,

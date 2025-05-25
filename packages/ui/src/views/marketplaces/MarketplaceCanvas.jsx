@@ -24,7 +24,8 @@ const MarketplaceCanvas = () => {
     const navigate = useNavigate()
 
     const { state } = useLocation()
-    const { flowData, name } = state
+    const flowData = state?.flowData || '{}'
+    const name = state?.name || 'Untitled'
 
     // ==============================|| ReactFlow ||============================== //
 

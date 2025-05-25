@@ -1,6 +1,7 @@
 import { flatten } from 'lodash'
 import { ChatMessage, OpenAI, OpenAIAgent } from 'llamaindex'
 import { getBaseClasses } from '../../../../src/utils'
+import { EvaluationRunTracerLlama } from '../../../../evaluation/EvaluationRunTracerLlama'
 import {
     FlowiseMemory,
     ICommonObject,
@@ -107,8 +108,11 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
             tools,
             llm: model,
             chatHistory: chatHistory,
-            verbose: process.env.DEBUG === 'true'
+            verbose: process.env.DEBUG === 'true' ? true : false
         })
+
+        // these are needed for evaluation runs
+        await EvaluationRunTracerLlama.injectEvaluationMetadata(nodeData, options, agent)
 
         let text = ''
         let isStreamingStarted = false
@@ -119,10 +123,9 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
                 message: input,
                 chatHistory,
                 stream: true,
-                verbose: process.env.DEBUG === 'true'
+                verbose: process.env.DEBUG === 'true' ? true : false
             })
             for await (const chunk of stream) {
-                //console.log('chunk', chunk)
                 text += chunk.response.delta
                 if (!isStreamingStarted) {
                     isStreamingStarted = true
@@ -147,7 +150,7 @@ class OpenAIFunctionAgent_LlamaIndex_Agents implements INode {
                 }
             }
         } else {
-            const response = await agent.chat({ message: input, chatHistory, verbose: process.env.DEBUG === 'true' })
+            const response = await agent.chat({ message: input, chatHistory, verbose: process.env.DEBUG === 'true' ? true : false })
             if (response.sources.length) {
                 for (const sourceTool of response.sources) {
                     usedTools.push({

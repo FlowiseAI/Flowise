@@ -1,0 +1,106 @@
+.role-editor {
+    padding: 20px 0px;
+    border-radius: 10px;
+    width: 100%;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 75vh;
+}
+
+.role-name {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.role-description {
+    margin-bottom: 20px;
+    position: sticky;
+    top: 0;
+    padding: 10px 0;
+    z-index: 1;
+}
+
+.permissions-container > p,
+.role-name label {
+    display: block;
+    font-weight: bold;
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.role-name input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    display: block;
+}
+
+.permissions-container {
+    overflow-y: hidden;
+    max-height: calc(100vh - 120px); /* Adjust based on header and input height */
+}
+
+.permissions-list-wrapper {
+    overflow-y: auto;
+    max-height: 100%;
+    padding-right: 10px;
+    padding-bottom: 10px;
+}
+
+.permission-category {
+    margin-bottom: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.category-header h3 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.category-header button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.permissions-list {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.permission-item {
+    width: 50%;
+    box-sizing: border-box;
+}
+
+.permission-item label {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.permission-item input {
+    margin-right: 10px;
+}

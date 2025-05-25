@@ -10,9 +10,9 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { baseURL, gridSpacing } from '@/store/constant'
 import AssistantEmptySVG from '@/assets/images/assistant_empty.svg'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import AddCustomAssistantDialog from './AddCustomAssistantDialog'
 import ErrorBoundary from '@/ErrorBoundary'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 
 // API
 import assistantsApi from '@/api/assistants'
@@ -101,14 +101,15 @@ const CustomAssistantLayout = () => {
                             description='Create custom assistants with your choice of LLMs'
                             onBack={() => navigate(-1)}
                         >
-                            <StyledButton
+                            <StyledPermissionButton
+                                permissionId={'assistants:create'}
                                 variant='contained'
                                 sx={{ borderRadius: 2, height: 40 }}
                                 onClick={addNew}
                                 startIcon={<IconPlus />}
                             >
                                 Add
-                            </StyledButton>
+                            </StyledPermissionButton>
                         </ViewHeader>
                         {isLoading ? (
                             <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>

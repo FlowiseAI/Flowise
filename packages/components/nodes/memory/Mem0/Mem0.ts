@@ -151,6 +151,7 @@ class Mem0_Memory implements INode {
 const initializeMem0 = async (nodeData: INodeData, options: ICommonObject): Promise<BaseMem0Memory> => {
     const initialUserId = nodeData.inputs?.user_id as string
     const useFlowiseChatId = nodeData.inputs?.useFlowiseChatId as boolean
+    const orgId = options.orgId as string
 
     if (!useFlowiseChatId && !initialUserId) {
         throw new Error('User ID field cannot be empty when "Use Flowise Chat ID" is OFF.')
@@ -198,7 +199,8 @@ const initializeMem0 = async (nodeData: INodeData, options: ICommonObject): Prom
             databaseEntities: options.databaseEntities as IDatabaseEntity,
             chatflowid: options.chatflowid as string,
             searchOnly: (nodeData.inputs?.searchOnly as boolean) || false,
-            useFlowiseChatId: useFlowiseChatId
+            useFlowiseChatId: useFlowiseChatId,
+            orgId: orgId
         }
 
     return new Mem0MemoryExtended(obj)
@@ -207,11 +209,13 @@ const initializeMem0 = async (nodeData: INodeData, options: ICommonObject): Prom
 interface Mem0MemoryExtendedInput extends Mem0MemoryInput {
     memoryOptions?: MemoryOptions | SearchOptions
     useFlowiseChatId: boolean
+    orgId: string
 }
 
 class Mem0MemoryExtended extends BaseMem0Memory implements MemoryMethods {
     initialUserId: string
     userId: string
+    orgId: string
     memoryKey: string
     inputKey: string
     appDataSource: DataSource
@@ -233,6 +237,7 @@ class Mem0MemoryExtended extends BaseMem0Memory implements MemoryMethods {
         this.chatflowid = fields.chatflowid
         this.searchOnly = fields.searchOnly
         this.useFlowiseChatId = fields.useFlowiseChatId
+        this.orgId = fields.orgId
     }
 
     // Selects Mem0 user_id based on toggle state (Flowise chat ID or input field)
@@ -337,7 +342,7 @@ class Mem0MemoryExtended extends BaseMem0Memory implements MemoryMethods {
                 console.warn('Mem0 history is not a string, cannot prepend directly.')
             }
 
-            return await mapChatMessageToBaseMessage(chatMessage)
+            return await mapChatMessageToBaseMessage(chatMessage, this.orgId)
         }
 
         return returnIMessages

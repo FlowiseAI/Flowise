@@ -8,8 +8,9 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { DeleteResult } from 'typeorm'
 import { CustomTemplate } from '../../database/entities/CustomTemplate'
 import { v4 as uuidv4 } from 'uuid'
-
 import chatflowsService from '../chatflows'
+import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
+import { WorkspaceService } from '../../enterprise/services/workspace.service'
 
 type ITemplate = {
     badge: string
@@ -134,30 +135,50 @@ const deleteCustomTemplate = async (templateId: string): Promise<DeleteResult> =
     }
 }
 
-const getAllCustomTemplates = async (): Promise<any> => {
+const _modifyTemplates = (templates: any[]) => {
+    templates.map((template) => {
+        template.usecases = template.usecases ? JSON.parse(template.usecases) : ''
+        if (template.type === 'Tool') {
+            template.flowData = JSON.parse(template.flowData)
+            template.iconSrc = template.flowData.iconSrc
+            template.schema = template.flowData.schema
+            template.func = template.flowData.func
+            template.categories = []
+            template.flowData = undefined
+        } else {
+            template.categories = getCategories(JSON.parse(template.flowData))
+        }
+        if (!template.badge) {
+            template.badge = ''
+        }
+        if (!template.framework) {
+            template.framework = ''
+        }
+    })
+}
+
+const getAllCustomTemplates = async (workspaceId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).find()
-        templates.map((template) => {
-            template.usecases = template.usecases ? JSON.parse(template.usecases) : ''
-            if (template.type === 'Tool') {
-                template.flowData = JSON.parse(template.flowData)
-                template.iconSrc = template.flowData.iconSrc
-                template.schema = template.flowData.schema
-                template.func = template.flowData.func
-                template.categories = []
-                template.flowData = undefined
-            } else {
-                template.categories = getCategories(JSON.parse(template.flowData))
+        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).findBy(getWorkspaceSearchOptions(workspaceId))
+        const dbResponse = []
+        _modifyTemplates(templates)
+        dbResponse.push(...templates)
+        // get shared credentials
+        if (workspaceId) {
+            const workspaceService = new WorkspaceService()
+            const sharedItems = (await workspaceService.getSharedItemsForWorkspace(workspaceId, 'custom_template')) as CustomTemplate[]
+            if (sharedItems && sharedItems.length) {
+                _modifyTemplates(sharedItems)
+                // add shared = true flag to all shared items, to differentiate them in the UI
+                sharedItems.forEach((sharedItem) => {
+                    // @ts-ignore
+                    sharedItem.shared = true
+                    dbResponse.push(sharedItem)
+                })
             }
-            if (!template.badge) {
-                template.badge = ''
-            }
-            if (!template.framework) {
-                template.framework = ''
-            }
-        })
-        return templates
+        }
+        return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

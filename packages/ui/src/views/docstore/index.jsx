@@ -23,11 +23,11 @@ import { useTheme } from '@mui/material/styles'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 
 // API
 import useApi from '@/hooks/useApi'
@@ -39,6 +39,7 @@ import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
+import { useError } from '@/store/context/ErrorContext'
 
 // ==============================|| DOCUMENTS ||============================== //
 
@@ -48,8 +49,8 @@ const Documents = () => {
 
     const navigate = useNavigate()
     const getAllDocumentStores = useApi(documentsApi.getAllDocumentStores)
+    const { error } = useError()
 
-    const [error, setError] = useState(null)
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
     const [search, setSearch] = useState('')
@@ -135,10 +136,6 @@ const Documents = () => {
         setLoading(getAllDocumentStores.loading)
     }, [getAllDocumentStores.loading])
 
-    useEffect(() => {
-        setError(getAllDocumentStores.error)
-    }, [getAllDocumentStores.error])
-
     return (
         <MainCard>
             {error ? (
@@ -184,7 +181,8 @@ const Documents = () => {
                                 <IconList />
                             </ToggleButton>
                         </ToggleButtonGroup>
-                        <StyledButton
+                        <StyledPermissionButton
+                            permissionId={'documentStores:create'}
                             variant='contained'
                             sx={{ borderRadius: 2, height: '100%' }}
                             onClick={addNew}
@@ -192,7 +190,7 @@ const Documents = () => {
                             id='btn_createVariable'
                         >
                             Add New
-                        </StyledButton>
+                        </StyledPermissionButton>
                     </ViewHeader>
                     {!view || view === 'card' ? (
                         <>

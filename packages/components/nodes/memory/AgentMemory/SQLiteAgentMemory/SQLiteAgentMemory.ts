@@ -51,6 +51,7 @@ class SQLiteAgentMemory_Memory implements INode {
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const chatflowid = options.chatflowid as string
         const appDataSource = options.appDataSource as DataSource
+        const orgId = options.orgId as string
 
         let additionalConfiguration = {}
         if (additionalConfig) {
@@ -76,7 +77,8 @@ class SQLiteAgentMemory_Memory implements INode {
             threadId,
             appDataSource,
             databaseEntities,
-            chatflowid
+            chatflowid,
+            orgId
         }
 
         const recordManager = new SqliteSaver(args)

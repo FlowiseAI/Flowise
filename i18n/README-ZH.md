@@ -31,12 +31,6 @@
     npx flowise start
     ```
 
-    使用用户名和密码
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
-    ```
-
 3. 打开 [http://localhost:3000](http://localhost:3000)
 
 ## 🐳 Docker
@@ -126,15 +120,6 @@ Flowise 在一个单一的代码库中有 3 个不同的模块。
         ```
 
     任何代码更改都会自动重新加载应用程序，访问 [http://localhost:8080](http://localhost:8080)
-
-## 🔒 认证
-
-要启用应用程序级身份验证，在 `packages/server` 的 `.env` 文件中添加 `FLOWISE_USERNAME` 和 `FLOWISE_PASSWORD`：
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
 
 ## 🌱 环境变量
 

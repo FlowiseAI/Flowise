@@ -25,6 +25,8 @@ import { AgentAction } from '@langchain/core/agents'
 import { LunaryHandler } from '@langchain/community/callbacks/handlers/lunary'
 
 import { getCredentialData, getCredentialParam, getEnvironmentVariable } from './utils'
+import { EvaluationRunTracer } from '../evaluation/EvaluationRunTracer'
+import { EvaluationRunTracerLlama } from '../evaluation/EvaluationRunTracerLlama'
 import { ICommonObject, IDatabaseEntity, INodeData, IServerSideEventStreamer } from './Interface'
 import { LangWatch, LangWatchSpan, LangWatchTrace, autoconvertTypedValues } from 'langwatch'
 import { DataSource } from 'typeorm'
@@ -32,7 +34,7 @@ import { ChatGenerationChunk } from '@langchain/core/outputs'
 import { AIMessageChunk, BaseMessageLike } from '@langchain/core/messages'
 import { Serialized } from '@langchain/core/load/serializable'
 
-interface AgentRun extends Run {
+export interface AgentRun extends Run {
     actions: AgentAction[]
 }
 
@@ -173,7 +175,7 @@ function tryGetJsonSpaces() {
     }
 }
 
-function tryJsonStringify(obj: unknown, fallback: string) {
+export function tryJsonStringify(obj: unknown, fallback: string) {
     try {
         return JSON.stringify(obj, null, tryGetJsonSpaces())
     } catch (err) {
@@ -181,7 +183,7 @@ function tryJsonStringify(obj: unknown, fallback: string) {
     }
 }
 
-function elapsed(run: Run): string {
+export function elapsed(run: Run): string {
     if (!run.end_time) return ''
     const elapsed = run.end_time - run.start_time
     if (elapsed < 1000) {
@@ -193,14 +195,16 @@ function elapsed(run: Run): string {
 export class ConsoleCallbackHandler extends BaseTracer {
     name = 'console_callback_handler' as const
     logger: Logger
+    orgId?: string
 
     protected persistRun(_run: Run) {
         return Promise.resolve()
     }
 
-    constructor(logger: Logger) {
+    constructor(logger: Logger, orgId?: string) {
         super()
         this.logger = logger
+        this.orgId = orgId
         if (getEnvironmentVariable('DEBUG') === 'true') {
             logger.level = getEnvironmentVariable('LOG_LEVEL') ?? 'info'
         }
@@ -235,57 +239,76 @@ export class ConsoleCallbackHandler extends BaseTracer {
     onChainStart(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
 
-        this.logger.verbose(`[chain/start] [${crumbs}] Entering Chain run with input: ${tryJsonStringify(run.inputs, '[inputs]')}`)
+        this.logger.verbose(
+            `[${this.orgId}]: [chain/start] [${crumbs}] Entering Chain run with input: ${tryJsonStringify(run.inputs, '[inputs]')}`
+        )
     }
 
     onChainEnd(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
         this.logger.verbose(
-            `[chain/end] [${crumbs}] [${elapsed(run)}] Exiting Chain run with output: ${tryJsonStringify(run.outputs, '[outputs]')}`
+            `[${this.orgId}]: [chain/end] [${crumbs}] [${elapsed(run)}] Exiting Chain run with output: ${tryJsonStringify(
+                run.outputs,
+                '[outputs]'
+            )}`
         )
     }
 
     onChainError(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
         this.logger.verbose(
-            `[chain/error] [${crumbs}] [${elapsed(run)}] Chain run errored with error: ${tryJsonStringify(run.error, '[error]')}`
+            `[${this.orgId}]: [chain/error] [${crumbs}] [${elapsed(run)}] Chain run errored with error: ${tryJsonStringify(
+                run.error,
+                '[error]'
+            )}`
         )
     }
 
     onLLMStart(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
         const inputs = 'prompts' in run.inputs ? { prompts: (run.inputs.prompts as string[]).map((p) => p.trim()) } : run.inputs
-        this.logger.verbose(`[llm/start] [${crumbs}] Entering LLM run with input: ${tryJsonStringify(inputs, '[inputs]')}`)
+        this.logger.verbose(`[${this.orgId}]: [llm/start] [${crumbs}] Entering LLM run with input: ${tryJsonStringify(inputs, '[inputs]')}`)
     }
 
     onLLMEnd(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
         this.logger.verbose(
-            `[llm/end] [${crumbs}] [${elapsed(run)}] Exiting LLM run with output: ${tryJsonStringify(run.outputs, '[response]')}`
+            `[${this.orgId}]: [llm/end] [${crumbs}] [${elapsed(run)}] Exiting LLM run with output: ${tryJsonStringify(
+                run.outputs,
+                '[response]'
+            )}`
         )
     }
 
     onLLMError(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
         this.logger.verbose(
-            `[llm/error] [${crumbs}] [${elapsed(run)}] LLM run errored with error: ${tryJsonStringify(run.error, '[error]')}`
+            `[${this.orgId}]: [llm/error] [${crumbs}] [${elapsed(run)}] LLM run errored with error: ${tryJsonStringify(
+                run.error,
+                '[error]'
+            )}`
         )
     }
 
     onToolStart(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(`[tool/start] [${crumbs}] Entering Tool run with input: "${run.inputs.input?.trim()}"`)
+        this.logger.verbose(`[${this.orgId}]: [tool/start] [${crumbs}] Entering Tool run with input: "${run.inputs.input?.trim()}"`)
     }
 
     onToolEnd(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
-        this.logger.verbose(`[tool/end] [${crumbs}] [${elapsed(run)}] Exiting Tool run with output: "${run.outputs?.output?.trim()}"`)
+        this.logger.verbose(
+            `[${this.orgId}]: [tool/end] [${crumbs}] [${elapsed(run)}] Exiting Tool run with output: "${run.outputs?.output?.trim()}"`
+        )
     }
 
     onToolError(run: Run) {
         const crumbs = this.getBreadcrumbs(run)
         this.logger.verbose(
-            `[tool/error] [${crumbs}] [${elapsed(run)}] Tool run errored with error: ${tryJsonStringify(run.error, '[error]')}`
+            `[${this.orgId}]: [tool/error] [${crumbs}] [${elapsed(run)}] Tool run errored with error: ${tryJsonStringify(
+                run.error,
+                '[error]'
+            )}`
         )
     }
 
@@ -293,7 +316,7 @@ export class ConsoleCallbackHandler extends BaseTracer {
         const agentRun = run as AgentRun
         const crumbs = this.getBreadcrumbs(run)
         this.logger.verbose(
-            `[agent/action] [${crumbs}] Agent selected action: ${tryJsonStringify(
+            `[${this.orgId}]: [agent/action] [${crumbs}] Agent selected action: ${tryJsonStringify(
                 agentRun.actions[agentRun.actions.length - 1],
                 '[action]'
             )}`
@@ -396,6 +419,7 @@ export class CustomChainHandler extends BaseCallbackHandler {
     }
 }
 
+/*TODO - Add llamaIndex tracer to non evaluation runs*/
 class ExtendedLunaryHandler extends LunaryHandler {
     chatId: string
     appDataSource: DataSource
@@ -550,6 +574,13 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     const handler = new ExtendedLunaryHandler(lunaryFields)
 
                     callbacks.push(handler)
+                } else if (provider === 'evaluation') {
+                    if (options.llamaIndex) {
+                        new EvaluationRunTracerLlama(options.evaluationRunId)
+                    } else {
+                        const evaluationHandler = new EvaluationRunTracer(options.evaluationRunId)
+                        callbacks.push(evaluationHandler)
+                    }
                 } else if (provider === 'langWatch') {
                     const langWatchApiKey = getCredentialParam('langWatchApiKey', credentialData, nodeData)
                     const langWatchEndpoint = getCredentialParam('langWatchEndpoint', credentialData, nodeData)

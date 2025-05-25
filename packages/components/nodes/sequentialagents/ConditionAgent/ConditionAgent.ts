@@ -540,7 +540,7 @@ const runCondition = async (
         result = { ...jsonResult, additional_kwargs: { nodeId: nodeData.id } }
     }
 
-    const variables = await getVars(appDataSource, databaseEntities, nodeData)
+    const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
 
     const flow = {
         chatflowId: options.chatflowid,
@@ -553,7 +553,7 @@ const runCondition = async (
     }
 
     if (selectedTab === 'conditionFunction' && conditionFunction) {
-        const vm = await getVM(appDataSource, databaseEntities, nodeData, flow)
+        const vm = await getVM(appDataSource, databaseEntities, nodeData, options, flow)
         try {
             const response = await vm.run(`module.exports = async function() {${conditionFunction}}()`, __dirname)
             if (typeof response !== 'string') throw new Error('Condition function must return a string')

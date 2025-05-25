@@ -216,6 +216,10 @@ class GoogleGenerativeAI_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
+        // this extra metadata is needed, as langchain does not show the model name in the callbacks.
+        obj.metadata = {
+            fw_model_name: customModelName || modelName
+        }
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)

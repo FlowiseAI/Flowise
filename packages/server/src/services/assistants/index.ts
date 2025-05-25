@@ -1,24 +1,26 @@
-import OpenAI from 'openai'
+import { ICommonObject } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { uniqWith, isEqual, cloneDeep } from 'lodash'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { cloneDeep, isEqual, uniqWith } from 'lodash'
+import OpenAI from 'openai'
+import { DeleteResult, In, QueryRunner } from 'typeorm'
 import { Assistant } from '../../database/entities/Assistant'
 import { Credential } from '../../database/entities/Credential'
-import { databaseEntities, decryptCredentialData, getAppVersion } from '../../utils'
+import { DocumentStore } from '../../database/entities/DocumentStore'
+import { Workspace } from '../../enterprise/database/entities/workspace.entity'
+import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { DeleteResult, QueryRunner } from 'typeorm'
-import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { AssistantType } from '../../Interface'
-import nodesService from '../nodes'
-import { DocumentStore } from '../../database/entities/DocumentStore'
-import { ICommonObject } from 'flowise-components'
+import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
+import { databaseEntities, decryptCredentialData, getAppVersion } from '../../utils'
+import { INPUT_PARAMS_TYPE } from '../../utils/constants'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import logger from '../../utils/logger'
 import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
-import { INPUT_PARAMS_TYPE } from '../../utils/constants'
-import { validate } from 'uuid'
+import { checkUsageLimit } from '../../utils/quotaUsage'
+import nodesService from '../nodes'
 
-const createAssistant = async (requestBody: any): Promise<Assistant> => {
+const createAssistant = async (requestBody: any, orgId: string): Promise<Assistant> => {
     try {
         const appServer = getRunningExpressApp()
         if (!requestBody.details) {
@@ -33,10 +35,14 @@ const createAssistant = async (requestBody: any): Promise<Assistant> => {
             const assistant = appServer.AppDataSource.getRepository(Assistant).create(newAssistant)
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
 
-            await appServer.telemetry.sendTelemetry('assistant_created', {
-                version: await getAppVersion(),
-                assistantId: dbResponse.id
-            })
+            await appServer.telemetry.sendTelemetry(
+                'assistant_created',
+                {
+                    version: await getAppVersion(),
+                    assistantId: dbResponse.id
+                },
+                orgId
+            )
             appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.ASSISTANT_CREATED, {
                 status: FLOWISE_COUNTER_STATUS.SUCCESS
             })
@@ -134,11 +140,17 @@ const createAssistant = async (requestBody: any): Promise<Assistant> => {
         const assistant = appServer.AppDataSource.getRepository(Assistant).create(newAssistant)
         const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
 
-        await appServer.telemetry.sendTelemetry('assistant_created', {
-            version: await getAppVersion(),
-            assistantId: dbResponse.id
-        })
+        await appServer.telemetry.sendTelemetry(
+            'assistant_created',
+            {
+                version: await getAppVersion(),
+                assistantId: dbResponse.id
+            },
+            orgId
+        )
+
         appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.ASSISTANT_CREATED, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
+
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -193,21 +205,62 @@ const deleteAssistant = async (assistantId: string, isDeleteBoth: any): Promise<
     }
 }
 
-const getAllAssistants = async (type?: AssistantType): Promise<Assistant[]> => {
+async function getAssistantsCountByOrganization(type: AssistantType, organizationId: string): Promise<number> {
+    try {
+        const appServer = getRunningExpressApp()
+
+        const workspaces = await appServer.AppDataSource.getRepository(Workspace).findBy({ organizationId })
+        const workspaceIds = workspaces.map((workspace) => workspace.id)
+        const assistantsCount = await appServer.AppDataSource.getRepository(Assistant).countBy({
+            type,
+            workspaceId: In(workspaceIds)
+        })
+
+        return assistantsCount
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: assistantsService.getAssistantsCountByOrganization - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getAllAssistants = async (type?: AssistantType, workspaceId?: string): Promise<Assistant[]> => {
     try {
         const appServer = getRunningExpressApp()
         if (type) {
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).findBy({
-                type
+                type,
+                ...getWorkspaceSearchOptions(workspaceId)
             })
             return dbResponse
         }
-        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).find()
+        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).findBy(getWorkspaceSearchOptions(workspaceId))
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: assistantsService.getAllAssistants - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const getAllAssistantsCount = async (type?: AssistantType, workspaceId?: string): Promise<number> => {
+    try {
+        const appServer = getRunningExpressApp()
+        if (type) {
+            const dbResponse = await appServer.AppDataSource.getRepository(Assistant).countBy({
+                type,
+                ...getWorkspaceSearchOptions(workspaceId)
+            })
+            return dbResponse
+        }
+        const dbResponse = await appServer.AppDataSource.getRepository(Assistant).countBy(getWorkspaceSearchOptions(workspaceId))
+        return dbResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: assistantsService.getAllAssistantsCount - ${getErrorMessage(error)}`
         )
     }
 }
@@ -338,19 +391,21 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
     }
 }
 
-const importAssistants = async (newAssistants: Partial<Assistant>[], queryRunner?: QueryRunner): Promise<any> => {
+const importAssistants = async (
+    newAssistants: Partial<Assistant>[],
+    orgId: string,
+    _: string,
+    subscriptionId: string,
+    queryRunner?: QueryRunner
+): Promise<any> => {
     try {
-        for (const data of newAssistants) {
-            if (data.id && !validate(data.id)) {
-                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: importAssistants - invalid id!`)
-            }
-        }
-
         const appServer = getRunningExpressApp()
         const repository = queryRunner ? queryRunner.manager.getRepository(Assistant) : appServer.AppDataSource.getRepository(Assistant)
 
         // step 1 - check whether array is zero
         if (newAssistants.length == 0) return
+
+        await checkUsageLimit('flows', subscriptionId, appServer.usageCacheManager, newAssistants.length)
 
         // step 2 - check whether ids are duplicate in database
         let ids = '('
@@ -406,10 +461,10 @@ const getChatModels = async (): Promise<any> => {
     }
 }
 
-const getDocumentStores = async (): Promise<any> => {
+const getDocumentStores = async (activeWorkspaceId?: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const stores = await appServer.AppDataSource.getRepository(DocumentStore).find()
+        const stores = await appServer.AppDataSource.getRepository(DocumentStore).findBy(getWorkspaceSearchOptions(activeWorkspaceId))
         const returnData = []
         for (const store of stores) {
             if (store.status === 'UPSERTED') {
@@ -492,11 +547,13 @@ export default {
     createAssistant,
     deleteAssistant,
     getAllAssistants,
+    getAllAssistantsCount,
     getAssistantById,
     updateAssistant,
     importAssistants,
     getChatModels,
     getDocumentStores,
     getTools,
-    generateAssistantInstruction
+    generateAssistantInstruction,
+    getAssistantsCountByOrganization
 }

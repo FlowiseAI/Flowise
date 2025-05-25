@@ -4,6 +4,8 @@ import { lazy } from 'react'
 import MainLayout from '@/layout/MainLayout'
 import Loadable from '@/ui-component/loading/Loadable'
 
+import { RequireAuth } from '@/routes/RequireAuth'
+
 // chatflows routing
 const Chatflows = Loadable(lazy(() => import('@/views/chatflows')))
 
@@ -39,8 +41,34 @@ const LoaderConfigPreviewChunks = Loadable(lazy(() => import('@/views/docstore/L
 const VectorStoreConfigure = Loadable(lazy(() => import('@/views/docstore/VectorStoreConfigure')))
 const VectorStoreQuery = Loadable(lazy(() => import('@/views/docstore/VectorStoreQuery')))
 
-// execution routing
+// Evaluations routing
+const EvalEvaluation = Loadable(lazy(() => import('@/views/evaluations/index')))
+const EvaluationResult = Loadable(lazy(() => import('@/views/evaluations/EvaluationResult')))
+const EvalDatasetRows = Loadable(lazy(() => import('@/views/datasets/DatasetItems')))
+const EvalDatasets = Loadable(lazy(() => import('@/views/datasets')))
+const Evaluators = Loadable(lazy(() => import('@/views/evaluators')))
+
+// account routing
+const Account = Loadable(lazy(() => import('@/views/account')))
+const UserProfile = Loadable(lazy(() => import('@/views/account/UserProfile')))
+
+// files routing
+const Files = Loadable(lazy(() => import('@/views/files')))
+
+// logs routing
+const Logs = Loadable(lazy(() => import('@/views/serverlogs')))
+
+// executions routing
 const Executions = Loadable(lazy(() => import('@/views/agentexecutions')))
+
+// enterprise features
+const UsersPage = Loadable(lazy(() => import('@/views/users')))
+const RolesPage = Loadable(lazy(() => import('@/views/roles')))
+const LoginActivityPage = Loadable(lazy(() => import('@/views/auth/loginActivity')))
+const Workspaces = Loadable(lazy(() => import('@/views/workspace')))
+const WorkspaceDetails = Loadable(lazy(() => import('@/views/workspace/WorkspaceUsers')))
+const SSOConfig = Loadable(lazy(() => import('@/views/auth/ssoConfig')))
+const SSOSuccess = Loadable(lazy(() => import('@/views/auth/ssoSuccess')))
 
 // ==============================|| MAIN ROUTING ||============================== //
 
@@ -50,83 +78,283 @@ const MainRoutes = {
     children: [
         {
             path: '/',
-            element: <Chatflows />
+            element: (
+                <RequireAuth permission={'chatflows:view'}>
+                    <Chatflows />
+                </RequireAuth>
+            )
         },
         {
             path: '/chatflows',
-            element: <Chatflows />
+            element: (
+                <RequireAuth permission={'chatflows:view'}>
+                    <Chatflows />
+                </RequireAuth>
+            )
         },
         {
             path: '/agentflows',
-            element: <Agentflows />
+            element: (
+                <RequireAuth permission={'agentflows:view'}>
+                    <Agentflows />
+                </RequireAuth>
+            )
         },
         {
             path: '/executions',
-            element: <Executions />
+            element: (
+                <RequireAuth permission={'executions:view'}>
+                    <Executions />
+                </RequireAuth>
+            )
         },
         {
             path: '/marketplaces',
-            element: <Marketplaces />
+            element: (
+                <RequireAuth permission={'templates:marketplace,templates:custom'}>
+                    <Marketplaces />
+                </RequireAuth>
+            )
         },
         {
             path: '/apikey',
-            element: <APIKey />
+            element: (
+                <RequireAuth permission={'apikeys:view'}>
+                    <APIKey />
+                </RequireAuth>
+            )
         },
         {
             path: '/tools',
-            element: <Tools />
+            element: (
+                <RequireAuth permission={'tools:view'}>
+                    <Tools />
+                </RequireAuth>
+            )
         },
         {
             path: '/assistants',
-            element: <Assistants />
+            element: (
+                <RequireAuth permission={'assistants:view'}>
+                    <Assistants />
+                </RequireAuth>
+            )
         },
         {
             path: '/assistants/custom',
-            element: <CustomAssistantLayout />
+            element: (
+                <RequireAuth permission={'assistants:view'}>
+                    <CustomAssistantLayout />
+                </RequireAuth>
+            )
         },
         {
             path: '/assistants/custom/:id',
-            element: <CustomAssistantConfigurePreview />
+            element: (
+                <RequireAuth permission={'assistants:view'}>
+                    <CustomAssistantConfigurePreview />
+                </RequireAuth>
+            )
         },
         {
             path: '/assistants/openai',
-            element: <OpenAIAssistantLayout />
+            element: (
+                <RequireAuth permission={'assistants:view'}>
+                    <OpenAIAssistantLayout />
+                </RequireAuth>
+            )
         },
         {
             path: '/credentials',
-            element: <Credentials />
+            element: (
+                <RequireAuth permission={'credentials:view'}>
+                    <Credentials />
+                </RequireAuth>
+            )
         },
         {
             path: '/variables',
-            element: <Variables />
+            element: (
+                <RequireAuth permission={'variables:view'}>
+                    <Variables />
+                </RequireAuth>
+            )
         },
         {
             path: '/document-stores',
-            element: <Documents />
+            element: (
+                <RequireAuth permission={'documentStores:view'}>
+                    <Documents />
+                </RequireAuth>
+            )
         },
         {
             path: '/document-stores/:storeId',
-            element: <DocumentStoreDetail />
+            element: (
+                <RequireAuth permission={'documentStores:view'}>
+                    <DocumentStoreDetail />
+                </RequireAuth>
+            )
         },
         {
             path: '/document-stores/chunks/:storeId/:fileId',
-            element: <ShowStoredChunks />
+            element: (
+                <RequireAuth permission={'documentStores:view'}>
+                    <ShowStoredChunks />
+                </RequireAuth>
+            )
         },
         {
             path: '/document-stores/:storeId/:name',
-            element: <LoaderConfigPreviewChunks />
+            element: (
+                <RequireAuth permission={'documentStores:view'}>
+                    <LoaderConfigPreviewChunks />
+                </RequireAuth>
+            )
         },
         {
             path: '/document-stores/vector/:storeId',
-            element: <VectorStoreConfigure />
+            element: (
+                <RequireAuth permission={'documentStores:view'}>
+                    <VectorStoreConfigure />
+                </RequireAuth>
+            )
         },
         {
             path: '/document-stores/vector/:storeId/:docId',
-            element: <VectorStoreConfigure />
+            element: (
+                <RequireAuth permission={'documentStores:view'}>
+                    <VectorStoreConfigure />
+                </RequireAuth>
+            )
         },
         {
             path: '/document-stores/query/:storeId',
-            element: <VectorStoreQuery />
+            element: (
+                <RequireAuth permission={'documentStores:view'}>
+                    <VectorStoreQuery />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/datasets',
+            element: (
+                <RequireAuth permission={'datasets:view'} display={'feat:datasets'}>
+                    <EvalDatasets />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/dataset_rows/:id',
+            element: (
+                <RequireAuth permission={'datasets:view'} display={'feat:datasets'}>
+                    <EvalDatasetRows />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/evaluations',
+            element: (
+                <RequireAuth permission={'evaluations:view'} display={'feat:evaluations'}>
+                    <EvalEvaluation />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/evaluation_results/:id',
+            element: (
+                <RequireAuth permission={'evaluations:view'} display={'feat:evaluations'}>
+                    <EvaluationResult />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/evaluators',
+            element: (
+                <RequireAuth permission={'evaluators:view'} display={'feat:evaluators'}>
+                    <Evaluators />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/logs',
+            element: (
+                <RequireAuth permission={'logs:view'} display={'feat:logs'}>
+                    <Logs />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/files',
+            element: (
+                <RequireAuth display={'feat:files'}>
+                    <Files />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/account',
+            element: (
+                <RequireAuth display={'feat:account'}>
+                    <Account />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/users',
+            element: (
+                <RequireAuth permission={'users:manage'} display={'feat:users'}>
+                    <UsersPage />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/user-profile',
+            element: <UserProfile />
+        },
+        {
+            path: '/roles',
+            element: (
+                <RequireAuth permission={'roles:manage'} display={'feat:roles'}>
+                    <RolesPage />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/login-activity',
+            element: (
+                <RequireAuth permission={'loginActivity:view'} display={'feat:login-activity'}>
+                    <LoginActivityPage />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/workspaces',
+            element: (
+                <RequireAuth permission={'workspace:view'} display={'feat:workspaces'}>
+                    <Workspaces />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/workspace-users/:id',
+            element: (
+                <RequireAuth permission={'workspace:view'} display={'feat:workspaces'}>
+                    <WorkspaceDetails />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/sso-config',
+            element: (
+                <RequireAuth permission={'sso:manage'} display={'feat:sso-config'}>
+                    <SSOConfig />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/sso-success',
+            element: <SSOSuccess />
         }
     ]
 }

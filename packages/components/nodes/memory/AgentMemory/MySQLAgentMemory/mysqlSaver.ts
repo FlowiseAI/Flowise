@@ -242,7 +242,7 @@ export class MySQLSaver extends BaseCheckpointSaver implements MemoryMethods {
         }
 
         if (returnBaseMessages) {
-            return await mapChatMessageToBaseMessage(chatMessage)
+            return await mapChatMessageToBaseMessage(chatMessage, this.config.orgId)
         }
 
         let returnIMessages: IMessage[] = []

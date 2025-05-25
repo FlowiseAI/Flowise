@@ -26,4 +26,7 @@ export class Assistant implements IAssistant {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Column({ nullable: true, type: 'text' })
+    workspaceId?: string
 }

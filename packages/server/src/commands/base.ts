@@ -12,16 +12,12 @@ enum EXIT_CODE {
 
 export abstract class BaseCommand extends Command {
     static flags = {
-        FLOWISE_USERNAME: Flags.string(),
-        FLOWISE_PASSWORD: Flags.string(),
         FLOWISE_FILE_SIZE_LIMIT: Flags.string(),
         PORT: Flags.string(),
         CORS_ORIGINS: Flags.string(),
         IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         BLOB_STORAGE_PATH: Flags.string(),
-        APIKEY_STORAGE_TYPE: Flags.string(),
-        APIKEY_PATH: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
@@ -59,6 +55,7 @@ export abstract class BaseCommand extends Command {
         SECRETKEY_AWS_ACCESS_KEY: Flags.string(),
         SECRETKEY_AWS_SECRET_KEY: Flags.string(),
         SECRETKEY_AWS_REGION: Flags.string(),
+        SECRETKEY_AWS_NAME: Flags.string(),
         DISABLED_NODES: Flags.string(),
         MODE: Flags.string(),
         WORKER_CONCURRENCY: Flags.string(),
@@ -131,14 +128,6 @@ export abstract class BaseCommand extends Command {
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
         if (flags.SHOW_COMMUNITY_NODES) process.env.SHOW_COMMUNITY_NODES = flags.SHOW_COMMUNITY_NODES
         if (flags.DISABLED_NODES) process.env.DISABLED_NODES = flags.DISABLED_NODES
-
-        // Authorization
-        if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
-        if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
-        if (flags.APIKEY_STORAGE_TYPE) process.env.APIKEY_STORAGE_TYPE = flags.APIKEY_STORAGE_TYPE
-        if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
-
-        // API Configuration
         if (flags.FLOWISE_FILE_SIZE_LIMIT) process.env.FLOWISE_FILE_SIZE_LIMIT = flags.FLOWISE_FILE_SIZE_LIMIT
 
         // Credentials
@@ -148,6 +137,7 @@ export abstract class BaseCommand extends Command {
         if (flags.SECRETKEY_AWS_ACCESS_KEY) process.env.SECRETKEY_AWS_ACCESS_KEY = flags.SECRETKEY_AWS_ACCESS_KEY
         if (flags.SECRETKEY_AWS_SECRET_KEY) process.env.SECRETKEY_AWS_SECRET_KEY = flags.SECRETKEY_AWS_SECRET_KEY
         if (flags.SECRETKEY_AWS_REGION) process.env.SECRETKEY_AWS_REGION = flags.SECRETKEY_AWS_REGION
+        if (flags.SECRETKEY_AWS_NAME) process.env.SECRETKEY_AWS_NAME = flags.SECRETKEY_AWS_NAME
 
         // Logs
         if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH

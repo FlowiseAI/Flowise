@@ -982,6 +982,18 @@ export const kFormatter = (num) => {
     return item ? (num / item.value).toFixed(1).replace(regexp, '').concat(item.symbol) : '0'
 }
 
+export const redirectWhenUnauthorized = ({ error, redirectTo }) => {
+    if (error === 'unauthorized') {
+        window.location.href = redirectTo
+    } else if (error === 'subscription_canceled') {
+        window.location.href = `${redirectTo}?error=${error}`
+    }
+}
+
+export const truncateString = (str, maxLength) => {
+    return str.length > maxLength ? `${str.slice(0, maxLength - 3)}...` : str
+}
+
 const toCamelCase = (str) => {
     return str
         .split(' ') // Split by space to process each word

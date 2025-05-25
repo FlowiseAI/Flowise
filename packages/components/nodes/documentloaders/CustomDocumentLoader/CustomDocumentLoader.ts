@@ -72,7 +72,7 @@ class CustomDocumentLoader_DocumentLoaders implements INode {
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
 
-        const variables = await getVars(appDataSource, databaseEntities, nodeData)
+        const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
         const flow = {
             chatflowId: options.chatflowid,
             sessionId: options.sessionId,

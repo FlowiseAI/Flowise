@@ -144,6 +144,7 @@ class File_DocumentLoaders implements INode {
             } else {
                 files = [fileName]
             }
+            const orgId = options.orgId
             const chatflowid = options.chatflowid
 
             // specific to createAttachment to get files from chatId
@@ -151,14 +152,14 @@ class File_DocumentLoaders implements INode {
             if (retrieveAttachmentChatId) {
                 for (const file of files) {
                     if (!file) continue
-                    const fileData = await getFileFromStorage(file, chatflowid, options.chatId)
+                    const fileData = await getFileFromStorage(file, orgId, chatflowid, options.chatId)
                     const blob = new Blob([fileData])
                     fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
                 }
             } else {
                 for (const file of files) {
                     if (!file) continue
-                    const fileData = await getFileFromStorage(file, chatflowid)
+                    const fileData = await getFileFromStorage(file, orgId, chatflowid)
                     const blob = new Blob([fileData])
                     fileBlobs.push({ blob, ext: file.split('.').pop() || '' })
                 }

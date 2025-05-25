@@ -30,7 +30,7 @@ const ErrorBoundary = ({ error }) => {
                         <pre style={{ margin: 0, overflowWrap: 'break-word', whiteSpace: 'pre-wrap', textAlign: 'center' }}>
                             <code>{`Status: ${error.response.status}`}</code>
                             <br />
-                            <code>{error.response.data.message}</code>
+                            <code>{error.response?.data?.message}</code>
                         </pre>
                     </Box>
                 </Card>
