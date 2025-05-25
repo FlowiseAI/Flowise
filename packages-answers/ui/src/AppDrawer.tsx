@@ -1,5 +1,6 @@
 'use client'
-import React, { useState } from 'react'
+import type React from 'react'
+import { useState } from 'react'
 import NextLink from 'next/link'
 import { styled } from '@mui/material/styles'
 import Avatar from '@mui/material/Avatar'
@@ -15,7 +16,7 @@ import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import Collapse from '@mui/material/Collapse'
-import { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
+import type { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { usePathname } from 'next/navigation'
 import { Menu, MenuItem, Tooltip } from '@mui/material'
@@ -34,7 +35,6 @@ import { useHelpChatContext } from './HelpChatContext' // Import the context
 import { ExportImportMenuItems } from './components/ExportImportComponent'
 import { useSubscriptionDialog } from './SubscriptionDialogContext'
 
-import dynamic from 'next/dynamic'
 import ChatDrawer from './ChatDrawer'
 import StarIcon from '@mui/icons-material/Star'
 
@@ -88,6 +88,7 @@ interface AppDrawerProps {
             picture?: string
             email?: string
             org_name?: string
+            subscription?: unknown
         }
     }
     flagsmithState: unknown
@@ -102,7 +103,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
     const pathname = usePathname()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
-    const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores', 'billing']
+    const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'documentstores', 'apikey', 'credentials', 'billing', 'apps']
     const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin', 'apps']
 
     const filterMenuItems = (items: MenuConfig[]) => {
@@ -359,7 +360,6 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                             </Collapse>
                         </Box>
                     ))}
-
 
                     {!user?.subscription && (
                         <ListItem disablePadding>

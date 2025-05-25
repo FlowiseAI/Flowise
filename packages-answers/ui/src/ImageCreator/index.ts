@@ -1,1 +1,1 @@
-export { default } from './ImageCreator.Server'
+export { default } from './ImageCreator.Client'

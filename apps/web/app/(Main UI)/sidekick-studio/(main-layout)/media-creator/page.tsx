@@ -1,8 +1,14 @@
 import React from 'react'
-import ImageCreator from '@ui/ImageCreator'
+import dynamic from 'next/dynamic'
+
+const View = dynamic(() => import('@ui/ImageCreator'), { ssr: false })
 
 const Page = () => {
-    return <ImageCreator />
+    return (
+        <>
+            <View />
+        </>
+    )
 }
 
 export default Page
