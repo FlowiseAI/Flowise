@@ -5,10 +5,33 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
+import {
+    Avatar,
+    Box,
+    ButtonBase,
+    Typography,
+    Stack,
+    TextField,
+    Button,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    Tabs,
+    Tab,
+    DialogActions
+} from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
+import {
+    IconSettings,
+    IconChevronLeft,
+    IconDeviceFloppy,
+    IconPencil,
+    IconCheck,
+    IconX,
+    IconCode,
+    IconPlayerPlay
+} from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
@@ -19,6 +42,7 @@ import ChatflowConfigurationDialog from '@/ui-component/dialog/ChatflowConfigura
 import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -64,6 +88,15 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
+
+    const [runDialogOpen, setRunDialogOpen] = useState(false)
+    const [activeTab, setActiveTab] = useState(0)
+    const [runResult, setRunResult] = useState({
+        input: {},
+        output: {},
+        details: {},
+        trace: []
+    })
 
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
@@ -218,6 +251,40 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         handleSaveFlow(flowName)
     }
 
+    const handleRunClick = () => {
+        setRunResult({
+            input: {
+                a: 1,
+                'sys.files': [],
+                'sys.user_id': '40f573af-ea4b-4f5d-ab82-71bf4d212d49',
+                'sys.app_id': 'cfc0f4c2-bf1f-4352-9866-12cb93e23388',
+                'sys.workflow_id': '57b216f9-0d99-4aee-9761-b9e2ab681713'
+            },
+            output: {},
+            details: {
+                status: 'SUCCESS',
+                executor: 'Dify',
+                startTime: '2025-05-26 04:26',
+                runTime: '0.070s',
+                totalTokens: '0 Tokens',
+                steps: 2
+            },
+            trace: [
+                {
+                    node: '开始',
+                    time: '31.299 ms',
+                    status: 'success'
+                },
+                {
+                    node: '结束',
+                    time: '51.209 ms',
+                    status: 'success'
+                }
+            ]
+        })
+        setRunDialogOpen(true)
+    }
+
     useEffect(() => {
         if (updateChatflowApi.data) {
             setFlowName(updateChatflowApi.data.name)
@@ -243,96 +310,49 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     return (
         <>
-            <Stack flexDirection='row' justifyContent='space-between' sx={{ width: '100%' }}>
-                <Stack flexDirection='row' sx={{ width: '100%', maxWidth: '50%' }}>
-                    <Box>
-                        <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
-                            <Avatar
-                                variant='rounded'
-                                sx={{
-                                    ...theme.typography.commonAvatar,
-                                    ...theme.typography.mediumAvatar,
-                                    transition: 'all .2s ease-in-out',
-                                    background: theme.palette.secondary.light,
-                                    color: theme.palette.secondary.dark,
-                                    '&:hover': {
-                                        background: theme.palette.secondary.dark,
-                                        color: theme.palette.secondary.light
-                                    }
-                                }}
-                                color='inherit'
-                                onClick={() => {
-                                    if (window.history.state && window.history.state.idx > 0) {
-                                        navigate(-1)
-                                    } else {
-                                        navigate('/', { replace: true })
-                                    }
-                                }}
-                            >
-                                <IconChevronLeft stroke={1.5} size='1.3rem' />
-                            </Avatar>
-                        </ButtonBase>
-                    </Box>
-                    <Box sx={{ width: '100%' }}>
-                        {!isEditingFlowName ? (
-                            <Stack flexDirection='row'>
-                                <Typography
-                                    sx={{
-                                        fontSize: '1.5rem',
-                                        fontWeight: 600,
-                                        ml: 2,
-                                        textOverflow: 'ellipsis',
-                                        overflow: 'hidden',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {canvas.isDirty && <strong style={{ color: theme.palette.orange.main }}>*</strong>} {flowName}
-                                </Typography>
-                                {chatflow?.id && (
-                                    <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
-                                        <Avatar
-                                            variant='rounded'
-                                            sx={{
-                                                ...theme.typography.commonAvatar,
-                                                ...theme.typography.mediumAvatar,
-                                                transition: 'all .2s ease-in-out',
-                                                ml: 1,
-                                                background: theme.palette.secondary.light,
-                                                color: theme.palette.secondary.dark,
-                                                '&:hover': {
-                                                    background: theme.palette.secondary.dark,
-                                                    color: theme.palette.secondary.light
-                                                }
-                                            }}
-                                            color='inherit'
-                                            onClick={() => setEditingFlowName(true)}
-                                        >
-                                            <IconPencil stroke={1.5} size='1.3rem' />
-                                        </Avatar>
-                                    </ButtonBase>
-                                )}
-                            </Stack>
-                        ) : (
-                            <Stack flexDirection='row' sx={{ width: '100%' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <ButtonBase title='Back' sx={{ borderRadius: '50%' }}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.secondary.light,
+                                color: theme.palette.secondary.dark,
+                                '&:hover': {
+                                    background: theme.palette.secondary.dark,
+                                    color: theme.palette.secondary.light
+                                }
+                            }}
+                            color='inherit'
+                            onClick={() =>
+                                isAgentflowV2
+                                    ? navigate('/v2/agentflows')
+                                    : isAgentCanvas
+                                    ? navigate('/agentflows')
+                                    : navigate('/chatflows')
+                            }
+                        >
+                            <IconChevronLeft stroke={1.5} size='1.3rem' />
+                        </Avatar>
+                    </ButtonBase>
+                    <Stack direction='row' alignItems='center'>
+                        {isEditingFlowName ? (
+                            <Stack direction='row' alignItems='center' spacing={1}>
                                 <TextField
-                                    //eslint-disable-next-line jsx-a11y/no-autofocus
-                                    autoFocus
                                     size='small'
                                     inputRef={flowNameRef}
-                                    sx={{
-                                        width: '100%',
-                                        ml: 2
-                                    }}
                                     defaultValue={flowName}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
-                                            submitFlowName()
-                                        } else if (e.key === 'Escape') {
                                             setEditingFlowName(false)
+                                            submitFlowName()
                                         }
                                     }}
                                 />
-                                <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title='Save' sx={{ borderRadius: '50%' }}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -341,14 +361,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                             transition: 'all .2s ease-in-out',
                                             background: theme.palette.success.light,
                                             color: theme.palette.success.dark,
-                                            ml: 1,
                                             '&:hover': {
                                                 background: theme.palette.success.dark,
                                                 color: theme.palette.success.light
                                             }
                                         }}
                                         color='inherit'
-                                        onClick={submitFlowName}
+                                        onClick={() => {
+                                            setEditingFlowName(false)
+                                            submitFlowName()
+                                        }}
                                     >
                                         <IconCheck stroke={1.5} size='1.3rem' />
                                     </Avatar>
@@ -362,7 +384,6 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                             transition: 'all .2s ease-in-out',
                                             background: theme.palette.error.light,
                                             color: theme.palette.error.dark,
-                                            ml: 1,
                                             '&:hover': {
                                                 background: theme.palette.error.dark,
                                                 color: theme.palette.error.light
@@ -375,44 +396,86 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                     </Avatar>
                                 </ButtonBase>
                             </Stack>
+                        ) : (
+                            <Stack direction='row' alignItems='center' spacing={1}>
+                                <Typography
+                                    variant='h3'
+                                    sx={{
+                                        fontSize: '1.5rem',
+                                        fontWeight: 400,
+                                        marginRight: '10px'
+                                    }}
+                                >
+                                    {flowName}
+                                </Typography>
+                                <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
+                                    <Avatar
+                                        variant='rounded'
+                                        sx={{
+                                            ...theme.typography.commonAvatar,
+                                            ...theme.typography.mediumAvatar,
+                                            transition: 'all .2s ease-in-out',
+                                            background: theme.palette.primary.light,
+                                            color: theme.palette.primary.dark,
+                                            '&:hover': {
+                                                background: theme.palette.primary.dark,
+                                                color: theme.palette.primary.light
+                                            }
+                                        }}
+                                        color='inherit'
+                                        onClick={() => setEditingFlowName(true)}
+                                    >
+                                        <IconPencil stroke={1.5} size='1.3rem' />
+                                    </Avatar>
+                                </ButtonBase>
+                            </Stack>
                         )}
-                    </Box>
-                </Stack>
-                <Box>
-                    {chatflow?.id && (
-                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
-                            <Avatar
-                                variant='rounded'
-                                sx={{
-                                    ...theme.typography.commonAvatar,
-                                    ...theme.typography.mediumAvatar,
-                                    transition: 'all .2s ease-in-out',
-                                    background: theme.palette.canvasHeader.deployLight,
-                                    color: theme.palette.canvasHeader.deployDark,
-                                    '&:hover': {
-                                        background: theme.palette.canvasHeader.deployDark,
-                                        color: theme.palette.canvasHeader.deployLight
-                                    }
-                                }}
-                                color='inherit'
-                                onClick={onAPIDialogClick}
-                            >
-                                <IconCode stroke={1.5} size='1.3rem' />
-                            </Avatar>
-                        </ButtonBase>
-                    )}
-                    <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+                    </Stack>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                    <StyledButton
+                        variant='contained'
+                        startIcon={<IconPlayerPlay />}
+                        sx={{
+                            height: 37,
+                            borderRadius: 2
+                        }}
+                        onClick={handleRunClick}
+                    >
+                        运行
+                    </StyledButton>
+                    <ButtonBase title='API Code' sx={{ borderRadius: '50%', mr: 2 }}>
                         <Avatar
                             variant='rounded'
                             sx={{
                                 ...theme.typography.commonAvatar,
                                 ...theme.typography.mediumAvatar,
                                 transition: 'all .2s ease-in-out',
-                                background: theme.palette.canvasHeader.saveLight,
-                                color: theme.palette.canvasHeader.saveDark,
+                                background: theme.palette.primary.light,
+                                color: theme.palette.primary.dark,
                                 '&:hover': {
-                                    background: theme.palette.canvasHeader.saveDark,
-                                    color: theme.palette.canvasHeader.saveLight
+                                    background: theme.palette.primary.dark,
+                                    color: theme.palette.primary.light
+                                }
+                            }}
+                            color='inherit'
+                            onClick={() => setAPIDialogOpen(true)}
+                        >
+                            <IconCode stroke={1.5} size='1.3rem' />
+                        </Avatar>
+                    </ButtonBase>
+                    <ButtonBase title='Save' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: theme.palette.primary.light,
+                                color: theme.palette.primary.dark,
+                                '&:hover': {
+                                    background: theme.palette.primary.dark,
+                                    color: theme.palette.primary.light
                                 }
                             }}
                             color='inherit'
@@ -428,11 +491,11 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 ...theme.typography.commonAvatar,
                                 ...theme.typography.mediumAvatar,
                                 transition: 'all .2s ease-in-out',
-                                background: theme.palette.canvasHeader.settingsLight,
-                                color: theme.palette.canvasHeader.settingsDark,
+                                background: theme.palette.primary.light,
+                                color: theme.palette.primary.dark,
                                 '&:hover': {
-                                    background: theme.palette.canvasHeader.settingsDark,
-                                    color: theme.palette.canvasHeader.settingsLight
+                                    background: theme.palette.primary.dark,
+                                    color: theme.palette.primary.light
                                 }
                             }}
                             onClick={() => setSettingsOpen(!isSettingsOpen)}
@@ -441,7 +504,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         </Avatar>
                     </ButtonBase>
                 </Box>
-            </Stack>
+            </Box>
             <Settings
                 chatflow={chatflow}
                 isSettingsOpen={isSettingsOpen}
@@ -487,6 +550,136 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                 onCancel={() => setChatflowConfigurationDialogOpen(false)}
                 isAgentCanvas={isAgentCanvas}
             />
+
+            <Dialog
+                open={runDialogOpen}
+                onClose={() => setRunDialogOpen(false)}
+                fullWidth
+                maxWidth='md'
+                aria-labelledby='run-dialog-title'
+                aria-describedby='run-dialog-description'
+            >
+                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant='h3'>Test Run#7</Typography>
+                    <IconX style={{ cursor: 'pointer' }} onClick={() => setRunDialogOpen(false)} />
+                </DialogTitle>
+                <DialogContent>
+                    <Tabs
+                        value={activeTab}
+                        onChange={(e, newValue) => setActiveTab(newValue)}
+                        sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
+                    >
+                        <Tab label='输入' />
+                        <Tab label='结果' />
+                        <Tab label='详情' />
+                        <Tab label='追踪' />
+                    </Tabs>
+
+                    {activeTab === 0 && (
+                        <Box>
+                            <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(runResult.input, null, 2)}</pre>
+                        </Box>
+                    )}
+
+                    {activeTab === 1 && (
+                        <Box>
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    bgcolor: '#f0f9f4',
+                                    borderRadius: 1,
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    mb: 2
+                                }}
+                            >
+                                <Typography>状态: SUCCESS</Typography>
+                                <Typography>运行时间: {runResult.details.runTime}</Typography>
+                                <Typography>总 TOKEN 数: {runResult.details.totalTokens}</Typography>
+                            </Box>
+                        </Box>
+                    )}
+
+                    {activeTab === 2 && (
+                        <Box>
+                            <Stack spacing={2}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography>状态</Typography>
+                                    <Typography>{runResult.details.status}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography>执行人</Typography>
+                                    <Typography>{runResult.details.executor}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography>开始时间</Typography>
+                                    <Typography>{runResult.details.startTime}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography>运行时间</Typography>
+                                    <Typography>{runResult.details.runTime}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography>总 token 数</Typography>
+                                    <Typography>{runResult.details.totalTokens}</Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography>运行步数</Typography>
+                                    <Typography>{runResult.details.steps}</Typography>
+                                </Box>
+                            </Stack>
+                        </Box>
+                    )}
+
+                    {activeTab === 3 && (
+                        <Box>
+                            <Stack spacing={2}>
+                                {runResult.trace.map((step, index) => (
+                                    <Box
+                                        key={index}
+                                        sx={{
+                                            p: 2,
+                                            bgcolor: '#f5f5f5',
+                                            borderRadius: 1,
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <Typography>{step.node}</Typography>
+                                        <Typography>{step.time}</Typography>
+                                        <Box
+                                            sx={{
+                                                width: 20,
+                                                height: 20,
+                                                borderRadius: '50%',
+                                                bgcolor: step.status === 'success' ? '#4caf50' : '#f44336'
+                                            }}
+                                        />
+                                    </Box>
+                                ))}
+                            </Stack>
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ p: 2.5 }}>
+                    <StyledButton
+                        variant='contained'
+                        fullWidth
+                        onClick={() => {}}
+                        sx={{
+                            height: 37,
+                            borderRadius: 2,
+                            bgcolor: theme.palette.primary.main,
+                            '&:hover': {
+                                bgcolor: theme.palette.primary.dark
+                            }
+                        }}
+                    >
+                        开始运行
+                    </StyledButton>
+                </DialogActions>
+            </Dialog>
         </>
     )
 }
