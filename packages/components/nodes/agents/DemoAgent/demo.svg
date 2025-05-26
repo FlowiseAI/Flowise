@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="#4CAF50" x="2" y="2" width="20" height="20" rx="2"/>
+        <text x="12" y="16" font-family="Arial" font-size="14" fill="white" text-anchor="middle">D</text>
+    </g>
+</svg> 
