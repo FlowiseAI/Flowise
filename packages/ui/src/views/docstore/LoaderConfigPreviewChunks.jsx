@@ -120,21 +120,27 @@ const LoaderConfigPreviewChunks = () => {
 
     const checkMandatoryFields = () => {
         let canSubmit = true
+        const missingFields = []
         const inputParams = (selectedDocumentLoader.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
         for (const inputParam of inputParams) {
             if (!inputParam.optional && (!selectedDocumentLoader.inputs[inputParam.name] || !selectedDocumentLoader.credential)) {
-                if (inputParam.type === 'credential' && !selectedDocumentLoader.credential) {
+                if (
+                    inputParam.type === 'credential' &&
+                    !selectedDocumentLoader.credential &&
+                    !selectedDocumentLoader.inputs['FLOWISE_CREDENTIAL_ID']
+                ) {
                     canSubmit = false
-                    break
+                    missingFields.push(inputParam.label || inputParam.name)
                 } else if (inputParam.type !== 'credential' && !selectedDocumentLoader.inputs[inputParam.name]) {
                     canSubmit = false
-                    break
+                    missingFields.push(inputParam.label || inputParam.name)
                 }
             }
         }
         if (!canSubmit) {
+            const fieldsList = missingFields.join(', ')
             enqueueSnackbar({
-                message: 'Please fill in all mandatory fields.',
+                message: `Please fill in the following mandatory fields: ${fieldsList}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'warning',
