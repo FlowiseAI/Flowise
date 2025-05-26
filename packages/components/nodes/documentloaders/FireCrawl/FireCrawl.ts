@@ -159,7 +159,6 @@ class FirecrawlApp {
                 prompt: params.extractorOptions.extractionPrompt
             }
         }
-        console.log('SCRAPE validParams', validParams)
 
         try {
             const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/scrape', validParams, headers)
@@ -258,8 +257,6 @@ class FirecrawlApp {
         if (Object.keys(scrapeOptions).length > 2) {
             validParams.scrapeOptions = scrapeOptions
         }
-
-        console.log('CRAWL validParams', validParams)
 
         try {
             const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/crawl', validParams, headers)
@@ -795,8 +792,6 @@ class FireCrawl_DocumentLoaders implements INode {
                 onlyMainContent: true
             }
         }
-
-        console.log('input', input)
 
         const loader = new FireCrawlLoader(input)
         let docs = []
