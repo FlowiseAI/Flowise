@@ -220,14 +220,14 @@ class HTTP_Agentflow implements INode {
             // Add credentials if provided
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             if (credentialData && Object.keys(credentialData).length !== 0) {
-                const basicAuthUsername = getCredentialParam('username', credentialData, nodeData)
-                const basicAuthPassword = getCredentialParam('password', credentialData, nodeData)
+                const basicAuthUsername = getCredentialParam('basicAuthUsername', credentialData, nodeData)
+                const basicAuthPassword = getCredentialParam('basicAuthPassword', credentialData, nodeData)
                 const bearerToken = getCredentialParam('token', credentialData, nodeData)
                 const apiKeyName = getCredentialParam('key', credentialData, nodeData)
                 const apiKeyValue = getCredentialParam('value', credentialData, nodeData)
 
                 // Determine which type of auth to use based on available credentials
-                if (basicAuthUsername && basicAuthPassword) {
+                if (basicAuthUsername || basicAuthPassword) {
                     // Basic Auth
                     const auth = Buffer.from(`${basicAuthUsername}:${basicAuthPassword}`).toString('base64')
                     requestHeaders['Authorization'] = `Basic ${auth}`

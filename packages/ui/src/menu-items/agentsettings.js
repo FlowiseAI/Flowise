@@ -50,42 +50,48 @@ const agent_settings = {
             title: 'Configuration',
             type: 'item',
             url: '',
-            icon: icons.IconAdjustmentsHorizontal
+            icon: icons.IconAdjustmentsHorizontal,
+            permission: 'agentflows:config'
         },
         {
             id: 'saveAsTemplate',
             title: 'Save As Template',
             type: 'item',
             url: '',
-            icon: icons.IconTemplate
+            icon: icons.IconTemplate,
+            permission: 'templates:flowexport'
         },
         {
             id: 'duplicateChatflow',
             title: 'Duplicate Agents',
             type: 'item',
             url: '',
-            icon: icons.IconCopy
+            icon: icons.IconCopy,
+            permission: 'agentflows:duplicate'
         },
         {
             id: 'loadChatflow',
             title: 'Load Agents',
             type: 'item',
             url: '',
-            icon: icons.IconFileUpload
+            icon: icons.IconFileUpload,
+            permission: 'agentflows:import'
         },
         {
             id: 'exportChatflow',
             title: 'Export Agents',
             type: 'item',
             url: '',
-            icon: icons.IconFileExport
+            icon: icons.IconFileExport,
+            permission: 'agentflows:export'
         },
         {
             id: 'deleteChatflow',
             title: 'Delete Agents',
             type: 'item',
             url: '',
-            icon: icons.IconTrash
+            icon: icons.IconTrash,
+            permission: 'agentflows:delete'
         }
     ]
 }

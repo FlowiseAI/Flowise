@@ -213,7 +213,6 @@ class Chroma_VectorStores implements INode {
         const chromaApiKey = getCredentialParam('chromaApiKey', credentialData, nodeData)
         const chromaTenant = getCredentialParam('chromaTenant', credentialData, nodeData)
         const chromaDatabase = getCredentialParam('chromaDatabase', credentialData, nodeData)
-
         const chromaMetadataFilter = nodeData.inputs?.chromaMetadataFilter
 
         const obj: {

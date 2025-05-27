@@ -100,13 +100,14 @@ const initalizeUpstashRedis = async (nodeData: INodeData, options: ICommonObject
         sessionTTL,
         client
     })
-
+    const orgId = options.orgId as string
     const memory = new BufferMemoryExtended({
         memoryKey: memoryKey ?? 'chat_history',
         chatHistory: redisChatMessageHistory,
         sessionId,
         sessionTTL,
-        redisClient: client
+        redisClient: client,
+        orgId
     })
 
     return memory
@@ -115,11 +116,13 @@ const initalizeUpstashRedis = async (nodeData: INodeData, options: ICommonObject
 interface BufferMemoryExtendedInput {
     redisClient: Redis
     sessionId: string
+    orgId: string
     sessionTTL?: number
 }
 
 class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
     sessionId = ''
+    orgId = ''
     redisClient: Redis
     sessionTTL?: number
 
@@ -128,6 +131,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         this.sessionId = fields.sessionId
         this.redisClient = fields.redisClient
         this.sessionTTL = fields.sessionTTL
+        this.orgId = fields.orgId
     }
 
     async getChatMessages(
@@ -143,7 +147,7 @@ class BufferMemoryExtended extends FlowiseMemory implements MemoryMethods {
         const previousMessages = orderedMessages.filter((x): x is StoredMessage => x.type !== undefined && x.data.content !== undefined)
         const baseMessages = previousMessages.map(mapStoredMessageToChatMessage)
         if (prependMessages?.length) {
-            baseMessages.unshift(...(await mapChatMessageToBaseMessage(prependMessages)))
+            baseMessages.unshift(...(await mapChatMessageToBaseMessage(prependMessages, this.orgId)))
         }
         return returnBaseMessages ? baseMessages : convertBaseMessagetoIMessage(baseMessages)
     }
