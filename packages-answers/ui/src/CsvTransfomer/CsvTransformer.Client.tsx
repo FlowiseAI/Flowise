@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { useUser } from '@auth0/nextjs-auth0/client'
 // @ts-ignore
 import chatflowsApi from '@/api/chatflows'
-import { User } from 'types'
 // material-ui
 import { Container, Box, Stack, Tabs, Tab, Typography } from '@mui/material'
 
@@ -26,7 +26,8 @@ function TabPanel(props: any) {
     )
 }
 
-const CsvTransformer = ({ user }: { user: User }) => {
+const CsvTransformer = () => {
+    const { user, isLoading } = useUser()
     const [chatflows, setChatflows] = useState([])
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -44,6 +45,21 @@ const CsvTransformer = ({ user }: { user: User }) => {
         }
         fetchChatflows()
     }, [])
+
+    if (isLoading) {
+        return (
+            <Container>
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
+                    <Typography variant='h2' component='h1'>
+                        AI CSV Transformer
+                    </Typography>
+                    <Typography>Loading...</Typography>
+                </Stack>
+            </Container>
+        )
+    }
+
+    console.log('CSV Transformer user:', user)
 
     return (
         <Container>

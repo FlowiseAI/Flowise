@@ -1,9 +1,25 @@
 'use client'
 import Link from 'next/link'
+import { useUser } from '@auth0/nextjs-auth0/client'
 // material-ui
 import { Container, Stack, Typography, Card, CardContent, CardActions, Button } from '@mui/material'
 
 const Apps = () => {
+    const { user, isLoading } = useUser()
+
+    if (isLoading) {
+        return (
+            <Container>
+                <Stack flexDirection='column' sx={{ gap: 3 }}>
+                    <Typography variant='h2' component='h1'>
+                        Apps
+                    </Typography>
+                    <Typography>Loading...</Typography>
+                </Stack>
+            </Container>
+        )
+    }
+
     return (
         <Container>
             <Stack flexDirection='column' sx={{ gap: 3 }}>

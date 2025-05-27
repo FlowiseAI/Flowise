@@ -1,1 +1,1 @@
-export { default } from './CsvTransformer.Server'
+export { default } from './CsvTransformer.Client'

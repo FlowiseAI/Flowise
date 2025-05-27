@@ -1,8 +1,14 @@
 import React from 'react'
-import CsvTransformer from '@ui/CsvTransfomer'
+import dynamic from 'next/dynamic'
+
+const View = dynamic(() => import('@ui/CsvTransfomer'), { ssr: false })
 
 const Page = () => {
-    return <CsvTransformer />
+    return (
+        <>
+            <View />
+        </>
+    )
 }
 
 export default Page

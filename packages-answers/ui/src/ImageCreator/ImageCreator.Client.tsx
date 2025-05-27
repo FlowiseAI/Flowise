@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useUser } from '@auth0/nextjs-auth0/client'
 import {
     Stack,
     TextField,
@@ -23,7 +24,6 @@ import {
     CircularProgress
 } from '@mui/material'
 import { IconDownload, IconX, IconFileDescription, IconPhoto, IconHistory } from '@tabler/icons-react'
-import type { User } from 'types'
 
 interface Message {
     id: string
@@ -56,7 +56,8 @@ interface ArchiveResponse {
     }
 }
 
-const ImageCreator = ({ user, accessToken }: { user: User; accessToken?: string }) => {
+const ImageCreator = () => {
+    const { user, isLoading } = useUser()
     const [prompt, setPrompt] = useState('')
     const [n, setN] = useState(1)
     const [size, setSize] = useState('1024x1024')
@@ -80,6 +81,31 @@ const ImageCreator = ({ user, accessToken }: { user: User; accessToken?: string 
         totalPages: 0,
         hasMore: false
     })
+
+    if (isLoading) {
+        return (
+            <Stack spacing={3} sx={{ p: 3 }}>
+                <Typography variant='h2' component='h1'>
+                    Image Creator
+                </Typography>
+                <Typography>Loading...</Typography>
+            </Stack>
+        )
+    }
+
+    if (!user) {
+        console.log('ImageCreator: No user object')
+        return (
+            <Stack spacing={3} sx={{ p: 3 }}>
+                <Typography variant='h2' component='h1'>
+                    Image Creator
+                </Typography>
+                <Typography>Please log in to use the Image Creator.</Typography>
+            </Stack>
+        )
+    }
+
+    console.log('ImageCreator user loaded:', user)
 
     // Get available options based on selected model
     const getSizeOptions = (modelType?: string) => {
@@ -187,14 +213,15 @@ const ImageCreator = ({ user, accessToken }: { user: User; accessToken?: string 
         setArchiveLoading(true)
         try {
             console.log('Fetching archived images for user:', {
-                userId: user.id,
-                organizationId: user.org_id,
+                userId: user.id || user.sub,
+                organizationId: user.organizationId || user.org_id,
                 email: user.email,
                 orgName: user.org_name
             })
 
             // Follow the same pattern as chat flow - make authenticated request directly to backend
             const flowiseDomain = user.chatflowDomain || process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'
+            const accessToken = sessionStorage.getItem('access_token')
 
             if (!accessToken) {
                 console.error('No access token available for authenticated request')
@@ -276,9 +303,9 @@ const ImageCreator = ({ user, accessToken }: { user: User; accessToken?: string 
                 size,
                 quality,
                 response_format: 'b64_json',
-                organizationId: user.organizationId || user.org_id,
-                userId: user.id,
-                userEmail: user.email
+                organizationId: user.organizationId || user.org_id || undefined,
+                userId: user.id || user.sub || undefined,
+                userEmail: user.email || undefined
             }
 
             // Add model-specific parameters
@@ -293,6 +320,8 @@ const ImageCreator = ({ user, accessToken }: { user: User; accessToken?: string 
 
             // Follow the same pattern as chat flow - make authenticated request directly to backend
             const flowiseDomain = user.chatflowDomain || process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'
+            const accessToken = sessionStorage.getItem('access_token')
+            console.log('ImageCreator API call:', { flowiseDomain, accessToken: !!accessToken, requestBody })
 
             if (!accessToken) {
                 console.error('No access token available for authenticated request')
@@ -415,7 +444,7 @@ const ImageCreator = ({ user, accessToken }: { user: User; accessToken?: string 
 
             <Box sx={{ p: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
                 <Typography variant='body2' color='text.secondary' gutterBottom>
-                    📁 Organization: <strong>{user.org_name}</strong> | 👤 User: <strong>{user.email}</strong>
+                    📁 Organization: <strong>{user.org_name || 'Unknown'}</strong> | 👤 User: <strong>{user.email || 'Unknown'}</strong>
                 </Typography>
                 <Typography variant='body2' color='text.secondary'>
                     Images and metadata will be stored in your organization&apos;s secure folder structure.
