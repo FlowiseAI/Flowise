@@ -153,8 +153,12 @@ class Redis_VectorStores implements INode {
                         keepAlive:
                             process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
                                 ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                                : undefined // milliseconds
-                    }
+                                : undefined
+                    },
+                    pingInterval:
+                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                            : undefined // Add Redis protocol-level pings
                 })
                 await redisClient.connect()
 
@@ -226,8 +230,12 @@ class Redis_VectorStores implements INode {
                 keepAlive:
                     process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
                         ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
-                        : undefined // milliseconds
-            }
+                        : undefined
+            },
+            pingInterval:
+                process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                    ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                    : undefined // Add Redis protocol-level pings
         })
 
         const storeConfig: RedisVectorStoreConfig = {
