@@ -34,6 +34,7 @@ import { useHelpChatContext } from './HelpChatContext' // Import the context
 import { ExportImportMenuItems } from './components/ExportImportComponent'
 import { useSubscriptionDialog } from './SubscriptionDialogContext'
 
+import dynamic from 'next/dynamic'
 import ChatDrawer from './ChatDrawer'
 import StarIcon from '@mui/icons-material/Star'
 
@@ -348,7 +349,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                             href={subItem.link || '#'}
                                             selected={pathname === subItem.link}
                                         >
-                                            <Tooltip title={drawerOpen ? null : subItem.text} placement='right'>
+                                            <Tooltip title={drawerOpen ? null : subItem.text}>
                                                 <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
                                             </Tooltip>
                                             <Typography>{subItem.text}</Typography>
@@ -358,6 +359,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                             </Collapse>
                         </Box>
                     ))}
+
 
                     {!user?.subscription && (
                         <ListItem disablePadding>

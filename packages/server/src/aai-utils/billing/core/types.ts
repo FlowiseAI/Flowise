@@ -71,10 +71,18 @@ export interface Invoice {
 }
 
 export interface BillingProvider {
+    createCustomer(params: CreateCustomerParams): Promise<BillingCustomer>
+    attachPaymentMethod(params: AttachPaymentMethodParams): Promise<PaymentMethod>
     createCheckoutSession(params: CreateCheckoutSessionParams): Promise<CheckoutSession>
-    syncLangfuseUsageToStripe(
-        traceId?: string
-    ): Promise<{ processedTraces: string[]; failedTraces: Array<{ traceId: string; error: string }> }>
+    createBillingPortalSession(params: CreateBillingPortalSessionParams): Promise<BillingPortalSession>
+    updateSubscription(params: UpdateSubscriptionParams): Promise<Subscription>
+    cancelSubscription(subscriptionId: string): Promise<Subscription>
+    getUpcomingInvoice(params: GetUpcomingInvoiceParams): Promise<Invoice>
+
+    syncUsageToStripe(traceId?: string): Promise<{ processedTraces: string[]; failedTraces: Array<{ traceId: string; error: string }> }>
+    listSubscriptions(params: Stripe.SubscriptionListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.Subscription>>>
+    getSubscriptionWithUsage(subscriptionId: string): Promise<SubscriptionWithUsage>
+    handleWebhook(payload: any, signature: string): Promise<any>
 }
 
 export interface CreateCustomerParams {
