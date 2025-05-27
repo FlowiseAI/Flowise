@@ -292,9 +292,9 @@ export const FlowListTable = ({
                                                     {(images[row.id]?.length || 0) + (icons[row.id]?.length || 0) > 5 && (
                                                         <MoreItemsTooltip
                                                             images={[
-                                                                ...(images[row.id]?.slice(3) || []),
+                                                                ...(images[row.id]?.slice(5) || []),
                                                                 ...(
-                                                                    icons[row.id]?.slice(Math.max(0, 3 - (images[row.id]?.length || 0))) ||
+                                                                    icons[row.id]?.slice(Math.max(0, 5 - (images[row.id]?.length || 0))) ||
                                                                     []
                                                                 ).map((ic) => ({ label: ic.name }))
                                                             ]}

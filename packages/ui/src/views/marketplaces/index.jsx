@@ -375,6 +375,7 @@ const Marketplace = () => {
                         images[flows[i].id] = []
                         icons[flows[i].id] = []
                         for (let j = 0; j < nodes.length; j += 1) {
+                            if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
                             const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
                             if (foundIcon) {
                                 icons[flows[i].id].push(foundIcon)
