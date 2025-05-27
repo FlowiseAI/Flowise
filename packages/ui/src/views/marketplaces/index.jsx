@@ -375,13 +375,17 @@ const Marketplace = () => {
                         images[flows[i].id] = []
                         icons[flows[i].id] = []
                         for (let j = 0; j < nodes.length; j += 1) {
+                            if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
                             const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
                             if (foundIcon) {
                                 icons[flows[i].id].push(foundIcon)
                             } else {
                                 const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                                if (!images[flows[i].id].includes(imageSrc)) {
-                                    images[flows[i].id].push(imageSrc)
+                                if (!images[flows[i].id].some((img) => img.imageSrc === imageSrc)) {
+                                    images[flows[i].id].push({
+                                        imageSrc,
+                                        label: nodes[j].data.name
+                                    })
                                 }
                             }
                         }

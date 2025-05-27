@@ -117,13 +117,17 @@ const Agentflows = () => {
                     images[agentflows[i].id] = []
                     icons[agentflows[i].id] = []
                     for (let j = 0; j < nodes.length; j += 1) {
+                        if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
                         const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
                         if (foundIcon) {
                             icons[agentflows[i].id].push(foundIcon)
                         } else {
                             const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                            if (!images[agentflows[i].id].includes(imageSrc)) {
-                                images[agentflows[i].id].push(imageSrc)
+                            if (!images[agentflows[i].id].some((img) => img.imageSrc === imageSrc)) {
+                                images[agentflows[i].id].push({
+                                    imageSrc,
+                                    label: nodes[j].data.label
+                                })
                             }
                         }
                     }
