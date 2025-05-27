@@ -98,7 +98,7 @@ class GETApiChain_Chains implements INode {
         const ansPrompt = nodeData.inputs?.ansPrompt as string
 
         const chain = await getAPIChain(apiDocs, model, headers, urlPrompt, ansPrompt)
-        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const loggerHandler = new ConsoleCallbackHandler(options.logger, options?.orgId)
         const callbacks = await additionalCallbacks(nodeData, options)
         const shouldStreamResponse = options.shouldStreamResponse
         const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
@@ -129,7 +129,7 @@ const getAPIChain = async (documents: string, llm: BaseLanguageModel, headers: s
     const chain = APIChain.fromLLMAndAPIDocs(llm, documents, {
         apiUrlPrompt,
         apiResponsePrompt,
-        verbose: process.env.DEBUG === 'true',
+        verbose: process.env.DEBUG === 'true' ? true : false,
         headers: typeof headers === 'object' ? headers : headers ? JSON.parse(headers) : {}
     })
     return chain

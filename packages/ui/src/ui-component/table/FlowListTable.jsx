@@ -23,6 +23,7 @@ import {
 import { tableCellClasses } from '@mui/material/TableCell'
 import FlowListMenu from '../button/FlowListMenu'
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -47,7 +48,21 @@ const getLocalStorageKeyName = (name, isAgentCanvas) => {
     return (isAgentCanvas ? 'agentcanvas' : 'chatflowcanvas') + '_' + name
 }
 
-export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filterFunction, updateFlowsApi, setError, isAgentCanvas }) => {
+export const FlowListTable = ({
+    data,
+    images = {},
+    icons = {},
+    isLoading,
+    filterFunction,
+    updateFlowsApi,
+    setError,
+    isAgentCanvas,
+    isAgentflowV2
+}) => {
+    const { hasPermission } = useAuth()
+    const isActionsAvailable = isAgentCanvas
+        ? hasPermission('agentflows:update,agentflows:delete,agentflows:config,agentflows:domains,templates:flowexport,agentflows:export')
+        : hasPermission('chatflows:update,chatflows:delete,chatflows:config,chatflows:domains,templates:flowexport,chatflows:export')
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -118,9 +133,11 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                     Last Modified Date
                                 </TableSortLabel>
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '10%' }} key='4'>
-                                Actions
-                            </StyledTableCell>
+                            {isActionsAvailable && (
+                                <StyledTableCell style={{ width: '10%' }} key='4'>
+                                    Actions
+                                </StyledTableCell>
+                            )}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -139,9 +156,11 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
+                                    {isActionsAvailable && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                 </StyledTableRow>
                                 <StyledTableRow>
                                     <StyledTableCell>
@@ -156,9 +175,11 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
+                                    {isActionsAvailable && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                 </StyledTableRow>
                             </>
                         ) : (
@@ -278,21 +299,24 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                         <StyledTableCell key='3'>
                                             {moment(row.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
                                         </StyledTableCell>
-                                        <StyledTableCell key='4'>
-                                            <Stack
-                                                direction={{ xs: 'column', sm: 'row' }}
-                                                spacing={1}
-                                                justifyContent='center'
-                                                alignItems='center'
-                                            >
-                                                <FlowListMenu
-                                                    isAgentCanvas={isAgentCanvas}
-                                                    chatflow={row}
-                                                    setError={setError}
-                                                    updateFlowsApi={updateFlowsApi}
-                                                />
-                                            </Stack>
-                                        </StyledTableCell>
+                                        {isActionsAvailable && (
+                                            <StyledTableCell key='4'>
+                                                <Stack
+                                                    direction={{ xs: 'column', sm: 'row' }}
+                                                    spacing={1}
+                                                    justifyContent='center'
+                                                    alignItems='center'
+                                                >
+                                                    <FlowListMenu
+                                                        isAgentCanvas={isAgentCanvas}
+                                                        isAgentflowV2={isAgentflowV2}
+                                                        chatflow={row}
+                                                        setError={setError}
+                                                        updateFlowsApi={updateFlowsApi}
+                                                    />
+                                                </Stack>
+                                            </StyledTableCell>
+                                        )}
                                     </StyledTableRow>
                                 ))}
                             </>
@@ -312,5 +336,6 @@ FlowListTable.propTypes = {
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object,
     setError: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isAgentflowV2: PropTypes.bool
 }

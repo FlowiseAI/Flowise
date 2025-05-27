@@ -20,6 +20,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ExpandedChunkDialog from './ExpandedChunkDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
+import { PermissionButton } from '@/ui-component/button/RBACButtons'
 
 // API
 import documentsApi from '@/api/documentstore'
@@ -27,6 +28,7 @@ import nodesApi from '@/api/nodes'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useAuth } from '@/hooks/useAuth'
 import useNotifier from '@/utils/useNotifier'
 import { baseURL } from '@/store/constant'
 import { initNode } from '@/utils/genericHelper'
@@ -57,6 +59,7 @@ const VectorStoreQuery = () => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const inputRef = useRef(null)
+    const { hasAssignedWorkspace } = useAuth()
 
     useNotifier()
 
@@ -227,6 +230,10 @@ const VectorStoreQuery = () => {
 
     useEffect(() => {
         if (getSpecificDocumentStoreApi.data) {
+            if (!hasAssignedWorkspace(getSpecificDocumentStoreApi.data.workspaceId)) {
+                navigate('/unauthorized')
+                return
+            }
             setDocumentStore(getSpecificDocumentStoreApi.data)
             const vectorStoreConfig = getSpecificDocumentStoreApi.data.vectorStoreConfig
             if (vectorStoreConfig) {
@@ -249,7 +256,8 @@ const VectorStoreQuery = () => {
                         description='Retrieval Playground - Test your vector store retrieval settings'
                         onBack={() => navigate(-1)}
                     >
-                        <Button
+                        <PermissionButton
+                            permissionId={'documentStores:upsert-config'}
                             variant='outlined'
                             color='secondary'
                             sx={{ borderRadius: 2, height: '100%' }}
@@ -257,7 +265,7 @@ const VectorStoreQuery = () => {
                             onClick={saveConfig}
                         >
                             Save Config
-                        </Button>
+                        </PermissionButton>
                     </ViewHeader>
                     <div style={{ width: '100%' }}></div>
                     <div>

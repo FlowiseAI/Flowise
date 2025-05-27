@@ -30,7 +30,7 @@ const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunct
 
 const getAllCustomTemplates = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await marketplacesService.getAllCustomTemplates()
+        const apiResponse = await marketplacesService.getAllCustomTemplates(req.user?.activeWorkspaceId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -45,7 +45,9 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
                 `Error: marketplacesService.saveCustomTemplate - body not provided!`
             )
         }
-        const apiResponse = await marketplacesService.saveCustomTemplate(req.body)
+        const body = req.body
+        body.workspaceId = req.user?.activeWorkspaceId
+        const apiResponse = await marketplacesService.saveCustomTemplate(body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

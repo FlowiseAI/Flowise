@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 
 // material-ui
 import { Box, Typography, IconButton, Button } from '@mui/material'
-import { IconRefresh, IconArrowsMaximize, IconAlertTriangle } from '@tabler/icons-react'
+import { IconArrowsMaximize, IconAlertTriangle, IconRefresh } from '@tabler/icons-react'
 
 // project import
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
