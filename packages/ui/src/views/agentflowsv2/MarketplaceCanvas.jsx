@@ -4,6 +4,7 @@ import 'reactflow/dist/style.css'
 import '@/views/canvas/index.css'
 
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 // material-ui
 import { Toolbar, Box, AppBar } from '@mui/material'
@@ -18,6 +19,9 @@ import StickyNote from './StickyNote'
 import EditNodeDialog from '@/views/agentflowsv2/EditNodeDialog'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
+// icons
+import { IconMagnetFilled, IconMagnetOff } from '@tabler/icons-react'
+
 const nodeTypes = { agentFlow: AgentFlowNode, stickyNote: StickyNote, iteration: IterationNode }
 const edgeTypes = { agentFlow: AgentFlowEdge }
 
@@ -26,6 +30,7 @@ const edgeTypes = { agentFlow: AgentFlowEdge }
 const MarketplaceCanvasV2 = () => {
     const theme = useTheme()
     const navigate = useNavigate()
+    const customization = useSelector((state) => state.customization)
 
     const { state } = useLocation()
     const { flowData, name } = state
@@ -36,6 +41,7 @@ const MarketplaceCanvasV2 = () => {
     const [edges, setEdges, onEdgesChange] = useEdgesState()
     const [editNodeDialogOpen, setEditNodeDialogOpen] = useState(false)
     const [editNodeDialogProps, setEditNodeDialogProps] = useState({})
+    const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
 
     const reactFlowWrapper = useRef(null)
     const { setReactFlowInstance } = useContext(flowContext)
@@ -108,15 +114,29 @@ const MarketplaceCanvasV2 = () => {
                                 edgeTypes={edgeTypes}
                                 fitView
                                 minZoom={0.1}
+                                snapGrid={[25, 25]}
+                                snapToGrid={isSnappingEnabled}
                             >
                                 <Controls
+                                    className={customization.isDarkMode ? 'dark-mode-controls' : ''}
                                     style={{
                                         display: 'flex',
                                         flexDirection: 'row',
                                         left: '50%',
                                         transform: 'translate(-50%, -50%)'
                                     }}
-                                />
+                                >
+                                    <button
+                                        className='react-flow__controls-button react-flow__controls-interactive'
+                                        onClick={() => {
+                                            setIsSnappingEnabled(!isSnappingEnabled)
+                                        }}
+                                        title='toggle snapping'
+                                        aria-label='toggle snapping'
+                                    >
+                                        {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
+                                    </button>
+                                </Controls>
                                 <Background color='#aaa' gap={16} />
                                 <EditNodeDialog
                                     show={editNodeDialogOpen}

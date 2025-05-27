@@ -42,7 +42,7 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
 // icons
-import { IconX, IconRefreshAlert } from '@tabler/icons-react'
+import { IconX, IconRefreshAlert, IconMagnetFilled, IconMagnetOff } from '@tabler/icons-react'
 
 // utils
 import {
@@ -100,6 +100,7 @@ const AgentflowCanvas = () => {
     const [isSyncNodesButtonEnabled, setIsSyncNodesButtonEnabled] = useState(false)
     const [editNodeDialogOpen, setEditNodeDialogOpen] = useState(false)
     const [editNodeDialogProps, setEditNodeDialogProps] = useState({})
+    const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
 
     const reactFlowWrapper = useRef(null)
 
@@ -718,17 +719,30 @@ const AgentflowCanvas = () => {
                                 fitView
                                 deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                                 minZoom={0.5}
+                                snapGrid={[25, 25]}
+                                snapToGrid={isSnappingEnabled}
                                 connectionLineComponent={ConnectionLine}
                             >
                                 <Controls
+                                    className={customization.isDarkMode ? 'dark-mode-controls' : ''}
                                     style={{
                                         display: 'flex',
                                         flexDirection: 'row',
                                         left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        backgroundColor: customization.isDarkMode ? theme.palette.background.default : '#fff'
+                                        transform: 'translate(-50%, -50%)'
                                     }}
-                                />
+                                >
+                                    <button
+                                        className='react-flow__controls-button react-flow__controls-interactive'
+                                        onClick={() => {
+                                            setIsSnappingEnabled(!isSnappingEnabled)
+                                        }}
+                                        title='toggle snapping'
+                                        aria-label='toggle snapping'
+                                    >
+                                        {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
+                                    </button>
+                                </Controls>
                                 <MiniMap
                                     nodeStrokeWidth={3}
                                     nodeColor={customization.isDarkMode ? '#2d2d2d' : '#e2e2e2'}

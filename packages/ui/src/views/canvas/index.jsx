@@ -38,7 +38,7 @@ import useConfirm from '@/hooks/useConfirm'
 import { useAuth } from '@/hooks/useAuth'
 
 // icons
-import { IconX, IconRefreshAlert } from '@tabler/icons-react'
+import { IconX, IconRefreshAlert, IconMagnetFilled, IconMagnetOff } from '@tabler/icons-react'
 
 // utils
 import {
@@ -77,6 +77,7 @@ const Canvas = () => {
     const { confirm } = useConfirm()
 
     const dispatch = useDispatch()
+    const customization = useSelector((state) => state.customization)
     const canvas = useSelector((state) => state.canvas)
     const [canvasDataStore, setCanvasDataStore] = useState(canvas)
     const [chatflow, setChatflow] = useState(null)
@@ -96,6 +97,7 @@ const Canvas = () => {
     const [selectedNode, setSelectedNode] = useState(null)
     const [isUpsertButtonEnabled, setIsUpsertButtonEnabled] = useState(false)
     const [isSyncNodesButtonEnabled, setIsSyncNodesButtonEnabled] = useState(false)
+    const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
 
     const reactFlowWrapper = useRef(null)
 
@@ -596,16 +598,30 @@ const Canvas = () => {
                                 fitView
                                 deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                                 minZoom={0.1}
+                                snapGrid={[25, 25]}
+                                snapToGrid={isSnappingEnabled}
                                 className='chatflow-canvas'
                             >
                                 <Controls
+                                    className={customization.isDarkMode ? 'dark-mode-controls' : ''}
                                     style={{
                                         display: 'flex',
                                         flexDirection: 'row',
                                         left: '50%',
                                         transform: 'translate(-50%, -50%)'
                                     }}
-                                />
+                                >
+                                    <button
+                                        className='react-flow__controls-button react-flow__controls-interactive'
+                                        onClick={() => {
+                                            setIsSnappingEnabled(!isSnappingEnabled)
+                                        }}
+                                        title='toggle snapping'
+                                        aria-label='toggle snapping'
+                                    >
+                                        {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
+                                    </button>
+                                </Controls>
                                 <Background color='#aaa' gap={16} />
                                 <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
                                 {isSyncNodesButtonEnabled && (
