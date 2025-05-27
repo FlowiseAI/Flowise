@@ -1324,6 +1324,24 @@ export const executeAgentFlow = async ({
         }
     }
 
+    // If the state is persistent, get the state from the previous execution
+    const startPersistState = nodes.find((node) => node.data.name === 'startAgentflow')?.data.inputs?.startPersistState
+    if (startPersistState === true && previousExecution) {
+        const previousExecutionData = (JSON.parse(previousExecution.executionData) as IAgentflowExecutedData[]) ?? []
+
+        let previousState = {}
+        if (Array.isArray(previousExecutionData) && previousExecutionData.length) {
+            for (const execData of previousExecutionData.reverse()) {
+                if (execData.data.state) {
+                    previousState = execData.data.state
+                    break
+                }
+            }
+        }
+
+        agentflowRuntime.state = previousState
+    }
+
     // If the start input type is form input, get the form values from the previous execution (form values are persisted in the same session)
     if (startInputType === 'formInput' && previousExecution) {
         const previousExecutionData = (JSON.parse(previousExecution.executionData) as IAgentflowExecutedData[]) ?? []

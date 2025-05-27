@@ -157,7 +157,8 @@ class CustomFunction_Agentflow implements INode {
             chatflowId: options.chatflowid,
             sessionId: options.sessionId,
             chatId: options.chatId,
-            input
+            input,
+            state: newState
         }
 
         let sandbox: any = {

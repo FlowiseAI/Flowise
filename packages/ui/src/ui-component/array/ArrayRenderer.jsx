@@ -54,7 +54,7 @@ export const ArrayRenderer = ({ inputParam, data, disabled }) => {
 
     // Initialize array items and parameters when component mounts or data changes
     useEffect(() => {
-        const initialArrayItems = cloneDeep(data.inputs[inputParam.name]) || []
+        const initialArrayItems = data.inputs[inputParam.name] || []
         setArrayItems(initialArrayItems)
 
         // Calculate initial display parameters for each array item
