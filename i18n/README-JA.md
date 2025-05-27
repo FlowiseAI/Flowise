@@ -182,9 +182,9 @@ Flowise は、インスタンスを設定するためのさまざまな環境変
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-[コントリビューティングガイド](CONTRIBUTING.md)を参照してください。質問や問題があれば、[Discord](https://discord.gg/jbaHfsRVBW) までご連絡ください。
+[コントリビューティングガイド](../CONTRIBUTING.md)を参照してください。質問や問題があれば、[Discord](https://discord.gg/jbaHfsRVBW) までご連絡ください。
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 ライセンス
 
-このリポジトリのソースコードは、[Apache License Version 2.0](LICENSE.md)の下で利用可能です。
+このリポジトリのソースコードは、[Apache License Version 2.0](../LICENSE.md)の下で利用可能です。

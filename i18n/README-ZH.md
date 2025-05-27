@@ -182,8 +182,8 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-参见[贡献指南](CONTRIBUTING.md)。如果您有任何问题或问题，请在[Discord](https://discord.gg/jbaHfsRVBW)上与我们联系。
+参见[贡献指南](CONTRIBUTING-ZH.md)。如果您有任何问题或问题，请在[Discord](https://discord.gg/jbaHfsRVBW)上与我们联系。
 
 ## 📄 许可证
 
-此代码库中的源代码在[Apache License Version 2.0 许可证](LICENSE.md)下提供。
+此代码库中的源代码在[Apache License Version 2.0 许可证](../LICENSE.md)下提供。

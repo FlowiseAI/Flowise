@@ -182,9 +182,9 @@ Flowise는 인스턴스 구성을 위한 다양한 환경 변수를 지원합니
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-[contributing guide](CONTRIBUTING.md)를 살펴보세요. 디스코드 [Discord](https://discord.gg/jbaHfsRVBW) 채널에서도 이슈나 질의응답을 진행하실 수 있습니다.
+[contributing guide](../CONTRIBUTING.md)를 살펴보세요. 디스코드 [Discord](https://discord.gg/jbaHfsRVBW) 채널에서도 이슈나 질의응답을 진행하실 수 있습니다.
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 라이센스
 
-본 리포지토리의 소스코드는 [Apache License Version 2.0](LICENSE.md) 라이센스가 적용됩니다.
+본 리포지토리의 소스코드는 [Apache License Version 2.0](../LICENSE.md) 라이센스가 적용됩니다.

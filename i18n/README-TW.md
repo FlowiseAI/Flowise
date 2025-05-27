@@ -194,9 +194,9 @@ Flowise 支持不同的環境變量來配置您的實例。您可以在 `package
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-請參閱 [貢獻指南](CONTRIBUTING.md)。如果您有任何問題或問題，請通過 [Discord](https://discord.gg/jbaHfsRVBW) 與我們聯繫。
+請參閱 [貢獻指南](../CONTRIBUTING.md)。如果您有任何問題或問題，請通過 [Discord](https://discord.gg/jbaHfsRVBW) 與我們聯繫。
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 許可證
 
-此存儲庫中的源代碼根據 [Apache 許可證版本 2.0](LICENSE.md) 提供。
+此存儲庫中的源代碼根據 [Apache 許可證版本 2.0](../LICENSE.md) 提供。
