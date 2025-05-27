@@ -18,7 +18,7 @@ export const convertSpeechToText = async (upload: IFileUpload, speechToTextConfi
     if (speechToTextConfig) {
         const credentialId = speechToTextConfig.credentialId as string
         const credentialData = await getCredentialData(credentialId ?? '', options)
-        const audio_file = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
+        const audio_file = await getFileFromStorage(upload.name, options.orgId, options.chatflowid, options.chatId)
 
         switch (speechToTextConfig.name) {
             case SpeechToTextType.OPENAI_WHISPER: {

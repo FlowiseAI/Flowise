@@ -23,4 +23,7 @@ export class Variable implements IVariable {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Column({ nullable: true, type: 'text' })
+    workspaceId?: string
 }
