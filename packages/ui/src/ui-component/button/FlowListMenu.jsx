@@ -74,7 +74,7 @@ const StyledMenu = styled((props) => (
     }
 }))
 
-export default function FlowListMenu({ chatflow, isAgentCanvas, setError, updateFlowsApi }) {
+export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, setError, updateFlowsApi }) {
     const { confirm } = useConfirm()
     const dispatch = useDispatch()
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -269,7 +269,13 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
         setAnchorEl(null)
         try {
             localStorage.setItem('duplicatedFlowData', chatflow.flowData)
-            window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
+            if (isAgentflowV2) {
+                window.open(`${uiBaseURL}/v2/agentcanvas`, '_blank')
+            } else if (isAgentCanvas) {
+                window.open(`${uiBaseURL}/agentcanvas`, '_blank')
+            } else {
+                window.open(`${uiBaseURL}/canvas`, '_blank')
+            }
         } catch (e) {
             console.error(e)
         }
@@ -446,6 +452,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, setError, update
 FlowListMenu.propTypes = {
     chatflow: PropTypes.object,
     isAgentCanvas: PropTypes.bool,
+    isAgentflowV2: PropTypes.bool,
     setError: PropTypes.func,
     updateFlowsApi: PropTypes.object
 }
