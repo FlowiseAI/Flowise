@@ -48,7 +48,17 @@ const getLocalStorageKeyName = (name, isAgentCanvas) => {
     return (isAgentCanvas ? 'agentcanvas' : 'chatflowcanvas') + '_' + name
 }
 
-export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filterFunction, updateFlowsApi, setError, isAgentCanvas }) => {
+export const FlowListTable = ({
+    data,
+    images = {},
+    icons = {},
+    isLoading,
+    filterFunction,
+    updateFlowsApi,
+    setError,
+    isAgentCanvas,
+    isAgentflowV2
+}) => {
     const { hasPermission } = useAuth()
     const isActionsAvailable = isAgentCanvas
         ? hasPermission('agentflows:update,agentflows:delete,agentflows:config,agentflows:domains,templates:flowexport,agentflows:export')
@@ -299,6 +309,7 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                                 >
                                                     <FlowListMenu
                                                         isAgentCanvas={isAgentCanvas}
+                                                        isAgentflowV2={isAgentflowV2}
                                                         chatflow={row}
                                                         setError={setError}
                                                         updateFlowsApi={updateFlowsApi}
@@ -325,5 +336,6 @@ FlowListTable.propTypes = {
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object,
     setError: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isAgentflowV2: PropTypes.bool
 }

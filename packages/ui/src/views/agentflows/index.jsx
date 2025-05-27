@@ -249,6 +249,7 @@ const Agentflows = () => {
                     ) : (
                         <FlowListTable
                             isAgentCanvas={true}
+                            isAgentflowV2={agentflowVersion === 'v2'}
                             data={getAllAgentflows.data}
                             images={images}
                             icons={icons}
