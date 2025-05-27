@@ -12,7 +12,7 @@
             "data": {
                 "id": "startAgentflow_0",
                 "label": "Start",
-                "version": 1,
+                "version": 1.1,
                 "name": "startAgentflow",
                 "type": "Start",
                 "color": "#7EE787",
@@ -159,6 +159,15 @@
                             }
                         ],
                         "id": "startAgentflow_0-input-startState-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Persist State",
+                        "name": "startPersistState",
+                        "type": "boolean",
+                        "description": "Persist the state in the same session",
+                        "optional": true,
+                        "id": "startAgentflow_0-input-startPersistState-boolean",
                         "display": true
                     }
                 ],

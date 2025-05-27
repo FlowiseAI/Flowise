@@ -5,7 +5,8 @@ import { ExecutionState } from '../../Interface'
 const getExecutionById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const executionId = req.params.id
-        const execution = await executionsService.getExecutionById(executionId)
+        const workspaceId = req.user?.activeWorkspaceId
+        const execution = await executionsService.getExecutionById(executionId, workspaceId)
         return res.json(execution)
     } catch (error) {
         next(error)
@@ -25,7 +26,8 @@ const getPublicExecutionById = async (req: Request, res: Response, next: NextFun
 const updateExecution = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const executionId = req.params.id
-        const execution = await executionsService.updateExecution(executionId, req.body)
+        const workspaceId = req.user?.activeWorkspaceId
+        const execution = await executionsService.updateExecution(executionId, req.body, workspaceId)
         return res.json(execution)
     } catch (error) {
         next(error)
@@ -36,6 +38,9 @@ const getAllExecutions = async (req: Request, res: Response, next: NextFunction)
     try {
         // Extract all possible filters from query params
         const filters: any = {}
+
+        // Add workspace ID filter
+        filters.workspaceId = req.user?.activeWorkspaceId
 
         // ID filter
         if (req.query.id) filters.id = req.query.id as string
@@ -86,6 +91,7 @@ const getAllExecutions = async (req: Request, res: Response, next: NextFunction)
 const deleteExecutions = async (req: Request, res: Response, next: NextFunction) => {
     try {
         let executionIds: string[] = []
+        const workspaceId = req.user?.activeWorkspaceId
 
         // Check if we're deleting a single execution from URL param
         if (req.params.id) {
@@ -98,7 +104,7 @@ const deleteExecutions = async (req: Request, res: Response, next: NextFunction)
             return res.status(400).json({ success: false, message: 'No execution IDs provided' })
         }
 
-        const result = await executionsService.deleteExecutions(executionIds)
+        const result = await executionsService.deleteExecutions(executionIds, workspaceId)
         return res.json(result)
     } catch (error) {
         next(error)

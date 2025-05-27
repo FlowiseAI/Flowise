@@ -66,7 +66,7 @@ class MultiPromptChain_Chains implements INode {
             promptNames,
             promptDescriptions,
             promptTemplates,
-            llmChainOpts: { verbose: process.env.DEBUG === 'true' }
+            llmChainOpts: { verbose: process.env.DEBUG === 'true' ? true : false }
         })
 
         return chain
@@ -95,7 +95,7 @@ class MultiPromptChain_Chains implements INode {
         }
         const obj = { input }
 
-        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const loggerHandler = new ConsoleCallbackHandler(options.logger, options?.orgId)
         const callbacks = await additionalCallbacks(nodeData, options)
 
         if (shouldStreamResponse) {
