@@ -1,19 +1,9 @@
 import {
     BillingProvider,
-    CreateCustomerParams,
-    AttachPaymentMethodParams,
     CreateCheckoutSessionParams,
-    CreateBillingPortalSessionParams,
-    UpdateSubscriptionParams,
     GetUpcomingInvoiceParams,
-    BillingCustomer,
-    PaymentMethod,
     CheckoutSession,
-    BillingPortalSession,
-    Subscription,
-    Invoice,
     UsageStats,
-    SubscriptionWithUsage,
     UsageSummary,
     GetUsageEventsParams,
     UsageEventsResponse
@@ -26,13 +16,13 @@ import { MeterEventSummary } from '../stripe/types'
 
 export class BillingService implements BillingProvider {
     public stripeClient: Stripe
-    private paymentProvider: StripeProvider
-    private usageProvider: LangfuseProvider
+    private stripeProvider: StripeProvider
+    private langfuseProvider: LangfuseProvider
 
     constructor() {
-        this.usageProvider = new LangfuseProvider()
+        this.langfuseProvider = new LangfuseProvider()
         try {
-            this.paymentProvider = new StripeProvider()
+            this.stripeProvider = new StripeProvider()
             this.stripeClient = new Stripe(process.env.BILLING_STRIPE_SECRET_KEY! ?? '', {
                 apiVersion: '2025-02-24.acacia'
             })
@@ -41,37 +31,8 @@ export class BillingService implements BillingProvider {
         }
     }
 
-    // Payment and subscription methods delegated to Stripe
-    async listSubscriptions(params: Stripe.SubscriptionListParams): Promise<Stripe.Response<Stripe.ApiList<Stripe.Subscription>>> {
-        return this.paymentProvider.listSubscriptions(params)
-    }
-
-    async createCustomer(params: CreateCustomerParams): Promise<BillingCustomer> {
-        return this.paymentProvider.createCustomer(params)
-    }
-
-    async attachPaymentMethod(params: AttachPaymentMethodParams): Promise<PaymentMethod> {
-        return this.paymentProvider.attachPaymentMethod(params)
-    }
-
     async createCheckoutSession(params: CreateCheckoutSessionParams): Promise<CheckoutSession> {
-        return this.paymentProvider.createCheckoutSession(params)
-    }
-
-    async createBillingPortalSession(params: CreateBillingPortalSessionParams): Promise<BillingPortalSession> {
-        return this.paymentProvider.createBillingPortalSession(params)
-    }
-
-    async updateSubscription(params: UpdateSubscriptionParams): Promise<Subscription> {
-        return this.paymentProvider.updateSubscription(params)
-    }
-
-    async cancelSubscription(subscriptionId: string): Promise<Subscription> {
-        return this.paymentProvider.cancelSubscription(subscriptionId)
-    }
-
-    async getUpcomingInvoice(params: GetUpcomingInvoiceParams): Promise<Invoice> {
-        return this.paymentProvider.getUpcomingInvoice(params)
+        return this.stripeProvider.createCheckoutSession(params)
     }
 
     // Usage tracking methods using Langfuse
@@ -155,7 +116,7 @@ export class BillingService implements BillingProvider {
                     customerId,
                     subscriptionId: subscription?.id
                 }
-                const invoice = await this.paymentProvider.getUpcomingInvoice(invoiceParams)
+                const invoice = await this.stripeProvider.getUpcomingInvoice(invoiceParams)
 
                 // Format the invoice data for the UsageSummary
                 upcomingInvoice = {
@@ -188,88 +149,7 @@ export class BillingService implements BillingProvider {
         }
     }
 
-    async getSubscriptionWithUsage(subscriptionId: string): Promise<SubscriptionWithUsage> {
-        try {
-            log.info('Getting subscription with usage', { subscriptionId })
-            const subscriptions = await this.paymentProvider.listSubscriptions({
-                customer: subscriptionId,
-                status: 'active',
-                limit: 1
-            })
-            const subscription = subscriptions.data[0]
-
-            // If no active subscription found, return a default response
-            if (!subscription) {
-                log.info('No active subscription found', { subscriptionId })
-                return {
-                    id: '',
-                    customerId: subscriptionId || '',
-                    status: 'unpaid',
-                    currentPeriodStart: new Date(),
-                    currentPeriodEnd: new Date(),
-                    cancelAtPeriodEnd: false,
-                    usage: []
-                }
-            }
-
-            // Get usage for current month
-            const now = new Date()
-            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-            const startTime = Math.floor(startOfMonth.getTime() / 1000)
-            const endTime = Math.floor(now.getTime() / 1000)
-
-            // Get meter events directly from Stripe
-            const meters = await this.stripeClient.billing.meters.list()
-            const summariesPromises = meters.data.map((meter) =>
-                this.stripeClient.billing.meters.listEventSummaries(meter.id, {
-                    customer: subscriptionId,
-                    start_time: startTime,
-                    end_time: endTime
-                })
-            )
-
-            const summariesResults = await Promise.all(summariesPromises)
-            const allSummaries = summariesResults.flatMap((result) => result.data)
-
-            // Map summaries to include meter_name
-            const usage = allSummaries.map((summary) => ({
-                ...summary,
-                meter_name: summary.meter === process.env.STRIPE_CREDITS_METER_ID ? 'credits' : 'unknown'
-            }))
-
-            return {
-                id: subscription.id,
-                customerId: subscription.customer as string,
-                status: subscription.status as Subscription['status'],
-                currentPeriodStart: new Date(subscription.current_period_start * 1000),
-                currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-                cancelAtPeriodEnd: subscription.cancel_at_period_end,
-                usage
-            }
-        } catch (error: any) {
-            log.error('Failed to get subscription with usage', {
-                error: error.message,
-                subscriptionId,
-                stack: error.stack
-            })
-            // Return a default response with empty usage array
-            return {
-                id: '',
-                customerId: subscriptionId || '',
-                status: 'unpaid',
-                currentPeriodStart: new Date(),
-                currentPeriodEnd: new Date(),
-                cancelAtPeriodEnd: false,
-                usage: [] // Ensure usage is always present
-            }
-        }
-    }
-
-    async handleWebhook(payload: any, signature: string): Promise<any> {
-        return this.paymentProvider.handleWebhook(payload, signature)
-    }
-
-    async syncUsageToStripe(traceId?: string): Promise<{
+    async syncLangfuseUsageToStripe(traceId?: string): Promise<{
         processedTraces: string[]
         failedTraces: Array<{ traceId: string; error: string }>
         skippedTraces: Array<{ traceId: string; reason: string }>
@@ -285,14 +165,14 @@ export class BillingService implements BillingProvider {
         try {
             // Get usage data from Langfuse
             const langfuseStartTime = Date.now()
-            result = await this.usageProvider.syncUsageToStripe(traceId)
+            result = await this.langfuseProvider.syncUsageToStripe(traceId)
             const langfuseTime = Date.now() - langfuseStartTime
             log.info('Langfuse sync completed', { durationMs: langfuseTime, traceId })
 
             // Sync to Stripe if needed
             if (result.creditsData && result.creditsData.length > 0) {
                 const stripeStartTime = Date.now()
-                const stripeResult = await this.paymentProvider.syncUsageToStripe(result.creditsData)
+                const stripeResult = await this.stripeProvider.syncUsageToStripe(result.creditsData)
                 const stripeTime = Date.now() - stripeStartTime
                 log.info('Stripe sync completed', { durationMs: stripeTime, traceId })
 
@@ -330,10 +210,6 @@ export class BillingService implements BillingProvider {
         }
     }
 
-    async getCustomer(customerId: string): Promise<Stripe.Customer> {
-        return this.stripeClient.customers.retrieve(customerId) as Promise<Stripe.Customer>
-    }
-
     async getActiveSubscription(customerId: string): Promise<Stripe.Subscription | null> {
         try {
             const subscriptions = await this.stripeClient.subscriptions.list({
@@ -348,19 +224,12 @@ export class BillingService implements BillingProvider {
         }
     }
 
-    async getPaymentMethods(customerId: string): Promise<Stripe.Response<Stripe.ApiList<Stripe.PaymentMethod>>> {
-        return this.stripeClient.paymentMethods.list({
-            customer: customerId,
-            type: 'card'
-        })
-    }
-
     /**
      * Get detailed usage events from Langfuse
      */
     async getUsageEvents(params: GetUsageEventsParams): Promise<UsageEventsResponse> {
         try {
-            return this.usageProvider.getUsageEvents(params)
+            return this.langfuseProvider.getUsageEvents(params)
         } catch (error) {
             log.error('Error getting usage events:', { error, customerId: params.customerId })
             throw error

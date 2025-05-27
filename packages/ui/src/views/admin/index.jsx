@@ -29,7 +29,6 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 
 // API
 import plansApi from '@/api/plans'
-import billingApi from '@/api/billing'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -112,17 +111,15 @@ const Admin = () => {
 
     const getCurrentPlan = useApi(plansApi.getCurrentPlan)
     const getHistoricPlans = useApi(plansApi.getHistoricPlans)
-    const getMeterEventSummaries = useApi(billingApi.getMeterEventSummaries)
 
     useEffect(() => {
         getCurrentPlan.request()
         getHistoricPlans.request()
-        getMeterEventSummaries.request()
     }, [])
 
     useEffect(() => {
-        setLoading(getCurrentPlan.loading || getHistoricPlans.loading || getMeterEventSummaries.loading)
-    }, [getCurrentPlan.loading, getHistoricPlans.loading, getMeterEventSummaries.loading])
+        setLoading(getCurrentPlan.loading || getHistoricPlans.loading)
+    }, [getCurrentPlan.loading, getHistoricPlans.loading])
 
     useEffect(() => {
         if (getCurrentPlan.error) {
@@ -144,12 +141,6 @@ const Admin = () => {
             setPlanHistory(getHistoricPlans.data)
         }
     }, [getHistoricPlans.data])
-
-    useEffect(() => {
-        if (getMeterEventSummaries.data) {
-            setMeterEventSummaries(getMeterEventSummaries.data.data || [])
-        }
-    }, [getMeterEventSummaries.data])
 
     const handleTabChange = (event, newValue) => {
         setTabValue(newValue)
