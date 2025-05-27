@@ -724,17 +724,19 @@ const AgentflowCanvas = () => {
                                 connectionLineComponent={ConnectionLine}
                             >
                                 <Controls
+                                    className={customization.isDarkMode ? 'dark-mode-controls' : ''}
                                     style={{
                                         display: 'flex',
                                         flexDirection: 'row',
                                         left: '50%',
-                                        transform: 'translate(-50%, -50%)',
-                                        backgroundColor: customization.isDarkMode ? theme.palette.background.default : '#fff'
+                                        transform: 'translate(-50%, -50%)'
                                     }}
                                 >
                                     <button
                                         className='react-flow__controls-button react-flow__controls-interactive'
-                                        onClick={() => { setIsSnappingEnabled(!isSnappingEnabled) }}
+                                        onClick={() => {
+                                            setIsSnappingEnabled(!isSnappingEnabled)
+                                        }}
                                         title='toggle snapping'
                                         aria-label='toggle snapping'
                                     >

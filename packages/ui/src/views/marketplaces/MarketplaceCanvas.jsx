@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import ReactFlow, { Controls, Background, useNodesState, useEdgesState } from 'reactflow'
 import 'reactflow/dist/style.css'
 import '@/views/canvas/index.css'
 
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 // material-ui
 import { Toolbar, Box, AppBar } from '@mui/material'
@@ -25,10 +26,10 @@ const edgeTypes = { buttonedge: '' }
 const MarketplaceCanvas = () => {
     const theme = useTheme()
     const navigate = useNavigate()
+    const customization = useSelector((state) => state.customization)
 
     const { state } = useLocation()
-    const flowData = state?.flowData || '{}'
-    const name = state?.name || 'Untitled'
+    const { flowData, name } = state
 
     // ==============================|| ReactFlow ||============================== //
 
@@ -95,6 +96,7 @@ const MarketplaceCanvas = () => {
                                 snapToGrid={isSnappingEnabled}
                             >
                                 <Controls
+                                    className={customization.isDarkMode ? 'dark-mode-controls' : ''}
                                     style={{
                                         display: 'flex',
                                         flexDirection: 'row',
@@ -104,7 +106,9 @@ const MarketplaceCanvas = () => {
                                 >
                                     <button
                                         className='react-flow__controls-button react-flow__controls-interactive'
-                                        onClick={() => { setIsSnappingEnabled(!isSnappingEnabled) }}
+                                        onClick={() => {
+                                            setIsSnappingEnabled(!isSnappingEnabled)
+                                        }}
                                         title='toggle snapping'
                                         aria-label='toggle snapping'
                                     >

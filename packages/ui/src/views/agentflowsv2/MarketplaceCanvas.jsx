@@ -4,6 +4,7 @@ import 'reactflow/dist/style.css'
 import '@/views/canvas/index.css'
 
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 // material-ui
 import { Toolbar, Box, AppBar } from '@mui/material'
@@ -29,6 +30,7 @@ const edgeTypes = { agentFlow: AgentFlowEdge }
 const MarketplaceCanvasV2 = () => {
     const theme = useTheme()
     const navigate = useNavigate()
+    const customization = useSelector((state) => state.customization)
 
     const { state } = useLocation()
     const { flowData, name } = state
@@ -116,6 +118,7 @@ const MarketplaceCanvasV2 = () => {
                                 snapToGrid={isSnappingEnabled}
                             >
                                 <Controls
+                                    className={customization.isDarkMode ? 'dark-mode-controls' : ''}
                                     style={{
                                         display: 'flex',
                                         flexDirection: 'row',
@@ -125,7 +128,9 @@ const MarketplaceCanvasV2 = () => {
                                 >
                                     <button
                                         className='react-flow__controls-button react-flow__controls-interactive'
-                                        onClick={() => { setIsSnappingEnabled(!isSnappingEnabled) }}
+                                        onClick={() => {
+                                            setIsSnappingEnabled(!isSnappingEnabled)
+                                        }}
                                         title='toggle snapping'
                                         aria-label='toggle snapping'
                                     >

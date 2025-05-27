@@ -77,6 +77,7 @@ const Canvas = () => {
     const { confirm } = useConfirm()
 
     const dispatch = useDispatch()
+    const customization = useSelector((state) => state.customization)
     const canvas = useSelector((state) => state.canvas)
     const [canvasDataStore, setCanvasDataStore] = useState(canvas)
     const [chatflow, setChatflow] = useState(null)
@@ -602,6 +603,7 @@ const Canvas = () => {
                                 className='chatflow-canvas'
                             >
                                 <Controls
+                                    className={customization.isDarkMode ? 'dark-mode-controls' : ''}
                                     style={{
                                         display: 'flex',
                                         flexDirection: 'row',
@@ -611,7 +613,9 @@ const Canvas = () => {
                                 >
                                     <button
                                         className='react-flow__controls-button react-flow__controls-interactive'
-                                        onClick={() => { setIsSnappingEnabled(!isSnappingEnabled) }}
+                                        onClick={() => {
+                                            setIsSnappingEnabled(!isSnappingEnabled)
+                                        }}
                                         title='toggle snapping'
                                         aria-label='toggle snapping'
                                     >
