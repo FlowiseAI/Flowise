@@ -346,7 +346,7 @@ let serverApp: App | undefined
 export async function start(): Promise<void> {
     serverApp = new App()
 
-    const host = process.env.HOST || '127.0.0.1'
+    const host = process.env.HOST
     const port = parseInt(process.env.PORT || '', 10) || 3000
     const server = http.createServer(serverApp.app)
 
