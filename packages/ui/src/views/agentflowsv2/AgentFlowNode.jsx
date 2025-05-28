@@ -421,23 +421,17 @@ const AgentFlowNode = ({ data }) => {
                                                             return (
                                                                 <Box
                                                                     key={`tool-${configIndex}-${toolIndex}-${propIndex}`}
+                                                                    component='img'
+                                                                    src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                                    alt={toolName}
                                                                     sx={{
-                                                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                        width: 20,
+                                                                        height: 20,
                                                                         borderRadius: '50%',
-                                                                        width: 24,
-                                                                        height: 24,
-                                                                        display: 'flex',
-                                                                        justifyContent: 'center',
-                                                                        alignItems: 'center',
-                                                                        padding: '4px'
+                                                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                        padding: 0.3
                                                                     }}
-                                                                >
-                                                                    <img
-                                                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                                        src={`${baseURL}/api/v1/node-icon/${toolName}`}
-                                                                        alt={toolName}
-                                                                    />
-                                                                </Box>
+                                                                />
                                                             )
                                                         })
                                                 } else {
@@ -447,23 +441,17 @@ const AgentFlowNode = ({ data }) => {
                                                     return [
                                                         <Box
                                                             key={`tool-${configIndex}-${toolIndex}`}
+                                                            component='img'
+                                                            src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                            alt={toolName}
                                                             sx={{
-                                                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                width: 20,
+                                                                height: 20,
                                                                 borderRadius: '50%',
-                                                                width: 24,
-                                                                height: 24,
-                                                                display: 'flex',
-                                                                justifyContent: 'center',
-                                                                alignItems: 'center',
-                                                                padding: '4px'
+                                                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                padding: 0.3
                                                             }}
-                                                        >
-                                                            <img
-                                                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                                src={`${baseURL}/api/v1/node-icon/${toolName}`}
-                                                                alt={toolName}
-                                                            />
-                                                        </Box>
+                                                        />
                                                     ]
                                                 }
                                             })}
