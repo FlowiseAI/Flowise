@@ -14,25 +14,25 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
     {
-        title: 'Low-Code AI Orchestration',
-        description: 'Intuitive drag-and-drop interface for building customized LLM orchestration flows.',
+        title: 'Visual Agent Builder',
+        description: 'Prompt to Agent, Use Drag-and-drop blocks to fine-tune, no code required.',
         icon: '🔧',
         buttonText: 'Learn More',
-        url: '/docs/using-answerai/sidekick-studio/'
+        url: '/docs/sidekick-studio'
     },
     {
-        title: 'AI-Powered Sidekicks',
-        description: 'Create and deploy AI sidekicks to enhance productivity and streamline workflows.',
+        title: 'Sidekick Browser Extension',
+        description: 'Search the web, chat with your AI agent, and more, directly from your browser.',
         icon: '🤖',
         buttonText: 'Explore Sidekicks',
-        url: '/docs/using-answerai/'
+        url: '/docs'
     },
     {
-        title: 'Flexible Knowledge Bases',
-        description: 'Build and manage knowledge bases to provide context for your AI applications.',
+        title: 'Plug-in Ecosystem',
+        description: '50+ ready connectors; swap OpenAI (ChatGPT), Anthropic (Claude), Google (Gemini), and more.',
         icon: '📚',
         buttonText: 'Discover Knowledge Bases',
-        url: '/docs/using-answerai/knowledge-bases/'
+        url: '/docs/sidekick-studio/documents/'
     }
 ]
 
@@ -82,10 +82,6 @@ FullWidthSection.propTypes = {
 export default function HomepageFeatures(): JSX.Element {
     return (
         <section className={styles.features}>
-            <FullWidthSection
-                title='Our Vision'
-                content='AnswerAI envisions a world where artificial intelligence is a democratized, decentralized public utility, empowering all of humanity to thrive in the age of AGI.'
-            />
             <div className='container'>
                 <div className={clsx('row', styles.featureListContainer)}>
                     {FeatureList.map((props, idx) => (
@@ -93,6 +89,7 @@ export default function HomepageFeatures(): JSX.Element {
                     ))}
                 </div>
             </div>
+            <FullWidthSection title='Our Vision' content='Answer Agent AI imagines a world where humans orchestrate—and agents execute.' />
         </section>
     )
 }

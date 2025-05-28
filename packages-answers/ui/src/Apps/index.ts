@@ -1,1 +1,1 @@
-export { default } from './Apps.Server'
+export { default } from './Apps.Client'

@@ -25,7 +25,7 @@ const ChatFeedback = ({ dialogProps }) => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
-    const [chatFeedbackStatus, setChatFeedbackStatus] = useState(false)
+    const [chatFeedbackStatus, setChatFeedbackStatus] = useState(true)
     const [chatbotConfig, setChatbotConfig] = useState({})
 
     const handleChange = (value) => {
@@ -88,9 +88,10 @@ const ChatFeedback = ({ dialogProps }) => {
         if (dialogProps.chatflow && dialogProps.chatflow.chatbotConfig) {
             let chatbotConfig = JSON.parse(dialogProps.chatflow.chatbotConfig)
             setChatbotConfig(chatbotConfig || {})
-            if (chatbotConfig.chatFeedback) {
+            if (chatbotConfig.chatFeedback && chatbotConfig.chatFeedback.status !== undefined) {
                 setChatFeedbackStatus(chatbotConfig.chatFeedback.status)
             }
+            // If chatFeedback is not defined or status is not set, keep the default (true)
         }
 
         return () => {}

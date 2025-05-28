@@ -519,23 +519,55 @@ const config: Config = {
                     position: 'left'
                 },
                 {
-                    to: '/docs/using-answerai/',
-                    label: 'Chat',
-                    position: 'left'
+                    type: 'dropdown',
+                    label: 'Using AnswerAI',
+                    position: 'left',
+                    items: [
+                        {
+                            to: '/docs/browser',
+                            label: 'Browser Extension'
+                        },
+                        {
+                            to: '/docs/chat',
+                            label: 'Chatbot'
+                        },
+                        {
+                            to: '/docs/sidekick-studio',
+                            label: 'Studio'
+                        }
+                    ]
                 },
                 {
-                    to: '/docs/developers',
+                    type: 'dropdown',
                     label: 'Developers',
-                    position: 'left'
+                    position: 'left',
+                    items: [
+                        {
+                            to: '/docs/developers',
+                            label: 'Developer Guide'
+                        },
+                        {
+                            to: '/docs/api',
+                            label: 'API Reference'
+                        },
+                        {
+                            to: '/docs/developers/embed',
+                            label: 'Embed Chatbot'
+                        },
+                        {
+                            to: '/docs/api/prediction',
+                            label: 'Prediction API'
+                        }
+                    ]
                 },
                 {
-                    to: '/docs/api',
-                    label: 'API Reference',
+                    to: '/docs/use-cases',
+                    label: 'Use Cases',
                     position: 'left'
                 },
                 {
                     to: '/docs/community',
-                    label: 'Community',
+                    label: 'Support',
                     position: 'left'
                 },
                 {
@@ -561,21 +593,25 @@ const config: Config = {
                             label: 'Getting Started'
                         },
                         {
-                            to: '/docs/using-answerai/',
-                            label: 'Chat'
+                            to: '/docs/browser',
+                            label: 'Browser Extension'
+                        },
+                        {
+                            to: '/docs/chat',
+                            label: 'Chatbot'
+                        },
+                        {
+                            to: '/docs/sidekick-studio',
+                            label: 'Studio'
                         },
                         {
                             to: '/docs/developers',
                             label: 'Developers'
-                        },
-                        {
-                            to: '/docs/community',
-                            label: 'Community'
                         }
                     ]
                 },
                 {
-                    title: 'Community',
+                    title: 'Support',
                     items: [
                         {
                             label: 'Discord',

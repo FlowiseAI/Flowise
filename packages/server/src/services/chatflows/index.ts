@@ -281,6 +281,25 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
             newChatFlow = chatflowWithoutId
         }
 
+        // Set default chatFeedback to true if chatbotConfig exists or create it if it doesn't
+        if (newChatFlow.chatbotConfig) {
+            try {
+                const config: Record<string, any> = JSON.parse(newChatFlow.chatbotConfig)
+                if (!config.chatFeedback) {
+                    config.chatFeedback = { status: true }
+                } else if (config.chatFeedback.status === undefined) {
+                    config.chatFeedback.status = true
+                }
+                newChatFlow.chatbotConfig = JSON.stringify(config)
+            } catch (e) {
+                // If parsing fails, set a new config
+                console.error(`Error parsing chatbotConfig during save:`, e)
+                newChatFlow.chatbotConfig = JSON.stringify({ chatFeedback: { status: true } })
+            }
+        } else {
+            newChatFlow.chatbotConfig = JSON.stringify({ chatFeedback: { status: true } })
+        }
+
         // Check if the chatflow already exists
         if (newChatFlow.id) {
             const existingChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
@@ -389,6 +408,27 @@ const importChatflows = async (user: IUser, newChatflows: Partial<ChatFlow>[], q
             newChatflow.flowData = JSON.stringify(JSON.parse(flowData))
             newChatflow.userId = user?.id
             newChatflow.organizationId = user?.organizationId
+
+            // Ensure chatFeedback is set to true by default
+            if (newChatflow.chatbotConfig) {
+                try {
+                    const config = JSON.parse(newChatflow.chatbotConfig)
+                    if (!config.chatFeedback) {
+                        config.chatFeedback = { status: true }
+                        newChatflow.chatbotConfig = JSON.stringify(config)
+                    } else if (config.chatFeedback.status === undefined) {
+                        config.chatFeedback.status = true
+                        newChatflow.chatbotConfig = JSON.stringify(config)
+                    }
+                } catch (e) {
+                    // If parsing fails, set a new config
+                    newChatflow.chatbotConfig = JSON.stringify({ chatFeedback: { status: true } })
+                }
+            } else {
+                // If no chatbotConfig, create one with chatFeedback enabled
+                newChatflow.chatbotConfig = JSON.stringify({ chatFeedback: { status: true } })
+            }
+
             return newChatflow
         })
 
@@ -413,28 +453,66 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow, user
         }
 
         // Parse existing chatbotConfig or create a new object if it doesn't exist
-        const existingChatbotConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {}
-
-        // Update chatbotConfig with new displayMode and embeddedUrl if provided
-        if (updateChatFlow.chatbotConfig) {
-            const updatedConfig = JSON.parse(updateChatFlow.chatbotConfig)
-            if (updatedConfig?.displayMode !== undefined) {
-                existingChatbotConfig.displayMode = updatedConfig.displayMode
-            }
-            if (updatedConfig?.embeddedUrl !== undefined) {
-                existingChatbotConfig.embeddedUrl = updatedConfig.embeddedUrl
+        let existingChatbotConfig: Record<string, any> = {}
+        if (chatflow.chatbotConfig) {
+            try {
+                existingChatbotConfig = JSON.parse(chatflow.chatbotConfig)
+            } catch (e) {
+                // If parsing fails, create a new object
+                existingChatbotConfig = {}
+                console.error(`Error parsing chatbotConfig for chatflow ${chatflow.id}:`, e)
             }
         }
 
+        // If updateChatFlow has a chatbotConfig, merge it with existing
+        if (updateChatFlow.chatbotConfig) {
+            let updatedConfig: Record<string, any> = {}
+            try {
+                updatedConfig = JSON.parse(updateChatFlow.chatbotConfig)
+
+                // Preserve displayMode and embeddedUrl which are handled specially
+                if (updatedConfig?.displayMode !== undefined) {
+                    existingChatbotConfig.displayMode = updatedConfig.displayMode
+                }
+                if (updatedConfig?.embeddedUrl !== undefined) {
+                    existingChatbotConfig.embeddedUrl = updatedConfig.embeddedUrl
+                }
+
+                // Merge other properties from updated config
+                Object.keys(updatedConfig).forEach((key) => {
+                    if (key !== 'displayMode' && key !== 'embeddedUrl') {
+                        existingChatbotConfig[key] = updatedConfig[key]
+                    }
+                })
+            } catch (e) {
+                console.error(`Error parsing updated chatbotConfig for chatflow ${chatflow.id}:`, e)
+            }
+        }
+
+        // Ensure chatFeedback.status is set to true if it's undefined
+        if (!existingChatbotConfig.chatFeedback) {
+            existingChatbotConfig.chatFeedback = { status: true }
+        } else if (existingChatbotConfig.chatFeedback.status === undefined) {
+            existingChatbotConfig.chatFeedback.status = true
+        }
+
         // Update the chatbotConfig in the chatflow object
-        chatflow.chatbotConfig = JSON.stringify(existingChatbotConfig)
+        const updatedChatbotConfig = JSON.stringify(existingChatbotConfig)
+
+        // Create a new object with all the properties from updateChatFlow
+        // but override chatbotConfig with our version
+        const mergedChatflow = {
+            ...updateChatFlow,
+            organizationId: user.organizationId,
+            chatbotConfig: updatedChatbotConfig
+        }
+
         updateChatFlow.visibility = Array.from(
             new Set([...(updateChatFlow.visibility ?? []), ChatflowVisibility.PRIVATE, ChatflowVisibility.ANSWERAI])
         )
-        const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, {
-            ...updateChatFlow,
-            organizationId: user.organizationId
-        })
+
+        const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, mergedChatflow)
+
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
 
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)

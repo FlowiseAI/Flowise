@@ -1,5 +1,6 @@
 'use client'
-import React, { useState } from 'react'
+import type React from 'react'
+import { useState } from 'react'
 import NextLink from 'next/link'
 import { styled } from '@mui/material/styles'
 import Avatar from '@mui/material/Avatar'
@@ -15,7 +16,7 @@ import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import Collapse from '@mui/material/Collapse'
-import { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
+import type { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { usePathname } from 'next/navigation'
 import { Menu, MenuItem, Tooltip } from '@mui/material'
@@ -29,11 +30,11 @@ import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/Integration
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
 import AssessmentIcon from '@mui/icons-material/Assessment'
+import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 import { ExportImportMenuItems } from './components/ExportImportComponent'
 import { useSubscriptionDialog } from './SubscriptionDialogContext'
 
-import dynamic from 'next/dynamic'
 import ChatDrawer from './ChatDrawer'
 import StarIcon from '@mui/icons-material/Star'
 
@@ -81,7 +82,19 @@ interface MenuConfig {
     subMenu?: MenuConfig[]
 }
 
-export const AppDrawer = ({ session, flagsmithState }: any) => {
+interface AppDrawerProps {
+    session: {
+        user: {
+            picture?: string
+            email?: string
+            org_name?: string
+            subscription?: unknown
+        }
+    }
+    flagsmithState: unknown
+}
+
+export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
     const { helpChatOpen, setHelpChatOpen } = useHelpChatContext()
     const user = session?.user
     const [drawerOpen, setDrawerOpen] = useState(false)
@@ -90,7 +103,7 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
     const pathname = usePathname()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
-    const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'document-stores', 'billing']
+    const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'documentstores', 'apikey', 'credentials', 'billing', 'apps']
     const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin', 'apps']
 
     const filterMenuItems = (items: MenuConfig[]) => {
@@ -162,13 +175,13 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                               text: 'Billing',
                               link: '/billing',
                               icon: <AssessmentIcon color='primary' />
+                          },
+                          {
+                              id: 'apps',
+                              text: 'Apps',
+                              link: '/sidekick-studio/apps',
+                              icon: <AppsOutlinedIcon color='primary' />
                           }
-                          //   {
-                          //       id: 'apps',
-                          //       text: 'Apps',
-                          //       link: '/sidekick-studio/apps',
-                          //       icon: <AppsOutlinedIcon color='primary' />
-                          //   }
                       ]
                   }
                 : {})
@@ -297,7 +310,7 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                                         href={item.link}
                                         component={item.link ? NextLink : 'button'}
                                         sx={{ flex: 1, display: 'flex', width: '100%' }}
-                                        onClick={() => setSubmenuOpen(item.text == submenuOpen ? '' : item.text ?? '')}
+                                        onClick={() => setSubmenuOpen(item.text === submenuOpen ? '' : item.text ?? '')}
                                     >
                                         <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
                                         <Typography
@@ -347,7 +360,6 @@ export const AppDrawer = ({ session, flagsmithState }: any) => {
                             </Collapse>
                         </Box>
                     ))}
-
 
                     {!user?.subscription && (
                         <ListItem disablePadding>
