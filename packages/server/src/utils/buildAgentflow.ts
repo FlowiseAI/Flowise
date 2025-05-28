@@ -335,6 +335,30 @@ export const resolveVariables = async (
                 }
             }
 
+            // Check if the variable is an output reference like `nodeId.output.path`
+            const outputMatch = variableFullPath.match(/^(.*?)\.output\.(.+)$/)
+            if (outputMatch && agentFlowExecutedData) {
+                // Extract nodeId and outputPath from the match
+                const [, nodeIdPart, outputPath] = outputMatch
+                // Clean nodeId (handle escaped underscores)
+                const cleanNodeId = nodeIdPart.replace('\\', '')
+                // Find the last (most recent) matching node data instead of the first one
+                const nodeData = [...agentFlowExecutedData].reverse().find((d) => d.nodeId === cleanNodeId)
+                if (nodeData?.data?.output && outputPath.trim()) {
+                    const variableValue = get(nodeData.data.output, outputPath)
+                    if (variableValue !== undefined) {
+                        // Replace the reference with actual value
+                        const formattedValue =
+                            Array.isArray(variableValue) || (typeof variableValue === 'object' && variableValue !== null)
+                                ? JSON.stringify(variableValue)
+                                : String(variableValue)
+                        resolvedValue = resolvedValue.replace(match, formattedValue)
+                        // Skip fallback logic
+                        continue
+                    }
+                }
+            }
+
             // Find node data in executed data
             // sometimes turndown value returns a backslash like `llmAgentflow\_1`, remove the backslash
             const cleanNodeId = variableFullPath.replace('\\', '')
