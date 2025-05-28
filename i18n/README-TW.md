@@ -1,8 +1,9 @@
 <!-- markdownlint-disable MD030 -->
 
-<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
-
-# Flowise - 輕鬆構建 LLM 應用
+<p align="center">
+<img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_white.svg#gh-light-mode-only">
+<img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_dark.svg#gh-dark-mode-only">
+</p>
 
 [![Release Notes](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/FlowiseAI/Flowise/releases)
 [![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
@@ -12,9 +13,9 @@
 
 [English](../README.md) | 繁體中文 | [简体中文](./README-ZH.md) | [日本語](./README-JA.md) | [한국어](./README-KR.md)
 
-<h3>拖放 UI 以構建自定義的 LLM 流程</h3>
+<h3>可視化建構 AI/LLM 流程</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
-<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
+<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true"></a>
 
 ## ⚡ 快速開始
 
@@ -28,12 +29,6 @@
 
     ```bash
     npx flowise start
-    ```
-
-    使用用戶名和密碼
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
     ```
 
 3. 打開 [http://localhost:3000](http://localhost:3000)
@@ -137,15 +132,6 @@ Flowise 在單個 mono 存儲庫中有 3 個不同的模塊。
 
     任何代碼更改都會自動重新加載應用程序 [http://localhost:8080](http://localhost:8080)
 
-## 🔒 認證
-
-要啟用應用級別的身份驗證，請在 `packages/server` 中的 `.env` 文件中添加 `FLOWISE_USERNAME` 和 `FLOWISE_PASSWORD`：
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
-
 ## 🌱 環境變量
 
 Flowise 支持不同的環境變量來配置您的實例。您可以在 `packages/server` 文件夾中的 `.env` 文件中指定以下變量。閱讀 [更多](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
@@ -208,9 +194,9 @@ Flowise 支持不同的環境變量來配置您的實例。您可以在 `package
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-請參閱 [貢獻指南](CONTRIBUTING.md)。如果您有任何問題或問題，請通過 [Discord](https://discord.gg/jbaHfsRVBW) 與我們聯繫。
+請參閱 [貢獻指南](../CONTRIBUTING.md)。如果您有任何問題或問題，請通過 [Discord](https://discord.gg/jbaHfsRVBW) 與我們聯繫。
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 許可證
 
-此存儲庫中的源代碼根據 [Apache 許可證版本 2.0](LICENSE.md) 提供。
+此存儲庫中的源代碼根據 [Apache 許可證版本 2.0](../LICENSE.md) 提供。

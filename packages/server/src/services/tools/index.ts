@@ -1,25 +1,30 @@
 import { StatusCodes } from 'http-status-codes'
 import { Tool } from '../../database/entities/Tool'
+import { getAppVersion } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { getAppVersion } from '../../utils'
+import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { QueryRunner } from 'typeorm'
 import { validate } from 'uuid'
 
-const createTool = async (requestBody: any): Promise<any> => {
+const createTool = async (requestBody: any, orgId: string): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
         const newTool = new Tool()
         Object.assign(newTool, requestBody)
         const tool = await appServer.AppDataSource.getRepository(Tool).create(newTool)
         const dbResponse = await appServer.AppDataSource.getRepository(Tool).save(tool)
-        await appServer.telemetry.sendTelemetry('tool_created', {
-            version: await getAppVersion(),
-            toolId: dbResponse.id,
-            toolName: dbResponse.name
-        })
+        await appServer.telemetry.sendTelemetry(
+            'tool_created',
+            {
+                version: await getAppVersion(),
+                toolId: dbResponse.id,
+                toolName: dbResponse.name
+            },
+            orgId
+        )
         appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.TOOL_CREATED, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
         return dbResponse
     } catch (error) {
@@ -39,10 +44,10 @@ const deleteTool = async (toolId: string): Promise<any> => {
     }
 }
 
-const getAllTools = async (): Promise<Tool[]> => {
+const getAllTools = async (workspaceId?: string): Promise<Tool[]> => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(Tool).find()
+        const dbResponse = await appServer.AppDataSource.getRepository(Tool).findBy(getWorkspaceSearchOptions(workspaceId))
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getAllTools - ${getErrorMessage(error)}`)
@@ -75,7 +80,7 @@ const updateTool = async (toolId: string, toolBody: any): Promise<any> => {
         }
         const updateTool = new Tool()
         Object.assign(updateTool, toolBody)
-        await appServer.AppDataSource.getRepository(Tool).merge(tool, updateTool)
+        appServer.AppDataSource.getRepository(Tool).merge(tool, updateTool)
         const dbResponse = await appServer.AppDataSource.getRepository(Tool).save(tool)
         return dbResponse
     } catch (error) {

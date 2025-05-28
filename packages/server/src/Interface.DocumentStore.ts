@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm'
 import { IComponentNodes } from './Interface'
 import { Telemetry } from './utils/telemetry'
 import { CachePool } from './CachePool'
+import { UsageCacheManager } from './UsageCacheManager'
 
 export enum DocumentStoreStatus {
     EMPTY_SYNC = 'EMPTY',
@@ -27,6 +28,7 @@ export interface IDocumentStore {
     vectorStoreConfig: string | null // JSON string
     embeddingConfig: string | null // JSON string
     recordManagerConfig: string | null // JSON string
+    workspaceId?: string
 }
 
 export interface IDocumentStoreFileChunk {
@@ -47,6 +49,7 @@ export interface IDocumentStoreFileChunkPagedResponse {
     storeName: string
     description: string
     docId: string
+    workspaceId?: string
 }
 
 export interface IDocumentStoreLoader {
@@ -119,9 +122,13 @@ export interface IDocumentStoreWhereUsed {
 }
 
 export interface IUpsertQueueAppServer {
+    orgId: string
+    workspaceId: string
+    subscriptionId: string
     appDataSource: DataSource
     componentNodes: IComponentNodes
     telemetry: Telemetry
+    usageCacheManager: UsageCacheManager
     cachePool?: CachePool
 }
 
@@ -188,6 +195,7 @@ export const addLoaderSource = (loader: IDocumentStoreLoader, isGetFileNameOnly 
 
     switch (loader.loaderId) {
         case 'pdfFile':
+        case 'docxFile':
         case 'jsonFile':
         case 'csvFile':
         case 'file':
@@ -230,6 +238,7 @@ export class DocumentStoreDTO {
     totalChunks: number
     totalChars: number
     chunkSize: number
+    workspaceId?: string
     loaders: IDocumentStoreLoader[]
     vectorStoreConfig: any
     embeddingConfig: any
@@ -245,6 +254,7 @@ export class DocumentStoreDTO {
         documentStoreDTO.name = entity.name
         documentStoreDTO.description = entity.description
         documentStoreDTO.status = entity.status
+        documentStoreDTO.workspaceId = entity.workspaceId
         documentStoreDTO.totalChars = 0
         documentStoreDTO.totalChunks = 0
 

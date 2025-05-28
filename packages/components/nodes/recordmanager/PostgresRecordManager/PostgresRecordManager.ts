@@ -258,7 +258,7 @@ class PostgresRecordManager implements RecordManagerInterface {
         const dataSource = await this.getDataSource()
         try {
             const queryRunner = dataSource.createQueryRunner()
-            const res = await queryRunner.manager.query('SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP)')
+            const res = await queryRunner.manager.query('SELECT EXTRACT(EPOCH FROM CURRENT_TIMESTAMP) AS extract')
             await queryRunner.release()
             return Number.parseFloat(res[0].extract)
         } catch (error) {

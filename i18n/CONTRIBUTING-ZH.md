@@ -119,16 +119,12 @@ Flowise 在一个单一的单体存储库中有 3 个不同的模块。
 Flowise 支持不同的环境变量来配置您的实例。您可以在 `packages/server` 文件夹中的 `.env` 文件中指定以下变量。阅读[更多信息](https://docs.flowiseai.com/environment-variables)
 
 | 变量名                       | 描述                                                    | 类型                                            | 默认值                              |
-| ---------------------------- | ------------------------------------------------------- | ----------------------------------------------- | ----------------------------------- | --- |
-| PORT                         | Flowise 运行的 HTTP 端口                                | 数字                                            | 3000                                |
-| FLOWISE_USERNAME             | 登录用户名                                              | 字符串                                          |                                     |
-| FLOWISE_PASSWORD             | 登录密码                                                | 字符串                                          |                                     |
+| ---------------------------- | ------------------------------------------------------- | ----------------------------------------------- | ----------------------------------- | --- | --- |
+| PORT                         | Flowise 运行的 HTTP 端口                                | 数字                                            | 3000                                |     |     |
 | FLOWISE_FILE_SIZE_LIMIT      | 上传文件大小限制                                        | 字符串                                          | 50mb                                |     |
 | DEBUG                        | 打印组件的日志                                          | 布尔值                                          |                                     |
 | LOG_PATH                     | 存储日志文件的位置                                      | 字符串                                          | `your-path/Flowise/logs`            |
 | LOG_LEVEL                    | 日志的不同级别                                          | 枚举字符串: `error`, `info`, `verbose`, `debug` | `info`                              |
-| APIKEY_STORAGE_TYPE          | 存储 API 密钥的存储类型                                 | 枚举字符串: `json`, `db`                        | `json`                              |
-| APIKEY_PATH                  | 存储 API 密钥的位置, 当`APIKEY_STORAGE_TYPE`是`json`    | 字符串                                          | `your-path/Flowise/packages/server` |
 | TOOL_FUNCTION_BUILTIN_DEP    | 用于工具函数的 NodeJS 内置模块                          | 字符串                                          |                                     |
 | TOOL_FUNCTION_EXTERNAL_DEP   | 用于工具函数的外部模块                                  | 字符串                                          |                                     |
 | DATABASE_TYPE                | 存储 flowise 数据的数据库类型                           | 枚举字符串: `sqlite`, `mysql`, `postgres`       | `sqlite`                            |
@@ -140,7 +136,6 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 | DATABASE_NAME                | 数据库名称（当 DATABASE_TYPE 不是 sqlite 时）           | 字符串                                          |                                     |
 | SECRETKEY_PATH               | 保存加密密钥（用于加密/解密凭据）的位置                 | 字符串                                          | `your-path/Flowise/packages/server` |
 | FLOWISE_SECRETKEY_OVERWRITE  | 加密密钥用于替代存储在 SECRETKEY_PATH 中的密钥          | 字符串                                          |
-| DISABLE_FLOWISE_TELEMETRY    | 关闭遥测                                                | 字符串                                          |
 | MODEL_LIST_CONFIG_JSON       | 加载模型的位置                                          | 字符                                            | `/your_model_list_config_file_path` |
 | STORAGE_TYPE                 | 上传文件的存储类型                                      | 枚举字符串: `local`, `s3`                       | `local`                             |
 | BLOB_STORAGE_PATH            | 上传文件存储的本地文件夹路径, 当`STORAGE_TYPE`是`local` | 字符串                                          | `your-home-dir/.flowise/storage`    |

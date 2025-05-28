@@ -14,7 +14,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import CredentialInputHandler from './CredentialInputHandler'
 
 // Icons
-import { IconX } from '@tabler/icons-react'
+import { IconHandStop, IconX } from '@tabler/icons-react'
 
 // API
 import credentialsApi from '@/api/credentials'
@@ -29,6 +29,7 @@ import { initializeDefaultNodeData } from '@/utils/genericHelper'
 // const
 import { baseURL, REDACTED_CREDENTIAL_VALUE } from '@/store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import keySVG from '@/assets/images/key.svg'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = document.getElementById('portal')
@@ -49,17 +50,22 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
     const [name, setName] = useState('')
     const [credentialData, setCredentialData] = useState({})
     const [componentCredential, setComponentCredential] = useState({})
+    const [shared, setShared] = useState(false)
 
     useEffect(() => {
         if (getSpecificCredentialApi.data) {
-            setCredential(getSpecificCredentialApi.data)
-            if (getSpecificCredentialApi.data.name) {
-                setName(getSpecificCredentialApi.data.name)
+            const shared = getSpecificCredentialApi.data.shared
+            setShared(shared)
+            if (!shared) {
+                setCredential(getSpecificCredentialApi.data)
+                if (getSpecificCredentialApi.data.name) {
+                    setName(getSpecificCredentialApi.data.name)
+                }
+                if (getSpecificCredentialApi.data.plainDataObj) {
+                    setCredentialData(getSpecificCredentialApi.data.plainDataObj)
+                }
+                getSpecificComponentCredentialApi.request(getSpecificCredentialApi.data.credentialName)
             }
-            if (getSpecificCredentialApi.data.plainDataObj) {
-                setCredentialData(getSpecificCredentialApi.data.plainDataObj)
-            }
-            getSpecificComponentCredentialApi.request(getSpecificCredentialApi.data.credentialName)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -216,7 +222,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             aria-describedby='alert-dialog-description'
         >
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
-                {componentCredential && componentCredential.label && (
+                {!shared && componentCredential && componentCredential.label && (
                     <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                         <div
                             style={{
@@ -237,6 +243,11 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                                 }}
                                 alt={componentCredential.name}
                                 src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
+                                onError={(e) => {
+                                    e.target.onerror = null
+                                    e.target.style.padding = '5px'
+                                    e.target.src = keySVG
+                                }}
                             />
                         </div>
                         {componentCredential.label}
@@ -244,7 +255,31 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                 )}
             </DialogTitle>
             <DialogContent>
-                {componentCredential && componentCredential.description && (
+                {shared && (
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            borderRadius: 10,
+                            background: '#f37a97',
+                            padding: 10,
+                            marginTop: 10,
+                            marginBottom: 10
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <IconHandStop size={25} color='white' />
+                            <span style={{ color: 'white', marginLeft: 10, fontWeight: 400 }}>Cannot edit shared credential.</span>
+                        </div>
+                    </div>
+                )}
+                {!shared && componentCredential && componentCredential.description && (
                     <Box sx={{ pl: 2, pr: 2 }}>
                         <div
                             style={{
@@ -261,7 +296,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                         </div>
                     </Box>
                 )}
-                {componentCredential && componentCredential.label && (
+                {!shared && componentCredential && componentCredential.label && (
                     <Box sx={{ p: 2 }}>
                         <Stack sx={{ position: 'relative' }} direction='row'>
                             <Typography variant='overline'>
@@ -280,20 +315,23 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                         />
                     </Box>
                 )}
-                {componentCredential &&
+                {!shared &&
+                    componentCredential &&
                     componentCredential.inputs &&
                     componentCredential.inputs.map((inputParam, index) => (
                         <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />
                     ))}
             </DialogContent>
             <DialogActions>
-                <StyledButton
-                    disabled={!name}
-                    variant='contained'
-                    onClick={() => (dialogProps.type === 'ADD' ? addNewCredential() : saveCredential())}
-                >
-                    {dialogProps.confirmButtonName}
-                </StyledButton>
+                {!shared && (
+                    <StyledButton
+                        disabled={!name}
+                        variant='contained'
+                        onClick={() => (dialogProps.type === 'ADD' ? addNewCredential() : saveCredential())}
+                    >
+                        {dialogProps.confirmButtonName}
+                    </StyledButton>
+                )}
             </DialogActions>
             <ConfirmDialog />
         </Dialog>

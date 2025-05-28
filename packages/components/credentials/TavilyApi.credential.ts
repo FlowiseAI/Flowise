@@ -10,8 +10,8 @@ class TavilyApi implements INodeCredential {
     constructor() {
         this.label = 'Tavily API'
         this.name = 'tavilyApi'
-        this.version = 1.0
-        this.description = 'Tavily API is a real-time API to access Google search results'
+        this.version = 1.1
+        this.description = 'Tavily API is a search engine designed for LLMs and AI agents'
         this.inputs = [
             {
                 label: 'Tavily Api Key',
