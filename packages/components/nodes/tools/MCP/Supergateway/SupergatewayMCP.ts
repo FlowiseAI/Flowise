@@ -21,7 +21,7 @@ class Supergateway_MCP implements INode {
         this.name = 'supergatewayMCP'
         this.version = 1.0
         this.type = 'Supergateway MCP Tool'
-        this.icon = 'supergateway.png'
+        this.icon = 'supermachine-logo.png'
         this.category = 'Tools (MCP)'
         this.description = 'Runs MCP stdio-based servers over SSE (Server-Sent Events) or WebSockets (WS)'
         this.documentation = 'https://github.com/supercorp-ai/supergateway'
@@ -88,7 +88,7 @@ class Supergateway_MCP implements INode {
 
     async getTools(nodeData: INodeData, _: ICommonObject): Promise<Tool[]> {
         const _args = nodeData.inputs?.arguments as string
-        const packagePath = getNodeModulesPackagePath('@latitude-data/supergateway/dist/index.js')
+        const packagePath = getNodeModulesPackagePath('supergateway/dist/index.js')
 
         const serverParams = {
             command: 'node',
