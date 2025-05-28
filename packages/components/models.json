@@ -1217,6 +1217,18 @@
                     "name": "mistral-large-2402",
                     "input_cost": 0.002,
                     "output_cost": 0.006
+                },
+                {
+                    "label": "codestral-latsest",
+                    "name": "codestral-latest",
+                    "input_cost": 0.0002,
+                    "output_cost": 0.0006
+                },
+                {
+                    "label": "devstral-small-2505",
+                    "name": "devstral-small-2505",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 }
             ]
         },

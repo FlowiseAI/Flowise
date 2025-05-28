@@ -12,6 +12,7 @@ import CredentialListDialog from '@/views/credentials/CredentialListDialog'
 
 // API
 import credentialsApi from '@/api/credentials'
+import { useAuth } from '@/hooks/useAuth'
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 
 // ===========================|| CredentialInputHandler ||=========================== //
@@ -24,6 +25,7 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
     const [showSpecificCredentialDialog, setShowSpecificCredentialDialog] = useState(false)
     const [specificCredentialDialogProps, setSpecificCredentialDialogProps] = useState({})
     const [reloadTimestamp, setReloadTimestamp] = useState(Date.now().toString())
+    const { hasPermission } = useAuth()
 
     const editCredential = (credentialId) => {
         const dialogProp = {
@@ -104,7 +106,7 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                                 name={inputParam.name}
                                 nodeData={data}
                                 value={credentialId ?? 'choose an option'}
-                                isCreateNewOption={true}
+                                isCreateNewOption={hasPermission('credentials:create')}
                                 credentialNames={inputParam.credentialNames}
                                 onSelect={(newValue) => {
                                     setCredentialId(newValue)
@@ -112,7 +114,7 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                                 }}
                                 onCreateNew={() => addAsyncOption(inputParam.name)}
                             />
-                            {credentialId && (
+                            {credentialId && hasPermission('credentials:update') && (
                                 <IconButton title='Edit' color='primary' size='small' onClick={() => editCredential(credentialId)}>
                                     <IconEdit />
                                 </IconButton>

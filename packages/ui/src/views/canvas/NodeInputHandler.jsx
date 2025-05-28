@@ -1037,6 +1037,7 @@ const NodeInputHandler = ({
                                             variant='outlined'
                                             onClick={() => {
                                                 data.inputs[inputParam.name] = inputParam.codeExample
+                                                setReloadTimestamp(Date.now().toString())
                                             }}
                                         >
                                             See Example
@@ -1044,6 +1045,7 @@ const NodeInputHandler = ({
                                     )}
                                 </div>
                                 <div
+                                    key={`${reloadTimestamp}_${data.id}}`}
                                     style={{
                                         marginTop: '10px',
                                         border: '1px solid',

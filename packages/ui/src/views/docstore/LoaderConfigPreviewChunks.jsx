@@ -7,6 +7,7 @@ import ReactJson from 'flowise-react-json-view'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useAuth } from '@/hooks/useAuth'
 
 // Material-UI
 import { Skeleton, Toolbar, Box, Button, Card, CardContent, Grid, OutlinedInput, Stack, Typography, TextField } from '@mui/material'
@@ -31,6 +32,7 @@ import documentsApi from '@/api/documentstore'
 // Const
 import { baseURL, gridSpacing } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
+import { useError } from '@/store/context/ErrorContext'
 
 // Utils
 import { initNode } from '@/utils/genericHelper'
@@ -61,6 +63,8 @@ const LoaderConfigPreviewChunks = () => {
     const customization = useSelector((state) => state.customization)
     const navigate = useNavigate()
     const theme = useTheme()
+    const { error } = useError()
+    const { hasAssignedWorkspace } = useAuth()
 
     const getNodeDetailsApi = useApi(nodesApi.getSpecificNode)
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
@@ -71,7 +75,6 @@ const LoaderConfigPreviewChunks = () => {
     const [selectedDocumentLoader, setSelectedDocumentLoader] = useState({})
 
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(null)
     const [loaderName, setLoaderName] = useState('')
 
     const [textSplitterNodes, setTextSplitterNodes] = useState([])
@@ -117,21 +120,27 @@ const LoaderConfigPreviewChunks = () => {
 
     const checkMandatoryFields = () => {
         let canSubmit = true
+        const missingFields = []
         const inputParams = (selectedDocumentLoader.inputParams ?? []).filter((inputParam) => !inputParam.hidden)
         for (const inputParam of inputParams) {
             if (!inputParam.optional && (!selectedDocumentLoader.inputs[inputParam.name] || !selectedDocumentLoader.credential)) {
-                if (inputParam.type === 'credential' && !selectedDocumentLoader.credential) {
+                if (
+                    inputParam.type === 'credential' &&
+                    !selectedDocumentLoader.credential &&
+                    !selectedDocumentLoader.inputs['FLOWISE_CREDENTIAL_ID']
+                ) {
                     canSubmit = false
-                    break
+                    missingFields.push(inputParam.label || inputParam.name)
                 } else if (inputParam.type !== 'credential' && !selectedDocumentLoader.inputs[inputParam.name]) {
                     canSubmit = false
-                    break
+                    missingFields.push(inputParam.label || inputParam.name)
                 }
             }
         }
         if (!canSubmit) {
+            const fieldsList = missingFields.join(', ')
             enqueueSnackbar({
-                message: 'Please fill in all mandatory fields.',
+                message: `Please fill in the following mandatory fields: ${fieldsList}`,
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'warning',
@@ -335,6 +344,11 @@ const LoaderConfigPreviewChunks = () => {
 
     useEffect(() => {
         if (getSpecificDocumentStoreApi.data) {
+            const workspaceId = getSpecificDocumentStoreApi.data.workspaceId
+            if (!hasAssignedWorkspace(workspaceId)) {
+                navigate('/unauthorized')
+                return
+            }
             if (getSpecificDocumentStoreApi.data?.loaders.length > 0) {
                 const loader = getSpecificDocumentStoreApi.data.loaders.find((loader) => loader.id === docLoaderNodeName)
                 if (loader) {
@@ -346,30 +360,6 @@ const LoaderConfigPreviewChunks = () => {
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getSpecificDocumentStoreApi.data])
-
-    useEffect(() => {
-        if (getSpecificDocumentStoreApi.error) {
-            setError(getSpecificDocumentStoreApi.error)
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getSpecificDocumentStoreApi.error])
-
-    useEffect(() => {
-        if (getNodeDetailsApi.error) {
-            setError(getNodeDetailsApi.error)
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getNodeDetailsApi.error])
-
-    useEffect(() => {
-        if (getNodesByCategoryApi.error) {
-            setError(getNodesByCategoryApi.error)
-        }
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [getNodesByCategoryApi.error])
 
     return (
         <>
