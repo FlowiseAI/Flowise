@@ -225,8 +225,16 @@ const AgentExecutions = () => {
             const executionDetails =
                 typeof execution.executionData === 'string' ? JSON.parse(execution.executionData) : execution.executionData
             setSelectedExecutionData(executionDetails)
-            setSelectedMetadata(omit(execution, ['executionData']))
+            const newMetadata = {
+                ...omit(execution, ['executionData']),
+                agentflow: {
+                    ...selectedMetadata.agentflow
+                }
+            }
+            setSelectedMetadata(newMetadata)
         }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getExecutionByIdApi.data])
 
     return (

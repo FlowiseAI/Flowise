@@ -1,16 +1,33 @@
 import { Tool } from '@langchain/core/tools'
-import { INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
+import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { MCPToolkit } from '../core'
+import { getVars, prepareSandboxVars } from '../../../../src/utils'
+import { DataSource } from 'typeorm'
 
 const mcpServerConfig = `{
     "command": "npx",
     "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed/files"]
 }`
 
-interface IMCPInputVariables {
-    variableName: string
-    variableValue: string
+const howToUseCode = `
+You can use variables in the MCP Server Config with double curly braces \`{{ }}\` and prefix \`$vars.<variableName>\`. 
+
+For example, you have a variable called "var1":
+\`\`\`json
+{
+    "command": "docker",
+    "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e", "API_TOKEN"
+    ],
+    "env": {
+        "API_TOKEN": "{{$vars.var1}}"
+    }
 }
+\`\`\`
+`
 
 class Custom_MCP implements INode {
     label: string
@@ -28,7 +45,7 @@ class Custom_MCP implements INode {
     constructor() {
         this.label = 'Custom MCP'
         this.name = 'customMCP'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Custom MCP Tool'
         this.icon = 'customMCP.png'
         this.category = 'Tools (MCP)'
@@ -36,31 +53,14 @@ class Custom_MCP implements INode {
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search'
         this.inputs = [
             {
-                label: 'Input Variables',
-                name: 'mcpInputVariables',
-                description: 'Input variables can be used in the MCP Server Config with prefix $. For example: $var',
-                type: 'array',
-                optional: true,
-                acceptVariable: true,
-                array: [
-                    {
-                        label: 'Variable Name',
-                        name: 'variableName',
-                        type: 'string'
-                    },
-                    {
-                        label: 'Variable Value',
-                        name: 'variableValue',
-                        type: 'string',
-                        acceptVariable: true
-                    }
-                ]
-            },
-            {
                 label: 'MCP Server Config',
                 name: 'mcpServerConfig',
                 type: 'code',
                 hideCodeExecute: true,
+                hint: {
+                    label: 'How to use',
+                    value: howToUseCode
+                },
                 placeholder: mcpServerConfig
             },
             {
@@ -76,9 +76,9 @@ class Custom_MCP implements INode {
 
     //@ts-ignore
     loadMethods = {
-        listActions: async (nodeData: INodeData): Promise<INodeOptionsValue[]> => {
+        listActions: async (nodeData: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> => {
             try {
-                const toolset = await this.getTools(nodeData)
+                const toolset = await this.getTools(nodeData, options)
                 toolset.sort((a: any, b: any) => a.name.localeCompare(b.name))
 
                 return toolset.map(({ name, ...rest }) => ({
@@ -98,8 +98,8 @@ class Custom_MCP implements INode {
         }
     }
 
-    async init(nodeData: INodeData): Promise<any> {
-        const tools = await this.getTools(nodeData)
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
+        const tools = await this.getTools(nodeData, options)
 
         const _mcpActions = nodeData.inputs?.mcpActions
         let mcpActions = []
@@ -114,20 +114,20 @@ class Custom_MCP implements INode {
         return tools.filter((tool: any) => mcpActions.includes(tool.name))
     }
 
-    async getTools(nodeData: INodeData): Promise<Tool[]> {
+    async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
         const mcpServerConfig = nodeData.inputs?.mcpServerConfig as string
-
         if (!mcpServerConfig) {
             throw new Error('MCP Server Config is required')
         }
 
-        const mcpInputVariables = (nodeData.inputs?.mcpInputVariables as IMCPInputVariables[]) ?? []
+        let sandbox: ICommonObject = {}
 
-        let sandbox: Record<string, string> = {}
-        for (const item of mcpInputVariables) {
-            const variableName = item.variableName
-            const variableValue = stripHtmlTags(item.variableValue)
-            sandbox[`$${variableName}`] = variableValue
+        if (mcpServerConfig.includes('$vars')) {
+            const appDataSource = options.appDataSource as DataSource
+            const databaseEntities = options.databaseEntities as IDatabaseEntity
+
+            const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
+            sandbox['$vars'] = prepareSandboxVars(variables)
         }
 
         try {
@@ -179,10 +179,44 @@ function substituteVariablesInObject(obj: any, sandbox: any): any {
 }
 
 function substituteVariablesInString(str: string, sandbox: any): string {
-    // Use regex to find $variableName patterns and replace with sandbox values
-    return str.replace(/\$(\w+)/g, (match, variableName) => {
-        const sandboxKey = `$${variableName}`
-        return Object.keys(sandbox).includes(sandboxKey) ? sandbox[sandboxKey] : match
+    // Use regex to find {{$variableName.property}} patterns and replace with sandbox values
+    return str.replace(/\{\{\$([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)\}\}/g, (match, variablePath) => {
+        try {
+            // Split the path into parts (e.g., "vars.testvar1" -> ["vars", "testvar1"])
+            const pathParts = variablePath.split('.')
+
+            // Start with the sandbox object
+            let current = sandbox
+
+            // Navigate through the path
+            for (const part of pathParts) {
+                // For the first part, check if it exists with $ prefix
+                if (current === sandbox) {
+                    const sandboxKey = `$${part}`
+                    if (Object.keys(current).includes(sandboxKey)) {
+                        current = current[sandboxKey]
+                    } else {
+                        // If the key doesn't exist, return the original match
+                        return match
+                    }
+                } else {
+                    // For subsequent parts, access directly
+                    if (current && typeof current === 'object' && part in current) {
+                        current = current[part]
+                    } else {
+                        // If the property doesn't exist, return the original match
+                        return match
+                    }
+                }
+            }
+
+            // Return the resolved value, converting to string if necessary
+            return typeof current === 'string' ? current : JSON.stringify(current)
+        } catch (error) {
+            // If any error occurs during resolution, return the original match
+            console.warn(`Error resolving variable ${match}:`, error)
+            return match
+        }
     })
 }
 
@@ -194,10 +228,6 @@ function convertToValidJSONString(inputString: string) {
         console.error('Error converting to JSON:', error)
         return ''
     }
-}
-
-function stripHtmlTags(inputString: string): string {
-    return inputString.replace(/<[^>]*>/g, '')
 }
 
 module.exports = { nodeClass: Custom_MCP }

@@ -38,8 +38,16 @@ const PublicExecutionDetails = () => {
             const executionDetails =
                 typeof execution.executionData === 'string' ? JSON.parse(execution.executionData) : execution.executionData
             setExecution(executionDetails)
-            setSelectedMetadata(omit(execution, ['executionData']))
+            const newMetadata = {
+                ...omit(execution, ['executionData']),
+                agentflow: {
+                    ...selectedMetadata.agentflow
+                }
+            }
+            setSelectedMetadata(newMetadata)
         }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getExecutionByIdPublicApi.data])
 
     useEffect(() => {
