@@ -35,6 +35,7 @@ import { AddSeqNoToDatasetRow1733752119696 } from './1733752119696-AddSeqNoToDat
 import { AddExecutionEntity1738090872625 } from './1738090872625-AddExecutionEntity'
 import { FixOpenSourceAssistantTable1743758056188 } from './1743758056188-FixOpenSourceAssistantTable'
 import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorToEvaluationRun'
+import { ModifyExecutionSessionIdFieldType1748450230238 } from './1748450230238-ModifyExecutionSessionIdFieldType'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/postgres/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/postgres/1720230151484-AddWorkspace'
@@ -96,5 +97,6 @@ export const postgresMigrations = [
     AddExecutionEntity1738090872625,
     FixOpenSourceAssistantTable1743758056188,
     AddErrorToEvaluationRun1744964560174,
-    ExecutionLinkWorkspaceId1746862866554
+    ExecutionLinkWorkspaceId1746862866554,
+    ModifyExecutionSessionIdFieldType1748450230238
 ]
