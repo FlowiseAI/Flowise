@@ -31,18 +31,17 @@ const StyledPopper = styled(Popper)({
 const fetchList = async ({ name, nodeData, previousNodes, currentNode }) => {
     const selectedParam = nodeData.inputParams.find((param) => param.name === name)
     const loadMethod = selectedParam?.loadMethod
-    const username = localStorage.getItem('username')
-    const password = localStorage.getItem('password')
+
+    let config = {
+        headers: {
+            'x-request-from': 'internal',
+            'Content-type': 'application/json'
+        },
+        withCredentials: true
+    }
 
     let lists = await axios
-        .post(
-            `${baseURL}/api/v1/node-load-method/${nodeData.name}`,
-            { ...nodeData, loadMethod, previousNodes, currentNode },
-            {
-                auth: username && password ? { username, password } : undefined,
-                headers: { 'Content-type': 'application/json', 'x-request-from': 'internal' }
-            }
-        )
+        .post(`${baseURL}/api/v1/node-load-method/${nodeData.name}`, { ...nodeData, loadMethod, previousNodes, currentNode }, config)
         .then(async function (response) {
             return response.data
         })

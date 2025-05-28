@@ -23,6 +23,9 @@ import {
 import { tableCellClasses } from '@mui/material/TableCell'
 import FlowListMenu from '../button/FlowListMenu'
 import { Link } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
+
+import MoreItemsTooltip from '../tooltip/MoreItemsTooltip'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -47,7 +50,21 @@ const getLocalStorageKeyName = (name, isAgentCanvas) => {
     return (isAgentCanvas ? 'agentcanvas' : 'chatflowcanvas') + '_' + name
 }
 
-export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filterFunction, updateFlowsApi, setError, isAgentCanvas }) => {
+export const FlowListTable = ({
+    data,
+    images = {},
+    icons = {},
+    isLoading,
+    filterFunction,
+    updateFlowsApi,
+    setError,
+    isAgentCanvas,
+    isAgentflowV2
+}) => {
+    const { hasPermission } = useAuth()
+    const isActionsAvailable = isAgentCanvas
+        ? hasPermission('agentflows:update,agentflows:delete,agentflows:config,agentflows:domains,templates:flowexport,agentflows:export')
+        : hasPermission('chatflows:update,chatflows:delete,chatflows:config,chatflows:domains,templates:flowexport,chatflows:export')
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -118,9 +135,11 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                     Last Modified Date
                                 </TableSortLabel>
                             </StyledTableCell>
-                            <StyledTableCell style={{ width: '10%' }} key='4'>
-                                Actions
-                            </StyledTableCell>
+                            {isActionsAvailable && (
+                                <StyledTableCell style={{ width: '10%' }} key='4'>
+                                    Actions
+                                </StyledTableCell>
+                            )}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -139,9 +158,11 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
+                                    {isActionsAvailable && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                 </StyledTableRow>
                                 <StyledTableRow>
                                     <StyledTableCell>
@@ -156,9 +177,11 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                     <StyledTableCell>
                                         <Skeleton variant='text' />
                                     </StyledTableCell>
-                                    <StyledTableCell>
-                                        <Skeleton variant='text' />
-                                    </StyledTableCell>
+                                    {isActionsAvailable && (
+                                        <StyledTableCell>
+                                            <Skeleton variant='text' />
+                                        </StyledTableCell>
+                                    )}
                                 </StyledTableRow>
                             </>
                         ) : (
@@ -213,64 +236,80 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                                     }}
                                                 >
                                                     {[
-                                                        ...(images[row.id] || []).map((img) => ({ type: 'image', src: img })),
+                                                        ...(images[row.id] || []).map((img) => ({
+                                                            type: 'image',
+                                                            src: img.imageSrc,
+                                                            label: img.label
+                                                        })),
                                                         ...(icons[row.id] || []).map((ic) => ({
                                                             type: 'icon',
                                                             icon: ic.icon,
-                                                            color: ic.color
+                                                            color: ic.color,
+                                                            title: ic.name
                                                         }))
                                                     ]
                                                         .slice(0, 5)
-                                                        .map((item, index) =>
-                                                            item.type === 'image' ? (
-                                                                <Box
-                                                                    key={item.src}
-                                                                    sx={{
-                                                                        width: 30,
-                                                                        height: 30,
-                                                                        borderRadius: '50%',
-                                                                        backgroundColor: customization.isDarkMode
-                                                                            ? theme.palette.common.white
-                                                                            : theme.palette.grey[300] + 75
-                                                                    }}
-                                                                >
-                                                                    <img
-                                                                        style={{
-                                                                            width: '100%',
-                                                                            height: '100%',
-                                                                            padding: 5,
-                                                                            objectFit: 'contain'
+                                                        .map((item, index) => (
+                                                            <Tooltip key={item.imageSrc || index} title={item.label} placement='top'>
+                                                                {item.type === 'image' ? (
+                                                                    <Box
+                                                                        sx={{
+                                                                            width: 30,
+                                                                            height: 30,
+                                                                            borderRadius: '50%',
+                                                                            backgroundColor: customization.isDarkMode
+                                                                                ? theme.palette.common.white
+                                                                                : theme.palette.grey[300] + 75
                                                                         }}
-                                                                        alt=''
-                                                                        src={item.src}
-                                                                    />
-                                                                </Box>
-                                                            ) : (
-                                                                <div
-                                                                    key={index}
-                                                                    style={{
-                                                                        width: 30,
-                                                                        height: 30,
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        justifyContent: 'center'
-                                                                    }}
-                                                                >
-                                                                    <item.icon size={25} color={item.color} />
-                                                                </div>
-                                                            )
-                                                        )}
+                                                                    >
+                                                                        <img
+                                                                            style={{
+                                                                                width: '100%',
+                                                                                height: '100%',
+                                                                                padding: 5,
+                                                                                objectFit: 'contain'
+                                                                            }}
+                                                                            alt=''
+                                                                            src={item.src}
+                                                                        />
+                                                                    </Box>
+                                                                ) : (
+                                                                    <div
+                                                                        style={{
+                                                                            width: 30,
+                                                                            height: 30,
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center'
+                                                                        }}
+                                                                    >
+                                                                        <item.icon size={25} color={item.color} />
+                                                                    </div>
+                                                                )}
+                                                            </Tooltip>
+                                                        ))}
+
                                                     {(images[row.id]?.length || 0) + (icons[row.id]?.length || 0) > 5 && (
-                                                        <Typography
-                                                            sx={{
-                                                                alignItems: 'center',
-                                                                display: 'flex',
-                                                                fontSize: '.9rem',
-                                                                fontWeight: 200
-                                                            }}
+                                                        <MoreItemsTooltip
+                                                            images={[
+                                                                ...(images[row.id]?.slice(5) || []),
+                                                                ...(
+                                                                    icons[row.id]?.slice(Math.max(0, 5 - (images[row.id]?.length || 0))) ||
+                                                                    []
+                                                                ).map((ic) => ({ label: ic.name }))
+                                                            ]}
                                                         >
-                                                            + {(images[row.id]?.length || 0) + (icons[row.id]?.length || 0) - 5} More
-                                                        </Typography>
+                                                            <Typography
+                                                                sx={{
+                                                                    alignItems: 'center',
+                                                                    display: 'flex',
+                                                                    fontSize: '.9rem',
+                                                                    fontWeight: 200
+                                                                }}
+                                                            >
+                                                                + {(images[row.id]?.length || 0) + (icons[row.id]?.length || 0) - 5} More
+                                                            </Typography>
+                                                        </MoreItemsTooltip>
                                                     )}
                                                 </Box>
                                             )}
@@ -278,21 +317,24 @@ export const FlowListTable = ({ data, images = {}, icons = {}, isLoading, filter
                                         <StyledTableCell key='3'>
                                             {moment(row.updatedDate).format('MMMM Do, YYYY HH:mm:ss')}
                                         </StyledTableCell>
-                                        <StyledTableCell key='4'>
-                                            <Stack
-                                                direction={{ xs: 'column', sm: 'row' }}
-                                                spacing={1}
-                                                justifyContent='center'
-                                                alignItems='center'
-                                            >
-                                                <FlowListMenu
-                                                    isAgentCanvas={isAgentCanvas}
-                                                    chatflow={row}
-                                                    setError={setError}
-                                                    updateFlowsApi={updateFlowsApi}
-                                                />
-                                            </Stack>
-                                        </StyledTableCell>
+                                        {isActionsAvailable && (
+                                            <StyledTableCell key='4'>
+                                                <Stack
+                                                    direction={{ xs: 'column', sm: 'row' }}
+                                                    spacing={1}
+                                                    justifyContent='center'
+                                                    alignItems='center'
+                                                >
+                                                    <FlowListMenu
+                                                        isAgentCanvas={isAgentCanvas}
+                                                        isAgentflowV2={isAgentflowV2}
+                                                        chatflow={row}
+                                                        setError={setError}
+                                                        updateFlowsApi={updateFlowsApi}
+                                                    />
+                                                </Stack>
+                                            </StyledTableCell>
+                                        )}
                                     </StyledTableRow>
                                 ))}
                             </>
@@ -312,5 +354,6 @@ FlowListTable.propTypes = {
     filterFunction: PropTypes.func,
     updateFlowsApi: PropTypes.object,
     setError: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isAgentflowV2: PropTypes.bool
 }

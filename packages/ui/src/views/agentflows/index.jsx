@@ -10,12 +10,11 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
 import AgentsEmptySVG from '@/assets/images/agents_empty.svg'
-import LoginDialog from '@/ui-component/dialog/LoginDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -25,6 +24,7 @@ import useApi from '@/hooks/useApi'
 
 // const
 import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
+import { useError } from '@/store/context/ErrorContext'
 
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
@@ -36,12 +36,10 @@ const Agentflows = () => {
     const theme = useTheme()
 
     const [isLoading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
     const [images, setImages] = useState({})
     const [icons, setIcons] = useState({})
     const [search, setSearch] = useState('')
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false)
-    const [loginDialogProps, setLoginDialogProps] = useState({})
+    const { error, setError } = useError()
 
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
@@ -72,12 +70,6 @@ const Agentflows = () => {
         )
     }
 
-    const onLoginClick = (username, password) => {
-        localStorage.setItem('username', username)
-        localStorage.setItem('password', password)
-        navigate(0)
-    }
-
     const addNew = () => {
         if (agentflowVersion === 'v2') {
             navigate('/v2/agentcanvas')
@@ -102,16 +94,10 @@ const Agentflows = () => {
 
     useEffect(() => {
         if (getAllAgentflows.error) {
-            if (getAllAgentflows.error?.response?.status === 401) {
-                setLoginDialogProps({
-                    title: 'Login',
-                    confirmButtonName: 'Login'
-                })
-                setLoginDialogOpen(true)
-            } else {
-                setError(getAllAgentflows.error)
-            }
+            setError(getAllAgentflows.error)
         }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllAgentflows.error])
 
     useEffect(() => {
@@ -131,13 +117,17 @@ const Agentflows = () => {
                     images[agentflows[i].id] = []
                     icons[agentflows[i].id] = []
                     for (let j = 0; j < nodes.length; j += 1) {
+                        if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
                         const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
                         if (foundIcon) {
                             icons[agentflows[i].id].push(foundIcon)
                         } else {
                             const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                            if (!images[agentflows[i].id].includes(imageSrc)) {
-                                images[agentflows[i].id].push(imageSrc)
+                            if (!images[agentflows[i].id].some((img) => img.imageSrc === imageSrc)) {
+                                images[agentflows[i].id].push({
+                                    imageSrc,
+                                    label: nodes[j].data.label
+                                })
                             }
                         }
                     }
@@ -228,9 +218,15 @@ const Agentflows = () => {
                                 <IconList />
                             </ToggleButton>
                         </ToggleButtonGroup>
-                        <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
+                        <StyledPermissionButton
+                            permissionId={'agentflows:create'}
+                            variant='contained'
+                            onClick={addNew}
+                            startIcon={<IconPlus />}
+                            sx={{ borderRadius: 2, height: 40 }}
+                        >
                             Add New
-                        </StyledButton>
+                        </StyledPermissionButton>
                     </ViewHeader>
                     {!view || view === 'card' ? (
                         <>
@@ -257,6 +253,7 @@ const Agentflows = () => {
                     ) : (
                         <FlowListTable
                             isAgentCanvas={true}
+                            isAgentflowV2={agentflowVersion === 'v2'}
                             data={getAllAgentflows.data}
                             images={images}
                             icons={icons}
@@ -280,8 +277,6 @@ const Agentflows = () => {
                     )}
                 </Stack>
             )}
-
-            <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
             <ConfirmDialog />
         </MainCard>
     )

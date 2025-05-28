@@ -20,7 +20,8 @@ import {
     IconCopy,
     IconTrash,
     IconInfoCircle,
-    IconLoader
+    IconLoader,
+    IconAlertCircleFilled
 } from '@tabler/icons-react'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -51,11 +52,13 @@ const StyledNodeToolbar = styled(NodeToolbar)(({ theme }) => ({
 const AgentFlowNode = ({ data }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const canvas = useSelector((state) => state.canvas)
     const ref = useRef(null)
     const updateNodeInternals = useUpdateNodeInternals()
     // eslint-disable-next-line
     const [position, setPosition] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
+    const [warningMessage, setWarningMessage] = useState('')
     const { deleteNode, duplicateNode } = useContext(flowContext)
     const [showInfoDialog, setShowInfoDialog] = useState(false)
     const [infoDialogProps, setInfoDialogProps] = useState({})
@@ -131,6 +134,28 @@ const AgentFlowNode = ({ data }) => {
             }, 10)
         }
     }, [data, ref, updateNodeInternals])
+
+    useEffect(() => {
+        const nodeOutdatedMessage = (oldVersion, newVersion) =>
+            `Node version ${oldVersion} outdated\nUpdate to latest version ${newVersion}`
+        const nodeVersionEmptyMessage = (newVersion) => `Node outdated\nUpdate to latest version ${newVersion}`
+
+        const componentNode = canvas.componentNodes.find((nd) => nd.name === data.name)
+        if (componentNode) {
+            if (!data.version) {
+                setWarningMessage(nodeVersionEmptyMessage(componentNode.version))
+            } else if (data.version && componentNode.version > data.version) {
+                setWarningMessage(nodeOutdatedMessage(data.version, componentNode.version))
+            } else if (componentNode.badge === 'DEPRECATING') {
+                setWarningMessage(
+                    componentNode?.deprecateMessage ??
+                        'This node will be deprecated in the next release. Change to a new node tagged with NEW'
+                )
+            } else {
+                setWarningMessage('')
+            }
+        }
+    }, [canvas.componentNodes, data.name, data.version])
 
     return (
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
@@ -232,6 +257,24 @@ const AgentFlowNode = ({ data }) => {
                             ) : (
                                 <IconCheck />
                             )}
+                        </Avatar>
+                    </Tooltip>
+                )}
+
+                {warningMessage && (
+                    <Tooltip placement='right-start' title={<span style={{ whiteSpace: 'pre-line' }}>{warningMessage}</span>}>
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.smallAvatar,
+                                borderRadius: '50%',
+                                background: 'white',
+                                position: 'absolute',
+                                top: -10,
+                                left: -10
+                            }}
+                        >
+                            <IconAlertCircleFilled color='orange' />
                         </Avatar>
                     </Tooltip>
                 )}
@@ -378,23 +421,17 @@ const AgentFlowNode = ({ data }) => {
                                                             return (
                                                                 <Box
                                                                     key={`tool-${configIndex}-${toolIndex}-${propIndex}`}
+                                                                    component='img'
+                                                                    src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                                    alt={toolName}
                                                                     sx={{
-                                                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                        width: 20,
+                                                                        height: 20,
                                                                         borderRadius: '50%',
-                                                                        width: 24,
-                                                                        height: 24,
-                                                                        display: 'flex',
-                                                                        justifyContent: 'center',
-                                                                        alignItems: 'center',
-                                                                        padding: '4px'
+                                                                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                        padding: 0.3
                                                                     }}
-                                                                >
-                                                                    <img
-                                                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                                        src={`${baseURL}/api/v1/node-icon/${toolName}`}
-                                                                        alt={toolName}
-                                                                    />
-                                                                </Box>
+                                                                />
                                                             )
                                                         })
                                                 } else {
@@ -404,23 +441,17 @@ const AgentFlowNode = ({ data }) => {
                                                     return [
                                                         <Box
                                                             key={`tool-${configIndex}-${toolIndex}`}
+                                                            component='img'
+                                                            src={`${baseURL}/api/v1/node-icon/${toolName}`}
+                                                            alt={toolName}
                                                             sx={{
-                                                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                width: 20,
+                                                                height: 20,
                                                                 borderRadius: '50%',
-                                                                width: 24,
-                                                                height: 24,
-                                                                display: 'flex',
-                                                                justifyContent: 'center',
-                                                                alignItems: 'center',
-                                                                padding: '4px'
+                                                                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                                                                padding: 0.3
                                                             }}
-                                                        >
-                                                            <img
-                                                                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                                                                src={`${baseURL}/api/v1/node-icon/${toolName}`}
-                                                                alt={toolName}
-                                                            />
-                                                        </Box>
+                                                        />
                                                     ]
                                                 }
                                             })}

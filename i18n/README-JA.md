@@ -31,12 +31,6 @@
     npx flowise start
     ```
 
-    ユーザー名とパスワードを入力
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
-    ```
-
 3. [http://localhost:3000](http://localhost:3000) を開く
 
 ## 🐳 Docker
@@ -127,15 +121,6 @@ Flowise には、3 つの異なるモジュールが 1 つの mono リポジト�
 
     コードの変更は [http://localhost:8080](http://localhost:8080) に自動的にアプリをリロードします
 
-## 🔒 認証
-
-アプリレベルの認証を有効にするには、 `FLOWISE_USERNAME` と `FLOWISE_PASSWORD` を `packages/server` の `.env` ファイルに追加します:
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
-
 ## 🌱 環境変数
 
 Flowise は、インスタンスを設定するためのさまざまな環境変数をサポートしています。`packages/server` フォルダ内の `.env` ファイルで以下の変数を指定することができる。[続き](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)を読む
@@ -197,9 +182,9 @@ Flowise は、インスタンスを設定するためのさまざまな環境変
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-[コントリビューティングガイド](CONTRIBUTING.md)を参照してください。質問や問題があれば、[Discord](https://discord.gg/jbaHfsRVBW) までご連絡ください。
+[コントリビューティングガイド](../CONTRIBUTING.md)を参照してください。質問や問題があれば、[Discord](https://discord.gg/jbaHfsRVBW) までご連絡ください。
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 ライセンス
 
-このリポジトリのソースコードは、[Apache License Version 2.0](LICENSE.md)の下で利用可能です。
+このリポジトリのソースコードは、[Apache License Version 2.0](../LICENSE.md)の下で利用可能です。

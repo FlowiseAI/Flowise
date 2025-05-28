@@ -120,7 +120,7 @@ class ChatPromptTemplate_Prompts implements INode {
         ) {
             const appDataSource = options.appDataSource as DataSource
             const databaseEntities = options.databaseEntities as IDatabaseEntity
-            const vm = await getVM(appDataSource, databaseEntities, nodeData, {})
+            const vm = await getVM(appDataSource, databaseEntities, nodeData, options, {})
             try {
                 const response = await vm.run(`module.exports = async function() {${messageHistoryCode}}()`, __dirname)
                 if (!Array.isArray(response)) throw new Error('Returned message history must be an array')

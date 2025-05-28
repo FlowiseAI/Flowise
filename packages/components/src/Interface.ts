@@ -414,10 +414,13 @@ export interface IVisionChatModal {
     revertToOriginalModel(): void
     setMultiModalOption(multiModalOption: IMultiModalOption): void
 }
+
 export interface IStateWithMessages extends ICommonObject {
     messages: BaseMessage[]
     [key: string]: any
 }
+
+export * from './Interface.Evaluation'
 
 export interface IServerSideEventStreamer {
     streamStartEvent(chatId: string, data: any): void

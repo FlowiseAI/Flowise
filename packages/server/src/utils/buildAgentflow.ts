@@ -52,6 +52,8 @@ import { utilAddChatMessage } from './addChatMesage'
 import { CachePool } from '../CachePool'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { Telemetry } from './telemetry'
+import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerServiceUtils'
+import { UsageCacheManager } from '../UsageCacheManager'
 
 interface IWaitingNode {
     nodeId: string
@@ -99,9 +101,11 @@ interface IExecuteNodeParams {
     chatId: string
     sessionId: string
     apiMessageId: string
+    evaluationRunId?: string
     isInternal: boolean
     pastChatHistory: IMessage[]
     appDataSource: DataSource
+    usageCacheManager: UsageCacheManager
     telemetry: Telemetry
     componentNodes: IComponentNodes
     cachePool: CachePool
@@ -122,6 +126,9 @@ interface IExecuteNodeParams {
     parentExecutionId?: string
     isRecursive?: boolean
     iterationContext?: ICommonObject
+    orgId: string
+    workspaceId: string
+    subscriptionId: string
 }
 
 interface IExecuteAgentFlowParams extends Omit<IExecuteFlowParams, 'incomingInput'> {
@@ -142,13 +149,15 @@ const addExecution = async (
     appDataSource: DataSource,
     agentflowId: string,
     agentFlowExecutedData: IAgentflowExecutedData[],
-    sessionId: string
+    sessionId: string,
+    workspaceId: string
 ) => {
     const newExecution = new Execution()
     const bodyExecution = {
         agentflowId,
         state: 'INPROGRESS',
         sessionId,
+        workspaceId,
         executionData: JSON.stringify(agentFlowExecutedData)
     }
     Object.assign(newExecution, bodyExecution)
@@ -164,9 +173,10 @@ const addExecution = async (
  * @param {Partial<IExecution>} data
  * @returns {Promise<void>}
  */
-const updateExecution = async (appDataSource: DataSource, executionId: string, data?: Partial<IExecution>) => {
+const updateExecution = async (appDataSource: DataSource, executionId: string, workspaceId: string, data?: Partial<IExecution>) => {
     const execution = await appDataSource.getRepository(Execution).findOneBy({
-        id: executionId
+        id: executionId,
+        workspaceId
     })
 
     if (!execution) {
@@ -325,6 +335,30 @@ export const resolveVariables = async (
                 }
             }
 
+            // Check if the variable is an output reference like `nodeId.output.path`
+            const outputMatch = variableFullPath.match(/^(.*?)\.output\.(.+)$/)
+            if (outputMatch && agentFlowExecutedData) {
+                // Extract nodeId and outputPath from the match
+                const [, nodeIdPart, outputPath] = outputMatch
+                // Clean nodeId (handle escaped underscores)
+                const cleanNodeId = nodeIdPart.replace('\\', '')
+                // Find the last (most recent) matching node data instead of the first one
+                const nodeData = [...agentFlowExecutedData].reverse().find((d) => d.nodeId === cleanNodeId)
+                if (nodeData?.data?.output && outputPath.trim()) {
+                    const variableValue = get(nodeData.data.output, outputPath)
+                    if (variableValue !== undefined) {
+                        // Replace the reference with actual value
+                        const formattedValue =
+                            Array.isArray(variableValue) || (typeof variableValue === 'object' && variableValue !== null)
+                                ? JSON.stringify(variableValue)
+                                : String(variableValue)
+                        resolvedValue = resolvedValue.replace(match, formattedValue)
+                        // Skip fallback logic
+                        continue
+                    }
+                }
+            }
+
             // Find node data in executed data
             // sometimes turndown value returns a backslash like `llmAgentflow\_1`, remove the backslash
             const cleanNodeId = variableFullPath.replace('\\', '')
@@ -334,7 +368,8 @@ export const resolveVariables = async (
                 : undefined
             if (nodeData && nodeData.data) {
                 // Replace the reference with actual value
-                const actualValue = (nodeData.data['output'] as ICommonObject)?.content
+                const nodeOutput = nodeData.data['output'] as ICommonObject
+                const actualValue = nodeOutput?.content ?? nodeOutput?.http?.data
                 // For arrays and objects, stringify them to prevent toString() conversion issues
                 const formattedValue =
                     Array.isArray(actualValue) || (typeof actualValue === 'object' && actualValue !== null)
@@ -770,9 +805,11 @@ const executeNode = async ({
     chatId,
     sessionId,
     apiMessageId,
+    evaluationRunId,
     parentExecutionId,
     pastChatHistory,
     appDataSource,
+    usageCacheManager,
     telemetry,
     componentNodes,
     cachePool,
@@ -792,7 +829,10 @@ const executeNode = async ({
     analyticHandlers,
     isInternal,
     isRecursive,
-    iterationContext
+    iterationContext,
+    orgId,
+    workspaceId,
+    subscriptionId
 }: IExecuteNodeParams): Promise<{
     result: any
     shouldStop?: boolean
@@ -824,7 +864,7 @@ const executeNode = async ({
         }
 
         // Get available variables and resolve them
-        const availableVariables = await appDataSource.getRepository(Variable).find()
+        const availableVariables = await appDataSource.getRepository(Variable).findBy(getWorkspaceSearchOptions(workspaceId))
 
         // Prepare flow config
         let updatedState = cloneDeep(agentflowRuntime.state)
@@ -902,6 +942,9 @@ const executeNode = async ({
 
         // Prepare run parameters
         const runParams = {
+            orgId,
+            workspaceId,
+            subscriptionId,
             chatId,
             sessionId,
             chatflowid: chatflow.id,
@@ -909,6 +952,7 @@ const executeNode = async ({
             logger,
             appDataSource,
             databaseEntities,
+            usageCacheManager,
             componentNodes,
             cachePool,
             analytic: chatflow.analytic,
@@ -922,7 +966,8 @@ const executeNode = async ({
             analyticHandlers,
             parentTraceIds,
             humanInputAction,
-            iterationContext
+            iterationContext,
+            evaluationRunId
         }
 
         // Execute node
@@ -982,7 +1027,9 @@ const executeNode = async ({
                             incomingInput,
                             chatflow: iterationChatflow,
                             chatId,
+                            evaluationRunId,
                             appDataSource,
+                            usageCacheManager,
                             telemetry,
                             cachePool,
                             sseStreamer,
@@ -996,7 +1043,10 @@ const executeNode = async ({
                             iterationContext: {
                                 ...iterationContext,
                                 agentflowRuntime
-                            }
+                            },
+                            orgId,
+                            workspaceId,
+                            subscriptionId
                         })
 
                         // Store the result
@@ -1023,7 +1073,7 @@ const executeNode = async ({
                             if (parentExecutionId) {
                                 try {
                                     logger.debug(`  📝 Updating parent execution ${parentExecutionId} with iteration ${i + 1} data`)
-                                    await updateExecution(appDataSource, parentExecutionId, {
+                                    await updateExecution(appDataSource, parentExecutionId, workspaceId, {
                                         executionData: JSON.stringify(agentFlowExecutedData)
                                     })
                                 } catch (error) {
@@ -1192,8 +1242,10 @@ export const executeAgentFlow = async ({
     incomingInput,
     chatflow,
     chatId,
+    evaluationRunId,
     appDataSource,
     telemetry,
+    usageCacheManager,
     cachePool,
     sseStreamer,
     baseURL,
@@ -1204,7 +1256,10 @@ export const executeAgentFlow = async ({
     isRecursive = false,
     parentExecutionId,
     iterationContext,
-    isTool = false
+    isTool = false,
+    orgId,
+    workspaceId,
+    subscriptionId
 }: IExecuteAgentFlowParams) => {
     logger.debug('\n🚀 Starting flow execution')
 
@@ -1281,7 +1336,8 @@ export const executeAgentFlow = async ({
         const previousExecutions = await appDataSource.getRepository(Execution).find({
             where: {
                 sessionId,
-                agentflowId: chatflowid
+                agentflowId: chatflowid,
+                workspaceId
             },
             order: {
                 createdDate: 'DESC'
@@ -1291,6 +1347,24 @@ export const executeAgentFlow = async ({
         if (previousExecutions.length) {
             previousExecution = previousExecutions[0]
         }
+    }
+
+    // If the state is persistent, get the state from the previous execution
+    const startPersistState = nodes.find((node) => node.data.name === 'startAgentflow')?.data.inputs?.startPersistState
+    if (startPersistState === true && previousExecution) {
+        const previousExecutionData = (JSON.parse(previousExecution.executionData) as IAgentflowExecutedData[]) ?? []
+
+        let previousState = {}
+        if (Array.isArray(previousExecutionData) && previousExecutionData.length) {
+            for (const execData of previousExecutionData.reverse()) {
+                if (execData.data.state) {
+                    previousState = execData.data.state
+                    break
+                }
+            }
+        }
+
+        agentflowRuntime.state = previousState
     }
 
     // If the start input type is form input, get the form values from the previous execution (form values are persisted in the same session)
@@ -1344,7 +1418,7 @@ export const executeAgentFlow = async ({
         agentflowRuntime.state = (lastState as ICommonObject) ?? {}
 
         // Update execution state to INPROGRESS
-        await updateExecution(appDataSource, previousExecution.id, {
+        await updateExecution(appDataSource, previousExecution.id, workspaceId, {
             state: 'INPROGRESS'
         })
         newExecution = previousExecution
@@ -1357,7 +1431,7 @@ export const executeAgentFlow = async ({
         // For recursive calls with a valid parent execution ID, don't create a new execution
         // Instead, fetch the parent execution to use it
         const parentExecution = await appDataSource.getRepository(Execution).findOne({
-            where: { id: parentExecutionId }
+            where: { id: parentExecutionId, workspaceId }
         })
 
         if (parentExecution) {
@@ -1365,7 +1439,7 @@ export const executeAgentFlow = async ({
             newExecution = parentExecution
         } else {
             console.warn(`   ⚠️ Parent execution ID ${parentExecutionId} not found, will create new execution`)
-            newExecution = await addExecution(appDataSource, chatflowid, agentFlowExecutedData, sessionId)
+            newExecution = await addExecution(appDataSource, chatflowid, agentFlowExecutedData, sessionId, workspaceId)
             parentExecutionId = newExecution.id
         }
     } else {
@@ -1374,7 +1448,7 @@ export const executeAgentFlow = async ({
         checkForMultipleStartNodes(startingNodeIds, isRecursive, nodes)
 
         // Only create a new execution if this is not a recursive call
-        newExecution = await addExecution(appDataSource, chatflowid, agentFlowExecutedData, sessionId)
+        newExecution = await addExecution(appDataSource, chatflowid, agentFlowExecutedData, sessionId, workspaceId)
         parentExecutionId = newExecution.id
     }
 
@@ -1430,6 +1504,8 @@ export const executeAgentFlow = async ({
     try {
         if (chatflow.analytic) {
             analyticHandlers = AnalyticHandler.getInstance({ inputs: {} } as any, {
+                orgId,
+                workspaceId,
                 appDataSource,
                 databaseEntities,
                 componentNodes,
@@ -1486,10 +1562,12 @@ export const executeAgentFlow = async ({
                 chatId,
                 sessionId,
                 apiMessageId,
+                evaluationRunId,
                 parentExecutionId,
                 isInternal,
                 pastChatHistory,
                 appDataSource,
+                usageCacheManager,
                 telemetry,
                 componentNodes,
                 cachePool,
@@ -1508,7 +1586,10 @@ export const executeAgentFlow = async ({
                 parentTraceIds,
                 analyticHandlers,
                 isRecursive,
-                iterationContext
+                iterationContext,
+                orgId,
+                workspaceId,
+                subscriptionId
             })
 
             if (executionResult.agentFlowExecutedData) {
@@ -1607,7 +1688,7 @@ export const executeAgentFlow = async ({
             if (!isRecursive) {
                 sseStreamer?.streamAgentFlowExecutedDataEvent(chatId, agentFlowExecutedData)
 
-                await updateExecution(appDataSource, newExecution.id, {
+                await updateExecution(appDataSource, newExecution.id, workspaceId, {
                     executionData: JSON.stringify(agentFlowExecutedData),
                     state: errorStatus
                 })
@@ -1642,7 +1723,7 @@ export const executeAgentFlow = async ({
 
     // Only update execution record if this is not a recursive call
     if (!isRecursive) {
-        await updateExecution(appDataSource, newExecution.id, {
+        await updateExecution(appDataSource, newExecution.id, workspaceId, {
             executionData: JSON.stringify(agentFlowExecutedData),
             state: status
         })
@@ -1744,6 +1825,8 @@ export const executeAgentFlow = async ({
     if (chatflow.followUpPrompts) {
         const followUpPromptsConfig = JSON.parse(chatflow.followUpPrompts)
         const followUpPrompts = await generateFollowUpPrompts(followUpPromptsConfig, apiMessage.content, {
+            orgId,
+            workspaceId,
             chatId,
             chatflowid,
             appDataSource,
@@ -1760,13 +1843,17 @@ export const executeAgentFlow = async ({
 
     logger.debug(`[server]: Finished running agentflow ${chatflowid}`)
 
-    await telemetry.sendTelemetry('prediction_sent', {
-        version: await getAppVersion(),
-        chatflowId: chatflowid,
-        chatId,
-        type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
-        flowGraph: getTelemetryFlowObj(nodes, edges)
-    })
+    await telemetry.sendTelemetry(
+        'prediction_sent',
+        {
+            version: await getAppVersion(),
+            chatflowId: chatflowid,
+            chatId,
+            type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+            flowGraph: getTelemetryFlowObj(nodes, edges)
+        },
+        orgId
+    )
 
     /*** Prepare response ***/
     let result: ICommonObject = {}

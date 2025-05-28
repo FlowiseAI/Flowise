@@ -92,7 +92,7 @@ class LangchainChatGoogleGenerativeAI
     private contextCache?: FlowiseGoogleAICacheManager
 
     get _isMultimodalModel() {
-        return this.modelName.includes('vision') || this.modelName.startsWith('gemini-1.5')
+        return true
     }
 
     constructor(fields?: GoogleGenerativeAIChatInput) {

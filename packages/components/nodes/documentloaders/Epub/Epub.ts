@@ -118,10 +118,11 @@ class Epub_DocumentLoaders implements INode {
                 files = fileName.startsWith('[') && fileName.endsWith(']') ? JSON.parse(fileName) : [fileName]
 
                 const chatflowid = options.chatflowid
+                const orgId = options.orgId
 
                 for (const file of files) {
                     if (!file) continue
-                    const fileData = await getFileFromStorage(file, chatflowid)
+                    const fileData = await getFileFromStorage(file, orgId, chatflowid)
                     const tempFilePath = path.join(tempDir, `${Date.now()}_${file}`)
                     fs.writeFileSync(tempFilePath, fileData)
                     await this.extractDocs(usage, tempFilePath, textSplitter, docs)
