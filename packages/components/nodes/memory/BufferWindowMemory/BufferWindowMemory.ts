@@ -69,6 +69,7 @@ class BufferWindowMemory_Memory implements INode {
         const appDataSource = options.appDataSource as DataSource
         const databaseEntities = options.databaseEntities as IDatabaseEntity
         const chatflowid = options.chatflowid as string
+        const orgId = options.orgId as string
 
         const obj: Partial<BufferWindowMemoryInput> & BufferMemoryExtendedInput = {
             returnMessages: true,
@@ -77,7 +78,8 @@ class BufferWindowMemory_Memory implements INode {
             k: parseInt(k, 10),
             appDataSource,
             databaseEntities,
-            chatflowid
+            chatflowid,
+            orgId
         }
 
         return new BufferWindowMemoryExtended(obj)
@@ -89,12 +91,14 @@ interface BufferMemoryExtendedInput {
     appDataSource: DataSource
     databaseEntities: IDatabaseEntity
     chatflowid: string
+    orgId: string
 }
 
 class BufferWindowMemoryExtended extends FlowiseWindowMemory implements MemoryMethods {
     appDataSource: DataSource
     databaseEntities: IDatabaseEntity
     chatflowid: string
+    orgId: string
     sessionId = ''
 
     constructor(fields: BufferWindowMemoryInput & BufferMemoryExtendedInput) {
@@ -103,6 +107,7 @@ class BufferWindowMemoryExtended extends FlowiseWindowMemory implements MemoryMe
         this.appDataSource = fields.appDataSource
         this.databaseEntities = fields.databaseEntities
         this.chatflowid = fields.chatflowid
+        this.orgId = fields.orgId
     }
 
     async getChatMessages(
@@ -134,7 +139,7 @@ class BufferWindowMemoryExtended extends FlowiseWindowMemory implements MemoryMe
         }
 
         if (returnBaseMessages) {
-            return await mapChatMessageToBaseMessage(chatMessage)
+            return await mapChatMessageToBaseMessage(chatMessage, this.orgId)
         }
 
         let returnIMessages: IMessage[] = []

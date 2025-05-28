@@ -3,14 +3,25 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
+import { getAppVersion } from '../../utils'
+import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { QueryRunner } from 'typeorm'
 import { validate } from 'uuid'
 
-const createVariable = async (newVariable: Variable) => {
+const createVariable = async (newVariable: Variable, orgId: string) => {
     try {
         const appServer = getRunningExpressApp()
+
         const variable = await appServer.AppDataSource.getRepository(Variable).create(newVariable)
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(variable)
+        await appServer.telemetry.sendTelemetry(
+            'variable_created',
+            {
+                version: await getAppVersion(),
+                variableType: variable.type
+            },
+            orgId
+        )
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -33,10 +44,10 @@ const deleteVariable = async (variableId: string): Promise<any> => {
     }
 }
 
-const getAllVariables = async () => {
+const getAllVariables = async (workspaceId?: string) => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(Variable).find()
+        const dbResponse = await appServer.AppDataSource.getRepository(Variable).findBy(getWorkspaceSearchOptions(workspaceId))
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(

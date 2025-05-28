@@ -18,4 +18,7 @@ export class ApiKey implements IApiKey {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Column({ nullable: true, type: 'text' })
+    workspaceId?: string
 }

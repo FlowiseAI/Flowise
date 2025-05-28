@@ -1,14 +1,14 @@
 import { StatusCodes } from 'http-status-codes'
-import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { getErrorMessage } from '../../errors/utils'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { Execution } from '../../database/entities/Execution'
-import { ExecutionState, IAgentflowExecutedData } from '../../Interface'
 import { In } from 'typeorm'
 import { ChatMessage } from '../../database/entities/ChatMessage'
+import { Execution } from '../../database/entities/Execution'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { getErrorMessage } from '../../errors/utils'
+import { ExecutionState, IAgentflowExecutedData } from '../../Interface'
 import { _removeCredentialId } from '../../utils/buildAgentflow'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
-interface ExecutionFilters {
+export interface ExecutionFilters {
     id?: string
     agentflowId?: string
     sessionId?: string
@@ -17,13 +17,19 @@ interface ExecutionFilters {
     endDate?: Date
     page?: number
     limit?: number
+    workspaceId?: string
 }
 
-const getExecutionById = async (executionId: string): Promise<Execution | null> => {
+const getExecutionById = async (executionId: string, workspaceId?: string): Promise<Execution | null> => {
     try {
         const appServer = getRunningExpressApp()
         const executionRepository = appServer.AppDataSource.getRepository(Execution)
-        const res = await executionRepository.findOne({ where: { id: executionId } })
+
+        const query: any = { id: executionId }
+        // Add workspace filtering if provided
+        if (workspaceId) query.workspaceId = workspaceId
+
+        const res = await executionRepository.findOne({ where: query })
         if (!res) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
         }
@@ -59,7 +65,7 @@ const getPublicExecutionById = async (executionId: string): Promise<Execution | 
 const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data: Execution[]; total: number }> => {
     try {
         const appServer = getRunningExpressApp()
-        const { id, agentflowId, sessionId, state, startDate, endDate, page = 1, limit = 10 } = filters
+        const { id, agentflowId, sessionId, state, startDate, endDate, page = 1, limit = 10, workspaceId } = filters
 
         // Handle UUID fields properly using raw parameters to avoid type conversion issues
         // This uses the query builder instead of direct objects for compatibility with UUID fields
@@ -74,6 +80,7 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
         if (agentflowId) queryBuilder.andWhere('execution.agentflowId = :agentflowId', { agentflowId })
         if (sessionId) queryBuilder.andWhere('execution.sessionId = :sessionId', { sessionId })
         if (state) queryBuilder.andWhere('execution.state = :state', { state })
+        if (workspaceId) queryBuilder.andWhere('execution.workspaceId = :workspaceId', { workspaceId })
 
         // Date range conditions
         if (startDate && endDate) {
@@ -95,12 +102,15 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
     }
 }
 
-const updateExecution = async (executionId: string, data: Partial<Execution>): Promise<Execution | null> => {
+const updateExecution = async (executionId: string, data: Partial<Execution>, workspaceId?: string): Promise<Execution | null> => {
     try {
         const appServer = getRunningExpressApp()
-        const execution = await appServer.AppDataSource.getRepository(Execution).findOneBy({
-            id: executionId
-        })
+
+        const query: any = { id: executionId }
+        // Add workspace filtering if provided
+        if (workspaceId) query.workspaceId = workspaceId
+
+        const execution = await appServer.AppDataSource.getRepository(Execution).findOneBy(query)
         if (!execution) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Execution ${executionId} not found`)
         }
@@ -120,17 +130,20 @@ const updateExecution = async (executionId: string, data: Partial<Execution>): P
 /**
  * Delete multiple executions by their IDs
  * @param executionIds Array of execution IDs to delete
+ * @param workspaceId Optional workspace ID to filter executions
  * @returns Object with success status and count of deleted executions
  */
-const deleteExecutions = async (executionIds: string[]): Promise<{ success: boolean; deletedCount: number }> => {
+const deleteExecutions = async (executionIds: string[], workspaceId?: string): Promise<{ success: boolean; deletedCount: number }> => {
     try {
         const appServer = getRunningExpressApp()
         const executionRepository = appServer.AppDataSource.getRepository(Execution)
 
-        // Delete executions where id is in the provided array
-        const result = await executionRepository.delete({
-            id: In(executionIds)
-        })
+        // Create the where condition with workspace filtering if provided
+        const whereCondition: any = { id: In(executionIds) }
+        if (workspaceId) whereCondition.workspaceId = workspaceId
+
+        // Delete executions where id is in the provided array and belongs to the workspace
+        const result = await executionRepository.delete(whereCondition)
 
         // Update chat message executionId column to NULL
         await appServer.AppDataSource.getRepository(ChatMessage).update({ executionId: In(executionIds) }, { executionId: null as any })

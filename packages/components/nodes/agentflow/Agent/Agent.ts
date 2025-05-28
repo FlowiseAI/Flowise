@@ -427,7 +427,8 @@ class Agent_Agentflow implements INode {
                 return returnData
             }
 
-            const stores = await appDataSource.getRepository(databaseEntities['DocumentStore']).find()
+            const searchOptions = options.searchOptions || {}
+            const stores = await appDataSource.getRepository(databaseEntities['DocumentStore']).findBy(searchOptions)
             for (const store of stores) {
                 if (store.status === 'UPSERTED') {
                     const obj = {
@@ -755,7 +756,7 @@ class Agent_Agentflow implements INode {
                 /*
                  * If this is the first node:
                  * - Add images to messages if exist
-                 * - Add user message
+                 * - Add user message if it does not exist in the agentMessages array
                  */
                 if (options.uploads) {
                     const imageContents = await getUniqueImageMessages(options, messages, modelConfig)
@@ -766,7 +767,7 @@ class Agent_Agentflow implements INode {
                     }
                 }
 
-                if (input && typeof input === 'string') {
+                if (input && typeof input === 'string' && !agentMessages.some((msg) => msg.role === 'user')) {
                     messages.push({
                         role: 'user',
                         content: input
@@ -976,7 +977,19 @@ class Agent_Agentflow implements INode {
                     inputMessages.push(...runtimeImageMessagesWithFileRef)
                 }
                 if (input && typeof input === 'string') {
-                    inputMessages.push({ role: 'user', content: input })
+                    if (!enableMemory) {
+                        if (!agentMessages.some((msg) => msg.role === 'user')) {
+                            inputMessages.push({ role: 'user', content: input })
+                        } else {
+                            agentMessages.map((msg) => {
+                                if (msg.role === 'user') {
+                                    inputMessages.push({ role: 'user', content: msg.content })
+                                }
+                            })
+                        }
+                    } else {
+                        inputMessages.push({ role: 'user', content: input })
+                    }
                 }
             }
 
@@ -1442,6 +1455,8 @@ class Agent_Agentflow implements INode {
                         toolOutput: '',
                         error: getErrorMessage(e)
                     })
+                    sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
+                    throw new Error(getErrorMessage(e))
                 }
             }
         }
@@ -1678,6 +1693,8 @@ class Agent_Agentflow implements INode {
                             toolOutput: '',
                             error: getErrorMessage(e)
                         })
+                        sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
+                        throw new Error(getErrorMessage(e))
                     }
                 }
             }

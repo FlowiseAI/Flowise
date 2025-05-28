@@ -20,6 +20,8 @@ const getIsChatflowStreaming = (id) => client.get(`/chatflows-streaming/${id}`)
 
 const getAllowChatflowUploads = (id) => client.get(`/chatflows-uploads/${id}`)
 
+const getHasChatflowChanged = (id, lastUpdatedDateTime) => client.get(`/chatflows/has-changed/${id}/${lastUpdatedDateTime}`)
+
 const generateAgentflow = (body) => client.post(`/agentflowv2-generator/generate`, body)
 
 export default {
@@ -33,5 +35,6 @@ export default {
     deleteChatflow,
     getIsChatflowStreaming,
     getAllowChatflowUploads,
+    getHasChatflowChanged,
     generateAgentflow
 }
