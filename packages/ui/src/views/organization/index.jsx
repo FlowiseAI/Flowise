@@ -287,7 +287,7 @@ const OrganizationSetupPage = () => {
                                 <>
                                     <Box>
                                         <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                            <Typography>
+                                            <Typography sx={{ mb: 1 }}>
                                                 Existing Username<span style={{ color: 'red' }}>&nbsp;*</span>
                                             </Typography>
                                             <div style={{ flexGrow: 1 }}></div>
@@ -304,7 +304,7 @@ const OrganizationSetupPage = () => {
                                     </Box>
                                     <Box>
                                         <div style={{ display: 'flex', flexDirection: 'row' }}>
-                                            <Typography>
+                                            <Typography sx={{ mb: 1 }}>
                                                 Existing Password<span style={{ color: 'red' }}>&nbsp;*</span>
                                             </Typography>
                                             <div style={{ flexGrow: 1 }}></div>
