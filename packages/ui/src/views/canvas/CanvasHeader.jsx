@@ -15,7 +15,6 @@ import {
     Button,
     Dialog,
     DialogContent,
-    DialogTitle,
     Tabs,
     Tab,
     DialogActions
@@ -46,6 +45,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import axios from 'axios'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -253,36 +253,69 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const handleRunClick = () => {
         setRunResult({
-            input: {
-                a: 1,
-                'sys.files': [],
-                'sys.user_id': '40f573af-ea4b-4f5d-ab82-71bf4d212d49',
-                'sys.app_id': 'cfc0f4c2-bf1f-4352-9866-12cb93e23388',
-                'sys.workflow_id': '57b216f9-0d99-4aee-9761-b9e2ab681713'
-            },
+            input: {},
             output: {},
             details: {
-                status: 'SUCCESS',
-                executor: 'Dify',
-                startTime: '2025-05-26 04:26',
-                runTime: '0.070s',
+                status: '',
+                executor: 'System',
+                startTime: new Date().toLocaleString(),
+                runTime: '0.000s',
                 totalTokens: '0 Tokens',
-                steps: 2
+                steps: 0
             },
-            trace: [
-                {
-                    node: '开始',
-                    time: '31.299 ms',
-                    status: 'success'
-                },
-                {
-                    node: '结束',
-                    time: '51.209 ms',
-                    status: 'success'
-                }
-            ]
+            trace: []
         })
         setRunDialogOpen(true)
+    }
+
+    const handleStartRun = async () => {
+        try {
+            const response = await axios.post(`/api/v1/prediction/${chatflow.id}`, {
+                question: '',
+                chatId: Date.now().toString(),
+                overrideConfig: {}
+            })
+
+            // 获取 EndFunction 节点的结果
+            let endFunctionOutput = {}
+            try {
+                if (response.data.results && Array.isArray(response.data.results)) {
+                    const endFunctionResults = response.data.results.filter((result) => {
+                        return result.nodeName === 'endFunction'
+                    })
+
+                    if (endFunctionResults && endFunctionResults.length > 0 && endFunctionResults[0].result) {
+                        endFunctionOutput = endFunctionResults[0].result
+                    }
+                }
+            } catch (error) {
+                console.warn('获取 EndFunction 结果时出错:', error)
+            }
+
+            setRunResult({
+                input: response.data.input || {},
+                output: endFunctionOutput || {},
+                details: {
+                    status: response.data.status || 'SUCCESS',
+                    executor: response.data.executor || 'System',
+                    startTime: new Date().toLocaleString(),
+                    runTime: response.data.runTime || '0.000s',
+                    totalTokens: response.data.totalTokens || '0 Tokens',
+                    steps: response.data.steps || 0
+                },
+                trace: response.data.trace || []
+            })
+        } catch (error) {
+            console.error('Error running prediction:', error)
+            setRunResult({
+                ...runResult,
+                details: {
+                    ...runResult.details,
+                    status: 'ERROR',
+                    error: error.message
+                }
+            })
+        }
     }
 
     useEffect(() => {
@@ -559,17 +592,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                 aria-labelledby='run-dialog-title'
                 aria-describedby='run-dialog-description'
             >
-                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
                     <Typography variant='h3'>Test Run#7</Typography>
                     <IconX style={{ cursor: 'pointer' }} onClick={() => setRunDialogOpen(false)} />
-                </DialogTitle>
+                </Box>
                 <DialogContent>
                     <Tabs
                         value={activeTab}
                         onChange={(e, newValue) => setActiveTab(newValue)}
                         sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
                     >
-                        <Tab label='输入' />
                         <Tab label='结果' />
                         <Tab label='详情' />
                         <Tab label='追踪' />
@@ -577,30 +609,54 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
                     {activeTab === 0 && (
                         <Box>
-                            <pre style={{ whiteSpace: 'pre-wrap' }}>{JSON.stringify(runResult.input, null, 2)}</pre>
+                            <pre style={{ whiteSpace: 'pre-wrap' }}>
+                                {runResult.output &&
+                                    typeof runResult.output === 'object' &&
+                                    (Object.keys(runResult.output).length === 0
+                                        ? '' // 如果是空对象，显示空字符串
+                                        : 'result' in runResult.output
+                                        ? JSON.stringify(runResult.output.result, null, 2)
+                                        : JSON.stringify(runResult.output, null, 2))}
+                            </pre>
+
+                            {/* {runResult.output && typeof runResult.output === 'object' &&
+                                Object.keys(runResult.output).length > 0 && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-start', mt: 2 }}>
+                                        <StyledButton
+                                            variant="contained"
+                                            onClick={() => {
+                                                const resultData = 'result' in runResult.output
+                                                    ? runResult.output.result
+                                                    : runResult.output
+                                                const dataStr = JSON.stringify(resultData, null, 2)
+                                                const blob = new Blob([dataStr], { type: 'application/json' })
+                                                const url = URL.createObjectURL(blob)
+                                                const link = document.createElement('a')
+                                                link.href = url
+                                                link.download = `result_${new Date().getTime()}.json`
+                                                document.body.appendChild(link)
+                                                link.click()
+                                                document.body.removeChild(link)
+                                                URL.revokeObjectURL(url)
+                                            }}
+                                            sx={{
+                                                height: 37,
+                                                borderRadius: 2,
+                                                bgcolor: theme.palette.primary.main,
+                                                '&:hover': {
+                                                    bgcolor: theme.palette.primary.dark
+                                                }
+                                            }}
+                                        >
+                                            下载结果
+                                        </StyledButton>
+                                    </Box>
+                                )
+                            } */}
                         </Box>
                     )}
 
                     {activeTab === 1 && (
-                        <Box>
-                            <Box
-                                sx={{
-                                    p: 2,
-                                    bgcolor: '#f0f9f4',
-                                    borderRadius: 1,
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    mb: 2
-                                }}
-                            >
-                                <Typography>状态: SUCCESS</Typography>
-                                <Typography>运行时间: {runResult.details.runTime}</Typography>
-                                <Typography>总 TOKEN 数: {runResult.details.totalTokens}</Typography>
-                            </Box>
-                        </Box>
-                    )}
-
-                    {activeTab === 2 && (
                         <Box>
                             <Stack spacing={2}>
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -631,7 +687,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         </Box>
                     )}
 
-                    {activeTab === 3 && (
+                    {activeTab === 2 && (
                         <Box>
                             <Stack spacing={2}>
                                 {runResult.trace.map((step, index) => (
@@ -666,7 +722,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     <StyledButton
                         variant='contained'
                         fullWidth
-                        onClick={() => {}}
+                        onClick={handleStartRun}
                         sx={{
                             height: 37,
                             borderRadius: 2,

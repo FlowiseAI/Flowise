@@ -97,16 +97,22 @@ const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any): Pr
                 const nodeInstance = appServer.nodesPool.componentNodes[nodeName]
                 const methodName = nodeData.loadMethod || ''
 
+                // 获取所有节点
+                const flowData = JSON.parse(requestBody.flowData || '{}')
+                const allNodes = flowData.nodes || []
+
                 const dbResponse: INodeOptionsValue[] = await nodeInstance.loadMethods![methodName]!.call(nodeInstance, nodeData, {
                     appDataSource: appServer.AppDataSource,
                     databaseEntities: databaseEntities,
                     componentNodes: appServer.nodesPool.componentNodes,
                     previousNodes: requestBody.previousNodes,
-                    currentNode: requestBody.currentNode
+                    currentNode: requestBody.currentNode,
+                    nodes: allNodes // 传递所有节点
                 })
 
                 return dbResponse
             } catch (error) {
+                console.error('Error in getSingleNodeAsyncOptions:', error)
                 return []
             }
         } else {

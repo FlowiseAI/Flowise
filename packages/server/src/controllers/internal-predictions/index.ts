@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
-import { utilBuildChatflow } from '../../utils/buildChatflow'
+import { buildNewflow } from '../../utils/buildNewflow'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { getErrorMessage } from '../../errors/utils'
 import { MODE } from '../../Interface'
+import { v4 as uuidv4 } from 'uuid'
 
 // Send input message and get prediction result (Internal)
 const createInternalPrediction = async (req: Request, res: Response, next: NextFunction) => {
@@ -11,8 +12,17 @@ const createInternalPrediction = async (req: Request, res: Response, next: NextF
             createAndStreamInternalPrediction(req, res, next)
             return
         } else {
-            const apiResponse = await utilBuildChatflow(req, true)
-            if (apiResponse) return res.json(apiResponse)
+            const result = await buildNewflow(req, true)
+            if (result) {
+                return res.json({
+                    text: result.finalResult?.text || '',
+                    status: result.status,
+                    executionTime: result.executionTime,
+                    tokenCount: result.tokenCount,
+                    results: result.results,
+                    chatId: result.chatId
+                })
+            }
         }
     } catch (error) {
         next(error)
@@ -21,7 +31,11 @@ const createInternalPrediction = async (req: Request, res: Response, next: NextF
 
 // Send input message and stream prediction result using SSE (Internal)
 const createAndStreamInternalPrediction = async (req: Request, res: Response, next: NextFunction) => {
-    const chatId = req.body.chatId
+    let chatId = req.body.chatId
+    if (!chatId) {
+        chatId = req.body.chatId ?? req.body.overrideConfig?.sessionId ?? uuidv4()
+        req.body.chatId = chatId
+    }
     const sseStreamer = getRunningExpressApp().sseStreamer
 
     try {
@@ -36,17 +50,30 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
             getRunningExpressApp().redisSubscriber.subscribe(chatId)
         }
 
-        const apiResponse = await utilBuildChatflow(req, true)
-        sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
+        const result = await buildNewflow(req, true)
+        if (result) {
+            const responseData = {
+                text: result.finalResult?.text || '',
+                status: result.status,
+                executionTime: result.executionTime,
+                tokenCount: result.tokenCount,
+                results: result.results,
+                chatId: result.chatId || chatId
+            }
+            sseStreamer.streamMetadataEvent(chatId, responseData)
+        }
     } catch (error) {
         if (chatId) {
             sseStreamer.streamErrorEvent(chatId, getErrorMessage(error))
         }
         next(error)
     } finally {
-        sseStreamer.removeClient(chatId)
+        if (chatId) {
+            sseStreamer.removeClient(chatId)
+        }
     }
 }
+
 export default {
     createInternalPrediction
 }

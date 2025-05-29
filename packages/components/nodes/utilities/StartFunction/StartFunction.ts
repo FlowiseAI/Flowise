@@ -12,6 +12,7 @@ class StartFunction_Utilities implements INode {
     tags: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    result: any
 
     constructor() {
         this.label = '开始'
@@ -25,12 +26,12 @@ class StartFunction_Utilities implements INode {
         this.tags = ['Utilities']
         this.inputs = [
             {
-                label: 'a',
-                name: 'a',
+                label: 'inputValue',
+                name: 'inputValue',
                 type: 'string',
-                description: '输入参数 a',
+                description: '输入参数值',
                 optional: false,
-                placeholder: '请输入参数 a'
+                placeholder: '请输入参数值'
             },
             {
                 label: 'sys.files',
@@ -83,7 +84,7 @@ class StartFunction_Utilities implements INode {
     }
 
     async init(nodeData: INodeData, _input: string, _options: ICommonObject): Promise<any> {
-        const a = nodeData.inputs?.a as string
+        const inputValue = nodeData.inputs?.inputValue as string
         const sysFiles = nodeData.inputs?.sysFiles
         const sysUserId = nodeData.inputs?.sysUserId
         const sysAppId = nodeData.inputs?.sysAppId
@@ -92,7 +93,7 @@ class StartFunction_Utilities implements INode {
 
         // 构建输出对象
         const output = {
-            a,
+            inputValue,
             sys: {
                 files: sysFiles,
                 user_id: sysUserId,
@@ -102,9 +103,10 @@ class StartFunction_Utilities implements INode {
             }
         }
 
-        return {
-            output
-        }
+        // 保存结果到节点实例
+        this.result = output
+
+        return output
     }
 }
 

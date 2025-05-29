@@ -26,7 +26,7 @@ class EndFunction_Utilities implements INode {
             {
                 label: '输入',
                 name: 'input',
-                type: 'string',
+                type: 'string | number | json | array | file',
                 description: '上游节点的输出数据',
                 optional: true,
                 acceptVariable: true,

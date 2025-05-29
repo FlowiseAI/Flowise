@@ -6,6 +6,8 @@
     "types": "dist/src/index.d.ts",
     "scripts": {
         "build": "tsc && gulp",
+        "watch:compile": "tsc-watch --onSuccess \"gulp\" --onFailure \"echo Error: Compilation failed\" --compiler typescript/bin/tsc",
+        "watch": "pnpm run watch:compile",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "clean": "rimraf dist",
         "nuke": "rimraf dist node_modules .turbo"

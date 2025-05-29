@@ -46,6 +46,7 @@ import { Tab } from '@/ui-component/tabs/Tab'
 import { ConfigInput } from '@/views/agentflowsv2/ConfigInput'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
+import { LoopFunction } from '@/ui-component/loop'
 
 import ToolDialog from '@/views/tools/ToolDialog'
 import AssistantDialog from '@/views/assistants/openai/AssistantDialog'
@@ -757,20 +758,19 @@ const NodeInputHandler = ({
         setModelSelectionDialogOpen(true)
     }
 
-    useEffect(() => {
-        if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
-            setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)
-            updateNodeInternals(data.id)
+    const renderComponent = () => {
+        if (data.customDisplay === 'LoopFunction') {
+            return <LoopFunction data={data} onChange={handleDataChange} />
         }
-    }, [data.id, ref, updateNodeInternals])
 
-    useEffect(() => {
-        updateNodeInternals(data.id)
-    }, [data.id, position, updateNodeInternals])
+        // 如果没有 inputAnchor 和 inputParam，直接返回 null
+        if (!inputAnchor && !inputParam) {
+            return null
+        }
 
-    return (
-        <div ref={ref}>
-            {inputAnchor && (
+        // 处理 inputAnchor 的渲染
+        if (inputAnchor) {
+            return (
                 <>
                     <CustomWidthTooltip placement='left' title={inputAnchor.type}>
                         <Handle
@@ -795,54 +795,32 @@ const NodeInputHandler = ({
                         </Typography>
                     </Box>
                 </>
-            )}
+            )
+        }
 
-            {((inputParam && !inputParam.additionalParams) || isAdditionalParams) && (
-                <>
-                    {inputParam.acceptVariable && !isAdditionalParams && (
-                        <CustomWidthTooltip placement='left' title={inputParam.type}>
-                            <Handle
-                                type='target'
-                                position={Position.Left}
-                                key={inputParam.id}
-                                id={inputParam.id}
-                                isValidConnection={(connection) => isValidConnection(connection, reactFlowInstance)}
-                                style={{
-                                    height: 10,
-                                    width: 10,
-                                    backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
-                                    top: position
-                                }}
-                            />
-                        </CustomWidthTooltip>
-                    )}
-                    <Box sx={{ p: disablePadding ? 0 : 2 }}>
-                        {(data.name === 'promptTemplate' || data.name === 'chatPromptTemplate') &&
-                            (inputParam.name === 'template' || inputParam.name === 'systemMessagePrompt') && (
-                                <>
-                                    <Button
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            width: '100%'
-                                        }}
-                                        disabled={disabled}
-                                        sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 0 }}
-                                        variant='outlined'
-                                        onClick={() => onShowPromptHubButtonClicked()}
-                                        endIcon={<IconAutoFixHigh />}
-                                    >
-                                        Langchain Hub
-                                    </Button>
-                                    <PromptLangsmithHubDialog
-                                        promptType={inputParam.name}
-                                        show={showPromptHubDialog}
-                                        onCancel={() => setShowPromptHubDialog(false)}
-                                        onSubmit={onShowPromptHubButtonSubmit}
-                                    ></PromptLangsmithHubDialog>
-                                </>
-                            )}
-                        {data.name === 'chatNvidiaNIM' && inputParam.name === 'modelName' && (
+        // 处理常规输入参数的渲染
+        return (
+            <>
+                {inputParam.acceptVariable && !isAdditionalParams && (
+                    <CustomWidthTooltip placement='left' title={inputParam.type}>
+                        <Handle
+                            type='target'
+                            position={Position.Left}
+                            key={inputParam.id}
+                            id={inputParam.id}
+                            isValidConnection={(connection) => isValidConnection(connection, reactFlowInstance)}
+                            style={{
+                                height: 10,
+                                width: 10,
+                                backgroundColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
+                                top: position
+                            }}
+                        />
+                    </CustomWidthTooltip>
+                )}
+                <Box sx={{ p: disablePadding ? 0 : 2 }}>
+                    {(data.name === 'promptTemplate' || data.name === 'chatPromptTemplate') &&
+                        (inputParam.name === 'template' || inputParam.name === 'systemMessagePrompt') && (
                             <>
                                 <Button
                                     style={{
@@ -850,359 +828,398 @@ const NodeInputHandler = ({
                                         flexDirection: 'row',
                                         width: '100%'
                                     }}
-                                    sx={{ borderRadius: '12px', width: '100%', mb: 2, mt: -1 }}
+                                    disabled={disabled}
+                                    sx={{ borderRadius: 25, width: '100%', mb: 2, mt: 0 }}
                                     variant='outlined'
-                                    onClick={() => setIsNvidiaNIMDialogOpen(true)}
+                                    onClick={() => onShowPromptHubButtonClicked()}
+                                    endIcon={<IconAutoFixHigh />}
                                 >
-                                    Setup NIM Locally
+                                    Langchain Hub
                                 </Button>
+                                <PromptLangsmithHubDialog
+                                    promptType={inputParam.name}
+                                    show={showPromptHubDialog}
+                                    onCancel={() => setShowPromptHubDialog(false)}
+                                    onSubmit={onShowPromptHubButtonSubmit}
+                                ></PromptLangsmithHubDialog>
                             </>
                         )}
-                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                            <Typography>
-                                {inputParam.label}
-                                {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
-                                {inputParam.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />}
-                            </Typography>
-                            <div style={{ flexGrow: 1 }}></div>
-                            {inputParam.hint && !isAdditionalParams && (
-                                <IconButton
-                                    size='small'
-                                    sx={{
-                                        height: 25,
-                                        width: 25
-                                    }}
-                                    title={inputParam.hint.label}
-                                    color='secondary'
-                                    onClick={() => onInputHintDialogClicked(inputParam.hint)}
-                                >
-                                    <IconBulb />
-                                </IconButton>
-                            )}
-                            {inputParam.hint && isAdditionalParams && (
-                                <Button
-                                    sx={{ p: 0, px: 2 }}
-                                    color='secondary'
-                                    variant='text'
-                                    onClick={() => {
-                                        onInputHintDialogClicked(inputParam.hint)
-                                    }}
-                                    startIcon={<IconBulb size={17} />}
-                                >
-                                    {inputParam.hint.label}
-                                </Button>
-                            )}
-                            {inputParam.acceptVariable && inputParam.type === 'string' && (
-                                <Tooltip title='Type {{ to select variables'>
-                                    <IconVariable size={20} style={{ color: 'teal' }} />
-                                </Tooltip>
-                            )}
-                            {inputParam.generateDocStoreDescription && (
-                                <IconButton
-                                    title='Generate knowledge base description'
-                                    sx={{
-                                        height: 25,
-                                        width: 25
-                                    }}
-                                    size='small'
-                                    color='secondary'
-                                    onClick={() => generateDocStoreToolDesc(data.inputs['documentStore'])}
-                                >
-                                    <IconWand />
-                                </IconButton>
-                            )}
-                            {inputParam.generateInstruction && (
-                                <IconButton
-                                    title='Generate instructions'
-                                    sx={{
-                                        height: 25,
-                                        width: 25,
-                                        ml: 0.5
-                                    }}
-                                    size='small'
-                                    color='secondary'
-                                    onClick={() => generateInstruction()}
-                                >
-                                    <IconWand />
-                                </IconButton>
-                            )}
-                            {((inputParam.type === 'string' && inputParam.rows) || inputParam.type === 'code') && (
-                                <IconButton
-                                    size='small'
-                                    sx={{
-                                        height: 25,
-                                        width: 25,
-                                        ml: 0.5
-                                    }}
-                                    title='Expand'
-                                    color='primary'
-                                    onClick={() =>
-                                        onExpandDialogClicked(data.inputs[inputParam.name] ?? inputParam.default ?? '', inputParam)
-                                    }
-                                >
-                                    <IconArrowsMaximize />
-                                </IconButton>
-                            )}
-                        </div>
-                        {inputParam.warning && (
-                            <div
+                    {data.name === 'chatNvidiaNIM' && inputParam.name === 'modelName' && (
+                        <>
+                            <Button
                                 style={{
                                     display: 'flex',
                                     flexDirection: 'row',
-                                    alignItems: 'center',
-                                    borderRadius: 10,
-                                    background: 'rgb(254,252,191)',
-                                    padding: 10,
-                                    marginTop: 10,
-                                    marginBottom: 10
+                                    width: '100%'
+                                }}
+                                sx={{ borderRadius: '12px', width: '100%', mb: 2, mt: -1 }}
+                                variant='outlined'
+                                onClick={() => setIsNvidiaNIMDialogOpen(true)}
+                            >
+                                Setup NIM Locally
+                            </Button>
+                        </>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                        <Typography>
+                            {inputParam.label}
+                            {!inputParam.optional && <span style={{ color: 'red' }}>&nbsp;*</span>}
+                            {inputParam.description && <TooltipWithParser style={{ marginLeft: 10 }} title={inputParam.description} />}
+                        </Typography>
+                        <div style={{ flexGrow: 1 }}></div>
+                        {inputParam.hint && !isAdditionalParams && (
+                            <IconButton
+                                size='small'
+                                sx={{
+                                    height: 25,
+                                    width: 25
+                                }}
+                                title={inputParam.hint.label}
+                                color='secondary'
+                                onClick={() => onInputHintDialogClicked(inputParam.hint)}
+                            >
+                                <IconBulb />
+                            </IconButton>
+                        )}
+                        {inputParam.hint && isAdditionalParams && (
+                            <Button
+                                sx={{ p: 0, px: 2 }}
+                                color='secondary'
+                                variant='text'
+                                onClick={() => {
+                                    onInputHintDialogClicked(inputParam.hint)
+                                }}
+                                startIcon={<IconBulb size={17} />}
+                            >
+                                {inputParam.hint.label}
+                            </Button>
+                        )}
+                        {inputParam.acceptVariable && inputParam.type === 'string' && (
+                            <Tooltip title='Type {{ to select variables'>
+                                <IconVariable size={20} style={{ color: 'teal' }} />
+                            </Tooltip>
+                        )}
+                        {inputParam.generateDocStoreDescription && (
+                            <IconButton
+                                title='Generate knowledge base description'
+                                sx={{
+                                    height: 25,
+                                    width: 25
+                                }}
+                                size='small'
+                                color='secondary'
+                                onClick={() => generateDocStoreToolDesc(data.inputs['documentStore'])}
+                            >
+                                <IconWand />
+                            </IconButton>
+                        )}
+                        {inputParam.generateInstruction && (
+                            <IconButton
+                                title='Generate instructions'
+                                sx={{
+                                    height: 25,
+                                    width: 25,
+                                    ml: 0.5
+                                }}
+                                size='small'
+                                color='secondary'
+                                onClick={() => generateInstruction()}
+                            >
+                                <IconWand />
+                            </IconButton>
+                        )}
+                        {((inputParam.type === 'string' && inputParam.rows) || inputParam.type === 'code') && (
+                            <IconButton
+                                size='small'
+                                sx={{
+                                    height: 25,
+                                    width: 25,
+                                    ml: 0.5
+                                }}
+                                title='Expand'
+                                color='primary'
+                                onClick={() => onExpandDialogClicked(data.inputs[inputParam.name] ?? inputParam.default ?? '', inputParam)}
+                            >
+                                <IconArrowsMaximize />
+                            </IconButton>
+                        )}
+                    </div>
+                    {inputParam.warning && (
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                borderRadius: 10,
+                                background: 'rgb(254,252,191)',
+                                padding: 10,
+                                marginTop: 10,
+                                marginBottom: 10
+                            }}
+                        >
+                            <IconAlertTriangle size={30} color='orange' />
+                            <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>{inputParam.warning}</span>
+                        </div>
+                    )}
+                    {inputParam.type === 'credential' && (
+                        <CredentialInputHandler
+                            disabled={disabled}
+                            data={data}
+                            inputParam={inputParam}
+                            onSelect={(newValue) => {
+                                data.credential = newValue
+                                data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
+                            }}
+                        />
+                    )}
+                    {inputParam.type === 'tabs' && (
+                        <>
+                            <Tabs
+                                value={getTabValue(inputParam)}
+                                onChange={(event, val) => {
+                                    setTabValue(val)
+                                    data.inputs[`${inputParam.tabIdentifier}_${data.id}`] = inputParam.tabs[val].name
+                                }}
+                                aria-label='tabs'
+                                variant='fullWidth'
+                                defaultValue={getTabValue(inputParam)}
+                            >
+                                <TabsList>
+                                    {inputParam.tabs.map((inputChildParam, index) => (
+                                        <Tab key={index}>{inputChildParam.label}</Tab>
+                                    ))}
+                                </TabsList>
+                            </Tabs>
+                            {inputParam.tabs
+                                .filter((inputParam) => inputParam.display !== false)
+                                .map((inputChildParam, index) => (
+                                    <TabPanel key={index} value={getTabValue(inputParam)} index={index}>
+                                        <NodeInputHandler
+                                            disabled={inputChildParam.disabled}
+                                            inputParam={inputChildParam}
+                                            data={data}
+                                            isAdditionalParams={true}
+                                            disablePadding={true}
+                                        />
+                                    </TabPanel>
+                                ))}
+                        </>
+                    )}
+                    {inputParam.type === 'file' && (
+                        <File
+                            disabled={disabled}
+                            fileType={inputParam.fileType || '*'}
+                            onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                            value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
+                        />
+                    )}
+                    {inputParam.type === 'boolean' && (
+                        <SwitchInput
+                            disabled={disabled}
+                            onChange={(newValue) => handleDataChange({ inputParam, newValue })}
+                            value={data.inputs[inputParam.name] ?? inputParam.default ?? false}
+                        />
+                    )}
+                    {inputParam.type === 'datagrid' && (
+                        <DataGrid
+                            disabled={disabled}
+                            columns={getDataGridColDef(inputParam.datagrid, inputParam)}
+                            hideFooter={true}
+                            rows={data.inputs[inputParam.name] ?? JSON.stringify(inputParam.default) ?? []}
+                            onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                        />
+                    )}
+                    {inputParam.type === 'code' && (
+                        <>
+                            <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start' }}>
+                                {inputParam.codeExample && (
+                                    <Button
+                                        variant='outlined'
+                                        onClick={() => {
+                                            data.inputs[inputParam.name] = inputParam.codeExample
+                                        }}
+                                    >
+                                        See Example
+                                    </Button>
+                                )}
+                            </div>
+                            <div
+                                style={{
+                                    marginTop: '10px',
+                                    border: '1px solid',
+                                    borderColor: theme.palette.grey['300'],
+                                    borderRadius: '6px',
+                                    height: inputParam.rows ? '100px' : '200px'
                                 }}
                             >
-                                <IconAlertTriangle size={30} color='orange' />
-                                <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>{inputParam.warning}</span>
+                                <CodeEditor
+                                    disabled={disabled}
+                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                    height={inputParam.rows ? '100px' : '200px'}
+                                    theme={customization.isDarkMode ? 'dark' : 'light'}
+                                    lang={'js'}
+                                    placeholder={inputParam.placeholder}
+                                    onValueChange={(code) => (data.inputs[inputParam.name] = code)}
+                                    basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
+                                />
                             </div>
-                        )}
-                        {inputParam.type === 'credential' && (
-                            <CredentialInputHandler
-                                disabled={disabled}
-                                data={data}
-                                inputParam={inputParam}
-                                onSelect={(newValue) => {
-                                    data.credential = newValue
-                                    data.inputs[FLOWISE_CREDENTIAL_ID] = newValue // in case data.credential is not updated
-                                }}
-                            />
-                        )}
-                        {inputParam.type === 'tabs' && (
-                            <>
-                                <Tabs
-                                    value={getTabValue(inputParam)}
-                                    onChange={(event, val) => {
-                                        setTabValue(val)
-                                        data.inputs[`${inputParam.tabIdentifier}_${data.id}`] = inputParam.tabs[val].name
-                                    }}
-                                    aria-label='tabs'
-                                    variant='fullWidth'
-                                    defaultValue={getTabValue(inputParam)}
-                                >
-                                    <TabsList>
-                                        {inputParam.tabs.map((inputChildParam, index) => (
-                                            <Tab key={index}>{inputChildParam.label}</Tab>
-                                        ))}
-                                    </TabsList>
-                                </Tabs>
-                                {inputParam.tabs
-                                    .filter((inputParam) => inputParam.display !== false)
-                                    .map((inputChildParam, index) => (
-                                        <TabPanel key={index} value={getTabValue(inputParam)} index={index}>
-                                            <NodeInputHandler
-                                                disabled={inputChildParam.disabled}
-                                                inputParam={inputChildParam}
-                                                data={data}
-                                                isAdditionalParams={true}
-                                                disablePadding={true}
-                                            />
-                                        </TabPanel>
-                                    ))}
-                            </>
-                        )}
-                        {inputParam.type === 'file' && (
-                            <File
-                                disabled={disabled}
-                                fileType={inputParam.fileType || '*'}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
-                            />
-                        )}
-                        {inputParam.type === 'boolean' && (
-                            <SwitchInput
-                                disabled={disabled}
-                                onChange={(newValue) => handleDataChange({ inputParam, newValue })}
-                                value={data.inputs[inputParam.name] ?? inputParam.default ?? false}
-                            />
-                        )}
-                        {inputParam.type === 'datagrid' && (
-                            <DataGrid
-                                disabled={disabled}
-                                columns={getDataGridColDef(inputParam.datagrid, inputParam)}
-                                hideFooter={true}
-                                rows={data.inputs[inputParam.name] ?? JSON.stringify(inputParam.default) ?? []}
-                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                            />
-                        )}
-                        {inputParam.type === 'code' && (
-                            <>
-                                <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start' }}>
-                                    {inputParam.codeExample && (
-                                        <Button
-                                            variant='outlined'
-                                            onClick={() => {
-                                                data.inputs[inputParam.name] = inputParam.codeExample
-                                            }}
-                                        >
-                                            See Example
-                                        </Button>
-                                    )}
-                                </div>
-                                <div
-                                    style={{
-                                        marginTop: '10px',
-                                        border: '1px solid',
-                                        borderColor: theme.palette.grey['300'],
-                                        borderRadius: '6px',
-                                        height: inputParam.rows ? '100px' : '200px'
-                                    }}
-                                >
-                                    <CodeEditor
-                                        disabled={disabled}
-                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                                        height={inputParam.rows ? '100px' : '200px'}
-                                        theme={customization.isDarkMode ? 'dark' : 'light'}
-                                        lang={'js'}
-                                        placeholder={inputParam.placeholder}
-                                        onValueChange={(code) => (data.inputs[inputParam.name] = code)}
-                                        basicSetup={{ highlightActiveLine: false, highlightActiveLineGutter: false }}
-                                    />
-                                </div>
-                            </>
-                        )}
+                        </>
+                    )}
 
-                        {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') &&
-                            (inputParam?.acceptVariable ? (
-                                <RichInput
-                                    key={data.inputs[inputParam.name]}
-                                    placeholder={inputParam.placeholder}
+                    {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') &&
+                        (inputParam?.acceptVariable ? (
+                            <RichInput
+                                key={data.inputs[inputParam.name]}
+                                placeholder={inputParam.placeholder}
+                                disabled={disabled}
+                                inputParam={inputParam}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                nodes={reactFlowInstance ? reactFlowInstance.getNodes() : []}
+                                edges={reactFlowInstance ? reactFlowInstance.getEdges() : []}
+                                nodeId={data.id}
+                            />
+                        ) : (
+                            <Input
+                                key={data.inputs[inputParam.name]}
+                                placeholder={inputParam.placeholder}
+                                disabled={disabled}
+                                inputParam={inputParam}
+                                onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
+                                nodes={[]}
+                                edges={[]}
+                                nodeId={data.id}
+                            />
+                        ))}
+                    {inputParam.type === 'json' && (
+                        <>
+                            {!inputParam?.acceptVariable && (
+                                <JsonEditorInput
                                     disabled={disabled}
-                                    inputParam={inputParam}
                                     onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                                    nodes={reactFlowInstance ? reactFlowInstance.getNodes() : []}
-                                    edges={reactFlowInstance ? reactFlowInstance.getEdges() : []}
-                                    nodeId={data.id}
+                                    value={
+                                        data.inputs[inputParam.name] ||
+                                        inputParam.default ||
+                                        getJSONValue(data.inputs['workerPrompt']) ||
+                                        ''
+                                    }
+                                    isSequentialAgent={data.category === 'Sequential Agents'}
+                                    isDarkMode={customization.isDarkMode}
                                 />
-                            ) : (
-                                <Input
-                                    key={data.inputs[inputParam.name]}
-                                    placeholder={inputParam.placeholder}
-                                    disabled={disabled}
-                                    inputParam={inputParam}
-                                    onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? ''}
-                                    nodes={[]}
-                                    edges={[]}
-                                    nodeId={data.id}
-                                />
-                            ))}
-                        {inputParam.type === 'json' && (
-                            <>
-                                {!inputParam?.acceptVariable && (
-                                    <JsonEditorInput
-                                        disabled={disabled}
-                                        onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                        value={
-                                            data.inputs[inputParam.name] ||
-                                            inputParam.default ||
-                                            getJSONValue(data.inputs['workerPrompt']) ||
-                                            ''
-                                        }
-                                        isSequentialAgent={data.category === 'Sequential Agents'}
-                                        isDarkMode={customization.isDarkMode}
-                                    />
-                                )}
-                                {inputParam?.acceptVariable && (
-                                    <>
-                                        <Button
-                                            sx={{
-                                                borderRadius: 25,
-                                                width: '100%',
-                                                mb: 0,
-                                                mt: 2
-                                            }}
-                                            variant='outlined'
-                                            disabled={disabled}
-                                            onClick={() => onEditJSONClicked(data.inputs[inputParam.name] ?? '', inputParam)}
-                                        >
-                                            {inputParam.label}
-                                        </Button>
-                                        <FormatPromptValuesDialog
-                                            show={showFormatPromptValuesDialog}
-                                            dialogProps={formatPromptValuesDialogProps}
-                                            onCancel={() => setShowFormatPromptValuesDialog(false)}
-                                            onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
-                                        ></FormatPromptValuesDialog>
-                                    </>
-                                )}
-                            </>
-                        )}
-                        {inputParam.type === 'options' && (
-                            <div key={`${data.id}_${JSON.stringify(data.inputs[inputParam.name])}`}>
-                                <Dropdown
-                                    disabled={disabled}
-                                    name={inputParam.name}
-                                    options={getDropdownOptions(inputParam)}
-                                    freeSolo={inputParam.freeSolo}
-                                    onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
-                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
-                                />
-                            </div>
-                        )}
-                        {inputParam.type === 'multiOptions' && (
-                            <div key={`${data.id}_${JSON.stringify(data.inputs[inputParam.name])}`}>
-                                <MultiDropdown
-                                    disabled={disabled}
-                                    name={inputParam.name}
-                                    options={getDropdownOptions(inputParam)}
-                                    onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
-                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
-                                />
-                            </div>
-                        )}
-                        {(inputParam.type === 'asyncOptions' || inputParam.type === 'asyncMultiOptions') && (
-                            <>
-                                {data.inputParams.length === 1 && <div style={{ marginTop: 10 }} />}
-                                <div
-                                    key={`${reloadTimestamp}_${data.id}_${JSON.stringify(data.inputs[inputParam.name])}`}
-                                    style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}
-                                >
-                                    <AsyncDropdown
-                                        disabled={disabled}
-                                        name={inputParam.name}
-                                        nodeData={data}
-                                        value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
-                                        freeSolo={inputParam.freeSolo}
-                                        multiple={inputParam.type === 'asyncMultiOptions'}
-                                        isCreateNewOption={EDITABLE_OPTIONS.includes(inputParam.name)}
-                                        onSelect={(newValue) => {
-                                            if (inputParam.loadConfig) setReloadTimestamp(Date.now().toString())
-                                            handleDataChange({ inputParam, newValue })
+                            )}
+                            {inputParam?.acceptVariable && (
+                                <>
+                                    <Button
+                                        sx={{
+                                            borderRadius: 25,
+                                            width: '100%',
+                                            mb: 0,
+                                            mt: 2
                                         }}
-                                        onCreateNew={() => addAsyncOption(inputParam.name)}
-                                    />
-                                    {EDITABLE_OPTIONS.includes(inputParam.name) && data.inputs[inputParam.name] && (
-                                        <IconButton
-                                            title='Edit'
-                                            color='primary'
-                                            size='small'
-                                            onClick={() => editAsyncOption(inputParam.name, data.inputs[inputParam.name])}
-                                        >
-                                            <IconEdit />
-                                        </IconButton>
-                                    )}
-                                    {inputParam.refresh && (
-                                        <IconButton
-                                            title='Refresh'
-                                            color='primary'
-                                            size='small'
-                                            onClick={() => setReloadTimestamp(Date.now().toString())}
-                                        >
-                                            <IconRefresh />
-                                        </IconButton>
-                                    )}
-                                </div>
-                            </>
-                        )}
-                        {inputParam.type === 'array' && <ArrayRenderer inputParam={inputParam} data={data} disabled={disabled} />}
-                        {/* CUSTOM INPUT LOGIC */}
-                        {inputParam.type.includes('conditionFunction') && (
+                                        variant='outlined'
+                                        disabled={disabled}
+                                        onClick={() => onEditJSONClicked(data.inputs[inputParam.name] ?? '', inputParam)}
+                                    >
+                                        {inputParam.label}
+                                    </Button>
+                                    <FormatPromptValuesDialog
+                                        show={showFormatPromptValuesDialog}
+                                        dialogProps={formatPromptValuesDialogProps}
+                                        onCancel={() => setShowFormatPromptValuesDialog(false)}
+                                        onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
+                                    ></FormatPromptValuesDialog>
+                                </>
+                            )}
+                        </>
+                    )}
+                    {inputParam.type === 'options' && (
+                        <div key={`${data.id}_${JSON.stringify(data.inputs[inputParam.name])}`}>
+                            <Dropdown
+                                disabled={disabled}
+                                name={inputParam.name}
+                                options={getDropdownOptions(inputParam)}
+                                freeSolo={inputParam.freeSolo}
+                                onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                            />
+                        </div>
+                    )}
+                    {inputParam.type === 'multiOptions' && (
+                        <div key={`${data.id}_${JSON.stringify(data.inputs[inputParam.name])}`}>
+                            <MultiDropdown
+                                disabled={disabled}
+                                name={inputParam.name}
+                                options={getDropdownOptions(inputParam)}
+                                onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
+                                value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                            />
+                        </div>
+                    )}
+                    {(inputParam.type === 'asyncOptions' || inputParam.type === 'asyncMultiOptions') && (
+                        <>
+                            {data.inputParams.length === 1 && <div style={{ marginTop: 10 }} />}
+                            <div
+                                key={`${reloadTimestamp}_${data.id}_${JSON.stringify(data.inputs[inputParam.name])}`}
+                                style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 1 }}
+                            >
+                                <AsyncDropdown
+                                    disabled={disabled}
+                                    name={inputParam.name}
+                                    nodeData={data}
+                                    value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
+                                    freeSolo={inputParam.freeSolo}
+                                    multiple={inputParam.type === 'asyncMultiOptions'}
+                                    isCreateNewOption={EDITABLE_OPTIONS.includes(inputParam.name)}
+                                    onSelect={(newValue) => {
+                                        if (inputParam.loadConfig) setReloadTimestamp(Date.now().toString())
+                                        handleDataChange({ inputParam, newValue })
+                                    }}
+                                    onCreateNew={() => addAsyncOption(inputParam.name)}
+                                />
+                                {EDITABLE_OPTIONS.includes(inputParam.name) && data.inputs[inputParam.name] && (
+                                    <IconButton
+                                        title='Edit'
+                                        color='primary'
+                                        size='small'
+                                        onClick={() => editAsyncOption(inputParam.name, data.inputs[inputParam.name])}
+                                    >
+                                        <IconEdit />
+                                    </IconButton>
+                                )}
+                                {inputParam.refresh && (
+                                    <IconButton
+                                        title='Refresh'
+                                        color='primary'
+                                        size='small'
+                                        onClick={() => setReloadTimestamp(Date.now().toString())}
+                                    >
+                                        <IconRefresh />
+                                    </IconButton>
+                                )}
+                            </div>
+                        </>
+                    )}
+                    {inputParam.type === 'array' && <ArrayRenderer inputParam={inputParam} data={data} disabled={disabled} />}
+                    {/* CUSTOM INPUT LOGIC */}
+                    {inputParam.type.includes('conditionFunction') && (
+                        <>
+                            <Button
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    width: '100%'
+                                }}
+                                sx={{ borderRadius: '12px', width: '100%', mt: 1 }}
+                                variant='outlined'
+                                onClick={() => onConditionDialogClicked(inputParam)}
+                            >
+                                {inputParam.label}
+                            </Button>
+                        </>
+                    )}
+                    {(data.name === 'cheerioWebScraper' || data.name === 'puppeteerWebScraper' || data.name === 'playwrightWebScraper') &&
+                        inputParam.name === 'url' && (
                             <>
                                 <Button
                                     style={{
@@ -1210,64 +1227,61 @@ const NodeInputHandler = ({
                                         flexDirection: 'row',
                                         width: '100%'
                                     }}
+                                    disabled={disabled}
                                     sx={{ borderRadius: '12px', width: '100%', mt: 1 }}
                                     variant='outlined'
-                                    onClick={() => onConditionDialogClicked(inputParam)}
+                                    onClick={() =>
+                                        onManageLinksDialogClicked(
+                                            data.inputs[inputParam.name] ?? inputParam.default ?? '',
+                                            data.inputs.selectedLinks,
+                                            data.inputs['relativeLinksMethod'] ?? 'webCrawl',
+                                            parseInt(data.inputs['limit']) ?? 0
+                                        )
+                                    }
                                 >
-                                    {inputParam.label}
+                                    Manage Links
                                 </Button>
-                            </>
-                        )}
-                        {(data.name === 'cheerioWebScraper' ||
-                            data.name === 'puppeteerWebScraper' ||
-                            data.name === 'playwrightWebScraper') &&
-                            inputParam.name === 'url' && (
-                                <>
-                                    <Button
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            width: '100%'
-                                        }}
-                                        disabled={disabled}
-                                        sx={{ borderRadius: '12px', width: '100%', mt: 1 }}
-                                        variant='outlined'
-                                        onClick={() =>
-                                            onManageLinksDialogClicked(
-                                                data.inputs[inputParam.name] ?? inputParam.default ?? '',
-                                                data.inputs.selectedLinks,
-                                                data.inputs['relativeLinksMethod'] ?? 'webCrawl',
-                                                parseInt(data.inputs['limit']) ?? 0
-                                            )
-                                        }
-                                    >
-                                        Manage Links
-                                    </Button>
-                                    <ManageScrapedLinksDialog
-                                        show={showManageScrapedLinksDialog}
-                                        dialogProps={manageScrapedLinksDialogProps}
-                                        onCancel={() => setShowManageScrapedLinksDialog(false)}
-                                        onSave={onManageLinksDialogSave}
-                                    />
-                                </>
-                            )}
-                        {inputParam.loadConfig && data && data.inputs && data.inputs[inputParam.name] && (
-                            <>
-                                <ConfigInput
-                                    key={`${data.id}_${JSON.stringify(data.inputs[inputParam.name])}_${arrayIndex}_${
-                                        parentParamForArray?.name
-                                    }`}
-                                    data={data}
-                                    inputParam={inputParam}
-                                    disabled={disabled}
-                                    arrayIndex={arrayIndex}
-                                    parentParamForArray={parentParamForArray}
+                                <ManageScrapedLinksDialog
+                                    show={showManageScrapedLinksDialog}
+                                    dialogProps={manageScrapedLinksDialogProps}
+                                    onCancel={() => setShowManageScrapedLinksDialog(false)}
+                                    onSave={onManageLinksDialogSave}
                                 />
                             </>
                         )}
-                    </Box>
-                </>
-            )}
+                    {inputParam.loadConfig && data && data.inputs && data.inputs[inputParam.name] && (
+                        <>
+                            <ConfigInput
+                                key={`${data.id}_${JSON.stringify(data.inputs[inputParam.name])}_${arrayIndex}_${
+                                    parentParamForArray?.name
+                                }`}
+                                data={data}
+                                inputParam={inputParam}
+                                disabled={disabled}
+                                arrayIndex={arrayIndex}
+                                parentParamForArray={parentParamForArray}
+                            />
+                        </>
+                    )}
+                </Box>
+            </>
+        )
+    }
+
+    useEffect(() => {
+        if (ref.current && ref.current.offsetTop && ref.current.clientHeight) {
+            setPosition(ref.current.offsetTop + ref.current.clientHeight / 2)
+            updateNodeInternals(data.id)
+        }
+    }, [data.id, ref, updateNodeInternals])
+
+    useEffect(() => {
+        updateNodeInternals(data.id)
+    }, [data.id, position, updateNodeInternals])
+
+    return (
+        <div ref={ref}>
+            {renderComponent()}
             <ToolDialog
                 show={showAsyncOptionDialog === 'selectedTool'}
                 dialogProps={asyncOptionEditDialogProps}

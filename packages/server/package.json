@@ -29,6 +29,7 @@
         "start-worker:windows": "cd bin && run worker",
         "start-worker:default": "cd bin && ./run worker",
         "dev": "nodemon",
+        "dev:watch": "tsc-watch --onSuccess \"nodemon\"",
         "oclif-dev": "run-script-os",
         "oclif-dev:windows": "cd bin && dev start",
         "oclif-dev:default": "cd bin && ./dev start",

@@ -14,7 +14,8 @@
         "strictPropertyInitialization": false,
         "useUnknownInCatchVariables": false,
         "declaration": true,
-        "module": "commonjs"
+        "module": "commonjs",
+        "jsx": "react-jsx"
     },
     "include": ["src", "nodes", "credentials"],
     "exclude": ["gulpfile.ts", "node_modules", "dist"]

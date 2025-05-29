@@ -153,19 +153,26 @@ export const ReactFlowContext = ({ children }) => {
                         const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
                         const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
 
-                        if (inputAnchor && inputAnchor.list) {
-                            const values = node.data.inputs[targetInput] || []
-                            value = values.filter((item) => !item.includes(sourceNodeId))
-                        } else if (inputParam && inputParam.acceptVariable) {
-                            value = node.data.inputs[targetInput].replace(`{{${sourceNodeId}.data.instance}}`, '') || ''
+                        if (inputAnchor?.list) {
+                            value = node.data.inputs[targetInput] || []
+                            value = value.filter((item) => {
+                                if (typeof item === 'string') {
+                                    return !item.startsWith('{{') || !item.endsWith('}}')
+                                }
+                                return true
+                            })
                         } else {
                             value = ''
                         }
-                        node.data = {
-                            ...node.data,
-                            inputs: {
-                                ...node.data.inputs,
-                                [targetInput]: value
+
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                inputs: {
+                                    ...node.data.inputs,
+                                    [targetInput]: value
+                                }
                             }
                         }
                     }

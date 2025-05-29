@@ -18,9 +18,7 @@ import { Toolbar, Box, AppBar, Button, Fab } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
-import CanvasNode from './CanvasNode'
 import ButtonEdge from './ButtonEdge'
-import StickyNote from './StickyNote'
 import CanvasHeader from './CanvasHeader'
 import AddNodes from './AddNodes'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
@@ -51,10 +49,11 @@ import {
 import useNotifier from '@/utils/useNotifier'
 import { usePrompt } from '@/utils/usePrompt'
 
+import { createLoopNode } from './LoopNode'
+import { nodeTypes } from './nodeTypes'
+
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
-
-const nodeTypes = { customNode: CanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: ButtonEdge }
 
 // ==============================|| CANVAS ||============================== //
@@ -88,8 +87,8 @@ const Canvas = () => {
 
     // ==============================|| ReactFlow ||============================== //
 
-    const [nodes, setNodes, onNodesChange] = useNodesState()
-    const [edges, setEdges, onEdgesChange] = useEdgesState()
+    const [nodes, setNodes, onNodesChange] = useNodesState([])
+    const [edges, setEdges, onEdgesChange] = useEdgesState([])
 
     const [selectedNode, setSelectedNode] = useState(null)
     const [isUpsertButtonEnabled, setIsUpsertButtonEnabled] = useState(false)
@@ -106,52 +105,100 @@ const Canvas = () => {
 
     // ==============================|| Events & Actions ||============================== //
 
-    const onConnect = (params) => {
-        const newEdge = {
-            ...params,
-            type: 'buttonedge',
-            id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
-        }
+    const onInit = useCallback((instance) => {
+        setReactFlowInstance(instance)
+    }, [])
 
-        const targetNodeId = params.targetHandle.split('-')[0]
-        const sourceNodeId = params.sourceHandle.split('-')[0]
-        const targetInput = params.targetHandle.split('-')[2]
+    const onConnect = useCallback(
+        (params) => {
+            const newEdge = {
+                ...params,
+                type: 'buttonedge',
+                id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
+            }
 
-        setNodes((nds) =>
-            nds.map((node) => {
-                if (node.id === targetNodeId) {
-                    setTimeout(() => setDirty(), 0)
-                    let value
-                    const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
-                    const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+            const targetNodeId = params.targetHandle.split('-')[0]
+            const sourceNodeId = params.sourceHandle.split('-')[0]
+            const targetInput = params.targetHandle.split('-')[2]
 
-                    if (inputAnchor && inputAnchor.list) {
-                        const newValues = node.data.inputs[targetInput] || []
-                        if (targetInput === 'tools') {
-                            rearrangeToolsOrdering(newValues, sourceNodeId)
-                        } else {
-                            newValues.push(`{{${sourceNodeId}.data.instance}}`)
+            // 查找源节点和目标节点
+            const sourceNode = nodes.find((node) => node.id === params.source)
+            const targetNode = nodes.find((node) => node.id === params.target)
+
+            console.log('连接事件:', {
+                sourceNode,
+                targetNode,
+                params
+            })
+
+            // 如果是 LoopFunction 的 failure 输出连接到 LoopInput
+            if (
+                sourceNode?.data?.name === 'loopFunction' &&
+                params.sourceHandle?.includes('failure') &&
+                targetNode?.data?.type === 'LoopInput'
+            ) {
+                console.log('LoopFunction failure 连接到 LoopInput:', {
+                    loopFunctionId: sourceNode.id,
+                    loopInputId: targetNode.id
+                })
+
+                // 更新源节点的数据
+                setNodes((nds) =>
+                    nds.map((node) => {
+                        if (node.id === sourceNode.id) {
+                            return {
+                                ...node,
+                                data: {
+                                    ...node.data,
+                                    inputs: {
+                                        ...node.data.inputs,
+                                        loopBackNode: targetNode.id,
+                                        connectedLoopInput: `${targetNode.data.label || 'Loop Input'} (${targetNode.id})`
+                                    }
+                                }
+                            }
                         }
-                        value = newValues
-                    } else if (inputParam && inputParam.acceptVariable) {
-                        value = node.data.inputs[targetInput] || ''
-                    } else {
-                        value = `{{${sourceNodeId}.data.instance}}`
-                    }
-                    node.data = {
-                        ...node.data,
-                        inputs: {
+                        return node
+                    })
+                )
+            }
+
+            setNodes((nds) =>
+                nds.map((node) => {
+                    if (node.id === targetNodeId) {
+                        setTimeout(() => setDirty(), 0)
+                        let value
+                        const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
+                        const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+
+                        if (inputAnchor && inputAnchor.list) {
+                            const newValues = node.data.inputs[targetInput] || []
+                            value = rearrangeToolsOrdering(newValues, sourceNodeId)
+                        } else {
+                            value = sourceNodeId
+                        }
+
+                        const newInputs = {
                             ...node.data.inputs,
                             [targetInput]: value
                         }
-                    }
-                }
-                return node
-            })
-        )
 
-        setEdges((eds) => addEdge(newEdge, eds))
-    }
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                inputs: newInputs
+                            }
+                        }
+                    }
+                    return node
+                })
+            )
+
+            setEdges((eds) => addEdge(newEdge, eds))
+        },
+        [nodes, setNodes, setEdges]
+    )
 
     const handleLoadFlow = (file) => {
         try {
@@ -276,7 +323,7 @@ const Canvas = () => {
 
             nodeData = JSON.parse(nodeData)
 
-            const position = reactFlowInstance.project({
+            const position = reactFlowInstance.screenToFlowPosition({
                 x: event.clientX - reactFlowBounds.left - 100,
                 y: event.clientY - reactFlowBounds.top - 50
             })
@@ -286,7 +333,7 @@ const Canvas = () => {
             const newNode = {
                 id: newNodeId,
                 position,
-                type: nodeData.type !== 'StickyNote' ? 'customNode' : 'stickyNote',
+                type: nodeData.type === 'StickyNote' ? 'stickyNote' : nodeData.type === 'group' ? 'group' : 'customNode',
                 data: initNode(nodeData, newNodeId)
             }
 
@@ -395,6 +442,44 @@ const Canvas = () => {
         setIsSyncNodesButtonEnabled(false)
     }
 
+    const onEdgesDelete = useCallback(
+        (edgesToDelete) => {
+            // 遍历要删除的边
+            edgesToDelete.forEach((edge) => {
+                const sourceNode = nodes.find((node) => node.id === edge.source)
+                const targetNode = nodes.find((node) => node.id === edge.target)
+
+                // 如果是从 LoopFunction 的 failure 输出到 LoopInput 的连接
+                if (
+                    sourceNode?.data?.name === 'loopFunction' &&
+                    edge.sourceHandle?.includes('failure') &&
+                    targetNode?.data?.type === 'LoopInput'
+                ) {
+                    // 清除源节点的循环相关数据
+                    setNodes((nds) =>
+                        nds.map((node) => {
+                            if (node.id === sourceNode.id) {
+                                const newInputs = { ...node.data.inputs }
+                                delete newInputs.loopBackNode
+                                delete newInputs.connectedLoopInput
+
+                                return {
+                                    ...node,
+                                    data: {
+                                        ...node.data,
+                                        inputs: newInputs
+                                    }
+                                }
+                            }
+                            return node
+                        })
+                    )
+                }
+            })
+        },
+        [nodes, setNodes]
+    )
+
     // ==============================|| useEffect ||============================== //
 
     // Get specific chatflow successful
@@ -453,6 +538,7 @@ const Canvas = () => {
     useEffect(() => {
         setIsSyncNodesButtonEnabled(false)
         setIsUpsertButtonEnabled(false)
+
         if (chatflowId) {
             getSpecificChatflowApi.request(chatflowId)
         } else {
@@ -473,7 +559,6 @@ const Canvas = () => {
 
         getNodesApi.request()
 
-        // Clear dirty state before leaving and remove any ongoing test triggers and webhooks
         return () => {
             setTimeout(() => dispatch({ type: REMOVE_DIRTY }), 0)
         }
@@ -512,6 +597,70 @@ const Canvas = () => {
     }, [templateFlowData])
 
     usePrompt('You have unsaved changes! Do you want to navigate away?', canvasDataStore.isDirty)
+    const initialNodes = [
+        {
+            id: 'A',
+            type: 'group',
+            data: { label: null },
+            position: { x: 0, y: 0 },
+            style: {
+                width: 170,
+                height: 140
+            }
+        },
+        {
+            id: 'B',
+            type: 'input',
+            data: { label: 'child node 1' },
+            position: { x: 10, y: 10 },
+            parentId: 'A',
+            extent: 'parent'
+        },
+        {
+            id: 'C',
+            data: { label: 'child node 2' },
+            position: { x: 10, y: 90 },
+            parentId: 'A',
+            extent: 'parent'
+        }
+    ]
+
+    // 添加创建循环节点的函数
+    const handleAddLoopNode = useCallback(() => {
+        if (!reactFlowInstance) return
+        // 获取视口信息
+        const { x, y, zoom } = reactFlowInstance.getViewport()
+
+        // 获取画布容器的尺寸
+        const flowBounds = reactFlowWrapper.current.getBoundingClientRect()
+
+        // 计算视图中心点的坐标
+        const centerX = (flowBounds.width / 2 - x) / zoom
+        const centerY = (flowBounds.height / 2 - y) / zoom
+
+        const { loopNode } = createLoopNode({
+            position: {
+                x: centerX,
+                y: centerY
+            },
+            data: {
+                title: '新循环节点',
+                loopCount: 5,
+                children: [],
+                type: 'loop',
+                inputs: {},
+                selected: false
+            }
+        })
+
+        // 使用函数式更新确保获取最新状态
+        setNodes((nds) => nds.concat([loopNode]))
+
+        // 添加节点后自动适应视图
+        setTimeout(() => {
+            reactFlowInstance.fitView({ padding: 0.2 })
+        }, 50)
+    }, [reactFlowInstance])
 
     return (
         <>
@@ -533,6 +682,41 @@ const Canvas = () => {
                             handleLoadFlow={handleLoadFlow}
                             isAgentCanvas={isAgentCanvas}
                         />
+                        <Button
+                            variant='contained'
+                            onClick={handleAddLoopNode}
+                            sx={{
+                                ml: 2,
+                                height: '36px',
+                                minWidth: 'auto',
+                                px: 2,
+                                backgroundColor: '#2196f3',
+                                color: '#fff',
+                                borderRadius: '8px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                fontSize: '14px',
+                                '&:hover': {
+                                    backgroundColor: '#1976d2'
+                                }
+                            }}
+                        >
+                            <span
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    flexDirection: 'row',
+                                    gap: '4px',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                <svg viewBox='0 0 24 24' width='16' height='16' fill='currentColor' style={{ marginRight: '4px' }}>
+                                    <path d='M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z' />
+                                </svg>
+                                <span>循环</span>
+                            </span>
+                        </Button>
                     </Toolbar>
                 </AppBar>
                 <Box sx={{ pt: '70px', height: '100vh', width: '100%' }}>
@@ -544,13 +728,14 @@ const Canvas = () => {
                                 onNodesChange={onNodesChange}
                                 onNodeClick={onNodeClick}
                                 onEdgesChange={onEdgesChange}
+                                onEdgesDelete={onEdgesDelete}
                                 onDrop={onDrop}
                                 onDragOver={onDragOver}
                                 onNodeDragStop={setDirty}
                                 nodeTypes={nodeTypes}
                                 edgeTypes={edgeTypes}
                                 onConnect={onConnect}
-                                onInit={setReactFlowInstance}
+                                onInit={onInit}
                                 fitView
                                 deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                                 minZoom={0.1}

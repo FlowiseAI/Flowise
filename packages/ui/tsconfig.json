@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "jsx": "preserve",
+        "esModuleInterop": true,
+        "target": "es5",
+        "lib": ["dom", "dom.iterable", "esnext"],
+        "allowJs": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "module": "esnext",
+        "moduleResolution": "node",
+        "isolatedModules": true,
+        "noEmit": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
+}

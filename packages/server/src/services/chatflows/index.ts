@@ -54,12 +54,25 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
         let isStreaming = false
         for (const endingNode of endingNodes) {
             const endingNodeData = endingNode.data
-            const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
-            // Once custom function ending node exists, flow is always unavailable to stream
-            if (isEndingNode) {
-                return { isStreaming: false }
+            if (!endingNodeData) continue
+
+            // 如果是 End 节点，直接设置为有效的流式处理节点
+            if (endingNodeData.name === 'end' || endingNodeData.name === 'endFunction') {
+                isStreaming = true
+                break
             }
-            isStreaming = isFlowValidForStream(nodes, endingNodeData)
+
+            // 检查是否是有效的 Chain/Agent/Engine 节点
+            if (
+                endingNodeData.category === 'Chains' ||
+                endingNodeData.category === 'Agents' ||
+                endingNodeData.category === 'Engine' ||
+                endingNodeData.category === 'Multi Agents' ||
+                endingNodeData.category === 'Sequential Agents'
+            ) {
+                isStreaming = isFlowValidForStream(nodes, endingNodeData)
+                if (isStreaming) break
+            }
         }
 
         // If it is a Multi/Sequential Agents, always enable streaming
@@ -67,8 +80,7 @@ const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<a
             return { isStreaming: true }
         }
 
-        const dbResponse = { isStreaming: isStreaming }
-        return dbResponse
+        return { isStreaming }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

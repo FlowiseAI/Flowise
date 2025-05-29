@@ -153,6 +153,7 @@ export interface INode extends INodeProperties {
 }
 
 export interface INodeData extends INodeProperties {
+    [x: string]: any
     id: string
     inputs?: ICommonObject
     outputs?: ICommonObject

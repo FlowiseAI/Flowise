@@ -1,6 +1,8 @@
 {
     "ignore": ["**/*.spec.ts", ".git", "node_modules"],
-    "watch": ["commands", "index.ts", "src"],
-    "exec": "pnpm start",
-    "ext": "ts"
+    "watch": ["commands", "index.ts", "src", "../components/dist"],
+    "exec": "tsc && ts-node --transpile-only ./bin/run start",
+    "ext": "ts,js",
+    "delay": "1000",
+    "verbose": false
 }

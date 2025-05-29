@@ -309,41 +309,47 @@ export const getEndingNodes = (
     // And only ensure that at least one can pass the verification.
     const verifiedEndingNodes: typeof endingNodes = []
     let error: InternalFlowiseError | null = null
+
     for (const endingNode of endingNodes) {
         const endingNodeData = endingNode.data
         if (!endingNodeData) {
             error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node ${endingNode.id} data not found`)
-
             continue
         }
 
-        const isEndingNode = endingNodeData?.outputs?.output === 'EndingNode'
-
-        if (!isEndingNode) {
-            if (
-                endingNodeData &&
-                endingNodeData.category !== 'Chains' &&
-                endingNodeData.category !== 'Agents' &&
-                endingNodeData.category !== 'Engine' &&
-                endingNodeData.category !== 'Multi Agents' &&
-                endingNodeData.category !== 'Sequential Agents'
-            ) {
-                error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent or Engine`)
-                continue
-            }
+        // Check if it's an End node
+        if (endingNodeData.name === 'end' || endingNodeData.name === 'endFunction') {
+            verifiedEndingNodes.push(endingNode)
+            continue
         }
-        verifiedEndingNodes.push(endingNode)
+
+        // Check if it's a valid Chain/Agent/Engine node
+        if (
+            endingNodeData.category === 'Chains' ||
+            endingNodeData.category === 'Agents' ||
+            endingNodeData.category === 'Engine' ||
+            endingNodeData.category === 'Multi Agents' ||
+            endingNodeData.category === 'Sequential Agents'
+        ) {
+            verifiedEndingNodes.push(endingNode)
+            continue
+        }
+        console.log('endingNodeData.name', endingNodeData.name)
+        // If we reach here, the node is neither an End node nor a valid Chain/Agent/Engine node
+        if (!error) {
+            error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending node must be either a Chain or Agent or Engine`)
+        }
     }
 
     if (verifiedEndingNodes.length > 0) {
         return verifiedEndingNodes
     }
 
-    if (endingNodes.length === 0 || error === null) {
-        error = new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending nodes not found`)
+    if (endingNodes.length === 0) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Ending nodes not found`)
     }
 
-    throw error
+    throw error || new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Invalid ending node configuration`)
 }
 
 /**
@@ -1355,6 +1361,11 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
  * @returns {boolean}
  */
 export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNodeData: INodeData) => {
+    // If it's an End node, always return true
+    if (endingNodeData.name === 'end' || endingNodeData.name === 'endFunction') {
+        return true
+    }
+
     /** Deprecated, add streaming input param to the component instead **/
     const streamAvailableLLMs = {
         'Chat Models': [
@@ -1417,6 +1428,9 @@ export const isFlowValidForStream = (reactFlowNodes: IReactFlowNode[], endingNod
         // Engines that are available to stream
         const whitelistEngine = ['contextChatEngine', 'simpleChatEngine', 'queryEngine', 'subQuestionQueryEngine']
         isValidChainOrAgent = whitelistEngine.includes(endingNodeData.name)
+    } else if (endingNodeData.name === 'end' || endingNodeData.name === 'endFunction') {
+        // Allow End node to be valid for streaming
+        isValidChainOrAgent = true
     }
 
     // If no output parser, flow is available to stream

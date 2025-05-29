@@ -159,7 +159,6 @@ const AgentflowCanvas = () => {
         try {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
-
             setNodes(nodes)
             setEdges(flowData.edges || [])
             setTimeout(() => setDirty(), 0)

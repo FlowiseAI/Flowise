@@ -1,7 +1,6 @@
 import { NodeVM } from '@flowiseai/nodevm'
-import { DataSource } from 'typeorm'
-import { availableDependencies, defaultAllowBuiltInDep, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
-import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
+import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, INodeOptionsValue, IVariable } from '../../../src/Interface'
 
 class LoopFunction_Utilities implements INode {
     label: string
@@ -23,117 +22,128 @@ class LoopFunction_Utilities implements INode {
         this.type = 'LoopFunction'
         this.icon = 'loop.svg'
         this.category = 'Utilities'
-        this.description = 'Execute a loop with condition check and max iterations'
+        this.description = 'Execute condition check, with different outputs for condition met/not met'
         this.baseClasses = [this.type, 'Utilities']
         this.tags = ['Utilities']
         this.inputs = [
             {
-                label: 'Input Variables',
-                name: 'functionInputVariables',
-                description: 'Input variables can be used in the function with prefix $. For example: $var',
-                type: 'json',
-                optional: true,
-                acceptVariable: true,
-                list: true
-            },
-            {
                 label: 'Input Value',
                 name: 'inputValue',
-                type: 'string',
-                description: 'Input value for the loop (can be string or number)',
+                type: 'string | number | json | array | file',
+                description: 'Input value for condition check (can be any type of data)',
                 placeholder: 'Enter value or connect to other nodes',
                 acceptVariable: true,
                 optional: true
             },
             {
-                label: 'Max Iterations',
-                name: 'maxIterations',
-                type: 'number',
-                description: 'Maximum number of iterations (optional)',
+                label: 'Success Condition',
+                name: 'successCondition',
+                type: 'code',
+                rows: 4,
+                description: 'JavaScript condition to determine if the result is successful. Return true for success, false for failure.',
+                default: `// Check if the result meets your criteria
+return true;`
+            },
+            {
+                label: 'Loop Back Node',
+                name: 'loopBackNode',
+                type: 'string',
+                description: 'Node ID to loop back to (automatically set when failure output is connected)',
                 optional: true,
-                default: 100
+                hidden: true
             },
             {
-                label: 'Loop Condition',
-                name: 'loopCondition',
-                type: 'code',
-                rows: 4,
-                description: 'JavaScript condition to determine if loop should continue. Return true to continue, false to stop.',
-                default: `if (iteration < 5) {
-    return true;
-}`
-            },
-            {
-                label: 'Loop Body',
-                name: 'loopBody',
-                type: 'code',
-                rows: 4,
-                description: 'JavaScript code to execute in each iteration.',
-                default: `return {
-    message: \`Processing iteration \${iteration}\`,
-    data: $input
-}`
+                label: 'Connected Loop Input',
+                name: 'connectedLoopInput',
+                type: 'string',
+                description: 'Currently connected Loop Input node',
+                optional: true,
+                placeholder: 'Not connected'
             }
         ]
         this.outputs = [
             {
-                label: 'Output',
-                name: 'output',
-                baseClasses: ['string', 'number', 'json', 'array'],
-                description: 'The final output after loop execution'
+                label: 'Success',
+                name: 'success',
+                baseClasses: ['string', 'number', 'boolean', 'json', 'array', 'any'],
+                description: 'Output when success condition is met',
+                isAnchor: true
+            },
+            {
+                label: 'Failure',
+                name: 'failure',
+                baseClasses: ['string', 'number', 'boolean', 'json', 'array', 'any'],
+                description: 'Output when success condition is not met',
+                isAnchor: true
             }
         ]
     }
 
-    async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        const maxIterations = (nodeData.inputs?.maxIterations as number) || 100
-        const loopCondition = nodeData.inputs?.loopCondition as string
-        const loopBody = nodeData.inputs?.loopBody as string
-        const functionInputVariablesRaw = nodeData.inputs?.functionInputVariables
-        const inputValue = nodeData.inputs?.inputValue
-        const appDataSource = options.appDataSource as DataSource
-        const databaseEntities = options.databaseEntities as IDatabaseEntity
+    //@ts-ignore
+    loadMethods = {
+        async listLoopInputNodes(_: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
+            const returnOptions: INodeOptionsValue[] = []
 
-        if (!loopCondition) throw new Error('Loop condition is required')
-        if (!loopBody) throw new Error('Loop body is required')
-
-        const variables = await getVars(appDataSource, databaseEntities, nodeData)
-        const flow = {
-            chatflowId: options.chatflowid,
-            sessionId: options.sessionId,
-            chatId: options.chatId,
-            input
-        }
-
-        let inputVars: ICommonObject = {}
-        if (functionInputVariablesRaw) {
             try {
-                inputVars =
-                    typeof functionInputVariablesRaw === 'object' ? functionInputVariablesRaw : JSON.parse(functionInputVariablesRaw)
-            } catch (exception) {
-                throw new Error("Invalid JSON in the Loop's Input Variables: " + exception)
-            }
-        }
+                console.log('DEBUG - Options received:', options)
+                const nodes = options.nodes || []
+                console.log(
+                    'DEBUG - Available nodes:',
+                    nodes?.map((node: ICommonObject) => ({
+                        id: node.id,
+                        type: node.data?.type,
+                        name: node.data?.name,
+                        label: node.data?.label
+                    }))
+                )
 
-        // Some values might be a stringified JSON, parse it
-        for (const key in inputVars) {
-            let value = inputVars[key]
-            if (typeof value === 'string') {
-                value = handleEscapeCharacters(value, true)
-                if (value.startsWith('{') && value.endsWith('}')) {
-                    try {
-                        value = JSON.parse(value)
-                    } catch (e) {
-                        // ignore
+                if (nodes && nodes.length > 0) {
+                    for (const node of nodes) {
+                        // 检查所有可能的标识符
+                        if (node.data?.type === 'LoopInput' || node.data?.name === 'loopInput' || node.type === 'LoopInput') {
+                            console.log('DEBUG - Found LoopInput node:', node.id)
+                            returnOptions.push({
+                                label: `${node.data?.label || 'Loop Input'} (${node.id})`,
+                                name: node.id,
+                                description: node.data?.label || 'Loop Input Node'
+                            })
+                        }
                     }
                 }
-                inputVars[key] = value
+            } catch (error) {
+                console.error('Error in listLoopInputNodes:', error)
             }
+
+            console.log('DEBUG - Return options:', returnOptions)
+            return returnOptions
+        }
+    }
+
+    async init(nodeData: INodeData, input: string, options: ICommonObject = {}): Promise<any> {
+        const successCondition = nodeData.inputs?.successCondition as string
+        const inputValue = nodeData.inputs?.inputValue
+        const loopBackNode = nodeData.inputs?.loopBackNode as string
+
+        if (!successCondition) throw new Error('Success condition is required')
+
+        let variables: IVariable[] = []
+        try {
+            if (options?.appDataSource && options?.databaseEntities) {
+                variables = await getVars(options.appDataSource, options.databaseEntities, nodeData)
+            }
+        } catch (error) {
+            console.warn('Warning: Failed to get variables:', error)
+        }
+
+        const flow = {
+            chatflowId: options?.chatflowid,
+            sessionId: options?.sessionId,
+            chatId: options?.chatId,
+            input
         }
 
         let sandbox: any = {
             $input: inputValue || input,
-            iteration: 0,
             util: undefined,
             Symbol: undefined,
             child_process: undefined,
@@ -142,12 +152,6 @@ class LoopFunction_Utilities implements INode {
         }
         sandbox['$vars'] = prepareSandboxVars(variables)
         sandbox['$flow'] = flow
-
-        if (Object.keys(inputVars).length) {
-            for (const item in inputVars) {
-                sandbox[`$${item}`] = inputVars[item]
-            }
-        }
 
         const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
             ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
@@ -168,33 +172,39 @@ class LoopFunction_Utilities implements INode {
         } as any
 
         const vm = new NodeVM(nodeVMOptions)
-        let iteration = 0
-        let prevOutput = inputValue || input
-        let output = null
 
         try {
-            while (iteration < maxIterations) {
-                sandbox.iteration = iteration
-                sandbox.$input = prevOutput
+            // 检查成功条件
+            sandbox.$output = sandbox.$input
+            const isSuccess = await vm.run(`module.exports = async function() {${successCondition}}()`, __dirname)
 
-                // Check loop condition
-                const shouldContinue = await vm.run(`module.exports = async function() {${loopCondition}}()`, __dirname)
-                if (!shouldContinue) break
-
-                // Execute loop body
-                output = await vm.run(`module.exports = async function() {${loopBody}}()`, __dirname)
-                prevOutput = output
-                iteration++
+            const result = {
+                inputValue: sandbox.$input
             }
 
-            return {
-                output: {
-                    iterations: iteration,
-                    finalOutput: typeof output === 'string' ? handleEscapeCharacters(output, false) : output
+            // 如果条件失败且没有指定回流节点，抛出错误
+            if (!isSuccess && !loopBackNode) {
+                throw new Error('Loop back node is required for failure case')
+            }
+
+            // 如果条件失败，添加循环回流信息
+            if (!isSuccess) {
+                return {
+                    failure: {
+                        ...result,
+                        nodeID: loopBackNode,
+                        isLoop: true
+                    },
+                    isLoop: true
                 }
             }
+
+            // 成功时正常返回
+            return {
+                success: result
+            }
         } catch (error) {
-            throw new Error(`Error in loop execution: ${error.message}`)
+            throw new Error(`Error in condition execution: ${error.message}`)
         }
     }
 }
