@@ -1,8 +1,10 @@
-import axios, { AxiosRequestConfig } from 'axios'
-import { omit } from 'lodash'
 import { Document } from '@langchain/core/documents'
-import { TextSplitter } from 'langchain/text_splitter'
+import axios, { AxiosRequestConfig } from 'axios'
+import * as https from 'https'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
+import { TextSplitter } from 'langchain/text_splitter'
+import { omit } from 'lodash'
+import { getFileFromStorage } from '../../../src'
 import { ICommonObject, IDocument, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { handleEscapeCharacters } from '../../../src/utils'
 
@@ -21,7 +23,7 @@ class API_DocumentLoaders implements INode {
     constructor() {
         this.label = 'API Loader'
         this.name = 'apiLoader'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'Document'
         this.icon = 'api.svg'
         this.category = 'Document Loaders'
@@ -58,6 +60,15 @@ class API_DocumentLoaders implements INode {
                 label: 'Headers',
                 name: 'headers',
                 type: 'json',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'SSL Certificate',
+                description: 'Please upload a SSL certificate file in either .pem or .crt',
+                name: 'caFile',
+                type: 'file',
+                fileType: '.pem, .crt',
                 additionalParams: true,
                 optional: true
             },
@@ -105,8 +116,10 @@ class API_DocumentLoaders implements INode {
             }
         ]
     }
-    async init(nodeData: INodeData): Promise<any> {
+
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const headers = nodeData.inputs?.headers as string
+        const caFileBase64 = nodeData.inputs?.caFile as string
         const url = nodeData.inputs?.url as string
         const body = nodeData.inputs?.body as string
         const method = nodeData.inputs?.method as string
@@ -120,22 +133,37 @@ class API_DocumentLoaders implements INode {
             omitMetadataKeys = _omitMetadataKeys.split(',').map((key) => key.trim())
         }
 
-        const options: ApiLoaderParams = {
+        const apiLoaderParam: ApiLoaderParams = {
             url,
             method
         }
 
         if (headers) {
             const parsedHeaders = typeof headers === 'object' ? headers : JSON.parse(headers)
-            options.headers = parsedHeaders
+            apiLoaderParam.headers = parsedHeaders
+        }
+
+        if (caFileBase64.startsWith('FILE-STORAGE::')) {
+            let file = caFileBase64.replace('FILE-STORAGE::', '')
+            file = file.replace('[', '')
+            file = file.replace(']', '')
+            const orgId = options.orgId
+            const chatflowid = options.chatflowid
+            const fileData = await getFileFromStorage(file, orgId, chatflowid)
+            apiLoaderParam.ca = fileData.toString()
+        } else {
+            const splitDataURI = caFileBase64.split(',')
+            splitDataURI.pop()
+            const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
+            apiLoaderParam.ca = bf.toString('utf-8')
         }
 
         if (body) {
             const parsedBody = typeof body === 'object' ? body : JSON.parse(body)
-            options.body = parsedBody
+            apiLoaderParam.body = parsedBody
         }
 
-        const loader = new ApiLoader(options)
+        const loader = new ApiLoader(apiLoaderParam)
 
         let docs: IDocument[] = []
 
@@ -195,6 +223,7 @@ interface ApiLoaderParams {
     method: string
     headers?: ICommonObject
     body?: ICommonObject
+    ca?: string
 }
 
 class ApiLoader extends BaseDocumentLoader {
@@ -206,27 +235,35 @@ class ApiLoader extends BaseDocumentLoader {
 
     public readonly method: string
 
-    constructor({ url, headers, body, method }: ApiLoaderParams) {
+    public readonly ca?: string
+
+    constructor({ url, headers, body, method, ca }: ApiLoaderParams) {
         super()
         this.url = url
         this.headers = headers
         this.body = body
         this.method = method
+        this.ca = ca
     }
 
     public async load(): Promise<IDocument[]> {
         if (this.method === 'POST') {
-            return this.executePostRequest(this.url, this.headers, this.body)
+            return this.executePostRequest(this.url, this.headers, this.body, this.ca)
         } else {
-            return this.executeGetRequest(this.url, this.headers)
+            return this.executeGetRequest(this.url, this.headers, this.ca)
         }
     }
 
-    protected async executeGetRequest(url: string, headers?: ICommonObject): Promise<IDocument[]> {
+    protected async executeGetRequest(url: string, headers?: ICommonObject, ca?: string): Promise<IDocument[]> {
         try {
             const config: AxiosRequestConfig = {}
             if (headers) {
                 config.headers = headers
+            }
+            if (ca) {
+                config.httpsAgent = new https.Agent({
+                    ca: ca
+                })
             }
             const response = await axios.get(url, config)
             const responseJsonString = JSON.stringify(response.data, null, 2)
@@ -242,11 +279,16 @@ class ApiLoader extends BaseDocumentLoader {
         }
     }
 
-    protected async executePostRequest(url: string, headers?: ICommonObject, body?: ICommonObject): Promise<IDocument[]> {
+    protected async executePostRequest(url: string, headers?: ICommonObject, body?: ICommonObject, ca?: string): Promise<IDocument[]> {
         try {
             const config: AxiosRequestConfig = {}
             if (headers) {
                 config.headers = headers
+            }
+            if (ca) {
+                config.httpsAgent = new https.Agent({
+                    ca: ca
+                })
             }
             const response = await axios.post(url, body ?? {}, config)
             const responseJsonString = JSON.stringify(response.data, null, 2)
