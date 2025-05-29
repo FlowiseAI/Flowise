@@ -82,7 +82,7 @@ jobs:
               uses: docker/build-push-action@v5.3.0
               with:
                   context: .
-                  file: Dockerfile
+                  file: ${{ steps.defaults.outputs.registry == 'docker_hub' && './docker/Dockerfile' || 'Dockerfile' }}
                   build-args: |
                       NODE_VERSION=${{ steps.defaults.outputs.node_version }}
                   platforms: linux/amd64,linux/arm64
