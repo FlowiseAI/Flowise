@@ -97,6 +97,7 @@ const deleteApiKey = async (id: string, workspaceId?: string) => {
 const importKeys = async (body: any) => {
     try {
         const jsonFile = body.jsonFile
+        const workspaceId = body.workspaceId
         const splitDataURI = jsonFile.split(',')
         if (splitDataURI[0] !== 'data:application/json;base64') {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Invalid dataURI`)
@@ -105,11 +106,46 @@ const importKeys = async (body: any) => {
         const plain = bf.toString('utf8')
         const keys = JSON.parse(plain)
 
+        // Validate schema of imported keys
+        if (!Array.isArray(keys)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid format: Expected an array of API keys`)
+        }
+
+        const requiredFields = ['keyName', 'apiKey', 'apiSecret', 'createdAt', 'id']
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i]
+            if (typeof key !== 'object' || key === null) {
+                throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Invalid format: Key at index ${i} is not an object`)
+            }
+
+            for (const field of requiredFields) {
+                if (!(field in key)) {
+                    throw new InternalFlowiseError(
+                        StatusCodes.BAD_REQUEST,
+                        `Invalid format: Key at index ${i} is missing required field '${field}'`
+                    )
+                }
+                if (typeof key[field] !== 'string') {
+                    throw new InternalFlowiseError(
+                        StatusCodes.BAD_REQUEST,
+                        `Invalid format: Key at index ${i} field '${field}' must be a string`
+                    )
+                }
+                if (key[field].trim() === '') {
+                    throw new InternalFlowiseError(
+                        StatusCodes.BAD_REQUEST,
+                        `Invalid format: Key at index ${i} field '${field}' cannot be empty`
+                    )
+                }
+            }
+        }
+
         const appServer = getRunningExpressApp()
-        const allApiKeys = await appServer.AppDataSource.getRepository(ApiKey).find()
+        const allApiKeys = await appServer.AppDataSource.getRepository(ApiKey).findBy(getWorkspaceSearchOptions(workspaceId))
         if (body.importMode === 'replaceAll') {
             await appServer.AppDataSource.getRepository(ApiKey).delete({
-                id: Not(IsNull())
+                id: Not(IsNull()),
+                workspaceId: workspaceId
             })
         }
         if (body.importMode === 'errorIfExist') {
@@ -127,12 +163,13 @@ const importKeys = async (body: any) => {
             if (keyNameExists) {
                 const keyIndex = allApiKeys.findIndex((k) => k.keyName === key.keyName)
                 switch (body.importMode) {
-                    case 'overwriteIfExist': {
+                    case 'overwriteIfExist':
+                    case 'replaceAll': {
                         const currentKey = allApiKeys[keyIndex]
                         currentKey.id = uuidv4()
                         currentKey.apiKey = key.apiKey
                         currentKey.apiSecret = key.apiSecret
-                        currentKey.workspaceId = body.workspaceId
+                        currentKey.workspaceId = workspaceId
                         await appServer.AppDataSource.getRepository(ApiKey).save(currentKey)
                         break
                     }
@@ -154,12 +191,12 @@ const importKeys = async (body: any) => {
                 newKey.apiKey = key.apiKey
                 newKey.apiSecret = key.apiSecret
                 newKey.keyName = key.keyName
-                newKey.workspaceId = body.workspaceId
+                newKey.workspaceId = workspaceId
                 const newKeyEntity = appServer.AppDataSource.getRepository(ApiKey).create(newKey)
                 await appServer.AppDataSource.getRepository(ApiKey).save(newKeyEntity)
             }
         }
-        return await getAllApiKeysFromDB(body.workspaceId)
+        return await getAllApiKeysFromDB(workspaceId)
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.importKeys - ${getErrorMessage(error)}`)
     }
