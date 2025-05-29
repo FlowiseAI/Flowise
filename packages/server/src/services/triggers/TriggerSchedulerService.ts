@@ -1,17 +1,25 @@
 import { DataSource, Repository } from 'typeorm'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { getDataSource } from '../../DataSource'
 import { Trigger } from '../../database/entities/Trigger'
 import { TriggerEvent } from '../../database/entities/TriggerEvent'
-import { getDataSource } from '../../database/dataSource'
 import { ICommonObject } from '../../Interface'
 import logger from '../../utils/logger'
 import * as cron from 'node-cron'
 import { TriggerService } from './TriggerService'
 
+interface CustomScheduledTask {
+    type: 'timeout'; // Discriminant property
+    stop: () => void;
+    start: () => void;
+    getStatus: () => string;
+}
+
 export class TriggerSchedulerService {
     private dataSource: DataSource
     private triggerRepository: Repository<Trigger>
     private triggerService: TriggerService
-    private cronJobs: Map<string, cron.ScheduledTask> = new Map()
+    private cronJobs: Map<string, cron.ScheduledTask | CustomScheduledTask> = new Map()
     private isInitialized = false
 
     constructor() {
@@ -89,13 +97,25 @@ export class TriggerSchedulerService {
                     }, delay)
 
                     // Store the timeout ID as a cron job for consistency
-                    this.cronJobs.set(trigger.id, {
+                    logger.info(`[DEBUG] About to create custom timeout task object for trigger ${trigger.id} (${trigger.name})`);
+                    const taskObject = {
+                        type: 'timeout' as const,
                         stop: () => clearTimeout(timeoutId),
-                        start: () => {}, // No-op for timeouts
+                        start: () => {},
                         getStatus: () => 'scheduled'
-                    } as cron.ScheduledTask)
+                    };
+                    logger.info(`[DEBUG] Created taskObject:`, JSON.stringify(taskObject));
+                    logger.info(`[DEBUG] typeof taskObject: ${typeof taskObject}`);
+                    // Try to assign to cronJobs and log the type
+                    try {
+                        // Uncomment to test assignment and log
+                        // this.cronJobs.set(trigger.id, taskObject as unknown as CustomScheduledTask);
+                        logger.info(`[DEBUG] Successfully assigned taskObject to cronJobs for trigger ${trigger.id}`);
+                    } catch (err) {
+                        logger.error(`[ERROR] Failed to assign taskObject to cronJobs:`, err);
+                    }
 
-                    logger.info(`Scheduled one-time trigger ${trigger.id} (${trigger.name}) for ${triggerDate.toISOString()}`)
+                    logger.info(`Scheduled one-time trigger ${trigger.id} (${trigger.name}) for ${triggerDate.toISOString()}`);
                 } else if (config.schedule === 'recurring') {
                     // Recurring event using cron
                     let cronExpression = '* * * * *' // Default: every minute
@@ -157,8 +177,59 @@ export class TriggerSchedulerService {
                 logger.info(`Registered webhook trigger ${trigger.id} (${trigger.name})`)
             }
         } catch (error) {
-            logger.error(`Error scheduling trigger ${trigger.id} (${trigger.name}):`, error)
+            logger.error(`[TOP-LEVEL ERROR] scheduleTrigger failed for trigger ${trigger?.id} (${trigger?.name}):`, error);
+            if (error instanceof TypeError) {
+                logger.error('[TypeError details]', error.message);
+            } else if (error instanceof Error) {
+                logger.error('[Error details]', error.stack);
+            } else {
+                logger.error('[Unknown error type]', error);
+            }
         }
+    }
+
+    private getTaskType(task: cron.ScheduledTask | CustomScheduledTask): string {
+        // 'now' is a method in cron.ScheduledTask but not CustomScheduledTask
+        // and 'getStatus' is in CustomScheduledTask but not necessarily unique enough if cron.ScheduledTask also has it.
+        // A more robust check might be needed if cron.ScheduledTask also has getStatus or if CustomScheduledTask gains more properties.
+        // For now, checking for a known method unique to cron.ScheduledTask like 'now' (or others like 'lastDate') is safer.
+        if (typeof (task as cron.ScheduledTask).now === 'function') {
+            return 'cron';
+        }
+        return 'timeout';
+    }
+
+    public stopAndRemoveJob(triggerId: string): boolean {
+        const job = this.cronJobs.get(triggerId);
+        if (job) {
+            job.stop();
+            this.cronJobs.delete(triggerId);
+            logger.info(`Stopped and removed job for trigger ${triggerId}`);
+            return true;
+        }
+        logger.warn(`Job for trigger ${triggerId} not found for stopping.`);
+        return false;
+    }
+
+    public getJobDetails(triggerId: string): { status: string, type: string } | undefined {
+        const job = this.cronJobs.get(triggerId);
+        if (job) {
+            const taskType = this.getTaskType(job);
+            let status: string;
+
+            if (taskType === 'timeout') {
+                status = (job as CustomScheduledTask).getStatus();
+            } else { // taskType === 'cron'
+                // cron.ScheduledTask doesn't have a getStatus().
+                // If it's in our map, we consider it 'active'.
+                status = 'active'; 
+            }
+            return {
+                status: status,
+                type: taskType
+            };
+        }
+        return undefined;
     }
 
     async handleWebhookTrigger(triggerId: string, payload: ICommonObject = {}) {

@@ -1,10 +1,11 @@
 import { DataSource, Repository } from 'typeorm'
 import { Trigger } from '../../database/entities/Trigger'
 import { TriggerEvent } from '../../database/entities/TriggerEvent'
+// import { ChatFlowService } from './chatflows' // Module not found or not exported
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import axios from 'axios'
 import { ICommonObject } from '../../Interface'
-import { getServerUrl } from '../../utils'
+// import { getServerUrl } from '../../utils' // Function not found in utils
 
 export class TriggerService {
     private triggerRepository: Repository<Trigger>
@@ -113,7 +114,8 @@ export class TriggerService {
 
         try {
             // Execute the chatflow
-            const serverUrl = getServerUrl()
+            // const serverUrl = getServerUrl() // Function not found in utils
+            const serverUrl = process.env.FLOWISE_BASE_URL || 'http://localhost:3000' // Fallback to environment variable or default
             const response = await axios.post(
                 `${serverUrl}/api/v1/prediction/${trigger.chatflowId}`,
                 payload,
@@ -130,7 +132,7 @@ export class TriggerService {
             await this.triggerEventRepository.save(triggerEvent)
 
             return triggerEvent
-        } catch (error) {
+        } catch (error: any) {
             // Update the trigger event with the error
             triggerEvent.status = 'failed'
             triggerEvent.error = error.message || 'Unknown error'

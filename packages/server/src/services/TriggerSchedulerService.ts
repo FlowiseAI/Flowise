@@ -2,7 +2,7 @@ import { Trigger } from '../database/entities/Trigger'
 import { TriggerEvent } from '../database/entities/TriggerEvent'
 import { DataSource } from 'typeorm'
 import { IChatFlow } from '../Interface'
-import { getDataSource } from '../database/dataSource'
+import { getDataSource } from '../DataSource'
 import { IncomingHttpHeaders } from 'http'
 import axios from 'axios'
 import logger from '../utils/logger'
@@ -176,13 +176,13 @@ export class TriggerSchedulerService {
             }
 
             // Create trigger event record
-            const triggerEventRepository = this.dataSource.getDataSource().getRepository(TriggerEvent)
+            const triggerEventRepository = this.dataSource.getRepository(TriggerEvent)
             const triggerEvent = new TriggerEvent()
             triggerEvent.id = uuidv4()
             triggerEvent.triggerId = trigger.id
             triggerEvent.status = 'PROCESSING'
             triggerEvent.payload = JSON.stringify(payload)
-            triggerEvent.startedAt = new Date()
+            // triggerEvent.startedAt = new Date() // Property does not exist on TriggerEvent
             await triggerEventRepository.save(triggerEvent)
 
             // Execute chatflow
@@ -207,17 +207,17 @@ export class TriggerSchedulerService {
             // Update trigger event with result
             triggerEvent.status = 'COMPLETED'
             triggerEvent.result = JSON.stringify(response.data)
-            triggerEvent.completedAt = new Date()
+            // triggerEvent.completedAt = new Date() // Property does not exist on TriggerEvent
             await triggerEventRepository.save(triggerEvent)
 
             logger.info(`Trigger ${trigger.id} executed successfully`)
             return response.data
-        } catch (error) {
+        } catch (error: any) {
             logger.error(`Error executing trigger ${trigger.id}:`, error)
 
             // Update trigger event with error
             try {
-                const triggerEventRepository = this.dataSource.getDataSource().getRepository(TriggerEvent)
+                const triggerEventRepository = this.dataSource.getRepository(TriggerEvent)
                 const triggerEvent = await triggerEventRepository.findOne({
                     where: { triggerId: trigger.id, status: 'PROCESSING' }
                 })
@@ -225,10 +225,10 @@ export class TriggerSchedulerService {
                 if (triggerEvent) {
                     triggerEvent.status = 'FAILED'
                     triggerEvent.error = error.message || 'Unknown error'
-                    triggerEvent.completedAt = new Date()
+                    // triggerEvent.completedAt = new Date() // Property does not exist on TriggerEvent
                     await triggerEventRepository.save(triggerEvent)
                 }
-            } catch (dbError) {
+            } catch (dbError: any) {
                 logger.error('Error updating trigger event status:', dbError)
             }
 

@@ -9,6 +9,8 @@ import {
     INodeParams,
     IServerSideEventStreamer
 } from 'flowise-components'
+
+export { ICommonObject }; // Re-export ICommonObject
 import { DataSource } from 'typeorm'
 import { CachePool } from './CachePool'
 import { Telemetry } from './utils/telemetry'

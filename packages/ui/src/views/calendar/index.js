@@ -8,11 +8,11 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import listPlugin from '@fullcalendar/list'
-import MainCard from 'ui-component/cards/MainCard'
-import { StyledButton } from 'ui-component/button/StyledButton'
+import MainCard from '@/ui-component/cards/MainCard'
+import { StyledButton } from '@/ui-component/button/StyledButton'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import api from 'api'
+import axios from 'axios'
 
 const Calendar = () => {
     const theme = useTheme()
@@ -73,7 +73,7 @@ const Calendar = () => {
 
     const fetchTriggers = async () => {
         try {
-            const response = await api.get('/api/v1/triggers')
+            const response = await axios.get('/api/v1/triggers')
             setTriggers(response.data)
         } catch (error) {
             console.error('Error fetching triggers:', error)
@@ -83,7 +83,7 @@ const Calendar = () => {
 
     const fetchChatflows = async () => {
         try {
-            const response = await api.get('/api/v1/chatflows')
+            const response = await axios.get('/api/v1/chatflows')
             setChatflows(response.data)
         } catch (error) {
             console.error('Error fetching chatflows:', error)
@@ -156,11 +156,11 @@ const Calendar = () => {
         try {
             if (selectedEvent) {
                 // Update existing trigger
-                await api.put(`/api/v1/triggers/${selectedEvent.id}`, newTrigger)
+                await axios.put(`/api/v1/triggers/${selectedEvent.id}`, newTrigger)
                 toast.success('Trigger updated successfully')
             } else {
                 // Create new trigger
-                await api.post('/api/v1/triggers', newTrigger)
+                await axios.post('/api/v1/triggers', newTrigger)
                 toast.success('Trigger created successfully')
             }
             handleCloseDialog()
@@ -175,7 +175,7 @@ const Calendar = () => {
         if (!selectedEvent) return
 
         try {
-            await api.delete(`/api/v1/triggers/${selectedEvent.id}`)
+            await axios.delete(`/api/v1/triggers/${selectedEvent.id}`)
             toast.success('Trigger deleted successfully')
             handleCloseDialog()
             fetchTriggers()

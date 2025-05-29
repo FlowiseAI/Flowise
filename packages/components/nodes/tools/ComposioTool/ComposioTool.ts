@@ -105,13 +105,13 @@ class ComposioTool implements INode {
         const tool = new DynamicTool({
             name: toolName,
             description: toolDescription,
-            schema: schema,
-            func: async (input: Record<string, any>) => {
+            func: async (input: string) => {
+                    const parsedInput: Record<string, any> = JSON.parse(input);
                 try {
                     // Call Composio API
                     const response = await axios.post(
                         `https://api.composio.dev/v1/tools/${toolName}/execute`,
-                        input,
+                        parsedInput,
                         {
                             headers: {
                                 'Authorization': `Bearer ${composioApiKey}`,

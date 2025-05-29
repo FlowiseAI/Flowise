@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { getDataSource } from '../database/dataSource'
+import { getDataSource } from '../DataSource'
 import { TriggerService } from '../services/triggers/TriggerService'
 import { triggerSchedulerService } from '../services/triggers/TriggerSchedulerService'
 import { Trigger } from '../database/entities/Trigger'
@@ -12,7 +12,7 @@ export const getAllTriggers = async (req: Request, res: Response) => {
         const triggerService = new TriggerService(dataSource)
         const triggers = await triggerService.getAllTriggers(tenantId)
         return res.json(triggers)
-    } catch (error) {
+    } catch (error: any) {
         return res.status(500).send({ error: error.message })
     }
 }
@@ -27,7 +27,7 @@ export const getTriggerById = async (req: Request, res: Response) => {
             return res.status(404).send({ error: `Trigger with ID ${triggerId} not found` })
         }
         return res.json(trigger)
-    } catch (error) {
+    } catch (error: any) {
         return res.status(500).send({ error: error.message })
     }
 }
@@ -45,7 +45,7 @@ export const createTrigger = async (req: Request, res: Response) => {
         }
         
         return res.status(201).json(newTrigger)
-    } catch (error) {
+    } catch (error: any) {
         return res.status(500).send({ error: error.message })
     }
 }
@@ -65,7 +65,7 @@ export const updateTrigger = async (req: Request, res: Response) => {
         await triggerSchedulerService.refreshTrigger(triggerId)
         
         return res.json(updatedTrigger)
-    } catch (error) {
+    } catch (error: any) {
         return res.status(500).send({ error: error.message })
     }
 }
@@ -75,11 +75,7 @@ export const deleteTrigger = async (req: Request, res: Response) => {
         const triggerId = req.params.id
         
         // Stop any scheduled jobs for this trigger
-        const existingJob = triggerSchedulerService.cronJobs?.get(triggerId)
-        if (existingJob) {
-            existingJob.stop()
-            triggerSchedulerService.cronJobs.delete(triggerId)
-        }
+        triggerSchedulerService.stopAndRemoveJob(triggerId);
         
         const dataSource = await getDataSource()
         const triggerService = new TriggerService(dataSource)
@@ -88,7 +84,7 @@ export const deleteTrigger = async (req: Request, res: Response) => {
             return res.status(404).send({ error: `Trigger with ID ${triggerId} not found` })
         }
         return res.status(204).send()
-    } catch (error) {
+    } catch (error: any) {
         return res.status(500).send({ error: error.message })
     }
 }
@@ -101,7 +97,7 @@ export const getTriggerEvents = async (req: Request, res: Response) => {
         const triggerService = new TriggerService(dataSource)
         const events = await triggerService.getTriggerEvents(triggerId, limit)
         return res.json(events)
-    } catch (error) {
+    } catch (error: any) {
         return res.status(500).send({ error: error.message })
     }
 }
@@ -114,7 +110,7 @@ export const executeTrigger = async (req: Request, res: Response) => {
         const triggerService = new TriggerService(dataSource)
         const event = await triggerService.executeTrigger(triggerId, payload)
         return res.json(event)
-    } catch (error) {
+    } catch (error: any) {
         return res.status(500).send({ error: error.message })
     }
 }
@@ -126,7 +122,7 @@ export const handleWebhook = async (req: Request, res: Response) => {
         
         const result = await triggerSchedulerService.handleWebhookTrigger(triggerId, payload)
         return res.json(result)
-    } catch (error) {
+    } catch (error: any) {
         return res.status(500).send({ error: error.message })
     }
 }

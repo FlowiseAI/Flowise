@@ -10,7 +10,7 @@ import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { checkInputs, Moderation } from '../../moderation/Moderation'
 import { formatResponse } from '../../outputparsers/OutputParserHelpers'
 
-type ObjectTool = StructuredTool
+type ObjectTool = Tool
 const FINISH_NAME = 'finish'
 
 class AutoGPT_Agents implements INode {
@@ -144,13 +144,13 @@ class AutoGPT_Agents implements INode {
                     executor.fullMessageHistory.push(new AIMessage(assistantReply))
 
                     const action = await executor.outputParser.parse(assistantReply)
-                    const tools = executor.tools.reduce((acc, tool) => ({ ...acc, [tool.name]: tool }), {} as { [key: string]: ObjectTool })
+                    const toolsMap = executor.tools.reduce((acc: { [key: string]: any }, tool: any) => { acc[tool.name] = tool; return acc; }, {} as { [key: string]: any });
                     if (action.name === FINISH_NAME) {
                         return action.args.response
                     }
                     let result: string
-                    if (action.name in tools) {
-                        const tool = tools[action.name]
+                    if (action.name in toolsMap) {
+                        const tool = toolsMap[action.name]
                         let observation
                         try {
                             observation = await tool.call(action.args)

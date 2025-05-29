@@ -1,4 +1,4 @@
-import { INodeParams, INodeCredential } from '../../../src/Interface'
+import { INodeParams, INodeCredential } from '../../src/Interface'
 
 class ComposioAuth implements INodeCredential {
     label: string
@@ -19,7 +19,7 @@ class ComposioAuth implements INodeCredential {
                 type: 'password',
                 description: 'Your Composio API Key',
                 default: '',
-                required: true
+                optional: false
             },
             {
                 label: 'Workspace ID',
@@ -27,7 +27,7 @@ class ComposioAuth implements INodeCredential {
                 type: 'string',
                 description: 'Your Composio Workspace ID (optional)',
                 default: '',
-                required: false
+                optional: true
             }
         ]
     }

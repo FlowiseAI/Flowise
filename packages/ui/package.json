@@ -64,6 +64,7 @@
         "react-router": "~6.3.0",
         "react-router-dom": "~6.3.0",
         "react-syntax-highlighter": "^15.5.0",
+        "react-toastify": "^10.0.5",
         "reactflow": "^11.5.6",
         "redux": "^4.0.5",
         "rehype-mathjax": "^4.0.2",

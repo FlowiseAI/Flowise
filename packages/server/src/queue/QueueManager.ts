@@ -7,8 +7,9 @@ import { CachePool } from '../CachePool'
 import { DataSource } from 'typeorm'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { QueueEventsProducer, RedisOptions } from 'bullmq'
-import { createBullBoard } from 'bull-board'
-import { BullMQAdapter } from 'bull-board/bullMQAdapter'
+import { ExpressAdapter } from '@bull-board/express'
+import { createBullBoard } from '@bull-board/api';
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter';
 import { Express } from 'express'
 
 const QUEUE_NAME = process.env.QUEUE_NAME || 'flowise-queue'
@@ -126,7 +127,16 @@ export class QueueManager {
         })
         this.registerQueue('upsert', upsertionQueue)
 
-        const bullboard = createBullBoard([new BullMQAdapter(predictionQueue.getQueue()), new BullMQAdapter(upsertionQueue.getQueue())])
-        this.bullBoardRouter = bullboard.router
+        const serverAdapter = new ExpressAdapter();
+        serverAdapter.setBasePath('/bullboard'); // Or your desired base path
+
+        createBullBoard({
+            queues: [
+                new BullMQAdapter(predictionQueue.getQueue()), 
+                new BullMQAdapter(upsertionQueue.getQueue())
+            ] as any, // Bypass strict type check for BaseAdapter compatibility
+            serverAdapter: serverAdapter
+        });
+        this.bullBoardRouter = serverAdapter.getRouter();
     }
 }

@@ -41,6 +41,11 @@ export default defineConfig(async ({ mode }) => {
         build: {
             outDir: './build'
         },
+        esbuild: {
+          loader: 'jsx',
+          include: /src\/.*\.jsx?$/,
+          exclude: []
+        },
         server: {
             open: true,
             proxy,

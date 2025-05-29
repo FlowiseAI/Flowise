@@ -1,4 +1,4 @@
-import { INodeParams, INodeCredential } from '../../../src/Interface'
+import { INodeParams, INodeCredential } from '../../src/Interface'
 
 class GoogleADKAuth implements INodeCredential {
     label: string
@@ -19,7 +19,7 @@ class GoogleADKAuth implements INodeCredential {
                 type: 'password',
                 description: 'Your Google ADK API Key from Google AI Studio',
                 default: '',
-                required: true
+                optional: false
             },
             {
                 label: 'Project ID',
@@ -27,7 +27,7 @@ class GoogleADKAuth implements INodeCredential {
                 type: 'string',
                 description: 'Your Google Cloud Project ID',
                 default: '',
-                required: false
+                optional: true
             }
         ]
     }
