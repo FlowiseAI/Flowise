@@ -81,39 +81,49 @@ export class App {
         // Initialize database
         try {
             await this.AppDataSource.initialize()
-            logger.info('📦 [server]: Data Source is initializing...')
+            logger.info('📦 [server]: Data Source initialized successfully')
 
             // Run Migrations Scripts
             await this.AppDataSource.runMigrations({ transaction: 'each' })
+            logger.info('🔄 [server]: Database migrations completed successfully')
 
             // Initialize Identity Manager
             this.identityManager = await IdentityManager.getInstance()
+            logger.info('🔐 [server]: Identity Manager initialized successfully')
 
             // Initialize nodes pool
             this.nodesPool = new NodesPool()
             await this.nodesPool.initialize()
+            logger.info('🔧 [server]: Nodes pool initialized successfully')
 
             // Initialize abort controllers pool
             this.abortControllerPool = new AbortControllerPool()
+            logger.info('⏹️ [server]: Abort controllers pool initialized successfully')
 
             // Initialize encryption key
             await getEncryptionKey()
+            logger.info('🔑 [server]: Encryption key initialized successfully')
 
             // Initialize Rate Limit
             this.rateLimiterManager = RateLimiterManager.getInstance()
             await this.rateLimiterManager.initializeRateLimiters(await getDataSource().getRepository(ChatFlow).find())
+            logger.info('🚦 [server]: Rate limiters initialized successfully')
 
             // Initialize cache pool
             this.cachePool = new CachePool()
+            logger.info('💾 [server]: Cache pool initialized successfully')
 
             // Initialize usage cache manager
             this.usageCacheManager = await UsageCacheManager.getInstance()
+            logger.info('📊 [server]: Usage cache manager initialized successfully')
 
             // Initialize telemetry
             this.telemetry = new Telemetry()
+            logger.info('📈 [server]: Telemetry initialized successfully')
 
             // Initialize SSE Streamer
             this.sseStreamer = new SSEStreamer()
+            logger.info('🌊 [server]: SSE Streamer initialized successfully')
 
             // Init Queues
             if (process.env.MODE === MODE.QUEUE) {
@@ -127,14 +137,16 @@ export class App {
                     usageCacheManager: this.usageCacheManager
                 })
                 logger.info('✅ [Queue]: All queues setup successfully')
+
                 this.redisSubscriber = new RedisEventSubscriber(this.sseStreamer)
                 await this.redisSubscriber.connect()
+                logger.info('🔗 [server]: Redis event subscriber connected successfully')
             }
 
             // TODO: Remove this by end of 2025
             await migrateApiKeysFromJsonToDb(this.AppDataSource, this.identityManager.getPlatformType())
 
-            logger.info('📦 [server]: Data Source has been initialized!')
+            logger.info('🎉 [server]: All initialization steps completed successfully!')
         } catch (error) {
             logger.error('❌ [server]: Error during Data Source initialization:', error)
         }
