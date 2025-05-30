@@ -1,0 +1,113 @@
+Parameters:
+    App:
+        Type: String
+        Description: Your application's name.
+    Env:
+        Type: String
+        Description: The name of the environment being deployed.
+    VPCID:
+        Type: String
+        Description: The ID of the VPC for the environment resources.
+        Default: ''
+    PrivateSubnets:
+        Type: String
+        Description: The IDs of the private subnets in which to create the Aurora Serverless v2 cluster.
+        Default: ''
+
+Mappings:
+    RedisEnvConfigurationMap:
+        staging:
+            'NodeType': 'cache.t3.micro'
+            'NumCacheNodes': 1
+        production:
+            'NodeType': 'cache.r6g.large'
+            'NumCacheNodes': 2
+        All:
+            'NodeType': 'cache.t3.micro'
+            'NumCacheNodes': 1
+
+Resources:
+    RedisSubnetGroup:
+        Type: 'AWS::ElastiCache::SubnetGroup'
+        Properties:
+            Description: Subnet group for Redis ElastiCache cluster
+            SubnetIds: !Split [',', !Ref PrivateSubnets]
+            CacheSubnetGroupName: !Sub '${App}-${Env}-redis-subnet-group'
+
+    RedisSecurityGroup:
+        Type: 'AWS::EC2::SecurityGroup'
+        Metadata:
+            'aws:copilot:description': 'A security group for the Redis ElastiCache cluster'
+        Properties:
+            GroupDescription: 'Security Group for Redis ElastiCache cluster'
+            VpcId: !Ref VPCID
+            SecurityGroupIngress:
+                - IpProtocol: tcp
+                  FromPort: 6379
+                  ToPort: 6379
+                  SourceSecurityGroupId: !Ref RedisWorkloadSecurityGroup
+            Tags:
+                - Key: Name
+                  Value: !Sub 'copilot-${App}-${Env}-Redis'
+
+    RedisWorkloadSecurityGroup:
+        Type: 'AWS::EC2::SecurityGroup'
+        Metadata:
+            'aws:copilot:description': 'A security group for workloads to access the Redis cluster'
+        Properties:
+            GroupDescription: 'Security Group for workloads to access Redis cluster'
+            VpcId: !Ref VPCID
+            Tags:
+                - Key: Name
+                  Value: !Sub 'copilot-${App}-${Env}-Redis-Workload'
+
+    RedisParameterGroup:
+        Type: 'AWS::ElastiCache::ParameterGroup'
+        Properties:
+            CacheParameterGroupFamily: 'redis7.x'
+            Description: !Sub 'Parameter group for ${App}-${Env} Redis cluster'
+            Properties:
+                maxmemory-policy: 'allkeys-lru'
+
+    RedisCluster:
+        Type: 'AWS::ElastiCache::CacheCluster'
+        Metadata:
+            'aws:copilot:description': 'Redis ElastiCache cluster for caching and session storage'
+        Properties:
+            CacheNodeType: !FindInMap [RedisEnvConfigurationMap, !Ref Env, NodeType]
+            Engine: redis
+            EngineVersion: '7.0'
+            NumCacheNodes: !FindInMap [RedisEnvConfigurationMap, !Ref Env, NumCacheNodes]
+            Port: 6379
+            CacheSubnetGroupName: !Ref RedisSubnetGroup
+            VpcSecurityGroupIds:
+                - !Ref RedisSecurityGroup
+            CacheParameterGroupName: !Ref RedisParameterGroup
+            Tags:
+                - Key: Name
+                  Value: !Sub '${App}-${Env}-redis'
+
+Outputs:
+    RedisEndpoint:
+        Description: 'Redis cluster endpoint'
+        Value: !GetAtt RedisCluster.RedisEndpoint.Address
+        Export:
+            Name: !Sub '${App}-${Env}-RedisEndpoint'
+
+    RedisPort:
+        Description: 'Redis cluster port'
+        Value: !GetAtt RedisCluster.RedisEndpoint.Port
+        Export:
+            Name: !Sub '${App}-${Env}-RedisPort'
+
+    RedisURL:
+        Description: 'Complete Redis URL for application connection'
+        Value: !Sub 'redis://${RedisCluster.RedisEndpoint.Address}:${RedisCluster.RedisEndpoint.Port}'
+        Export:
+            Name: !Sub '${App}-${Env}-RedisURL'
+
+    RedisWorkloadSecurityGroup:
+        Description: 'Security group to attach to workloads that need Redis access'
+        Value: !Ref RedisWorkloadSecurityGroup
+        Export:
+            Name: !Sub '${App}-${Env}-RedisWorkloadSecurityGroup'
