@@ -1,34 +1,23 @@
-# Build local monorepo image
-# docker build --no-cache -t  flowise .
+# Wersja Node.js (dostosuj w razie potrzeby)
+FROM node:18
 
-# Run image
-# docker run -d -p 3000:3000 flowise
+# Ustaw katalog roboczy
+WORKDIR /usr/src/app
 
-FROM node:20-alpine
-RUN apk add --update libc6-compat python3 make g++
-# needed for pdfjs-dist
-RUN apk add --no-cache build-base cairo-dev pango-dev
+# Skopiuj pliki package.json i package-lock.json
+COPY package*.json ./
 
-# Install Chromium
-RUN apk add --no-cache chromium
+# Instalacja zależności
+RUN npm install
 
-#install PNPM globaly
-RUN npm install -g pnpm
-
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-ENV NODE_OPTIONS=--max-old-space-size=8192
-
-WORKDIR /usr/src
-
-# Copy app source
+# Skopiuj resztę aplikacji
 COPY . .
 
-RUN pnpm install
-
-RUN pnpm build
-
+# Upewnij się, że Flowise będzie widoczny na odpowiednim porcie (domyślnie 3000)
 EXPOSE 3000
 
-CMD [ "pnpm", "start" ]
+# Ustaw zmienną środowiskową DATABASE_URL (Render ustawia ją automatycznie, ale warto ją jawnie przekazać)
+ENV DATABASE_URL=${DATABASE_URL}
+
+# Uruchom aplikację
+CMD ["npm", "run", "start"]
