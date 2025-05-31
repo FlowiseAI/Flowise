@@ -28,7 +28,7 @@ class Tool_Agentflow implements INode {
     constructor() {
         this.label = 'Tool'
         this.name = 'toolAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Tool'
         this.category = 'Agent Flows'
         this.description = 'Tools allow LLM to interact with external systems'
@@ -37,7 +37,7 @@ class Tool_Agentflow implements INode {
         this.inputs = [
             {
                 label: 'Tool',
-                name: 'selectedTool',
+                name: 'toolAgentflowSelectedTool',
                 type: 'asyncOptions',
                 loadMethod: 'listTools',
                 loadConfig: true
@@ -64,7 +64,7 @@ class Tool_Agentflow implements INode {
                     }
                 ],
                 show: {
-                    selectedTool: '.+'
+                    toolAgentflowSelectedTool: '.+'
                 }
             },
             {
@@ -124,7 +124,7 @@ class Tool_Agentflow implements INode {
         },
         async listToolInputArgs(nodeData: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
             const currentNode = options.currentNode as ICommonObject
-            const selectedTool = currentNode?.inputs?.selectedTool as string
+            const selectedTool = (currentNode?.inputs?.selectedTool as string) || (currentNode?.inputs?.toolAgentflowSelectedTool as string)
             const selectedToolConfig = currentNode?.inputs?.selectedToolConfig as ICommonObject
 
             const nodeInstanceFilePath = options.componentNodes[selectedTool].filePath as string
@@ -183,7 +183,7 @@ class Tool_Agentflow implements INode {
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        const selectedTool = nodeData.inputs?.selectedTool as string
+        const selectedTool = (nodeData.inputs?.selectedTool as string) || (nodeData.inputs?.toolAgentflowSelectedTool as string)
         const selectedToolConfig = nodeData.inputs?.selectedToolConfig as ICommonObject
 
         const toolInputArgs = nodeData.inputs?.toolInputArgs as IToolInputArgs[]

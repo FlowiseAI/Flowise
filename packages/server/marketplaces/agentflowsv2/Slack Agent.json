@@ -526,7 +526,7 @@
             "data": {
                 "id": "toolAgentflow_0",
                 "label": "Slack Reply",
-                "version": 1,
+                "version": 1.1,
                 "name": "toolAgentflow",
                 "type": "Tool",
                 "color": "#d4a373",
@@ -536,11 +536,11 @@
                 "inputParams": [
                     {
                         "label": "Tool",
-                        "name": "selectedTool",
+                        "name": "toolAgentflowSelectedTool",
                         "type": "asyncOptions",
                         "loadMethod": "listTools",
                         "loadConfig": true,
-                        "id": "toolAgentflow_0-input-selectedTool-asyncOptions",
+                        "id": "toolAgentflow_0-input-toolAgentflowSelectedTool-asyncOptions",
                         "display": true
                     },
                     {
@@ -565,7 +565,7 @@
                             }
                         ],
                         "show": {
-                            "selectedTool": ".+"
+                            "toolAgentflowSelectedTool": ".+"
                         },
                         "id": "toolAgentflow_0-input-toolInputArgs-array",
                         "display": true
@@ -599,7 +599,7 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "selectedTool": "slackMCP",
+                    "toolAgentflowSelectedTool": "slackMCP",
                     "toolInputArgs": [
                         {
                             "inputArgName": "channel_id",
@@ -611,9 +611,9 @@
                         }
                     ],
                     "toolUpdateState": "",
-                    "selectedToolConfig": {
+                    "toolAgentflowSelectedToolConfig": {
                         "mcpActions": "[\"slack_post_message\"]",
-                        "selectedTool": "slackMCP"
+                        "toolAgentflowSelectedTool": "slackMCP"
                     }
                 },
                 "outputAnchors": [
