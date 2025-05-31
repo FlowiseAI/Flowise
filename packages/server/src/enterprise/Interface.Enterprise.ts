@@ -104,8 +104,10 @@ export const OrgSetupSchema = z
         password: z
             .string()
             .min(8, 'Password must be at least 8 characters')
+            .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
             .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-            .regex(/[!@#$%^&*]/, 'Password must contain at least one special character'),
+            .regex(/\d/, 'Password must contain at least one digit')
+            .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
         confirmPassword: z.string().min(1, 'Confirm Password is required')
     })
     .refine((data) => data.password === data.confirmPassword, {
@@ -122,8 +124,10 @@ export const RegisterUserSchema = z
         password: z
             .string()
             .min(8, 'Password must be at least 8 characters')
+            .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
             .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-            .regex(/[!@#$%^&*]/, 'Password must contain at least one special character'),
+            .regex(/\d/, 'Password must contain at least one digit')
+            .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
         confirmPassword: z.string().min(1, 'Confirm Password is required'),
         token: z.string().min(1, 'Invite Code is required')
     })

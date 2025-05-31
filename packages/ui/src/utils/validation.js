@@ -6,7 +6,7 @@ export const passwordSchema = z
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
     .regex(/\d/, 'Password must contain at least one digit')
-    .regex(/[@$!%*?&-]/, 'Password must contain at least one special character (@$!%*?&-)')
+    .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character')
 
 export const validatePassword = (password) => {
     const result = passwordSchema.safeParse(password)

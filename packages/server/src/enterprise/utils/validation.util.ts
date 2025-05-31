@@ -18,6 +18,6 @@ export function isInvalidDateTime(dateTime: unknown): boolean {
 }
 
 export function isInvalidPassword(password: unknown): boolean {
-    const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&-])[A-Za-z\d@$!%*?&-]{8,}$/
+    const regexPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/
     return !password || typeof password !== 'string' || !regexPassword.test(password)
 }
