@@ -791,7 +791,7 @@ const AccountSettings = () => {
                                             <Typography variant='caption'>
                                                 <i>
                                                     Password must be at least 8 characters long and contain at least one lowercase letter,
-                                                    one uppercase letter, one digit, and one special character (@$!%*?&-).
+                                                    one uppercase letter, one digit, and one special character.
                                                 </i>
                                             </Typography>
                                         </Box>
