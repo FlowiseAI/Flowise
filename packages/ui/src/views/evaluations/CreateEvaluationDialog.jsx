@@ -51,12 +51,26 @@ import { evaluators as evaluatorsOptions } from '../evaluators/evaluatorConstant
 
 const steps = ['Datasets', 'Evaluators', 'LLM Graded Metrics']
 
+export const flowTypes = [
+    {
+        name: 'CHATFLOW',
+        label: 'Chatflow',
+        description: 'Regular Chatflow'
+    },
+    {
+        name: 'AGENTFLOW',
+        label: 'Agentflow (v2)',
+        description: 'Multi Agentflow'
+    }
+]
 const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
     useNotifier()
 
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
+    const getAllAgentflowsApi = useApi(chatflowsApi.getAllAgentflows)
+
     const getAllDatasetsApi = useApi(datasetsApi.getAllDatasets)
     const getAllEvaluatorsApi = useApi(evaluatorsApi.getAllEvaluators)
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
@@ -65,6 +79,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [chatflow, setChatflow] = useState([])
     const [dataset, setDataset] = useState('')
     const [datasetAsOneConversation, setDatasetAsOneConversation] = useState(false)
+    const [flowType, setFlowType] = useState('CHATFLOW')
 
     const [flows, setFlows] = useState([])
     const [datasets, setDatasets] = useState([])
@@ -124,6 +139,20 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         setSelectedLLM('no_grading')
         setUseLLM(false)
         setDatasetAsOneConversation(false)
+    }
+
+    const onChangeFlowType = (newFlowType) => {
+        setChatflow([])
+        if (newFlowType === 'CHATFLOW') {
+            if (flowType === 'AGENTFLOW') {
+                getAllChatflowsApi.request()
+            }
+        } else {
+            if (flowType === 'CHATFLOW') {
+                getAllAgentflowsApi.request('AGENTFLOW')
+            }
+        }
+        setFlowType(newFlowType)
     }
 
     const validate = () => {
@@ -227,21 +256,22 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     useEffect(() => {
         if (getAllChatflowsApi.data) {
             try {
-                const chatflows = getAllChatflowsApi.data
-                let flowNames = []
-                for (let i = 0; i < chatflows.length; i += 1) {
-                    const flow = chatflows[i]
-                    flowNames.push({
-                        label: flow.name,
-                        name: flow.id
-                    })
-                }
-                setFlows(flowNames)
+                populateFlowNames(getAllChatflowsApi.data)
             } catch (e) {
                 console.error(e)
             }
         }
     }, [getAllChatflowsApi.data])
+
+    useEffect(() => {
+        if (getAllAgentflowsApi.data) {
+            try {
+                populateFlowNames(getAllAgentflowsApi.data)
+            } catch (e) {
+                console.error(e)
+            }
+        }
+    }, [getAllAgentflowsApi.data])
 
     useEffect(() => {
         if (getNodesByCategoryApi.data) {
@@ -337,6 +367,18 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         if (llm !== 'no_grading') getModelsApi.request(llm, { loadMethod: 'listModels' })
     }
 
+    const populateFlowNames = (flows) => {
+        let flowNames = []
+        for (let i = 0; i < flows.length; i += 1) {
+            const flow = flows[i]
+            flowNames.push({
+                label: flow.name,
+                name: flow.id
+            })
+        }
+        setFlows(flowNames)
+    }
+
     const component = show ? (
         <Dialog
             fullWidth
@@ -353,7 +395,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </div>
             </DialogTitle>
             <DialogContent>
-                <Stack direction='column' spacing={2}>
+                <Stack direction='column' spacing={1}>
                     <Divider />
                     {validationFailed && (
                         <div
@@ -483,7 +525,20 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             </Box>
                             <Box>
                                 <Typography variant='overline'>
-                                    Chatflow(s) to Evaluate<span style={{ color: 'red' }}>&nbsp;*</span>
+                                    Category<span style={{ color: 'red' }}>&nbsp;*</span>
+                                </Typography>
+                                <Dropdown
+                                    name='eval_flow_type'
+                                    defaultOption='Select Flow Category'
+                                    options={flowTypes}
+                                    onSelect={(newValue) => onChangeFlowType(newValue)}
+                                    value={flowType}
+                                />
+                            </Box>
+                            <Box>
+                                <Typography variant='overline'>
+                                    Select your {flowType === 'CHATFLOW' ? 'Chatflow(s)' : 'Agentflow(s)'} to Evaluate
+                                    <span style={{ color: 'red' }}>&nbsp;*</span>
                                 </Typography>
                                 <MultiDropdown
                                     name={'chatflow1'}

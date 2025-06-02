@@ -171,8 +171,48 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                             totalTime += parseFloat(evaluationRow.latency)
                             let metricsObjFromRun: ICommonObject = {}
 
+                            let nested_metrics = evaluationRow.nested_metrics
+
+                            let promptTokens = 0,
+                                completionTokens = 0,
+                                totalTokens = 0
+                            let inputCost = 0,
+                                outputCost = 0,
+                                totalCost = 0
+                            if (nested_metrics && nested_metrics.length > 0) {
+                                for (let i = 0; i < nested_metrics.length; i++) {
+                                    const nested_metric: any = nested_metrics[i]
+                                    if (nested_metric.model && nested_metric.promptTokens > 0) {
+                                        promptTokens += nested_metric.promptTokens
+                                        completionTokens += nested_metric.completionTokens
+                                        totalTokens += nested_metric.totalTokens
+
+                                        inputCost += nested_metric.cost_values.input_cost
+                                        outputCost += nested_metric.cost_values.output_cost
+                                        totalCost += nested_metric.cost_values.total_cost
+
+                                        nested_metric['totalCost'] = formatCost(nested_metric.cost_values.total_cost)
+                                        nested_metric['promptCost'] = formatCost(nested_metric.cost_values.input_cost)
+                                        nested_metric['completionCost'] = formatCost(nested_metric.cost_values.output_cost)
+                                    }
+                                }
+                                nested_metrics = nested_metrics.filter((metric: any) => {
+                                    return metric.model && metric.provider
+                                })
+                            }
                             const metrics = evaluationRow.metrics
                             if (metrics) {
+                                if (nested_metrics && nested_metrics.length > 0) {
+                                    metrics.push({
+                                        promptTokens: promptTokens,
+                                        completionTokens: completionTokens,
+                                        totalTokens: totalTokens,
+                                        totalCost: formatCost(totalCost),
+                                        promptCost: formatCost(inputCost),
+                                        completionCost: formatCost(outputCost)
+                                    })
+                                    metricsObjFromRun.nested_metrics = nested_metrics
+                                }
                                 metrics.map((metric: any) => {
                                     if (metric) {
                                         const json = typeof metric === 'object' ? metric : JSON.parse(metric)
@@ -347,6 +387,10 @@ const deleteEvaluation = async (id: string, activeWorkspaceId?: string) => {
             `Error: EvalsService.deleteEvaluation - ${getErrorMessage(error)}`
         )
     }
+}
+
+const formatCost = (cost: number) => {
+    return cost < 0.01 ? '$ <0.01' : '$ ' + cost.toFixed(2)
 }
 
 // check for outdated evaluations

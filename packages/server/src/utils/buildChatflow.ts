@@ -905,17 +905,15 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const isTool = req.get('flowise-tool') === 'true'
     const isEvaluation: boolean = req.headers['X-Flowise-Evaluation'] || req.body.evaluation
     let evaluationRunId = ''
-    if (isEvaluation) {
+    if (isEvaluation && chatflow.type === 'CHATFLOW' && req.body.evaluationRunId) {
         evaluationRunId = req.body.evaluationRunId
-        if (evaluationRunId) {
-            const newEval = {
-                evaluation: {
-                    status: true,
-                    evaluationRunId
-                }
+        const newEval = {
+            evaluation: {
+                status: true,
+                evaluationRunId
             }
-            chatflow.analytic = JSON.stringify(newEval)
         }
+        chatflow.analytic = JSON.stringify(newEval)
     }
 
     try {
