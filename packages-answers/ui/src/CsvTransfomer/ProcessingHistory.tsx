@@ -32,7 +32,7 @@ async function getProcessedCsvSignedUrl(csvParseRunId: string) {
         throw new Error('Failed to get signed URL for processed CSV')
     }
     const data = await response.json()
-    return data.signedUrl
+    return data
 }
 
 async function downloadProcessedCsv(csvParseRunId: string) {
@@ -99,9 +99,9 @@ const ProcessingHistory = ({ user }: { user: User }) => {
             headerClassName: 'super-app-theme--header',
             renderCell: (params: any) => (
                 <Chip
-                    label={params.value === 'ready' ? 'CSV Processed' : 'Processing...'}
+                    label={params.value === 'READY' ? 'CSV Processed' : 'Processing...'}
                     variant='outlined'
-                    color={params.value === 'ready' ? 'success' : params.value === 'completeWithErrors' ? 'error' : 'warning'}
+                    color={params.value === 'READY' ? 'success' : params.value === 'COMPLETE_WITH_ERRORS' ? 'error' : 'warning'}
                     size='small'
                     sx={{ fontSize: '0.825rem' }}
                 />
@@ -195,7 +195,7 @@ const ProcessingHistory = ({ user }: { user: User }) => {
                         size='small'
                         variant='contained'
                         color='primary'
-                        disabled={params.row.status !== 'ready'}
+                        disabled={params.row.status !== 'READY'}
                         onClick={() => handleDownloadProcessedCsv(params.row.id)}
                         sx={{ fontSize: '0.825rem', py: 0.5, px: 1 }}
                     >
@@ -205,7 +205,7 @@ const ProcessingHistory = ({ user }: { user: User }) => {
                         size='small'
                         variant='outlined'
                         color='secondary'
-                        disabled={params.row.status !== 'ready'}
+                        disabled={params.row.status !== 'READY'}
                         sx={{ fontSize: '0.825rem', py: 0.5, px: 1 }}
                         component={Link}
                         href={`/sidekick-studio/csv-transformer?tab=process&cloneFrom=${params.row.id}`}

@@ -1,5 +1,5 @@
 import cron from 'node-cron'
-import { S3, PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import { PutObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
 import { parse } from 'csv-parse/sync'
 import logger from '../utils/logger'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
@@ -20,7 +20,7 @@ const GENERATE_CSV_CRON_SCHEDULE = process.env.GENERATE_CSV_CRON_SCHEDULE || '*/
  */
 const ENABLE_GENERATE_CSV_CRON = process.env.ENABLE_GENERATE_CSV_CRON !== 'false'
 
-const s3 = new S3(getS3Config())
+const { s3Client } = getS3Config()
 
 function convertToCSV<T extends object>(data: T[]): string {
     if (data.length === 0) {
@@ -74,7 +74,7 @@ const generateCsv = async (csvParseRun: AppCsvParseRuns) => {
 
         // if includeOriginalColumns is set to true, download original csv from S3
         if (csvParseRun.includeOriginalColumns) {
-            const originalCsv = await s3.send(
+            const originalCsv = await s3Client.send(
                 new GetObjectCommand({
                     Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
                     Key: csvParseRun.originalCsvUrl.replace(`s3://${process.env.S3_STORAGE_BUCKET_NAME ?? ''}/`, '')
@@ -107,7 +107,7 @@ const generateCsv = async (csvParseRun: AppCsvParseRuns) => {
 
         // save csv to S3
         const key = `s3://${process.env.S3_STORAGE_BUCKET_NAME ?? ''}/csv-parse-runs/${csvParseRun.organizationId}/${csvParseRun.id}.csv`
-        await s3.send(
+        await s3Client.send(
             new PutObjectCommand({
                 Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
                 Key: key,
@@ -135,8 +135,9 @@ const main = async () => {
         const appServer = getRunningExpressApp()
         const csvParseRuns = await appServer.AppDataSource.getRepository(AppCsvParseRuns)
             .createQueryBuilder('csvParseRuns')
-            .where('status = :status', { status: AppCsvParseRunsStatus.COMPLETE })
-            .orWhere('status = :status', { status: AppCsvParseRunsStatus.COMPLETE_WITH_ERRORS })
+            .where('status IN (:...statuses)', {
+                statuses: [AppCsvParseRunsStatus.COMPLETE, AppCsvParseRunsStatus.COMPLETE_WITH_ERRORS]
+            })
             .orderBy('"startedAt"', 'ASC')
             .take(1)
             .getMany()

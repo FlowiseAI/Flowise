@@ -7,6 +7,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { AppCsvParseRuns } from '../../database/entities/AppCsvParseRuns'
+import { getS3Config } from 'flowise-components'
 
 const slugify = (text?: string) =>
     text
@@ -155,20 +156,13 @@ const getProcessedCsvSignedUrl = async (csvParseRunId: string, user: IUser) => {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `CsvParseRun ${csvParseRunId} not found`)
         }
 
-        const s3 = new S3Client({
-            region: process.env.S3_STORAGE_REGION ?? '',
-            credentials: {
-                accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID ?? '',
-                secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY ?? ''
-            }
-        })
+        const { s3Client, Bucket } = getS3Config()
 
         const getCmd = new GetObjectCommand({
-            Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
+            Bucket,
             Key: csvParseRun.processedCsvUrl
         })
-
-        const signedUrl = await getSignedUrl(s3, getCmd, {
+        const signedUrl = await getSignedUrl(s3Client, getCmd, {
             expiresIn: 60 * 60 * 24 // 1 day
         })
         return signedUrl
