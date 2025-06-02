@@ -39,7 +39,7 @@
         "@next-auth/prisma-adapter": "^1.0.7",
         "@sentry/browser": "^7.60.0",
         "@textea/json-viewer": "2.14.1",
-        "@types/cors": "^2.8.13",
+        "@types/cors": "^2.8.18",
         "@types/js-cookie": "^3.0.3",
         "@types/react-window": "^1.8.5",
         "aai-embed-react": "~1.0.8",

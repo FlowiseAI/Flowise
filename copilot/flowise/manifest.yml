@@ -34,7 +34,7 @@ network:
     vpc:
         security_groups:
             - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterSecurityGroup
-
+            
 storage:
     volumes:
         myManagedEFSVolume:
@@ -48,7 +48,10 @@ storage:
 variables: # Pass environment variables as key value pairs.
     S3_STORAGE_BUCKET_NAME:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorageBucketName
-
+    AAI_DEFAULT_REDIS_URL:
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
+    REDIS_URL:
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
 env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
 secrets:
     DATABASE_SECRET:

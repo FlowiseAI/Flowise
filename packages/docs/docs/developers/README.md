@@ -11,7 +11,7 @@ Welcome to the developers section of the AnswerAI documentation. This area provi
 AnswerAI provides a comprehensive set of APIs to help you integrate our AI capabilities into your applications:
 
 -   [API Documentation](/docs/api) - Explore our complete API reference, including endpoints, request/response formats, and examples
--   [Getting Your API Key](/docs/api#getting-your-api-key) - Learn how to generate and use your API key
+-   [Getting Your API Key](/docs/developers/authorization/chatflow-level) - Learn how to generate and use your API key
 
 ## Deployment
 

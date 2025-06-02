@@ -25,7 +25,7 @@
     "dependencies": {
         "@answerai/confluence-mcp": "^1.0.0",
         "@answerai/jira-mcp": "^1.0.2",
-        "@apidevtools/json-schema-ref-parser": "^11.7.0",
+        "@apidevtools/json-schema-ref-parser": "^12.0.2",
         "@arizeai/openinference-instrumentation-langchain": "^2.0.0",
         "@aws-sdk/client-bedrock-runtime": "3.422.0",
         "@aws-sdk/client-dynamodb": "^3.360.0",

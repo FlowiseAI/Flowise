@@ -61,7 +61,7 @@
         "@babel/core": "^7.21.4",
         "@next/bundle-analyzer": "^13.4.12",
         "@prisma/nextjs-monorepo-workaround-plugin": "^5.0.0",
-        "@types/cors": "^2.8.13",
+        "@types/cors": "^2.8.18",
         "@types/js-cookie": "^3.0.3",
         "@types/node": "^18.15.11",
         "@types/react": "^18.2.15",

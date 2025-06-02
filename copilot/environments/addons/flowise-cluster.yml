@@ -14,7 +14,7 @@ Parameters:
         # Naming constraints: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.Constraints
     VPCID:
         Type: String
-        Description: The ID of the VPC in which to create the Aurora Serverless v2 cluster.
+        Description: The ID of the VPC for the environment resources.
         Default: ''
     PublicSubnets:
         Type: String

@@ -101,7 +101,7 @@
         "rimraf": "^5.0.5",
         "sass": "^1.42.1",
         "typescript": "^5.4.5",
-        "vite": "^5.0.2",
+        "vite": "^6.3.5",
         "vite-plugin-pwa": "^0.17.0",
         "vite-plugin-react-js-support": "^1.0.7"
     }

@@ -108,10 +108,8 @@ export interface BaseDynamicToolInput extends ToolParams {
     returnDirect?: boolean
 }
 
-export interface DynamicStructuredToolInput<
-    // eslint-disable-next-line
-    T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>
-> extends BaseDynamicToolInput {
+export interface DynamicStructuredToolInput<T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>>
+    extends BaseDynamicToolInput {
     func?: (input: z.infer<T>, runManager?: CallbackManagerForToolRun) => Promise<string>
     schema: T
     baseUrl: string
@@ -122,10 +120,7 @@ export interface DynamicStructuredToolInput<
     removeNulls?: boolean
 }
 
-export class DynamicStructuredTool<
-    // eslint-disable-next-line
-    T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>
-> extends StructuredTool {
+export class DynamicStructuredTool<T extends z.ZodObject<any, any, any, any> = z.ZodObject<any, any, any, any>> extends StructuredTool {
     name: string
 
     description: string

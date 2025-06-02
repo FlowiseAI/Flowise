@@ -1,142 +1,112 @@
 ---
-description: Welcome to the official AnswerAI documentation
+description: Welcome to the official Answer Agent AI documentation
 ---
 
 # Getting Started
 
-## What is AnswerAI?
+## What is Answer Agent AI?
 
-AnswerAI is a revolutionary AI-powered productivity suite that empowers individuals and organizations to streamline their workflows, enhance decision-making, and boost creativity. By leveraging cutting-edge AI technology, AnswerAI provides a comprehensive set of tools designed to tackle a wide range of tasks with unprecedented efficiency and intelligence.
+Answer Agent AI is a revolutionary platform for building and managing your internal AI agent workforce. By leveraging cutting-edge AI technology, Answer Agent AI provides a comprehensive suite of tools designed to create, deploy, and integrate intelligent agents that enhance productivity and automate workflows across your organization.
 
 ### Key Features
 
-1. **AI Sidekicks (Chatflows)**
-2. **Document Stores**
-3. **Powerful Tools Integration**
-4. **Developer-Friendly Platform**
-5. **Shareable Chatbots**
-6. **Integrates with open source workflow builder [Flowise](https://flowiseai.com)**
+-   **[Browser Extension](browser/)**: Learn how to install and use the browser extension to bring your agents into your daily workflows.
+-   **[Agent Chat](chat/)**: Discover how to interact with your agents and leverage the workbench features.
+-   **[Sidekick Studio](sidekick-studio/)**: Master the art of building powerful autonomous agents and complex workflows.
+-   **[Use Cases](use-cases/)**: Explore real-world applications and success stories from various industries.
+-   **[API Reference](api/)**: Integrate Answer Agent AI with your custom applications and systems.
 
-Let's dive into each of these features and explore how they can transform your work:
+Let's explore how each of these features can transform your AI infrastructure:
 
-## 1. AI Sidekicks (Chatflows)
+## 1. Browser Extension
 
-AI Sidekicks are task-specific AI assistants that you can chat with to accomplish various tasks. These intelligent chatbots are designed to help you with:
+The Answer Agent AI browser extension keeps your AI workforce with you at all times:
 
--   Summarizing meetings and conversations
--   Finding and analyzing documents within your organization
--   Creating new content, from reports to creative writing
--   Answering questions and providing insights on specific topics
-
-**Benefits:**
-
--   Save time on repetitive tasks
--   Access expert-level assistance 24/7
--   Improve decision-making with AI-powered insights
--   Enhance productivity across various departments
-
-## 2. Document Stores
-
-AnswerAI's Document Stores feature allows you to connect and access data from a wide range of third-party services, including:
-
--   Cloud storage providers (Google Drive, Dropbox, etc.)
--   Content management systems (SharePoint, Confluence, etc.)
--   Databases and data warehouses
--   Web scraping and API integrations
+-   Access your AI agents directly within your browser context
+-   Interact with tools like Salesforce, Confluence, and other web applications
+-   Get real-time assistance as you work without switching contexts
+-   Enable your agents to see what you see and help in real-time
 
 **Benefits:**
 
--   Centralize access to all your organization's knowledge
--   Seamlessly integrate data from multiple sources
--   Enhance AI Sidekicks with relevant, up-to-date information
--   Improve search and discovery of internal documents
+-   Eliminate context switching between tasks and tools
+-   Receive AI assistance exactly where you need it
+-   Seamlessly integrate AI into your existing workflows
+-   Boost productivity with contextual AI support
 
-## 3. Powerful Tools Integration
+## 2. Agent Chat
 
-AnswerAI's AI Sidekicks can leverage a variety of tools to extend their capabilities, including:
+Similar to ChatGPT but fully customizable to your needs:
 
--   Image generation using DALL-E
--   Complex calculations and data analysis
--   Natural language processing for sentiment analysis and entity extraction
--   Integration with external APIs and services
-
-**Benefits:**
-
--   Expand the range of tasks your AI Sidekicks can handle
--   Combine AI intelligence with specialized tools for optimal results
--   Automate complex workflows involving multiple steps and tools
--   Stay at the forefront of AI technology with regular tool updates
-
-## 4. Developer-Friendly Platform
-
-AnswerAI is built with developers in mind, offering:
-
--   Customizable AI models and workflows
--   API access for seamless integration with existing systems
--   Extensive documentation and support resources
--   Flexibility to extend and modify AI Sidekicks' capabilities
+-   Choose between different specialized agents based on your task
+-   Access a complete workbench of AI capabilities
+-   Maintain conversation history and context across sessions
 
 **Benefits:**
 
--   Tailor AnswerAI to your organization's specific needs
--   Integrate AI-powered features into your existing applications
--   Develop custom AI solutions using AnswerAI as a foundation
--   Stay in control of your AI implementations
+-   Centralized interface for interacting with your AI workforce
+-   Purpose-built agents for specific tasks and domains
+-   Consistent AI experience across your organization
+-   Flexible deployment options for teams of any size
 
-## 5. Shareable Chatbots
+## 3. Sidekick Studio
 
-With AnswerAI, you can easily share your custom AI Sidekicks:
+The backbone of your AI infrastructure:
 
--   Deploy chatbots for internal use across your organization
--   Create public-facing AI assistants for customer support or engagement
--   Collaborate with team members on AI Sidekick development
-
-**Benefits:**
-
--   Improve knowledge sharing within your organization
--   Enhance customer support with 24/7 AI-powered assistance
--   Showcase your expertise through public AI Sidekicks
--   Foster innovation by allowing teams to build on each other's work
-
-## 6. Integration with Flowise
-
-AnswerAI seamlessly integrates with [Flowise](https://flowiseai.com), a popular open-source workflow builder for creating AI applications. This integration brings several advantages:
-
--   **Visual Workflow Creation**: Design complex AI workflows using Flowise's intuitive drag-and-drop interface.
--   **Customization**: Tailor your AI Sidekicks and chatbots to your specific needs using Flowise's extensive library of components.
--   **Flexibility**: Combine various AI models, data sources, and tools to create powerful, multi-step workflows.
--   **Community Support**: Benefit from the active Flowise community, sharing and discovering new workflow templates and components.
+-   Build complex automations and truly autonomous agents
+-   Create end-to-end workflows with visual building tools
+-   Design, test, and deploy agents without coding expertise
+-   Customize agent capabilities, knowledge, and behaviors
 
 **Benefits:**
 
--   Accelerate development of AI-powered applications
--   Leverage the power of visual programming for AI workflows
--   Access a growing ecosystem of pre-built components and integrations
--   Easily extend and modify your AI Sidekicks as your needs evolve
+-   Transform business processes with autonomous AI agents
+-   Reduce development time with visual workflow tools
+-   Scale your AI initiatives across departments
+-   Create specialized agents for unique business needs
 
-## Getting Started with AnswerAI & Flowise
+## 4. Seamless Tool Integrations
 
-Ready to revolutionize your workflow with AI? Watch this quick video on Flowise. Since AnswerAI uses the popular open-source workflow builder [Flowise](https://flowiseai.com), you can use the same tools to build your Sidekicks.
+Answer Agent AI connects with your existing tools and systems:
 
-<!-- TODO: Add Quick 2 min overview video -->
-<iframe src="https://www.youtube.com/embed/d7vfUodP0c4" width="640" height="390"></iframe>
+-   Native integrations with popular business applications
+-   Connect to document repositories and knowledge bases
+-   Leverage external APIs and services
+-   Access and process data from multiple sources
 
-For a more in-depth look at creating your first AI Sidekick, check out this comprehensive tutorial:
+**Benefits:**
 
-<!-- TODO: Add 10 min video building a chatbot with a PDF -->
-<iframe src="https://www.youtube.com/embed/kAyKOsm8L5Y" width="640" height="390"></iframe>
+-   Extend agent capabilities with specialized tools
+-   Unify disparate systems through AI orchestration
+-   Create cohesive workflows across platforms
+-   Maximize the value of your existing technology investments
 
-## Join the AnswerAI Community
+## 5. Flowise Compatibility
 
-We're excited to see what you'll create with AnswerAI! Join our community to share your experiences, get support, and collaborate with other innovators:
+Answer Agent AI is built on the power of Flowise:
 
--   [Join our Discord](https://discord.gg/X54ywt8pzj)
+-   All your Flowise chatflows and agent flows work by default
+-   Access to the extensive Flowise component library
+-   Visual workflow builder with drag-and-drop interface
+-   Active community and continuous innovation
+
+**Benefits:**
+
+-   Leverage existing Flowise investments and knowledge
+-   Combine the power of Flowise with Answer Agent AI's unique features
+-   Build on open standards for maximum flexibility
+-   Future-proof your AI infrastructure
+
+## Join the Answer Agent AI Community
+
+We're excited to see what you'll create! Join our community to share your experiences, get support, and collaborate with other innovators:
+
 -   [Subscribe to Youtube](https://youtube.com/@digitalatscale)
 -   [Follow us on X](https://x.com/digitalatscale_)
 -   [Read our blog](https://theanswer.ai/blog)
 
 ## Contributing
 
-AnswerAI is an open-source project, and we welcome contributions from the community. If you're interested in helping improve AnswerAI, please check out our [Contribution Guide](community/).
+Answer Agent AI welcomes contributions from the community. If you're interested in helping improve the platform, please check out our [Contribution Guide](community/).
 
-Together, let's build the future of AI-powered productivity!
+Together, let's build the future of autonomous AI agents!

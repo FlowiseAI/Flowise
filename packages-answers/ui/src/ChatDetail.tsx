@@ -22,10 +22,12 @@ const SourceDocumentModal = dynamic(() => import('@ui/SourceDocumentModal'), { s
 const CodePreview = dynamic(() => import('./Message/CodePreview').then((mod) => ({ default: mod.CodePreview })), { ssr: false })
 const DrawerFilters = dynamic(() => import('./DrawerFilters/DrawerFilters'), { ssr: false })
 const ChatInput = dynamic(() => import('./ChatInput'), { ssr: true })
+const ImageCreator = dynamic(() => import('@ui/ImageCreator').then((mod) => ({ default: mod.default })), { ssr: false })
 
 const DISPLAY_MODES = {
     CHATBOT: 'chatbot',
-    EMBEDDED_FORM: 'embeddedForm'
+    EMBEDDED_FORM: 'embeddedForm',
+    MEDIA_CREATION: 'mediaCreation'
 }
 
 export const ChatDetail = ({
@@ -242,6 +244,8 @@ export const ChatDetail = ({
                                     />
                                 </Box>
                             </Box>
+                        ) : displayMode === DISPLAY_MODES.MEDIA_CREATION ? (
+                            <ImageCreator user={session?.user} />
                         ) : (
                             <Box
                                 sx={{

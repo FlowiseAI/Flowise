@@ -14,7 +14,8 @@ import TagInput from '@/ui-component/input/TagInput'
 
 const DISPLAY_MODES = {
     CHATBOT: 'chatbot',
-    EMBEDDED_FORM: 'embeddedForm'
+    EMBEDDED_FORM: 'embeddedForm',
+    MEDIA_CREATION: 'mediaCreation'
 }
 
 const GeneralSettings = ({ dialogProps }) => {
@@ -107,6 +108,7 @@ const GeneralSettings = ({ dialogProps }) => {
                 <Select fullWidth value={displayMode} onChange={(e) => setDisplayMode(e.target.value)}>
                     <MenuItem value={DISPLAY_MODES.CHATBOT}>Chatbot</MenuItem>
                     <MenuItem value={DISPLAY_MODES.EMBEDDED_FORM}>Embedded Form</MenuItem>
+                    <MenuItem value={DISPLAY_MODES.MEDIA_CREATION}>Media Creation</MenuItem>
                 </Select>
             </Box>
             {displayMode === DISPLAY_MODES.EMBEDDED_FORM && (
