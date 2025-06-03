@@ -7,6 +7,6 @@ export class AddSeqNoToDatasetRow1733752119696 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "dataset_row" DROP COLUMN "sequence_no";`)
+        await queryRunner.query(`ALTER TABLE \`dataset_row\` DROP COLUMN \`sequence_no\``)
     }
 }
