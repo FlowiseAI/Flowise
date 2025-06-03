@@ -1,5 +1,5 @@
 import cron from 'node-cron'
-import { S3, GetObjectCommand } from '@aws-sdk/client-s3'
+import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { parse } from 'csv-parse/sync'
 import logger from '../utils/logger'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
@@ -19,13 +19,13 @@ const INIT_CSV_RUN_CRON_SCHEDULE = process.env.INIT_CSV_RUN_CRON_SCHEDULE || '*/
  */
 const ENABLE_INIT_CSV_RUN_CRON = process.env.ENABLE_INIT_CSV_RUN_CRON !== 'false'
 
-const s3 = new S3(getS3Config())
+const { s3Client } = getS3Config()
 
 const initCsvRun = async (csvParseRun: IAppCsvParseRuns) => {
     try {
         const appServer = getRunningExpressApp()
         // download csv from s3
-        const originalCsv = await s3.send(
+        const originalCsv = await s3Client.send(
             new GetObjectCommand({
                 Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
                 Key: csvParseRun.originalCsvUrl.replace(`s3://${process.env.S3_STORAGE_BUCKET_NAME ?? ''}/`, '')
