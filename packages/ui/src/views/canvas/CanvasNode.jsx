@@ -23,10 +23,18 @@ import LlamaindexPNG from '@/assets/images/llamaindex.png'
 
 // ===========================|| CANVAS NODE ||=========================== //
 
-const CanvasNode = ({ data }) => {
+const CanvasNode = (props) => {
+    const data = props.data
     const theme = useTheme()
     const canvas = useSelector((state) => state.canvas)
-    const { deleteNode, duplicateNode } = useContext(flowContext)
+    const { deleteNode, duplicateNode, reactFlowInstance } = useContext(flowContext)
+
+    // 初始化必要的属性
+    data.inputParams = data.inputParams || []
+    data.inputAnchors = data.inputAnchors || []
+    data.outputAnchors = data.outputAnchors || []
+    data.inputs = data.inputs || {}
+    data.outputs = data.outputs || {}
 
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
@@ -114,7 +122,7 @@ const CanvasNode = ({ data }) => {
                             <IconButton
                                 title='Duplicate'
                                 onClick={() => {
-                                    duplicateNode(data.id)
+                                    duplicateNode(data)
                                 }}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
@@ -124,7 +132,18 @@ const CanvasNode = ({ data }) => {
                             <IconButton
                                 title='Delete'
                                 onClick={() => {
-                                    deleteNode(data.id)
+                                    if (data.isInLoop && data.onNodesChange) {
+                                        // 如果是循环内的节点，使用 onNodesChange 删除
+                                        data.onNodesChange([
+                                            {
+                                                type: 'remove',
+                                                id: data.id
+                                            }
+                                        ])
+                                    } else {
+                                        // 如果不是循环内的节点，使用普通的 deleteNode
+                                        deleteNode(data.id)
+                                    }
                                 }}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}

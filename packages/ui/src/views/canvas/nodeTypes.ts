@@ -1,12 +1,18 @@
 import { NodeTypes } from 'reactflow'
-import { LoopNode } from './LoopNode'
-import { InnerNode } from './InnerNode'
 import CanvasNode from './CanvasNode'
 import StickyNote from './StickyNote'
 
-export const nodeTypes: NodeTypes = {
+// 基础节点类型
+export const baseNodeTypes: NodeTypes = {
     customNode: CanvasNode,
-    stickyNote: StickyNote,
-    loop: LoopNode,
-    innerNode: InnerNode
+    stickyNote: StickyNote
 }
+
+// 获取完整节点类型的函数
+export const getNodeTypes = (additionalTypes: NodeTypes = {}): NodeTypes => ({
+    ...baseNodeTypes,
+    ...additionalTypes
+})
+
+// 为了向后兼容，保留 nodeTypes 导出
+export const nodeTypes = baseNodeTypes

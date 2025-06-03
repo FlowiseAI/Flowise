@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, useCallback, useContext } from 'react'
-import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState } from 'reactflow'
+import { useEffect, useRef, useState, useCallback, useContext, useMemo } from 'react'
+import ReactFlow, { addEdge, Controls, Background, useNodesState, useEdgesState, ReactFlowProvider } from 'reactflow'
 import 'reactflow/dist/style.css'
+import PropTypes from 'prop-types'
 
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useLocation } from 'react-router-dom'
@@ -49,18 +50,39 @@ import {
 import useNotifier from '@/utils/useNotifier'
 import { usePrompt } from '@/utils/usePrompt'
 
-import { createLoopNode } from './LoopNode'
-import { nodeTypes } from './nodeTypes'
+import { getNodeTypes } from './nodeTypes'
+import { LoopNode } from './LoopNode'
 
 // const
 import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
-const edgeTypes = { buttonedge: ButtonEdge }
 
 // ==============================|| CANVAS ||============================== //
 
 const Canvas = () => {
     const theme = useTheme()
     const navigate = useNavigate()
+    const { deleteNode, duplicateNode } = useContext(flowContext)
+
+    // 定义边类型
+    const edgeTypes = useMemo(() => ({ buttonedge: ButtonEdge }), [])
+
+    // 定义节点类型
+    const allNodeTypes = useMemo(
+        () =>
+            getNodeTypes({
+                loop: (props) => (
+                    <LoopNode
+                        {...props}
+                        data={{
+                            ...props.data,
+                            deleteNode,
+                            duplicateNode
+                        }}
+                    />
+                )
+            }),
+        [deleteNode, duplicateNode]
+    )
 
     const { state } = useLocation()
     const templateFlowData = state ? state.templateFlowData : ''
@@ -105,9 +127,12 @@ const Canvas = () => {
 
     // ==============================|| Events & Actions ||============================== //
 
-    const onInit = useCallback((instance) => {
-        setReactFlowInstance(instance)
-    }, [])
+    const onInit = useCallback(
+        (instance) => {
+            setReactFlowInstance(instance)
+        },
+        [setReactFlowInstance]
+    )
 
     const onConnect = useCallback(
         (params) => {
@@ -116,10 +141,6 @@ const Canvas = () => {
                 type: 'buttonedge',
                 id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
             }
-
-            const targetNodeId = params.targetHandle.split('-')[0]
-            const sourceNodeId = params.sourceHandle.split('-')[0]
-            const targetInput = params.targetHandle.split('-')[2]
 
             // 查找源节点和目标节点
             const sourceNode = nodes.find((node) => node.id === params.source)
@@ -130,6 +151,16 @@ const Canvas = () => {
                 targetNode,
                 params
             })
+
+            // 如果目标节点是循环节点，允许任何节点连接到它
+            if (targetNode?.type === 'loop' || sourceNode?.type === 'loop') {
+                setEdges((eds) => addEdge(newEdge, eds))
+                return
+            }
+
+            const targetNodeId = params.targetHandle.split('-')[0]
+            const sourceNodeId = params.sourceHandle.split('-')[0]
+            const targetInput = params.targetHandle.split('-')[2]
 
             // 如果是 LoopFunction 的 failure 输出连接到 LoopInput
             if (
@@ -205,11 +236,47 @@ const Canvas = () => {
             const flowData = JSON.parse(file)
             const nodes = flowData.nodes || []
 
-            setNodes(nodes)
+            console.log('Loading flow data:', flowData)
+            console.log('Original nodes:', nodes)
+
+            // 处理循环节点的内部数据
+            const processedNodes = nodes.map((node) => {
+                if (node.type === 'loop') {
+                    console.log('Processing loop node:', node)
+                    // 确保 data 对象存在
+                    const nodeData = node.data || {}
+                    // 确保 innerNodes 是数组
+                    const innerNodes = Array.isArray(nodeData.innerNodes) ? nodeData.innerNodes : []
+                    // 确保 innerEdges 是数组
+                    const innerEdges = Array.isArray(nodeData.innerEdges) ? nodeData.innerEdges : []
+
+                    const processedNode = {
+                        ...node,
+                        data: {
+                            ...nodeData,
+                            innerNodes: innerNodes.map((innerNode) => ({
+                                ...innerNode,
+                                data: {
+                                    ...innerNode.data,
+                                    selected: false
+                                }
+                            })),
+                            innerEdges: innerEdges,
+                            selected: false
+                        }
+                    }
+                    console.log('Processed loop node:', processedNode)
+                    return processedNode
+                }
+                return node
+            })
+
+            console.log('Processed nodes:', processedNodes)
+            setNodes(processedNodes)
             setEdges(flowData.edges || [])
             setTimeout(() => setDirty(), 0)
         } catch (e) {
-            console.error(e)
+            console.error('Error in handleLoadFlow:', e)
         }
     }
 
@@ -247,12 +314,27 @@ const Canvas = () => {
 
     const handleSaveFlow = (chatflowName) => {
         if (reactFlowInstance) {
-            const nodes = reactFlowInstance.getNodes().map((node) => {
+            // 获取最新的节点数据
+            const currentNodes = reactFlowInstance.getNodes()
+            const nodes = currentNodes.map((node) => {
                 const nodeData = cloneDeep(node.data)
                 if (Object.prototype.hasOwnProperty.call(nodeData.inputs, FLOWISE_CREDENTIAL_ID)) {
                     nodeData.credential = nodeData.inputs[FLOWISE_CREDENTIAL_ID]
                     nodeData.inputs = omit(nodeData.inputs, [FLOWISE_CREDENTIAL_ID])
                 }
+
+                // 如果是循环节点，确保内部节点和边也被保存
+                if (node.type === 'loop') {
+                    // 内部节点数据已经在 nodeData 中了，因为我们在 LoopNode 组件中同步了数据
+                    nodeData.innerNodes = (nodeData.innerNodes || []).map((innerNode) => ({
+                        ...innerNode,
+                        data: {
+                            ...innerNode.data,
+                            selected: false
+                        }
+                    }))
+                }
+
                 node.data = {
                     ...nodeData,
                     selected: false
@@ -262,6 +344,17 @@ const Canvas = () => {
 
             const rfInstanceObject = reactFlowInstance.toObject()
             rfInstanceObject.nodes = nodes
+
+            // 收集所有循环节点内部的边
+            const allInnerEdges = nodes
+                .filter((node) => node.type === 'loop')
+                .reduce((acc, loopNode) => {
+                    const innerEdges = loopNode.data.innerEdges || []
+                    return [...acc, ...innerEdges]
+                }, [])
+            // 合并主流程的边和所有循环节点内部的边
+            rfInstanceObject.edges = [...rfInstanceObject.edges, ...allInnerEdges]
+
             const flowData = JSON.stringify(rfInstanceObject)
 
             if (!chatflow.id) {
@@ -312,6 +405,12 @@ const Canvas = () => {
 
     const onDrop = useCallback(
         (event) => {
+            // 检查目标元素是否在循环节点内部
+            const isInsideLoopNode = event.target.closest('.react-flow__renderer')?.parentElement?.closest('.react-flow__renderer')
+            if (isInsideLoopNode) {
+                return // 如果是在循环节点内部，不处理拖拽
+            }
+
             event.preventDefault()
             const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect()
             let nodeData = event.dataTransfer.getData('application/reactflow')
@@ -357,8 +456,6 @@ const Canvas = () => {
             )
             setTimeout(() => setDirty(), 0)
         },
-
-        // eslint-disable-next-line
         [reactFlowInstance]
     )
 
@@ -628,39 +725,94 @@ const Canvas = () => {
     // 添加创建循环节点的函数
     const handleAddLoopNode = useCallback(() => {
         if (!reactFlowInstance) return
-        // 获取视口信息
+
         const { x, y, zoom } = reactFlowInstance.getViewport()
-
-        // 获取画布容器的尺寸
         const flowBounds = reactFlowWrapper.current.getBoundingClientRect()
-
-        // 计算视图中心点的坐标
         const centerX = (flowBounds.width / 2 - x) / zoom
         const centerY = (flowBounds.height / 2 - y) / zoom
 
-        const { loopNode } = createLoopNode({
+        // 添加日志来检查 loopNode 的结构
+        console.log('Creating loop node...')
+
+        const loopNode = {
+            id: `loop-${Date.now()}`,
+            type: 'loop',
             position: {
                 x: centerX,
                 y: centerY
             },
             data: {
+                name: 'loop',
+                id: `loop-${Date.now()}`,
                 title: '新循环节点',
                 loopCount: 5,
                 children: [],
                 type: 'loop',
                 inputs: {},
-                selected: false
+                selected: false,
+                inputParams: [], // 添加必要的输入参数
+                outputParams: [], // 添加必要的输出参数
+                inputAnchors: [], // 添加输入锚点
+                outputAnchors: [] // 添加输出锚点
             }
-        })
+        }
 
-        // 使用函数式更新确保获取最新状态
-        setNodes((nds) => nds.concat([loopNode]))
+        console.log('Loop node structure:', loopNode)
 
-        // 添加节点后自动适应视图
+        try {
+            setNodes((nds) => {
+                const newNodes = nds.concat([loopNode])
+                return newNodes
+            })
+        } catch (error) {
+            console.error('Error adding loop node:', error)
+        }
+
+        // 延迟执行视图适应
         setTimeout(() => {
-            reactFlowInstance.fitView({ padding: 0.2 })
+            try {
+                reactFlowInstance.fitView({ padding: 0.2 })
+            } catch (error) {
+                console.error('Error fitting view:', error)
+            }
         }, 50)
     }, [reactFlowInstance])
+
+    // 自定义节点变更处理
+    const handleNodesChange = useCallback(
+        (changes) => {
+            // 处理删除事件
+            const deletions = changes.filter((change) => change.type === 'remove')
+            if (deletions.length > 0) {
+                // 检查要删除的节点中是否有循环节点，且其内部有被选中的节点
+                const shouldPreventDelete = deletions.some((deletion) => {
+                    const node = nodes.find((n) => n.id === deletion.id)
+                    if (node?.type === 'loop') {
+                        // 检查是否有内部节点被选中
+                        return node.data?.innerNodes?.some((innerNode) => innerNode.selected)
+                    }
+                    return false
+                })
+
+                if (shouldPreventDelete) {
+                    // 如果有循环节点内部节点被选中，阻止删除循环节点
+                    const safeChanges = changes.filter((change) => {
+                        if (change.type === 'remove') {
+                            const node = nodes.find((n) => n.id === change.id)
+                            return !node?.type === 'loop'
+                        }
+                        return true
+                    })
+                    onNodesChange(safeChanges)
+                    return
+                }
+            }
+
+            // 处理其他变更
+            onNodesChange(changes)
+        },
+        [nodes, onNodesChange]
+    )
 
     return (
         <>
@@ -722,58 +874,60 @@ const Canvas = () => {
                 <Box sx={{ pt: '70px', height: '100vh', width: '100%' }}>
                     <div className='reactflow-parent-wrapper'>
                         <div className='reactflow-wrapper' ref={reactFlowWrapper}>
-                            <ReactFlow
-                                nodes={nodes}
-                                edges={edges}
-                                onNodesChange={onNodesChange}
-                                onNodeClick={onNodeClick}
-                                onEdgesChange={onEdgesChange}
-                                onEdgesDelete={onEdgesDelete}
-                                onDrop={onDrop}
-                                onDragOver={onDragOver}
-                                onNodeDragStop={setDirty}
-                                nodeTypes={nodeTypes}
-                                edgeTypes={edgeTypes}
-                                onConnect={onConnect}
-                                onInit={onInit}
-                                fitView
-                                deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
-                                minZoom={0.1}
-                                className='chatflow-canvas'
-                            >
-                                <Controls
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        left: '50%',
-                                        transform: 'translate(-50%, -50%)'
-                                    }}
-                                />
-                                <Background color='#aaa' gap={16} />
-                                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
-                                {isSyncNodesButtonEnabled && (
-                                    <Fab
-                                        sx={{
-                                            left: 40,
-                                            top: 20,
-                                            color: 'white',
-                                            background: 'orange',
-                                            '&:hover': {
-                                                background: 'orange',
-                                                backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
-                                            }
+                            <ReactFlowProvider>
+                                <ReactFlow
+                                    nodes={nodes}
+                                    edges={edges}
+                                    onNodesChange={handleNodesChange}
+                                    onNodeClick={onNodeClick}
+                                    onEdgesChange={onEdgesChange}
+                                    onEdgesDelete={onEdgesDelete}
+                                    onDrop={onDrop}
+                                    onDragOver={onDragOver}
+                                    onNodeDragStop={setDirty}
+                                    nodeTypes={allNodeTypes}
+                                    edgeTypes={edgeTypes}
+                                    onConnect={onConnect}
+                                    onInit={onInit}
+                                    fitView
+                                    deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
+                                    minZoom={0.1}
+                                    className='chatflow-canvas'
+                                >
+                                    <Controls
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'row',
+                                            left: '50%',
+                                            transform: 'translate(-50%, -50%)'
                                         }}
-                                        size='small'
-                                        aria-label='sync'
-                                        title='Sync Nodes'
-                                        onClick={() => syncNodes()}
-                                    >
-                                        <IconRefreshAlert />
-                                    </Fab>
-                                )}
-                                {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
-                                <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
-                            </ReactFlow>
+                                    />
+                                    <Background color='#aaa' gap={16} />
+                                    <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
+                                    {isSyncNodesButtonEnabled && (
+                                        <Fab
+                                            sx={{
+                                                left: 40,
+                                                top: 20,
+                                                color: 'white',
+                                                background: 'orange',
+                                                '&:hover': {
+                                                    background: 'orange',
+                                                    backgroundImage: `linear-gradient(rgb(0 0 0/10%) 0 0)`
+                                                }
+                                            }}
+                                            size='small'
+                                            aria-label='sync'
+                                            title='Sync Nodes'
+                                            onClick={() => syncNodes()}
+                                        >
+                                            <IconRefreshAlert />
+                                        </Fab>
+                                    )}
+                                    {isUpsertButtonEnabled && <VectorStorePopUp chatflowid={chatflowId} />}
+                                    <ChatPopUp isAgentCanvas={isAgentCanvas} chatflowid={chatflowId} />
+                                </ReactFlow>
+                            </ReactFlowProvider>
                         </div>
                     </div>
                 </Box>
@@ -781,6 +935,18 @@ const Canvas = () => {
             </Box>
         </>
     )
+}
+
+Canvas.propTypes = {
+    data: PropTypes.shape({
+        id: PropTypes.string,
+        type: PropTypes.string,
+        position: PropTypes.shape({
+            x: PropTypes.number,
+            y: PropTypes.number
+        }),
+        data: PropTypes.object
+    })
 }
 
 export default Canvas

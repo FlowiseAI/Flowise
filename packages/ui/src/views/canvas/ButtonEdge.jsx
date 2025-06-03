@@ -10,7 +10,9 @@ import './index.css'
 
 const foreignObjectSize = 40
 
-const ButtonEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, data, markerEnd }) => {
+const ButtonEdge = (props) => {
+    const { id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style = {}, data, markerEnd } = props
+    // console.log('props', props)
     const [edgePath, edgeCenterX, edgeCenterY] = getBezierPath({
         sourceX,
         sourceY,

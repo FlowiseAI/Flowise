@@ -65,7 +65,7 @@ const NodeOutputHandler = ({ outputAnchor, data, disabled = false }) => {
             }, 0)
         }
     }, [data.id, dropdownValue, updateNodeInternals])
-
+    // console.log('NodeOutputHandler', outputAnchor, Position, position);
     return (
         <div ref={ref}>
             {outputAnchor.type !== 'options' && !outputAnchor.options && (

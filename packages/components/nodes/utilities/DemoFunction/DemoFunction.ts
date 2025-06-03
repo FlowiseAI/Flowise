@@ -28,7 +28,7 @@ class DemoFunction_Utilities implements INode {
             {
                 label: 'Input Value',
                 name: 'inputValue',
-                type: 'string | number | json | array | file | any',
+                type: 'string | number | json | array | file',
                 description: 'Input value for calculation',
                 default: 1,
                 acceptVariable: true
