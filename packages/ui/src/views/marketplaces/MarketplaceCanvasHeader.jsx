@@ -8,6 +8,7 @@ import { StyledButton } from '@/ui-component/button/StyledButton'
 
 // icons
 import { IconCopy, IconChevronLeft } from '@tabler/icons-react'
+import { Available } from '@/ui-component/rbac/available'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -52,17 +53,19 @@ const MarketplaceCanvasHeader = ({ flowName, flowData, onChatflowCopy }) => {
                     </Typography>
                 </Stack>
             </Box>
-            <Box>
-                <StyledButton
-                    color='secondary'
-                    variant='contained'
-                    title='Use Chatflow'
-                    onClick={() => onChatflowCopy(flowData)}
-                    startIcon={<IconCopy />}
-                >
-                    Use Template
-                </StyledButton>
-            </Box>
+            <Available permission={'chatflows:create,agentflows.create'}>
+                <Box>
+                    <StyledButton
+                        color='secondary'
+                        variant='contained'
+                        title='Use Chatflow'
+                        onClick={() => onChatflowCopy(flowData)}
+                        startIcon={<IconCopy />}
+                    >
+                        Use Template
+                    </StyledButton>
+                </Box>
+            </Available>
         </>
     )
 }

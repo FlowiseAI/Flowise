@@ -35,9 +35,10 @@ import chatflowsApi from '@/api/chatflows'
 // Hooks
 import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
+import { useAuth } from '@/hooks/useAuth'
 
 // icons
-import { IconX, IconRefreshAlert } from '@tabler/icons-react'
+import { IconX, IconRefreshAlert, IconMagnetFilled, IconMagnetOff } from '@tabler/icons-react'
 
 // utils
 import {
@@ -62,6 +63,7 @@ const edgeTypes = { buttonedge: ButtonEdge }
 const Canvas = () => {
     const theme = useTheme()
     const navigate = useNavigate()
+    const { hasAssignedWorkspace } = useAuth()
 
     const { state } = useLocation()
     const templateFlowData = state ? state.templateFlowData : ''
@@ -75,6 +77,7 @@ const Canvas = () => {
     const { confirm } = useConfirm()
 
     const dispatch = useDispatch()
+    const customization = useSelector((state) => state.customization)
     const canvas = useSelector((state) => state.canvas)
     const [canvasDataStore, setCanvasDataStore] = useState(canvas)
     const [chatflow, setChatflow] = useState(null)
@@ -94,8 +97,13 @@ const Canvas = () => {
     const [selectedNode, setSelectedNode] = useState(null)
     const [isUpsertButtonEnabled, setIsUpsertButtonEnabled] = useState(false)
     const [isSyncNodesButtonEnabled, setIsSyncNodesButtonEnabled] = useState(false)
+    const [isSnappingEnabled, setIsSnappingEnabled] = useState(false)
 
     const reactFlowWrapper = useRef(null)
+
+    const [lastUpdatedDateTime, setLasUpdatedDateTime] = useState('')
+    const [chatflowName, setChatflowName] = useState('')
+    const [flowData, setFlowData] = useState('')
 
     // ==============================|| Chatflow API ||============================== //
 
@@ -103,6 +111,7 @@ const Canvas = () => {
     const createNewChatflowApi = useApi(chatflowsApi.createNewChatflow)
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
+    const getHasChatflowChangedApi = useApi(chatflowsApi.getHasChatflowChanged)
 
     // ==============================|| Events & Actions ||============================== //
 
@@ -198,7 +207,7 @@ const Canvas = () => {
         }
     }
 
-    const handleSaveFlow = (chatflowName) => {
+    const handleSaveFlow = async (chatflowName) => {
         if (reactFlowInstance) {
             const nodes = reactFlowInstance.getNodes().map((node) => {
                 const nodeData = cloneDeep(node.data)
@@ -227,11 +236,9 @@ const Canvas = () => {
                 }
                 createNewChatflowApi.request(newChatflowBody)
             } else {
-                const updateBody = {
-                    name: chatflowName,
-                    flowData
-                }
-                updateChatflowApi.request(chatflow.id, updateBody)
+                setChatflowName(chatflowName)
+                setFlowData(flowData)
+                getHasChatflowChangedApi.request(chatflow.id, lastUpdatedDateTime)
             }
         }
     }
@@ -401,7 +408,13 @@ const Canvas = () => {
     useEffect(() => {
         if (getSpecificChatflowApi.data) {
             const chatflow = getSpecificChatflowApi.data
+            const workspaceId = chatflow.workspaceId
+            if (!hasAssignedWorkspace(workspaceId)) {
+                navigate('/unauthorized')
+                return
+            }
             const initialFlow = chatflow.flowData ? JSON.parse(chatflow.flowData) : []
+            setLasUpdatedDateTime(chatflow.updatedDate)
             setNodes(initialFlow.nodes || [])
             setEdges(initialFlow.edges || [])
             dispatch({ type: SET_CHATFLOW, chatflow })
@@ -420,7 +433,7 @@ const Canvas = () => {
             saveChatflowSuccess()
             window.history.replaceState(state, null, `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
         } else if (createNewChatflowApi.error) {
-            errorFailed(`Failed to save ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to retrieve ${canvasTitle}: ${createNewChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -430,13 +443,44 @@ const Canvas = () => {
     useEffect(() => {
         if (updateChatflowApi.data) {
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
+            setLasUpdatedDateTime(updateChatflowApi.data.updatedDate)
             saveChatflowSuccess()
         } else if (updateChatflowApi.error) {
-            errorFailed(`Failed to save ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
+            errorFailed(`Failed to retrieve ${canvasTitle}: ${updateChatflowApi.error.response.data.message}`)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [updateChatflowApi.data, updateChatflowApi.error])
+
+    // check if chatflow has changed before saving
+    useEffect(() => {
+        const checkIfHasChanged = async () => {
+            if (getHasChatflowChangedApi.data?.hasChanged === true) {
+                const confirmPayload = {
+                    title: `Confirm Change`,
+                    description: `${canvasTitle} ${chatflow.name} has changed since you have opened, overwrite changes?`,
+                    confirmButtonName: 'Confirm',
+                    cancelButtonName: 'Cancel'
+                }
+                const isConfirmed = await confirm(confirmPayload)
+
+                if (!isConfirmed) {
+                    return
+                }
+            }
+            const updateBody = {
+                name: chatflowName,
+                flowData
+            }
+            updateChatflowApi.request(chatflow.id, updateBody)
+        }
+
+        if (getHasChatflowChangedApi.data) {
+            checkIfHasChanged()
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getHasChatflowChangedApi.data, getHasChatflowChangedApi.error])
 
     useEffect(() => {
         setChatflow(canvasDataStore.chatflow)
@@ -554,16 +598,30 @@ const Canvas = () => {
                                 fitView
                                 deleteKeyCode={canvas.canvasDialogShow ? null : ['Delete']}
                                 minZoom={0.1}
+                                snapGrid={[25, 25]}
+                                snapToGrid={isSnappingEnabled}
                                 className='chatflow-canvas'
                             >
                                 <Controls
+                                    className={customization.isDarkMode ? 'dark-mode-controls' : ''}
                                     style={{
                                         display: 'flex',
                                         flexDirection: 'row',
                                         left: '50%',
                                         transform: 'translate(-50%, -50%)'
                                     }}
-                                />
+                                >
+                                    <button
+                                        className='react-flow__controls-button react-flow__controls-interactive'
+                                        onClick={() => {
+                                            setIsSnappingEnabled(!isSnappingEnabled)
+                                        }}
+                                        title='toggle snapping'
+                                        aria-label='toggle snapping'
+                                    >
+                                        {isSnappingEnabled ? <IconMagnetFilled /> : <IconMagnetOff />}
+                                    </button>
+                                </Controls>
                                 <Background color='#aaa' gap={16} />
                                 <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
                                 {isSyncNodesButtonEnabled && (

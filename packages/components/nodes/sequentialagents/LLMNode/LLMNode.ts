@@ -668,7 +668,7 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
     const updateStateMemory = nodeData.inputs?.updateStateMemory as string
 
     const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'updateStateMemoryUI'
-    const variables = await getVars(appDataSource, databaseEntities, nodeData)
+    const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
 
     const flow = {
         chatflowId: options.chatflowid,
@@ -721,7 +721,7 @@ const getReturnOutput = async (nodeData: INodeData, input: string, options: ICom
             throw new Error(e)
         }
     } else if (selectedTab === 'updateStateMemoryCode' && updateStateMemoryCode) {
-        const vm = await getVM(appDataSource, databaseEntities, nodeData, flow)
+        const vm = await getVM(appDataSource, databaseEntities, nodeData, options, flow)
         try {
             const response = await vm.run(`module.exports = async function() {${updateStateMemoryCode}}()`, __dirname)
             if (typeof response !== 'object') throw new Error('Return output must be an object')

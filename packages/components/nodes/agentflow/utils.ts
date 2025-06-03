@@ -18,7 +18,7 @@ export const addImagesToMessages = async (
         for (const upload of imageUploads) {
             let bf = upload.data
             if (upload.type == 'stored-file') {
-                const contents = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
+                const contents = await getFileFromStorage(upload.name, options.orgId, options.chatflowid, options.chatId)
                 // as the image is stored in the server, read the file and convert it to base64
                 bf = 'data:' + upload.mime + ';base64,' + contents.toString('base64')
 
@@ -90,7 +90,7 @@ export const processMessagesWithImages = async (
                     hasImageReferences = true
                     try {
                         // Get file contents from storage
-                        const contents = await getFileFromStorage(item.name, options.chatflowid, options.chatId)
+                        const contents = await getFileFromStorage(item.name, options.orgId, options.chatflowid, options.chatId)
 
                         // Create base64 data URL
                         const base64Data = 'data:' + item.mime + ';base64,' + contents.toString('base64')
@@ -140,7 +140,12 @@ export const replaceBase64ImagesWithFileReferences = (
 ): BaseMessageLike[] => {
     // Create a deep copy to avoid mutating the original
     const updatedMessages = JSON.parse(JSON.stringify(messages))
-    let imageMessagesIndex = 0
+
+    // Track positions in replacement arrays
+    let pastMessageIndex = 0
+    let pastContentIndex = 0
+    let uniqueMessageIndex = 0
+    let uniqueContentIndex = 0
 
     for (let i = 0; i < updatedMessages.length; i++) {
         const message = updatedMessages[i]
@@ -148,17 +153,77 @@ export const replaceBase64ImagesWithFileReferences = (
             for (let j = 0; j < message.content.length; j++) {
                 const item = message.content[j]
                 if (item.type === 'image_url') {
-                    // Look for matching file reference in uniqueImageMessages or pastImageMessages
-                    const imageMessage =
-                        (uniqueImageMessages[imageMessagesIndex] as BaseMessage | undefined) ||
-                        (pastImageMessages[imageMessagesIndex] as BaseMessage | undefined)
+                    // Try past images first
+                    let replacement = null
 
-                    if (imageMessage && Array.isArray(imageMessage.content) && imageMessage.content[j]) {
-                        const replaceContent = imageMessage.content[j]
-                        message.content[j] = {
-                            ...replaceContent
+                    if (pastMessageIndex < pastImageMessages.length) {
+                        const pastMessage = pastImageMessages[pastMessageIndex] as BaseMessage | undefined
+                        if (pastMessage && Array.isArray(pastMessage.content)) {
+                            if (pastContentIndex < pastMessage.content.length) {
+                                replacement = pastMessage.content[pastContentIndex]
+                                pastContentIndex++
+
+                                // Move to next message if we've used all content in current one
+                                if (pastContentIndex >= pastMessage.content.length) {
+                                    pastMessageIndex++
+                                    pastContentIndex = 0
+                                }
+                            } else {
+                                // Current message has no more content, move to next
+                                pastMessageIndex++
+                                pastContentIndex = 0
+
+                                // Try again with the next message
+                                if (pastMessageIndex < pastImageMessages.length) {
+                                    const nextPastMessage = pastImageMessages[pastMessageIndex] as BaseMessage | undefined
+                                    if (nextPastMessage && Array.isArray(nextPastMessage.content) && nextPastMessage.content.length > 0) {
+                                        replacement = nextPastMessage.content[0]
+                                        pastContentIndex = 1
+                                    }
+                                }
+                            }
                         }
-                        imageMessagesIndex++
+                    }
+
+                    // Try unique images if no past image replacement found
+                    if (!replacement && uniqueMessageIndex < uniqueImageMessages.length) {
+                        const uniqueMessage = uniqueImageMessages[uniqueMessageIndex] as BaseMessage | undefined
+                        if (uniqueMessage && Array.isArray(uniqueMessage.content)) {
+                            if (uniqueContentIndex < uniqueMessage.content.length) {
+                                replacement = uniqueMessage.content[uniqueContentIndex]
+                                uniqueContentIndex++
+
+                                // Move to next message if we've used all content in current one
+                                if (uniqueContentIndex >= uniqueMessage.content.length) {
+                                    uniqueMessageIndex++
+                                    uniqueContentIndex = 0
+                                }
+                            } else {
+                                // Current message has no more content, move to next
+                                uniqueMessageIndex++
+                                uniqueContentIndex = 0
+
+                                // Try again with the next message
+                                if (uniqueMessageIndex < uniqueImageMessages.length) {
+                                    const nextUniqueMessage = uniqueImageMessages[uniqueMessageIndex] as BaseMessage | undefined
+                                    if (
+                                        nextUniqueMessage &&
+                                        Array.isArray(nextUniqueMessage.content) &&
+                                        nextUniqueMessage.content.length > 0
+                                    ) {
+                                        replacement = nextUniqueMessage.content[0]
+                                        uniqueContentIndex = 1
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Apply replacement if found
+                    if (replacement) {
+                        message.content[j] = {
+                            ...replacement
+                        }
                     }
                 }
             }
@@ -254,7 +319,7 @@ export const getPastChatHistoryImageMessages = async (
                 const imageContents: MessageContentImageUrl[] = []
                 for (const upload of uploads) {
                     if (upload.type === 'stored-file' && upload.mime.startsWith('image/')) {
-                        const fileData = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
+                        const fileData = await getFileFromStorage(upload.name, options.orgId, options.chatflowid, options.chatId)
                         // as the image is stored in the server, read the file and convert it to base64
                         const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
 

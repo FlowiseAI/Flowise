@@ -10,10 +10,9 @@ import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
 import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
-import LoginDialog from '@/ui-component/dialog/LoginDialog'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { FlowListTable } from '@/ui-component/table/FlowListTable'
-import { StyledButton } from '@/ui-component/button/StyledButton'
+import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 
@@ -25,6 +24,7 @@ import useApi from '@/hooks/useApi'
 
 // const
 import { baseURL } from '@/store/constant'
+import { useError } from '@/store/context/ErrorContext'
 
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
@@ -36,11 +36,9 @@ const Chatflows = () => {
     const theme = useTheme()
 
     const [isLoading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
     const [images, setImages] = useState({})
     const [search, setSearch] = useState('')
-    const [loginDialogOpen, setLoginDialogOpen] = useState(false)
-    const [loginDialogProps, setLoginDialogProps] = useState({})
+    const { error, setError } = useError()
 
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
@@ -57,16 +55,10 @@ const Chatflows = () => {
 
     function filterFlows(data) {
         return (
-            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
+            data?.name.toLowerCase().indexOf(search.toLowerCase()) > -1 ||
             (data.category && data.category.toLowerCase().indexOf(search.toLowerCase()) > -1) ||
-            data.id.toLowerCase().indexOf(search.toLowerCase()) > -1
+            data?.id.toLowerCase().indexOf(search.toLowerCase()) > -1
         )
-    }
-
-    const onLoginClick = (username, password) => {
-        localStorage.setItem('username', username)
-        localStorage.setItem('password', password)
-        navigate(0)
     }
 
     const addNew = () => {
@@ -79,23 +71,8 @@ const Chatflows = () => {
 
     useEffect(() => {
         getAllChatflowsApi.request()
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-
-    useEffect(() => {
-        if (getAllChatflowsApi.error) {
-            if (getAllChatflowsApi.error?.response?.status === 401) {
-                setLoginDialogProps({
-                    title: 'Login',
-                    confirmButtonName: 'Login'
-                })
-                setLoginDialogOpen(true)
-            } else {
-                setError(getAllChatflowsApi.error)
-            }
-        }
-    }, [getAllChatflowsApi.error])
 
     useEffect(() => {
         setLoading(getAllChatflowsApi.loading)
@@ -112,9 +89,13 @@ const Chatflows = () => {
                     const nodes = flowData.nodes || []
                     images[chatflows[i].id] = []
                     for (let j = 0; j < nodes.length; j += 1) {
+                        if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
                         const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                        if (!images[chatflows[i].id].includes(imageSrc)) {
-                            images[chatflows[i].id].push(imageSrc)
+                        if (!images[chatflows[i].id].some((img) => img.imageSrc === imageSrc)) {
+                            images[chatflows[i].id].push({
+                                imageSrc,
+                                label: nodes[j].data.label
+                            })
                         }
                     }
                 }
@@ -170,9 +151,15 @@ const Chatflows = () => {
                                 <IconList />
                             </ToggleButton>
                         </ToggleButtonGroup>
-                        <StyledButton variant='contained' onClick={addNew} startIcon={<IconPlus />} sx={{ borderRadius: 2, height: 40 }}>
+                        <StyledPermissionButton
+                            permissionId={'chatflows:create'}
+                            variant='contained'
+                            onClick={addNew}
+                            startIcon={<IconPlus />}
+                            sx={{ borderRadius: 2, height: 40 }}
+                        >
                             Add New
-                        </StyledButton>
+                        </StyledPermissionButton>
                     </ViewHeader>
                     {!view || view === 'card' ? (
                         <>
@@ -184,9 +171,17 @@ const Chatflows = () => {
                                 </Box>
                             ) : (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllChatflowsApi.data?.filter(filterFlows).map((data, index) => (
-                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                    ))}
+                                    {getAllChatflowsApi.data &&
+                                        getAllChatflowsApi.data
+                                            ?.filter(filterFlows)
+                                            .map((data, index) => (
+                                                <ItemCard
+                                                    key={index}
+                                                    onClick={() => goToCanvas(data)}
+                                                    data={data}
+                                                    images={images[data.id]}
+                                                />
+                                            ))}
                                 </Box>
                             )}
                         </>
@@ -214,8 +209,6 @@ const Chatflows = () => {
                     )}
                 </Stack>
             )}
-
-            <LoginDialog show={loginDialogOpen} dialogProps={loginDialogProps} onConfirm={onLoginClick} />
             <ConfirmDialog />
         </MainCard>
     )

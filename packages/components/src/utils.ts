@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
-import { DataSource } from 'typeorm'
+import { DataSource, Equal } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
 import { omit } from 'lodash'
@@ -706,7 +706,7 @@ export const getUserHome = (): string => {
  * @param {IChatMessage[]} chatmessages
  * @returns {BaseMessage[]}
  */
-export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Promise<BaseMessage[]> => {
+export const mapChatMessageToBaseMessage = async (chatmessages: any[] = [], orgId: string): Promise<BaseMessage[]> => {
     const chatHistory = []
 
     for (const message of chatmessages) {
@@ -722,7 +722,7 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                     const imageContents: MessageContentImageUrl[] = []
                     for (const upload of uploads) {
                         if (upload.type === 'stored-file' && upload.mime.startsWith('image/')) {
-                            const fileData = await getFileFromStorage(upload.name, message.chatflowid, message.chatId)
+                            const fileData = await getFileFromStorage(upload.name, orgId, message.chatflowid, message.chatId)
                             // as the image is stored in the server, read the file and convert it to base64
                             const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
 
@@ -746,7 +746,8 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = []): Pro
                             const options = {
                                 retrieveAttachmentChatId: true,
                                 chatflowid: message.chatflowid,
-                                chatId: message.chatId
+                                chatId: message.chatId,
+                                orgId
                             }
                             let fileInputFieldFromMimeType = 'txtFile'
                             fileInputFieldFromMimeType = mapMimeTypeToInputField(upload.mime)
@@ -935,8 +936,16 @@ export const convertMultiOptionsToStringArray = (inputString: string): string[] 
  * @param {IDatabaseEntity} databaseEntities
  * @param {INodeData} nodeData
  */
-export const getVars = async (appDataSource: DataSource, databaseEntities: IDatabaseEntity, nodeData: INodeData) => {
-    const variables = ((await appDataSource.getRepository(databaseEntities['Variable']).find()) as IVariable[]) ?? []
+export const getVars = async (
+    appDataSource: DataSource,
+    databaseEntities: IDatabaseEntity,
+    nodeData: INodeData,
+    options: ICommonObject
+) => {
+    const variables =
+        ((await appDataSource
+            .getRepository(databaseEntities['Variable'])
+            .findBy(options.workspaceId ? { workspaceId: Equal(options.workspaceId) } : {})) as IVariable[]) ?? []
 
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable

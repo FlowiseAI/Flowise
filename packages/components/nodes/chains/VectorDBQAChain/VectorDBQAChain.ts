@@ -55,7 +55,7 @@ class VectorDBQAChain_Chains implements INode {
 
         const chain = VectorDBQAChain.fromLLM(model, vectorStore, {
             k: (vectorStore as any)?.k ?? 4,
-            verbose: process.env.DEBUG === 'true'
+            verbose: process.env.DEBUG === 'true' ? true : false
         })
         return chain
     }
@@ -84,7 +84,7 @@ class VectorDBQAChain_Chains implements INode {
             query: input
         }
 
-        const loggerHandler = new ConsoleCallbackHandler(options.logger)
+        const loggerHandler = new ConsoleCallbackHandler(options.logger, options?.orgId)
         const callbacks = await additionalCallbacks(nodeData, options)
 
         if (shouldStreamResponse) {

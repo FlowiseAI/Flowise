@@ -1,37 +1,38 @@
 import { useEffect, useState, useRef } from 'react'
 
 // material-ui
-import { Box, Stack, Button, ButtonGroup, Skeleton, ToggleButtonGroup, ToggleButton } from '@mui/material'
+import { Box, Stack, ButtonGroup, Skeleton, ToggleButtonGroup, ToggleButton } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ItemCard from '@/ui-component/cards/ItemCard'
-import { gridSpacing } from '@/store/constant'
-import ToolEmptySVG from '@/assets/images/tools_empty.svg'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import ToolDialog from './ToolDialog'
+import ViewHeader from '@/layout/MainLayout/ViewHeader'
+import ErrorBoundary from '@/ErrorBoundary'
 import { ToolsTable } from '@/ui-component/table/ToolsListTable'
+import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 
 // API
 import toolsApi from '@/api/tools'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useError } from '@/store/context/ErrorContext'
+import { gridSpacing } from '@/store/constant'
 
 // icons
 import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icons-react'
-import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import ErrorBoundary from '@/ErrorBoundary'
-import { useTheme } from '@mui/material/styles'
+import ToolEmptySVG from '@/assets/images/tools_empty.svg'
 
-// ==============================|| CHATFLOWS ||============================== //
+// ==============================|| TOOLS ||============================== //
 
 const Tools = () => {
     const theme = useTheme()
     const getAllToolsApi = useApi(toolsApi.getAllTools)
+    const { error, setError } = useError()
 
     const [isLoading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
     const [showDialog, setShowDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
     const [view, setView] = useState(localStorage.getItem('toolsDisplayStyle') || 'card')
@@ -125,12 +126,6 @@ const Tools = () => {
         setLoading(getAllToolsApi.loading)
     }, [getAllToolsApi.loading])
 
-    useEffect(() => {
-        if (getAllToolsApi.error) {
-            setError(getAllToolsApi.error)
-        }
-    }, [getAllToolsApi.error])
-
     return (
         <>
             <MainCard>
@@ -178,14 +173,15 @@ const Tools = () => {
                                 </ToggleButton>
                             </ToggleButtonGroup>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Button
+                                <PermissionButton
+                                    permissionId={'tools:create'}
                                     variant='outlined'
                                     onClick={() => inputRef.current.click()}
                                     startIcon={<IconFileUpload />}
                                     sx={{ borderRadius: 2, height: 40 }}
                                 >
                                     Load
-                                </Button>
+                                </PermissionButton>
                                 <input
                                     style={{ display: 'none' }}
                                     ref={inputRef}
@@ -196,14 +192,15 @@ const Tools = () => {
                                 />
                             </Box>
                             <ButtonGroup disableElevation aria-label='outlined primary button group'>
-                                <StyledButton
+                                <StyledPermissionButton
+                                    permissionId={'tools:create'}
                                     variant='contained'
                                     onClick={addNew}
                                     startIcon={<IconPlus />}
                                     sx={{ borderRadius: 2, height: 40 }}
                                 >
                                     Create
-                                </StyledButton>
+                                </StyledPermissionButton>
                             </ButtonGroup>
                         </ViewHeader>
                         {!view || view === 'card' ? (
