@@ -10,10 +10,16 @@ export class EvaluationRunner {
     static getCostMetrics = async (selectedProvider: string, selectedModel: string) => {
         let modelConfig = await getModelConfigByModelName(MODEL_TYPE.CHAT, selectedProvider, selectedModel)
         if (modelConfig) {
+            if (modelConfig['cost_values']) {
+                return modelConfig.cost_values
+            }
             return { cost_values: modelConfig }
         } else {
             modelConfig = await getModelConfigByModelName(MODEL_TYPE.LLM, selectedProvider, selectedModel)
             if (modelConfig) {
+                if (modelConfig['cost_values']) {
+                    return modelConfig.cost_values
+                }
                 return { cost_values: modelConfig }
             }
         }

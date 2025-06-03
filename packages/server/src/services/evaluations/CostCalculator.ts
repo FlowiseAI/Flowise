@@ -18,7 +18,13 @@ export const calculateCost = (metricsArray: ICommonObject[]) => {
         let completionTokensCost: string = '0'
         let totalTokensCost = '0'
         if (metric.cost_values) {
-            const costValues = metric.cost_values
+            let costValues: any = {}
+            if (metric.cost_values?.cost_values) {
+                costValues = metric.cost_values.cost_values
+            } else {
+                costValues = metric.cost_values
+            }
+
             if (costValues.total_price > 0) {
                 let cost = costValues.total_cost * (totalTokens / 1000)
                 if (cost < 0.01) {

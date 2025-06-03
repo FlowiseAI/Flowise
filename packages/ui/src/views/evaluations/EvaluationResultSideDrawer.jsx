@@ -15,9 +15,9 @@ import {
     TableBody
 } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { IconSquareRoundedChevronsRight } from '@tabler/icons-react'
 import { evaluators as evaluatorsOptions, numericOperators } from '../evaluators/evaluatorConstant'
 import TableCell from '@mui/material/TableCell'
+import { Close } from '@mui/icons-material'
 
 const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
     const onOpen = () => {}
@@ -34,12 +34,21 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
         return ''
     }
 
+    const getNameAndType = (name) => {
+        // name would be in the form of Hello (Chatflow), return the name and type
+        const split = name.split(' (')
+        return { name: split[0], type: split[1].split(')')[0] }
+    }
+
     return (
         <SwipeableDrawer sx={{ zIndex: 2000 }} anchor='right' open={show} onClose={() => onClickFunction()} onOpen={onOpen}>
-            <Button startIcon={<IconSquareRoundedChevronsRight />} onClick={() => onClickFunction()}>
-                Close
-            </Button>
-            <Box sx={{ width: 600, p: 3 }} role='presentation'>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ccc' }}>
+                <Typography variant='overline' sx={{ margin: 1, fontWeight: 'bold' }}>
+                    Evaluation Details
+                </Typography>
+                <Button endIcon={<Close />} onClick={() => onClickFunction()} />
+            </div>
+            <Box sx={{ width: 600, p: 2 }} role='presentation'>
                 <Box>
                     <Typography variant='overline' sx={{ fontWeight: 'bold' }}>
                         Evaluation Id
@@ -76,13 +85,25 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                             <CardContent>
                                 {dialogProps.evaluationChatflows?.length > 0 && (
                                     <>
-                                        <Box>
-                                            <Typography variant='overline' sx={{ fontWeight: 'bold' }}>
-                                                {dialogProps.data.metrics[0]?.nested_metrics ? 'Agentflow (v2)' : 'Chatflow'}
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                                marginBottom: 5
+                                            }}
+                                        >
+                                            <Typography variant='overline' sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                                                {getNameAndType(dialogProps.evaluationChatflows[index]).name}
                                             </Typography>
-                                            <Typography variant='body2'>{dialogProps.evaluationChatflows[index]}</Typography>
-                                        </Box>
-                                        <br />
+                                            <Typography variant='body2'>
+                                                <Chip
+                                                    label={getNameAndType(dialogProps.evaluationChatflows[index]).type}
+                                                    variant='outlined'
+                                                    size='small'
+                                                />
+                                            </Typography>
+                                        </div>
                                         <Divider />
                                     </>
                                 )}
@@ -176,28 +197,19 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                         <Table size='small' style={{ border: '1px solid #ccc' }}>
                                             <TableHead>
                                                 <TableRow>
-                                                    <TableCell align='left' style={{ fontSize: '11px', backgroundColor: '#ccc' }}>
+                                                    <TableCell align='left' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         Node
                                                     </TableCell>
-                                                    <TableCell align='left' style={{ fontSize: '11px', backgroundColor: '#ccc' }}>
+                                                    <TableCell align='left' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         Provider & Model
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', width: '15%', backgroundColor: '#ccc' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold', width: '15%' }}>
                                                         Input
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', width: '15%', backgroundColor: '#ccc' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold', width: '15%' }}>
                                                         Output
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', width: '15%', backgroundColor: '#ccc' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold', width: '15%' }}>
                                                         Total
                                                     </TableCell>
                                                 </TableRow>
@@ -227,29 +239,20 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                                 <TableRow key={index}>
                                                     <TableCell
                                                         align='right'
-                                                        style={{ fontSize: '11px', backgroundColor: '#ccc', fontWeight: 'bold' }}
+                                                        style={{ fontSize: '11px', fontWeight: 'bold' }}
                                                         component='th'
                                                         scope='row'
                                                         colspan={2}
                                                     >
                                                         Total
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', backgroundColor: '#ccc', fontWeight: 'bold' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         {dialogProps.data.metrics[index].promptTokens}
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', backgroundColor: '#ccc', fontWeight: 'bold' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         {dialogProps.data.metrics[index].completionTokens}
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', backgroundColor: '#ccc', fontWeight: 'bold' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         {dialogProps.data.metrics[index].totalTokens}
                                                     </TableCell>
                                                 </TableRow>
@@ -303,28 +306,19 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                         <Table size='small' style={{ border: '1px solid #ccc' }}>
                                             <TableHead>
                                                 <TableRow>
-                                                    <TableCell align='left' style={{ fontSize: '11px', backgroundColor: '#ccc' }}>
+                                                    <TableCell align='left' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         Node
                                                     </TableCell>
-                                                    <TableCell align='left' style={{ fontSize: '11px', backgroundColor: '#ccc' }}>
+                                                    <TableCell align='left' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         Provider & Model
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', width: '15%', backgroundColor: '#ccc' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', width: '15%', fontWeight: 'bold' }}>
                                                         Input
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', width: '15%', backgroundColor: '#ccc' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', width: '15%', fontWeight: 'bold' }}>
                                                         Output
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', width: '15%', backgroundColor: '#ccc' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', width: '15%', fontWeight: 'bold' }}>
                                                         Total
                                                     </TableCell>
                                                 </TableRow>
@@ -353,29 +347,20 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                                 <TableRow key={index}>
                                                     <TableCell
                                                         align='right'
-                                                        style={{ fontSize: '11px', backgroundColor: '#ccc', fontWeight: 'bold' }}
+                                                        style={{ fontSize: '11px', fontWeight: 'bold' }}
                                                         component='th'
                                                         scope='row'
                                                         colspan={2}
                                                     >
                                                         Total
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', backgroundColor: '#ccc', fontWeight: 'bold' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         {dialogProps.data.metrics[index].promptCost}
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', backgroundColor: '#ccc', fontWeight: 'bold' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         {dialogProps.data.metrics[index].completionCost}
                                                     </TableCell>
-                                                    <TableCell
-                                                        align='right'
-                                                        style={{ fontSize: '11px', backgroundColor: '#ccc', fontWeight: 'bold' }}
-                                                    >
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
                                                         {dialogProps.data.metrics[index].totalCost}
                                                     </TableCell>
                                                 </TableRow>

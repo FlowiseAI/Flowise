@@ -724,7 +724,9 @@ export const executeFlow = async ({
             fileUploads: uploads ? JSON.stringify(fileUploads) : undefined,
             leadEmail: incomingInput.leadEmail
         }
-        await utilAddChatMessage(userMessage, appDataSource)
+        if (!isEvaluation) {
+            await utilAddChatMessage(userMessage, appDataSource)
+        }
 
         let resultText = ''
         if (result.text) {
@@ -794,7 +796,7 @@ export const executeFlow = async ({
             }
         }
 
-        const chatMessage = await utilAddChatMessage(apiMessage, appDataSource)
+        const chatMessage = isEvaluation ? apiMessage : await utilAddChatMessage(apiMessage, appDataSource)
 
         logger.debug(`[server]: [${orgId}]: Finished running ${endingNodeData.label} (${endingNodeData.id})`)
         if (evaluationRunId) {
@@ -816,7 +818,8 @@ export const executeFlow = async ({
         /*** Prepare response ***/
         result.question = incomingInput.question // return the question in the response, this is used when input text is empty but question is in audio format
         result.chatId = chatId
-        result.chatMessageId = chatMessage?.id
+        result.chatMessageId = chatMessage?.id || uuidv4()
+        result.chatflowid = chatflowid
         result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
         result.isStreamValid = isStreamValid
 
@@ -905,7 +908,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const isTool = req.get('flowise-tool') === 'true'
     const isEvaluation: boolean = req.headers['X-Flowise-Evaluation'] || req.body.evaluation
     let evaluationRunId = ''
-    if (isEvaluation && chatflow.type === 'CHATFLOW' && req.body.evaluationRunId) {
+    if (isEvaluation && chatflow.type !== 'AGENTFLOW' && req.body.evaluationRunId) {
         evaluationRunId = req.body.evaluationRunId
         const newEval = {
             evaluation: {

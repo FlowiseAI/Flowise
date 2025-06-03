@@ -21,7 +21,8 @@ import {
     Switch,
     StepLabel,
     IconButton,
-    FormControlLabel
+    FormControlLabel,
+    Checkbox
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
@@ -42,6 +43,7 @@ import useApi from '@/hooks/useApi'
 import datasetsApi from '@/api/dataset'
 import evaluatorsApi from '@/api/evaluators'
 import nodesApi from '@/api/nodes'
+import assistantsApi from '@/api/assistants'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
@@ -61,6 +63,11 @@ export const flowTypes = [
         name: 'AGENTFLOW',
         label: 'Agentflow (v2)',
         description: 'Multi Agentflow'
+    },
+    {
+        name: 'ASSISTANTS',
+        label: 'Assistants',
+        description: 'Custom Assistants'
     }
 ]
 const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
@@ -75,11 +82,12 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const getAllEvaluatorsApi = useApi(evaluatorsApi.getAllEvaluators)
     const getNodesByCategoryApi = useApi(nodesApi.getNodesByCategory)
     const getModelsApi = useApi(nodesApi.executeNodeLoadMethod)
+    const getAssistantsApi = useApi(assistantsApi.getAllAssistants)
 
     const [chatflow, setChatflow] = useState([])
     const [dataset, setDataset] = useState('')
     const [datasetAsOneConversation, setDatasetAsOneConversation] = useState(false)
-    const [flowType, setFlowType] = useState('CHATFLOW')
+    const [flowTypes, setFlowTypes] = useState([])
 
     const [flows, setFlows] = useState([])
     const [datasets, setDatasets] = useState([])
@@ -139,20 +147,6 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         setSelectedLLM('no_grading')
         setUseLLM(false)
         setDatasetAsOneConversation(false)
-    }
-
-    const onChangeFlowType = (newFlowType) => {
-        setChatflow([])
-        if (newFlowType === 'CHATFLOW') {
-            if (flowType === 'AGENTFLOW') {
-                getAllChatflowsApi.request()
-            }
-        } else {
-            if (flowType === 'CHATFLOW') {
-                getAllAgentflowsApi.request('AGENTFLOW')
-            }
-        }
-        setFlowType(newFlowType)
     }
 
     const validate = () => {
@@ -245,6 +239,8 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         getNodesByCategoryApi.request('Chat Models')
         if (flows.length === 0) {
             getAllChatflowsApi.request()
+            getAssistantsApi.request('CUSTOM')
+            getAllAgentflowsApi.request('AGENTFLOW')
         }
         if (datasets.length === 0) {
             getAllDatasetsApi.request()
@@ -254,24 +250,18 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     }, [])
 
     useEffect(() => {
-        if (getAllChatflowsApi.data) {
+        if (getAllAgentflowsApi.data && getAllChatflowsApi.data && getAssistantsApi.data) {
             try {
-                populateFlowNames(getAllChatflowsApi.data)
+                const agentFlows = populateFlowNames(getAllAgentflowsApi.data, 'Agentflow v2')
+                const chatFlows = populateFlowNames(getAllChatflowsApi.data, 'Chatflow')
+                const assistants = populateAssistants(getAssistantsApi.data)
+                setFlows([...agentFlows, ...chatFlows, ...assistants])
+                setFlowTypes(['Agentflow v2', 'Chatflow', 'Custom Assistant'])
             } catch (e) {
                 console.error(e)
             }
         }
-    }, [getAllChatflowsApi.data])
-
-    useEffect(() => {
-        if (getAllAgentflowsApi.data) {
-            try {
-                populateFlowNames(getAllAgentflowsApi.data)
-            } catch (e) {
-                console.error(e)
-            }
-        }
-    }, [getAllAgentflowsApi.data])
+    }, [getAllAgentflowsApi.data, getAllChatflowsApi.data, getAssistantsApi.data])
 
     useEffect(() => {
         if (getNodesByCategoryApi.data) {
@@ -367,16 +357,40 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         if (llm !== 'no_grading') getModelsApi.request(llm, { loadMethod: 'listModels' })
     }
 
-    const populateFlowNames = (flows) => {
+    const onChangeFlowType = (flowType) => {
+        const selected = flowType.target.checked
+        const flowTypeValue = flowType.target.value
+        if (selected) {
+            setFlowTypes([...flowTypes, flowTypeValue])
+        } else {
+            setFlowTypes(flowTypes.filter((f) => f !== flowTypeValue))
+        }
+    }
+
+    const populateFlowNames = (data, type) => {
         let flowNames = []
-        for (let i = 0; i < flows.length; i += 1) {
-            const flow = flows[i]
+        for (let i = 0; i < data.length; i += 1) {
+            const flow = data[i]
             flowNames.push({
-                label: flow.name,
-                name: flow.id
+                label: flow.name + ' (' + type + ')',
+                name: flow.id,
+                type: type
             })
         }
-        setFlows(flowNames)
+        return flowNames
+    }
+
+    const populateAssistants = (assistants) => {
+        let assistantNames = []
+        for (let i = 0; i < assistants.length; i += 1) {
+            const assistant = assistants[i]
+            assistantNames.push({
+                label: JSON.parse(assistant.details).name + ' (Custom Assistant)' || '',
+                name: assistant.id,
+                type: 'Custom Assistant'
+            })
+        }
+        return assistantNames
     }
 
     const component = show ? (
@@ -395,7 +409,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 </div>
             </DialogTitle>
             <DialogContent>
-                <Stack direction='column' spacing={1}>
+                <Stack direction='column' spacing={2}>
                     <Divider />
                     {validationFailed && (
                         <div
@@ -518,31 +532,54 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                     Treat all dataset rows as one conversation ?
                                 </Typography>
                                 <FormControlLabel
+                                    label=''
                                     control={<Switch />}
                                     value={datasetAsOneConversation}
                                     onChange={() => setDatasetAsOneConversation(!datasetAsOneConversation)}
                                 />
                             </Box>
+                            {/*<Box>*/}
+                            {/*    <Typography variant='overline'>*/}
+                            {/*        Category<span style={{ color: 'red' }}>&nbsp;*</span>*/}
+                            {/*    </Typography>*/}
+                            {/*    <Dropdown*/}
+                            {/*        name='eval_flow_type'*/}
+                            {/*        defaultOption='Select Flow Category'*/}
+                            {/*        options={flowTypes}*/}
+                            {/*        onSelect={(newValue) => onChangeFlowType(newValue)}*/}
+                            {/*        value={flowType}*/}
+                            {/*    />*/}
+                            {/*</Box>*/}
                             <Box>
-                                <Typography variant='overline'>
-                                    Category<span style={{ color: 'red' }}>&nbsp;*</span>
-                                </Typography>
-                                <Dropdown
-                                    name='eval_flow_type'
-                                    defaultOption='Select Flow Category'
-                                    options={flowTypes}
-                                    onSelect={(newValue) => onChangeFlowType(newValue)}
-                                    value={flowType}
-                                />
-                            </Box>
-                            <Box>
-                                <Typography variant='overline'>
-                                    Select your {flowType === 'CHATFLOW' ? 'Chatflow(s)' : 'Agentflow(s)'} to Evaluate
-                                    <span style={{ color: 'red' }}>&nbsp;*</span>
-                                </Typography>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography variant='overline'>
+                                        Select your flows to Evaluate
+                                        <span style={{ color: 'red' }}>&nbsp;*</span>
+                                    </Typography>
+                                    <Typography variant='overline'>
+                                        <Checkbox defaultChecked size='small' label='All' value='Chatflow' onChange={onChangeFlowType} />{' '}
+                                        Chatflows
+                                        <Checkbox
+                                            defaultChecked
+                                            size='small'
+                                            label='All'
+                                            value='Agentflow v2'
+                                            onChange={onChangeFlowType}
+                                        />{' '}
+                                        Agentflows (v2)
+                                        <Checkbox
+                                            defaultChecked
+                                            size='small'
+                                            label='All'
+                                            value='Custom Assistant'
+                                            onChange={onChangeFlowType}
+                                        />{' '}
+                                        Custom Assistants
+                                    </Typography>
+                                </div>
                                 <MultiDropdown
                                     name={'chatflow1'}
-                                    options={flows}
+                                    options={flows.filter((f) => flowTypes.includes(f.type))}
                                     onSelect={(newValue) => setChatflow(newValue)}
                                     value={chatflow ?? chatflow ?? 'choose an option'}
                                 />
