@@ -992,13 +992,21 @@ const validateAndSaveChat = async (
                 }
             } catch (billingError) {
                 logger.error(`Error checking billing information: ${getErrorMessage(billingError)}`)
+                if (billingError instanceof InternalFlowiseError && billingError.statusCode === StatusCodes.PAYMENT_REQUIRED) {
+                    logger.error(
+                        `[billedUserId: ${billedUserId}] [userId: ${req.user?.id}] [chatId: ${chatId}] [chatflowid: ${chatflowid}] User reached limit`
+                    )
+                }
                 // Allow operation to continue even if billing check fails
                 throw billingError
             }
         }
     } catch (error) {
-        logger.error(`Error in billing validation: ${getErrorMessage(error)}`)
-        // Continue without enforcing billing restrictions if there's an error
+        logger.error(
+            `[userId: ${req.user?.id}] [chatId: ${chatId}] [chatflowid: ${chatflowid}] Error in billing validation: ${getErrorMessage(
+                error
+            )}`
+        )
         throw error
     }
 }
