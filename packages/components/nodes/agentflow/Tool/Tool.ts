@@ -125,7 +125,10 @@ class Tool_Agentflow implements INode {
         async listToolInputArgs(nodeData: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
             const currentNode = options.currentNode as ICommonObject
             const selectedTool = (currentNode?.inputs?.selectedTool as string) || (currentNode?.inputs?.toolAgentflowSelectedTool as string)
-            const selectedToolConfig = currentNode?.inputs?.selectedToolConfig as ICommonObject
+            const selectedToolConfig =
+                (currentNode?.inputs?.selectedToolConfig as ICommonObject) ||
+                (currentNode?.inputs?.toolAgentflowSelectedToolConfig as ICommonObject) ||
+                {}
 
             const nodeInstanceFilePath = options.componentNodes[selectedTool].filePath as string
 
