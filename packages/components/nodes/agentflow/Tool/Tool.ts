@@ -187,7 +187,10 @@ class Tool_Agentflow implements INode {
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const selectedTool = (nodeData.inputs?.selectedTool as string) || (nodeData.inputs?.toolAgentflowSelectedTool as string)
-        const selectedToolConfig = nodeData.inputs?.selectedToolConfig as ICommonObject
+        const selectedToolConfig =
+            (nodeData?.inputs?.selectedToolConfig as ICommonObject) ||
+            (nodeData?.inputs?.toolAgentflowSelectedToolConfig as ICommonObject) ||
+            {}
 
         const toolInputArgs = nodeData.inputs?.toolInputArgs as IToolInputArgs[]
         const _toolUpdateState = nodeData.inputs?.toolUpdateState
