@@ -47,3 +47,7 @@
     cursor: crosshair;
     background: #5dba62 !important;
 }
+
+.MuiDialogContent-root {
+    overflow-y: hidden !important;
+}

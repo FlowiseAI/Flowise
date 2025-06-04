@@ -81,7 +81,7 @@ const Canvas = () => {
                     />
                 )
             }),
-        [deleteNode, duplicateNode]
+        []
     )
 
     const { state } = useLocation()

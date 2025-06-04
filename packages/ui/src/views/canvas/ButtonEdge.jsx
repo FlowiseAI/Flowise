@@ -77,7 +77,7 @@ const ButtonEdge = (props) => {
             const parentZoom = getParentZoom()
 
             // 计算相对位置，考虑handle的中心点偏移
-            const handleOffset = 8 // handle的一半宽度
+            const handleOffset = handleBounds.width / 2 // handle的一半宽度
             let x, y
 
             if (isLoop) {
@@ -103,7 +103,7 @@ const ButtonEdge = (props) => {
                     x -= handleOffset
                 }
             }
-
+            y += handleBounds.height / 2
             return { x, y }
         },
         [dataFlowId, isLoop, getParentZoom]

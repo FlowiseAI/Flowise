@@ -17,7 +17,8 @@ import ReactFlow, {
     ReactFlowProvider,
     useReactFlow,
     Connection,
-    EdgeTypes
+    EdgeTypes,
+    ReactFlowInstance
 } from 'reactflow'
 import 'reactflow/dist/style.css'
 
@@ -31,6 +32,7 @@ import { isEqual } from 'lodash'
 import ButtonEdge from './ButtonEdge'
 
 import { flowContext } from '../../store/context/ReactFlowContext'
+import ExpandTextDialog from '../../ui-component/dialog/ExpandTextDialog'
 
 // 定义基础节点数据类型
 interface BaseNodeData {
@@ -91,16 +93,42 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
     const theme = useTheme()
     const { getNode, getNodes, setNodes: setFlowNodes } = useReactFlow()
     const reactFlowWrapper = useRef<HTMLDivElement>(null)
+    const flowRef = useRef<HTMLDivElement>(null)
     const [nodes, setNodes] = useNodesState<Node[]>(data?.innerNodes || [])
     const [edges, setEdges] = useEdgesState<Edge[]>(data?.innerEdges || [])
     const [isHovered, setIsHovered] = useState(false)
     const prevNodesRef = useRef<Node[]>([])
-    // 添加内部 ReactFlow 实例的唯一标识
     const innerFlowId = useMemo(() => `loop-flow-${id}`, [id])
 
-    const { deleteNode, duplicateNode } = useContext(flowContext)
+    const { reactFlowInstance } = useContext(flowContext) as { reactFlowInstance: ReactFlowInstance | null }
 
-    // 定义边类型
+    // 修改状态名称以保持一致
+    // 定义默认的输入值
+    const defaultInputValue = '// Check if the result meets your criteria\nreturn true'
+    const [showExpandDialog, setShowExpandDialog] = useState(false)
+
+    const [expandDialogProps, setExpandDialogProps] = useState({
+        value: data.inputs?.successCondition || defaultInputValue,
+        inputParam: {
+            name: 'successCondition',
+            label: 'Success Condition',
+            type: 'code',
+            rows: 4,
+            description: 'JavaScript condition to determine if the result is successful. Return true for success, false for failure.',
+            default: defaultInputValue,
+            placeholder: defaultInputValue,
+            id,
+            display: true
+        },
+        disabled: false,
+        nodes: [],
+        edges: [],
+        nodeId: id,
+        cancelButtonName: 'Cancel',
+        confirmButtonName: 'Save'
+    })
+
+    // 修改边类型
     const edgeTypes: EdgeTypes = useMemo(
         () => ({
             buttonedge: (props) => <ButtonEdge {...props} isLoop={true} dataFlowId={innerFlowId} />
@@ -168,7 +196,6 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                         }
                     }))
                 )
-                console.log('currentNode.data.innerEdges', currentNode)
                 if (currentNode.data.innerEdges) {
                     setEdges(currentNode.data.innerEdges)
                 }
@@ -284,24 +311,6 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
     useEffect(() => {
         initNodes()
     }, [])
-
-    // 更新节点类型的 onNodesChange
-    // useEffect(() => {
-    //     Object.values(nodeTypesRef.current).forEach((NodeComponent: any) => {
-    //         if (NodeComponent.type) {
-    //             NodeComponent.type.defaultProps = {
-    //                 ...NodeComponent.type.defaultProps,
-    //                 data: {
-    //                     ...NodeComponent.type.defaultProps?.data,
-    //                     isInLoop: true,
-    //                     parentId: id,
-    //                     onNodesChange,
-    //                     nodes
-    //                 }
-    //             };
-    //         }
-    //     });
-    // }, [onNodesChange, nodes]);
 
     // 添加清理状态的effect
     useEffect(() => {
@@ -684,6 +693,158 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
         [id, nodes, edges, setNodes, setEdges, innerFlowId]
     )
 
+    // 添加鼠标移动事件监听
+    useEffect(() => {
+        let isDragging = false
+        let startHandle: Element | null = null
+
+        const getParentZoom = () => {
+            const parent = document.querySelector('.react-flow')
+            if (!parent) return 1
+            const flowPane = parent.querySelector('.react-flow__viewport')
+            const parentTransform = getComputedStyle(flowPane!).transform
+            const matrix = parentTransform.match(/matrix.*\((.+)\)/)
+            let transformMatrix = [1, 0, 0, 1, 0, 0] // 默认值
+            if (matrix) {
+                transformMatrix = matrix[1].split(', ').map(Number)
+            }
+            const zoom = Math.sqrt(transformMatrix[0] * transformMatrix[0] + transformMatrix[1] * transformMatrix[1])
+            return zoom
+        }
+
+        const getHandlePosition = (handle: Element | null, container: Element | null) => {
+            if (!handle || !container) return null
+
+            const handleBounds = handle.getBoundingClientRect()
+            const containerBounds = container.getBoundingClientRect()
+            const flowPane = container.querySelector('.react-flow__viewport')
+            const flowTransform = flowPane ? getComputedStyle(flowPane).transform : 'none'
+            let transformMatrix = [1, 0, 0, 1, 0, 0] // 默认值
+            if (flowTransform && flowTransform !== 'none') {
+                const matrix = flowTransform.match(/matrix.*\((.+)\)/)
+                if (matrix) {
+                    transformMatrix = matrix[1].split(', ').map(Number)
+                }
+            }
+
+            // 提取缩放和平移值
+            const zoom = Math.sqrt(transformMatrix[0] * transformMatrix[0] + transformMatrix[1] * transformMatrix[1])
+            const translateX = transformMatrix[4]
+            const translateY = transformMatrix[5]
+            const parentZoom = getParentZoom()
+
+            // 计算相对位置，考虑handle的中心点偏移
+            const handleOffset = handleBounds.width / 2 // handle的一半宽度
+            let x = ((handleBounds.left - containerBounds.left) / parentZoom - translateX) / zoom
+            let y = ((handleBounds.top - containerBounds.top) / parentZoom - translateY) / zoom
+
+            // 根据handle的位置添加偏移
+            if (handle.getAttribute('data-handlepos') === 'left') {
+                x += handleOffset
+            } else if (handle.getAttribute('data-handlepos') === 'right') {
+                x -= handleOffset
+            }
+            y += handleBounds.height / 2
+            return { x, y }
+        }
+
+        const handleMouseDown = (event: Event) => {
+            const mouseEvent = event as MouseEvent
+            const handle = (mouseEvent.target as Element)?.closest('.react-flow__handle')
+            if (handle) {
+                const flowId = (mouseEvent.target as Element)?.closest('[data-flow-id]')?.getAttribute('data-flow-id')
+                if (flowId === innerFlowId) {
+                    isDragging = true
+                    startHandle = handle
+                }
+            }
+        }
+
+        const handleMouseUp = () => {
+            isDragging = false
+            startHandle = null
+        }
+
+        const handleMouseMove = (event: Event) => {
+            if (!isDragging || !flowRef.current || !startHandle) return
+            const mouseEvent = event as MouseEvent
+
+            // 获取 ReactFlow 容器
+            const flowElement = flowRef.current
+            const tempConnection = flowElement.querySelector('.react-flow__connection')
+            if (tempConnection) {
+                const pathElement = tempConnection.querySelector('path')
+                if (pathElement) {
+                    // 阻止 ReactFlow 默认的路径更新
+
+                    // 初始设置路径
+                    const sourcePos = getHandlePosition(startHandle, flowElement)
+                    if (!sourcePos) return
+
+                    const containerBounds = flowElement.getBoundingClientRect()
+                    const flowPane = flowElement.querySelector('.react-flow__viewport')
+                    const flowTransform = flowPane ? getComputedStyle(flowPane).transform : 'none'
+                    let transformMatrix = [1, 0, 0, 1, 0, 0]
+                    if (flowTransform && flowTransform !== 'none') {
+                        const matrix = flowTransform.match(/matrix.*\((.+)\)/)
+                        if (matrix) {
+                            transformMatrix = matrix[1].split(', ').map(Number)
+                        }
+                    }
+
+                    const zoom = Math.sqrt(transformMatrix[0] * transformMatrix[0] + transformMatrix[1] * transformMatrix[1])
+                    const translateX = transformMatrix[4]
+                    const translateY = transformMatrix[5]
+                    const parentZoom = getParentZoom()
+
+                    const mouseX = ((mouseEvent.clientX - containerBounds.left) / parentZoom - translateX) / zoom
+                    const mouseY = ((mouseEvent.clientY - containerBounds.top) / parentZoom - translateY) / zoom
+
+                    const dx = Math.abs(mouseX - sourcePos.x) * 0.5
+                    const pathData = `M${sourcePos.x},${sourcePos.y} C${sourcePos.x + dx},${sourcePos.y} ${
+                        mouseX - dx
+                    },${mouseY} ${mouseX},${mouseY}`
+
+                    requestAnimationFrame(() => {
+                        pathElement.setAttribute('d', pathData)
+                    })
+                }
+            }
+        }
+
+        const flowElement = flowRef.current
+        if (flowElement) {
+            flowElement.addEventListener('mousedown', handleMouseDown as EventListener)
+            flowElement.addEventListener('mouseup', handleMouseUp as EventListener)
+            flowElement.addEventListener('mousemove', handleMouseMove as EventListener)
+
+            return () => {
+                flowElement.removeEventListener('mousedown', handleMouseDown as EventListener)
+                flowElement.removeEventListener('mouseup', handleMouseUp as EventListener)
+                flowElement.removeEventListener('mousemove', handleMouseMove as EventListener)
+            }
+        }
+    }, [innerFlowId])
+
+    // 修改处理函数名称
+    const onExpandDialogSave = (newValue: string, inputParamName: string) => {
+        setShowExpandDialog(false)
+        reactFlowInstance?.setNodes((nodes) =>
+            nodes.map((node) => {
+                if (node.id === id) {
+                    node.data.inputs[inputParamName] = newValue
+                }
+                return node
+            })
+        )
+    }
+
+    // 修改点击处理函数
+    const handleExpandClick = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        setShowExpandDialog(true)
+    }
+
     return (
         <div
             role='button'
@@ -738,6 +899,31 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                     display: 'none'
                 }}
             />
+            <IconButton
+                onClick={handleExpandClick}
+                sx={{
+                    position: 'absolute',
+                    right: '16px',
+                    top: '16px',
+                    height: '40px',
+                    width: '40px',
+                    backgroundColor: 'transparent',
+                    '&:hover': {
+                        backgroundColor: theme.palette.action.hover
+                    },
+                    zIndex: 1
+                }}
+            >
+                <svg width='60' height='60' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                    <path
+                        d='M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7'
+                        stroke='currentColor'
+                        strokeWidth='2'
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                    />
+                </svg>
+            </IconButton>
             <div className='resize-indicator' />
             <NodeTooltip
                 open={isHovered}
@@ -898,53 +1084,62 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                         <div style={innerBackgroundStyle}>
                             <Background color='#aaa' gap={16} size={1} style={{ position: 'absolute', top: 0, left: 0 }} />
                         </div>
-                        <ReactFlow
-                            nodes={nodes}
-                            edges={edges}
-                            onNodesChange={onNodesChange}
-                            onEdgesChange={onEdgesChange}
-                            nodeTypes={baseTypes}
-                            edgeTypes={edgeTypes}
-                            fitView={true}
-                            nodesDraggable={true}
-                            nodesConnectable={true}
-                            elementsSelectable={true}
-                            onDragOver={onDragOver}
-                            onDrop={onDrop}
-                            onConnect={handleConnect}
-                            zoomOnScroll={true}
-                            panOnScroll={false}
-                            panOnDrag={true}
-                            preventScrolling={true}
-                            style={{ ...innerFlowStyle, zIndex: 0 }}
-                            maxZoom={1.5}
-                            minZoom={0.3}
-                            defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-                            deleteKeyCode={['Delete', 'Backspace']}
-                            data-flow-id={innerFlowId}
-                        >
-                            <Controls
-                                showZoom={true}
-                                showFitView={true}
-                                showInteractive={false}
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    gap: '8px',
-                                    left: '50%',
-                                    transform: 'translateX(-50%)',
-                                    bottom: '8px',
-                                    backgroundColor: 'transparent',
-                                    border: 'none',
-                                    boxShadow: 'none',
-                                    padding: 0
-                                }}
-                                className='react-flow__controls-interactive'
-                            />
-                        </ReactFlow>
+                        <div ref={flowRef} style={{ width: '100%', height: '100%' }}>
+                            <ReactFlow
+                                nodes={nodes}
+                                edges={edges}
+                                onNodesChange={onNodesChange}
+                                onEdgesChange={onEdgesChange}
+                                nodeTypes={baseTypes}
+                                edgeTypes={edgeTypes}
+                                fitView={true}
+                                nodesDraggable={true}
+                                nodesConnectable={true}
+                                elementsSelectable={true}
+                                onDragOver={onDragOver}
+                                onDrop={onDrop}
+                                onConnect={handleConnect}
+                                zoomOnScroll={true}
+                                panOnScroll={false}
+                                panOnDrag={true}
+                                preventScrolling={true}
+                                style={{ ...innerFlowStyle, zIndex: 0 }}
+                                maxZoom={1.5}
+                                minZoom={0.3}
+                                defaultViewport={{ x: 0, y: 0, zoom: 1 }}
+                                deleteKeyCode={['Delete', 'Backspace']}
+                                data-flow-id={innerFlowId}
+                            >
+                                <Controls
+                                    showZoom={true}
+                                    showFitView={true}
+                                    showInteractive={false}
+                                    style={{
+                                        display: 'flex',
+                                        flexDirection: 'row',
+                                        gap: '8px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        bottom: '8px',
+                                        backgroundColor: 'transparent',
+                                        border: 'none',
+                                        boxShadow: 'none',
+                                        padding: 0
+                                    }}
+                                    className='react-flow__controls-interactive'
+                                />
+                            </ReactFlow>
+                        </div>
                     </div>
                 </ReactFlowProvider>
             </div>
+            <ExpandTextDialog
+                show={showExpandDialog}
+                dialogProps={expandDialogProps}
+                onCancel={() => setShowExpandDialog(false)}
+                onConfirm={onExpandDialogSave}
+                onInputHintDialogClicked={() => {}}
+            />
         </div>
     )
 }
