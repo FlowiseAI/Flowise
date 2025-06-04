@@ -76,10 +76,10 @@ interface AgentToolConfig {
 
 interface NodeInputs {
     agentTools?: AgentToolConfig[]
-    selectedTool?: string
+    toolAgentflowSelectedTool?: string
     toolInputArgs?: Record<string, any>[]
-    selectedToolConfig?: {
-        selectedTool: string
+    toolAgentflowSelectedToolConfig?: {
+        toolAgentflowSelectedTool: string
     }
     [key: string]: any
 }
@@ -284,10 +284,10 @@ Now, select the ONLY tool that is needed to achieve the given task. You must onl
             if (Array.isArray(tools) && tools.length > 0) {
                 selectedTools.push(...tools)
 
-                node.data.inputs.selectedTool = tools[0]
+                node.data.inputs.toolAgentflowSelectedTool = tools[0]
                 node.data.inputs.toolInputArgs = []
-                node.data.inputs.selectedToolConfig = {
-                    selectedTool: tools[0]
+                node.data.inputs.toolAgentflowSelectedToolConfig = {
+                    toolAgentflowSelectedTool: tools[0]
                 }
             }
         }
