@@ -53,10 +53,36 @@ export class MCPToolkit extends BaseToolkit {
 
             const baseUrl = new URL(this.serverParams.url)
             try {
-                transport = new StreamableHTTPClientTransport(baseUrl)
+                if (this.serverParams.headers) {
+                    transport = new StreamableHTTPClientTransport(baseUrl, {
+                        requestInit: {
+                            headers: this.serverParams.headers
+                        }
+                    })
+                } else {
+                    transport = new StreamableHTTPClientTransport(baseUrl)
+                }
                 await client.connect(transport)
             } catch (error) {
-                transport = new SSEClientTransport(baseUrl)
+                if (this.serverParams.headers) {
+                    transport = new SSEClientTransport(baseUrl, {
+                        requestInit: {
+                            headers: this.serverParams.headers
+                        },
+                        eventSourceInit: {
+                            // Reference: https://github.com/modelcontextprotocol/typescript-sdk/issues/118
+                            async fetch(input: Request | URL | string, init?: RequestInit) {
+                                const headers = new Headers(init?.headers || {})
+                                Object.entries(this.serverParams.headers).forEach(([key, value]) => {
+                                    headers.set(key, value as string)
+                                })
+                                return fetch(input, { ...init, headers })
+                            }
+                        } as any
+                    })
+                } else {
+                    transport = new SSEClientTransport(baseUrl)
+                }
                 await client.connect(transport)
             }
         }
