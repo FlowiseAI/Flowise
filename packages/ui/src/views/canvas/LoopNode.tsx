@@ -95,13 +95,15 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
     const [edges, setEdges] = useEdgesState<Edge[]>(data?.innerEdges || [])
     const [isHovered, setIsHovered] = useState(false)
     const prevNodesRef = useRef<Node[]>([])
+    // 添加内部 ReactFlow 实例的唯一标识
+    const innerFlowId = useMemo(() => `loop-flow-${id}`, [id])
 
     const { deleteNode, duplicateNode } = useContext(flowContext)
 
     // 定义边类型
     const edgeTypes: EdgeTypes = useMemo(
         () => ({
-            buttonedge: ButtonEdge as any
+            buttonedge: (props) => <ButtonEdge {...props} isLoop={true} dataFlowId={innerFlowId} />
         }),
         []
     )
@@ -186,8 +188,8 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
 
         // 添加对 edges 变化的监听
         const handleEdgesChange = (event: CustomEvent) => {
-            const { detail } = event
-            const { edgeid, isDelete } = detail
+            const { detail } = event || {}
+            const { edgeid, isDelete } = detail || {}
             if (isDelete) {
                 setEdges((eds) => {
                     return eds.filter((edge: Edge) => edge.id !== edgeid)
@@ -522,6 +524,10 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
         event.dataTransfer.dropEffect = 'move'
     }, [])
 
+    // 修改句柄ID的生成逻辑
+    const getInnerHandleId = useCallback((baseId: string) => `${innerFlowId}-${baseId}`, [innerFlowId])
+
+    // 修改 onDrop 函数中的节点 ID 生成
     const onDrop = useCallback(
         (event: React.DragEvent) => {
             event.preventDefault()
@@ -542,9 +548,9 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                     y: event.clientY - reactFlowBounds.top - 50
                 }
 
-                // 生成唯一ID，添加 loopNode_ 前缀
+                // 生成唯一ID，添加内部流程标识
                 const baseId = getUniqueNodeId(parsedNodeData, nodes)
-                const newNodeId = `loopNode_${baseId}`
+                const newNodeId = `${innerFlowId}_${baseId}`
 
                 // 创建新节点，添加 isInLoop 标记和节点列表
                 const newNode = {
@@ -557,9 +563,10 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                         position,
                         positionAbsolute: position,
                         isInLoop: true,
-                        onNodesChange,
+                        onNodesChange: onNodesChange as unknown as (changes: NodeChange[]) => void,
                         parentId: id,
-                        nodes
+                        nodes: nodes as Node[],
+                        flowId: innerFlowId
                     }
                 }
 
@@ -569,7 +576,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                 console.error('Error adding node:', error)
             }
         },
-        [nodes, setNodes, onNodesChange]
+        [nodes, setNodes, onNodesChange, innerFlowId]
     )
 
     // 在组件内部添加复制功能
@@ -579,21 +586,35 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
         }
     }, [id, data, nodes])
 
-    // 处理连接事件
+    // 修改 handleConnect 函数
     const handleConnect = useCallback(
         (params: Connection) => {
             console.log('handleConnect', params)
             if (!params.source || !params.target) return
 
+            // 创建新的边ID，包含内部流程标识
+            const newEdgeId = `${innerFlowId}-${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
+
+            // 检查是否已存在相同ID的边
+            const edgeExists = edges.some((edge: Edge) => edge.id === newEdgeId)
+            if (edgeExists) {
+                console.log('边已存在，跳过创建:', newEdgeId)
+                return
+            }
+
             // 创建新的边
             const newEdge: Edge = {
-                id: `${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`,
+                id: newEdgeId,
                 source: params.source,
                 target: params.target,
                 sourceHandle: params.sourceHandle,
                 targetHandle: params.targetHandle,
-                type: 'buttonedge'
+                type: 'buttonedge',
+                data: {
+                    flowId: innerFlowId // 添加流程标识
+                }
             }
+
             // 查找源节点和目标节点
             const sourceNode = nodes.find((node: Node<any>) => node.id === params.source)
             const targetNode = nodes.find((node: Node<any>) => node.id === params.target)
@@ -601,7 +622,8 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
             console.log('循环节点连接事件:', {
                 sourceNode,
                 targetNode,
-                params
+                params,
+                flowId: innerFlowId
             })
 
             // 如果源节点是循环节点
@@ -615,7 +637,8 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                                 data: {
                                     ...node.data,
                                     isInLoop: true,
-                                    parentId: id
+                                    parentId: id,
+                                    flowId: innerFlowId
                                 }
                             } as Node<any>
                         }
@@ -635,7 +658,8 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                                 data: {
                                     ...node.data,
                                     isInLoop: true,
-                                    parentId: id
+                                    parentId: id,
+                                    flowId: innerFlowId
                                 }
                             } as Node<any>
                         }
@@ -648,9 +672,16 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
             console.log('添加新的边', newEdge)
             setEdges((eds) => [...eds, newEdge])
             // 触发边更新事件
-            window.dispatchEvent(new Event('reactflow-edges-update'))
+            window.dispatchEvent(
+                new CustomEvent('reactflow-edges-update', {
+                    detail: {
+                        flowId: innerFlowId,
+                        edge: newEdge
+                    }
+                })
+            )
         },
-        [id, nodes, setNodes, setEdges]
+        [id, nodes, edges, setNodes, setEdges, innerFlowId]
     )
 
     return (
@@ -778,12 +809,15 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                             type='target'
                             position={Position.Left}
                             id={`${id}-input-input-string|number|json|array|file`}
+                            data-handlepos='left'
                             style={{
-                                height: 15,
-                                width: 15,
+                                height: 16,
+                                width: 16,
                                 backgroundColor: theme.palette.text.secondary,
-                                position: 'relative',
-                                left: '-7.5px',
+                                position: 'absolute',
+                                left: '-8px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
                                 border: '2px solid #fff'
                             }}
                         />
@@ -793,12 +827,15 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                             type='source'
                             position={Position.Right}
                             id={`${id}-output-output-string|number|json|array|file`}
+                            data-handlepos='right'
                             style={{
-                                height: 15,
-                                width: 15,
+                                height: 16,
+                                width: 16,
                                 backgroundColor: theme.palette.text.secondary,
-                                position: 'relative',
-                                right: '-7.5px',
+                                position: 'absolute',
+                                right: '-8px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
                                 border: '2px solid #fff'
                             }}
                         />
@@ -884,6 +921,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                             minZoom={0.3}
                             defaultViewport={{ x: 0, y: 0, zoom: 1 }}
                             deleteKeyCode={['Delete', 'Backspace']}
+                            data-flow-id={innerFlowId}
                         >
                             <Controls
                                 showZoom={true}
