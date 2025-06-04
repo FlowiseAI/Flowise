@@ -1,0 +1,10 @@
+{
+  "signIn": {
+    "title": "登录",
+    "emailLabel": "电子邮件地址",
+    "passwordLabel": "密码",
+    "loginButton": "登录",
+    "forgotPasswordLink": "忘记密码？"
+  },
+  "greeting": "你好，世界！"
+}

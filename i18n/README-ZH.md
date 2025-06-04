@@ -13,7 +13,7 @@
 
 [English](../README.md) | [繁體中文](./README-TW.md) | 简体中文 | [日本語](./README-JA.md) | [한국어](./README-KR.md)
 
-<h3>可视化构建 AI/LLM 流程</h3>
+<h3>可视化构建 AI 智能体</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
 <img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true"></a>
 
@@ -37,11 +37,12 @@
 
 ### Docker Compose
 
-1. 进入项目根目录下的 `docker` 文件夹
-2. 创建 `.env` 文件并指定 `PORT`（参考 `.env.example`）
-3. 运行 `docker compose up -d`
-4. 打开 [http://localhost:3000](http://localhost:3000)
-5. 可以通过 `docker compose stop` 停止容器
+1. 克隆 Flowise 项目
+2. 进入项目根目录下的 `docker` 文件夹
+3. 复制 .env.example 文件，将其粘贴到相同位置，并重命名为 .env 文件
+4. 运行 `docker compose up -d`
+5. 打开 [http://localhost:3000](http://localhost:3000)
+6. 可以通过 `docker compose stop` 停止容器
 
 ### Docker 镜像
 
@@ -67,6 +68,7 @@ Flowise 在一个单一的代码库中有 3 个不同的模块。
 -   `server`：用于提供 API 逻辑的 Node 后端
 -   `ui`：React 前端
 -   `components`：第三方节点集成
+-   `api-documentation`：基于 Express 自动生成的 Swagger UI API 文档
 
 ### 先决条件
 
@@ -100,6 +102,15 @@ Flowise 在一个单一的代码库中有 3 个不同的模块。
     ```bash
     pnpm build
     ```
+
+    <details>
+    <summary>退出代码 134（JavaScript 堆内存不足）</summary>
+    如果在运行上述 `build` 脚本时遇到此错误，请尝试增加 Node.js 的堆内存大小，然后重新运行脚本：
+
+        export NODE_OPTIONS="--max-old-space-size=4096"
+        pnpm build
+
+    </details>
 
 5. 启动应用：
 
@@ -154,7 +165,7 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 
     -   [Elestio](https://elest.io/open-source/flowiseai)
 
-        [![Deploy](https://pub-da36157c854648669813f3f76c526c2b.r2.dev/deploy-on-elestio-black.png)](https://elest.io/open-source/flowiseai)
+        [![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/flowiseai)
 
     -   [Sealos](https://template.sealos.io/deploy?templateName=flowise)
 
@@ -166,9 +177,9 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 
       </details>
 
-## ☁️ 云托管
+## ☁️ Flowise 云
 
-[开始使用云托管](https://flowiseai.com/)
+[开始使用 Flowise 云](https://flowiseai.com/)
 
 ## 🙋 支持
 
@@ -183,6 +194,8 @@ Flowise 支持不同的环境变量来配置您的实例。您可以在 `package
 </a>
 
 参见[贡献指南](CONTRIBUTING-ZH.md)。如果您有任何问题或问题，请在[Discord](https://discord.gg/jbaHfsRVBW)上与我们联系。
+
+[![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 许可证
 

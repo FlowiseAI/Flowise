@@ -28,6 +28,9 @@ import useNotifier from '@/utils/useNotifier'
 import { loginSuccess, logoutSuccess } from '@/store/reducers/authSlice'
 import { store } from '@/store'
 
+// i18n
+import { useTranslation } from 'react-i18next';
+
 // icons
 import AzureSSOLoginIcon from '@/assets/images/microsoft-azure.svg'
 import GoogleSSOLoginIcon from '@/assets/images/google.svg'
@@ -37,6 +40,7 @@ import GithubSSOLoginIcon from '@/assets/images/github.svg'
 // ==============================|| SignInPage ||============================== //
 
 const SignInPage = () => {
+    const { t } = useTranslation();
     const theme = useTheme()
     useSelector((state) => state.customization)
     useNotifier()
@@ -192,7 +196,7 @@ const SignInPage = () => {
                         </Stack>
                     )}
                     <Stack sx={{ gap: 1 }}>
-                        <Typography variant='h1'>Sign In</Typography>
+                        <Typography variant='h1'>{t('signIn.title')}</Typography>
                         {isCloud && (
                             <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
                                 Don&apos;t have an account?{' '}
@@ -217,7 +221,7 @@ const SignInPage = () => {
                             <Box sx={{ p: 0 }}>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Email<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        {t('signIn.emailLabel')}<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
@@ -231,14 +235,14 @@ const SignInPage = () => {
                             <Box sx={{ p: 0 }}>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Password<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        {t('signIn.passwordLabel')}<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
                                 <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
                                 <Typography variant='body2' sx={{ color: theme.palette.grey[600], mt: 1, textAlign: 'right' }}>
                                     <Link style={{ color: theme.palette.primary.main }} to='/forgot-password'>
-                                        Forgot password?
+                                        {t('signIn.forgotPasswordLink')}
                                     </Link>
                                 </Typography>
                                 {isCloud && (
@@ -260,7 +264,7 @@ const SignInPage = () => {
                                 style={{ borderRadius: 12, height: 40, marginRight: 5 }}
                                 type='submit'
                             >
-                                Login
+                                {t('signIn.loginButton')}
                             </LoadingButton>
                             {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
                             {configuredSsoProviders &&

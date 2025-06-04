@@ -15,6 +15,9 @@ import { ReactFlowContext } from '@/store/context/ReactFlowContext'
 import { ConfigProvider } from '@/store/context/ConfigContext'
 import { ErrorProvider } from '@/store/context/ErrorContext'
 
+// Internationalization
+import './i18n';
+
 const container = document.getElementById('root')
 const root = createRoot(container)
 

@@ -31,6 +31,9 @@ import accountApi from '@/api/account.api'
 import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
 
+// i18n
+import { useTranslation } from 'react-i18next';
+
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
 const MaterialUISwitch = styled(Switch)(({ theme }) => ({
@@ -143,6 +146,7 @@ GitHubStarButton.propTypes = {
 }
 
 const Header = ({ handleLeftDrawerToggle }) => {
+    const { i18n } = useTranslation();
     const theme = useTheme()
     const navigate = useNavigate()
 
@@ -310,7 +314,27 @@ const Header = ({ handleLeftDrawerToggle }) => {
                 />
             )}
             <MaterialUISwitch checked={isDark} onChange={changeDarkMode} />
-            <Box sx={{ ml: 2 }}></Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', ml: 1 }}>
+                <Button
+                    color="inherit"
+                    onClick={() => i18n.changeLanguage('en')}
+                    disabled={i18n.language === 'en'}
+                    size="small"
+                    sx={{ minWidth: '30px', px: '5px', color: i18n.language === 'en' ? theme.palette.primary.main : theme.palette.text.secondary }}
+                >
+                    EN
+                </Button>
+                <Typography sx={{ color: theme.palette.text.secondary, mx: 0.5 }}>/</Typography>
+                <Button
+                    color="inherit"
+                    onClick={() => i18n.changeLanguage('zh')}
+                    disabled={i18n.language === 'zh'}
+                    size="small"
+                    sx={{ minWidth: '30px', px: '5px', color: i18n.language === 'zh' ? theme.palette.primary.main : theme.palette.text.secondary }}
+                >
+                    ZH
+                </Button>
+            </Box>
             <ProfileSection handleLogout={signOutClicked} />
         </>
     )

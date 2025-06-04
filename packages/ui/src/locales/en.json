@@ -1,0 +1,10 @@
+{
+  "signIn": {
+    "title": "Sign In",
+    "emailLabel": "Email Address",
+    "passwordLabel": "Password",
+    "loginButton": "Login",
+    "forgotPasswordLink": "Forgot password?"
+  },
+  "greeting": "Hello, World!"
+}
