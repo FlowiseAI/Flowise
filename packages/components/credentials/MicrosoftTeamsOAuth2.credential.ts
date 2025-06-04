@@ -71,7 +71,7 @@ class MsoftTeamsOAuth2 implements INodeCredential {
             {
                 label: 'Client Secret',
                 name: 'clientSecret',
-                type: 'string'
+                type: 'password'
             },
             {
                 label: 'Scope',
