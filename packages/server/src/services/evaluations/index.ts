@@ -15,7 +15,7 @@ import { getAppVersion } from '../../utils'
 import { In } from 'typeorm'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { v4 as uuidv4 } from 'uuid'
-import { calculateCost } from './CostCalculator'
+import { calculateCost, formatCost } from './CostCalculator'
 import { runAdditionalEvaluators } from './EvaluatorRunner'
 import evaluatorsService from '../evaluator'
 import { LLMEvaluationRunner } from './LLMEvaluationRunner'
@@ -387,10 +387,6 @@ const deleteEvaluation = async (id: string, activeWorkspaceId?: string) => {
             `Error: EvalsService.deleteEvaluation - ${getErrorMessage(error)}`
         )
     }
-}
-
-const formatCost = (cost: number) => {
-    return cost < 0.01 ? '$ <0.01' : '$ ' + cost.toFixed(2)
 }
 
 // check for outdated evaluations

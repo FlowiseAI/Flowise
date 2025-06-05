@@ -27,40 +27,31 @@ export const calculateCost = (metricsArray: ICommonObject[]) => {
 
             if (costValues.total_price > 0) {
                 let cost = costValues.total_cost * (totalTokens / 1000)
-                if (cost < 0.01) {
-                    totalTokensCost = '$ <0.01'
-                } else {
-                    totalTokensCost = '$ ' + cost.toFixed(fractionDigits)
-                }
+                totalTokensCost = formatCost(cost)
             } else {
                 let totalCost = 0
                 if (promptTokens) {
                     const cost = costValues.input_cost * (promptTokens / 1000)
                     totalCost += cost
-                    if (cost < 0.01) {
-                        promptTokensCost = '$ <0.01'
-                    } else {
-                        promptTokensCost = '$ ' + cost.toFixed(fractionDigits)
-                    }
+                    promptTokensCost = formatCost(cost)
                 }
                 if (completionTokens) {
                     const cost = costValues.output_cost * (completionTokens / 1000)
                     totalCost += cost
-                    if (cost < 0.01) {
-                        completionTokensCost = '$ <0.01'
-                    } else {
-                        completionTokensCost = '$ ' + cost.toFixed(fractionDigits)
-                    }
+                    completionTokensCost = formatCost(cost)
                 }
-                if (totalCost < 0.01) {
-                    totalTokensCost = '$ <0.01'
-                } else {
-                    totalTokensCost = '$ ' + totalCost.toFixed(fractionDigits)
-                }
+                totalTokensCost = formatCost(totalCost)
             }
         }
         metric['totalCost'] = totalTokensCost
         metric['promptCost'] = promptTokensCost
         metric['completionCost'] = completionTokensCost
     }
+}
+
+export const formatCost = (cost: number) => {
+    if (cost == 0) {
+        return '$ 0'
+    }
+    return cost < 0.01 ? '$ <0.01' : '$ ' + cost.toFixed(fractionDigits)
 }
