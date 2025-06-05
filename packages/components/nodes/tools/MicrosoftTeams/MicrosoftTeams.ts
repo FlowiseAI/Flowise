@@ -1,5 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getCredentialData, getCredentialParam, refreshOAuth2Token } from '../../../src/utils'
+import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam, refreshOAuth2Token } from '../../../src/utils'
 import { createTeamsTools } from './core'
 
 class MicrosoftTeams_Tools implements INode {
@@ -907,17 +907,17 @@ class MicrosoftTeams_Tools implements INode {
 
     async init(nodeData: INodeData, _: string, options: any): Promise<any> {
         const teamsType = nodeData.inputs?.teamsType as string
-        const channelActions = nodeData.inputs?.channelActions as string[]
-        const chatActions = nodeData.inputs?.chatActions as string[]
-        const chatMessageActions = nodeData.inputs?.chatMessageActions as string[]
+        const channelActions = nodeData.inputs?.channelActions as string
+        const chatActions = nodeData.inputs?.chatActions as string
+        const chatMessageActions = nodeData.inputs?.chatMessageActions as string
 
         let actions: string[] = []
         if (teamsType === 'channel') {
-            actions = typeof channelActions === 'string' ? JSON.parse(channelActions) : channelActions
+            actions = convertMultiOptionsToStringArray(channelActions)
         } else if (teamsType === 'chat') {
-            actions = typeof chatActions === 'string' ? JSON.parse(chatActions) : chatActions
+            actions = convertMultiOptionsToStringArray(chatActions)
         } else if (teamsType === 'chatMessage') {
-            actions = typeof chatMessageActions === 'string' ? JSON.parse(chatMessageActions) : chatMessageActions
+            actions = convertMultiOptionsToStringArray(chatMessageActions)
         }
 
         let credentialData = await getCredentialData(nodeData.credential ?? '', options)

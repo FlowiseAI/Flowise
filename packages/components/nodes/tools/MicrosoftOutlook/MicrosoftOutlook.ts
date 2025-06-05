@@ -1,4 +1,4 @@
-import { getCredentialData, getCredentialParam, refreshOAuth2Token } from '../../../src/utils'
+import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam, refreshOAuth2Token } from '../../../src/utils'
 import { createOutlookTools } from './core'
 import type { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 
@@ -729,8 +729,8 @@ class MicrosoftOutlook_Tools implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const outlookType = nodeData.inputs?.outlookType as string
-        const calendarActions = nodeData.inputs?.calendarActions as string[]
-        const messageActions = nodeData.inputs?.messageActions as string[]
+        const calendarActions = nodeData.inputs?.calendarActions as string
+        const messageActions = nodeData.inputs?.messageActions as string
 
         let credentialData = await getCredentialData(nodeData.credential ?? '', options)
         credentialData = await refreshOAuth2Token(nodeData.credential ?? '', credentialData, options)
@@ -742,9 +742,9 @@ class MicrosoftOutlook_Tools implements INode {
 
         let actions: string[] = []
         if (outlookType === 'calendar') {
-            actions = typeof calendarActions === 'string' ? JSON.parse(calendarActions) : calendarActions
+            actions = convertMultiOptionsToStringArray(calendarActions)
         } else if (outlookType === 'message') {
-            actions = typeof messageActions === 'string' ? JSON.parse(messageActions) : messageActions
+            actions = convertMultiOptionsToStringArray(messageActions)
         }
 
         // Prepare default parameters for each action based on type

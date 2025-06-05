@@ -1,4 +1,4 @@
-import { getCredentialData, getCredentialParam, refreshOAuth2Token } from '../../../src/utils'
+import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam, refreshOAuth2Token } from '../../../src/utils'
 import { createGmailTools } from './core'
 import type { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 
@@ -562,13 +562,13 @@ class Gmail_Tools implements INode {
         let actions: string[] = []
 
         if (gmailType === 'drafts') {
-            actions = nodeData.inputs?.draftActions ? JSON.parse(nodeData.inputs?.draftActions) : []
+            actions = convertMultiOptionsToStringArray(nodeData.inputs?.draftActions)
         } else if (gmailType === 'messages') {
-            actions = nodeData.inputs?.messageActions ? JSON.parse(nodeData.inputs?.messageActions) : []
+            actions = convertMultiOptionsToStringArray(nodeData.inputs?.messageActions)
         } else if (gmailType === 'labels') {
-            actions = nodeData.inputs?.labelActions ? JSON.parse(nodeData.inputs?.labelActions) : []
+            actions = convertMultiOptionsToStringArray(nodeData.inputs?.labelActions)
         } else if (gmailType === 'threads') {
-            actions = nodeData.inputs?.threadActions ? JSON.parse(nodeData.inputs?.threadActions) : []
+            actions = convertMultiOptionsToStringArray(nodeData.inputs?.threadActions)
         }
 
         // Prepare default parameters for each action

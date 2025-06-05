@@ -1,4 +1,4 @@
-import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { createJiraTools } from './core'
 import type { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 
@@ -393,11 +393,11 @@ class Jira_Tools implements INode {
         let actions: string[] = []
 
         if (jiraType === 'issues') {
-            actions = nodeData.inputs?.issueActions ? JSON.parse(nodeData.inputs?.issueActions) : []
+            actions = convertMultiOptionsToStringArray(nodeData.inputs?.issueActions)
         } else if (jiraType === 'comments') {
-            actions = nodeData.inputs?.commentActions ? JSON.parse(nodeData.inputs?.commentActions) : []
+            actions = convertMultiOptionsToStringArray(nodeData.inputs?.commentActions)
         } else if (jiraType === 'users') {
-            actions = nodeData.inputs?.userActions ? JSON.parse(nodeData.inputs?.userActions) : []
+            actions = convertMultiOptionsToStringArray(nodeData.inputs?.userActions)
         }
 
         // Prepare default parameters for each action
