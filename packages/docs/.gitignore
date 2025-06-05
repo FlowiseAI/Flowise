@@ -13,6 +13,10 @@
 docs/api/
 static/api/
 
+# Track manually written API overview files
+!docs/api/index.mdx
+!docs/api/full-api-spec.mdx
+
 # Misc
 .DS_Store
 .env.local
