@@ -555,7 +555,7 @@ const config: Config = {
                             label: 'Embed Chatbot'
                         },
                         {
-                            to: '/docs/api/prediction',
+                            to: '/docs/api/prediction/prediction-api',
                             label: 'Prediction API'
                         }
                     ]
