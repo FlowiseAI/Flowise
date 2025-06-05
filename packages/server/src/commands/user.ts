@@ -36,8 +36,6 @@ export default class user extends BaseCommand {
                 logger.info('Running listUserEmails')
                 await this.listUserEmails(queryRunner)
             }
-
-            logger.info('To reset your password, run the following command: pnpm user --email "myEmail" --password "myPassword"')
         } catch (error) {
             logger.error(error)
         } finally {
@@ -55,6 +53,7 @@ export default class user extends BaseCommand {
         const emails = users.map((user) => user.email)
         logger.info(`Email addresses: ${emails.join(', ')}`)
         logger.info(`Email count: ${emails.length}`)
+        logger.info('To reset user password, run the following command: pnpm user --email "myEmail" --password "myPassword"')
     }
 
     async resetPassword(queryRunner: QueryRunner, email: string, password: string) {
