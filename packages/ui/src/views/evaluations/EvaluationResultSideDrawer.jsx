@@ -34,12 +34,6 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
         return ''
     }
 
-    const getNameAndType = (name) => {
-        // name would be in the form of Hello (Chatflow), return the name and type
-        const split = name.split(' (')
-        return { name: split[0], type: split[1].split(')')[0] }
-    }
-
     return (
         <SwipeableDrawer sx={{ zIndex: 2000 }} anchor='right' open={show} onClose={() => onClickFunction()} onOpen={onOpen}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ccc' }}>
@@ -94,15 +88,9 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                             }}
                                         >
                                             <Typography variant='overline' sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                                                {getNameAndType(dialogProps.evaluationChatflows[index]).name}
+                                                {dialogProps.evaluationChatflows[index]}
                                             </Typography>
-                                            <Typography variant='body2'>
-                                                <Chip
-                                                    label={getNameAndType(dialogProps.evaluationChatflows[index]).type}
-                                                    variant='outlined'
-                                                    size='small'
-                                                />
-                                            </Typography>
+
                                         </div>
                                         <Divider />
                                     </>

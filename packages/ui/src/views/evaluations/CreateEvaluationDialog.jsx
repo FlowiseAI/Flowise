@@ -53,23 +53,6 @@ import { evaluators as evaluatorsOptions } from '../evaluators/evaluatorConstant
 
 const steps = ['Datasets', 'Evaluators', 'LLM Graded Metrics']
 
-export const flowTypes = [
-    {
-        name: 'CHATFLOW',
-        label: 'Chatflow',
-        description: 'Regular Chatflow'
-    },
-    {
-        name: 'AGENTFLOW',
-        label: 'Agentflow (v2)',
-        description: 'Multi Agentflow'
-    },
-    {
-        name: 'ASSISTANTS',
-        label: 'Assistants',
-        description: 'Custom Assistants'
-    }
-]
 const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const theme = useTheme()
@@ -372,9 +355,10 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         for (let i = 0; i < data.length; i += 1) {
             const flow = data[i]
             flowNames.push({
-                label: flow.name + ' (' + type + ')',
+                label: flow.name,
                 name: flow.id,
-                type: type
+                type: type,
+                description: type
             })
         }
         return flowNames
@@ -385,9 +369,10 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         for (let i = 0; i < assistants.length; i += 1) {
             const assistant = assistants[i]
             assistantNames.push({
-                label: JSON.parse(assistant.details).name + ' (Custom Assistant)' || '',
+                label: JSON.parse(assistant.details).name || '',
                 name: assistant.id,
-                type: 'Custom Assistant'
+                type: 'Custom Assistant',
+                description: 'Custom Assistant'
             })
         }
         return assistantNames
@@ -538,18 +523,6 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                                     onChange={() => setDatasetAsOneConversation(!datasetAsOneConversation)}
                                 />
                             </Box>
-                            {/*<Box>*/}
-                            {/*    <Typography variant='overline'>*/}
-                            {/*        Category<span style={{ color: 'red' }}>&nbsp;*</span>*/}
-                            {/*    </Typography>*/}
-                            {/*    <Dropdown*/}
-                            {/*        name='eval_flow_type'*/}
-                            {/*        defaultOption='Select Flow Category'*/}
-                            {/*        options={flowTypes}*/}
-                            {/*        onSelect={(newValue) => onChangeFlowType(newValue)}*/}
-                            {/*        value={flowType}*/}
-                            {/*    />*/}
-                            {/*</Box>*/}
                             <Box>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                     <Typography variant='overline'>
