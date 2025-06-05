@@ -36,6 +36,8 @@ export default class user extends BaseCommand {
                 logger.info('Running listUserEmails')
                 await this.listUserEmails(queryRunner)
             }
+
+            logger.info('To reset your password, run the following command: pnpm user --email "myEmail" --password "myPassword"')
         } catch (error) {
             logger.error(error)
         } finally {
