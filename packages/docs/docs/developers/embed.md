@@ -70,8 +70,8 @@ You can change the pop up button properties, as well as the chat window:
 <script type="module">
     import Chatbot from 'https://cdn.jsdelivr.net/npm/aai-embed/dist/web.js'
     Chatbot.init({
-        chatflowid: '91e9c803-5169-4db9-8207-3c0915d71c5f',
-        apiHost: 'https://public.studio.theanswer.ai',
+        chatflowid: '91e9c803-1234-5a6b7-8207-3c0915d71c5f',
+        apiHost: 'https://prod.studio.theanswer.ai',
         chatflowConfig: {
             // topK: 2
         },
