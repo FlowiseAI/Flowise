@@ -8,7 +8,7 @@ info:
         url: https://theanswer.ai/support
         email: support@theanswer.ai
 servers:
-    - url: https://public.studio.theanswer.ai/api/v1
+    - url: https://prod.studio.theanswer.ai/api/v1
       description: Production server
     - url: http://localhost:4000/api/v1
       description: Local development server
