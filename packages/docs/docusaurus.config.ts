@@ -506,6 +506,11 @@ const config: Config = {
     themeConfig: {
         // Replace with your project's social card
         image: 'img/answerai-social-card.png',
+        colorMode: {
+            defaultMode: 'dark',
+            disableSwitch: false,
+            respectPrefersColorScheme: false
+        },
         navbar: {
             logo: {
                 alt: 'AnswerAI Logo',
@@ -555,7 +560,7 @@ const config: Config = {
                             label: 'Embed Chatbot'
                         },
                         {
-                            to: '/docs/api/prediction',
+                            to: '/docs/api/prediction/create-prediction',
                             label: 'Prediction API'
                         }
                     ]
