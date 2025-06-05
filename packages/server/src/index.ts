@@ -34,6 +34,7 @@ import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { Organization } from './enterprise/database/entities/organization.entity'
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
+import { handleStripeWebhook } from './enterprise/webhooks/stripe'
 
 declare global {
     namespace Express {
@@ -153,6 +154,9 @@ export class App {
     }
 
     async config() {
+        // Add Stripe webhook route BEFORE global JSON middleware to preserve raw body
+        this.app.post('/api/v1/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook)
+
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))

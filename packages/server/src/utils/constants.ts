@@ -39,6 +39,7 @@ export const WHITELIST_URLS = [
     '/api/v1/loginmethod',
     '/api/v1/pricing',
     '/api/v1/user/test',
+    '/api/v1/webhooks',
     AzureSSO.LOGIN_URI,
     AzureSSO.LOGOUT_URI,
     AzureSSO.CALLBACK_URI,
