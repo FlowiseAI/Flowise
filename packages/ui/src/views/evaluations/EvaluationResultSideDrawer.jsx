@@ -90,7 +90,6 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                             <Typography variant='overline' sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
                                                 {dialogProps.evaluationChatflows[index]}
                                             </Typography>
-
                                         </div>
                                         <Divider />
                                     </>
