@@ -908,8 +908,10 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const isTool = req.get('flowise-tool') === 'true'
     const isEvaluation: boolean = req.headers['X-Flowise-Evaluation'] || req.body.evaluation
     let evaluationRunId = ''
+    evaluationRunId = req.body.evaluationRunId
     if (isEvaluation && chatflow.type !== 'AGENTFLOW' && req.body.evaluationRunId) {
-        evaluationRunId = req.body.evaluationRunId
+        // this is needed for the collection of token metrics for non-agent flows,
+        // for agentflows the execution trace has the info needed
         const newEval = {
             evaluation: {
                 status: true,

@@ -1806,7 +1806,9 @@ export const executeAgentFlow = async ({
         leadEmail: incomingInput.leadEmail,
         executionId: newExecution.id
     }
-    await utilAddChatMessage(userMessage, appDataSource)
+    if (!evaluationRunId) {
+        await utilAddChatMessage(userMessage, appDataSource)
+    }
 
     const apiMessage: Omit<IChatMessage, 'createdDate'> = {
         id: apiMessageId,
@@ -1839,7 +1841,7 @@ export const executeAgentFlow = async ({
     if (lastNodeOutput?.humanInputAction && Object.keys(lastNodeOutput.humanInputAction).length)
         apiMessage.action = JSON.stringify(lastNodeOutput.humanInputAction)
 
-    const chatMessage = await utilAddChatMessage(apiMessage, appDataSource)
+    const chatMessage = evaluationRunId ? apiMessage : await utilAddChatMessage(apiMessage, appDataSource)
 
     logger.debug(`[server]: Finished running agentflow ${chatflowid}`)
 
@@ -1861,7 +1863,7 @@ export const executeAgentFlow = async ({
     result.question = incomingInput.question // return the question in the response, this is used when input text is empty but question is in audio format
     result.form = form
     result.chatId = chatId
-    result.chatMessageId = chatMessage?.id
+    result.chatMessageId = chatMessage?.id || uuidv4()
     result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
     result.executionId = newExecution.id
     result.agentFlowExecutedData = agentFlowExecutedData
