@@ -13,7 +13,8 @@ export default defineConfig(async ({ mode }) => {
             proxy = {
                 '^/api(/|$).*': {
                     target: `http://${serverHost}:${serverPort}`,
-                    changeOrigin: true
+                    changeOrigin: true,
+                    ws: true
                 }
             }
         }

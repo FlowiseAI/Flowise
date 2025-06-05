@@ -586,6 +586,9 @@ importers:
             '@types/uuid':
                 specifier: ^9.0.7
                 version: 9.0.8
+            '@types/ws':
+                specifier: ^8.5.10
+                version: 8.5.10
             async-mutex:
                 specifier: ^0.4.0
                 version: 0.4.1
@@ -700,6 +703,9 @@ importers:
             winston:
                 specifier: ^3.9.0
                 version: 3.12.0
+            ws:
+                specifier: ^8.18.0
+                version: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
         devDependencies:
             '@types/content-disposition':
                 specifier: 0.5.8
@@ -725,9 +731,6 @@ importers:
             concurrently:
                 specifier: ^7.1.0
                 version: 7.6.0
-            cross-env:
-                specifier: ^7.0.3
-                version: 7.0.3
             cypress:
                 specifier: ^13.13.0
                 version: 13.13.0
@@ -755,9 +758,6 @@ importers:
             tsc-watch:
                 specifier: ^6.0.4
                 version: 6.0.4(typescript@5.5.2)
-            tsconfig-paths:
-                specifier: ^4.2.0
-                version: 4.2.0
             typescript:
                 specifier: ^5.4.5
                 version: 5.5.2
@@ -15927,10 +15927,6 @@ packages:
     tsconfig-paths@3.15.0:
         resolution: { integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg== }
 
-    tsconfig-paths@4.2.0:
-        resolution: { integrity: sha512-NoZ4roiN7LnbKn9QqE1amc9DJfzvZXxF4xDavcOWt1BPkdx+m+0gJuPM+S0vCe7zTJMYUP0R8pO2XMr+Y8oLIg== }
-        engines: { node: '>=6' }
-
     tslib@1.14.1:
         resolution: { integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg== }
 
@@ -25273,7 +25269,7 @@ snapshots:
 
     '@types/ws@8.5.10':
         dependencies:
-            '@types/node': 20.11.26
+            '@types/node': 22.13.9
 
     '@types/yargs-parser@21.0.3': {}
 
@@ -37026,12 +37022,6 @@ snapshots:
     tsconfig-paths@3.15.0:
         dependencies:
             '@types/json5': 0.0.29
-            json5: 2.2.3
-            minimist: 1.2.8
-            strip-bom: 3.0.0
-
-    tsconfig-paths@4.2.0:
-        dependencies:
             json5: 2.2.3
             minimist: 1.2.8
             strip-bom: 3.0.0

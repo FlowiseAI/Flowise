@@ -28,6 +28,8 @@ import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import { WHITELIST_URLS } from './utils/constants'
 import 'global-agent/bootstrap'
+import { WebSocketService } from './utils/websocket'
+import { WebSocketManager } from './utils/WebSocketManager'
 
 declare global {
     namespace Express {
@@ -60,6 +62,7 @@ export class App {
     metricsProvider: IMetricsProvider
     queueManager: QueueManager
     redisSubscriber: RedisEventSubscriber
+    webSocketService: WebSocketService
 
     constructor() {
         this.app = express()
@@ -113,6 +116,9 @@ export class App {
                 this.redisSubscriber = new RedisEventSubscriber(this.sseStreamer)
                 await this.redisSubscriber.connect()
             }
+
+            // Initialize WebSocket Service
+            this.webSocketService = WebSocketService.getInstance()
 
             logger.info('📦 [server]: Data Source has been initialized!')
         } catch (error) {
@@ -290,19 +296,53 @@ export class App {
 
 let serverApp: App | undefined
 
+export const initWebSocketService = (server: any) => {
+    const webSocketService = WebSocketService.getInstance()
+    webSocketService.initialize(server)
+    WebSocketManager.getInstance().setWebSocketService(webSocketService)
+    return webSocketService
+}
+
 export async function start(): Promise<void> {
-    serverApp = new App()
+    try {
+        serverApp = new App()
+        const httpServer = http.createServer(serverApp.app)
 
-    const host = process.env.HOST
-    const port = parseInt(process.env.PORT || '', 10) || 3000
-    const server = http.createServer(serverApp.app)
+        // 初始化 WebSocket 服务并设置到 WebSocketManager
+        const webSocketService = initWebSocketService(httpServer)
 
-    await serverApp.initDatabase()
-    await serverApp.config()
+        // 将 WebSocket 服务添加到 app 实例中
+        serverApp.app.set('webSocketService', webSocketService)
+        serverApp.webSocketService = webSocketService
 
-    server.listen(port, host, () => {
-        logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)
-    })
+        // 添加 WebSocket 路由处理
+        serverApp.app.get('/api/v1/ws', (req, res) => {
+            res.status(426).send('Upgrade Required')
+        })
+
+        const host = process.env.HOST
+        const port = parseInt(process.env.PORT || '', 10) || 3000
+
+        await serverApp.initDatabase()
+        await serverApp.config()
+
+        httpServer.listen(port, host, () => {
+            logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)
+            logger.info('💬 [server]: WebSocket server is ready for connections')
+        })
+    } catch (error) {
+        logger.error(`Error: ${error}`)
+        process.exit(1)
+    }
+}
+
+// 这个函数仍然可以内部使用
+async function startServer() {
+    await start()
+}
+
+if (require.main === module) {
+    startServer()
 }
 
 export function getInstance(): App | undefined {

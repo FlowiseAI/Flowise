@@ -8,6 +8,7 @@ import chatflowsService from '../services/chatflows'
 import { getRunningExpressApp } from './getRunningExpressApp'
 import { Variable } from '../database/entities/Variable'
 import { getAPIOverrideConfig } from '../utils'
+import { WebSocketManager } from './WebSocketManager'
 
 interface IFlowExecutionResult extends ICommonObject {
     status: string
@@ -48,6 +49,7 @@ interface IFlowNode extends INode {
         innerNodes?: IFlowNode[]
         innerEdges?: IFlowEdge[]
     }
+    options?: any
 }
 
 interface IFlowEdge {
@@ -186,7 +188,9 @@ class FlowManager {
                     }
                 }
             }
-
+            if (node.options) {
+                nodeData.options = node.options
+            }
             // 执行节点初始化
             const result = await node.init(nodeData, nodeData.inputs)
             node.previousResult = result
@@ -601,6 +605,12 @@ export const buildNewflow = async (req: Request, _isInternal: boolean = false): 
                     } catch (error) {
                         logger.warn(`[FlowManager]: Failed to process inner data for Loop node ${node.id}:`, error)
                     }
+                }
+
+                const wsManager = WebSocketManager.getInstance()
+                nodeData.options = {
+                    chatflowid: chatflowId,
+                    wsManager: wsManager.getWebSocketService()
                 }
                 flowManager.addNode(nodeData as IFlowNode)
             } catch (error: any) {

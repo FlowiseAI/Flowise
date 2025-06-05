@@ -308,6 +308,7 @@ return true;`
         let iterationCount = 0
         let result
         let isSuccess = false
+        let debugHistory: any[] = []
 
         // 循环执行直到成功或达到最大迭代次数
         while (!isSuccess && iterationCount < MAX_ITERATIONS) {
@@ -315,6 +316,33 @@ return true;`
 
             // 执行节点链
             result = await this.executeNodeChain(executionChain, currentInput, options)
+
+            // 输出调试信息到网页
+            const debugInfo = {
+                iteration: iterationCount,
+                condition: successCondition,
+                input: currentInput,
+                output: result,
+                timestamp: new Date().toISOString()
+            }
+
+            // 添加到调试历史
+            debugHistory.push(debugInfo)
+
+            // 发送 WebSocket 消息
+            const wsManager = nodeData.options?.wsManager
+            if (wsManager && typeof wsManager.sendMessage === 'function' && nodeData.options?.chatflowid) {
+                try {
+                    wsManager.sendMessage(nodeData.options.chatflowid, {
+                        type: 'loopIteration',
+                        data: debugHistory
+                    })
+                } catch (error) {
+                    console.warn('Error sending WebSocket message:', error)
+                }
+            } else {
+                console.warn('WebSocket service not available, sendMessage not a function, or chatflowid missing')
+            }
 
             let variables: IVariable[] = []
             try {

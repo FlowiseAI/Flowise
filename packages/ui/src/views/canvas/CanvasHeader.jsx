@@ -199,48 +199,6 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         }
     }
 
-    const onAPIDialogClick = () => {
-        // If file type is file, isFormDataRequired = true
-        let isFormDataRequired = false
-        try {
-            const flowData = JSON.parse(chatflow.flowData)
-            const nodes = flowData.nodes
-            for (const node of nodes) {
-                if (node.data.inputParams.find((param) => param.type === 'file')) {
-                    isFormDataRequired = true
-                    break
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        // If sessionId memory, isSessionMemory = true
-        let isSessionMemory = false
-        try {
-            const flowData = JSON.parse(chatflow.flowData)
-            const nodes = flowData.nodes
-            for (const node of nodes) {
-                if (node.data.inputParams.find((param) => param.name === 'sessionId')) {
-                    isSessionMemory = true
-                    break
-                }
-            }
-        } catch (e) {
-            console.error(e)
-        }
-
-        setAPIDialogProps({
-            title: 'Embed in website or use as API',
-            chatflowid: chatflow.id,
-            chatflowApiKeyId: chatflow.apikeyid,
-            isFormDataRequired,
-            isSessionMemory,
-            isAgentCanvas
-        })
-        setAPIDialogOpen(true)
-    }
-
     const onSaveChatflowClick = () => {
         if (chatflow.id) handleSaveFlow(flowName)
         else setFlowDialogOpen(true)
@@ -340,6 +298,115 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             }
         }
     }, [chatflow, title, chatflowConfigurationDialogOpen])
+
+    useEffect(() => {
+        // 建立 WebSocket 连接
+        if (chatflow?.id) {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+            // 使用当前页面的 host 和 port
+            const wsUrl = `${protocol}//${window.location.host}/api/v1/ws?chatflowid=${chatflow.id}`
+            console.log('Attempting to connect WebSocket:', wsUrl)
+
+            let ws = null
+            let reconnectTimeout = null
+            let retryCount = 0
+            const maxRetries = 10
+            const initialRetryDelay = 1000
+            const maxRetryDelay = 10000
+
+            const getRetryDelay = () => {
+                // 指数退避策略
+                return Math.min(initialRetryDelay * Math.pow(2, retryCount), maxRetryDelay)
+            }
+
+            const clearReconnectTimeout = () => {
+                if (reconnectTimeout) {
+                    clearTimeout(reconnectTimeout)
+                    reconnectTimeout = null
+                }
+            }
+
+            const connect = () => {
+                try {
+                    clearReconnectTimeout()
+
+                    if (ws) {
+                        ws.close()
+                    }
+
+                    ws = new WebSocket(wsUrl)
+
+                    // 启用 ping 自动响应
+                    ws.onopen = () => {
+                        console.log('WebSocket connection established')
+                        retryCount = 0 // 重置重试计数
+                        // 发送一个测试消息
+                        ws.send(
+                            JSON.stringify({
+                                type: 'system',
+                                message: 'Client connected'
+                            })
+                        )
+                    }
+
+                    ws.onclose = (event) => {
+                        console.log('WebSocket connection closed:', event.code, event.reason)
+
+                        // 如果不是正常关闭且未达到最大重试次数，则尝试重连
+                        if (event.code !== 1000 && retryCount < maxRetries) {
+                            retryCount++
+                            const delay = getRetryDelay()
+                            console.log(`Retrying connection (${retryCount}/${maxRetries}) in ${delay}ms...`)
+                            reconnectTimeout = setTimeout(connect, delay)
+                        }
+                    }
+
+                    ws.onerror = (error) => {
+                        console.error('WebSocket connection error:', error)
+                    }
+
+                    ws.onmessage = (event) => {
+                        try {
+                            // 如果是字符串消息，尝试解析为 JSON
+                            if (typeof event.data === 'string') {
+                                const data = JSON.parse(event.data)
+                                console.log('Parsed WebSocket message:', data)
+                                // 处理接收到的消息
+                                if (data.type === 'loopIteration') {
+                                    // 处理循环迭代消息
+                                    console.log('Loop iteration update:', data.data)
+                                } else if (data.type === 'system') {
+                                    // 处理系统消息
+                                    console.log('System message:', data.message)
+                                }
+                            }
+                            // ping 消息会自动触发浏览器的 pong 响应，不需要我们手动处理
+                        } catch (error) {
+                            console.error('Error handling WebSocket message:', error)
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error creating WebSocket connection:', error)
+                    if (retryCount < maxRetries) {
+                        retryCount++
+                        const delay = getRetryDelay()
+                        console.log(`Retrying connection (${retryCount}/${maxRetries}) in ${delay}ms...`)
+                        reconnectTimeout = setTimeout(connect, delay)
+                    }
+                }
+            }
+
+            connect()
+
+            // 清理函数
+            return () => {
+                clearReconnectTimeout()
+                if (ws) {
+                    ws.close(1000, 'Component unmounting')
+                }
+            }
+        }
+    }, [chatflow?.id])
 
     return (
         <>
