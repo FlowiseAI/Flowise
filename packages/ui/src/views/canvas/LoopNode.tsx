@@ -100,7 +100,10 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
     const prevNodesRef = useRef<Node[]>([])
     const innerFlowId = useMemo(() => `loop-flow-${id}`, [id])
 
-    const { reactFlowInstance } = useContext(flowContext) as { reactFlowInstance: ReactFlowInstance | null }
+    const { reactFlowInstance, deleteNode } = useContext(flowContext) as {
+        reactFlowInstance: ReactFlowInstance | null
+        deleteNode: (id: string) => void
+    }
 
     // 修改状态名称以保持一致
     // 定义默认的输入值
@@ -259,38 +262,41 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
 
     // 保存内部节点到父节点的数据中
     useEffect(() => {
-        if (data) {
-            const updatedData = {
-                ...data,
-                innerNodes: nodes.map((node: Node) => ({
-                    ...node,
-                    data: {
-                        ...node.data,
-                        isInLoop: true,
-                        parentId: id,
-                        onNodesChange
-                    }
-                })),
-                innerEdges: edges
-            }
-
-            // 更新 store 中的数据
-            const currentNode = getNode(id)
-            if (currentNode) {
-                setFlowNodes((nds) =>
-                    nds.map((node) => {
-                        if (node.id === id) {
-                            return { ...node, data: updatedData }
+        //添加settimeout防止立即触发导致无法删除
+        setTimeout(() => {
+            if (data) {
+                const updatedData = {
+                    ...data,
+                    innerNodes: nodes.map((node: Node) => ({
+                        ...node,
+                        data: {
+                            ...node.data,
+                            isInLoop: true,
+                            parentId: id,
+                            onNodesChange
                         }
-                        return node
-                    })
-                )
-            }
+                    })),
+                    innerEdges: edges
+                }
 
-            // 直接更新 data 对象
-            Object.assign(data, updatedData)
-        }
-    }, [nodes, edges, id, getNode, setFlowNodes, onNodesChange])
+                // 更新 store 中的数据
+                const currentNode = getNode(id)
+                if (currentNode) {
+                    reactFlowInstance?.setNodes((nds) =>
+                        nds.map((node) => {
+                            if (node.id === id) {
+                                return { ...node, data: updatedData }
+                            }
+                            return node
+                        })
+                    )
+                }
+
+                // 直接更新 data 对象
+                Object.assign(data, updatedData)
+            }
+        }, 1)
+    }, [nodes, edges, id, getNode, setFlowNodes])
 
     const initNodes = () => {
         if (data?.innerNodes && data?.innerEdges) {
@@ -329,17 +335,15 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
 
     // 修改删除按钮的处理函数
     const handleDelete = useCallback(() => {
-        if (data.deleteNode) {
-            // 先清理内部状态
-            setNodes([])
-            setEdges([])
-            if (data) {
-                data.innerNodes = []
-                data.innerEdges = []
-            }
-            // 调用删除函数
-            data.deleteNode(id)
+        // 先清理内部状态
+        setNodes([])
+        setEdges([])
+        if (data) {
+            data.innerNodes = []
+            data.innerEdges = []
         }
+        // 调用删除函数
+        deleteNode(id)
     }, [data, id, setNodes, setEdges])
 
     // 确保 data 对象包含必要的属性

@@ -77,9 +77,8 @@ class DemoFunction_Utilities implements INode {
     }
 
     async init(nodeData: INodeData, input: string): Promise<any> {
-        let prevResult = nodeData.previousResult || null
+        let prevResult = nodeData.previousResult || nodeData.inputs || null
 
-        // console.log('DEBUG: prevResult', prevResult)
         // 从前一个节点获取结果，如果没有则使用输入值
         const rawInputValue = prevResult?.inputValue ?? prevResult?.inputValue ?? 1
         const operation = nodeData.inputs?.operation as string

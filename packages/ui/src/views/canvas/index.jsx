@@ -75,7 +75,6 @@ const Canvas = () => {
                         {...props}
                         data={{
                             ...props.data,
-                            deleteNode,
                             duplicateNode
                         }}
                     />
@@ -330,9 +329,11 @@ const Canvas = () => {
                         ...innerNode,
                         data: {
                             ...innerNode.data,
+                            category: 'Loop',
                             selected: false
                         }
                     }))
+                    nodeData.category = 'Loop'
                 }
 
                 node.data = {
@@ -344,16 +345,6 @@ const Canvas = () => {
 
             const rfInstanceObject = reactFlowInstance.toObject()
             rfInstanceObject.nodes = nodes
-
-            // 收集所有循环节点内部的边
-            const allInnerEdges = nodes
-                .filter((node) => node.type === 'loop')
-                .reduce((acc, loopNode) => {
-                    const innerEdges = loopNode.data.innerEdges || []
-                    return [...acc, ...innerEdges]
-                }, [])
-            // 合并主流程的边和所有循环节点内部的边
-            rfInstanceObject.edges = [...rfInstanceObject.edges, ...allInnerEdges]
 
             const flowData = JSON.stringify(rfInstanceObject)
 

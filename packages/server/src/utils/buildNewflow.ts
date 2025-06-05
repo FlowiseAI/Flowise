@@ -22,6 +22,10 @@ interface IFlowExecutionResult extends ICommonObject {
 
 interface IExtendedNodeData extends IBaseNodeData {
     inputs: Record<string, any>
+    flowData: {
+        innerNodes?: IFlowNode[]
+        innerEdges?: IFlowEdge[]
+    }
 }
 
 interface IFlowNode extends INode {
@@ -40,9 +44,14 @@ interface IFlowNode extends INode {
     inputs?: INodeParams[]
     output?: INodeOutputsValue[]
     init: (nodeData: IExtendedNodeData, input?: any) => Promise<any>
+    flowData?: {
+        innerNodes?: IFlowNode[]
+        innerEdges?: IFlowEdge[]
+    }
 }
 
 interface IFlowEdge {
+    id?: string
     source: string
     target: string
     sourceHandle?: string
@@ -83,55 +92,6 @@ class FlowManager {
             }
             this.nodeConnections.get(edge.source)?.push(edge.target)
         })
-    }
-
-    /**
-     * 获取节点的输入数据
-     */
-    private getNodeInputs(nodeId: string): Record<string, any> {
-        const inputs: Record<string, any> = {}
-
-        // 查找连接到当前节点的边
-        const incomingEdges = this.edges.filter((edge) => edge.target === nodeId)
-
-        for (const edge of incomingEdges) {
-            const sourceNode = this.nodes.get(edge.source)
-
-            if (sourceNode?.previousResult) {
-                // 如果源节点有结果，将其作为当前节点的输入
-                const sourceOutput = sourceNode.previousResult
-
-                // 处理目标句柄
-                if (edge.targetHandle) {
-                    // 解析目标句柄以获取参数名
-                    const handleParts = edge.targetHandle.split('_')
-                    const paramName = handleParts[handleParts.length - 1]
-
-                    if (paramName) {
-                        // 如果源节点的结果是对象且包含 result 属性，使用 result 值
-                        if (typeof sourceOutput === 'object' && 'result' in sourceOutput) {
-                            inputs[paramName] = sourceOutput.result
-                        } else if (typeof sourceOutput === 'object' && 'a' in sourceOutput) {
-                            // 特殊处理 StartFunction 的输出
-                            inputs[paramName] = sourceOutput.a
-                        } else {
-                            inputs[paramName] = sourceOutput
-                        }
-                    }
-                } else {
-                    // 如果没有指定目标句柄，使用默认参数名
-                    if (typeof sourceOutput === 'object' && 'result' in sourceOutput) {
-                        inputs['inputValue'] = sourceOutput.result
-                    } else if (typeof sourceOutput === 'object' && 'a' in sourceOutput) {
-                        inputs['inputValue'] = sourceOutput.a
-                    } else {
-                        inputs['inputValue'] = sourceOutput
-                    }
-                }
-            }
-        }
-
-        return inputs
     }
 
     /**
@@ -198,6 +158,13 @@ class FlowManager {
                     })
                 }
             } else {
+                nodeData.flowData = {}
+                if (node.flowData?.innerNodes) {
+                    nodeData.flowData.innerNodes = node.flowData.innerNodes
+                }
+                if (node.flowData?.innerEdges) {
+                    nodeData.flowData.innerEdges = node.flowData.innerEdges
+                }
                 // 获取从其他节点传入的数据
                 const nodeInputs = node.previousResult
                 nodeData.previousResult = nodeInputs
@@ -368,7 +335,11 @@ class FlowManager {
                     category: currentNode.category,
                     baseClasses: currentNode.baseClasses,
                     inputs: nodeInputs,
-                    outputs: nodeOutputs
+                    outputs: nodeOutputs,
+                    flowData: {
+                        innerNodes: currentNode.flowData?.innerNodes,
+                        innerEdges: currentNode.flowData?.innerEdges
+                    }
                 }
 
                 // 如果有前一个节点的结果，设置为当前节点的 previousResult
@@ -591,9 +562,46 @@ export const buildNewflow = async (req: Request, _isInternal: boolean = false): 
                     ...node.data,
                     id: node.id,
                     inputs: nodeInputs,
-                    init: nodeInstance.init.bind(nodeInstance)
+                    init: nodeInstance.init.bind(nodeInstance),
+                    flowData: node.data.flowData
                 }
 
+                // 如果是 Loop 节点，添加内部节点和边的数据
+                if (node.data.type === 'loop') {
+                    const innerNodes: IFlowNode[] = node.data.innerNodes || []
+                    const innerEdges: Array<IFlowEdge> = node.data.innerEdges || []
+
+                    try {
+                        // 确保内部节点和边被正确处理
+                        const processedInnerNodes = innerNodes.map((innerNode: IFlowNode) => ({
+                            ...innerNode,
+                            id: innerNode.id || uuidv4(),
+                            type: innerNode.type || 'unknown'
+                        }))
+
+                        const processedInnerEdges: IFlowEdge[] = []
+                        for (const edge of innerEdges) {
+                            processedInnerEdges.push({
+                                ...edge,
+                                id: edge.id || uuidv4()
+                            })
+                        }
+
+                        // 处理 Loop 节点的内部数据
+                        ;(nodeData as IExtendedNodeData & { flowData: NonNullable<IExtendedNodeData['flowData']> }).flowData =
+                            nodeData.flowData || {}
+                        nodeData.flowData!.innerNodes = processedInnerNodes
+                        nodeData.flowData!.innerEdges = processedInnerEdges
+
+                        // 更新节点输入数据
+                        nodeData.inputs = {
+                            ...nodeData.inputs,
+                            hasInnerFlow: true
+                        }
+                    } catch (error) {
+                        logger.warn(`[FlowManager]: Failed to process inner data for Loop node ${node.id}:`, error)
+                    }
+                }
                 flowManager.addNode(nodeData as IFlowNode)
             } catch (error: any) {
                 throw new InternalFlowiseError(
