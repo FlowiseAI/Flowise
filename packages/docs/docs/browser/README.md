@@ -15,7 +15,7 @@ The AnswerAgent Sidekick is a browser extension that integrates your AnswerAgent
 
 ### Installing on Google Chrome (Beta)
 
-1. **[Click here to download the beta](https://theanswer.ai/download-browser-extension)** (Chrome Store Coming Soon)
+1. **[Click here to download the beta](/sidekick-alpha-20250604.zip)** (Chrome Store Coming Soon)
 
 2. **Install as an unpacked extension:**
 
@@ -201,19 +201,17 @@ This is where the AnswerAgent Sidekick truly shines, by talking to the tools you
 Here are some of the tool types you can connect (with more always on the way!):
 
 -   **CRM:**
-    -   Salesforce (SFDC) `[Learn More](#)`
+    -   Salesforce (SFDC) [Learn More](/docs/sidekick-studio/chatflows/tools-mcp/salesforce-mcp)
 -   **Project Management & Collaboration:**
-    -   Jira `[Learn More](#)`
-    -   Notion `[Learn More](#)`
-    -   Confluence `[Learn More](#)`
+    -   Jira [Learn More](/docs/sidekick-studio/chatflows/tools-mcp/jira-mcp)
+    -   Confluence [Learn More](/docs/sidekick-studio/chatflows/tools-mcp/confluence-mcp)
 -   **Communication:**
-    -   Slack `[Learn More](#)`
+    -   Slack [Learn More](/docs/sidekick-studio/chatflows/tools-mcp/slack-mcp)
 -   **Data & Content Management:**
-    -   Airtable `[Learn More](#)`
-    -   PostgreSQL `[Learn More](#)`
-    -   Contentful `[Learn More](#)`
+    -   PostgreSQL [Learn More](/docs/sidekick-studio/chatflows/tools-mcp/postgresql-mcp)
+    -   Contentful [Learn More](/docs/sidekick-studio/chatflows/tools-mcp/contentful-mcp)
 -   **Development:**
-    -   GitHub `[Learn More](#)`
+    -   GitHub [Learn More](/docs/sidekick-studio/chatflows/tools-mcp/github-mcp)
 
 And many more! The setup for each integration might vary slightly, but generally involves authorizing the Sidekick to access your tool's data (securely, of course!).
 

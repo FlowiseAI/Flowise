@@ -8,6 +8,15 @@
 .docusaurus
 .cache-loader
 
+# Generated API documentation (auto-generated from OpenAPI specs)
+# Keep the source OpenAPI specs in openapi/ but ignore the generated docs
+docs/api/
+static/api/
+
+# Track manually written API overview files
+!docs/api/index.mdx
+!docs/api/full-api-spec.mdx
+
 # Misc
 .DS_Store
 .env.local

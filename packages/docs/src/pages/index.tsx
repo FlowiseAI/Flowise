@@ -97,10 +97,10 @@ function HomepageHeader() {
                     <p>Design, deploy, and manage your AI agent workforce in hours—not months.</p>
                 </div>
                 <div className={styles.heroCTAs}>
-                    <a href='/signup' className={styles.ctaButton}>
+                    <a href='https://studio.theanswer.ai' className={styles.ctaButton}>
                         Sign Up
                     </a>
-                    <a href='/browser-extension' className={styles.ctaButton}>
+                    <a href='/sidekick-alpha-20250604.zip' className={styles.ctaButton}>
                         Download Browser Extension
                     </a>
                 </div>
