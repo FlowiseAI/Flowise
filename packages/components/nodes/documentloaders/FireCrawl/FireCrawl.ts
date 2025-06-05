@@ -184,7 +184,11 @@ class FirecrawlApp {
         }
 
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/scrape', validParams, headers)
+            const parameters = {
+                ...validParams,
+                integration: 'flowise'
+            }
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/scrape', parameters, headers)
             if (response.status === 200) {
                 const responseData = response.data
                 if (responseData.success) {
@@ -282,7 +286,11 @@ class FirecrawlApp {
         }
 
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/crawl', validParams, headers)
+            const parameters = {
+                ...validParams,
+                integration: 'flowise'
+            }
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/crawl', parameters, headers)
             if (response.status === 200) {
                 const crawlResponse = response.data as CrawlResponse
                 if (!crawlResponse.success) {
@@ -390,7 +398,11 @@ class FirecrawlApp {
         }
 
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/extract', validParams, headers)
+            const parameters = {
+                ...validParams,
+                integration: 'flowise'
+            }
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/extract', parameters, headers)
             if (response.status === 200) {
                 const extractResponse = response.data as ExtractResponse
                 if (waitUntilDone) {
@@ -425,7 +437,11 @@ class FirecrawlApp {
         })
 
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/search', validParams, headers)
+            const parameters = {
+                ...validParams,
+                integration: 'flowise'
+            }
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/search', parameters, headers)
             if (response.status === 200) {
                 const searchResponse = response.data as SearchResponse
                 if (!searchResponse.success) {
@@ -445,14 +461,13 @@ class FirecrawlApp {
         return {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${this.apiKey}`,
-            'X-Origin': 'flowise',
-            'X-Origin-Type': 'integration',
             ...(idempotencyKey ? { 'x-idempotency-key': idempotencyKey } : {})
-        } as AxiosRequestHeaders & { 'X-Origin': string; 'X-Origin-Type': string; 'x-idempotency-key'?: string }
+        } as AxiosRequestHeaders & { 'x-idempotency-key'?: string }
     }
 
-    private postRequest(url: string, data: Params, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
-        return axios.post(url, data, { headers })
+    private async postRequest(url: string, data: Params, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
+        const result = await axios.post(url, data, { headers })
+        return result
     }
 
     private getRequest(url: string, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
