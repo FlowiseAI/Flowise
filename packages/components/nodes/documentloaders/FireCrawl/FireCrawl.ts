@@ -704,7 +704,7 @@ class FireCrawl_DocumentLoaders implements INode {
         this.name = 'fireCrawl'
         this.type = 'Document'
         this.icon = 'firecrawl.png'
-        this.version = 3.0
+        this.version = 4.0
         this.category = 'Document Loaders'
         this.description = 'Load data from URL using FireCrawl'
         this.baseClasses = [this.type]
@@ -722,15 +722,7 @@ class FireCrawl_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'URLs',
-                name: 'url',
-                type: 'string',
-                description: 'URL to be crawled/scraped/extracted',
-                placeholder: 'https://docs.flowiseai.com',
-                optional: true
-            },
-            {
-                label: 'Crawler type',
+                label: 'Type',
                 type: 'options',
                 name: 'crawlerType',
                 options: [
@@ -758,128 +750,169 @@ class FireCrawl_DocumentLoaders implements INode {
                 default: 'crawl'
             },
             {
+                label: 'URLs',
+                name: 'url',
+                type: 'string',
+                description: 'URL to be crawled/scraped/extracted',
+                placeholder: 'https://docs.flowiseai.com',
+                optional: true,
+                show: {
+                    crawlerType: ['crawl', 'scrape', 'extract']
+                }
+            },
+            {
                 // includeTags
-                label: '[Scrape] Include Tags',
+                label: 'Include Tags',
                 name: 'includeTags',
                 type: 'string',
                 description: 'Tags to include in the output. Use comma to separate multiple tags.',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['scrape']
+                }
             },
             {
                 // excludeTags
-                label: '[Scrape] Exclude Tags',
+                label: 'Exclude Tags',
                 name: 'excludeTags',
                 type: 'string',
                 description: 'Tags to exclude from the output. Use comma to separate multiple tags.',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['scrape']
+                }
             },
             {
                 // onlyMainContent
-                label: '[Scrape] Only Main Content',
+                label: 'Only Main Content',
                 name: 'onlyMainContent',
                 type: 'boolean',
                 description: 'Extract only the main content of the page',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['scrape']
+                }
             },
             {
                 // limit
-                label: '[Crawl] Limit',
+                label: 'Limit',
                 name: 'limit',
                 type: 'string',
                 description: 'Maximum number of pages to crawl',
                 optional: true,
                 additionalParams: true,
-                default: '10000'
+                default: '10000',
+                show: {
+                    crawlerType: ['crawl']
+                }
             },
             {
-                label: '[Crawl] Include Paths',
+                label: 'Include Paths',
                 name: 'includePaths',
                 type: 'string',
                 description:
                     'URL pathname regex patterns that include matching URLs in the crawl. Only the paths that match the specified patterns will be included in the response.',
                 placeholder: `blog/.*, news/.*`,
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['crawl']
+                }
             },
             {
-                label: '[Crawl] Exclude Paths',
+                label: 'Exclude Paths',
                 name: 'excludePaths',
                 type: 'string',
                 description: 'URL pathname regex patterns that exclude matching URLs from the crawl.',
                 placeholder: `blog/.*, news/.*`,
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['crawl']
+                }
             },
             {
-                label: '[Extract] Schema',
+                label: 'Schema',
                 name: 'extractSchema',
                 type: 'json',
                 description: 'JSON schema for data extraction',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['extract']
+                }
             },
             {
-                label: '[Extract] Prompt',
+                label: 'Prompt',
                 name: 'extractPrompt',
                 type: 'string',
                 description: 'Prompt for data extraction',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['extract']
+                }
             },
             {
-                label: '[Extract] Job ID',
-                name: 'extractJobId',
-                type: 'string',
-                description: 'ID of the extract job',
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: '[Search] Query',
+                label: 'Query',
                 name: 'searchQuery',
                 type: 'string',
                 description: 'Search query to find relevant content',
                 optional: true,
-                additionalParams: true
+                show: {
+                    crawlerType: ['search']
+                }
             },
             {
-                label: '[Search] Limit',
+                label: 'Limit',
                 name: 'searchLimit',
                 type: 'string',
                 description: 'Maximum number of results to return',
                 optional: true,
                 additionalParams: true,
-                default: '5'
+                default: '5',
+                show: {
+                    crawlerType: ['search']
+                }
             },
             {
-                label: '[Search] Language',
+                label: 'Language',
                 name: 'searchLang',
                 type: 'string',
                 description: 'Language code for search results (e.g., en, es, fr)',
                 optional: true,
                 additionalParams: true,
-                default: 'en'
+                default: 'en',
+                show: {
+                    crawlerType: ['search']
+                }
             },
             {
-                label: '[Search] Country',
+                label: 'Country',
                 name: 'searchCountry',
                 type: 'string',
                 description: 'Country code for search results (e.g., us, uk, ca)',
                 optional: true,
                 additionalParams: true,
-                default: 'us'
+                default: 'us',
+                show: {
+                    crawlerType: ['search']
+                }
             },
             {
-                label: '[Search] Timeout',
+                label: 'Timeout',
                 name: 'searchTimeout',
                 type: 'number',
                 description: 'Timeout in milliseconds for search operation',
                 optional: true,
                 additionalParams: true,
-                default: 60000
+                default: 60000,
+                show: {
+                    crawlerType: ['search']
+                }
             }
         ]
         this.outputs = [
