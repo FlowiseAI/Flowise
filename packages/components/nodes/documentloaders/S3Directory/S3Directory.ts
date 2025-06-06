@@ -19,9 +19,9 @@ import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { TextSplitter } from 'langchain/text_splitter'
-
 import { CSVLoader } from '../Csv/CsvLoader'
-
+import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
+import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
 class S3_DocumentLoaders implements INode {
     label: string
     name: string
@@ -240,7 +240,13 @@ class S3_DocumentLoaders implements INode {
                     '.json': (path) => new JSONLoader(path),
                     '.txt': (path) => new TextLoader(path),
                     '.csv': (path) => new CSVLoader(path),
+                    '.xls': (path) => new LoadOfSheet(path),
+                    '.xlsx': (path) => new LoadOfSheet(path),
+                    '.xlsm': (path) => new LoadOfSheet(path),
+                    '.xlsb': (path) => new LoadOfSheet(path),
                     '.docx': (path) => new DocxLoader(path),
+                    '.ppt': (path) => new PowerpointLoader(path),
+                    '.pptx': (path) => new PowerpointLoader(path),
                     '.pdf': (path) =>
                         new PDFLoader(path, {
                             splitPages: pdfUsage !== 'perFile',

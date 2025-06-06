@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { updateFlowState } from '../utils'
 import { Tool } from '@langchain/core/tools'
-import { ARTIFACTS_PREFIX } from '../../../src/agents'
+import { ARTIFACTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import zodToJsonSchema from 'zod-to-json-schema'
 
 interface IToolInputArgs {
@@ -268,6 +268,17 @@ class Tool_Agentflow implements INode {
                 }
             }
 
+            let toolInput
+            if (typeof toolOutput === 'string' && toolOutput.includes(TOOL_ARGS_PREFIX)) {
+                const [output, args] = toolOutput.split(TOOL_ARGS_PREFIX)
+                toolOutput = output
+                try {
+                    toolInput = JSON.parse(args)
+                } catch (e) {
+                    console.error('Error parsing tool input from tool:', e)
+                }
+            }
+
             if (typeof toolOutput === 'object') {
                 toolOutput = JSON.stringify(toolOutput, null, 2)
             }
@@ -290,7 +301,7 @@ class Tool_Agentflow implements INode {
                 id: nodeData.id,
                 name: this.name,
                 input: {
-                    toolInputArgs: toolInputArgs,
+                    toolInputArgs: toolInput ?? toolInputArgs,
                     selectedTool: selectedTool
                 },
                 output: {

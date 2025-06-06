@@ -7,6 +7,8 @@ import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { BaseDocumentLoader } from 'langchain/document_loaders/base'
+import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
+import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
 import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from '../../../src/storageUtils'
 import { handleEscapeCharacters, mapMimeTypeToExt } from '../../../src/utils'
@@ -213,10 +215,14 @@ class File_DocumentLoaders implements INode {
             jsonl: (blob) => new JSONLinesLoader(blob, '/' + pointerName.trim()),
             txt: (blob) => new TextLoader(blob),
             csv: (blob) => new CSVLoader(blob),
-            xls: (blob) => new CSVLoader(blob),
-            xlsx: (blob) => new CSVLoader(blob),
+            xls: (blob) => new LoadOfSheet(blob),
+            xlsx: (blob) => new LoadOfSheet(blob),
+            xlsm: (blob) => new LoadOfSheet(blob),
+            xlsb: (blob) => new LoadOfSheet(blob),
             docx: (blob) => new DocxLoader(blob),
             doc: (blob) => new DocxLoader(blob),
+            ppt: (blob) => new PowerpointLoader(blob),
+            pptx: (blob) => new PowerpointLoader(blob),
             pdf: (blob) =>
                 pdfUsage === 'perFile'
                     ? // @ts-ignore
