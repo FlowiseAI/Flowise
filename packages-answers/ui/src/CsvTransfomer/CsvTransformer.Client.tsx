@@ -41,7 +41,7 @@ const CsvTransformer = () => {
     useEffect(() => {
         const fetchChatflows = async () => {
             const { data } = await chatflowsApi.getAllChatflows()
-            setChatflows((data ?? []).filter((chatflow: any) => chatflow.category === 'csv'))
+            setChatflows((data ?? []).filter((chatflow: any) => chatflow.category?.toLowerCase()?.split(';')?.includes('csv')))
         }
         fetchChatflows()
     }, [])
