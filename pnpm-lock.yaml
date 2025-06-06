@@ -726,7 +726,7 @@ importers:
                 version: 6.9.15
             openai:
                 specifier: 4.96.0
-                version: 4.96.0(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)
+                version: 4.96.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)
             passport:
                 specifier: ^0.7.0
                 version: 0.7.0
@@ -1067,6 +1067,9 @@ importers:
             remark-math:
                 specifier: ^5.1.1
                 version: 5.1.1
+            showdown:
+                specifier: ^2.1.0
+                version: 2.1.0
             tippy.js:
                 specifier: ^6.3.7
                 version: 6.3.7
@@ -16119,6 +16122,10 @@ packages:
     shimmer@1.2.1:
         resolution: { integrity: sha512-sQTKC1Re/rM6XyFM6fIAGHRPVGvyXfgzIDvzoq608vM+jeyVD0Tu1E6Np0Kc2zAIFWIj963V2800iF/9LPieQw== }
 
+    showdown@2.1.0:
+        resolution: { integrity: sha512-/6NVYu4U819R2pUIk79n67SYgJHWCce0a5xTP979WbNp0FL9MN1I1QK662IDU1b6JzKTvmhgI7T7JYIxBi3kMQ== }
+        hasBin: true
+
     shx@0.3.4:
         resolution: { integrity: sha512-N6A9MLVqjxZYcVn8hLmtneQWIJtp8IKzMP4eMnx+nqkvXoqinUPCbUFLp2UcWTEIUONhlk0ewxr/jaVGlc+J+g== }
         engines: { node: '>=6' }
@@ -21653,7 +21660,7 @@ snapshots:
             dotenv: 16.4.5
             openai: 4.96.0(encoding@0.1.13)(ws@8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)
             sharp: 0.33.5
-            ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+            ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
             zod: 3.22.4
             zod-to-json-schema: 3.24.1(zod@3.22.4)
         transitivePeerDependencies:
@@ -22402,7 +22409,7 @@ snapshots:
     '@google/genai@0.7.0(bufferutil@4.0.8)(encoding@0.1.13)(utf-8-validate@6.0.4)':
         dependencies:
             google-auth-library: 9.15.1(encoding@0.1.13)
-            ws: 8.18.0(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+            ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
         transitivePeerDependencies:
             - bufferutil
             - encoding
@@ -36019,6 +36026,21 @@ snapshots:
         transitivePeerDependencies:
             - encoding
 
+    openai@4.96.0(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4):
+        dependencies:
+            '@types/node': 18.19.23
+            '@types/node-fetch': 2.6.12
+            abort-controller: 3.0.0
+            agentkeepalive: 4.5.0
+            form-data-encoder: 1.7.2
+            formdata-node: 4.4.1
+            node-fetch: 2.7.0(encoding@0.1.13)
+        optionalDependencies:
+            ws: 8.18.2(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+            zod: 3.22.4
+        transitivePeerDependencies:
+            - encoding
+
     openapi-types@12.1.3: {}
 
     openapi-typescript-fetch@1.1.3: {}
@@ -38733,6 +38755,10 @@ snapshots:
             rechoir: 0.6.2
 
     shimmer@1.2.1: {}
+
+    showdown@2.1.0:
+        dependencies:
+            commander: 9.5.0
 
     shx@0.3.4:
         dependencies:
