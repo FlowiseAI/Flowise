@@ -1,6 +1,6 @@
 import { Command, Flags } from '@oclif/core'
-import path from 'path'
 import dotenv from 'dotenv'
+import path from 'path'
 import logger from '../utils/logger'
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true })
@@ -120,7 +120,7 @@ export abstract class BaseCommand extends Command {
             logger.error('unhandledRejection: ', err)
         })
 
-        const { flags } = await this.parse(BaseCommand)
+        const { flags } = await this.parse(this.constructor as any)
         if (flags.PORT) process.env.PORT = flags.PORT
         if (flags.CORS_ORIGINS) process.env.CORS_ORIGINS = flags.CORS_ORIGINS
         if (flags.IFRAME_ORIGINS) process.env.IFRAME_ORIGINS = flags.IFRAME_ORIGINS
