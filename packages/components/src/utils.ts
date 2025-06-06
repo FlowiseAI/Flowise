@@ -1217,6 +1217,35 @@ export const handleDocumentLoaderDocuments = async (loader: DocumentLoader, text
 }
 
 /**
+ * Normalize special characters in key to be used in vector store
+ * @param str - Key to normalize
+ * @returns Normalized key
+ */
+export const normalizeSpecialChars = (str: string) => {
+    return str.replace(/[^a-zA-Z0-9_]/g, '_')
+}
+
+/**
+ * recursively normalize object keys
+ * @param data - Object to normalize
+ * @returns Normalized object
+ */
+export const normalizeKeysRecursively = (data: any): any => {
+    if (Array.isArray(data)) {
+        return data.map(normalizeKeysRecursively)
+    }
+
+    if (data !== null && typeof data === 'object') {
+        return Object.entries(data).reduce((acc, [key, value]) => {
+            const newKey = normalizeSpecialChars(key)
+            acc[newKey] = normalizeKeysRecursively(value)
+            return acc
+        }, {} as Record<string, any>)
+    }
+    return data
+}
+
+/**
  * Check if OAuth2 token is expired and refresh if needed
  * @param {string} credentialId
  * @param {ICommonObject} credentialData
