@@ -70,15 +70,8 @@ export class MCPToolkit extends BaseToolkit {
                             headers: this.serverParams.headers
                         },
                         eventSourceInit: {
-                            // Reference: https://github.com/modelcontextprotocol/typescript-sdk/issues/118
-                            async fetch(input: Request | URL | string, init?: RequestInit) {
-                                const headers = new Headers(init?.headers || {})
-                                Object.entries(this.serverParams.headers).forEach(([key, value]) => {
-                                    headers.set(key, value as string)
-                                })
-                                return fetch(input, { ...init, headers })
-                            }
-                        } as any
+                            fetch: (url, init) => fetch(url, { ...init, headers: this.serverParams.headers })
+                        }
                     })
                 } else {
                     transport = new SSEClientTransport(baseUrl)
