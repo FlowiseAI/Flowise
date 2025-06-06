@@ -18,7 +18,7 @@ export class Execution implements IExecution {
     agentflowId: string
 
     @Index()
-    @Column({ type: 'uuid' })
+    @Column({ type: 'varchar' })
     sessionId: string
 
     @Column({ nullable: true, type: 'text' })
@@ -41,4 +41,7 @@ export class Execution implements IExecution {
     @ManyToOne(() => ChatFlow)
     @JoinColumn({ name: 'agentflowId' })
     agentflow: ChatFlow
+
+    @Column({ nullable: true, type: 'text' })
+    workspaceId?: string
 }

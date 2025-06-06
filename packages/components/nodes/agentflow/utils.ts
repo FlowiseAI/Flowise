@@ -18,7 +18,7 @@ export const addImagesToMessages = async (
         for (const upload of imageUploads) {
             let bf = upload.data
             if (upload.type == 'stored-file') {
-                const contents = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
+                const contents = await getFileFromStorage(upload.name, options.orgId, options.chatflowid, options.chatId)
                 // as the image is stored in the server, read the file and convert it to base64
                 bf = 'data:' + upload.mime + ';base64,' + contents.toString('base64')
 
@@ -90,7 +90,7 @@ export const processMessagesWithImages = async (
                     hasImageReferences = true
                     try {
                         // Get file contents from storage
-                        const contents = await getFileFromStorage(item.name, options.chatflowid, options.chatId)
+                        const contents = await getFileFromStorage(item.name, options.orgId, options.chatflowid, options.chatId)
 
                         // Create base64 data URL
                         const base64Data = 'data:' + item.mime + ';base64,' + contents.toString('base64')
@@ -319,7 +319,7 @@ export const getPastChatHistoryImageMessages = async (
                 const imageContents: MessageContentImageUrl[] = []
                 for (const upload of uploads) {
                     if (upload.type === 'stored-file' && upload.mime.startsWith('image/')) {
-                        const fileData = await getFileFromStorage(upload.name, options.chatflowid, options.chatId)
+                        const fileData = await getFileFromStorage(upload.name, options.orgId, options.chatflowid, options.chatId)
                         // as the image is stored in the server, read the file and convert it to base64
                         const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
 

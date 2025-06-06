@@ -21,7 +21,7 @@ class HTTP_Agentflow implements INode {
     constructor() {
         this.label = 'HTTP'
         this.name = 'httpAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'HTTP'
         this.category = 'Agent Flows'
         this.description = 'Send a HTTP request'
@@ -72,6 +72,7 @@ class HTTP_Agentflow implements INode {
                 label: 'Headers',
                 name: 'headers',
                 type: 'array',
+                acceptVariable: true,
                 array: [
                     {
                         label: 'Key',
@@ -83,7 +84,8 @@ class HTTP_Agentflow implements INode {
                         label: 'Value',
                         name: 'value',
                         type: 'string',
-                        default: ''
+                        default: '',
+                        acceptVariable: true
                     }
                 ],
                 optional: true
@@ -92,6 +94,7 @@ class HTTP_Agentflow implements INode {
                 label: 'Query Params',
                 name: 'queryParams',
                 type: 'array',
+                acceptVariable: true,
                 array: [
                     {
                         label: 'Key',
@@ -103,7 +106,8 @@ class HTTP_Agentflow implements INode {
                         label: 'Value',
                         name: 'value',
                         type: 'string',
-                        default: ''
+                        default: '',
+                        acceptVariable: true
                     }
                 ],
                 optional: true
@@ -147,6 +151,7 @@ class HTTP_Agentflow implements INode {
                 label: 'Body',
                 name: 'body',
                 type: 'array',
+                acceptVariable: true,
                 show: {
                     bodyType: ['xWwwFormUrlencoded', 'formData']
                 },
@@ -161,7 +166,8 @@ class HTTP_Agentflow implements INode {
                         label: 'Value',
                         name: 'value',
                         type: 'string',
-                        default: ''
+                        default: '',
+                        acceptVariable: true
                     }
                 ],
                 optional: true
@@ -220,14 +226,14 @@ class HTTP_Agentflow implements INode {
             // Add credentials if provided
             const credentialData = await getCredentialData(nodeData.credential ?? '', options)
             if (credentialData && Object.keys(credentialData).length !== 0) {
-                const basicAuthUsername = getCredentialParam('username', credentialData, nodeData)
-                const basicAuthPassword = getCredentialParam('password', credentialData, nodeData)
+                const basicAuthUsername = getCredentialParam('basicAuthUsername', credentialData, nodeData)
+                const basicAuthPassword = getCredentialParam('basicAuthPassword', credentialData, nodeData)
                 const bearerToken = getCredentialParam('token', credentialData, nodeData)
                 const apiKeyName = getCredentialParam('key', credentialData, nodeData)
                 const apiKeyValue = getCredentialParam('value', credentialData, nodeData)
 
                 // Determine which type of auth to use based on available credentials
-                if (basicAuthUsername && basicAuthPassword) {
+                if (basicAuthUsername || basicAuthPassword) {
                     // Basic Auth
                     const auth = Buffer.from(`${basicAuthUsername}:${basicAuthPassword}`).toString('base64')
                     requestHeaders['Authorization'] = `Basic ${auth}`

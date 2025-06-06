@@ -13,7 +13,11 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                         process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
                             ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
                             : undefined
-                }
+                },
+                pingInterval:
+                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                        : undefined
             })
         } else {
             this.redisPublisher = createClient({
@@ -30,7 +34,11 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                         process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
                             ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
                             : undefined
-                }
+                },
+                pingInterval:
+                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                        : undefined
             })
         }
     }

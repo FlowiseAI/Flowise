@@ -31,12 +31,6 @@
     npx flowise start
     ```
 
-    使用用戶名和密碼
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
-    ```
-
 3. 打開 [http://localhost:3000](http://localhost:3000)
 
 ## 🐳 Docker
@@ -138,15 +132,6 @@ Flowise 在單個 mono 存儲庫中有 3 個不同的模塊。
 
     任何代碼更改都會自動重新加載應用程序 [http://localhost:8080](http://localhost:8080)
 
-## 🔒 認證
-
-要啟用應用級別的身份驗證，請在 `packages/server` 中的 `.env` 文件中添加 `FLOWISE_USERNAME` 和 `FLOWISE_PASSWORD`：
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
-
 ## 🌱 環境變量
 
 Flowise 支持不同的環境變量來配置您的實例。您可以在 `packages/server` 文件夾中的 `.env` 文件中指定以下變量。閱讀 [更多](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
@@ -209,9 +194,9 @@ Flowise 支持不同的環境變量來配置您的實例。您可以在 `package
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-請參閱 [貢獻指南](CONTRIBUTING.md)。如果您有任何問題或問題，請通過 [Discord](https://discord.gg/jbaHfsRVBW) 與我們聯繫。
+請參閱 [貢獻指南](../CONTRIBUTING.md)。如果您有任何問題或問題，請通過 [Discord](https://discord.gg/jbaHfsRVBW) 與我們聯繫。
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 許可證
 
-此存儲庫中的源代碼根據 [Apache 許可證版本 2.0](LICENSE.md) 提供。
+此存儲庫中的源代碼根據 [Apache 許可證版本 2.0](../LICENSE.md) 提供。

@@ -1,6 +1,6 @@
 {
     "name": "flowise",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "private": true,
     "homepage": "https://flowiseai.com",
     "workspaces": [
@@ -20,6 +20,7 @@
         "start-worker": "run-script-os",
         "start-worker:windows": "cd packages/server/bin && run worker",
         "start-worker:default": "cd packages/server/bin && ./run worker",
+        "test": "turbo run test",
         "clean": "pnpm --filter \"./packages/**\" clean",
         "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
