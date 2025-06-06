@@ -3,6 +3,7 @@ import { Handle, Position, useUpdateNodeInternals } from 'reactflow'
 import { useEffect, useRef, useState, useContext } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { cloneDeep } from 'lodash'
+import showdown from 'showdown'
 
 // material-ui
 import { useTheme, styled } from '@mui/material/styles'
@@ -96,6 +97,13 @@ const StyledPopper = styled(Popper)({
             margin: 10
         }
     }
+})
+
+const markdownConverter = new showdown.Converter({
+    simplifiedAutoLink: true,
+    strikethrough: true,
+    tables: true,
+    tasklists: true
 })
 
 // ===========================|| NodeInputHandler ||=========================== //
@@ -1389,7 +1397,12 @@ const NodeInputHandler = ({
                 onCancel={() => setPromptGeneratorDialogOpen(false)}
                 onConfirm={(generatedInstruction) => {
                     try {
-                        data.inputs[inputParam.name] = generatedInstruction
+                        if (inputParam?.acceptVariable && window.location.href.includes('v2/agentcanvas')) {
+                            const htmlContent = markdownConverter.makeHtml(generatedInstruction)
+                            data.inputs[inputParam.name] = htmlContent
+                        } else {
+                            data.inputs[inputParam.name] = generatedInstruction
+                        }
                         setPromptGeneratorDialogOpen(false)
                     } catch (error) {
                         enqueueSnackbar({

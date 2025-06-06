@@ -67,6 +67,29 @@ interface ExtractResponse {
     data?: Record<string, any>
 }
 
+interface SearchResult {
+    url: string
+    title: string
+    description: string
+}
+
+interface SearchResponse {
+    success: boolean
+    data?: SearchResult[]
+    warning?: string
+}
+
+interface SearchRequest {
+    query: string
+    limit?: number
+    tbs?: string
+    lang?: string
+    country?: string
+    location?: string
+    timeout?: number
+    ignoreInvalidURLs?: boolean
+}
+
 interface Params {
     [key: string]: any
     extractorOptions?: {
@@ -161,7 +184,11 @@ class FirecrawlApp {
         }
 
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/scrape', validParams, headers)
+            const parameters = {
+                ...validParams,
+                integration: 'flowise'
+            }
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/scrape', parameters, headers)
             if (response.status === 200) {
                 const responseData = response.data
                 if (responseData.success) {
@@ -259,7 +286,11 @@ class FirecrawlApp {
         }
 
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/crawl', validParams, headers)
+            const parameters = {
+                ...validParams,
+                integration: 'flowise'
+            }
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/crawl', parameters, headers)
             if (response.status === 200) {
                 const crawlResponse = response.data as CrawlResponse
                 if (!crawlResponse.success) {
@@ -367,7 +398,11 @@ class FirecrawlApp {
         }
 
         try {
-            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/extract', validParams, headers)
+            const parameters = {
+                ...validParams,
+                integration: 'flowise'
+            }
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/extract', parameters, headers)
             if (response.status === 200) {
                 const extractResponse = response.data as ExtractResponse
                 if (waitUntilDone) {
@@ -384,18 +419,55 @@ class FirecrawlApp {
         return { success: false, id: '', url: '' }
     }
 
+    async search(request: SearchRequest): Promise<SearchResponse> {
+        const headers = this.prepareHeaders()
+
+        // Create a clean payload with only valid parameters
+        const validParams: any = {
+            query: request.query
+        }
+
+        // Add optional parameters if they exist and are not empty
+        const validSearchParams = ['limit', 'tbs', 'lang', 'country', 'location', 'timeout', 'ignoreInvalidURLs'] as const
+
+        validSearchParams.forEach((param) => {
+            if (request[param] !== undefined && request[param] !== null) {
+                validParams[param] = request[param]
+            }
+        })
+
+        try {
+            const parameters = {
+                ...validParams,
+                integration: 'flowise'
+            }
+            const response: AxiosResponse = await this.postRequest(this.apiUrl + '/v1/search', parameters, headers)
+            if (response.status === 200) {
+                const searchResponse = response.data as SearchResponse
+                if (!searchResponse.success) {
+                    throw new Error(`Search request failed: ${searchResponse.warning || 'Unknown error'}`)
+                }
+                return searchResponse
+            } else {
+                this.handleError(response, 'perform search')
+            }
+        } catch (error: any) {
+            throw new Error(error.message)
+        }
+        return { success: false }
+    }
+
     private prepareHeaders(idempotencyKey?: string): AxiosRequestHeaders {
         return {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${this.apiKey}`,
-            'X-Origin': 'flowise',
-            'X-Origin-Type': 'integration',
             ...(idempotencyKey ? { 'x-idempotency-key': idempotencyKey } : {})
-        } as AxiosRequestHeaders & { 'X-Origin': string; 'X-Origin-Type': string; 'x-idempotency-key'?: string }
+        } as AxiosRequestHeaders & { 'x-idempotency-key'?: string }
     }
 
-    private postRequest(url: string, data: Params, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
-        return axios.post(url, data, { headers })
+    private async postRequest(url: string, data: Params, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
+        const result = await axios.post(url, data, { headers })
+        return result
     }
 
     private getRequest(url: string, headers: AxiosRequestHeaders): Promise<AxiosResponse> {
@@ -468,29 +540,32 @@ class FirecrawlApp {
 
 // FireCrawl Loader
 interface FirecrawlLoaderParameters {
-    url: string
+    url?: string
+    query?: string
     apiKey?: string
     apiUrl?: string
-    mode?: 'crawl' | 'scrape' | 'extract'
+    mode?: 'crawl' | 'scrape' | 'extract' | 'search'
     params?: Record<string, unknown>
 }
 
 export class FireCrawlLoader extends BaseDocumentLoader {
     private apiKey: string
     private apiUrl: string
-    private url: string
-    private mode: 'crawl' | 'scrape' | 'extract'
+    private url?: string
+    private query?: string
+    private mode: 'crawl' | 'scrape' | 'extract' | 'search'
     private params?: Record<string, unknown>
 
     constructor(loaderParams: FirecrawlLoaderParameters) {
         super()
-        const { apiKey, apiUrl, url, mode = 'crawl', params } = loaderParams
+        const { apiKey, apiUrl, url, query, mode = 'crawl', params } = loaderParams
         if (!apiKey) {
             throw new Error('Firecrawl API key not set. You can set it as FIRECRAWL_API_KEY in your .env file, or pass it to Firecrawl.')
         }
 
         this.apiKey = apiKey
         this.url = url
+        this.query = query
         this.mode = mode
         this.params = params
         this.apiUrl = apiUrl || 'https://api.firecrawl.dev'
@@ -500,13 +575,37 @@ export class FireCrawlLoader extends BaseDocumentLoader {
         const app = new FirecrawlApp({ apiKey: this.apiKey, apiUrl: this.apiUrl })
         let firecrawlDocs: FirecrawlDocument[]
 
-        if (this.mode === 'scrape') {
+        if (this.mode === 'search') {
+            if (!this.query) {
+                throw new Error('Firecrawl: Query is required for search mode')
+            }
+            const response = await app.search({ query: this.query, ...this.params })
+            if (!response.success) {
+                throw new Error(`Firecrawl: Failed to search. Warning: ${response.warning}`)
+            }
+
+            // Convert search results to FirecrawlDocument format
+            firecrawlDocs = (response.data || []).map((result) => ({
+                markdown: result.description,
+                metadata: {
+                    title: result.title,
+                    sourceURL: result.url,
+                    description: result.description
+                }
+            }))
+        } else if (this.mode === 'scrape') {
+            if (!this.url) {
+                throw new Error('Firecrawl: URL is required for scrape mode')
+            }
             const response = await app.scrapeUrl(this.url, this.params)
             if (!response.success) {
                 throw new Error(`Firecrawl: Failed to scrape URL. Error: ${response.error}`)
             }
             firecrawlDocs = [response.data as FirecrawlDocument]
         } else if (this.mode === 'crawl') {
+            if (!this.url) {
+                throw new Error('Firecrawl: URL is required for crawl mode')
+            }
             const response = await app.crawlUrl(this.url, this.params)
             if ('status' in response) {
                 if (response.status === 'failed') {
@@ -520,6 +619,9 @@ export class FireCrawlLoader extends BaseDocumentLoader {
                 firecrawlDocs = [response.data as FirecrawlDocument]
             }
         } else if (this.mode === 'extract') {
+            if (!this.url) {
+                throw new Error('Firecrawl: URL is required for extract mode')
+            }
             this.params!.urls = [this.url]
             const response = await app.extract(this.params as any as ExtractRequest)
             if (!response.success) {
@@ -557,7 +659,7 @@ export class FireCrawlLoader extends BaseDocumentLoader {
             }
             return []
         } else {
-            throw new Error(`Unrecognized mode '${this.mode}'. Expected one of 'crawl', 'scrape', 'extract'.`)
+            throw new Error(`Unrecognized mode '${this.mode}'. Expected one of 'crawl', 'scrape', 'extract', 'search'.`)
         }
 
         // Convert Firecrawl documents to LangChain documents
@@ -602,7 +704,7 @@ class FireCrawl_DocumentLoaders implements INode {
         this.name = 'fireCrawl'
         this.type = 'Document'
         this.icon = 'firecrawl.png'
-        this.version = 3.0
+        this.version = 4.0
         this.category = 'Document Loaders'
         this.description = 'Load data from URL using FireCrawl'
         this.baseClasses = [this.type]
@@ -620,14 +722,7 @@ class FireCrawl_DocumentLoaders implements INode {
                 optional: true
             },
             {
-                label: 'URLs',
-                name: 'url',
-                type: 'string',
-                description: 'URL to be crawled/scraped/extracted',
-                placeholder: 'https://docs.flowiseai.com'
-            },
-            {
-                label: 'Crawler type',
+                label: 'Type',
                 type: 'options',
                 name: 'crawlerType',
                 options: [
@@ -645,89 +740,179 @@ class FireCrawl_DocumentLoaders implements INode {
                         label: 'Extract',
                         name: 'extract',
                         description: 'Extract data from a URL'
+                    },
+                    {
+                        label: 'Search',
+                        name: 'search',
+                        description: 'Search the web using FireCrawl'
                     }
                 ],
                 default: 'crawl'
             },
             {
+                label: 'URLs',
+                name: 'url',
+                type: 'string',
+                description: 'URL to be crawled/scraped/extracted',
+                placeholder: 'https://docs.flowiseai.com',
+                optional: true,
+                show: {
+                    crawlerType: ['crawl', 'scrape', 'extract']
+                }
+            },
+            {
                 // includeTags
-                label: '[Scrape] Include Tags',
+                label: 'Include Tags',
                 name: 'includeTags',
                 type: 'string',
                 description: 'Tags to include in the output. Use comma to separate multiple tags.',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['scrape']
+                }
             },
             {
                 // excludeTags
-                label: '[Scrape] Exclude Tags',
+                label: 'Exclude Tags',
                 name: 'excludeTags',
                 type: 'string',
                 description: 'Tags to exclude from the output. Use comma to separate multiple tags.',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['scrape']
+                }
             },
             {
                 // onlyMainContent
-                label: '[Scrape] Only Main Content',
+                label: 'Only Main Content',
                 name: 'onlyMainContent',
                 type: 'boolean',
                 description: 'Extract only the main content of the page',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['scrape']
+                }
             },
             {
                 // limit
-                label: '[Crawl] Limit',
+                label: 'Limit',
                 name: 'limit',
                 type: 'string',
                 description: 'Maximum number of pages to crawl',
                 optional: true,
                 additionalParams: true,
-                default: '10000'
+                default: '10000',
+                show: {
+                    crawlerType: ['crawl']
+                }
             },
             {
-                label: '[Crawl] Include Paths',
+                label: 'Include Paths',
                 name: 'includePaths',
                 type: 'string',
                 description:
                     'URL pathname regex patterns that include matching URLs in the crawl. Only the paths that match the specified patterns will be included in the response.',
                 placeholder: `blog/.*, news/.*`,
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['crawl']
+                }
             },
             {
-                label: '[Crawl] Exclude Paths',
+                label: 'Exclude Paths',
                 name: 'excludePaths',
                 type: 'string',
                 description: 'URL pathname regex patterns that exclude matching URLs from the crawl.',
                 placeholder: `blog/.*, news/.*`,
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['crawl']
+                }
             },
             {
-                label: '[Extract] Schema',
+                label: 'Schema',
                 name: 'extractSchema',
                 type: 'json',
                 description: 'JSON schema for data extraction',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['extract']
+                }
             },
             {
-                label: '[Extract] Prompt',
+                label: 'Prompt',
                 name: 'extractPrompt',
                 type: 'string',
                 description: 'Prompt for data extraction',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    crawlerType: ['extract']
+                }
             },
             {
-                label: '[Extract] Job ID',
-                name: 'extractJobId',
+                label: 'Query',
+                name: 'searchQuery',
                 type: 'string',
-                description: 'ID of the extract job',
+                description: 'Search query to find relevant content',
                 optional: true,
-                additionalParams: true
+                show: {
+                    crawlerType: ['search']
+                }
+            },
+            {
+                label: 'Limit',
+                name: 'searchLimit',
+                type: 'string',
+                description: 'Maximum number of results to return',
+                optional: true,
+                additionalParams: true,
+                default: '5',
+                show: {
+                    crawlerType: ['search']
+                }
+            },
+            {
+                label: 'Language',
+                name: 'searchLang',
+                type: 'string',
+                description: 'Language code for search results (e.g., en, es, fr)',
+                optional: true,
+                additionalParams: true,
+                default: 'en',
+                show: {
+                    crawlerType: ['search']
+                }
+            },
+            {
+                label: 'Country',
+                name: 'searchCountry',
+                type: 'string',
+                description: 'Country code for search results (e.g., us, uk, ca)',
+                optional: true,
+                additionalParams: true,
+                default: 'us',
+                show: {
+                    crawlerType: ['search']
+                }
+            },
+            {
+                label: 'Timeout',
+                name: 'searchTimeout',
+                type: 'number',
+                description: 'Timeout in milliseconds for search operation',
+                optional: true,
+                additionalParams: true,
+                default: 60000,
+                show: {
+                    crawlerType: ['search']
+                }
             }
         ]
         this.outputs = [
@@ -758,6 +943,11 @@ class FireCrawl_DocumentLoaders implements INode {
         const firecrawlApiUrl = getCredentialParam('firecrawlApiUrl', credentialData, nodeData, 'https://api.firecrawl.dev')
         const output = nodeData.outputs?.output as string
 
+        // Validate URL only for non-search methods
+        if (crawlerType !== 'search' && !url) {
+            throw new Error('Firecrawl: URL is required for ' + crawlerType + ' mode')
+        }
+
         const includePaths = nodeData.inputs?.includePaths ? (nodeData.inputs.includePaths.split(',') as string[]) : undefined
         const excludePaths = nodeData.inputs?.excludePaths ? (nodeData.inputs.excludePaths.split(',') as string[]) : undefined
 
@@ -767,9 +957,16 @@ class FireCrawl_DocumentLoaders implements INode {
         const extractSchema = nodeData.inputs?.extractSchema
         const extractPrompt = nodeData.inputs?.extractPrompt as string
 
+        const searchQuery = nodeData.inputs?.searchQuery as string
+        const searchLimit = nodeData.inputs?.searchLimit as string
+        const searchLang = nodeData.inputs?.searchLang as string
+        const searchCountry = nodeData.inputs?.searchCountry as string
+        const searchTimeout = nodeData.inputs?.searchTimeout as number
+
         const input: FirecrawlLoaderParameters = {
             url,
-            mode: crawlerType as 'crawl' | 'scrape' | 'extract',
+            query: searchQuery,
+            mode: crawlerType as 'crawl' | 'scrape' | 'extract' | 'search',
             apiKey: firecrawlApiToken,
             apiUrl: firecrawlApiUrl,
             params: {
@@ -782,6 +979,19 @@ class FireCrawl_DocumentLoaders implements INode {
                 },
                 schema: extractSchema || undefined,
                 prompt: extractPrompt || undefined
+            }
+        }
+
+        // Add search-specific parameters only when in search mode
+        if (crawlerType === 'search') {
+            if (!searchQuery) {
+                throw new Error('Firecrawl: Search query is required for search mode')
+            }
+            input.params = {
+                limit: searchLimit ? parseInt(searchLimit, 10) : 5,
+                lang: searchLang,
+                country: searchCountry,
+                timeout: searchTimeout
             }
         }
 
