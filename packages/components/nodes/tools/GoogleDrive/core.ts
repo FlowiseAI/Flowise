@@ -490,7 +490,7 @@ class DeleteFileTool extends BaseGoogleDriveTool {
                 method: 'DELETE',
                 params
             })
-            return `File deleted successfully${TOOL_ARGS_PREFIX}${JSON.stringify(params)}`
+            return `File deleted successfully`
         } catch (error) {
             return `Error deleting file: ${error}`
         }
@@ -818,7 +818,7 @@ class DeleteFolderTool extends BaseGoogleDriveTool {
                 method: 'DELETE',
                 params
             })
-            return `Folder deleted successfully${TOOL_ARGS_PREFIX}${JSON.stringify(params)}`
+            return `Folder deleted successfully`
         } catch (error) {
             return `Error deleting folder: ${error}`
         }
@@ -909,7 +909,7 @@ class RemovePermissionTool extends BaseGoogleDriveTool {
                 method: 'DELETE',
                 params
             })
-            return `Permission removed successfully${TOOL_ARGS_PREFIX}${JSON.stringify(params)}`
+            return `Permission removed successfully`
         } catch (error) {
             return `Error removing permission: ${error}`
         }

@@ -688,8 +688,7 @@ class Gmail_Tools implements INode {
         const tools = createGmailTools({
             actions,
             accessToken,
-            defaultParams,
-            maxOutputLength: Infinity
+            defaultParams
         })
 
         return tools

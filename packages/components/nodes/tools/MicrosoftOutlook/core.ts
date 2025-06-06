@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
+import { TOOL_ARGS_PREFIX } from '../../../src/agents'
 
 export const desc = `Use this when you want to access Microsoft Outlook API for managing calendars, events, and messages`
 
@@ -17,7 +18,6 @@ export interface RequestParameters {
     body?: Body
     url?: string
     description?: string
-    maxOutputLength?: number
     name?: string
     actions?: string[]
     accessToken?: string
@@ -134,15 +134,13 @@ const ForwardMessageSchema = z.object({
 
 class BaseOutlookTool extends DynamicStructuredTool {
     protected accessToken: string = ''
-    protected maxOutputLength: number = Infinity
 
     constructor(args: any) {
         super(args)
         this.accessToken = args.accessToken ?? ''
-        this.maxOutputLength = args.maxOutputLength ?? Infinity
     }
 
-    async makeGraphRequest(url: string, method: string = 'GET', body?: any): Promise<string> {
+    async makeGraphRequest(url: string, method: string = 'GET', body?: any, params?: any): Promise<string> {
         const headers = {
             Authorization: `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json',
@@ -161,7 +159,7 @@ class BaseOutlookTool extends DynamicStructuredTool {
         }
 
         const data = await response.text()
-        return data.slice(0, this.maxOutputLength)
+        return data + TOOL_ARGS_PREFIX + JSON.stringify(params)
     }
 
     parseEmailAddresses(emailString: string) {
@@ -187,7 +185,7 @@ class ListCalendarsTool extends BaseOutlookTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -200,7 +198,7 @@ class ListCalendarsTool extends BaseOutlookTool {
         const url = `https://graph.microsoft.com/v1.0/me/calendars?${queryParams.toString()}`
 
         try {
-            const response = await this.makeGraphRequest(url)
+            const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error listing calendars: ${error}`
@@ -220,7 +218,7 @@ class GetCalendarTool extends BaseOutlookTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -229,7 +227,7 @@ class GetCalendarTool extends BaseOutlookTool {
         const url = `https://graph.microsoft.com/v1.0/me/calendars/${params.calendarId}`
 
         try {
-            const response = await this.makeGraphRequest(url)
+            const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error getting calendar: ${error}`
@@ -249,7 +247,7 @@ class CreateCalendarTool extends BaseOutlookTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -262,7 +260,7 @@ class CreateCalendarTool extends BaseOutlookTool {
             }
 
             const url = 'https://graph.microsoft.com/v1.0/me/calendars'
-            const response = await this.makeGraphRequest(url, 'POST', calendarData)
+            const response = await this.makeGraphRequest(url, 'POST', calendarData, params)
             return response
         } catch (error) {
             return `Error creating calendar: ${error}`
@@ -282,7 +280,7 @@ class UpdateCalendarTool extends BaseOutlookTool {
             method: 'PATCH',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -295,7 +293,7 @@ class UpdateCalendarTool extends BaseOutlookTool {
             }
 
             const url = `https://graph.microsoft.com/v1.0/me/calendars/${params.calendarId}`
-            const response = await this.makeGraphRequest(url, 'PATCH', calendarData)
+            const response = await this.makeGraphRequest(url, 'PATCH', calendarData, params)
             return response
         } catch (error) {
             return `Error updating calendar: ${error}`
@@ -315,7 +313,7 @@ class DeleteCalendarTool extends BaseOutlookTool {
             method: 'DELETE',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -324,7 +322,7 @@ class DeleteCalendarTool extends BaseOutlookTool {
         const url = `https://graph.microsoft.com/v1.0/me/calendars/${params.calendarId}`
 
         try {
-            await this.makeGraphRequest(url, 'DELETE')
+            await this.makeGraphRequest(url, 'DELETE', undefined, params)
             return `Calendar ${params.calendarId} deleted successfully`
         } catch (error) {
             return `Error deleting calendar: ${error}`
@@ -344,7 +342,7 @@ class ListEventsTool extends BaseOutlookTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -371,7 +369,7 @@ class ListEventsTool extends BaseOutlookTool {
         const url = `${baseUrl}?${queryParams.toString()}`
 
         try {
-            const response = await this.makeGraphRequest(url)
+            const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error listing events: ${error}`
@@ -391,7 +389,7 @@ class GetEventTool extends BaseOutlookTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -400,7 +398,7 @@ class GetEventTool extends BaseOutlookTool {
         const url = `https://graph.microsoft.com/v1.0/me/events/${params.eventId}`
 
         try {
-            const response = await this.makeGraphRequest(url)
+            const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error getting event: ${error}`
@@ -420,7 +418,7 @@ class CreateEventTool extends BaseOutlookTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -451,7 +449,7 @@ class CreateEventTool extends BaseOutlookTool {
             }
 
             const url = 'https://graph.microsoft.com/v1.0/me/events'
-            const response = await this.makeGraphRequest(url, 'POST', eventData)
+            const response = await this.makeGraphRequest(url, 'POST', eventData, params)
             return response
         } catch (error) {
             return `Error creating event: ${error}`
@@ -471,7 +469,7 @@ class UpdateEventTool extends BaseOutlookTool {
             method: 'PATCH',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -483,7 +481,7 @@ class UpdateEventTool extends BaseOutlookTool {
             if (params.subject) eventData.subject = params.subject
 
             const url = `https://graph.microsoft.com/v1.0/me/events/${params.eventId}`
-            const response = await this.makeGraphRequest(url, 'PATCH', eventData)
+            const response = await this.makeGraphRequest(url, 'PATCH', eventData, params)
             return response
         } catch (error) {
             return `Error updating event: ${error}`
@@ -503,7 +501,7 @@ class DeleteEventTool extends BaseOutlookTool {
             method: 'DELETE',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -512,7 +510,7 @@ class DeleteEventTool extends BaseOutlookTool {
         const url = `https://graph.microsoft.com/v1.0/me/events/${params.eventId}`
 
         try {
-            await this.makeGraphRequest(url, 'DELETE')
+            await this.makeGraphRequest(url, 'DELETE', undefined, params)
             return `Event ${params.eventId} deleted successfully`
         } catch (error) {
             return `Error deleting event: ${error}`
@@ -533,7 +531,7 @@ class ListMessagesTool extends BaseOutlookTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -547,7 +545,7 @@ class ListMessagesTool extends BaseOutlookTool {
         const url = `https://graph.microsoft.com/v1.0/me/messages?${queryParams.toString()}`
 
         try {
-            const response = await this.makeGraphRequest(url)
+            const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error listing messages: ${error}`
@@ -567,7 +565,7 @@ class GetMessageTool extends BaseOutlookTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -576,7 +574,7 @@ class GetMessageTool extends BaseOutlookTool {
         const url = `https://graph.microsoft.com/v1.0/me/messages/${params.messageId}`
 
         try {
-            const response = await this.makeGraphRequest(url)
+            const response = await this.makeGraphRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error getting message: ${error}`
@@ -596,7 +594,7 @@ class CreateDraftMessageTool extends BaseOutlookTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -616,7 +614,7 @@ class CreateDraftMessageTool extends BaseOutlookTool {
             }
 
             const url = 'https://graph.microsoft.com/v1.0/me/messages'
-            const response = await this.makeGraphRequest(url, 'POST', messageData)
+            const response = await this.makeGraphRequest(url, 'POST', messageData, params)
             return response
         } catch (error) {
             return `Error creating draft message: ${error}`
@@ -636,7 +634,7 @@ class SendMessageTool extends BaseOutlookTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -657,7 +655,7 @@ class SendMessageTool extends BaseOutlookTool {
             }
 
             const url = 'https://graph.microsoft.com/v1.0/me/sendMail'
-            await this.makeGraphRequest(url, 'POST', messageData)
+            await this.makeGraphRequest(url, 'POST', messageData, params)
             return 'Message sent successfully'
         } catch (error) {
             return `Error sending message: ${error}`
@@ -677,7 +675,7 @@ class UpdateMessageTool extends BaseOutlookTool {
             method: 'PATCH',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -689,7 +687,7 @@ class UpdateMessageTool extends BaseOutlookTool {
             if (params.isRead !== undefined) messageData.isRead = params.isRead
 
             const url = `https://graph.microsoft.com/v1.0/me/messages/${params.messageId}`
-            const response = await this.makeGraphRequest(url, 'PATCH', messageData)
+            const response = await this.makeGraphRequest(url, 'PATCH', messageData, params)
             return response
         } catch (error) {
             return `Error updating message: ${error}`
@@ -709,7 +707,7 @@ class DeleteMessageTool extends BaseOutlookTool {
             method: 'DELETE',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -718,7 +716,7 @@ class DeleteMessageTool extends BaseOutlookTool {
         const url = `https://graph.microsoft.com/v1.0/me/messages/${params.messageId}`
 
         try {
-            await this.makeGraphRequest(url, 'DELETE')
+            await this.makeGraphRequest(url, 'DELETE', undefined, params)
             return `Message ${params.messageId} deleted successfully`
         } catch (error) {
             return `Error deleting message: ${error}`
@@ -738,7 +736,7 @@ class CopyMessageTool extends BaseOutlookTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -751,7 +749,7 @@ class CopyMessageTool extends BaseOutlookTool {
             }
 
             const url = `https://graph.microsoft.com/v1.0/me/messages/${params.messageId}/copy`
-            const response = await this.makeGraphRequest(url, 'POST', copyData)
+            const response = await this.makeGraphRequest(url, 'POST', copyData, params)
             return response
         } catch (error) {
             return `Error copying message: ${error}`
@@ -771,7 +769,7 @@ class MoveMessageTool extends BaseOutlookTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -784,7 +782,7 @@ class MoveMessageTool extends BaseOutlookTool {
             }
 
             const url = `https://graph.microsoft.com/v1.0/me/messages/${params.messageId}/move`
-            const response = await this.makeGraphRequest(url, 'POST', moveData)
+            const response = await this.makeGraphRequest(url, 'POST', moveData, params)
             return response
         } catch (error) {
             return `Error moving message: ${error}`
@@ -804,7 +802,7 @@ class ReplyMessageTool extends BaseOutlookTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -817,7 +815,7 @@ class ReplyMessageTool extends BaseOutlookTool {
             }
 
             const url = `https://graph.microsoft.com/v1.0/me/messages/${params.messageId}/reply`
-            await this.makeGraphRequest(url, 'POST', replyData)
+            await this.makeGraphRequest(url, 'POST', replyData, params)
             return 'Reply sent successfully'
         } catch (error) {
             return `Error replying to message: ${error}`
@@ -837,7 +835,7 @@ class ForwardMessageTool extends BaseOutlookTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -851,7 +849,7 @@ class ForwardMessageTool extends BaseOutlookTool {
             }
 
             const url = `https://graph.microsoft.com/v1.0/me/messages/${params.messageId}/forward`
-            await this.makeGraphRequest(url, 'POST', forwardData)
+            await this.makeGraphRequest(url, 'POST', forwardData, params)
             return 'Message forwarded successfully'
         } catch (error) {
             return `Error forwarding message: ${error}`
@@ -863,14 +861,12 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     const tools: DynamicStructuredTool[] = []
     const actions = args?.actions || []
     const accessToken = args?.accessToken || ''
-    const maxOutputLength = args?.maxOutputLength || Infinity
     const defaultParams = args?.defaultParams || {}
 
     // Calendar tools
     if (actions.includes('listCalendars')) {
         const listTool = new ListCalendarsTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.listCalendars
         })
         tools.push(listTool)
@@ -879,7 +875,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('getCalendar')) {
         const getTool = new GetCalendarTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.getCalendar
         })
         tools.push(getTool)
@@ -888,7 +883,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('createCalendar')) {
         const createTool = new CreateCalendarTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.createCalendar
         })
         tools.push(createTool)
@@ -897,7 +891,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('updateCalendar')) {
         const updateTool = new UpdateCalendarTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.updateCalendar
         })
         tools.push(updateTool)
@@ -906,7 +899,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('deleteCalendar')) {
         const deleteTool = new DeleteCalendarTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.deleteCalendar
         })
         tools.push(deleteTool)
@@ -915,7 +907,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('listEvents')) {
         const listTool = new ListEventsTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.listEvents
         })
         tools.push(listTool)
@@ -924,7 +915,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('getEvent')) {
         const getTool = new GetEventTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.getEvent
         })
         tools.push(getTool)
@@ -933,7 +923,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('createEvent')) {
         const createTool = new CreateEventTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.createEvent
         })
         tools.push(createTool)
@@ -942,7 +931,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('updateEvent')) {
         const updateTool = new UpdateEventTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.updateEvent
         })
         tools.push(updateTool)
@@ -951,7 +939,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('deleteEvent')) {
         const deleteTool = new DeleteEventTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.deleteEvent
         })
         tools.push(deleteTool)
@@ -961,7 +948,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('listMessages')) {
         const listTool = new ListMessagesTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.listMessages
         })
         tools.push(listTool)
@@ -970,7 +956,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('getMessage')) {
         const getTool = new GetMessageTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.getMessage
         })
         tools.push(getTool)
@@ -979,7 +964,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('createDraftMessage')) {
         const createTool = new CreateDraftMessageTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.createDraftMessage
         })
         tools.push(createTool)
@@ -988,7 +972,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('sendMessage')) {
         const sendTool = new SendMessageTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.sendMessage
         })
         tools.push(sendTool)
@@ -997,7 +980,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('updateMessage')) {
         const updateTool = new UpdateMessageTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.updateMessage
         })
         tools.push(updateTool)
@@ -1006,7 +988,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('deleteMessage')) {
         const deleteTool = new DeleteMessageTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.deleteMessage
         })
         tools.push(deleteTool)
@@ -1015,7 +996,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('copyMessage')) {
         const copyTool = new CopyMessageTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.copyMessage
         })
         tools.push(copyTool)
@@ -1024,7 +1004,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('moveMessage')) {
         const moveTool = new MoveMessageTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.moveMessage
         })
         tools.push(moveTool)
@@ -1033,7 +1012,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('replyMessage')) {
         const replyTool = new ReplyMessageTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.replyMessage
         })
         tools.push(replyTool)
@@ -1042,7 +1020,6 @@ export const createOutlookTools = (args?: RequestParameters): DynamicStructuredT
     if (actions.includes('forwardMessage')) {
         const forwardTool = new ForwardMessageTool({
             accessToken,
-            maxOutputLength,
             defaultParams: defaultParams.forwardMessage
         })
         tools.push(forwardTool)

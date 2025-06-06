@@ -67,6 +67,10 @@ abstract class BaseTeamsTool extends DynamicStructuredTool {
         return await makeGraphRequest(endpoint, method as any, body, this.accessToken)
     }
 
+    protected formatResponse(data: any, params: any): string {
+        return JSON.stringify(data) + TOOL_ARGS_PREFIX + JSON.stringify(params)
+    }
+
     // Abstract method that must be implemented by subclasses
     protected abstract _call(arg: any, runManager?: CallbackManagerForToolRun, parentConfig?: any): Promise<string>
 }
@@ -106,16 +110,14 @@ class ListChannelsTool extends BaseTeamsTool {
             const channels = result.value || []
             const limitedChannels = channels.slice(0, maxResults)
 
-            return (
-                JSON.stringify({
-                    success: true,
-                    channels: limitedChannels,
-                    count: limitedChannels.length,
-                    total: channels.length
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
-            )
+            const responseData = {
+                success: true,
+                channels: limitedChannels,
+                count: limitedChannels.length,
+                total: channels.length
+            }
+
+            return this.formatResponse(responseData, params)
         } catch (error) {
             return `Error listing channels: ${error}`
         }
@@ -151,16 +153,15 @@ class GetChannelTool extends BaseTeamsTool {
             const endpoint = `/teams/${teamId}/channels/${channelId}`
             const result = await this.makeTeamsRequest(endpoint)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     channel: result
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error getting channel: ${error}`
+            return this.formatResponse(`Error getting channel: ${error}`, params)
         }
     }
 }
@@ -206,17 +207,16 @@ class CreateChannelTool extends BaseTeamsTool {
             const endpoint = `/teams/${teamId}/channels`
             const result = await this.makeTeamsRequest(endpoint, 'POST', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     channel: result,
                     message: `Channel "${displayName}" created successfully`
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error creating channel: ${error}`
+            return this.formatResponse(`Error creating channel: ${error}`, params)
         }
     }
 }
@@ -260,16 +260,15 @@ class UpdateChannelTool extends BaseTeamsTool {
             const endpoint = `/teams/${teamId}/channels/${channelId}`
             await this.makeTeamsRequest(endpoint, 'PATCH', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Channel updated successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error updating channel: ${error}`
+            return this.formatResponse(`Error updating channel: ${error}`, params)
         }
     }
 }
@@ -303,16 +302,15 @@ class DeleteChannelTool extends BaseTeamsTool {
             const endpoint = `/teams/${teamId}/channels/${channelId}`
             await this.makeTeamsRequest(endpoint, 'DELETE')
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Channel deleted successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error deleting channel: ${error}`
+            return this.formatResponse(`Error deleting channel: ${error}`, params)
         }
     }
 }
@@ -346,16 +344,15 @@ class ArchiveChannelTool extends BaseTeamsTool {
             const endpoint = `/teams/${teamId}/channels/${channelId}/archive`
             await this.makeTeamsRequest(endpoint, 'POST', {})
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Channel archived successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error archiving channel: ${error}`
+            return this.formatResponse(`Error archiving channel: ${error}`, params)
         }
     }
 }
@@ -389,16 +386,15 @@ class UnarchiveChannelTool extends BaseTeamsTool {
             const endpoint = `/teams/${teamId}/channels/${channelId}/unarchive`
             await this.makeTeamsRequest(endpoint, 'POST', {})
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Channel unarchived successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error unarchiving channel: ${error}`
+            return this.formatResponse(`Error unarchiving channel: ${error}`, params)
         }
     }
 }
@@ -432,17 +428,16 @@ class ListChannelMembersTool extends BaseTeamsTool {
             const endpoint = `/teams/${teamId}/channels/${channelId}/members`
             const result = await this.makeTeamsRequest(endpoint)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     members: result.value || [],
                     count: result.value?.length || 0
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error listing channel members: ${error}`
+            return this.formatResponse(`Error listing channel members: ${error}`, params)
         }
     }
 }
@@ -482,16 +477,15 @@ class AddChannelMemberTool extends BaseTeamsTool {
             const endpoint = `/teams/${teamId}/channels/${channelId}/members`
             await this.makeTeamsRequest(endpoint, 'POST', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Member added to channel successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error adding channel member: ${error}`
+            return this.formatResponse(`Error adding channel member: ${error}`, params)
         }
     }
 }
@@ -535,16 +529,15 @@ class RemoveChannelMemberTool extends BaseTeamsTool {
             const endpoint = `/teams/${teamId}/channels/${channelId}/members/${member.id}`
             await this.makeTeamsRequest(endpoint, 'DELETE')
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Member removed from channel successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error removing channel member: ${error}`
+            return this.formatResponse(`Error removing channel member: ${error}`, params)
         }
     }
 }
@@ -575,17 +568,16 @@ class ListChatsTool extends BaseTeamsTool {
             const endpoint = `/me/chats?$top=${maxResults}`
             const result = await this.makeTeamsRequest(endpoint)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     chats: result.value || [],
                     count: result.value?.length || 0
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error listing chats: ${error}`
+            return this.formatResponse(`Error listing chats: ${error}`, params)
         }
     }
 }
@@ -618,16 +610,15 @@ class GetChatTool extends BaseTeamsTool {
             const endpoint = `/chats/${chatId}`
             const result = await this.makeTeamsRequest(endpoint)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     chat: result
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error getting chat: ${error}`
+            return this.formatResponse(`Error getting chat: ${error}`, params)
         }
     }
 }
@@ -677,17 +668,16 @@ class CreateChatTool extends BaseTeamsTool {
             const endpoint = '/chats'
             const result = await this.makeTeamsRequest(endpoint, 'POST', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     chat: result,
                     message: 'Chat created successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error creating chat: ${error}`
+            return this.formatResponse(`Error creating chat: ${error}`, params)
         }
     }
 }
@@ -726,16 +716,15 @@ class UpdateChatTool extends BaseTeamsTool {
             const endpoint = `/chats/${chatId}`
             await this.makeTeamsRequest(endpoint, 'PATCH', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Chat updated successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error updating chat: ${error}`
+            return this.formatResponse(`Error updating chat: ${error}`, params)
         }
     }
 }
@@ -768,16 +757,15 @@ class DeleteChatTool extends BaseTeamsTool {
             const endpoint = `/chats/${chatId}`
             await this.makeTeamsRequest(endpoint, 'DELETE')
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Chat deleted successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error deleting chat: ${error}`
+            return this.formatResponse(`Error deleting chat: ${error}`, params)
         }
     }
 }
@@ -810,17 +798,16 @@ class ListChatMembersTool extends BaseTeamsTool {
             const endpoint = `/chats/${chatId}/members`
             const result = await this.makeTeamsRequest(endpoint)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     members: result.value || [],
                     count: result.value?.length || 0
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error listing chat members: ${error}`
+            return this.formatResponse(`Error listing chat members: ${error}`, params)
         }
     }
 }
@@ -859,16 +846,15 @@ class AddChatMemberTool extends BaseTeamsTool {
             const endpoint = `/chats/${chatId}/members`
             await this.makeTeamsRequest(endpoint, 'POST', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Member added to chat successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error adding chat member: ${error}`
+            return this.formatResponse(`Error adding chat member: ${error}`, params)
         }
     }
 }
@@ -911,16 +897,15 @@ class RemoveChatMemberTool extends BaseTeamsTool {
             const endpoint = `/chats/${chatId}/members/${member.id}`
             await this.makeTeamsRequest(endpoint, 'DELETE')
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Member removed from chat successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error removing chat member: ${error}`
+            return this.formatResponse(`Error removing chat member: ${error}`, params)
         }
     }
 }
@@ -960,16 +945,15 @@ class PinMessageTool extends BaseTeamsTool {
             const endpoint = `/chats/${chatId}/pinnedMessages`
             await this.makeTeamsRequest(endpoint, 'POST', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Message pinned successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error pinning message: ${error}`
+            return this.formatResponse(`Error pinning message: ${error}`, params)
         }
     }
 }
@@ -1012,16 +996,15 @@ class UnpinMessageTool extends BaseTeamsTool {
             const endpoint = `/chats/${chatId}/pinnedMessages/${pinnedMessage.id}`
             await this.makeTeamsRequest(endpoint, 'DELETE')
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Message unpinned successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error unpinning message: ${error}`
+            return this.formatResponse(`Error unpinning message: ${error}`, params)
         }
     }
 }
@@ -1066,18 +1049,17 @@ class ListMessagesTool extends BaseTeamsTool {
 
             const result = await this.makeTeamsRequest(endpoint)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     messages: result.value || [],
                     count: result.value?.length || 0,
                     context: teamId ? 'channel' : 'chat'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error listing messages: ${error}`
+            return this.formatResponse(`Error listing messages: ${error}`, params)
         }
     }
 }
@@ -1120,17 +1102,16 @@ class GetMessageTool extends BaseTeamsTool {
 
             const result = await this.makeTeamsRequest(endpoint)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: result,
                     context: teamId ? 'channel' : 'chat'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error getting message: ${error}`
+            return this.formatResponse(`Error getting message: ${error}`, params)
         }
     }
 }
@@ -1181,18 +1162,17 @@ class SendMessageTool extends BaseTeamsTool {
 
             const result = await this.makeTeamsRequest(endpoint, 'POST', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: result,
                     context: teamId ? 'channel' : 'chat',
                     messageText: 'Message sent successfully'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error sending message: ${error}`
+            return this.formatResponse(`Error sending message: ${error}`, params)
         }
     }
 }
@@ -1240,17 +1220,16 @@ class UpdateMessageTool extends BaseTeamsTool {
 
             await this.makeTeamsRequest(endpoint, 'PATCH', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Message updated successfully',
                     context: teamId ? 'channel' : 'chat'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error updating message: ${error}`
+            return this.formatResponse(`Error updating message: ${error}`, params)
         }
     }
 }
@@ -1293,17 +1272,16 @@ class DeleteMessageTool extends BaseTeamsTool {
 
             await this.makeTeamsRequest(endpoint, 'POST', {})
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: 'Message deleted successfully',
                     context: teamId ? 'channel' : 'chat'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error deleting message: ${error}`
+            return this.formatResponse(`Error deleting message: ${error}`, params)
         }
     }
 }
@@ -1355,18 +1333,17 @@ class ReplyToMessageTool extends BaseTeamsTool {
 
             const result = await this.makeTeamsRequest(endpoint, 'POST', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     reply: result,
                     message: 'Reply sent successfully',
                     context: teamId ? 'channel' : 'chat'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error replying to message: ${error}`
+            return this.formatResponse(`Error replying to message: ${error}`, params)
         }
     }
 }
@@ -1418,17 +1395,16 @@ class SetReactionTool extends BaseTeamsTool {
 
             await this.makeTeamsRequest(endpoint, 'POST', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: `Reaction "${reactionType}" set successfully`,
                     context: teamId ? 'channel' : 'chat'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error setting reaction: ${error}`
+            return this.formatResponse(`Error setting reaction: ${error}`, params)
         }
     }
 }
@@ -1480,17 +1456,16 @@ class UnsetReactionTool extends BaseTeamsTool {
 
             await this.makeTeamsRequest(endpoint, 'POST', body)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     message: `Reaction "${reactionType}" removed successfully`,
                     context: teamId ? 'channel' : 'chat'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error unsetting reaction: ${error}`
+            return this.formatResponse(`Error unsetting reaction: ${error}`, params)
         }
     }
 }
@@ -1520,18 +1495,17 @@ class GetAllMessagesTool extends BaseTeamsTool {
             const chatEndpoint = `/me/chats/getAllMessages?$top=${maxResults}`
             const chatResult = await this.makeTeamsRequest(chatEndpoint)
 
-            return (
-                JSON.stringify({
+            return this.formatResponse(
+                {
                     success: true,
                     messages: chatResult.value || [],
                     count: chatResult.value?.length || 0,
                     source: 'all_chats_and_channels'
-                }) +
-                TOOL_ARGS_PREFIX +
-                JSON.stringify(params)
+                },
+                params
             )
         } catch (error) {
-            return `Error getting all messages: ${error}`
+            return this.formatResponse(`Error getting all messages: ${error}`, params)
         }
     }
 }

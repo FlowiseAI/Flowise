@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
+import { TOOL_ARGS_PREFIX } from '../../../src/agents'
 
 export const desc = `Use this when you want to access Gmail API for managing drafts, messages, labels, and threads`
 
@@ -17,7 +18,6 @@ export interface RequestParameters {
     body?: Body
     url?: string
     description?: string
-    maxOutputLength?: number
     name?: string
     actions?: string[]
     accessToken?: string
@@ -63,15 +63,13 @@ const CreateLabelSchema = z.object({
 
 class BaseGmailTool extends DynamicStructuredTool {
     protected accessToken: string = ''
-    protected maxOutputLength: number = Infinity
 
     constructor(args: any) {
         super(args)
         this.accessToken = args.accessToken ?? ''
-        this.maxOutputLength = args.maxOutputLength ?? Infinity
     }
 
-    async makeGmailRequest(url: string, method: string = 'GET', body?: any): Promise<string> {
+    async makeGmailRequest(url: string, method: string = 'GET', body?: any, params?: any): Promise<string> {
         const headers = {
             Authorization: `Bearer ${this.accessToken}`,
             'Content-Type': 'application/json',
@@ -90,7 +88,7 @@ class BaseGmailTool extends DynamicStructuredTool {
         }
 
         const data = await response.text()
-        return data.slice(0, this.maxOutputLength)
+        return data + TOOL_ARGS_PREFIX + JSON.stringify(params)
     }
 
     createMimeMessage(to: string, subject?: string, body?: string, cc?: string, bcc?: string): string {
@@ -125,7 +123,7 @@ class ListDraftsTool extends BaseGmailTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -139,7 +137,7 @@ class ListDraftsTool extends BaseGmailTool {
         const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts?${queryParams.toString()}`
 
         try {
-            const response = await this.makeGmailRequest(url)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error listing drafts: ${error}`
@@ -159,7 +157,7 @@ class CreateDraftTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -175,7 +173,7 @@ class CreateDraftTool extends BaseGmailTool {
             }
 
             const url = 'https://gmail.googleapis.com/gmail/v1/users/me/drafts'
-            const response = await this.makeGmailRequest(url, 'POST', draftData)
+            const response = await this.makeGmailRequest(url, 'POST', draftData, params)
             return response
         } catch (error) {
             return `Error creating draft: ${error}`
@@ -195,7 +193,7 @@ class GetDraftTool extends BaseGmailTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -209,7 +207,7 @@ class GetDraftTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts/${draftId}`
-            const response = await this.makeGmailRequest(url)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error getting draft: ${error}`
@@ -229,7 +227,7 @@ class UpdateDraftTool extends BaseGmailTool {
             method: 'PUT',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -250,7 +248,7 @@ class UpdateDraftTool extends BaseGmailTool {
             }
 
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts/${draftId}`
-            const response = await this.makeGmailRequest(url, 'PUT', draftData)
+            const response = await this.makeGmailRequest(url, 'PUT', draftData, params)
             return response
         } catch (error) {
             return `Error updating draft: ${error}`
@@ -270,7 +268,7 @@ class SendDraftTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -284,7 +282,7 @@ class SendDraftTool extends BaseGmailTool {
 
         try {
             const url = 'https://gmail.googleapis.com/gmail/v1/users/me/drafts/send'
-            const response = await this.makeGmailRequest(url, 'POST', { id: draftId })
+            const response = await this.makeGmailRequest(url, 'POST', { id: draftId }, params)
             return response
         } catch (error) {
             return `Error sending draft: ${error}`
@@ -304,7 +302,7 @@ class DeleteDraftTool extends BaseGmailTool {
             method: 'DELETE',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -318,7 +316,7 @@ class DeleteDraftTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/drafts/${draftId}`
-            await this.makeGmailRequest(url, 'DELETE')
+            await this.makeGmailRequest(url, 'DELETE', undefined, params)
             return `Draft ${draftId} deleted successfully`
         } catch (error) {
             return `Error deleting draft: ${error}`
@@ -339,7 +337,7 @@ class ListMessagesTool extends BaseGmailTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -353,7 +351,7 @@ class ListMessagesTool extends BaseGmailTool {
         const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages?${queryParams.toString()}`
 
         try {
-            const response = await this.makeGmailRequest(url)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error listing messages: ${error}`
@@ -373,7 +371,7 @@ class GetMessageTool extends BaseGmailTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -387,7 +385,7 @@ class GetMessageTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}`
-            const response = await this.makeGmailRequest(url)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error getting message: ${error}`
@@ -407,7 +405,7 @@ class SendMessageTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -421,7 +419,7 @@ class SendMessageTool extends BaseGmailTool {
             }
 
             const url = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send'
-            const response = await this.makeGmailRequest(url, 'POST', messageData)
+            const response = await this.makeGmailRequest(url, 'POST', messageData, params)
             return response
         } catch (error) {
             return `Error sending message: ${error}`
@@ -441,7 +439,7 @@ class ModifyMessageTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -463,7 +461,7 @@ class ModifyMessageTool extends BaseGmailTool {
             }
 
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/modify`
-            const response = await this.makeGmailRequest(url, 'POST', modifyData)
+            const response = await this.makeGmailRequest(url, 'POST', modifyData, params)
             return response
         } catch (error) {
             return `Error modifying message: ${error}`
@@ -483,7 +481,7 @@ class TrashMessageTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -497,7 +495,7 @@ class TrashMessageTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/trash`
-            const response = await this.makeGmailRequest(url, 'POST')
+            const response = await this.makeGmailRequest(url, 'POST', undefined, params)
             return response
         } catch (error) {
             return `Error moving message to trash: ${error}`
@@ -517,7 +515,7 @@ class UntrashMessageTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -531,7 +529,7 @@ class UntrashMessageTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}/untrash`
-            const response = await this.makeGmailRequest(url, 'POST')
+            const response = await this.makeGmailRequest(url, 'POST', undefined, params)
             return response
         } catch (error) {
             return `Error removing message from trash: ${error}`
@@ -551,7 +549,7 @@ class DeleteMessageTool extends BaseGmailTool {
             method: 'DELETE',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -565,7 +563,7 @@ class DeleteMessageTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}`
-            await this.makeGmailRequest(url, 'DELETE')
+            await this.makeGmailRequest(url, 'DELETE', undefined, params)
             return `Message ${messageId} deleted successfully`
         } catch (error) {
             return `Error deleting message: ${error}`
@@ -586,14 +584,14 @@ class ListLabelsTool extends BaseGmailTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
     async _call(): Promise<string> {
         try {
             const url = 'https://gmail.googleapis.com/gmail/v1/users/me/labels'
-            const response = await this.makeGmailRequest(url)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, {})
             return response
         } catch (error) {
             return `Error listing labels: ${error}`
@@ -613,7 +611,7 @@ class GetLabelTool extends BaseGmailTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -627,7 +625,7 @@ class GetLabelTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/labels/${labelId}`
-            const response = await this.makeGmailRequest(url)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error getting label: ${error}`
@@ -647,7 +645,7 @@ class CreateLabelTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -672,7 +670,7 @@ class CreateLabelTool extends BaseGmailTool {
             }
 
             const url = 'https://gmail.googleapis.com/gmail/v1/users/me/labels'
-            const response = await this.makeGmailRequest(url, 'POST', labelData)
+            const response = await this.makeGmailRequest(url, 'POST', labelData, params)
             return response
         } catch (error) {
             return `Error creating label: ${error}`
@@ -692,7 +690,7 @@ class UpdateLabelTool extends BaseGmailTool {
             method: 'PUT',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -716,7 +714,7 @@ class UpdateLabelTool extends BaseGmailTool {
             }
 
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/labels/${labelId}`
-            const response = await this.makeGmailRequest(url, 'PUT', labelData)
+            const response = await this.makeGmailRequest(url, 'PUT', labelData, params)
             return response
         } catch (error) {
             return `Error updating label: ${error}`
@@ -736,7 +734,7 @@ class DeleteLabelTool extends BaseGmailTool {
             method: 'DELETE',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -750,7 +748,7 @@ class DeleteLabelTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/labels/${labelId}`
-            await this.makeGmailRequest(url, 'DELETE')
+            await this.makeGmailRequest(url, 'DELETE', undefined, params)
             return `Label ${labelId} deleted successfully`
         } catch (error) {
             return `Error deleting label: ${error}`
@@ -771,7 +769,7 @@ class ListThreadsTool extends BaseGmailTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -785,7 +783,7 @@ class ListThreadsTool extends BaseGmailTool {
         const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads?${queryParams.toString()}`
 
         try {
-            const response = await this.makeGmailRequest(url)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error listing threads: ${error}`
@@ -805,7 +803,7 @@ class GetThreadTool extends BaseGmailTool {
             method: 'GET',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -819,7 +817,7 @@ class GetThreadTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}`
-            const response = await this.makeGmailRequest(url)
+            const response = await this.makeGmailRequest(url, 'GET', undefined, params)
             return response
         } catch (error) {
             return `Error getting thread: ${error}`
@@ -839,7 +837,7 @@ class ModifyThreadTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -861,7 +859,7 @@ class ModifyThreadTool extends BaseGmailTool {
             }
 
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/modify`
-            const response = await this.makeGmailRequest(url, 'POST', modifyData)
+            const response = await this.makeGmailRequest(url, 'POST', modifyData, params)
             return response
         } catch (error) {
             return `Error modifying thread: ${error}`
@@ -881,7 +879,7 @@ class TrashThreadTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -895,7 +893,7 @@ class TrashThreadTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/trash`
-            const response = await this.makeGmailRequest(url, 'POST')
+            const response = await this.makeGmailRequest(url, 'POST', undefined, params)
             return response
         } catch (error) {
             return `Error moving thread to trash: ${error}`
@@ -915,7 +913,7 @@ class UntrashThreadTool extends BaseGmailTool {
             method: 'POST',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -929,7 +927,7 @@ class UntrashThreadTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/untrash`
-            const response = await this.makeGmailRequest(url, 'POST')
+            const response = await this.makeGmailRequest(url, 'POST', undefined, params)
             return response
         } catch (error) {
             return `Error removing thread from trash: ${error}`
@@ -949,7 +947,7 @@ class DeleteThreadTool extends BaseGmailTool {
             method: 'DELETE',
             headers: {}
         }
-        super({ ...toolInput, accessToken: args.accessToken, maxOutputLength: args.maxOutputLength })
+        super({ ...toolInput, accessToken: args.accessToken })
         this.defaultParams = args.defaultParams || {}
     }
 
@@ -963,7 +961,7 @@ class DeleteThreadTool extends BaseGmailTool {
 
         try {
             const url = `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}`
-            await this.makeGmailRequest(url, 'DELETE')
+            await this.makeGmailRequest(url, 'DELETE', undefined, params)
             return `Thread ${threadId} deleted successfully`
         } catch (error) {
             return `Error deleting thread: ${error}`
@@ -975,7 +973,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
     const tools: DynamicStructuredTool[] = []
     const actions = args?.actions || []
     const accessToken = args?.accessToken || ''
-    const maxOutputLength = args?.maxOutputLength || Infinity
     const defaultParams = args?.defaultParams || {}
 
     // Draft tools
@@ -983,7 +980,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new ListDraftsTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.listDrafts
             })
         )
@@ -993,7 +989,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new CreateDraftTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.createDraft
             })
         )
@@ -1003,7 +998,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new GetDraftTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.getDraft
             })
         )
@@ -1013,7 +1007,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new UpdateDraftTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.updateDraft
             })
         )
@@ -1023,7 +1016,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new SendDraftTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.sendDraft
             })
         )
@@ -1033,7 +1025,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new DeleteDraftTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.deleteDraft
             })
         )
@@ -1044,7 +1035,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new ListMessagesTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.listMessages
             })
         )
@@ -1054,7 +1044,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new GetMessageTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.getMessage
             })
         )
@@ -1064,7 +1053,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new SendMessageTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.sendMessage
             })
         )
@@ -1074,7 +1062,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new ModifyMessageTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.modifyMessage
             })
         )
@@ -1084,7 +1071,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new TrashMessageTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.trashMessage
             })
         )
@@ -1094,7 +1080,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new UntrashMessageTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.untrashMessage
             })
         )
@@ -1104,7 +1089,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new DeleteMessageTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.deleteMessage
             })
         )
@@ -1115,7 +1099,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new ListLabelsTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.listLabels
             })
         )
@@ -1125,7 +1108,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new GetLabelTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.getLabel
             })
         )
@@ -1135,7 +1117,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new CreateLabelTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.createLabel
             })
         )
@@ -1145,7 +1126,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new UpdateLabelTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.updateLabel
             })
         )
@@ -1155,7 +1135,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new DeleteLabelTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.deleteLabel
             })
         )
@@ -1166,7 +1145,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new ListThreadsTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.listThreads
             })
         )
@@ -1176,7 +1154,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new GetThreadTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.getThread
             })
         )
@@ -1186,7 +1163,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new ModifyThreadTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.modifyThread
             })
         )
@@ -1196,7 +1172,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new TrashThreadTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.trashThread
             })
         )
@@ -1206,7 +1181,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new UntrashThreadTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.untrashThread
             })
         )
@@ -1216,7 +1190,6 @@ export const createGmailTools = (args?: RequestParameters): DynamicStructuredToo
         tools.push(
             new DeleteThreadTool({
                 accessToken,
-                maxOutputLength,
                 defaultParams: defaultParams.deleteThread
             })
         )
