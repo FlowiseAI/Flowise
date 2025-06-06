@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { updateFlowState } from '../utils'
 import { Tool } from '@langchain/core/tools'
-import { ARTIFACTS_PREFIX } from '../../../src/agents'
+import { ARTIFACTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import zodToJsonSchema from 'zod-to-json-schema'
 
 interface IToolInputArgs {
@@ -28,7 +28,7 @@ class Tool_Agentflow implements INode {
     constructor() {
         this.label = 'Tool'
         this.name = 'toolAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Tool'
         this.category = 'Agent Flows'
         this.description = 'Tools allow LLM to interact with external systems'
@@ -37,7 +37,7 @@ class Tool_Agentflow implements INode {
         this.inputs = [
             {
                 label: 'Tool',
-                name: 'selectedTool',
+                name: 'toolAgentflowSelectedTool',
                 type: 'asyncOptions',
                 loadMethod: 'listTools',
                 loadConfig: true
@@ -64,7 +64,7 @@ class Tool_Agentflow implements INode {
                     }
                 ],
                 show: {
-                    selectedTool: '.+'
+                    toolAgentflowSelectedTool: '.+'
                 }
             },
             {
@@ -124,8 +124,11 @@ class Tool_Agentflow implements INode {
         },
         async listToolInputArgs(nodeData: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> {
             const currentNode = options.currentNode as ICommonObject
-            const selectedTool = currentNode?.inputs?.selectedTool as string
-            const selectedToolConfig = currentNode?.inputs?.selectedToolConfig as ICommonObject
+            const selectedTool = (currentNode?.inputs?.selectedTool as string) || (currentNode?.inputs?.toolAgentflowSelectedTool as string)
+            const selectedToolConfig =
+                (currentNode?.inputs?.selectedToolConfig as ICommonObject) ||
+                (currentNode?.inputs?.toolAgentflowSelectedToolConfig as ICommonObject) ||
+                {}
 
             const nodeInstanceFilePath = options.componentNodes[selectedTool].filePath as string
 
@@ -183,8 +186,11 @@ class Tool_Agentflow implements INode {
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        const selectedTool = nodeData.inputs?.selectedTool as string
-        const selectedToolConfig = nodeData.inputs?.selectedToolConfig as ICommonObject
+        const selectedTool = (nodeData.inputs?.selectedTool as string) || (nodeData.inputs?.toolAgentflowSelectedTool as string)
+        const selectedToolConfig =
+            (nodeData?.inputs?.selectedToolConfig as ICommonObject) ||
+            (nodeData?.inputs?.toolAgentflowSelectedToolConfig as ICommonObject) ||
+            {}
 
         const toolInputArgs = nodeData.inputs?.toolInputArgs as IToolInputArgs[]
         const _toolUpdateState = nodeData.inputs?.toolUpdateState
@@ -262,6 +268,17 @@ class Tool_Agentflow implements INode {
                 }
             }
 
+            let toolInput
+            if (typeof toolOutput === 'string' && toolOutput.includes(TOOL_ARGS_PREFIX)) {
+                const [output, args] = toolOutput.split(TOOL_ARGS_PREFIX)
+                toolOutput = output
+                try {
+                    toolInput = JSON.parse(args)
+                } catch (e) {
+                    console.error('Error parsing tool input from tool:', e)
+                }
+            }
+
             if (typeof toolOutput === 'object') {
                 toolOutput = JSON.stringify(toolOutput, null, 2)
             }
@@ -284,7 +301,7 @@ class Tool_Agentflow implements INode {
                 id: nodeData.id,
                 name: this.name,
                 input: {
-                    toolInputArgs: toolInputArgs,
+                    toolInputArgs: toolInput ?? toolInputArgs,
                     selectedTool: selectedTool
                 },
                 output: {

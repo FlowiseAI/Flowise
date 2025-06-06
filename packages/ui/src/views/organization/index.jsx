@@ -172,7 +172,7 @@ const OrganizationSetupPage = () => {
             if (isEnterpriseLicensed) {
                 finalErrMessage = `Error in registering organization. Please contact your administrator. (${errMessage})`
             } else {
-                finalErrMessage = `Error in registering account.`
+                finalErrMessage = `Error in registering account: ${errMessage}`
             }
             setAuthError(finalErrMessage)
             setLoading(false)
@@ -396,7 +396,7 @@ const OrganizationSetupPage = () => {
                                 <Typography variant='caption'>
                                     <i>
                                         Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase
-                                        letter, one digit, and one special character (@$!%*?&-).
+                                        letter, one digit, and one special character.
                                     </i>
                                 </Typography>
                             </Box>

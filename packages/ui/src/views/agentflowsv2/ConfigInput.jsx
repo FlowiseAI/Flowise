@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect, useRef } from 'react'
+import { useContext, useState, useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { cloneDeep } from 'lodash'
 
@@ -26,8 +26,12 @@ export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = n
     const [expanded, setExpanded] = useState(false)
     const [selectedComponentNodeData, setSelectedComponentNodeData] = useState({})
 
-    // Track the last processed input values to prevent infinite loops
-    const lastProcessedInputsRef = useRef({})
+    // Track the last processed input values to prevent infinite loops using useState
+    const [lastProcessedInputs, setLastProcessedInputs] = useState({
+        mainValue: null,
+        configValue: null,
+        arrayValue: null
+    })
 
     const handleAccordionChange = (event, isExpanded) => {
         setExpanded(isExpanded)
@@ -63,6 +67,18 @@ export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = n
 
         setSelectedComponentNodeData(nodeData)
     }
+
+    // Memoize current input values for reliable comparison
+    const currentInputValues = useMemo(
+        () => ({
+            mainValue: data.inputs[inputParam.name],
+            configValue: data.inputs[`${inputParam.name}Config`],
+            arrayValue: parentParamForArray ? data.inputs[parentParamForArray.name] : null
+        }),
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [data.inputs, inputParam.name, parentParamForArray?.name]
+    )
 
     // Load initial component data when the component mounts
     useEffect(() => {
@@ -138,11 +154,11 @@ export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = n
             setSelectedComponentNodeData(componentNodeData)
 
             // Store the processed inputs to track changes
-            lastProcessedInputsRef.current = {
+            setLastProcessedInputs({
                 mainValue: data.inputs[inputParam.name],
                 configValue: data.inputs[`${inputParam.name}Config`],
                 arrayValue: parentParamForArray ? data.inputs[parentParamForArray.name] : null
-            }
+            })
         }
 
         loadComponentData()
@@ -154,15 +170,10 @@ export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = n
     useEffect(() => {
         if (!selectedComponentNodeData.inputParams) return
 
-        // Get current input values
-        const currentMainValue = data.inputs[inputParam.name]
-        const currentConfigValue = data.inputs[`${inputParam.name}Config`]
-        const currentArrayValue = parentParamForArray ? data.inputs[parentParamForArray.name] : null
-
-        // Check if relevant inputs have changed
-        const hasMainValueChanged = lastProcessedInputsRef.current.mainValue !== currentMainValue
-        const hasConfigValueChanged = lastProcessedInputsRef.current.configValue !== currentConfigValue
-        const hasArrayValueChanged = lastProcessedInputsRef.current.arrayValue !== currentArrayValue
+        // Check if relevant inputs have changed using strict equality comparison
+        const hasMainValueChanged = lastProcessedInputs.mainValue !== currentInputValues.mainValue
+        const hasConfigValueChanged = lastProcessedInputs.configValue !== currentInputValues.configValue
+        const hasArrayValueChanged = lastProcessedInputs.arrayValue !== currentInputValues.arrayValue
 
         if (!hasMainValueChanged && !hasConfigValueChanged && !hasArrayValueChanged) {
             return // No relevant changes
@@ -224,17 +235,17 @@ export const ConfigInput = ({ data, inputParam, disabled = false, arrayIndex = n
             setSelectedComponentNodeData(updatedComponentData)
 
             // Update the tracked values
-            lastProcessedInputsRef.current = {
-                mainValue: currentMainValue,
-                configValue: currentConfigValue,
-                arrayValue: currentArrayValue
-            }
+            setLastProcessedInputs({
+                mainValue: currentInputValues.mainValue,
+                configValue: currentInputValues.configValue,
+                arrayValue: currentInputValues.arrayValue
+            })
         }
 
         updateComponentData()
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [data.inputs, inputParam.name, parentParamForArray?.name, arrayIndex])
+    }, [currentInputValues, selectedComponentNodeData.inputParams, inputParam.name, parentParamForArray?.name, arrayIndex])
 
     // Update node configuration when selected component data changes
     useEffect(() => {

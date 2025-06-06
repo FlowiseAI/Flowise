@@ -90,19 +90,6 @@ const getAllDocumentStores = async (workspaceId?: string) => {
     }
 }
 
-const getAllDocumentFileChunks = async () => {
-    try {
-        const appServer = getRunningExpressApp()
-        const entities = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find()
-        return entities
-    } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: documentStoreServices.getAllDocumentFileChunks - ${getErrorMessage(error)}`
-        )
-    }
-}
-
 const getAllDocumentFileChunksByDocumentStoreIds = async (documentStoreIds: string[]) => {
     const appServer = getRunningExpressApp()
     return await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find({ where: { storeId: In(documentStoreIds) } })
@@ -2258,7 +2245,6 @@ export default {
     createDocumentStore,
     deleteLoaderFromDocumentStore,
     getAllDocumentStores,
-    getAllDocumentFileChunks,
     getAllDocumentFileChunksByDocumentStoreIds,
     getDocumentStoreById,
     getUsedChatflowNames,

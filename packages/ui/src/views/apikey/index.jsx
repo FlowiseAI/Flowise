@@ -424,7 +424,7 @@ const APIKey = () => {
                                             <StyledTableCell>Key Name</StyledTableCell>
                                             <StyledTableCell>API Key</StyledTableCell>
                                             <StyledTableCell>Usage</StyledTableCell>
-                                            <StyledTableCell>Created</StyledTableCell>
+                                            <StyledTableCell>Updated</StyledTableCell>
                                             <Available permission={'apikeys:update,apikeys:create'}>
                                                 <StyledTableCell> </StyledTableCell>
                                             </Available>

@@ -201,16 +201,6 @@ const abortChatMessage = async (chatId: string, chatflowid: string) => {
     }
 }
 
-async function getAllMessages(): Promise<ChatMessage[]> {
-    const appServer = getRunningExpressApp()
-    return await appServer.AppDataSource.getRepository(ChatMessage).find()
-}
-
-async function getAllMessagesFeedback(): Promise<ChatMessageFeedback[]> {
-    const appServer = getRunningExpressApp()
-    return await appServer.AppDataSource.getRepository(ChatMessageFeedback).find()
-}
-
 async function getMessagesByChatflowIds(chatflowIds: string[]): Promise<ChatMessage[]> {
     const appServer = getRunningExpressApp()
     return await appServer.AppDataSource.getRepository(ChatMessage).find({ where: { chatflowid: In(chatflowIds) } })
@@ -228,8 +218,6 @@ export default {
     removeAllChatMessages,
     removeChatMessagesByMessageIds,
     abortChatMessage,
-    getAllMessages,
-    getAllMessagesFeedback,
     getMessagesByChatflowIds,
     getMessagesFeedbackByChatflowIds
 }

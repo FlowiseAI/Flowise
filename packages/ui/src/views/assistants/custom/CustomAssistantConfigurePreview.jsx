@@ -53,7 +53,7 @@ import { baseURL } from '@/store/constant'
 import { SET_CHATFLOW, closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
 // Utils
-import { initNode } from '@/utils/genericHelper'
+import { initNode, showHideInputParams } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 import { toolAgentFlow } from './toolAgentFlow'
 
@@ -126,6 +126,28 @@ const CustomAssistantConfigurePreview = () => {
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+
+    const handleChatModelDataChange = ({ inputParam, newValue }) => {
+        setSelectedChatModel((prevData) => {
+            const updatedData = { ...prevData }
+            updatedData.inputs[inputParam.name] = newValue
+            updatedData.inputParams = showHideInputParams(updatedData)
+            return updatedData
+        })
+    }
+
+    const handleToolDataChange =
+        (toolIndex) =>
+        ({ inputParam, newValue }) => {
+            setSelectedTools((prevTools) => {
+                const updatedTools = [...prevTools]
+                const updatedTool = { ...updatedTools[toolIndex] }
+                updatedTool.inputs[inputParam.name] = newValue
+                updatedTool.inputParams = showHideInputParams(updatedTool)
+                updatedTools[toolIndex] = updatedTool
+                return updatedTools
+            })
+        }
 
     const displayWarning = () => {
         enqueueSnackbar({
@@ -1126,13 +1148,14 @@ const CustomAssistantConfigurePreview = () => {
                                                     borderRadius: 2
                                                 }}
                                             >
-                                                {(selectedChatModel.inputParams ?? [])
-                                                    .filter((inputParam) => !inputParam.hidden)
+                                                {showHideInputParams(selectedChatModel)
+                                                    .filter((inputParam) => !inputParam.hidden && inputParam.display !== false)
                                                     .map((inputParam, index) => (
                                                         <DocStoreInputHandler
                                                             key={index}
                                                             inputParam={inputParam}
                                                             data={selectedChatModel}
+                                                            onNodeDataChange={handleChatModelDataChange}
                                                         />
                                                     ))}
                                             </Box>
@@ -1217,13 +1240,16 @@ const CustomAssistantConfigurePreview = () => {
                                                                     mb: 1
                                                                 }}
                                                             >
-                                                                {(tool.inputParams ?? [])
-                                                                    .filter((inputParam) => !inputParam.hidden)
-                                                                    .map((inputParam, index) => (
+                                                                {showHideInputParams(tool)
+                                                                    .filter(
+                                                                        (inputParam) => !inputParam.hidden && inputParam.display !== false
+                                                                    )
+                                                                    .map((inputParam, inputIndex) => (
                                                                         <DocStoreInputHandler
-                                                                            key={index}
+                                                                            key={inputIndex}
                                                                             inputParam={inputParam}
                                                                             data={tool}
+                                                                            onNodeDataChange={handleToolDataChange(index)}
                                                                         />
                                                                     ))}
                                                             </Box>
