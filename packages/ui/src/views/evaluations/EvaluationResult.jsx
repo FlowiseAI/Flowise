@@ -501,7 +501,7 @@ const EvalEvaluationRows = () => {
                         {showCharts && (
                             <Grid container={true} spacing={2}>
                                 {customEvalsDefined && (
-                                    <Grid item={true} xs={12} sm={6} md={4} lg={4}>
+                                    <Grid item={true} xs={12} sm={12} md={4} lg={4}>
                                         <MetricsItemCard
                                             data={{
                                                 header: 'PASS RATE',

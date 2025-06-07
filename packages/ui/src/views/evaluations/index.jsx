@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import * as PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import { useNavigate } from 'react-router-dom'
@@ -20,7 +20,8 @@ import {
     TableBody,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    ToggleButton
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
@@ -53,7 +54,9 @@ import {
     IconTrash,
     IconX,
     IconChevronsUp,
-    IconChevronsDown
+    IconChevronsDown,
+    IconPlayerPlay,
+    IconPlayerPause
 } from '@tabler/icons-react'
 import empty_evalSVG from '@/assets/images/empty_evals.svg'
 
@@ -79,6 +82,7 @@ const EvalsEvaluation = () => {
     const [loading, setLoading] = useState(false)
     const [isTableLoading, setTableLoading] = useState(false)
     const [selected, setSelected] = useState([])
+    const [autoRefresh, setAutoRefresh] = useState(false)
 
     const onSelectAllClick = (event) => {
         if (event.target.checked) {
@@ -240,13 +244,33 @@ const EvalsEvaluation = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [createNewEvaluation.error])
 
-    const onRefresh = () => {
+    const onRefresh = useCallback(() => {
         getAllEvaluations.request()
-    }
+    }, [getAllEvaluations])
 
     useEffect(() => {
         setTableLoading(getAllEvaluations.loading)
     }, [getAllEvaluations.loading])
+
+    useEffect(() => {
+        let intervalId = null
+
+        if (autoRefresh) {
+            intervalId = setInterval(() => {
+                onRefresh()
+            }, 5000)
+        }
+
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId)
+            }
+        }
+    }, [autoRefresh, onRefresh])
+
+    const toggleAutoRefresh = () => {
+        setAutoRefresh(!autoRefresh)
+    }
 
     return (
         <>
@@ -256,6 +280,35 @@ const EvalsEvaluation = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader isBackButton={false} isEditButton={false} search={false} title={'Evaluations'} description=''>
+                            <ToggleButton
+                                value='auto-refresh'
+                                selected={autoRefresh}
+                                onChange={toggleAutoRefresh}
+                                size='small'
+                                sx={{
+                                    borderRadius: 2,
+                                    height: '100%',
+                                    backgroundColor: autoRefresh ? '#ff9800' : '#4caf50',
+                                    color: 'white',
+                                    border: autoRefresh ? '1px solid #ff9800' : '1px solid #4caf50',
+                                    '&:hover': {
+                                        backgroundColor: autoRefresh ? '#f57c00' : '#388e3c',
+                                        border: autoRefresh ? '1px solid #f57c00' : '1px solid #388e3c'
+                                    },
+                                    '&.Mui-selected': {
+                                        backgroundColor: '#ff9800',
+                                        color: 'white',
+                                        border: '1px solid #ff9800',
+                                        '&:hover': {
+                                            backgroundColor: '#f57c00',
+                                            border: '1px solid #f57c00'
+                                        }
+                                    }
+                                }}
+                                title={autoRefresh ? 'Disable auto-refresh' : 'Enable auto-refresh (every 5s)'}
+                            >
+                                {autoRefresh ? <IconPlayerPause /> : <IconPlayerPlay />}
+                            </ToggleButton>
                             <StyledButton
                                 color='secondary'
                                 variant='outlined'
