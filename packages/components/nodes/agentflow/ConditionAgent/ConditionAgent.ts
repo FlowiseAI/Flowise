@@ -27,7 +27,7 @@ class ConditionAgent_Agentflow implements INode {
     constructor() {
         this.label = 'Condition Agent'
         this.name = 'conditionAgentAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'ConditionAgent'
         this.category = 'Agent Flows'
         this.description = `Utilize an agent to split flows based on dynamic conditions`
@@ -58,6 +58,16 @@ class ConditionAgent_Agentflow implements INode {
                 rows: 4,
                 acceptVariable: true,
                 default: '<p><span class="variable" data-type="mention" data-id="question" data-label="question">{{ question }}</span> </p>'
+            },
+            {
+                label: 'Node System Prompt',
+                name: 'conditionAgentSystemPrompt',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                acceptVariable: true,
+                default: CONDITION_AGENT_SYSTEM_PROMPT,
+                description: 'Expert use only. Modifying this can significantly alter agent behavior. Leave default if unsure'
             },
             {
                 label: 'Scenarios',
@@ -242,6 +252,7 @@ class ConditionAgent_Agentflow implements INode {
             const conditionAgentInput = nodeData.inputs?.conditionAgentInput as string
             let input = conditionAgentInput || question
             const conditionAgentInstructions = nodeData.inputs?.conditionAgentInstructions as string
+            const systemPrompt = (nodeData.inputs?.conditionAgentSystemPrompt as string) ?? CONDITION_AGENT_SYSTEM_PROMPT
 
             // Extract memory and configuration options
             const enableMemory = nodeData.inputs?.conditionAgentEnableMemory as boolean
@@ -277,7 +288,7 @@ class ConditionAgent_Agentflow implements INode {
             const messages: BaseMessageLike[] = [
                 {
                     role: 'system',
-                    content: CONDITION_AGENT_SYSTEM_PROMPT
+                    content: systemPrompt
                 },
                 {
                     role: 'user',
