@@ -9,8 +9,8 @@ export class AddSSOColumns1730519457880 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "organization" DROP COLUMN "sso_config";`)
-        await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "user_type";`)
-        await queryRunner.query(`ALTER TABLE "login_activity" DROP COLUMN "login_mode";`)
+        await queryRunner.query(`ALTER TABLE \`organization\` DROP COLUMN \`sso_config\`;`)
+        await queryRunner.query(`ALTER TABLE \`user\` DROP COLUMN \`user_type\`;`)
+        await queryRunner.query(`ALTER TABLE \`login_activity\` DROP COLUMN \`login_mode\`;`)
     }
 }

@@ -1401,9 +1401,18 @@ class Agent_Agentflow implements INode {
                     return { response, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput: true }
                 }
 
+                let toolIds: ICommonObject | undefined
+                if (options.analyticHandlers) {
+                    toolIds = await options.analyticHandlers.onToolStart(toolCall.name, toolCall.args, options.parentTraceIds)
+                }
+
                 try {
                     //@ts-ignore
                     let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+
+                    if (options.analyticHandlers && toolIds) {
+                        await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
+                    }
 
                     // Extract source documents if present
                     if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
@@ -1459,6 +1468,10 @@ class Agent_Agentflow implements INode {
                         toolOutput
                     })
                 } catch (e) {
+                    if (options.analyticHandlers && toolIds) {
+                        await options.analyticHandlers.onToolEnd(toolIds, e)
+                    }
+
                     console.error('Error invoking tool:', e)
                     usedTools.push({
                         tool: selectedTool.name,
@@ -1650,9 +1663,18 @@ class Agent_Agentflow implements INode {
                     toolsInstance = toolsInstance.filter((tool) => tool.name !== toolCall.name)
                 }
                 if (humanInput.type === 'proceed') {
+                    let toolIds: ICommonObject | undefined
+                    if (options.analyticHandlers) {
+                        toolIds = await options.analyticHandlers.onToolStart(toolCall.name, toolCall.args, options.parentTraceIds)
+                    }
+
                     try {
                         //@ts-ignore
                         let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+
+                        if (options.analyticHandlers && toolIds) {
+                            await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
+                        }
 
                         // Extract source documents if present
                         if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
@@ -1708,6 +1730,10 @@ class Agent_Agentflow implements INode {
                             toolOutput
                         })
                     } catch (e) {
+                        if (options.analyticHandlers && toolIds) {
+                            await options.analyticHandlers.onToolEnd(toolIds, e)
+                        }
+
                         console.error('Error invoking tool:', e)
                         usedTools.push({
                             tool: selectedTool.name,
