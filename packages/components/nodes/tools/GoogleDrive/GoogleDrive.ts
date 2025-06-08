@@ -616,8 +616,20 @@ class GoogleDrive_Tools implements INode {
             actions = shareActions
         }
 
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
+
+        const tools = createGoogleDriveTools({
+            accessToken,
+            actions,
+            defaultParams
+        })
+
+        return tools
+    }
+
+    transformNodeInputsToToolArgs(nodeData: INodeData): Record<string, any> {
         // Collect default parameters from inputs
-        const defaultParams: any = {}
+        const defaultParams: Record<string, any> = {}
 
         // Add parameters based on the inputs provided
         if (nodeData.inputs?.fileId) defaultParams.fileId = nodeData.inputs.fileId
@@ -644,13 +656,7 @@ class GoogleDrive_Tools implements INode {
         if (nodeData.inputs?.fields) defaultParams.fields = nodeData.inputs.fields
         if (nodeData.inputs?.acknowledgeAbuse !== undefined) defaultParams.acknowledgeAbuse = nodeData.inputs.acknowledgeAbuse
 
-        const tools = createGoogleDriveTools({
-            accessToken,
-            actions,
-            defaultParams
-        })
-
-        return tools
+        return defaultParams
     }
 }
 

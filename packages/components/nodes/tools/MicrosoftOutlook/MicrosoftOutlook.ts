@@ -747,216 +747,7 @@ class MicrosoftOutlook_Tools implements INode {
             actions = convertMultiOptionsToStringArray(messageActions)
         }
 
-        // Prepare default parameters for each action based on type
-        const defaultParams: ICommonObject = {}
-
-        if (outlookType === 'calendar') {
-            // Map calendar actions to their parameters
-            actions.forEach((action) => {
-                defaultParams[action] = {}
-
-                switch (action) {
-                    case 'listCalendars':
-                        if (nodeData.inputs?.maxResultsListCalendars) {
-                            defaultParams[action].maxResults = nodeData.inputs.maxResultsListCalendars
-                        }
-                        break
-
-                    case 'getCalendar':
-                        if (nodeData.inputs?.calendarIdGetCalendar) {
-                            defaultParams[action].calendarId = nodeData.inputs.calendarIdGetCalendar
-                        }
-                        break
-
-                    case 'createCalendar':
-                        if (nodeData.inputs?.calendarNameCreateCalendar) {
-                            defaultParams[action].calendarName = nodeData.inputs.calendarNameCreateCalendar
-                        }
-                        break
-
-                    case 'updateCalendar':
-                        if (nodeData.inputs?.calendarIdUpdateCalendar) {
-                            defaultParams[action].calendarId = nodeData.inputs.calendarIdUpdateCalendar
-                        }
-                        if (nodeData.inputs?.calendarNameUpdateCalendar) {
-                            defaultParams[action].calendarName = nodeData.inputs.calendarNameUpdateCalendar
-                        }
-                        break
-
-                    case 'deleteCalendar':
-                        if (nodeData.inputs?.calendarIdDeleteCalendar) {
-                            defaultParams[action].calendarId = nodeData.inputs.calendarIdDeleteCalendar
-                        }
-                        break
-
-                    case 'listEvents':
-                        if (nodeData.inputs?.calendarIdListEvents) {
-                            defaultParams[action].calendarId = nodeData.inputs.calendarIdListEvents
-                        }
-                        if (nodeData.inputs?.maxResultsListEvents) {
-                            defaultParams[action].maxResults = nodeData.inputs.maxResultsListEvents
-                        }
-                        if (nodeData.inputs?.startDateTimeListEvents) {
-                            defaultParams[action].startDateTime = nodeData.inputs.startDateTimeListEvents
-                        }
-                        if (nodeData.inputs?.endDateTimeListEvents) {
-                            defaultParams[action].endDateTime = nodeData.inputs.endDateTimeListEvents
-                        }
-                        break
-
-                    case 'getEvent':
-                        if (nodeData.inputs?.eventIdGetEvent) {
-                            defaultParams[action].eventId = nodeData.inputs.eventIdGetEvent
-                        }
-                        break
-
-                    case 'createEvent':
-                        if (nodeData.inputs?.subjectCreateEvent) {
-                            defaultParams[action].subject = nodeData.inputs.subjectCreateEvent
-                        }
-                        if (nodeData.inputs?.bodyCreateEvent) {
-                            defaultParams[action].body = nodeData.inputs.bodyCreateEvent
-                        }
-                        if (nodeData.inputs?.startDateTimeCreateEvent) {
-                            defaultParams[action].startDateTime = nodeData.inputs.startDateTimeCreateEvent
-                        }
-                        if (nodeData.inputs?.endDateTimeCreateEvent) {
-                            defaultParams[action].endDateTime = nodeData.inputs.endDateTimeCreateEvent
-                        }
-                        if (nodeData.inputs?.timeZoneCreateEvent) {
-                            defaultParams[action].timeZone = nodeData.inputs.timeZoneCreateEvent
-                        }
-                        if (nodeData.inputs?.locationCreateEvent) {
-                            defaultParams[action].location = nodeData.inputs.locationCreateEvent
-                        }
-                        if (nodeData.inputs?.attendeesCreateEvent) {
-                            defaultParams[action].attendees = nodeData.inputs.attendeesCreateEvent
-                        }
-                        break
-
-                    case 'updateEvent':
-                        if (nodeData.inputs?.eventIdUpdateEvent) {
-                            defaultParams[action].eventId = nodeData.inputs.eventIdUpdateEvent
-                        }
-                        if (nodeData.inputs?.subjectUpdateEvent) {
-                            defaultParams[action].subject = nodeData.inputs.subjectUpdateEvent
-                        }
-                        break
-
-                    case 'deleteEvent':
-                        if (nodeData.inputs?.eventIdDeleteEvent) {
-                            defaultParams[action].eventId = nodeData.inputs.eventIdDeleteEvent
-                        }
-                        break
-                }
-            })
-        } else if (outlookType === 'message') {
-            // Map message actions to their parameters
-            actions.forEach((action) => {
-                defaultParams[action] = {}
-
-                switch (action) {
-                    case 'listMessages':
-                        if (nodeData.inputs?.maxResultsListMessages) {
-                            defaultParams[action].maxResults = nodeData.inputs.maxResultsListMessages
-                        }
-                        if (nodeData.inputs?.filterListMessages) {
-                            defaultParams[action].filter = nodeData.inputs.filterListMessages
-                        }
-                        break
-
-                    case 'getMessage':
-                        if (nodeData.inputs?.messageIdGetMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdGetMessage
-                        }
-                        break
-
-                    case 'createDraftMessage':
-                        if (nodeData.inputs?.toCreateDraftMessage) {
-                            defaultParams[action].to = nodeData.inputs.toCreateDraftMessage
-                        }
-                        if (nodeData.inputs?.subjectCreateDraftMessage) {
-                            defaultParams[action].subject = nodeData.inputs.subjectCreateDraftMessage
-                        }
-                        if (nodeData.inputs?.bodyCreateDraftMessage) {
-                            defaultParams[action].body = nodeData.inputs.bodyCreateDraftMessage
-                        }
-                        if (nodeData.inputs?.ccCreateDraftMessage) {
-                            defaultParams[action].cc = nodeData.inputs.ccCreateDraftMessage
-                        }
-                        if (nodeData.inputs?.bccCreateDraftMessage) {
-                            defaultParams[action].bcc = nodeData.inputs.bccCreateDraftMessage
-                        }
-                        break
-
-                    case 'sendMessage':
-                        if (nodeData.inputs?.toSendMessage) {
-                            defaultParams[action].to = nodeData.inputs.toSendMessage
-                        }
-                        if (nodeData.inputs?.subjectSendMessage) {
-                            defaultParams[action].subject = nodeData.inputs.subjectSendMessage
-                        }
-                        if (nodeData.inputs?.bodySendMessage) {
-                            defaultParams[action].body = nodeData.inputs.bodySendMessage
-                        }
-                        break
-
-                    case 'updateMessage':
-                        if (nodeData.inputs?.messageIdUpdateMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdUpdateMessage
-                        }
-                        if (nodeData.inputs?.isReadUpdateMessage !== undefined) {
-                            defaultParams[action].isRead = nodeData.inputs.isReadUpdateMessage
-                        }
-                        break
-
-                    case 'deleteMessage':
-                        if (nodeData.inputs?.messageIdDeleteMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdDeleteMessage
-                        }
-                        break
-
-                    case 'copyMessage':
-                        if (nodeData.inputs?.messageIdCopyMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdCopyMessage
-                        }
-                        if (nodeData.inputs?.destinationFolderIdCopyMessage) {
-                            defaultParams[action].destinationFolderId = nodeData.inputs.destinationFolderIdCopyMessage
-                        }
-                        break
-
-                    case 'moveMessage':
-                        if (nodeData.inputs?.messageIdMoveMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdMoveMessage
-                        }
-                        if (nodeData.inputs?.destinationFolderIdMoveMessage) {
-                            defaultParams[action].destinationFolderId = nodeData.inputs.destinationFolderIdMoveMessage
-                        }
-                        break
-
-                    case 'replyMessage':
-                        if (nodeData.inputs?.messageIdReplyMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdReplyMessage
-                        }
-                        if (nodeData.inputs?.replyBodyReplyMessage) {
-                            defaultParams[action].replyBody = nodeData.inputs.replyBodyReplyMessage
-                        }
-                        break
-
-                    case 'forwardMessage':
-                        if (nodeData.inputs?.messageIdForwardMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdForwardMessage
-                        }
-                        if (nodeData.inputs?.forwardToForwardMessage) {
-                            defaultParams[action].forwardTo = nodeData.inputs.forwardToForwardMessage
-                        }
-                        if (nodeData.inputs?.forwardCommentForwardMessage) {
-                            defaultParams[action].forwardComment = nodeData.inputs.forwardCommentForwardMessage
-                        }
-                        break
-                }
-            })
-        }
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
 
         const outlookTools = createOutlookTools({
             accessToken,
@@ -965,6 +756,66 @@ class MicrosoftOutlook_Tools implements INode {
         })
 
         return outlookTools
+    }
+
+    transformNodeInputsToToolArgs(nodeData: INodeData): Record<string, any> {
+        // Collect default parameters from inputs
+        const defaultParams: Record<string, any> = {}
+
+        // Calendar parameters
+        if (nodeData.inputs?.maxResultsListCalendars) defaultParams.maxResultsListCalendars = nodeData.inputs.maxResultsListCalendars
+        if (nodeData.inputs?.calendarIdGetCalendar) defaultParams.calendarIdGetCalendar = nodeData.inputs.calendarIdGetCalendar
+        if (nodeData.inputs?.calendarNameCreateCalendar)
+            defaultParams.calendarNameCreateCalendar = nodeData.inputs.calendarNameCreateCalendar
+        if (nodeData.inputs?.calendarIdUpdateCalendar) defaultParams.calendarIdUpdateCalendar = nodeData.inputs.calendarIdUpdateCalendar
+        if (nodeData.inputs?.calendarNameUpdateCalendar)
+            defaultParams.calendarNameUpdateCalendar = nodeData.inputs.calendarNameUpdateCalendar
+        if (nodeData.inputs?.calendarIdDeleteCalendar) defaultParams.calendarIdDeleteCalendar = nodeData.inputs.calendarIdDeleteCalendar
+        if (nodeData.inputs?.calendarIdListEvents) defaultParams.calendarIdListEvents = nodeData.inputs.calendarIdListEvents
+        if (nodeData.inputs?.maxResultsListEvents) defaultParams.maxResultsListEvents = nodeData.inputs.maxResultsListEvents
+        if (nodeData.inputs?.startDateTimeListEvents) defaultParams.startDateTimeListEvents = nodeData.inputs.startDateTimeListEvents
+        if (nodeData.inputs?.endDateTimeListEvents) defaultParams.endDateTimeListEvents = nodeData.inputs.endDateTimeListEvents
+        if (nodeData.inputs?.eventIdGetEvent) defaultParams.eventIdGetEvent = nodeData.inputs.eventIdGetEvent
+        if (nodeData.inputs?.subjectCreateEvent) defaultParams.subjectCreateEvent = nodeData.inputs.subjectCreateEvent
+        if (nodeData.inputs?.bodyCreateEvent) defaultParams.bodyCreateEvent = nodeData.inputs.bodyCreateEvent
+        if (nodeData.inputs?.startDateTimeCreateEvent) defaultParams.startDateTimeCreateEvent = nodeData.inputs.startDateTimeCreateEvent
+        if (nodeData.inputs?.endDateTimeCreateEvent) defaultParams.endDateTimeCreateEvent = nodeData.inputs.endDateTimeCreateEvent
+        if (nodeData.inputs?.timeZoneCreateEvent) defaultParams.timeZoneCreateEvent = nodeData.inputs.timeZoneCreateEvent
+        if (nodeData.inputs?.locationCreateEvent) defaultParams.locationCreateEvent = nodeData.inputs.locationCreateEvent
+        if (nodeData.inputs?.attendeesCreateEvent) defaultParams.attendeesCreateEvent = nodeData.inputs.attendeesCreateEvent
+        if (nodeData.inputs?.eventIdUpdateEvent) defaultParams.eventIdUpdateEvent = nodeData.inputs.eventIdUpdateEvent
+        if (nodeData.inputs?.subjectUpdateEvent) defaultParams.subjectUpdateEvent = nodeData.inputs.subjectUpdateEvent
+        if (nodeData.inputs?.eventIdDeleteEvent) defaultParams.eventIdDeleteEvent = nodeData.inputs.eventIdDeleteEvent
+
+        // Message parameters
+        if (nodeData.inputs?.maxResultsListMessages) defaultParams.maxResultsListMessages = nodeData.inputs.maxResultsListMessages
+        if (nodeData.inputs?.filterListMessages) defaultParams.filterListMessages = nodeData.inputs.filterListMessages
+        if (nodeData.inputs?.messageIdGetMessage) defaultParams.messageIdGetMessage = nodeData.inputs.messageIdGetMessage
+        if (nodeData.inputs?.toCreateDraftMessage) defaultParams.toCreateDraftMessage = nodeData.inputs.toCreateDraftMessage
+        if (nodeData.inputs?.subjectCreateDraftMessage) defaultParams.subjectCreateDraftMessage = nodeData.inputs.subjectCreateDraftMessage
+        if (nodeData.inputs?.bodyCreateDraftMessage) defaultParams.bodyCreateDraftMessage = nodeData.inputs.bodyCreateDraftMessage
+        if (nodeData.inputs?.ccCreateDraftMessage) defaultParams.ccCreateDraftMessage = nodeData.inputs.ccCreateDraftMessage
+        if (nodeData.inputs?.bccCreateDraftMessage) defaultParams.bccCreateDraftMessage = nodeData.inputs.bccCreateDraftMessage
+        if (nodeData.inputs?.toSendMessage) defaultParams.toSendMessage = nodeData.inputs.toSendMessage
+        if (nodeData.inputs?.subjectSendMessage) defaultParams.subjectSendMessage = nodeData.inputs.subjectSendMessage
+        if (nodeData.inputs?.bodySendMessage) defaultParams.bodySendMessage = nodeData.inputs.bodySendMessage
+        if (nodeData.inputs?.messageIdUpdateMessage) defaultParams.messageIdUpdateMessage = nodeData.inputs.messageIdUpdateMessage
+        if (nodeData.inputs?.isReadUpdateMessage !== undefined) defaultParams.isReadUpdateMessage = nodeData.inputs.isReadUpdateMessage
+        if (nodeData.inputs?.messageIdDeleteMessage) defaultParams.messageIdDeleteMessage = nodeData.inputs.messageIdDeleteMessage
+        if (nodeData.inputs?.messageIdCopyMessage) defaultParams.messageIdCopyMessage = nodeData.inputs.messageIdCopyMessage
+        if (nodeData.inputs?.destinationFolderIdCopyMessage)
+            defaultParams.destinationFolderIdCopyMessage = nodeData.inputs.destinationFolderIdCopyMessage
+        if (nodeData.inputs?.messageIdMoveMessage) defaultParams.messageIdMoveMessage = nodeData.inputs.messageIdMoveMessage
+        if (nodeData.inputs?.destinationFolderIdMoveMessage)
+            defaultParams.destinationFolderIdMoveMessage = nodeData.inputs.destinationFolderIdMoveMessage
+        if (nodeData.inputs?.messageIdReplyMessage) defaultParams.messageIdReplyMessage = nodeData.inputs.messageIdReplyMessage
+        if (nodeData.inputs?.replyBodyReplyMessage) defaultParams.replyBodyReplyMessage = nodeData.inputs.replyBodyReplyMessage
+        if (nodeData.inputs?.messageIdForwardMessage) defaultParams.messageIdForwardMessage = nodeData.inputs.messageIdForwardMessage
+        if (nodeData.inputs?.forwardToForwardMessage) defaultParams.forwardToForwardMessage = nodeData.inputs.forwardToForwardMessage
+        if (nodeData.inputs?.forwardCommentForwardMessage)
+            defaultParams.forwardCommentForwardMessage = nodeData.inputs.forwardCommentForwardMessage
+
+        return defaultParams
     }
 }
 

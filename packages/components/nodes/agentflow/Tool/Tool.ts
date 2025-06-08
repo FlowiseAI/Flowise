@@ -226,6 +226,16 @@ class Tool_Agentflow implements INode {
         const toolInstance = (await newToolNodeInstance.init(newNodeData, '', options)) as Tool | Tool[]
 
         let toolCallArgs: Record<string, any> = {}
+
+        if (newToolNodeInstance.transformNodeInputsToToolArgs) {
+            const defaultParams = newToolNodeInstance.transformNodeInputsToToolArgs(newNodeData)
+
+            toolCallArgs = {
+                ...defaultParams,
+                ...toolCallArgs
+            }
+        }
+
         for (const item of toolInputArgs) {
             const variableName = item.inputArgName
             const variableValue = item.inputArgValue

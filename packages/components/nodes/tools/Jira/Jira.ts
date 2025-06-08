@@ -400,93 +400,7 @@ class Jira_Tools implements INode {
             actions = convertMultiOptionsToStringArray(nodeData.inputs?.userActions)
         }
 
-        // Prepare default parameters for each action
-        const defaultParams: ICommonObject = {}
-
-        // Issue parameters
-        const projectKey = nodeData.inputs?.projectKey
-        const issueType = nodeData.inputs?.issueType
-        const issueSummary = nodeData.inputs?.issueSummary
-        const issueDescription = nodeData.inputs?.issueDescription
-        const issuePriority = nodeData.inputs?.issuePriority
-        const issueKey = nodeData.inputs?.issueKey
-        const assigneeAccountId = nodeData.inputs?.assigneeAccountId
-        const transitionId = nodeData.inputs?.transitionId
-        const jqlQuery = nodeData.inputs?.jqlQuery
-        const issueMaxResults = nodeData.inputs?.issueMaxResults
-
-        // Comment parameters
-        const commentIssueKey = nodeData.inputs?.commentIssueKey
-        const commentText = nodeData.inputs?.commentText
-        const commentId = nodeData.inputs?.commentId
-
-        // User parameters
-        const userQuery = nodeData.inputs?.userQuery
-        const userAccountId = nodeData.inputs?.userAccountId
-        const userEmail = nodeData.inputs?.userEmail
-        const userDisplayName = nodeData.inputs?.userDisplayName
-        const userMaxResults = nodeData.inputs?.userMaxResults
-
-        // Set default parameters based on actions
-        actions.forEach((action) => {
-            const params: ICommonObject = {}
-
-            // Issue action parameters
-            if (action === 'listIssues') {
-                if (projectKey) params.projectKey = projectKey
-                if (jqlQuery) params.jql = jqlQuery
-                if (issueMaxResults) params.maxResults = issueMaxResults
-            }
-            if (action === 'createIssue') {
-                if (projectKey) params.projectKey = projectKey
-                if (issueType) params.issueType = issueType
-                if (issueSummary) params.summary = issueSummary
-                if (issueDescription) params.description = issueDescription
-                if (issuePriority) params.priority = issuePriority
-                if (assigneeAccountId) params.assigneeAccountId = assigneeAccountId
-            }
-            if (['getIssue', 'updateIssue', 'deleteIssue', 'assignIssue', 'transitionIssue'].includes(action)) {
-                if (issueKey) params.issueKey = issueKey
-            }
-            if (action === 'updateIssue') {
-                if (issueSummary) params.summary = issueSummary
-                if (issueDescription) params.description = issueDescription
-                if (issuePriority) params.priority = issuePriority
-                if (assigneeAccountId) params.assigneeAccountId = assigneeAccountId
-            }
-            if (action === 'assignIssue') {
-                if (assigneeAccountId) params.assigneeAccountId = assigneeAccountId
-            }
-            if (action === 'transitionIssue') {
-                if (transitionId) params.transitionId = transitionId
-            }
-
-            // Comment action parameters
-            if (['listComments', 'createComment'].includes(action) && commentIssueKey) {
-                params.issueKey = commentIssueKey
-            }
-            if (['createComment', 'updateComment'].includes(action) && commentText) {
-                params.text = commentText
-            }
-            if (['getComment', 'updateComment', 'deleteComment'].includes(action) && commentId) {
-                params.commentId = commentId
-            }
-
-            // User action parameters
-            if (action === 'searchUsers') {
-                if (userQuery) params.query = userQuery
-                if (userMaxResults) params.maxResults = userMaxResults
-            }
-            if (['getUser', 'updateUser', 'deleteUser'].includes(action) && userAccountId) {
-                params.accountId = userAccountId
-            }
-            if (['createUser', 'updateUser'].includes(action)) {
-                if (userEmail) params.emailAddress = userEmail
-                if (userDisplayName) params.displayName = userDisplayName
-            }
-
-            defaultParams[action] = params
-        })
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
 
         // Create and return tools based on selected actions
         const tools = createJiraTools({
@@ -498,6 +412,37 @@ class Jira_Tools implements INode {
         })
 
         return tools
+    }
+
+    transformNodeInputsToToolArgs(nodeData: INodeData): Record<string, any> {
+        // Collect default parameters from inputs
+        const defaultParams: Record<string, any> = {}
+
+        // Issue parameters
+        if (nodeData.inputs?.projectKey) defaultParams.projectKey = nodeData.inputs.projectKey
+        if (nodeData.inputs?.issueType) defaultParams.issueType = nodeData.inputs.issueType
+        if (nodeData.inputs?.issueSummary) defaultParams.issueSummary = nodeData.inputs.issueSummary
+        if (nodeData.inputs?.issueDescription) defaultParams.issueDescription = nodeData.inputs.issueDescription
+        if (nodeData.inputs?.issuePriority) defaultParams.issuePriority = nodeData.inputs.issuePriority
+        if (nodeData.inputs?.issueKey) defaultParams.issueKey = nodeData.inputs.issueKey
+        if (nodeData.inputs?.assigneeAccountId) defaultParams.assigneeAccountId = nodeData.inputs.assigneeAccountId
+        if (nodeData.inputs?.transitionId) defaultParams.transitionId = nodeData.inputs.transitionId
+        if (nodeData.inputs?.jqlQuery) defaultParams.jqlQuery = nodeData.inputs.jqlQuery
+        if (nodeData.inputs?.issueMaxResults) defaultParams.issueMaxResults = nodeData.inputs.issueMaxResults
+
+        // Comment parameters
+        if (nodeData.inputs?.commentIssueKey) defaultParams.commentIssueKey = nodeData.inputs.commentIssueKey
+        if (nodeData.inputs?.commentText) defaultParams.commentText = nodeData.inputs.commentText
+        if (nodeData.inputs?.commentId) defaultParams.commentId = nodeData.inputs.commentId
+
+        // User parameters
+        if (nodeData.inputs?.userQuery) defaultParams.userQuery = nodeData.inputs.userQuery
+        if (nodeData.inputs?.userAccountId) defaultParams.userAccountId = nodeData.inputs.userAccountId
+        if (nodeData.inputs?.userEmail) defaultParams.userEmail = nodeData.inputs.userEmail
+        if (nodeData.inputs?.userDisplayName) defaultParams.userDisplayName = nodeData.inputs.userDisplayName
+        if (nodeData.inputs?.userMaxResults) defaultParams.userMaxResults = nodeData.inputs.userMaxResults
+
+        return defaultParams
     }
 }
 
