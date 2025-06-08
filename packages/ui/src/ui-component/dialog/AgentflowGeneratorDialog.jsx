@@ -131,7 +131,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'error',
-                        persist: true,
+                        persist: false,
                         action: (key) => (
                             <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
                                 <IconX />
@@ -146,7 +146,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
-                    persist: true,
+                    persist: false,
                     action: (key) => (
                         <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
                             <IconX />
