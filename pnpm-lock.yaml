@@ -1073,6 +1073,9 @@ importers:
             remark-math:
                 specifier: ^5.1.1
                 version: 5.1.1
+            showdown:
+                specifier: ^2.1.0
+                version: 2.1.0
             tippy.js:
                 specifier: ^6.3.7
                 version: 6.3.7
@@ -16153,6 +16156,10 @@ packages:
 
     shimmer@1.2.1:
         resolution: { integrity: sha512-sQTKC1Re/rM6XyFM6fIAGHRPVGvyXfgzIDvzoq608vM+jeyVD0Tu1E6Np0Kc2zAIFWIj963V2800iF/9LPieQw== }
+
+    showdown@2.1.0:
+        resolution: { integrity: sha512-/6NVYu4U819R2pUIk79n67SYgJHWCce0a5xTP979WbNp0FL9MN1I1QK662IDU1b6JzKTvmhgI7T7JYIxBi3kMQ== }
+        hasBin: true
 
     shx@0.3.4:
         resolution: { integrity: sha512-N6A9MLVqjxZYcVn8hLmtneQWIJtp8IKzMP4eMnx+nqkvXoqinUPCbUFLp2UcWTEIUONhlk0ewxr/jaVGlc+J+g== }
@@ -38833,6 +38840,10 @@ snapshots:
             rechoir: 0.6.2
 
     shimmer@1.2.1: {}
+
+    showdown@2.1.0:
+        dependencies:
+            commander: 9.5.0
 
     shx@0.3.4:
         dependencies:
