@@ -328,88 +328,7 @@ class GoogleSheets_Tools implements INode {
             actions = convertMultiOptionsToStringArray(nodeData.inputs?.valuesActions)
         }
 
-        // Create default params object based on inputs
-        const defaultParams: any = {}
-
-        // Spreadsheet-specific default params
-        if (sheetsType === 'spreadsheet') {
-            actions.forEach((action) => {
-                const params: any = {}
-
-                // Common spreadsheet parameters
-                if (nodeData.inputs?.spreadsheetId) params.spreadsheetId = nodeData.inputs.spreadsheetId
-
-                if (action === 'createSpreadsheet') {
-                    if (nodeData.inputs?.title) params.title = nodeData.inputs.title
-                    if (nodeData.inputs?.sheetCount) params.sheetCount = nodeData.inputs.sheetCount
-                }
-
-                if (action === 'getSpreadsheet') {
-                    if (nodeData.inputs?.ranges) params.ranges = nodeData.inputs.ranges
-                    if (nodeData.inputs?.includeGridData !== undefined) params.includeGridData = nodeData.inputs.includeGridData
-                }
-
-                if (action === 'updateSpreadsheet') {
-                    if (nodeData.inputs?.title) params.title = nodeData.inputs.title
-                }
-
-                defaultParams[action] = params
-            })
-        }
-
-        // Values-specific default params
-        if (sheetsType === 'values') {
-            actions.forEach((action) => {
-                const params: any = {}
-
-                // Common values parameters
-                if (nodeData.inputs?.spreadsheetId) params.spreadsheetId = nodeData.inputs.spreadsheetId
-
-                if (action === 'getValues') {
-                    if (nodeData.inputs?.range) params.range = nodeData.inputs.range
-                    if (nodeData.inputs?.valueRenderOption) params.valueRenderOption = nodeData.inputs.valueRenderOption
-                    if (nodeData.inputs?.dateTimeRenderOption) params.dateTimeRenderOption = nodeData.inputs.dateTimeRenderOption
-                    if (nodeData.inputs?.majorDimension) params.majorDimension = nodeData.inputs.majorDimension
-                }
-
-                if (action === 'updateValues') {
-                    if (nodeData.inputs?.range) params.range = nodeData.inputs.range
-                    if (nodeData.inputs?.values) params.values = nodeData.inputs.values
-                    if (nodeData.inputs?.valueInputOption) params.valueInputOption = nodeData.inputs.valueInputOption
-                    if (nodeData.inputs?.majorDimension) params.majorDimension = nodeData.inputs.majorDimension
-                }
-
-                if (action === 'appendValues') {
-                    if (nodeData.inputs?.range) params.range = nodeData.inputs.range
-                    if (nodeData.inputs?.values) params.values = nodeData.inputs.values
-                    if (nodeData.inputs?.valueInputOption) params.valueInputOption = nodeData.inputs.valueInputOption
-                    if (nodeData.inputs?.insertDataOption) params.insertDataOption = nodeData.inputs.insertDataOption
-                    if (nodeData.inputs?.majorDimension) params.majorDimension = nodeData.inputs.majorDimension
-                }
-
-                if (action === 'clearValues') {
-                    if (nodeData.inputs?.range) params.range = nodeData.inputs.range
-                }
-
-                if (action === 'batchGetValues') {
-                    if (nodeData.inputs?.ranges) params.ranges = nodeData.inputs.ranges
-                    if (nodeData.inputs?.valueRenderOption) params.valueRenderOption = nodeData.inputs.valueRenderOption
-                    if (nodeData.inputs?.dateTimeRenderOption) params.dateTimeRenderOption = nodeData.inputs.dateTimeRenderOption
-                    if (nodeData.inputs?.majorDimension) params.majorDimension = nodeData.inputs.majorDimension
-                }
-
-                if (action === 'batchUpdateValues') {
-                    if (nodeData.inputs?.values) params.values = nodeData.inputs.values
-                    if (nodeData.inputs?.valueInputOption) params.valueInputOption = nodeData.inputs.valueInputOption
-                }
-
-                if (action === 'batchClearValues') {
-                    if (nodeData.inputs?.ranges) params.ranges = nodeData.inputs.ranges
-                }
-
-                defaultParams[action] = params
-            })
-        }
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
 
         const tools = createGoogleSheetsTools({
             accessToken,
@@ -418,6 +337,31 @@ class GoogleSheets_Tools implements INode {
         })
 
         return tools
+    }
+
+    transformNodeInputsToToolArgs(nodeData: INodeData): Record<string, any> {
+        // Collect default parameters from inputs
+        const defaultParams: Record<string, any> = {}
+
+        // Common parameters
+        if (nodeData.inputs?.spreadsheetId) defaultParams.spreadsheetId = nodeData.inputs.spreadsheetId
+
+        // Spreadsheet parameters
+        if (nodeData.inputs?.title) defaultParams.title = nodeData.inputs.title
+        if (nodeData.inputs?.sheetCount) defaultParams.sheetCount = nodeData.inputs.sheetCount
+        if (nodeData.inputs?.includeGridData !== undefined) defaultParams.includeGridData = nodeData.inputs.includeGridData
+
+        // Values parameters
+        if (nodeData.inputs?.range) defaultParams.range = nodeData.inputs.range
+        if (nodeData.inputs?.ranges) defaultParams.ranges = nodeData.inputs.ranges
+        if (nodeData.inputs?.values) defaultParams.values = nodeData.inputs.values
+        if (nodeData.inputs?.valueInputOption) defaultParams.valueInputOption = nodeData.inputs.valueInputOption
+        if (nodeData.inputs?.valueRenderOption) defaultParams.valueRenderOption = nodeData.inputs.valueRenderOption
+        if (nodeData.inputs?.dateTimeRenderOption) defaultParams.dateTimeRenderOption = nodeData.inputs.dateTimeRenderOption
+        if (nodeData.inputs?.insertDataOption) defaultParams.insertDataOption = nodeData.inputs.insertDataOption
+        if (nodeData.inputs?.majorDimension) defaultParams.majorDimension = nodeData.inputs.majorDimension
+
+        return defaultParams
     }
 }
 

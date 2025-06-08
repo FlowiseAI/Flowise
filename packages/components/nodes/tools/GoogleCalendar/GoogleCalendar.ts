@@ -559,88 +559,7 @@ class GoogleCalendar_Tools implements INode {
             actions = convertMultiOptionsToStringArray(nodeData.inputs?.freebusyActions)
         }
 
-        // Create default params object based on inputs
-        const defaultParams: any = {}
-
-        // Event-specific default params
-        if (calendarType === 'event') {
-            actions.forEach((action) => {
-                const params: any = {}
-
-                if (nodeData.inputs?.calendarId) params.calendarId = nodeData.inputs.calendarId
-                if (action === 'getEvent' || action === 'updateEvent' || action === 'deleteEvent') {
-                    if (nodeData.inputs?.eventId) params.eventId = nodeData.inputs.eventId
-                }
-                if (action === 'createEvent' || action === 'updateEvent') {
-                    if (nodeData.inputs?.summary) params.summary = nodeData.inputs.summary
-                    if (nodeData.inputs?.description) params.description = nodeData.inputs.description
-                    if (nodeData.inputs?.location) params.location = nodeData.inputs.location
-                    if (nodeData.inputs?.startDateTime) params.startDateTime = nodeData.inputs.startDateTime
-                    if (nodeData.inputs?.endDateTime) params.endDateTime = nodeData.inputs.endDateTime
-                    if (nodeData.inputs?.timeZone) params.timeZone = nodeData.inputs.timeZone
-                    if (nodeData.inputs?.allDay !== undefined) params.allDay = nodeData.inputs.allDay
-                    if (nodeData.inputs?.startDate) params.startDate = nodeData.inputs.startDate
-                    if (nodeData.inputs?.endDate) params.endDate = nodeData.inputs.endDate
-                    if (nodeData.inputs?.attendees) params.attendees = nodeData.inputs.attendees
-                    if (nodeData.inputs?.recurrence) params.recurrence = nodeData.inputs.recurrence
-                    if (nodeData.inputs?.reminderMinutes) params.reminderMinutes = nodeData.inputs.reminderMinutes
-                    if (nodeData.inputs?.visibility) params.visibility = nodeData.inputs.visibility
-                }
-                if (action === 'quickAddEvent') {
-                    if (nodeData.inputs?.quickAddText) params.quickAddText = nodeData.inputs.quickAddText
-                }
-                if (action === 'listEvents') {
-                    if (nodeData.inputs?.timeMin) params.timeMin = nodeData.inputs.timeMin
-                    if (nodeData.inputs?.timeMax) params.timeMax = nodeData.inputs.timeMax
-                    if (nodeData.inputs?.maxResults) params.maxResults = nodeData.inputs.maxResults
-                    if (nodeData.inputs?.singleEvents !== undefined) params.singleEvents = nodeData.inputs.singleEvents
-                    if (nodeData.inputs?.orderBy) params.orderBy = nodeData.inputs.orderBy
-                    if (nodeData.inputs?.query) params.query = nodeData.inputs.query
-                }
-
-                defaultParams[action] = params
-            })
-        }
-
-        // Calendar-specific default params
-        if (calendarType === 'calendar') {
-            actions.forEach((action) => {
-                const params: any = {}
-
-                if (['getCalendar', 'updateCalendar', 'deleteCalendar', 'clearCalendar'].includes(action)) {
-                    if (nodeData.inputs?.calendarIdForCalendar) params.calendarId = nodeData.inputs.calendarIdForCalendar
-                }
-                if (action === 'createCalendar' || action === 'updateCalendar') {
-                    if (nodeData.inputs?.calendarSummary) params.summary = nodeData.inputs.calendarSummary
-                    if (nodeData.inputs?.calendarDescription) params.description = nodeData.inputs.calendarDescription
-                    if (nodeData.inputs?.calendarLocation) params.location = nodeData.inputs.calendarLocation
-                    if (nodeData.inputs?.calendarTimeZone) params.timeZone = nodeData.inputs.calendarTimeZone
-                }
-                if (action === 'listCalendars') {
-                    if (nodeData.inputs?.showHidden !== undefined) params.showHidden = nodeData.inputs.showHidden
-                    if (nodeData.inputs?.minAccessRole) params.minAccessRole = nodeData.inputs.minAccessRole
-                }
-
-                defaultParams[action] = params
-            })
-        }
-
-        // Freebusy-specific default params
-        if (calendarType === 'freebusy') {
-            actions.forEach((action) => {
-                const params: any = {}
-
-                if (action === 'queryFreebusy') {
-                    if (nodeData.inputs?.freebusyTimeMin) params.timeMin = nodeData.inputs.freebusyTimeMin
-                    if (nodeData.inputs?.freebusyTimeMax) params.timeMax = nodeData.inputs.freebusyTimeMax
-                    if (nodeData.inputs?.calendarIds) params.calendarIds = nodeData.inputs.calendarIds
-                    if (nodeData.inputs?.groupExpansionMax) params.groupExpansionMax = nodeData.inputs.groupExpansionMax
-                    if (nodeData.inputs?.calendarExpansionMax) params.calendarExpansionMax = nodeData.inputs.calendarExpansionMax
-                }
-
-                defaultParams[action] = params
-            })
-        }
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
 
         const tools = createGoogleCalendarTools({
             accessToken,
@@ -649,6 +568,53 @@ class GoogleCalendar_Tools implements INode {
         })
 
         return tools
+    }
+
+    transformNodeInputsToToolArgs(nodeData: INodeData): Record<string, any> {
+        // Collect default parameters from inputs
+        const defaultParams: Record<string, any> = {}
+
+        // Event parameters
+        if (nodeData.inputs?.calendarId) defaultParams.calendarId = nodeData.inputs.calendarId
+        if (nodeData.inputs?.eventId) defaultParams.eventId = nodeData.inputs.eventId
+        if (nodeData.inputs?.summary) defaultParams.summary = nodeData.inputs.summary
+        if (nodeData.inputs?.description) defaultParams.description = nodeData.inputs.description
+        if (nodeData.inputs?.location) defaultParams.location = nodeData.inputs.location
+        if (nodeData.inputs?.startDateTime) defaultParams.startDateTime = nodeData.inputs.startDateTime
+        if (nodeData.inputs?.endDateTime) defaultParams.endDateTime = nodeData.inputs.endDateTime
+        if (nodeData.inputs?.timeZone) defaultParams.timeZone = nodeData.inputs.timeZone
+        if (nodeData.inputs?.allDay !== undefined) defaultParams.allDay = nodeData.inputs.allDay
+        if (nodeData.inputs?.startDate) defaultParams.startDate = nodeData.inputs.startDate
+        if (nodeData.inputs?.endDate) defaultParams.endDate = nodeData.inputs.endDate
+        if (nodeData.inputs?.attendees) defaultParams.attendees = nodeData.inputs.attendees
+        if (nodeData.inputs?.recurrence) defaultParams.recurrence = nodeData.inputs.recurrence
+        if (nodeData.inputs?.reminderMinutes) defaultParams.reminderMinutes = nodeData.inputs.reminderMinutes
+        if (nodeData.inputs?.visibility) defaultParams.visibility = nodeData.inputs.visibility
+        if (nodeData.inputs?.quickAddText) defaultParams.quickAddText = nodeData.inputs.quickAddText
+        if (nodeData.inputs?.timeMin) defaultParams.timeMin = nodeData.inputs.timeMin
+        if (nodeData.inputs?.timeMax) defaultParams.timeMax = nodeData.inputs.timeMax
+        if (nodeData.inputs?.maxResults) defaultParams.maxResults = nodeData.inputs.maxResults
+        if (nodeData.inputs?.singleEvents !== undefined) defaultParams.singleEvents = nodeData.inputs.singleEvents
+        if (nodeData.inputs?.orderBy) defaultParams.orderBy = nodeData.inputs.orderBy
+        if (nodeData.inputs?.query) defaultParams.query = nodeData.inputs.query
+
+        // Calendar parameters
+        if (nodeData.inputs?.calendarIdForCalendar) defaultParams.calendarIdForCalendar = nodeData.inputs.calendarIdForCalendar
+        if (nodeData.inputs?.calendarSummary) defaultParams.calendarSummary = nodeData.inputs.calendarSummary
+        if (nodeData.inputs?.calendarDescription) defaultParams.calendarDescription = nodeData.inputs.calendarDescription
+        if (nodeData.inputs?.calendarLocation) defaultParams.calendarLocation = nodeData.inputs.calendarLocation
+        if (nodeData.inputs?.calendarTimeZone) defaultParams.calendarTimeZone = nodeData.inputs.calendarTimeZone
+        if (nodeData.inputs?.showHidden !== undefined) defaultParams.showHidden = nodeData.inputs.showHidden
+        if (nodeData.inputs?.minAccessRole) defaultParams.minAccessRole = nodeData.inputs.minAccessRole
+
+        // Freebusy parameters
+        if (nodeData.inputs?.freebusyTimeMin) defaultParams.freebusyTimeMin = nodeData.inputs.freebusyTimeMin
+        if (nodeData.inputs?.freebusyTimeMax) defaultParams.freebusyTimeMax = nodeData.inputs.freebusyTimeMax
+        if (nodeData.inputs?.calendarIds) defaultParams.calendarIds = nodeData.inputs.calendarIds
+        if (nodeData.inputs?.groupExpansionMax) defaultParams.groupExpansionMax = nodeData.inputs.groupExpansionMax
+        if (nodeData.inputs?.calendarExpansionMax) defaultParams.calendarExpansionMax = nodeData.inputs.calendarExpansionMax
+
+        return defaultParams
     }
 }
 

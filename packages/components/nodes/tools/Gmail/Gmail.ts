@@ -571,118 +571,7 @@ class Gmail_Tools implements INode {
             actions = convertMultiOptionsToStringArray(nodeData.inputs?.threadActions)
         }
 
-        // Prepare default parameters for each action
-        const defaultParams: ICommonObject = {}
-
-        // Draft parameters
-        const draftMaxResults = nodeData.inputs?.draftMaxResults
-        const draftTo = nodeData.inputs?.draftTo
-        const draftSubject = nodeData.inputs?.draftSubject
-        const draftBody = nodeData.inputs?.draftBody
-        const draftCc = nodeData.inputs?.draftCc
-        const draftBcc = nodeData.inputs?.draftBcc
-        const draftId = nodeData.inputs?.draftId
-        const draftUpdateTo = nodeData.inputs?.draftUpdateTo
-        const draftUpdateSubject = nodeData.inputs?.draftUpdateSubject
-        const draftUpdateBody = nodeData.inputs?.draftUpdateBody
-
-        // Message parameters
-        const messageMaxResults = nodeData.inputs?.messageMaxResults
-        const messageQuery = nodeData.inputs?.messageQuery
-        const messageTo = nodeData.inputs?.messageTo
-        const messageSubject = nodeData.inputs?.messageSubject
-        const messageBody = nodeData.inputs?.messageBody
-        const messageCc = nodeData.inputs?.messageCc
-        const messageBcc = nodeData.inputs?.messageBcc
-        const messageId = nodeData.inputs?.messageId
-        const messageAddLabelIds = nodeData.inputs?.messageAddLabelIds
-        const messageRemoveLabelIds = nodeData.inputs?.messageRemoveLabelIds
-
-        // Label parameters
-        const labelName = nodeData.inputs?.labelName
-        const labelColor = nodeData.inputs?.labelColor
-        const labelId = nodeData.inputs?.labelId
-
-        // Thread parameters
-        const threadMaxResults = nodeData.inputs?.threadMaxResults
-        const threadQuery = nodeData.inputs?.threadQuery
-        const threadId = nodeData.inputs?.threadId
-        const threadAddLabelIds = nodeData.inputs?.threadAddLabelIds
-        const threadRemoveLabelIds = nodeData.inputs?.threadRemoveLabelIds
-
-        // Set default parameters based on actions
-        actions.forEach((action) => {
-            const params: ICommonObject = {}
-
-            // Draft action parameters
-            if (action.startsWith('list') && draftMaxResults) params.maxResults = draftMaxResults
-            if (action === 'createDraft') {
-                if (draftTo) params.to = draftTo
-                if (draftSubject) params.subject = draftSubject
-                if (draftBody) params.body = draftBody
-                if (draftCc) params.cc = draftCc
-                if (draftBcc) params.bcc = draftBcc
-            }
-            if (action === 'updateDraft') {
-                if (draftId) params.draftId = draftId
-                if (draftUpdateTo) params.to = draftUpdateTo
-                if (draftUpdateSubject) params.subject = draftUpdateSubject
-                if (draftUpdateBody) params.body = draftUpdateBody
-            }
-            if (['getDraft', 'sendDraft', 'deleteDraft'].includes(action) && draftId) {
-                params.draftId = draftId
-            }
-
-            // Message action parameters
-            if (action === 'listMessages') {
-                if (messageMaxResults) params.maxResults = messageMaxResults
-                if (messageQuery) params.query = messageQuery
-            }
-            if (action === 'sendMessage') {
-                if (messageTo) params.to = messageTo
-                if (messageSubject) params.subject = messageSubject
-                if (messageBody) params.body = messageBody
-                if (messageCc) params.cc = messageCc
-                if (messageBcc) params.bcc = messageBcc
-            }
-            if (['getMessage', 'trashMessage', 'untrashMessage', 'deleteMessage'].includes(action) && messageId) {
-                params.messageId = messageId
-            }
-            if (action === 'modifyMessage') {
-                if (messageId) params.messageId = messageId
-                if (messageAddLabelIds) params.addLabelIds = messageAddLabelIds.split(',').map((id: string) => id.trim())
-                if (messageRemoveLabelIds) params.removeLabelIds = messageRemoveLabelIds.split(',').map((id: string) => id.trim())
-            }
-
-            // Label action parameters
-            if (action === 'createLabel') {
-                if (labelName) params.labelName = labelName
-                if (labelColor) params.labelColor = labelColor
-            }
-            if (['getLabel', 'updateLabel', 'deleteLabel'].includes(action) && labelId) {
-                params.labelId = labelId
-            }
-            if (action === 'updateLabel') {
-                if (labelName) params.labelName = labelName
-                if (labelColor) params.labelColor = labelColor
-            }
-
-            // Thread action parameters
-            if (action === 'listThreads') {
-                if (threadMaxResults) params.maxResults = threadMaxResults
-                if (threadQuery) params.query = threadQuery
-            }
-            if (['getThread', 'trashThread', 'untrashThread', 'deleteThread'].includes(action) && threadId) {
-                params.threadId = threadId
-            }
-            if (action === 'modifyThread') {
-                if (threadId) params.threadId = threadId
-                if (threadAddLabelIds) params.addLabelIds = threadAddLabelIds.split(',').map((id: string) => id.trim())
-                if (threadRemoveLabelIds) params.removeLabelIds = threadRemoveLabelIds.split(',').map((id: string) => id.trim())
-            }
-
-            defaultParams[action] = params
-        })
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
 
         // Create and return tools based on selected actions
         const tools = createGmailTools({
@@ -692,6 +581,49 @@ class Gmail_Tools implements INode {
         })
 
         return tools
+    }
+
+    transformNodeInputsToToolArgs(nodeData: INodeData): Record<string, any> {
+        // Collect default parameters from inputs
+        const defaultParams: Record<string, any> = {}
+
+        // Draft parameters
+        if (nodeData.inputs?.draftMaxResults) defaultParams.draftMaxResults = nodeData.inputs.draftMaxResults
+        if (nodeData.inputs?.draftTo) defaultParams.draftTo = nodeData.inputs.draftTo
+        if (nodeData.inputs?.draftSubject) defaultParams.draftSubject = nodeData.inputs.draftSubject
+        if (nodeData.inputs?.draftBody) defaultParams.draftBody = nodeData.inputs.draftBody
+        if (nodeData.inputs?.draftCc) defaultParams.draftCc = nodeData.inputs.draftCc
+        if (nodeData.inputs?.draftBcc) defaultParams.draftBcc = nodeData.inputs.draftBcc
+        if (nodeData.inputs?.draftId) defaultParams.draftId = nodeData.inputs.draftId
+        if (nodeData.inputs?.draftUpdateTo) defaultParams.draftUpdateTo = nodeData.inputs.draftUpdateTo
+        if (nodeData.inputs?.draftUpdateSubject) defaultParams.draftUpdateSubject = nodeData.inputs.draftUpdateSubject
+        if (nodeData.inputs?.draftUpdateBody) defaultParams.draftUpdateBody = nodeData.inputs.draftUpdateBody
+
+        // Message parameters
+        if (nodeData.inputs?.messageMaxResults) defaultParams.messageMaxResults = nodeData.inputs.messageMaxResults
+        if (nodeData.inputs?.messageQuery) defaultParams.messageQuery = nodeData.inputs.messageQuery
+        if (nodeData.inputs?.messageTo) defaultParams.messageTo = nodeData.inputs.messageTo
+        if (nodeData.inputs?.messageSubject) defaultParams.messageSubject = nodeData.inputs.messageSubject
+        if (nodeData.inputs?.messageBody) defaultParams.messageBody = nodeData.inputs.messageBody
+        if (nodeData.inputs?.messageCc) defaultParams.messageCc = nodeData.inputs.messageCc
+        if (nodeData.inputs?.messageBcc) defaultParams.messageBcc = nodeData.inputs.messageBcc
+        if (nodeData.inputs?.messageId) defaultParams.messageId = nodeData.inputs.messageId
+        if (nodeData.inputs?.messageAddLabelIds) defaultParams.messageAddLabelIds = nodeData.inputs.messageAddLabelIds
+        if (nodeData.inputs?.messageRemoveLabelIds) defaultParams.messageRemoveLabelIds = nodeData.inputs.messageRemoveLabelIds
+
+        // Label parameters
+        if (nodeData.inputs?.labelName) defaultParams.labelName = nodeData.inputs.labelName
+        if (nodeData.inputs?.labelColor) defaultParams.labelColor = nodeData.inputs.labelColor
+        if (nodeData.inputs?.labelId) defaultParams.labelId = nodeData.inputs.labelId
+
+        // Thread parameters
+        if (nodeData.inputs?.threadMaxResults) defaultParams.threadMaxResults = nodeData.inputs.threadMaxResults
+        if (nodeData.inputs?.threadQuery) defaultParams.threadQuery = nodeData.inputs.threadQuery
+        if (nodeData.inputs?.threadId) defaultParams.threadId = nodeData.inputs.threadId
+        if (nodeData.inputs?.threadAddLabelIds) defaultParams.threadAddLabelIds = nodeData.inputs.threadAddLabelIds
+        if (nodeData.inputs?.threadRemoveLabelIds) defaultParams.threadRemoveLabelIds = nodeData.inputs.threadRemoveLabelIds
+
+        return defaultParams
     }
 }
 

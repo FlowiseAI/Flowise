@@ -1,4 +1,4 @@
-import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { convertMultiOptionsToStringArray, getCredentialData, getCredentialParam, refreshOAuth2Token } from '../../../src/utils'
 import { createTeamsTools } from './core'
 
@@ -928,289 +928,7 @@ class MicrosoftTeams_Tools implements INode {
             throw new Error('No access token found in credential')
         }
 
-        // Prepare default parameters for each action based on type
-        const defaultParams: ICommonObject = {}
-
-        if (teamsType === 'channel') {
-            // Map channel actions to their parameters
-            actions.forEach((action) => {
-                defaultParams[action] = {}
-
-                switch (action) {
-                    case 'listChannels':
-                        if (nodeData.inputs?.teamIdListChannels) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdListChannels
-                        }
-                        if (nodeData.inputs?.maxResultsListChannels) {
-                            defaultParams[action].maxResults = nodeData.inputs.maxResultsListChannels
-                        }
-                        break
-
-                    case 'getChannel':
-                        if (nodeData.inputs?.teamIdGetChannel) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdGetChannel
-                        }
-                        if (nodeData.inputs?.channelIdGetChannel) {
-                            defaultParams[action].channelId = nodeData.inputs.channelIdGetChannel
-                        }
-                        break
-
-                    case 'createChannel':
-                        if (nodeData.inputs?.teamIdCreateChannel) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdCreateChannel
-                        }
-                        if (nodeData.inputs?.displayNameCreateChannel) {
-                            defaultParams[action].displayName = nodeData.inputs.displayNameCreateChannel
-                        }
-                        if (nodeData.inputs?.descriptionCreateChannel) {
-                            defaultParams[action].description = nodeData.inputs.descriptionCreateChannel
-                        }
-                        if (nodeData.inputs?.membershipTypeCreateChannel) {
-                            defaultParams[action].membershipType = nodeData.inputs.membershipTypeCreateChannel
-                        }
-                        break
-
-                    case 'updateChannel':
-                        if (nodeData.inputs?.teamIdUpdateChannel) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdUpdateChannel
-                        }
-                        if (nodeData.inputs?.channelIdUpdateChannel) {
-                            defaultParams[action].channelId = nodeData.inputs.channelIdUpdateChannel
-                        }
-                        if (nodeData.inputs?.displayNameUpdateChannel) {
-                            defaultParams[action].displayName = nodeData.inputs.displayNameUpdateChannel
-                        }
-                        break
-
-                    case 'deleteChannel':
-                    case 'archiveChannel':
-                    case 'unarchiveChannel':
-                        if (nodeData.inputs?.teamIdDeleteChannel) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdDeleteChannel
-                        }
-                        if (nodeData.inputs?.channelIdDeleteChannel) {
-                            defaultParams[action].channelId = nodeData.inputs.channelIdDeleteChannel
-                        }
-                        break
-
-                    case 'listChannelMembers':
-                        if (nodeData.inputs?.teamIdChannelMembers) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdChannelMembers
-                        }
-                        if (nodeData.inputs?.channelIdChannelMembers) {
-                            defaultParams[action].channelId = nodeData.inputs.channelIdChannelMembers
-                        }
-                        break
-
-                    case 'addChannelMember':
-                    case 'removeChannelMember':
-                        if (nodeData.inputs?.teamIdChannelMembers) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdChannelMembers
-                        }
-                        if (nodeData.inputs?.channelIdChannelMembers) {
-                            defaultParams[action].channelId = nodeData.inputs.channelIdChannelMembers
-                        }
-                        if (nodeData.inputs?.userIdChannelMember) {
-                            defaultParams[action].userId = nodeData.inputs.userIdChannelMember
-                        }
-                        break
-                }
-            })
-        } else if (teamsType === 'chat') {
-            // Map chat actions to their parameters
-            actions.forEach((action) => {
-                defaultParams[action] = {}
-
-                switch (action) {
-                    case 'listChats':
-                        if (nodeData.inputs?.maxResultsListChats) {
-                            defaultParams[action].maxResults = nodeData.inputs.maxResultsListChats
-                        }
-                        break
-
-                    case 'getChat':
-                        if (nodeData.inputs?.chatIdGetChat) {
-                            defaultParams[action].chatId = nodeData.inputs.chatIdGetChat
-                        }
-                        break
-
-                    case 'createChat':
-                        if (nodeData.inputs?.chatTypeCreateChat) {
-                            defaultParams[action].chatType = nodeData.inputs.chatTypeCreateChat
-                        }
-                        if (nodeData.inputs?.topicCreateChat) {
-                            defaultParams[action].topic = nodeData.inputs.topicCreateChat
-                        }
-                        if (nodeData.inputs?.membersCreateChat) {
-                            defaultParams[action].members = nodeData.inputs.membersCreateChat
-                        }
-                        break
-
-                    case 'updateChat':
-                        if (nodeData.inputs?.chatIdUpdateChat) {
-                            defaultParams[action].chatId = nodeData.inputs.chatIdUpdateChat
-                        }
-                        if (nodeData.inputs?.topicUpdateChat) {
-                            defaultParams[action].topic = nodeData.inputs.topicUpdateChat
-                        }
-                        break
-
-                    case 'deleteChat':
-                        if (nodeData.inputs?.chatIdDeleteChat) {
-                            defaultParams[action].chatId = nodeData.inputs.chatIdDeleteChat
-                        }
-                        break
-
-                    case 'listChatMembers':
-                        if (nodeData.inputs?.chatIdChatMembers) {
-                            defaultParams[action].chatId = nodeData.inputs.chatIdChatMembers
-                        }
-                        break
-
-                    case 'addChatMember':
-                    case 'removeChatMember':
-                        if (nodeData.inputs?.chatIdChatMembers) {
-                            defaultParams[action].chatId = nodeData.inputs.chatIdChatMembers
-                        }
-                        if (nodeData.inputs?.userIdChatMember) {
-                            defaultParams[action].userId = nodeData.inputs.userIdChatMember
-                        }
-                        break
-
-                    case 'pinMessage':
-                    case 'unpinMessage':
-                        if (nodeData.inputs?.chatIdPinMessage) {
-                            defaultParams[action].chatId = nodeData.inputs.chatIdPinMessage
-                        }
-                        if (nodeData.inputs?.messageIdPinMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdPinMessage
-                        }
-                        break
-                }
-            })
-        } else if (teamsType === 'chatMessage') {
-            // Map chat message actions to their parameters
-            actions.forEach((action) => {
-                defaultParams[action] = {}
-
-                switch (action) {
-                    case 'listMessages':
-                        if (nodeData.inputs?.chatChannelIdListMessages) {
-                            defaultParams[action].chatChannelId = nodeData.inputs.chatChannelIdListMessages
-                        }
-                        if (nodeData.inputs?.teamIdListMessages) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdListMessages
-                        }
-                        if (nodeData.inputs?.maxResultsListMessages) {
-                            defaultParams[action].maxResults = nodeData.inputs.maxResultsListMessages
-                        }
-                        break
-
-                    case 'getMessage':
-                        if (nodeData.inputs?.chatChannelIdGetMessage) {
-                            defaultParams[action].chatChannelId = nodeData.inputs.chatChannelIdGetMessage
-                        }
-                        if (nodeData.inputs?.teamIdGetMessage) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdGetMessage
-                        }
-                        if (nodeData.inputs?.messageIdGetMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdGetMessage
-                        }
-                        break
-
-                    case 'sendMessage':
-                        if (nodeData.inputs?.chatChannelIdSendMessage) {
-                            defaultParams[action].chatChannelId = nodeData.inputs.chatChannelIdSendMessage
-                        }
-                        if (nodeData.inputs?.teamIdSendMessage) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdSendMessage
-                        }
-                        if (nodeData.inputs?.messageBodySendMessage) {
-                            defaultParams[action].messageBody = nodeData.inputs.messageBodySendMessage
-                        }
-                        if (nodeData.inputs?.contentTypeSendMessage) {
-                            defaultParams[action].contentType = nodeData.inputs.contentTypeSendMessage
-                        }
-                        break
-
-                    case 'updateMessage':
-                        if (nodeData.inputs?.chatChannelIdUpdateMessage) {
-                            defaultParams[action].chatChannelId = nodeData.inputs.chatChannelIdUpdateMessage
-                        }
-                        if (nodeData.inputs?.teamIdUpdateMessage) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdUpdateMessage
-                        }
-                        if (nodeData.inputs?.messageIdUpdateMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdUpdateMessage
-                        }
-                        break
-
-                    case 'deleteMessage':
-                        if (nodeData.inputs?.chatChannelIdDeleteMessage) {
-                            defaultParams[action].chatChannelId = nodeData.inputs.chatChannelIdDeleteMessage
-                        }
-                        if (nodeData.inputs?.teamIdDeleteMessage) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdDeleteMessage
-                        }
-                        if (nodeData.inputs?.messageIdDeleteMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdDeleteMessage
-                        }
-                        break
-
-                    case 'replyToMessage':
-                        if (nodeData.inputs?.chatChannelIdReplyMessage) {
-                            defaultParams[action].chatChannelId = nodeData.inputs.chatChannelIdReplyMessage
-                        }
-                        if (nodeData.inputs?.teamIdReplyMessage) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdReplyMessage
-                        }
-                        if (nodeData.inputs?.messageIdReplyMessage) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdReplyMessage
-                        }
-                        if (nodeData.inputs?.replyBodyReplyMessage) {
-                            defaultParams[action].replyBody = nodeData.inputs.replyBodyReplyMessage
-                        }
-                        break
-
-                    case 'setReaction':
-                        if (nodeData.inputs?.chatChannelIdReaction) {
-                            defaultParams[action].chatChannelId = nodeData.inputs.chatChannelIdReaction
-                        }
-                        if (nodeData.inputs?.teamIdReaction) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdReaction
-                        }
-                        if (nodeData.inputs?.messageIdReaction) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdReaction
-                        }
-                        if (nodeData.inputs?.reactionTypeSetReaction) {
-                            defaultParams[action].reactionType = nodeData.inputs.reactionTypeSetReaction
-                        }
-                        break
-
-                    case 'unsetReaction':
-                        if (nodeData.inputs?.chatChannelIdReaction) {
-                            defaultParams[action].chatChannelId = nodeData.inputs.chatChannelIdReaction
-                        }
-                        if (nodeData.inputs?.teamIdReaction) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdReaction
-                        }
-                        if (nodeData.inputs?.messageIdReaction) {
-                            defaultParams[action].messageId = nodeData.inputs.messageIdReaction
-                        }
-                        break
-
-                    case 'getAllMessages':
-                        // getAllMessages might use similar params to listMessages
-                        if (nodeData.inputs?.chatChannelIdListMessages) {
-                            defaultParams[action].chatChannelId = nodeData.inputs.chatChannelIdListMessages
-                        }
-                        if (nodeData.inputs?.teamIdListMessages) {
-                            defaultParams[action].teamId = nodeData.inputs.teamIdListMessages
-                        }
-                        break
-                }
-            })
-        }
+        const defaultParams = this.transformNodeInputsToToolArgs(nodeData)
 
         const teamsTools = createTeamsTools({
             accessToken,
@@ -1220,6 +938,74 @@ class MicrosoftTeams_Tools implements INode {
         })
 
         return teamsTools
+    }
+
+    transformNodeInputsToToolArgs(nodeData: INodeData): Record<string, any> {
+        // Collect default parameters from inputs
+        const defaultParams: Record<string, any> = {}
+
+        // Channel parameters
+        if (nodeData.inputs?.teamIdListChannels) defaultParams.teamIdListChannels = nodeData.inputs.teamIdListChannels
+        if (nodeData.inputs?.maxResultsListChannels) defaultParams.maxResultsListChannels = nodeData.inputs.maxResultsListChannels
+        if (nodeData.inputs?.teamIdGetChannel) defaultParams.teamIdGetChannel = nodeData.inputs.teamIdGetChannel
+        if (nodeData.inputs?.channelIdGetChannel) defaultParams.channelIdGetChannel = nodeData.inputs.channelIdGetChannel
+        if (nodeData.inputs?.teamIdCreateChannel) defaultParams.teamIdCreateChannel = nodeData.inputs.teamIdCreateChannel
+        if (nodeData.inputs?.displayNameCreateChannel) defaultParams.displayNameCreateChannel = nodeData.inputs.displayNameCreateChannel
+        if (nodeData.inputs?.descriptionCreateChannel) defaultParams.descriptionCreateChannel = nodeData.inputs.descriptionCreateChannel
+        if (nodeData.inputs?.membershipTypeCreateChannel)
+            defaultParams.membershipTypeCreateChannel = nodeData.inputs.membershipTypeCreateChannel
+        if (nodeData.inputs?.teamIdUpdateChannel) defaultParams.teamIdUpdateChannel = nodeData.inputs.teamIdUpdateChannel
+        if (nodeData.inputs?.channelIdUpdateChannel) defaultParams.channelIdUpdateChannel = nodeData.inputs.channelIdUpdateChannel
+        if (nodeData.inputs?.displayNameUpdateChannel) defaultParams.displayNameUpdateChannel = nodeData.inputs.displayNameUpdateChannel
+        if (nodeData.inputs?.teamIdDeleteChannel) defaultParams.teamIdDeleteChannel = nodeData.inputs.teamIdDeleteChannel
+        if (nodeData.inputs?.channelIdDeleteChannel) defaultParams.channelIdDeleteChannel = nodeData.inputs.channelIdDeleteChannel
+        if (nodeData.inputs?.teamIdChannelMembers) defaultParams.teamIdChannelMembers = nodeData.inputs.teamIdChannelMembers
+        if (nodeData.inputs?.channelIdChannelMembers) defaultParams.channelIdChannelMembers = nodeData.inputs.channelIdChannelMembers
+        if (nodeData.inputs?.userIdChannelMember) defaultParams.userIdChannelMember = nodeData.inputs.userIdChannelMember
+
+        // Chat parameters
+        if (nodeData.inputs?.maxResultsListChats) defaultParams.maxResultsListChats = nodeData.inputs.maxResultsListChats
+        if (nodeData.inputs?.chatIdGetChat) defaultParams.chatIdGetChat = nodeData.inputs.chatIdGetChat
+        if (nodeData.inputs?.chatTypeCreateChat) defaultParams.chatTypeCreateChat = nodeData.inputs.chatTypeCreateChat
+        if (nodeData.inputs?.topicCreateChat) defaultParams.topicCreateChat = nodeData.inputs.topicCreateChat
+        if (nodeData.inputs?.membersCreateChat) defaultParams.membersCreateChat = nodeData.inputs.membersCreateChat
+        if (nodeData.inputs?.chatIdUpdateChat) defaultParams.chatIdUpdateChat = nodeData.inputs.chatIdUpdateChat
+        if (nodeData.inputs?.topicUpdateChat) defaultParams.topicUpdateChat = nodeData.inputs.topicUpdateChat
+        if (nodeData.inputs?.chatIdDeleteChat) defaultParams.chatIdDeleteChat = nodeData.inputs.chatIdDeleteChat
+        if (nodeData.inputs?.chatIdChatMembers) defaultParams.chatIdChatMembers = nodeData.inputs.chatIdChatMembers
+        if (nodeData.inputs?.userIdChatMember) defaultParams.userIdChatMember = nodeData.inputs.userIdChatMember
+        if (nodeData.inputs?.chatIdPinMessage) defaultParams.chatIdPinMessage = nodeData.inputs.chatIdPinMessage
+        if (nodeData.inputs?.messageIdPinMessage) defaultParams.messageIdPinMessage = nodeData.inputs.messageIdPinMessage
+
+        // Chat Message parameters
+        if (nodeData.inputs?.chatChannelIdListMessages) defaultParams.chatChannelIdListMessages = nodeData.inputs.chatChannelIdListMessages
+        if (nodeData.inputs?.teamIdListMessages) defaultParams.teamIdListMessages = nodeData.inputs.teamIdListMessages
+        if (nodeData.inputs?.maxResultsListMessages) defaultParams.maxResultsListMessages = nodeData.inputs.maxResultsListMessages
+        if (nodeData.inputs?.chatChannelIdGetMessage) defaultParams.chatChannelIdGetMessage = nodeData.inputs.chatChannelIdGetMessage
+        if (nodeData.inputs?.teamIdGetMessage) defaultParams.teamIdGetMessage = nodeData.inputs.teamIdGetMessage
+        if (nodeData.inputs?.messageIdGetMessage) defaultParams.messageIdGetMessage = nodeData.inputs.messageIdGetMessage
+        if (nodeData.inputs?.chatChannelIdSendMessage) defaultParams.chatChannelIdSendMessage = nodeData.inputs.chatChannelIdSendMessage
+        if (nodeData.inputs?.teamIdSendMessage) defaultParams.teamIdSendMessage = nodeData.inputs.teamIdSendMessage
+        if (nodeData.inputs?.messageBodySendMessage) defaultParams.messageBodySendMessage = nodeData.inputs.messageBodySendMessage
+        if (nodeData.inputs?.contentTypeSendMessage) defaultParams.contentTypeSendMessage = nodeData.inputs.contentTypeSendMessage
+        if (nodeData.inputs?.chatChannelIdUpdateMessage)
+            defaultParams.chatChannelIdUpdateMessage = nodeData.inputs.chatChannelIdUpdateMessage
+        if (nodeData.inputs?.teamIdUpdateMessage) defaultParams.teamIdUpdateMessage = nodeData.inputs.teamIdUpdateMessage
+        if (nodeData.inputs?.messageIdUpdateMessage) defaultParams.messageIdUpdateMessage = nodeData.inputs.messageIdUpdateMessage
+        if (nodeData.inputs?.chatChannelIdDeleteMessage)
+            defaultParams.chatChannelIdDeleteMessage = nodeData.inputs.chatChannelIdDeleteMessage
+        if (nodeData.inputs?.teamIdDeleteMessage) defaultParams.teamIdDeleteMessage = nodeData.inputs.teamIdDeleteMessage
+        if (nodeData.inputs?.messageIdDeleteMessage) defaultParams.messageIdDeleteMessage = nodeData.inputs.messageIdDeleteMessage
+        if (nodeData.inputs?.chatChannelIdReplyMessage) defaultParams.chatChannelIdReplyMessage = nodeData.inputs.chatChannelIdReplyMessage
+        if (nodeData.inputs?.teamIdReplyMessage) defaultParams.teamIdReplyMessage = nodeData.inputs.teamIdReplyMessage
+        if (nodeData.inputs?.messageIdReplyMessage) defaultParams.messageIdReplyMessage = nodeData.inputs.messageIdReplyMessage
+        if (nodeData.inputs?.replyBodyReplyMessage) defaultParams.replyBodyReplyMessage = nodeData.inputs.replyBodyReplyMessage
+        if (nodeData.inputs?.chatChannelIdReaction) defaultParams.chatChannelIdReaction = nodeData.inputs.chatChannelIdReaction
+        if (nodeData.inputs?.teamIdReaction) defaultParams.teamIdReaction = nodeData.inputs.teamIdReaction
+        if (nodeData.inputs?.messageIdReaction) defaultParams.messageIdReaction = nodeData.inputs.messageIdReaction
+        if (nodeData.inputs?.reactionTypeSetReaction) defaultParams.reactionTypeSetReaction = nodeData.inputs.reactionTypeSetReaction
+
+        return defaultParams
     }
 }
 
