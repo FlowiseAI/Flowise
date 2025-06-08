@@ -27,7 +27,7 @@ class ConditionAgent_Agentflow implements INode {
     constructor() {
         this.label = 'Condition Agent'
         this.name = 'conditionAgentAgentflow'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'ConditionAgent'
         this.category = 'Agent Flows'
         this.description = `Utilize an agent to split flows based on dynamic conditions`
@@ -292,27 +292,11 @@ class ConditionAgent_Agentflow implements INode {
                 },
                 {
                     role: 'user',
-                    content: `{"input": "Hello", "scenarios": ["user is asking about AI", "default"], "instruction": "Your task is to check and see if user is asking topic about AI"}`
+                    content: `{"input": "Hello", "scenarios": ["user is asking about AI", "user is not asking about AI"], "instruction": "Your task is to check if the user is asking about AI."}`
                 },
                 {
                     role: 'assistant',
-                    content: `\`\`\`json\n{"output": "default"}\n\`\`\``
-                },
-                {
-                    role: 'user',
-                    content: `{"input": "What is AIGC?", "scenarios": ["user is asking about AI", "default"], "instruction": "Your task is to check and see if user is asking topic about AI"}`
-                },
-                {
-                    role: 'assistant',
-                    content: `\`\`\`json\n{"output": "user is asking about AI"}\n\`\`\``
-                },
-                {
-                    role: 'user',
-                    content: `{"input": "Can you explain deep learning?", "scenarios": ["user is interested in AI topics", "default"], "instruction": "Determine if the user is interested in learning about AI"}`
-                },
-                {
-                    role: 'assistant',
-                    content: `\`\`\`json\n{"output": "user is interested in AI topics"}\n\`\`\``
+                    content: `\`\`\`json\n{"output": "user is not asking about AI"}\n\`\`\``
                 }
             ]
             // Use to store messages with image file references as we do not want to store the base64 data into database
@@ -385,16 +369,22 @@ class ConditionAgent_Agentflow implements INode {
                 )
             }
 
-            let calledOutputName = 'default'
+            // *** CORRECTED LOGIC ***
+            let calledOutputName: string
             try {
                 const parsedResponse = this.parseJsonMarkdown(response.content as string)
-                if (!parsedResponse.output) {
-                    throw new Error('Missing "output" key in response')
+                if (!parsedResponse.output || typeof parsedResponse.output !== 'string') {
+                    throw new Error('LLM response is missing the "output" key or it is not a string.')
                 }
                 calledOutputName = parsedResponse.output
             } catch (error) {
-                console.warn(`Failed to parse LLM response: ${error}. Using default output.`)
+                throw new Error(
+                    `Failed to parse a valid scenario from the LLM's response. Please check if the model is capable of following JSON output instructions. Raw LLM Response: "${
+                        response.content as string
+                    }"`
+                )
             }
+            // *** CORRECTED LOGIC ***
 
             // Clean up empty inputs
             for (const key in nodeData.inputs) {
