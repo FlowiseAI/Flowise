@@ -551,7 +551,7 @@ export const executeFlow = async ({
                 role: 'userMessage',
                 content: incomingInput.question,
                 chatflowid: agentflow.id,
-                chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 chatId,
                 memoryType,
                 sessionId,
@@ -566,7 +566,7 @@ export const executeFlow = async ({
                 role: 'apiMessage',
                 content: finalResult,
                 chatflowid: agentflow.id,
-                chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                chatType: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 chatId,
                 memoryType,
                 sessionId
@@ -598,7 +598,7 @@ export const executeFlow = async ({
                     version: await getAppVersion(),
                     agentflowId: agentflow.id,
                     chatId,
-                    type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                    type: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                     flowGraph: getTelemetryFlowObj(nodes, edges)
                 },
                 orgId
@@ -724,9 +724,7 @@ export const executeFlow = async ({
             fileUploads: uploads ? JSON.stringify(fileUploads) : undefined,
             leadEmail: incomingInput.leadEmail
         }
-        if (!isEvaluation) {
-            await utilAddChatMessage(userMessage, appDataSource)
-        }
+        await utilAddChatMessage(userMessage, appDataSource)
 
         let resultText = ''
         if (result.text) {
@@ -796,7 +794,7 @@ export const executeFlow = async ({
             }
         }
 
-        const chatMessage = isEvaluation ? apiMessage : await utilAddChatMessage(apiMessage, appDataSource)
+        const chatMessage = await utilAddChatMessage(apiMessage, appDataSource)
 
         logger.debug(`[server]: [${orgId}]: Finished running ${endingNodeData.label} (${endingNodeData.id})`)
         if (evaluationRunId) {
@@ -809,7 +807,7 @@ export const executeFlow = async ({
                 version: await getAppVersion(),
                 chatflowId: chatflowid,
                 chatId,
-                type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+                type: isEvaluation ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
                 flowGraph: getTelemetryFlowObj(nodes, edges)
             },
             orgId

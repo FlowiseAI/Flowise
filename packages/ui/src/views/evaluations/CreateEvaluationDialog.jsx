@@ -169,6 +169,10 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         for (let i = 0; i < selectedChatflows.length; i += 1) {
             selectedChatflowNames.push(flows.find((f) => f.name === selectedChatflows[i])?.label)
         }
+        const selectedChatflowTypes = []
+        for (let i = 0; i < selectedChatflows.length; i += 1) {
+            selectedChatflowTypes.push(flows.find((f) => f.name === selectedChatflows[i])?.type)
+        }
         const chatflowName = JSON.stringify(selectedChatflowNames)
         const datasetName = datasets.find((f) => f.name === dataset)?.label
         const obj = {
@@ -179,6 +183,7 @@ const CreateEvaluationDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             datasetName: datasetName,
             chatflowId: chatflow,
             chatflowName: chatflowName,
+            chatflowType: JSON.stringify(selectedChatflowTypes),
             selectedSimpleEvaluators: selectedSimpleEvaluators,
             selectedLLMEvaluators: selectedLLMEvaluators,
             model: selectedModel,

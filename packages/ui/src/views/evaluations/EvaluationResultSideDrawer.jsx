@@ -14,10 +14,13 @@ import {
     TableRow,
     TableBody
 } from '@mui/material'
+import { IconHierarchy, IconUsersGroup, IconRobot } from '@tabler/icons-react'
+
 import { useSelector } from 'react-redux'
 import { evaluators as evaluatorsOptions, numericOperators } from '../evaluators/evaluatorConstant'
 import TableCell from '@mui/material/TableCell'
 import { Close } from '@mui/icons-material'
+import React from 'react'
 
 const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
     const onOpen = () => {}
@@ -32,6 +35,23 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
             return evaluator.value
         }
         return ''
+    }
+
+    const getFlowIcon = (index) => {
+        if (index === undefined) {
+            return <IconHierarchy size={24} />
+        }
+        if (dialogProps.additionalConfig.chatflowTypes) {
+            switch (dialogProps.additionalConfig.chatflowTypes[index]) {
+                case 'Chatflow':
+                    return <IconHierarchy size={20} />
+                case 'Custom Assistant':
+                    return <IconRobot size={20} />
+                case 'Agentflow v2':
+                    return <IconUsersGroup size={20} />
+            }
+        }
+        return <IconHierarchy />
     }
 
     return (
@@ -82,12 +102,13 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                         <div
                                             style={{
                                                 display: 'flex',
-                                                justifyContent: 'space-between',
+                                                justifyContent: 'start',
                                                 alignItems: 'center',
                                                 marginBottom: 5
                                             }}
                                         >
-                                            <Typography variant='overline' sx={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
+                                            {getFlowIcon(index)}
+                                            <Typography variant='overline' sx={{ fontWeight: 'bold', fontSize: '1.1rem', marginLeft: 1 }}>
                                                 {dialogProps.evaluationChatflows[index]}
                                             </Typography>
                                         </div>

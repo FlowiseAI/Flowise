@@ -19,6 +19,7 @@ import { calculateCost, formatCost } from './CostCalculator'
 import { runAdditionalEvaluators } from './EvaluatorRunner'
 import evaluatorsService from '../evaluator'
 import { LLMEvaluationRunner } from './LLMEvaluationRunner'
+import { Assistant } from '../../database/entities/Assistant'
 
 const runAgain = async (id: string, baseURL: string, orgId: string) => {
     try {
@@ -35,7 +36,8 @@ const runAgain = async (id: string, baseURL: string, orgId: string) => {
             datasetId: evaluation.datasetId,
             evaluationType: evaluation.evaluationType,
             selectedSimpleEvaluators: JSON.stringify(additionalConfig.simpleEvaluators),
-            datasetAsOneConversation: additionalConfig.datasetAsOneConversation
+            datasetAsOneConversation: additionalConfig.datasetAsOneConversation,
+            chatflowType: JSON.stringify(additionalConfig.chatflowTypes ? additionalConfig.chatflowTypes : [])
         }
         data.name = evaluation.name
         data.workspaceId = evaluation.workspaceId
@@ -70,6 +72,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         row.average_metrics = JSON.stringify({})
 
         const additionalConfig: any = {
+            chatflowTypes: body.chatflowType ? JSON.parse(body.chatflowType) : [],
             datasetAsOneConversation: body.datasetAsOneConversation,
             simpleEvaluators: body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
         }
@@ -423,8 +426,15 @@ const isOutdated = async (id: string) => {
         }
         const chatflows = JSON.parse(evaluation.chatflowId)
         const chatflowNames = JSON.parse(evaluation.chatflowName)
-
+        const chatflowTypes = evaluation.additionalConfig ? JSON.parse(evaluation.additionalConfig).chatflowTypes : []
         for (let i = 0; i < chatflows.length; i++) {
+            // check for backward compatibility, as previous versions did not the types in additionalConfig
+            if (chatflowTypes && chatflowTypes.length >= 0) {
+                if (chatflowTypes[i] === 'Custom Assistant') {
+                    // if the chatflow type is custom assistant, then we should NOT check in the chatflows table
+                    continue
+                }
+            }
             const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
                 id: chatflows[i]
             })
@@ -438,8 +448,35 @@ const isOutdated = async (id: string) => {
                     returnObj.chatflows.push({
                         chatflowName: chatflowNames[i],
                         chatflowId: chatflows[i],
+                        chatflowType: chatflow.type === 'AGENTFLOW' ? 'Agentflow v2' : 'Chatflow',
                         isOutdated: true
                     })
+                }
+            }
+        }
+        if (chatflowTypes && chatflowTypes.length > 0) {
+            for (let i = 0; i < chatflows.length; i++) {
+                if (chatflowTypes[i] !== 'Custom Assistant') {
+                    // if the chatflow type is NOT custom assistant, then bail out for this item
+                    continue
+                }
+                const assistant = await appServer.AppDataSource.getRepository(Assistant).findOneBy({
+                    id: chatflows[i]
+                })
+                if (!assistant) {
+                    returnObj.errors.push(`Custom Assistant ${chatflowNames[i]} not found`)
+                    isOutdated = true
+                } else {
+                    const chatflowLastUpdated = assistant.updatedDate.getTime()
+                    if (chatflowLastUpdated > evaluationRunDate) {
+                        isOutdated = true
+                        returnObj.chatflows.push({
+                            chatflowName: chatflowNames[i],
+                            chatflowId: chatflows[i],
+                            chatflowType: 'Custom Assistant',
+                            isOutdated: true
+                        })
+                    }
                 }
             }
         }

@@ -25,6 +25,7 @@ import {
 import { useTheme } from '@mui/material/styles'
 import moment from 'moment'
 import PaidIcon from '@mui/icons-material/Paid'
+import { IconHierarchy, IconUsersGroup, IconRobot } from '@tabler/icons-react'
 import LLMIcon from '@mui/icons-material/ModelTraining'
 import AlarmIcon from '@mui/icons-material/AlarmOn'
 import TokensIcon from '@mui/icons-material/AutoAwesomeMotion'
@@ -116,10 +117,13 @@ const EvalEvaluationRows = () => {
     const [expandTableProps, setExpandTableProps] = useState({})
     const [isTableLoading, setTableLoading] = useState(false)
 
+    const [additionalConfig, setAdditionalConfig] = useState({})
+
     const openDetailsDrawer = (item) => {
         setSideDrawerDialogProps({
             type: 'View',
             data: item,
+            additionalConfig: additionalConfig,
             evaluationType: evaluation.evaluationType,
             evaluationChatflows: evaluation.chatflowName
         })
@@ -239,6 +243,9 @@ const EvalEvaluationRows = () => {
             const data = getEvaluation.data
             setSelectedEvaluationName(data.name)
             getIsOutdatedApi.request(data.id)
+            if (data.additionalConfig) {
+                setAdditionalConfig(JSON.parse(data.additionalConfig))
+            }
             data.chatflowId = typeof data.chatflowId === 'object' ? data.chatflowId : JSON.parse(data.chatflowId)
             data.chatflowName = typeof data.chatflowName === 'object' ? data.chatflowName : JSON.parse(data.chatflowName)
             const rows = getEvaluation.data.rows
@@ -314,6 +321,39 @@ const EvalEvaluationRows = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getEvaluation.data])
 
+    const getOpenLink = (index) => {
+        if (index === undefined) {
+            return ''
+        }
+        if (additionalConfig.chatflowTypes) {
+            switch (additionalConfig.chatflowTypes[index]) {
+                case 'Chatflow':
+                    return '/canvas/' + evaluation.chatflowId[index]
+                case 'Custom Assistant':
+                    return '/assistants/custom/' + evaluation.chatflowId[index]
+                case 'Agentflow v2':
+                    return '/v2/agentcanvas/' + evaluation.chatflowId[index]
+            }
+        }
+        return '/canvas/' + evaluation.chatflowId[index]
+    }
+
+    const getFlowIcon = (index) => {
+        if (index === undefined) {
+            return <IconHierarchy size={24} />
+        }
+        if (additionalConfig.chatflowTypes) {
+            switch (additionalConfig.chatflowTypes[index]) {
+                case 'Chatflow':
+                    return <IconHierarchy size={20} />
+                case 'Custom Assistant':
+                    return <IconRobot size={20} />
+                case 'Agentflow v2':
+                    return <IconUsersGroup size={20} />
+            }
+        }
+        return <IconHierarchy />
+    }
     return (
         <>
             <MainCard>
@@ -429,7 +469,15 @@ const EvalEvaluationRows = () => {
                                                         }}
                                                         variant='outlined'
                                                         label={chatflow.chatflowName}
-                                                        onClick={() => navigate(`/canvas/${chatflow.chatflowId}`)}
+                                                        onClick={() =>
+                                                            navigate(
+                                                                chatflow.chatflowType === 'Chatflow'
+                                                                    ? '/canvas/' + chatflow.chatflowId
+                                                                    : chatflow.chatflowType === 'Custom Assistant'
+                                                                    ? '/assistants/custom/' + chatflow.chatflowId
+                                                                    : '/v2/agentcanvas/' + chatflow.chatflowId
+                                                            )
+                                                        }
                                                     ></Chip>
                                                 ))}
                                             </Stack>
@@ -566,11 +614,12 @@ const EvalEvaluationRows = () => {
                                     }}
                                 >
                                     <IconVectorBezier2 style={{ marginRight: 5 }} size={17} />
-                                    Chatflows Used:
+                                    Flows Used:
                                 </div>
                                 {(evaluation.chatflowName || []).map((chatflowUsed, index) => (
                                     <Chip
                                         key={index}
+                                        icon={getFlowIcon(index)}
                                         clickable
                                         style={{
                                             width: 'max-content',
@@ -580,7 +629,7 @@ const EvalEvaluationRows = () => {
                                                 : '0 2px 14px 0 rgb(32 40 45 / 10%)'
                                         }}
                                         label={chatflowUsed}
-                                        onClick={() => navigate('/canvas/' + evaluation.chatflowId[index])}
+                                        onClick={() => navigate(getOpenLink(index))}
                                     ></Chip>
                                 ))}
                             </Stack>
