@@ -324,7 +324,12 @@ const EvalEvaluationRows = () => {
 
     const getOpenLink = (index) => {
         if (index === undefined) {
-            return ''
+            return undefined
+        }
+        const id = evaluation.chatflowId[index]
+        // this is to check if the evaluation is deleted!
+        if (outdated?.errors?.length > 0 && outdated.errors.find((e) => e.id === id)) {
+            return undefined
         }
         if (additionalConfig.chatflowTypes) {
             switch (additionalConfig.chatflowTypes[index]) {
@@ -337,6 +342,13 @@ const EvalEvaluationRows = () => {
             }
         }
         return '/canvas/' + evaluation.chatflowId[index]
+    }
+
+    const openFlow = (index) => {
+        const url = getOpenLink(index)
+        if (url) {
+            window.open(getOpenLink(index), '_blank')
+        }
     }
 
     const getFlowIcon = (index) => {
@@ -453,7 +465,7 @@ const EvalEvaluationRows = () => {
                                     {outdated.chatflows && outdated?.errors?.length === 0 && outdated.chatflows.length > 0 && (
                                         <>
                                             <br />
-                                            <b style={{ color: 'rgb(116,66,16)' }}>Chatflows:</b>
+                                            <b style={{ color: 'rgb(116,66,16)' }}>Flows:</b>
                                             <Stack sx={{ mt: 1, alignItems: 'center', flexWrap: 'wrap' }} flexDirection='row' gap={1}>
                                                 {outdated.chatflows.map((chatflow, index) => (
                                                     <Chip
@@ -486,7 +498,7 @@ const EvalEvaluationRows = () => {
                                         </>
                                     )}
                                     {outdated.errors.length > 0 &&
-                                        outdated.errors.map((error, index) => <ListItem key={index}>{error}</ListItem>)}
+                                        outdated.errors.map((error, index) => <ListItem key={index}>{error.message}</ListItem>)}
                                     <IconButton
                                         style={{ position: 'absolute', top: 10, right: 10 }}
                                         size='small'
@@ -631,7 +643,7 @@ const EvalEvaluationRows = () => {
                                                 : '0 2px 14px 0 rgb(32 40 45 / 10%)'
                                         }}
                                         label={chatflowUsed}
-                                        onClick={() => window.open(getOpenLink(index), '_blank')}
+                                        onClick={() => openFlow(index)}
                                     ></Chip>
                                 ))}
                             </Stack>

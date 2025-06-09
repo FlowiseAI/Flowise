@@ -421,7 +421,10 @@ const isOutdated = async (id: string) => {
                 returnObj.dataset = dataset
             }
         } else {
-            returnObj.errors.push(`Dataset ${evaluation.datasetName} not found`)
+            returnObj.errors.push({
+                message: `Dataset ${evaluation.datasetName} not found`,
+                id: evaluation.datasetId
+            })
             isOutdated = true
         }
         const chatflows = JSON.parse(evaluation.chatflowId)
@@ -439,7 +442,10 @@ const isOutdated = async (id: string) => {
                 id: chatflows[i]
             })
             if (!chatflow) {
-                returnObj.errors.push(`Chatflow ${chatflowNames[i]} not found`)
+                returnObj.errors.push({
+                    message: `Chatflow ${chatflowNames[i]} not found`,
+                    id: chatflows[i]
+                })
                 isOutdated = true
             } else {
                 const chatflowLastUpdated = chatflow.updatedDate.getTime()
@@ -464,7 +470,10 @@ const isOutdated = async (id: string) => {
                     id: chatflows[i]
                 })
                 if (!assistant) {
-                    returnObj.errors.push(`Custom Assistant ${chatflowNames[i]} not found`)
+                    returnObj.errors.push({
+                        message: `Custom Assistant ${chatflowNames[i]} not found`,
+                        id: chatflows[i]
+                    })
                     isOutdated = true
                 } else {
                     const chatflowLastUpdated = assistant.updatedDate.getTime()
