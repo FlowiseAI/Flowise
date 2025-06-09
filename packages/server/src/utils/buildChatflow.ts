@@ -816,7 +816,7 @@ export const executeFlow = async ({
         /*** Prepare response ***/
         result.question = incomingInput.question // return the question in the response, this is used when input text is empty but question is in audio format
         result.chatId = chatId
-        result.chatMessageId = chatMessage?.id || uuidv4()
+        result.chatMessageId = chatMessage?.id
         result.chatflowid = chatflowid
         result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
         result.isStreamValid = isStreamValid

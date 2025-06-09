@@ -173,7 +173,8 @@ const EvalEvaluationRows = () => {
                 showCustomEvals,
                 showTokenMetrics,
                 showLatencyMetrics,
-                showCostMetrics
+                showCostMetrics,
+                additionalConfig
             }
         })
         setShowExpandTableDialog(true)
@@ -340,16 +341,16 @@ const EvalEvaluationRows = () => {
 
     const getFlowIcon = (index) => {
         if (index === undefined) {
-            return <IconHierarchy size={24} />
+            return <IconHierarchy size={17} />
         }
         if (additionalConfig.chatflowTypes) {
             switch (additionalConfig.chatflowTypes[index]) {
                 case 'Chatflow':
-                    return <IconHierarchy size={20} />
+                    return <IconHierarchy size={17} />
                 case 'Custom Assistant':
-                    return <IconRobot size={20} />
+                    return <IconRobot size={17} />
                 case 'Agentflow v2':
-                    return <IconUsersGroup size={20} />
+                    return <IconUsersGroup size={17} />
             }
         }
         return <IconHierarchy />
@@ -445,7 +446,7 @@ const EvalEvaluationRows = () => {
                                                 }}
                                                 variant='outlined'
                                                 label={outdated.dataset.name}
-                                                onClick={() => navigate(`/dataset_rows/${outdated.dataset.id}`)}
+                                                onClick={() => window.open(`/dataset_rows/${outdated.dataset.id}`, '_blank')}
                                             ></Chip>
                                         </>
                                     )}
@@ -470,12 +471,13 @@ const EvalEvaluationRows = () => {
                                                         variant='outlined'
                                                         label={chatflow.chatflowName}
                                                         onClick={() =>
-                                                            navigate(
+                                                            window.open(
                                                                 chatflow.chatflowType === 'Chatflow'
                                                                     ? '/canvas/' + chatflow.chatflowId
                                                                     : chatflow.chatflowType === 'Custom Assistant'
                                                                     ? '/assistants/custom/' + chatflow.chatflowId
-                                                                    : '/v2/agentcanvas/' + chatflow.chatflowId
+                                                                    : '/v2/agentcanvas/' + chatflow.chatflowId,
+                                                                '_blank'
                                                             )
                                                         }
                                                     ></Chip>
@@ -629,7 +631,7 @@ const EvalEvaluationRows = () => {
                                                 : '0 2px 14px 0 rgb(32 40 45 / 10%)'
                                         }}
                                         label={chatflowUsed}
-                                        onClick={() => navigate(getOpenLink(index))}
+                                        onClick={() => window.open(getOpenLink(index), '_blank')}
                                     ></Chip>
                                 ))}
                             </Stack>

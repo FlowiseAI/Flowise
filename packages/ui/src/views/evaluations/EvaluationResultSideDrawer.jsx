@@ -20,7 +20,6 @@ import { useSelector } from 'react-redux'
 import { evaluators as evaluatorsOptions, numericOperators } from '../evaluators/evaluatorConstant'
 import TableCell from '@mui/material/TableCell'
 import { Close } from '@mui/icons-material'
-import React from 'react'
 
 const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
     const onOpen = () => {}
