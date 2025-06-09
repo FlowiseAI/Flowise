@@ -18,6 +18,7 @@ import { IconHandStop, IconX } from '@tabler/icons-react'
 
 // API
 import credentialsApi from '@/api/credentials'
+import oauth2Api from '@/api/oauth2'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -212,6 +213,149 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         }
     }
 
+    const setOAuth2 = async () => {
+        try {
+            let credentialId = null
+
+            // First save or add the credential
+            if (dialogProps.type === 'ADD') {
+                // Add new credential first
+                const obj = {
+                    name,
+                    credentialName: componentCredential.name,
+                    plainDataObj: credentialData
+                }
+                const createResp = await credentialsApi.createCredential(obj)
+                if (createResp.data) {
+                    credentialId = createResp.data.id
+                }
+            } else {
+                // Save existing credential first
+                const saveObj = {
+                    name,
+                    credentialName: componentCredential.name
+                }
+
+                let plainDataObj = {}
+                for (const key in credentialData) {
+                    if (credentialData[key] !== REDACTED_CREDENTIAL_VALUE) {
+                        plainDataObj[key] = credentialData[key]
+                    }
+                }
+                if (Object.keys(plainDataObj).length) saveObj.plainDataObj = plainDataObj
+
+                const saveResp = await credentialsApi.updateCredential(credential.id, saveObj)
+                if (saveResp.data) {
+                    credentialId = credential.id
+                }
+            }
+
+            if (!credentialId) {
+                throw new Error('Failed to save credential')
+            }
+
+            const authResponse = await oauth2Api.authorize(credentialId)
+
+            if (authResponse.data && authResponse.data.success && authResponse.data.authorizationUrl) {
+                // Open the authorization URL in a new window/tab
+                const authWindow = window.open(
+                    authResponse.data.authorizationUrl,
+                    '_blank',
+                    'width=600,height=700,scrollbars=yes,resizable=yes'
+                )
+
+                if (!authWindow) {
+                    throw new Error('Failed to open authorization window. Please check if popups are blocked.')
+                }
+
+                // Listen for messages from the popup window
+                const handleMessage = (event) => {
+                    // Verify origin if needed (you may want to add origin checking)
+                    if (event.data && (event.data.type === 'OAUTH2_SUCCESS' || event.data.type === 'OAUTH2_ERROR')) {
+                        window.removeEventListener('message', handleMessage)
+
+                        if (event.data.type === 'OAUTH2_SUCCESS') {
+                            enqueueSnackbar({
+                                message: 'OAuth2 authorization completed successfully',
+                                options: {
+                                    key: new Date().getTime() + Math.random(),
+                                    variant: 'success',
+                                    action: (key) => (
+                                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                            <IconX />
+                                        </Button>
+                                    )
+                                }
+                            })
+                            onConfirm(credentialId)
+                        } else if (event.data.type === 'OAUTH2_ERROR') {
+                            enqueueSnackbar({
+                                message: event.data.message || 'OAuth2 authorization failed',
+                                options: {
+                                    key: new Date().getTime() + Math.random(),
+                                    variant: 'error',
+                                    persist: true,
+                                    action: (key) => (
+                                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                            <IconX />
+                                        </Button>
+                                    )
+                                }
+                            })
+                        }
+
+                        // Close the auth window if it's still open
+                        if (authWindow && !authWindow.closed) {
+                            authWindow.close()
+                        }
+                    }
+                }
+
+                // Add message listener
+                window.addEventListener('message', handleMessage)
+
+                // Fallback: Monitor the auth window and handle if it closes manually
+                const checkClosed = setInterval(() => {
+                    if (authWindow.closed) {
+                        clearInterval(checkClosed)
+                        window.removeEventListener('message', handleMessage)
+
+                        // If no message was received, assume user closed window manually
+                        // Don't show error in this case, just close dialog
+                        onConfirm(credentialId)
+                    }
+                }, 1000)
+
+                // Cleanup after a reasonable timeout (5 minutes)
+                setTimeout(() => {
+                    clearInterval(checkClosed)
+                    window.removeEventListener('message', handleMessage)
+                    if (authWindow && !authWindow.closed) {
+                        authWindow.close()
+                    }
+                }, 300000) // 5 minutes
+            } else {
+                throw new Error('Invalid response from authorization endpoint')
+            }
+        } catch (error) {
+            console.error('OAuth2 authorization error:', error)
+            if (setError) setError(error)
+            enqueueSnackbar({
+                message: `OAuth2 authorization failed: ${error.response?.data?.message || error.message || 'Unknown error'}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+    }
+
     const component = show ? (
         <Dialog
             fullWidth
@@ -315,12 +459,34 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                         />
                     </Box>
                 )}
+                {!shared && componentCredential && componentCredential.name && componentCredential.name.includes('OAuth2') && (
+                    <Box sx={{ p: 2 }}>
+                        <Stack sx={{ position: 'relative' }} direction='row'>
+                            <Typography variant='overline'>OAuth Redirect URL</Typography>
+                        </Stack>
+                        <OutlinedInput
+                            id='oauthRedirectUrl'
+                            type='string'
+                            disabled
+                            fullWidth
+                            value={`${baseURL}/api/v1/oauth2-credential/callback`}
+                        />
+                    </Box>
+                )}
                 {!shared &&
                     componentCredential &&
                     componentCredential.inputs &&
-                    componentCredential.inputs.map((inputParam, index) => (
-                        <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />
-                    ))}
+                    componentCredential.inputs
+                        .filter((inputParam) => inputParam.hidden !== true)
+                        .map((inputParam, index) => <CredentialInputHandler key={index} inputParam={inputParam} data={credentialData} />)}
+
+                {!shared && componentCredential && componentCredential.name && componentCredential.name.includes('OAuth2') && (
+                    <Box sx={{ p: 2 }}>
+                        <Button variant='contained' color='secondary' onClick={() => setOAuth2()}>
+                            Authenticate
+                        </Button>
+                    </Box>
+                )}
             </DialogContent>
             <DialogActions>
                 {!shared && (
