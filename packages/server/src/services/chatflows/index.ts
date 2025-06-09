@@ -508,7 +508,7 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow, user
         }
 
         updateChatFlow.visibility = Array.from(
-            new Set([...(updateChatFlow.visibility ?? []), ...[ChatflowVisibility.PRIVATE, ChatflowVisibility.ANSWERAI]])
+            new Set([...(updateChatFlow.visibility ?? []), ChatflowVisibility.PRIVATE, ChatflowVisibility.ANSWERAI])
         )
 
         const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, mergedChatflow)
