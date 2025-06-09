@@ -16,6 +16,7 @@ Tools are functions that agents can use to interact with the world. These tools 
 -   [Chatflow Tool](chatflow-tool.md)
 -   [Custom Tool](custom-tool.md)
 -   [Exa Search](exa-search.md)
+-   [Google Calendar](google-calendar.md)
 -   [Google Custom Search](google-custom-search.md)
 -   [OpenAPI Toolkit](openapi-toolkit.md)
 -   [Python Interpreter](python-interpreter.md)

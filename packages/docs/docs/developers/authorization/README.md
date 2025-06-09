@@ -14,3 +14,4 @@ By implementing robust authentication, you can protect your Flowise instances an
 
 -   [App level](app-level.md)
 -   [Chatflow level](chatflow-level.md)
+-   [Google OAuth](google-oauth.md)
