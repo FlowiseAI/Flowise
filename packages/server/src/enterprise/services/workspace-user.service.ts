@@ -327,30 +327,31 @@ export class WorkspaceUserService {
         return newWorkspace
     }
 
-    public async updateWorkspaceUser(newWorkspaserUser: Partial<WorkspaceUser>) {
+    public async updateWorkspaceUser(newUserDetails: Partial<WorkspaceUser>) {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         const { workspaceUser } = await this.readWorkspaceUserByWorkspaceIdUserId(
-            newWorkspaserUser.workspaceId,
-            newWorkspaserUser.userId,
+            newUserDetails.workspaceId,
+            newUserDetails.userId,
             queryRunner
         )
         if (!workspaceUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceUserErrorMessage.WORKSPACE_USER_NOT_FOUND)
-        if (newWorkspaserUser.roleId) {
-            const role = await this.roleService.readRoleById(newWorkspaserUser.roleId, queryRunner)
+        if (newUserDetails.roleId) {
+            const role = await this.roleService.readRoleById(newUserDetails.roleId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
+            newUserDetails.role = role
         }
-        const updatedBy = await this.userService.readUserById(newWorkspaserUser.updatedBy, queryRunner)
+        const updatedBy = await this.userService.readUserById(newUserDetails.updatedBy, queryRunner)
         if (!updatedBy) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
-        if (newWorkspaserUser.status) this.validateWorkspaceUserStatus(newWorkspaserUser.status)
-        if (newWorkspaserUser.lastLogin) this.validateWorkspaceUserLastLogin(newWorkspaserUser.lastLogin)
-        newWorkspaserUser.createdBy = workspaceUser.createdBy
+        if (newUserDetails.status) this.validateWorkspaceUserStatus(newUserDetails.status)
+        if (newUserDetails.lastLogin) this.validateWorkspaceUserLastLogin(newUserDetails.lastLogin)
+        newUserDetails.createdBy = workspaceUser.createdBy
 
-        let updataWorkspaceUser = queryRunner.manager.merge(WorkspaceUser, workspaceUser, newWorkspaserUser)
+        let updatedWorkspaceUser = queryRunner.manager.merge(WorkspaceUser, workspaceUser, newUserDetails)
         try {
             await queryRunner.startTransaction()
-            updataWorkspaceUser = await this.saveWorkspaceUser(updataWorkspaceUser, queryRunner)
+            updatedWorkspaceUser = await this.saveWorkspaceUser(updatedWorkspaceUser, queryRunner)
             await queryRunner.commitTransaction()
         } catch (error) {
             await queryRunner.rollbackTransaction()
@@ -359,7 +360,7 @@ export class WorkspaceUserService {
             await queryRunner.release()
         }
 
-        return updataWorkspaceUser
+        return updatedWorkspaceUser
     }
 
     public async deleteWorkspaceUser(workspaceId: string | undefined, userId: string | undefined) {
