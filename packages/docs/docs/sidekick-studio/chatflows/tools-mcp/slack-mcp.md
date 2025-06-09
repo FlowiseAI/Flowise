@@ -18,7 +18,13 @@ To use the Slack MCP, you'll need to configure the following credentials:
     - Go to [https://api.slack.com/apps](https://api.slack.com/apps)
     - Create a new app or select an existing one
     - Navigate to "OAuth & Permissions"
-    - Add necessary bot scopes like `chat:write`, `channels:read`, etc.
+    - Add necessary bot scopes:
+        - channels:history - View messages and other content in public channels
+        - channels:read - View basic channel information
+        - chat:write - Send messages as the app
+        - reactions:write - Add emoji reactions to messages
+        - users:read - View users and their basic information
+        - users.profile:read - View detailed profiles about users
     - Install the app to your workspace
     - Copy the Bot User OAuth Token
 

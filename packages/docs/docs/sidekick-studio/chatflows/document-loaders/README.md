@@ -52,6 +52,8 @@ AnswerAI offers a variety of document loaders to accommodate different data sour
 -   [Contentful](contentful.md)
 -   [Figma](figma.md)
 -   [Github](github.md)
+-   [Gmail](gmail.md)
+-   [Google Drive](google-drive.md)
 -   [Notion Database](notion-database.md)
 -   [Notion Folder](notion-folder.md)
 -   [Notion Page](notion-page.md)
