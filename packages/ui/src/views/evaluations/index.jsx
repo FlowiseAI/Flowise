@@ -36,7 +36,6 @@ import useNotifier from '@/utils/useNotifier'
 
 // project
 import MainCard from '@/ui-component/cards/MainCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ErrorBoundary from '@/ErrorBoundary'
@@ -288,20 +287,22 @@ const EvalsEvaluation = () => {
                                 sx={{
                                     borderRadius: 2,
                                     height: '100%',
-                                    backgroundColor: autoRefresh ? '#ff9800' : '#4caf50',
-                                    color: 'white',
-                                    border: autoRefresh ? '1px solid #ff9800' : '1px solid #4caf50',
+                                    backgroundColor: 'transparent',
+                                    color: autoRefresh ? '#ff9800' : '#4caf50',
+                                    border: '1px solid transparent',
                                     '&:hover': {
-                                        backgroundColor: autoRefresh ? '#f57c00' : '#388e3c',
-                                        border: autoRefresh ? '1px solid #f57c00' : '1px solid #388e3c'
+                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                        color: autoRefresh ? '#f57c00' : '#388e3c',
+                                        border: '1px solid transparent'
                                     },
                                     '&.Mui-selected': {
-                                        backgroundColor: '#ff9800',
-                                        color: 'white',
-                                        border: '1px solid #ff9800',
+                                        backgroundColor: 'transparent',
+                                        color: '#ff9800',
+                                        border: '1px solid transparent',
                                         '&:hover': {
-                                            backgroundColor: '#f57c00',
-                                            border: '1px solid #f57c00'
+                                            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                            color: '#f57c00',
+                                            border: '1px solid transparent'
                                         }
                                     }
                                 }}
@@ -309,15 +310,21 @@ const EvalsEvaluation = () => {
                             >
                                 {autoRefresh ? <IconPlayerPause /> : <IconPlayerPlay />}
                             </ToggleButton>
-                            <StyledButton
-                                color='secondary'
-                                variant='outlined'
-                                sx={{ borderRadius: 2, height: '100%' }}
+                            <IconButton
+                                sx={{
+                                    borderRadius: 2,
+                                    height: '100%',
+                                    color: theme.palette.secondary.main,
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                        color: theme.palette.secondary.dark
+                                    }
+                                }}
                                 onClick={onRefresh}
-                                startIcon={<IconRefresh />}
+                                title='Refresh'
                             >
-                                Refresh
-                            </StyledButton>
+                                <IconRefresh />
+                            </IconButton>
                             <StyledPermissionButton
                                 permissionId={'evaluations:create'}
                                 sx={{ borderRadius: 2, height: '100%' }}
@@ -380,7 +387,7 @@ const EvalsEvaluation = () => {
                                             <TableCell>Latest Version</TableCell>
                                             <TableCell>Average Metrics</TableCell>
                                             <TableCell>Last Evaluated</TableCell>
-                                            <TableCell>Chatflow(s)</TableCell>
+                                            <TableCell>Flow(s)</TableCell>
                                             <TableCell>Dataset</TableCell>
                                             <TableCell> </TableCell>
                                         </TableRow>
@@ -491,7 +498,7 @@ function EvaluationRunRow(props) {
     }
 
     const goToDataset = (id) => {
-        navigate(`/dataset_rows/${id}`)
+        window.open(`/dataset_rows/${id}`, '_blank')
     }
 
     const onSelectAllChildClick = (event) => {
@@ -564,10 +571,6 @@ function EvaluationRunRow(props) {
                 })
             }
         }
-    }
-
-    const goToCanvas = (id) => {
-        navigate(`/canvas/${id}`)
     }
 
     const getStatusColor = (status) => {
@@ -672,16 +675,11 @@ function EvaluationRunRow(props) {
                         {props.item?.usedFlows?.map((usedFlow, index) => (
                             <Chip
                                 key={index}
-                                clickable
                                 style={{
                                     width: 'max-content',
-                                    borderRadius: '25px',
-                                    boxShadow: props.customization.isDarkMode
-                                        ? '0 2px 14px 0 rgb(255 255 255 / 10%)'
-                                        : '0 2px 14px 0 rgb(32 40 45 / 10%)'
+                                    borderRadius: '25px'
                                 }}
                                 label={usedFlow}
-                                onClick={() => goToCanvas(props.item.chatIds[index])}
                             ></Chip>
                         ))}
                     </Stack>
@@ -690,6 +688,7 @@ function EvaluationRunRow(props) {
                     <Chip
                         clickable
                         style={{
+                            border: 'none',
                             width: 'max-content',
                             borderRadius: '25px',
                             boxShadow: props.customization.isDarkMode
