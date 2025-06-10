@@ -50,7 +50,7 @@ export class UpsertQueue extends BaseQueue {
         return this.queue
     }
 
-    async processJob(
+    public async processJob(
         data: IExecuteFlowParams | IExecuteDocStoreUpsert | IExecuteProcessLoader | IExecuteVectorStoreInsert | IExecutePreviewLoader
     ) {
         if (this.appDataSource) data.appDataSource = this.appDataSource
