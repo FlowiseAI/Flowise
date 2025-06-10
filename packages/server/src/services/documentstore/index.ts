@@ -54,6 +54,7 @@ import { DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR } from '../../utils/pro
 import { checkStorage, updateStorageUsage } from '../../utils/quotaUsage'
 import { Telemetry } from '../../utils/telemetry'
 import nodesService from '../nodes'
+import { Execution } from '../../database/entities/Execution'
 
 const createDocumentStore = async (newDocumentStore: DocumentStore, orgId: string) => {
     try {
@@ -77,11 +78,19 @@ const createDocumentStore = async (newDocumentStore: DocumentStore, orgId: strin
     }
 }
 
-const getAllDocumentStores = async (workspaceId?: string) => {
+const getAllDocumentStores = async (workspaceId?: string, page: number = 1, limit: number = 10) => {
     try {
         const appServer = getRunningExpressApp()
-        const entities = await appServer.AppDataSource.getRepository(DocumentStore).findBy(getWorkspaceSearchOptions(workspaceId))
-        return entities
+        const queryBuilder = appServer.AppDataSource.getRepository(DocumentStore)
+            .createQueryBuilder('doc_store')
+            .orderBy('doc_store.updatedDate', 'DESC')
+            .skip((page - 1) * limit)
+            .take(limit)
+        if (workspaceId) queryBuilder.andWhere('doc_store.workspaceId = :workspaceId', { workspaceId })
+
+        const [data, total] = await queryBuilder.getManyAndCount()
+
+        return { data, total }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

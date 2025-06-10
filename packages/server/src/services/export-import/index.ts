@@ -125,7 +125,7 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
             exportInput.custom_template === true ? await marketplacesService.getAllCustomTemplates(activeWorkspaceId) : []
 
         let DocumentStore: DocumentStore[] =
-            exportInput.document_store === true ? await documenStoreService.getAllDocumentStores(activeWorkspaceId) : []
+            exportInput.document_store === true ? (await documenStoreService.getAllDocumentStores(activeWorkspaceId))?.data : []
         const documentStoreIds = DocumentStore.map((documentStore) => documentStore.id)
 
         let DocumentStoreFileChunk: DocumentStoreFileChunk[] =

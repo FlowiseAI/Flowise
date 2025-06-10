@@ -37,8 +37,17 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
 
 const getAllDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await documentStoreService.getAllDocumentStores(req.user?.activeWorkspaceId)
-        return res.json(DocumentStoreDTO.fromEntities(apiResponse))
+        // Pagination
+        let page = 1
+        if (req.query.page) page = parseInt(req.query.page as string)
+        let limit = 10
+        if (req.query.limit) limit = parseInt(req.query.limit as string)
+
+        const apiResponse = await documentStoreService.getAllDocumentStores(req.user?.activeWorkspaceId, page, limit)
+        return res.json({
+            total: apiResponse.total,
+            data: DocumentStoreDTO.fromEntities(apiResponse.data)
+        })
     } catch (error) {
         next(error)
     }
