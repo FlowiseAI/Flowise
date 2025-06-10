@@ -60,16 +60,6 @@ class ConditionAgent_Agentflow implements INode {
                 default: '<p><span class="variable" data-type="mention" data-id="question" data-label="question">{{ question }}</span> </p>'
             },
             {
-                label: 'Node System Prompt',
-                name: 'conditionAgentSystemPrompt',
-                type: 'string',
-                rows: 4,
-                optional: true,
-                acceptVariable: true,
-                default: CONDITION_AGENT_SYSTEM_PROMPT,
-                description: 'Expert use only. Modifying this can significantly alter agent behavior. Leave default if unsure'
-            },
-            {
                 label: 'Scenarios',
                 name: 'conditionAgentScenarios',
                 description: 'Define the scenarios that will be used as the conditions to split the flow',
@@ -90,6 +80,26 @@ class ConditionAgent_Agentflow implements INode {
                         scenario: ''
                     }
                 ]
+            },
+            {
+                label: 'Override System Prompt',
+                name: 'conditionAgentOverrideSystemPrompt',
+                type: 'boolean',
+                description: 'Override initial system prompt for Condition Agent',
+                optional: true
+            },
+            {
+                label: 'Node System Prompt',
+                name: 'conditionAgentSystemPrompt',
+                type: 'string',
+                rows: 4,
+                optional: true,
+                acceptVariable: true,
+                default: CONDITION_AGENT_SYSTEM_PROMPT,
+                description: 'Expert use only. Modifying this can significantly alter agent behavior. Leave default if unsure',
+                show: {
+                    conditionAgentOverrideSystemPrompt: true
+                }
             }
             /*{
                 label: 'Enable Memory',
@@ -252,7 +262,12 @@ class ConditionAgent_Agentflow implements INode {
             const conditionAgentInput = nodeData.inputs?.conditionAgentInput as string
             let input = conditionAgentInput || question
             const conditionAgentInstructions = nodeData.inputs?.conditionAgentInstructions as string
-            const systemPrompt = (nodeData.inputs?.conditionAgentSystemPrompt as string) ?? CONDITION_AGENT_SYSTEM_PROMPT
+            const conditionAgentSystemPrompt = nodeData.inputs?.conditionAgentSystemPrompt as string
+            const conditionAgentOverrideSystemPrompt = nodeData.inputs?.conditionAgentOverrideSystemPrompt as boolean
+            let systemPrompt = CONDITION_AGENT_SYSTEM_PROMPT
+            if (conditionAgentSystemPrompt && conditionAgentOverrideSystemPrompt) {
+                systemPrompt = conditionAgentSystemPrompt
+            }
 
             // Extract memory and configuration options
             const enableMemory = nodeData.inputs?.conditionAgentEnableMemory as boolean
@@ -369,7 +384,6 @@ class ConditionAgent_Agentflow implements INode {
                 )
             }
 
-            // *** CORRECTED LOGIC ***
             let calledOutputName: string
             try {
                 const parsedResponse = this.parseJsonMarkdown(response.content as string)
@@ -384,7 +398,6 @@ class ConditionAgent_Agentflow implements INode {
                     }"`
                 )
             }
-            // *** CORRECTED LOGIC ***
 
             // Clean up empty inputs
             for (const key in nodeData.inputs) {
