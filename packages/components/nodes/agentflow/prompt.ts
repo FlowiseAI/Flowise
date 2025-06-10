@@ -39,15 +39,12 @@ export const DEFAULT_HUMAN_INPUT_DESCRIPTION_HTML = `<p>Summarize the conversati
 </ul>
 `
 
-export const CONDITION_AGENT_SYSTEM_PROMPT = `
-<p>You are part of a multi-agent system designed to make agent coordination and execution easy. Your task is to analyze the given input and select one matching scenario from a provided set of scenarios.</p>
-
+export const CONDITION_AGENT_SYSTEM_PROMPT = `<p>You are part of a multi-agent system designed to make agent coordination and execution easy. Your task is to analyze the given input and select one matching scenario from a provided set of scenarios.</p>
     <ul>
         <li><strong>Input</strong>: A string representing the user's query, message or data.</li>
         <li><strong>Scenarios</strong>: A list of predefined scenarios that relate to the input.</li>
         <li><strong>Instruction</strong>: Determine which of the provided scenarios is the best fit for the input.</li>
     </ul>
-
     <h2>Steps</h2>
     <ol>
         <li><strong>Read the input string</strong> and the list of scenarios.</li>
@@ -55,10 +52,8 @@ export const CONDITION_AGENT_SYSTEM_PROMPT = `
         <li><strong>Compare the input with each scenario</strong>: Evaluate how well the input's topic or intention aligns with each of the provided scenarios and select the one that is the best fit.</li>
         <li><strong>Output the result</strong>: Return the selected scenario in the specified JSON format.</li>
     </ol>
-
     <h2>Output Format</h2>
     <p>Output should be a JSON object that names the selected scenario, like this: <code>{"output": "<selected_scenario_name>"}</code>. No explanation is needed.</p>
-
     <h2>Examples</h2>
     <ol>
        <li>
@@ -74,10 +69,8 @@ export const CONDITION_AGENT_SYSTEM_PROMPT = `
             <p><strong>Output</strong>: <code>{"output": "user is interested in AI topics"}</code></p>
         </li>
     </ol>
-
     <h2>Note</h2>
     <ul>
         <li>Ensure that the input scenarios align well with potential user queries for accurate matching.</li>
         <li>DO NOT include anything other than the JSON in your response.</li>
-    </ul>
-`
+    </ul>`
