@@ -4,7 +4,6 @@ import 'react-datepicker/dist/react-datepicker.css'
 
 // material-ui
 import {
-    Pagination,
     Box,
     Stack,
     TextField,
@@ -21,7 +20,6 @@ import {
     DialogTitle,
     IconButton,
     Tooltip,
-    Typography,
     useTheme
 } from '@mui/material'
 
@@ -44,6 +42,7 @@ import { IconTrash } from '@tabler/icons-react'
 import { ExecutionsListTable } from '@/ui-component/table/ExecutionsListTable'
 import { ExecutionDetails } from './ExecutionDetails'
 import { omit } from 'lodash'
+import TablePagination from '@/ui-component/pagination/TablePagination'
 
 // ==============================|| AGENT EXECUTIONS ||============================== //
 
@@ -71,11 +70,6 @@ const AgentExecutions = () => {
         agentflowId: '',
         sessionId: ''
     })
-    const [pagination, setPagination] = useState({
-        page: 1,
-        limit: 10,
-        total: 0
-    })
 
     const handleFilterChange = (field, value) => {
         setFilters({
@@ -94,26 +88,21 @@ const AgentExecutions = () => {
         })
     }
 
-    const handlePageChange = (event, newPage) => {
-        setPagination({
-            ...pagination,
-            page: newPage
-        })
+    /* Table Pagination */
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageLimit, setPageLimit] = useState(10)
+    const [total, setTotal] = useState(0)
+    const onChange = (page, pageLimit) => {
+        setCurrentPage(page)
+        setPageLimit(pageLimit)
+        applyFilters(page, pageLimit)
     }
 
-    const handleLimitChange = (event) => {
-        setPagination({
-            ...pagination,
-            page: 1, // Reset to first page when changing items per page
-            limit: parseInt(event.target.value, 10)
-        })
-    }
-
-    const applyFilters = () => {
+    const applyFilters = (page, limit) => {
         setLoading(true)
         const params = {
-            page: pagination.page,
-            limit: pagination.limit
+            page: page || currentPage,
+            limit: limit || pageLimit
         }
 
         if (filters.state) params.state = filters.state
@@ -186,7 +175,7 @@ const AgentExecutions = () => {
                 const { data, total } = getAllExecutions.data
                 if (!Array.isArray(data)) return
                 setExecutions(data)
-                setPagination((prev) => ({ ...prev, total }))
+                setTotal(total)
             } catch (e) {
                 console.error(e)
             }
@@ -202,16 +191,11 @@ const AgentExecutions = () => {
     }, [getAllExecutions.error])
 
     useEffect(() => {
-        applyFilters()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pagination.page, pagination.limit])
-
-    useEffect(() => {
         if (deleteExecutionsApi.data) {
             // Refresh the executions list
             getAllExecutions.request({
-                page: pagination.page,
-                limit: pagination.limit
+                page: currentPage,
+                limit: pageLimit
             })
             setSelectedExecutionIds([])
         }
@@ -245,190 +229,166 @@ const AgentExecutions = () => {
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
                     <ViewHeader title='Agent Executions' description='Monitor and manage agentflows executions' />
 
-                    {/* Filter Section */}
-                    <Box sx={{ mb: 2, width: '100%' }}>
-                        <Grid container spacing={2} alignItems='center'>
-                            <Grid item xs={12} md={2}>
-                                <FormControl fullWidth size='small'>
-                                    <InputLabel id='state-select-label'>State</InputLabel>
-                                    <Select
-                                        labelId='state-select-label'
-                                        value={filters.state}
-                                        label='State'
-                                        onChange={(e) => handleFilterChange('state', e.target.value)}
-                                        size='small'
-                                        sx={{
-                                            '& .MuiOutlinedInput-notchedOutline': {
-                                                borderColor: borderColor
-                                            },
-                                            '& .MuiSvgIcon-root': {
-                                                color: customization.isDarkMode ? '#fff' : 'inherit'
-                                            }
-                                        }}
-                                    >
-                                        <MenuItem value=''>All</MenuItem>
-                                        <MenuItem value='INPROGRESS'>In Progress</MenuItem>
-                                        <MenuItem value='FINISHED'>Finished</MenuItem>
-                                        <MenuItem value='ERROR'>Error</MenuItem>
-                                        <MenuItem value='TERMINATED'>Terminated</MenuItem>
-                                        <MenuItem value='TIMEOUT'>Timeout</MenuItem>
-                                        <MenuItem value='STOPPED'>Stopped</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Grid>
-                            <Grid item xs={12} md={2}>
-                                <DatePicker
-                                    selected={filters.startDate}
-                                    onChange={(date) => onDateChange('startDate', date)}
-                                    selectsStart
-                                    startDate={filters.startDate}
-                                    className='form-control'
-                                    wrapperClassName='datePicker'
-                                    maxDate={new Date()}
-                                    customInput={
-                                        <TextField
-                                            size='small'
-                                            label='Start date'
-                                            fullWidth
-                                            sx={{
-                                                '& .MuiOutlinedInput-notchedOutline': {
-                                                    borderColor: borderColor
-                                                }
-                                            }}
-                                        />
-                                    }
-                                />
-                            </Grid>
-                            <Grid sx={{ ml: -1 }} item xs={12} md={2}>
-                                <DatePicker
-                                    selected={filters.endDate}
-                                    onChange={(date) => onDateChange('endDate', date)}
-                                    selectsEnd
-                                    endDate={filters.endDate}
-                                    className='form-control'
-                                    wrapperClassName='datePicker'
-                                    minDate={filters.startDate}
-                                    maxDate={new Date()}
-                                    customInput={
-                                        <TextField
-                                            size='small'
-                                            label='End date'
-                                            fullWidth
-                                            sx={{
-                                                '& .MuiOutlinedInput-notchedOutline': {
-                                                    borderColor: borderColor
-                                                }
-                                            }}
-                                        />
-                                    }
-                                />
-                            </Grid>
-                            <Grid sx={{ ml: -1 }} item xs={12} md={2}>
-                                <TextField
-                                    fullWidth
-                                    label='Session ID'
-                                    value={filters.sessionId}
-                                    onChange={(e) => handleFilterChange('sessionId', e.target.value)}
-                                    size='small'
-                                    sx={{
-                                        '& .MuiOutlinedInput-notchedOutline': {
-                                            borderColor: borderColor
-                                        }
-                                    }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={4}>
-                                <Stack direction='row' spacing={1}>
-                                    <Button variant='contained' color='primary' onClick={applyFilters} size='small'>
-                                        Apply
-                                    </Button>
-                                    <Button variant='outlined' onClick={resetFilters} size='small'>
-                                        Reset
-                                    </Button>
-                                    <Available permissions={['executions:delete']}>
-                                        <Tooltip title='Delete selected executions'>
-                                            <span>
-                                                <IconButton
-                                                    sx={{ height: 30, width: 30 }}
+                    {executions?.length > 0 && (
+                        <>
+                            {/* Filter Section */}
+                            <Box sx={{ mb: 2, width: '100%' }}>
+                                <Grid container spacing={2} alignItems='center'>
+                                    <Grid item xs={12} md={2}>
+                                        <FormControl fullWidth size='small'>
+                                            <InputLabel id='state-select-label'>State</InputLabel>
+                                            <Select
+                                                labelId='state-select-label'
+                                                value={filters.state}
+                                                label='State'
+                                                onChange={(e) => handleFilterChange('state', e.target.value)}
+                                                size='small'
+                                                sx={{
+                                                    '& .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: borderColor
+                                                    },
+                                                    '& .MuiSvgIcon-root': {
+                                                        color: customization.isDarkMode ? '#fff' : 'inherit'
+                                                    }
+                                                }}
+                                            >
+                                                <MenuItem value=''>All</MenuItem>
+                                                <MenuItem value='INPROGRESS'>In Progress</MenuItem>
+                                                <MenuItem value='FINISHED'>Finished</MenuItem>
+                                                <MenuItem value='ERROR'>Error</MenuItem>
+                                                <MenuItem value='TERMINATED'>Terminated</MenuItem>
+                                                <MenuItem value='TIMEOUT'>Timeout</MenuItem>
+                                                <MenuItem value='STOPPED'>Stopped</MenuItem>
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} md={2}>
+                                        <DatePicker
+                                            selected={filters.startDate}
+                                            onChange={(date) => onDateChange('startDate', date)}
+                                            selectsStart
+                                            startDate={filters.startDate}
+                                            className='form-control'
+                                            wrapperClassName='datePicker'
+                                            maxDate={new Date()}
+                                            customInput={
+                                                <TextField
                                                     size='small'
-                                                    color='error'
-                                                    onClick={handleDeleteDialogOpen}
-                                                    edge='end'
-                                                    disabled={selectedExecutionIds.length === 0}
-                                                >
-                                                    <IconTrash />
-                                                </IconButton>
-                                            </span>
-                                        </Tooltip>
-                                    </Available>
-                                </Stack>
-                            </Grid>
-                        </Grid>
-                    </Box>
+                                                    label='Start date'
+                                                    fullWidth
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-notchedOutline': {
+                                                            borderColor: borderColor
+                                                        }
+                                                    }}
+                                                />
+                                            }
+                                        />
+                                    </Grid>
+                                    <Grid sx={{ ml: -1 }} item xs={12} md={2}>
+                                        <DatePicker
+                                            selected={filters.endDate}
+                                            onChange={(date) => onDateChange('endDate', date)}
+                                            selectsEnd
+                                            endDate={filters.endDate}
+                                            className='form-control'
+                                            wrapperClassName='datePicker'
+                                            minDate={filters.startDate}
+                                            maxDate={new Date()}
+                                            customInput={
+                                                <TextField
+                                                    size='small'
+                                                    label='End date'
+                                                    fullWidth
+                                                    sx={{
+                                                        '& .MuiOutlinedInput-notchedOutline': {
+                                                            borderColor: borderColor
+                                                        }
+                                                    }}
+                                                />
+                                            }
+                                        />
+                                    </Grid>
+                                    <Grid sx={{ ml: -1 }} item xs={12} md={2}>
+                                        <TextField
+                                            fullWidth
+                                            label='Session ID'
+                                            value={filters.sessionId}
+                                            onChange={(e) => handleFilterChange('sessionId', e.target.value)}
+                                            size='small'
+                                            sx={{
+                                                '& .MuiOutlinedInput-notchedOutline': {
+                                                    borderColor: borderColor
+                                                }
+                                            }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} md={4}>
+                                        <Stack direction='row' spacing={1}>
+                                            <Button variant='contained' color='primary' onClick={applyFilters} size='small'>
+                                                Apply
+                                            </Button>
+                                            <Button variant='outlined' onClick={resetFilters} size='small'>
+                                                Reset
+                                            </Button>
+                                            <Available permissions={['executions:delete']}>
+                                                <Tooltip title='Delete selected executions'>
+                                                    <span>
+                                                        <IconButton
+                                                            sx={{ height: 30, width: 30 }}
+                                                            size='small'
+                                                            color='error'
+                                                            onClick={handleDeleteDialogOpen}
+                                                            edge='end'
+                                                            disabled={selectedExecutionIds.length === 0}
+                                                        >
+                                                            <IconTrash />
+                                                        </IconButton>
+                                                    </span>
+                                                </Tooltip>
+                                            </Available>
+                                        </Stack>
+                                    </Grid>
+                                </Grid>
+                            </Box>
 
-                    <ExecutionsListTable
-                        data={executions}
-                        isLoading={isLoading}
-                        onSelectionChange={handleExecutionSelectionChange}
-                        onExecutionRowClick={(execution) => {
-                            setOpenDrawer(true)
-                            const executionDetails =
-                                typeof execution.executionData === 'string' ? JSON.parse(execution.executionData) : execution.executionData
-                            setSelectedExecutionData(executionDetails)
-                            setSelectedMetadata(omit(execution, ['executionData']))
-                        }}
-                    />
-
-                    {/* Pagination and Page Size Controls */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                            <Typography variant='body2'>Items per page:</Typography>
-                            <FormControl
-                                variant='outlined'
-                                size='small'
-                                sx={{
-                                    minWidth: 80,
-                                    '& .MuiOutlinedInput-notchedOutline': {
-                                        borderColor: borderColor
-                                    },
-                                    '& .MuiSvgIcon-root': {
-                                        color: customization.isDarkMode ? '#fff' : 'inherit'
-                                    }
+                            <ExecutionsListTable
+                                data={executions}
+                                isLoading={isLoading}
+                                onSelectionChange={handleExecutionSelectionChange}
+                                onExecutionRowClick={(execution) => {
+                                    setOpenDrawer(true)
+                                    const executionDetails =
+                                        typeof execution.executionData === 'string'
+                                            ? JSON.parse(execution.executionData)
+                                            : execution.executionData
+                                    setSelectedExecutionData(executionDetails)
+                                    setSelectedMetadata(omit(execution, ['executionData']))
                                 }}
-                            >
-                                <Select value={pagination.limit} onChange={handleLimitChange} displayEmpty>
-                                    <MenuItem value={10}>10</MenuItem>
-                                    <MenuItem value={50}>50</MenuItem>
-                                    <MenuItem value={100}>100</MenuItem>
-                                    <MenuItem value={1000}>1000</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
-                        <Pagination
-                            count={Math.ceil(pagination.total / pagination.limit)}
-                            page={pagination.page}
-                            onChange={handlePageChange}
-                            color='primary'
-                        />
-                    </Box>
+                            />
 
-                    <ExecutionDetails
-                        open={openDrawer}
-                        execution={selectedExecutionData}
-                        metadata={selectedMetadata}
-                        onClose={() => setOpenDrawer(false)}
-                        onProceedSuccess={() => {
-                            setOpenDrawer(false)
-                            getAllExecutions.request()
-                        }}
-                        onUpdateSharing={() => {
-                            getAllExecutions.request()
-                        }}
-                        onRefresh={(executionId) => {
-                            getAllExecutions.request()
-                            getExecutionByIdApi.request(executionId)
-                        }}
-                    />
+                            {/* Pagination and Page Size Controls */}
+                            {!isLoading && total > 0 && <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />}
+
+                            <ExecutionDetails
+                                open={openDrawer}
+                                execution={selectedExecutionData}
+                                metadata={selectedMetadata}
+                                onClose={() => setOpenDrawer(false)}
+                                onProceedSuccess={() => {
+                                    setOpenDrawer(false)
+                                    getAllExecutions.request()
+                                }}
+                                onUpdateSharing={() => {
+                                    getAllExecutions.request()
+                                }}
+                                onRefresh={(executionId) => {
+                                    getAllExecutions.request()
+                                    getExecutionByIdApi.request(executionId)
+                                }}
+                            />
+                        </>
+                    )}
 
                     {/* Delete Confirmation Dialog */}
                     <Dialog
