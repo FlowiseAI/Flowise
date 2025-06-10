@@ -11,7 +11,10 @@ const initialState = {
         localStorage.getItem('permissions') && localStorage.getItem('permissions') !== 'undefined'
             ? JSON.parse(localStorage.getItem('permissions'))
             : null,
-    features: localStorage.getItem('features') ? JSON.parse(localStorage.getItem('features')) : null
+    features:
+        localStorage.getItem('features') && localStorage.getItem('features') !== 'undefined'
+            ? JSON.parse(localStorage.getItem('features'))
+            : null
 }
 
 const authSlice = createSlice({
