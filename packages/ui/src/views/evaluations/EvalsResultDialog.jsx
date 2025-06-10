@@ -2,7 +2,6 @@ import React from 'react'
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
 
 // Material
 import {
@@ -36,13 +35,29 @@ const EvalsResultDialog = ({ show, dialogProps, onCancel, openDetailsDrawer }) =
     const portalElement = document.getElementById('portal')
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
-    const navigate = useNavigate()
 
     const getColSpan = (evaluationsShown, llmEvaluations) => {
         let colSpan = 1
         if (evaluationsShown) colSpan++
         if (llmEvaluations) colSpan++
         return colSpan
+    }
+
+    const getOpenLink = (index) => {
+        if (index === undefined) {
+            return ''
+        }
+        if (dialogProps.data?.additionalConfig?.chatflowTypes) {
+            switch (dialogProps.data.additionalConfig.chatflowTypes[index]) {
+                case 'Chatflow':
+                    return '/canvas/' + dialogProps.data.evaluation.chatflowId[index]
+                case 'Custom Assistant':
+                    return '/assistants/custom/' + dialogProps.data.evaluation.chatflowId[index]
+                case 'Agentflow v2':
+                    return '/v2/agentcanvas/' + dialogProps.data.evaluation.chatflowId[index]
+            }
+        }
+        return '/canvas/' + dialogProps.data.evaluation.chatflowId[index]
     }
 
     const component = show ? (
@@ -65,7 +80,7 @@ const EvalsResultDialog = ({ show, dialogProps, onCancel, openDetailsDrawer }) =
                                 }}
                             >
                                 <IconVectorBezier2 style={{ marginRight: 5 }} size={17} />
-                                Chatflows Used:
+                                Flows Used:
                             </div>
                             {(dialogProps.data.evaluation.chatflowName || []).map((chatflowUsed, index) => (
                                 <Chip
@@ -79,7 +94,7 @@ const EvalsResultDialog = ({ show, dialogProps, onCancel, openDetailsDrawer }) =
                                             : '0 2px 14px 0 rgb(32 40 45 / 10%)'
                                     }}
                                     label={chatflowUsed}
-                                    onClick={() => navigate('/canvas/' + dialogProps.data.evaluation.chatflowId[index])}
+                                    onClick={() => window.open(getOpenLink(index), '_blank')}
                                 ></Chip>
                             ))}
                         </Stack>
