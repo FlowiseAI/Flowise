@@ -546,7 +546,6 @@ const WorkspaceDetails = () => {
                     dialogProps={workspaceUserRoleDialogProps}
                     onCancel={() => setShowWorkspaceUserRoleDialog(false)}
                     onConfirm={onConfirm}
-                    setError={setError}
                 />
             )}
             <ConfirmDialog />

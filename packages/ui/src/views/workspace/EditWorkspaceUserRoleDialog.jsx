@@ -50,7 +50,7 @@ const StyledPopper = styled(Popper)({
     }
 })
 
-const EditWorkspaceUserRoleDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
+const EditWorkspaceUserRoleDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const currentUser = useSelector((state) => state.auth.user)
 
@@ -132,7 +132,6 @@ const EditWorkspaceUserRoleDialog = ({ show, dialogProps, onCancel, onConfirm, s
                 onConfirm(saveResp.data.id)
             }
         } catch (error) {
-            setError(err)
             enqueueSnackbar({
                 message: `Failed to update WorkspaceUser: ${
                     typeof error.response.data === 'object' ? error.response.data.message : error.response.data
@@ -148,7 +147,6 @@ const EditWorkspaceUserRoleDialog = ({ show, dialogProps, onCancel, onConfirm, s
                     )
                 }
             })
-            onCancel()
         }
     }
 
@@ -207,8 +205,7 @@ EditWorkspaceUserRoleDialog.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onCancel: PropTypes.func,
-    onConfirm: PropTypes.func,
-    setError: PropTypes.func
+    onConfirm: PropTypes.func
 }
 
 export default EditWorkspaceUserRoleDialog

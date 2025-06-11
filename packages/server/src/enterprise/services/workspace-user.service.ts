@@ -327,31 +327,36 @@ export class WorkspaceUserService {
         return newWorkspace
     }
 
-    public async updateWorkspaceUser(newUserDetails: Partial<WorkspaceUser>) {
+    public async updateWorkspaceUser(newWorkspaserUser: Partial<WorkspaceUser>) {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         const { workspaceUser } = await this.readWorkspaceUserByWorkspaceIdUserId(
-            newUserDetails.workspaceId,
-            newUserDetails.userId,
+            newWorkspaserUser.workspaceId,
+            newWorkspaserUser.userId,
             queryRunner
         )
         if (!workspaceUser) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceUserErrorMessage.WORKSPACE_USER_NOT_FOUND)
-        if (newUserDetails.roleId) {
-            const role = await this.roleService.readRoleById(newUserDetails.roleId, queryRunner)
+        if (newWorkspaserUser.roleId) {
+            const role = await this.roleService.readRoleById(newWorkspaserUser.roleId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
-            newUserDetails.role = role
+            // check if the role is from the same organization
+            if (role.organizationId && role.organizationId !== workspaceUser?.role?.organizationId) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
+            }
+            // delete role, the new role will be created again, with the new roleId (newWorkspaserUser.roleId)
+            if (workspaceUser.role) delete workspaceUser.role
         }
-        const updatedBy = await this.userService.readUserById(newUserDetails.updatedBy, queryRunner)
+        const updatedBy = await this.userService.readUserById(newWorkspaserUser.updatedBy, queryRunner)
         if (!updatedBy) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
-        if (newUserDetails.status) this.validateWorkspaceUserStatus(newUserDetails.status)
-        if (newUserDetails.lastLogin) this.validateWorkspaceUserLastLogin(newUserDetails.lastLogin)
-        newUserDetails.createdBy = workspaceUser.createdBy
+        if (newWorkspaserUser.status) this.validateWorkspaceUserStatus(newWorkspaserUser.status)
+        if (newWorkspaserUser.lastLogin) this.validateWorkspaceUserLastLogin(newWorkspaserUser.lastLogin)
+        newWorkspaserUser.createdBy = workspaceUser.createdBy
 
-        let updatedWorkspaceUser = queryRunner.manager.merge(WorkspaceUser, workspaceUser, newUserDetails)
+        let updataWorkspaceUser = queryRunner.manager.merge(WorkspaceUser, workspaceUser, newWorkspaserUser)
         try {
             await queryRunner.startTransaction()
-            updatedWorkspaceUser = await this.saveWorkspaceUser(updatedWorkspaceUser, queryRunner)
+            updataWorkspaceUser = await this.saveWorkspaceUser(updataWorkspaceUser, queryRunner)
             await queryRunner.commitTransaction()
         } catch (error) {
             await queryRunner.rollbackTransaction()
@@ -360,7 +365,7 @@ export class WorkspaceUserService {
             await queryRunner.release()
         }
 
-        return updatedWorkspaceUser
+        return updataWorkspaceUser
     }
 
     public async deleteWorkspaceUser(workspaceId: string | undefined, userId: string | undefined) {
