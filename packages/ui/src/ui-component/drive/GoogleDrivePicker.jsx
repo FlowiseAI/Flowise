@@ -97,24 +97,103 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
         }
 
         try {
-            const view = new window.google.picker.View(window.google.picker.ViewId.DOCS)
-            view.setMimeTypes(
-                'application/vnd.google-apps.document,' +
-                    'application/vnd.google-apps.spreadsheet,' +
-                    'application/pdf,' +
-                    'text/csv,' +
-                    'application/csv,' +
-                    'text/comma-separated-values,' +
-                    'application/vnd.ms-excel,' +
-                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
+            // Create the main "My Drive" view with proper folder navigation
+            const myDriveView = new window.google.picker.DocsView()
+                .setIncludeFolders(true)
+                .setSelectFolderEnabled(false)
+                .setParent('root') // Start from root of My Drive
+                .setMimeTypes(
+                    'application/vnd.google-apps.document,' +
+                        'application/vnd.google-apps.spreadsheet,' +
+                        'application/vnd.google-apps.presentation,' +
+                        'application/pdf,' +
+                        'text/csv,' +
+                        'application/csv,' +
+                        'text/comma-separated-values,' +
+                        'application/vnd.ms-excel,' +
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,' +
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document,' +
+                        'application/vnd.openxmlformats-officedocument.presentationml.presentation,' +
+                        'application/msword,' +
+                        'application/vnd.ms-powerpoint,' +
+                        'text/plain'
+                )
+
+            // Create "Shared with me" view to show files shared by others
+            const sharedWithMeView = new window.google.picker.DocsView()
+                .setOwnedByMe(false) // Files not owned by me (shared with me)
+                .setIncludeFolders(true)
+                .setSelectFolderEnabled(false)
+                .setMimeTypes(
+                    'application/vnd.google-apps.document,' +
+                        'application/vnd.google-apps.spreadsheet,' +
+                        'application/vnd.google-apps.presentation,' +
+                        'application/pdf,' +
+                        'text/csv,' +
+                        'application/csv,' +
+                        'text/comma-separated-values,' +
+                        'application/vnd.ms-excel,' +
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,' +
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document,' +
+                        'application/vnd.openxmlformats-officedocument.presentationml.presentation,' +
+                        'application/msword,' +
+                        'application/vnd.ms-powerpoint,' +
+                        'text/plain'
+                )
+
+            // Create shared drives (team drives) view using the newer method name
+            const sharedDrivesView = new window.google.picker.DocsView()
+                .setEnableDrives(true) // Use newer API method
+                .setIncludeFolders(true)
+                .setSelectFolderEnabled(false)
+                .setMimeTypes(
+                    'application/vnd.google-apps.document,' +
+                        'application/vnd.google-apps.spreadsheet,' +
+                        'application/vnd.google-apps.presentation,' +
+                        'application/pdf,' +
+                        'text/csv,' +
+                        'application/csv,' +
+                        'text/comma-separated-values,' +
+                        'application/vnd.ms-excel,' +
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,' +
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document,' +
+                        'application/vnd.openxmlformats-officedocument.presentationml.presentation,' +
+                        'application/msword,' +
+                        'application/vnd.ms-powerpoint,' +
+                        'text/plain'
+                )
+
+            // Create recent files view for quick access
+            const recentView = new window.google.picker.DocsView()
+                .setQuery('') // Empty query shows recent files
+                .setIncludeFolders(false)
+                .setMimeTypes(
+                    'application/vnd.google-apps.document,' +
+                        'application/vnd.google-apps.spreadsheet,' +
+                        'application/vnd.google-apps.presentation,' +
+                        'application/pdf,' +
+                        'text/csv,' +
+                        'application/csv,' +
+                        'text/comma-separated-values,' +
+                        'application/vnd.ms-excel,' +
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,' +
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document,' +
+                        'application/vnd.openxmlformats-officedocument.presentationml.presentation,' +
+                        'application/msword,' +
+                        'application/vnd.ms-powerpoint,' +
+                        'text/plain'
+                )
 
             const picker = new window.google.picker.PickerBuilder()
                 .enableFeature(window.google.picker.Feature.MULTISELECT_ENABLED)
+                .enableFeature(window.google.picker.Feature.SUPPORT_DRIVES) // Enable shared drives support
                 .setDeveloperKey(process.env.NEXT_PUBLIC_GOOGLE_DEVELOPER_KEY)
                 .setAppId(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID)
                 .setOAuthToken(accessToken)
-                .addView(view)
+                .addView(myDriveView.setLabel('My Drive'))
+                .addView(sharedWithMeView.setLabel('Shared with me'))
+                .addView(sharedDrivesView.setLabel('Shared drives'))
+                .addView(recentView.setLabel('Recent'))
                 .setCallback(pickerCallback)
                 .build()
 

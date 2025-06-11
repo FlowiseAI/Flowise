@@ -238,6 +238,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas }) {
         try {
             const duplicatedFlow = generateExportFlowData(chatflow)
             delete duplicatedFlow.id
+            duplicatedFlow.visibility = ['Private']
             localStorage.setItem('duplicatedFlowData', JSON.stringify(duplicatedFlow))
             window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
         } catch (e) {
