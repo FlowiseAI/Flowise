@@ -1,8 +1,37 @@
+/**
+ * Google Drive Document Loader
+ *
+ * This loader integrates with Google Drive to download and process various file types:
+ * - Google Workspace files (Docs, Sheets, Slides) - exported as text/CSV
+ * - Microsoft Office files (Word, Excel, PowerPoint) - uses specialized LangChain loaders
+ * - PDF files - uses PDFLoader with configurable page splitting
+ * - Plain text and CSV files - direct text processing
+ *
+ * Key Features:
+ * - Automatic fallback from text export to binary download for Office files
+ * - Proper binary file handling with base64 encoding
+ * - Individual file error handling (failures don't stop batch processing)
+ * - Support for text splitting and metadata enrichment
+ * - Includes clickable file URLs in metadata for easy access to original files
+ *
+ * Metadata Fields:
+ * - source: Google Drive URI (gdrive://fileId)
+ * - fileId: Google Drive file ID
+ * - fileName: Original file name
+ * - fileUrl: Direct link to view/edit file in Google Drive
+ * - iconUrl: File type icon URL
+ * - mimeType: Original file MIME type
+ * - lastModified: File modification timestamp (when enabled)
+ *
+ * Updated: Uses proper document loaders instead of generic text processing
+ */
+
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { Document } from 'langchain/document'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
+import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { DriveService } from './DriveService'
 import _, { omit } from 'lodash'
 
@@ -115,51 +144,7 @@ class GoogleDrive implements INode {
         }
 
         const driveService = new DriveService(credentials)
-        const documents: Document[] = []
-
-        for (const fileId of fileIds) {
-            const file = await driveService.getFile(fileId)
-            const response = await driveService.downloadFile(fileId)
-
-            let docs: Document[] = []
-
-            if (file.mimeType === 'application/vnd.google-apps.document') {
-                // Google Docs are returned as plain text
-                docs = [new Document({ pageContent: response.data })]
-            } else if (file.mimeType === 'application/vnd.google-apps.spreadsheet') {
-                // CSV data needs to be parsed
-                docs = await this.processCsvContent(response.data, columnName, textSplitter)
-            } else if (file.mimeType === 'application/pdf') {
-                const buffer = Buffer.from(response.data, 'base64')
-                docs = await this.processPdfFile(buffer, pdfUsage, textSplitter)
-            } else {
-                docs = [new Document({ pageContent: response.data })]
-            }
-
-            // Add metadata to documents
-            docs = docs.map((doc) => ({
-                ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? { ...metadata }
-                        : omit(
-                              {
-                                  ...doc.metadata,
-                                  source: `gdrive://${file.id}`,
-                                  fileId: file.id,
-                                  fileName: file.name,
-                                  iconUrl: selectedFiles.find((f: any) => f.fileId === file.id)?.iconUrl,
-                                  mimeType: file.mimeType,
-                                  ...metadata
-                              },
-                              omitMetadataKeys
-                          )
-            }))
-
-            documents.push(...docs)
-        }
-
-        return documents
+        return this.processFiles(driveService, fileIds, selectedFiles, textSplitter, pdfUsage, columnName, metadata, _omitMetadataKeys)
     }
 
     async syncAndRefresh(nodeData: INodeData): Promise<any> {
@@ -187,57 +172,145 @@ class GoogleDrive implements INode {
         }
 
         const driveService = new DriveService(credentials)
+        return this.processFiles(
+            driveService,
+            fileIds,
+            selectedFiles,
+            textSplitter,
+            pdfUsage,
+            columnName,
+            metadata,
+            _omitMetadataKeys,
+            true
+        )
+    }
+
+    private async processFiles(
+        driveService: DriveService,
+        fileIds: string[],
+        selectedFiles: any[],
+        textSplitter?: TextSplitter,
+        pdfUsage?: string,
+        columnName?: string,
+        metadata?: any,
+        _omitMetadataKeys?: string | string[],
+        includeModificationTime = false
+    ): Promise<Document[]> {
         const documents: Document[] = []
 
         for (const fileId of fileIds) {
-            const file = await driveService.getFile(fileId)
-            const response = await driveService.downloadFile(fileId)
+            try {
+                const file = await driveService.getFile(fileId)
+                const response = await driveService.downloadFile(fileId)
 
-            // Check if file has been modified
-            const lastModified = new Date(file.modifiedTime).getTime()
-            const currentMetadata = { lastModified, fileId: file.id }
+                let docs: Document[] = await this.processFileContent(file, response, textSplitter, pdfUsage, columnName)
 
-            let docs: Document[] = []
+                // Add metadata to documents
+                const baseMetadata = {
+                    source: `gdrive://${file.id}`,
+                    fileId: file.id,
+                    fileName: file.name,
+                    fileUrl: file.webViewLink,
+                    iconUrl: selectedFiles.find((f: any) => f.fileId === file.id)?.iconUrl,
+                    mimeType: file.mimeType,
+                    ...(includeModificationTime && { lastModified: new Date(file.modifiedTime).getTime() }),
+                    ...metadata
+                }
 
-            if (file.mimeType === 'application/vnd.google-apps.document') {
-                docs = [new Document({ pageContent: response.data })]
-            } else if (file.mimeType === 'application/vnd.google-apps.spreadsheet') {
-                docs = await this.processCsvContent(response.data, columnName, textSplitter)
-            } else if (file.mimeType === 'application/pdf') {
-                const buffer = Buffer.from(response.data, 'base64')
-                docs = await this.processPdfFile(buffer, pdfUsage, textSplitter)
-            } else {
-                docs = [new Document({ pageContent: response.data })]
+                docs = docs.map((doc) => ({
+                    ...doc,
+                    metadata:
+                        _omitMetadataKeys === '*'
+                            ? { ...metadata, ...(includeModificationTime && { lastModified: baseMetadata.lastModified }) }
+                            : omit({ ...doc.metadata, ...baseMetadata }, _omitMetadataKeys as string[])
+                }))
+
+                documents.push(...docs)
+            } catch (error) {
+                console.error(`Error processing file ${fileId}:`, error)
+                // Continue processing other files instead of failing completely
             }
-
-            // Add metadata to documents
-            docs = docs.map((doc) => ({
-                ...doc,
-                metadata:
-                    _omitMetadataKeys === '*'
-                        ? { ...metadata, ...currentMetadata }
-                        : omit(
-                              {
-                                  ...doc.metadata,
-                                  source: `gdrive://${file.id}`,
-                                  fileId: file.id,
-                                  fileName: file.name,
-                                  iconUrl: selectedFiles.find((f: any) => f.fileId === file.id)?.iconUrl,
-                                  mimeType: file.mimeType,
-                                  lastModified,
-                                  ...metadata
-                              },
-                              omitMetadataKeys
-                          )
-            }))
-
-            documents.push(...docs)
         }
 
         return documents
     }
 
-    private async processPdfFile(buffer: Buffer, usage: string, textSplitter?: TextSplitter): Promise<Document[]> {
+    private async processFileContent(
+        file: any,
+        response: any,
+        textSplitter?: TextSplitter,
+        pdfUsage?: string,
+        columnName?: string
+    ): Promise<Document[]> {
+        const { mimeType } = file
+        const { data, mimeType: responseMimeType } = response
+
+        // Google Workspace files (already exported as text)
+        if (mimeType === 'application/vnd.google-apps.document' || mimeType === 'application/vnd.google-apps.presentation') {
+            return this.processPlainText(data, textSplitter)
+        }
+
+        if (mimeType === 'application/vnd.google-apps.spreadsheet') {
+            return this.processCsvContent(data, columnName, textSplitter)
+        }
+
+        // PDF files
+        if (mimeType === 'application/pdf') {
+            return this.processPdfFile(Buffer.from(data, 'base64'), pdfUsage, textSplitter)
+        }
+
+        // Microsoft Word files
+        if (this.isWordDocument(mimeType)) {
+            return this.processDocxFile(data, responseMimeType, textSplitter)
+        }
+
+        // Microsoft Excel and CSV files
+        if (this.isSpreadsheetFile(mimeType)) {
+            return this.processExcelFile(data, responseMimeType, columnName, textSplitter)
+        }
+
+        // Microsoft PowerPoint files
+        if (this.isPresentationFile(mimeType)) {
+            return this.processPlainText(data, textSplitter)
+        }
+
+        // Plain text files
+        if (mimeType === 'text/plain') {
+            return this.processPlainText(data, textSplitter)
+        }
+
+        // Default fallback
+        return this.processPlainText(data, textSplitter)
+    }
+
+    private isWordDocument(mimeType: string): boolean {
+        return ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'].includes(mimeType)
+    }
+
+    private isSpreadsheetFile(mimeType: string): boolean {
+        return [
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-excel',
+            'text/csv',
+            'application/csv'
+        ].includes(mimeType)
+    }
+
+    private isPresentationFile(mimeType: string): boolean {
+        return ['application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.ms-powerpoint'].includes(
+            mimeType
+        )
+    }
+
+    private async processPlainText(data: string, textSplitter?: TextSplitter): Promise<Document[]> {
+        let docs = [new Document({ pageContent: data })]
+        if (textSplitter) {
+            docs = await textSplitter.splitDocuments(docs)
+        }
+        return docs
+    }
+
+    private async processPdfFile(buffer: Buffer, usage: string = 'perPage', textSplitter?: TextSplitter): Promise<Document[]> {
         const loader = new PDFLoader(new Blob([buffer]), {
             splitPages: usage !== 'perFile'
         })
@@ -249,9 +322,50 @@ class GoogleDrive implements INode {
         return docs
     }
 
+    private async processDocxFile(data: string, dataMimeType: string, textSplitter?: TextSplitter): Promise<Document[]> {
+        // If the data is plain text (successfully exported from Google Drive), use it directly
+        if (dataMimeType === 'text/plain') {
+            return this.processPlainText(data, textSplitter)
+        }
+
+        // Otherwise, treat as binary data and use DocxLoader
+        const buffer = Buffer.from(data, 'base64')
+        const blob = new Blob([buffer])
+        const loader = new DocxLoader(blob)
+
+        let docs = await loader.load()
+        if (textSplitter) {
+            docs = await textSplitter.splitDocuments(docs)
+        }
+        return docs
+    }
+
     private async processCsvContent(csvContent: string, columnName?: string, textSplitter?: TextSplitter): Promise<Document[]> {
         // Convert CSV string to Blob
         const blob = new Blob([csvContent], { type: 'text/csv' })
+        const loader = new CSVLoader(blob, columnName?.trim().length ? columnName.trim() : undefined)
+
+        let docs = await loader.load()
+        if (textSplitter) {
+            docs = await textSplitter.splitDocuments(docs)
+        }
+        return docs
+    }
+
+    private async processExcelFile(
+        data: string,
+        dataMimeType: string,
+        columnName?: string,
+        textSplitter?: TextSplitter
+    ): Promise<Document[]> {
+        // If the data is CSV text (successfully exported from Google Drive), use it directly
+        if (dataMimeType === 'text/csv') {
+            return this.processCsvContent(data, columnName, textSplitter)
+        }
+
+        // Otherwise, treat as binary data and use CSVLoader with the binary data
+        const buffer = Buffer.from(data, 'base64')
+        const blob = new Blob([buffer])
         const loader = new CSVLoader(blob, columnName?.trim().length ? columnName.trim() : undefined)
 
         let docs = await loader.load()
