@@ -252,9 +252,11 @@ export const ReactFlowContext = ({ children }) => {
             // 更新节点的输入输出锚点ID
             const inputKeys = ['inputParams', 'inputAnchors']
             for (const key of inputKeys) {
-                for (const item of duplicatedNode.data[key]) {
-                    if (item.id) {
-                        item.id = item.id.replace(id, newNodeId)
+                if (typeof duplicatedNode.data[key][Symbol.iterator] === 'function') {
+                    for (const item of duplicatedNode.data[key]) {
+                        if (item.id) {
+                            item.id = item.id.replace(id, newNodeId)
+                        }
                     }
                 }
             }
@@ -328,9 +330,11 @@ export const ReactFlowContext = ({ children }) => {
             // 更新节点的输入输出锚点ID
             const inputKeys = ['inputParams', 'inputAnchors']
             for (const key of inputKeys) {
-                for (const item of duplicatedNode.data[key]) {
-                    if (item.id) {
-                        item.id = item.id.replace(id, newNodeId)
+                if (typeof duplicatedNode.data[key][Symbol.iterator] === 'function') {
+                    for (const item of duplicatedNode.data[key]) {
+                        if (item.id) {
+                            item.id = item.id.replace(id, newNodeId)
+                        }
                     }
                 }
             }

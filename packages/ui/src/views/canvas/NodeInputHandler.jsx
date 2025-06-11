@@ -111,7 +111,8 @@ const NodeInputHandler = ({
     parentParamForArray = null,
     arrayIndex = null,
     onHideNodeInfoDialog,
-    onCustomDataChange
+    onCustomDataChange,
+    onFileProcess
 }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
@@ -1011,6 +1012,7 @@ const NodeInputHandler = ({
                             fileType={inputParam.fileType || '*'}
                             onChange={(newValue) => (data.inputs[inputParam.name] = newValue)}
                             value={data.inputs[inputParam.name] ?? inputParam.default ?? 'Choose a file to upload'}
+                            onFileProcess={onFileProcess}
                         />
                     )}
                     {inputParam.type === 'boolean' && (
@@ -1435,7 +1437,8 @@ NodeInputHandler.propTypes = {
     parentParamForArray: PropTypes.object,
     arrayIndex: PropTypes.number,
     onCustomDataChange: PropTypes.func,
-    onHideNodeInfoDialog: PropTypes.func
+    onHideNodeInfoDialog: PropTypes.func,
+    onFileProcess: PropTypes.func
 }
 
 export default NodeInputHandler

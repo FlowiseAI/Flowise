@@ -1,11 +1,13 @@
 import { NodeTypes } from 'reactflow'
 import CanvasNode from './CanvasNode'
 import StickyNote from './StickyNote'
+import YamlNode from './YamlNode'
 
 // 基础节点类型
 export const baseNodeTypes: NodeTypes = {
     customNode: CanvasNode,
-    stickyNote: StickyNote
+    stickyNote: StickyNote,
+    yamlNode: YamlNode
 }
 
 // 获取完整节点类型的函数

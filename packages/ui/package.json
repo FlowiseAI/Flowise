@@ -8,6 +8,7 @@
         "email": "henryheng@flowiseai.com"
     },
     "dependencies": {
+        "@ant-design/icons": "^6.0.0",
         "@codemirror/lang-javascript": "^6.2.1",
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/view": "^6.22.3",
@@ -32,6 +33,7 @@
         "@uiw/codemirror-theme-sublime": "^4.21.21",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
+        "antd": "^5.25.4",
         "axios": "1.7.9",
         "clsx": "^1.1.1",
         "dotenv": "^16.0.0",

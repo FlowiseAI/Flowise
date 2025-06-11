@@ -1,7 +1,8 @@
 import { useSelector } from 'react-redux'
-
 import { ThemeProvider } from '@mui/material/styles'
 import { CssBaseline, StyledEngineProvider } from '@mui/material'
+import { ConfigProvider } from 'antd'
+import zhCN from 'antd/locale/zh_CN'
 
 // routing
 import Routes from '@/routes'
@@ -21,9 +22,11 @@ const App = () => {
         <StyledEngineProvider injectFirst>
             <ThemeProvider theme={themes(customization)}>
                 <CssBaseline />
-                <NavigationScroll>
-                    <Routes />
-                </NavigationScroll>
+                <ConfigProvider locale={zhCN} theme={themes(customization)}>
+                    <NavigationScroll>
+                        <Routes />
+                    </NavigationScroll>
+                </ConfigProvider>
             </ThemeProvider>
         </StyledEngineProvider>
     )

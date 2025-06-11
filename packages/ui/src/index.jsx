@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 
 // style + assets
 import '@/assets/scss/style.scss'
+import 'antd/dist/reset.css'
 
 // third party
 import { BrowserRouter } from 'react-router-dom'

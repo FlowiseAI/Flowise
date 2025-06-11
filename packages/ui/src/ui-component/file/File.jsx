@@ -5,10 +5,14 @@ import { FormControl, Button } from '@mui/material'
 import { IconUpload } from '@tabler/icons-react'
 import { getFileName } from '@/utils/genericHelper'
 
-export const File = ({ value, formDataUpload, fileType, onChange, onFormDataChange, disabled = false }) => {
+export const File = ({ value, formDataUpload, fileType, onChange, onFormDataChange, onFileProcess, disabled = false }) => {
     const theme = useTheme()
 
     const [myValue, setMyValue] = useState(value ?? '')
+
+    const isYamlFile = (file) => {
+        return file.name.endsWith('.yaml') || file.name.endsWith('.yml')
+    }
 
     const handleFileUpload = async (e) => {
         if (!e.target.files) return
@@ -24,10 +28,20 @@ export const File = ({ value, formDataUpload, fileType, onChange, onFormDataChan
                 }
                 const { result } = evt.target
 
-                const value = result + `,filename:${name}`
-
-                setMyValue(value)
-                onChange(value)
+                // 如果是 YAML 文件且提供了处理函数
+                if (isYamlFile(file) && onFileProcess) {
+                    // 将 base64 转换回文本
+                    const base64Content = result.split(',')[1]
+                    const yamlContent = atob(base64Content)
+                    // 处理 YAML 内容
+                    const processedValue = onFileProcess(yamlContent, name)
+                    setMyValue(processedValue)
+                    onChange(processedValue)
+                } else {
+                    const value = result + `,filename:${name}`
+                    setMyValue(value)
+                    onChange(value)
+                }
             }
             reader.readAsDataURL(file)
         } else if (e.target.files.length > 0) {
@@ -41,8 +55,17 @@ export const File = ({ value, formDataUpload, fileType, onChange, onFormDataChan
                             return
                         }
                         const { result } = evt.target
-                        const value = result + `,filename:${name}`
-                        resolve(value)
+
+                        // 如果是 YAML 文件且提供了处理函数
+                        if (isYamlFile(file) && onFileProcess) {
+                            const base64Content = result.split(',')[1]
+                            const yamlContent = atob(base64Content)
+                            const processedValue = onFileProcess(yamlContent, name)
+                            resolve(processedValue)
+                        } else {
+                            const value = result + `,filename:${name}`
+                            resolve(value)
+                        }
                     }
                     reader.readAsDataURL(file)
                 })
@@ -118,5 +141,6 @@ File.propTypes = {
     formDataUpload: PropTypes.bool,
     onChange: PropTypes.func,
     onFormDataChange: PropTypes.func,
+    onFileProcess: PropTypes.func,
     disabled: PropTypes.bool
 }

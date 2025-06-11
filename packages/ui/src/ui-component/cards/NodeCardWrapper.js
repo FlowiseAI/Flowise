@@ -4,11 +4,11 @@ import { styled } from '@mui/material/styles'
 // project imports
 import MainCard from './MainCard'
 
-const NodeCardWrapper = styled(MainCard)(({ theme }) => ({
+const NodeCardWrapper = styled(MainCard)(({ theme, width }) => ({
     background: theme.palette.card.main,
     color: theme.darkTextPrimary,
     border: `1px solid ${theme.customization?.isDarkMode ? theme.palette.grey[900] + 25 : theme.palette.primary[200] + 75}`,
-    width: '300px',
+    width: width || '300px',
     height: 'auto',
     padding: '10px',
     boxShadow: `rgba(0, 0, 0, 0.05) 0px 0px 0px 1px`,

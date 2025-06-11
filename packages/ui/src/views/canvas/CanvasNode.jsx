@@ -21,6 +21,9 @@ import { IconTrash, IconCopy, IconInfoCircle, IconAlertTriangle } from '@tabler/
 import { flowContext } from '@/store/context/ReactFlowContext'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 
+// yaml parser
+import { yamlToJson } from '@/utils/yaml-parser/yamlParser'
+
 // ===========================|| CANVAS NODE ||=========================== //
 
 const CanvasNode = (props) => {
@@ -43,6 +46,37 @@ const CanvasNode = (props) => {
     const [warningMessage, setWarningMessage] = useState('')
     const [open, setOpen] = useState(false)
     const [isForceCloseNodeInfo, setIsForceCloseNodeInfo] = useState(null)
+
+    // 处理 YAML 文件的回调函数
+    const handleYamlFile = (yamlContent, fileName) => {
+        try {
+            // 将 YAML 转换为 JSON
+            const jsonData = yamlToJson(yamlContent)
+            const totalNodes = reactFlowInstance.getNodes()
+            const newNodes = totalNodes.map((node) => {
+                if (node.id === props.id) {
+                    return {
+                        ...node,
+                        type: 'yamlNode',
+                        data: {
+                            ...node.data,
+                            inputParams: jsonData
+                        }
+                    }
+                }
+                return node
+            })
+            reactFlowInstance.setNodes(newNodes)
+            console.log('newNodes', newNodes)
+
+            // 返回原始的文件内容（为了保持与现有系统的兼容性）
+            return yamlContent + `,filename:${fileName}`
+        } catch (error) {
+            console.error('YAML 解析错误:', error)
+            // 如果解析失败，仍然返回原始内容
+            return yamlContent + `,filename:${fileName}`
+        }
+    }
 
     const handleClose = () => {
         setOpen(false)
@@ -258,6 +292,7 @@ const CanvasNode = (props) => {
                                             setIsForceCloseNodeInfo(null)
                                         }
                                     }}
+                                    onFileProcess={handleYamlFile}
                                 />
                             ))}
                         {data.inputParams.find((param) => param.additionalParams) && (
@@ -308,7 +343,8 @@ const CanvasNode = (props) => {
 }
 
 CanvasNode.propTypes = {
-    data: PropTypes.object
+    data: PropTypes.object,
+    id: PropTypes.string.isRequired
 }
 
 export default memo(CanvasNode)

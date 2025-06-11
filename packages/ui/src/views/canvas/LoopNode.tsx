@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useEffect, useMemo, useContext } from 'react'
+import React, { useCallback, useState, useRef, useEffect, useMemo, useContext, MouseEvent } from 'react'
 import ReactFlow, {
     Position,
     useNodesState,
@@ -136,7 +136,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
         () => ({
             buttonedge: (props) => <ButtonEdge {...props} isLoop={true} dataFlowId={innerFlowId} />
         }),
-        []
+        [innerFlowId]
     )
 
     // 添加删除节点的处理函数
@@ -173,7 +173,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
             // 处理其他类型的变更
             setNodes((nds) => applyNodeChanges(changes, nds))
         },
-        [nodes, onNodesDelete]
+        [nodes, onNodesDelete, setNodes]
     )
 
     // 监听节点变化的回调函数
@@ -204,7 +204,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                 }
             }
         }, 0)
-    }, [getNodes, setNodes, setEdges, onNodesChange])
+    }, [getNodes, setNodes, setEdges, onNodesChange, id])
 
     // 监听外部节点变化
     useEffect(() => {
@@ -344,7 +344,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
         }
         // 调用删除函数
         deleteNode(id)
-    }, [data, id, setNodes, setEdges])
+    }, [data, id, setNodes, setEdges, deleteNode])
 
     // 确保 data 对象包含必要的属性
     if (!data.inputs) {
@@ -403,13 +403,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
     }
 
     // 内部ReactFlow的样式
-    const innerFlowStyle = {
-        background: 'transparent',
-        width: '100%',
-        height: '100%',
-        borderRadius: '4px',
-        border: '1px solid #eee'
-    }
+    const innerFlowStyle = {}
 
     // 内部背景样式
     const innerBackgroundStyle = {
@@ -418,10 +412,29 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
         height: '100%',
         top: 0,
         left: 0,
-        pointerEvents: 'none' as const,
         zIndex: 0,
         backgroundColor: '#fff'
     }
+
+    // 添加全局样式
+    useEffect(() => {
+        const style = document.createElement('style')
+        style.textContent = `
+            .react-flow__pane {
+                cursor: grab !important;
+            }
+            .react-flow__pane:active {
+                cursor: grabbing !important;
+            }
+            .react-flow__viewport {
+                transform-origin: 0 0 !important;
+            }
+        `
+        document.head.appendChild(style)
+        return () => {
+            document.head.removeChild(style)
+        }
+    }, [])
 
     const onEdgesChange = useCallback(
         (changes: EdgeChange[]) => {
@@ -508,28 +521,28 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
     )
 
     // 添加连接验证函数
-    const isValidConnection = useCallback(
-        (connection: any) => {
-            // 防止自连接
-            if (connection.source === connection.target) {
-                return false
-            }
+    // const isValidConnection = useCallback(
+    //     (connection: any) => {
+    //         // 防止自连接
+    //         if (connection.source === connection.target) {
+    //             return false
+    //         }
 
-            // 获取源节点和目标节点
-            const sourceNode = getNode(connection.source || '')
-            const targetNode = getNode(connection.target || '')
+    //         // 获取源节点和目标节点
+    //         const sourceNode = getNode(connection.source || '')
+    //         const targetNode = getNode(connection.target || '')
 
-            // 获取源句柄和目标句柄的类型
-            const sourceTypes = connection.sourceHandle?.split('-').pop()?.split('|') || []
-            const targetTypes = connection.targetHandle?.split('-').pop()?.split('|') || []
+    //         // 获取源句柄和目标句柄的类型
+    //         const sourceTypes = connection.sourceHandle?.split('-').pop()?.split('|') || []
+    //         const targetTypes = connection.targetHandle?.split('-').pop()?.split('|') || []
 
-            // 检查类型是否匹配
-            const hasMatchingType = sourceTypes.some((type: string) => targetTypes.includes(type))
+    //         // 检查类型是否匹配
+    //         const hasMatchingType = sourceTypes.some((type: string) => targetTypes.includes(type))
 
-            return hasMatchingType
-        },
-        [getNode]
-    )
+    //         return hasMatchingType
+    //     },
+    //     [getNode]
+    // )
 
     // 内部拖拽处理
     const onDragOver = useCallback((event: React.DragEvent) => {
@@ -538,7 +551,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
     }, [])
 
     // 修改句柄ID的生成逻辑
-    const getInnerHandleId = useCallback((baseId: string) => `${innerFlowId}-${baseId}`, [innerFlowId])
+    // const getInnerHandleId = useCallback((baseId: string) => `${innerFlowId}-${baseId}`, [innerFlowId])
 
     // 修改 onDrop 函数中的节点 ID 生成
     const onDrop = useCallback(
@@ -589,7 +602,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                 console.error('Error adding node:', error)
             }
         },
-        [nodes, setNodes, onNodesChange, innerFlowId]
+        [nodes, setNodes, onNodesChange, innerFlowId, id]
     )
 
     // 在组件内部添加复制功能
@@ -597,13 +610,13 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
         if (data.duplicateNode) {
             data.duplicateNode({ id })
         }
-    }, [id, data, nodes])
+    }, [id, data])
 
     // 修改 handleConnect 函数
     const handleConnect = useCallback(
         (params: Connection) => {
             console.log('handleConnect', params)
-            if (!params.source || !params.target) return
+            if (!params.source || !params.target || params.source === params.target) return
 
             // 创建新的边ID，包含内部流程标识
             const newEdgeId = `${innerFlowId}-${params.source}-${params.sourceHandle}-${params.target}-${params.targetHandle}`
@@ -701,6 +714,22 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
     useEffect(() => {
         let isDragging = false
         let startHandle: Element | null = null
+        let clickPosition: { x: number; y: number } | null = null
+        let isCanvasDragging = false
+        let originTransform: string | null = null
+        let viewport: HTMLElement | null = null
+
+        // 解析transform字符串获取位移和缩放值
+        const parseTransform = (transform: string) => {
+            const translateMatch = transform.match(/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/)
+            const scaleMatch = transform.match(/scale\(([-\d.]+)\)/)
+
+            return {
+                x: translateMatch ? parseFloat(translateMatch[1]) : 0,
+                y: translateMatch ? parseFloat(translateMatch[2]) : 0,
+                scale: scaleMatch ? parseFloat(scaleMatch[1]) : 1
+            }
+        }
 
         const getParentZoom = () => {
             const parent = document.querySelector('.react-flow')
@@ -753,7 +782,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
         }
 
         const handleMouseDown = (event: Event) => {
-            const mouseEvent = event as MouseEvent
+            const mouseEvent = event as unknown as MouseEvent
             const handle = (mouseEvent.target as Element)?.closest('.react-flow__handle')
             if (handle) {
                 const flowId = (mouseEvent.target as Element)?.closest('[data-flow-id]')?.getAttribute('data-flow-id')
@@ -762,56 +791,89 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                     startHandle = handle
                 }
             }
+
+            const pane = (mouseEvent.target as Element)?.closest('.react-flow__pane')
+            if (pane) {
+                isCanvasDragging = true
+                clickPosition = {
+                    x: mouseEvent.clientX,
+                    y: mouseEvent.clientY
+                }
+                if (flowRef.current) {
+                    viewport = flowRef.current.querySelector('.react-flow__viewport')
+                    if (viewport) {
+                        originTransform = (viewport as HTMLElement).style.transform
+                    }
+                }
+            }
         }
 
         const handleMouseUp = () => {
             isDragging = false
             startHandle = null
+            isCanvasDragging = false
+            clickPosition = null
         }
 
         const handleMouseMove = (event: Event) => {
-            if (!isDragging || !flowRef.current || !startHandle) return
-            const mouseEvent = event as MouseEvent
+            if ((!isDragging && !isCanvasDragging) || !flowRef.current) return
+            const mouseEvent = event as unknown as MouseEvent
 
-            // 获取 ReactFlow 容器
-            const flowElement = flowRef.current
-            const tempConnection = flowElement.querySelector('.react-flow__connection')
-            if (tempConnection) {
-                const pathElement = tempConnection.querySelector('path')
-                if (pathElement) {
-                    // 阻止 ReactFlow 默认的路径更新
+            if (startHandle) {
+                // 获取 ReactFlow 容器
+                const flowElement = flowRef.current
+                const tempConnection = flowElement.querySelector('.react-flow__connection')
+                if (tempConnection) {
+                    const pathElement = tempConnection.querySelector('path')
+                    if (pathElement) {
+                        // 阻止 ReactFlow 默认的路径更新
 
-                    // 初始设置路径
-                    const sourcePos = getHandlePosition(startHandle, flowElement)
-                    if (!sourcePos) return
+                        // 初始设置路径
+                        const sourcePos = getHandlePosition(startHandle, flowElement)
+                        if (!sourcePos) return
 
-                    const containerBounds = flowElement.getBoundingClientRect()
-                    const flowPane = flowElement.querySelector('.react-flow__viewport')
-                    const flowTransform = flowPane ? getComputedStyle(flowPane).transform : 'none'
-                    let transformMatrix = [1, 0, 0, 1, 0, 0]
-                    if (flowTransform && flowTransform !== 'none') {
-                        const matrix = flowTransform.match(/matrix.*\((.+)\)/)
-                        if (matrix) {
-                            transformMatrix = matrix[1].split(', ').map(Number)
+                        const containerBounds = flowElement.getBoundingClientRect()
+                        const flowPane = flowElement.querySelector('.react-flow__viewport')
+                        const flowTransform = flowPane ? getComputedStyle(flowPane).transform : 'none'
+                        let transformMatrix = [1, 0, 0, 1, 0, 0]
+                        if (flowTransform && flowTransform !== 'none') {
+                            const matrix = flowTransform.match(/matrix.*\((.+)\)/)
+                            if (matrix) {
+                                transformMatrix = matrix[1].split(', ').map(Number)
+                            }
                         }
+
+                        const zoom = Math.sqrt(transformMatrix[0] * transformMatrix[0] + transformMatrix[1] * transformMatrix[1])
+                        const translateX = transformMatrix[4]
+                        const translateY = transformMatrix[5]
+                        const parentZoom = getParentZoom()
+
+                        const mouseX = ((mouseEvent.clientX - containerBounds.left) / parentZoom - translateX) / zoom
+                        const mouseY = ((mouseEvent.clientY - containerBounds.top) / parentZoom - translateY) / zoom
+
+                        const dx = Math.abs(mouseX - sourcePos.x) * 0.5
+                        const pathData = `M${sourcePos.x},${sourcePos.y} C${sourcePos.x + dx},${sourcePos.y} ${
+                            mouseX - dx
+                        },${mouseY} ${mouseX},${mouseY}`
+
+                        requestAnimationFrame(() => {
+                            pathElement.setAttribute('d', pathData)
+                        })
                     }
+                }
+            }
 
-                    const zoom = Math.sqrt(transformMatrix[0] * transformMatrix[0] + transformMatrix[1] * transformMatrix[1])
-                    const translateX = transformMatrix[4]
-                    const translateY = transformMatrix[5]
-                    const parentZoom = getParentZoom()
+            if (isCanvasDragging) {
+                const newX = mouseEvent.clientX - clickPosition!.x
+                const newY = mouseEvent.clientY - clickPosition!.y
 
-                    const mouseX = ((mouseEvent.clientX - containerBounds.left) / parentZoom - translateX) / zoom
-                    const mouseY = ((mouseEvent.clientY - containerBounds.top) / parentZoom - translateY) / zoom
+                if (viewport && originTransform) {
+                    const { x: originX, y: originY } = parseTransform(originTransform)
+                    const finalX = originX + newX
+                    const finalY = originY + newY
 
-                    const dx = Math.abs(mouseX - sourcePos.x) * 0.5
-                    const pathData = `M${sourcePos.x},${sourcePos.y} C${sourcePos.x + dx},${sourcePos.y} ${
-                        mouseX - dx
-                    },${mouseY} ${mouseX},${mouseY}`
-
-                    requestAnimationFrame(() => {
-                        pathElement.setAttribute('d', pathData)
-                    })
+                    const { scale } = parseTransform((viewport as HTMLElement).style.transform)
+                    viewport.style.transform = `translate(${finalX}px, ${finalY}px) scale(${scale})`
                 }
             }
         }
@@ -828,7 +890,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                 flowElement.removeEventListener('mousemove', handleMouseMove as EventListener)
             }
         }
-    }, [innerFlowId])
+    }, [innerFlowId as string])
 
     // 修改处理函数名称
     const onExpandDialogSave = (newValue: string, inputParamName: string) => {
@@ -1113,6 +1175,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
                                 defaultViewport={{ x: 0, y: 0, zoom: 1 }}
                                 deleteKeyCode={['Delete', 'Backspace']}
                                 data-flow-id={innerFlowId}
+                                className='nodrag'
                             >
                                 <Controls
                                     showZoom={true}
