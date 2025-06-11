@@ -12,6 +12,16 @@
  * - Proper binary file handling with base64 encoding
  * - Individual file error handling (failures don't stop batch processing)
  * - Support for text splitting and metadata enrichment
+ * - Includes clickable file URLs in metadata for easy access to original files
+ *
+ * Metadata Fields:
+ * - source: Google Drive URI (gdrive://fileId)
+ * - fileId: Google Drive file ID
+ * - fileName: Original file name
+ * - fileUrl: Direct link to view/edit file in Google Drive
+ * - iconUrl: File type icon URL
+ * - mimeType: Original file MIME type
+ * - lastModified: File modification timestamp (when enabled)
  *
  * Updated: Uses proper document loaders instead of generic text processing
  */
@@ -200,6 +210,7 @@ class GoogleDrive implements INode {
                     source: `gdrive://${file.id}`,
                     fileId: file.id,
                     fileName: file.name,
+                    fileUrl: file.webViewLink,
                     iconUrl: selectedFiles.find((f: any) => f.fileId === file.id)?.iconUrl,
                     mimeType: file.mimeType,
                     ...(includeModificationTime && { lastModified: new Date(file.modifiedTime).getTime() }),
