@@ -243,13 +243,18 @@ const ProcessingHistory = ({ user }: { user: User }) => {
                 sx={{
                     '& .super-app-theme--header': {
                         fontWeight: 'bold',
-                        fontSize: '0.875rem'
+                        fontSize: '0.875rem',
+                        color: 'white'
                     },
                     '& .MuiDataGrid-cell': {
-                        fontSize: '0.825rem'
+                        fontSize: '0.825rem',
+                        color: 'white'
                     },
                     '& .MuiDataGrid-columnHeaders': {
                         fontWeight: 'bold'
+                    },
+                    '& .MuiTablePagination-root': {
+                        color: 'white'
                     }
                 }}
             />
