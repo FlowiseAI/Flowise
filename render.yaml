@@ -12,16 +12,16 @@ services:
           - key: NODE_ENV
             value: production
           - key: PORT
-            value: "4000"
+            value: '4000'
           - key: DEBUG
-            value: "false"
+            value: 'false'
           - key: LOG_LEVEL
-            value: "info"
+            value: 'info'
           - key: LOG_PATH
             sync: false
           - key: DISABLE_FLOWISE_TELEMETRY
-            value: "true"
-          
+            value: 'true'
+
           # =========================================
           # Database Configuration
           # =========================================
@@ -45,7 +45,7 @@ services:
             fromDatabase:
                 name: theanswer
                 property: password
-          
+
           # =========================================
           # Auth0 Configuration (Must Match Frontend)
           # =========================================
@@ -66,12 +66,12 @@ services:
           - key: AUTH0_ORGANIZATION_ID
             sync: false
           - key: AUTH0_TOKEN_SIGN_ALG
-            value: "RS256"
+            value: 'RS256'
           - key: AUTH0_SCOPE
-            value: "openid profile email"
+            value: 'openid profile email'
           - key: AUTH0_JWKS_URI
             sync: false
-          
+
           # =========================================
           # Domain Configuration
           # =========================================
@@ -79,27 +79,27 @@ services:
             sync: false
           - key: ANSWERAI_DOMAIN
             sync: false
-          
+
           # =========================================
           # Security & API Keys
           # =========================================
           - key: FLOWISE_SECRETKEY_OVERWRITE
             sync: false
           - key: SECRETKEY_PATH
-            value: "/var/data"
+            value: '/var/data'
           - key: APIKEY_STORAGE_TYPE
-            value: "local"
+            value: 'local'
           - key: APIKEY_PATH
-            value: "/var/data"
-          
+            value: '/var/data'
+
           # =========================================
           # CORS & Iframe Settings
           # =========================================
           - key: CORS_ORIGINS
-            value: "*"
+            value: '*'
           - key: IFRAME_ORIGINS
             sync: false
-          
+
           # =========================================
           # Redis Configuration
           # =========================================
@@ -108,15 +108,15 @@ services:
                 name: theanswer
                 type: redis
                 property: connectionString
-          
+
           # =========================================
           # Storage Configuration
           # =========================================
           - key: STORAGE_TYPE
             value: local
           - key: BLOB_STORAGE_PATH
-            value: "/var/data"
-          
+            value: '/var/data'
+
           # =========================================
           # Langfuse Tracing
           # =========================================
@@ -126,13 +126,13 @@ services:
             sync: false
           - key: LANGFUSE_SECRET_KEY
             sync: false
-          
+
           # =========================================
           # External Services
           # =========================================
           - key: OPENAI_API_KEY
             sync: false
-          
+
           # =========================================
           # Legacy/Migration Variables (To Remove)
           # =========================================
@@ -173,12 +173,12 @@ services:
           - key: NODE_ENV
             value: production
           - key: PORT
-            value: "3000"
+            value: '3000'
           - key: HOSTNAME
-            value: "0.0.0.0"
+            value: '0.0.0.0'
           - key: NEXT_TELEMETRY_DISABLED
-            value: "1"
-          
+            value: '1'
+
           # =========================================
           # Database Configuration (Shared)
           # =========================================
@@ -206,7 +206,7 @@ services:
             fromDatabase:
                 name: theanswer
                 property: password
-          
+
           # =========================================
           # Auth0 Configuration (Must Match Backend)
           # =========================================
@@ -230,7 +230,7 @@ services:
             sync: false
           - key: AUTH0_JWKS_URI
             sync: false
-          
+
           # =========================================
           # Backend Connection
           # =========================================
@@ -238,17 +238,17 @@ services:
             sync: false
           - key: DOMAIN
             sync: false
-          
+
           # =========================================
           # Frontend-Specific Services
           # =========================================
           - key: FLAGSMITH_ENVIRONMENT_ID
             sync: false
           - key: DISABLE_SENTRY
-            value: "false"
+            value: 'false'
           - key: ANALYZE
-            value: "false"
-          
+            value: 'false'
+
           # =========================================
           # React App Variables (Client-Side)
           # =========================================
@@ -260,7 +260,7 @@ services:
             sync: false
           - key: REACT_APP_AUTH0_CLIENT_ID
             sync: false
-          
+
           # =========================================
           # External Services
           # =========================================
@@ -277,7 +277,7 @@ services:
       #     - app.theanswer.ai
     - type: redis
       name: theanswer
-      plan: starter
+      plan: standard
       region: oregon
       maxmemoryPolicy: allkeys-lru
       ipAllowList: []
