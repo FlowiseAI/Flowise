@@ -7,6 +7,6 @@ export class AddErrorToEvaluationRun1744964560174 implements MigrationInterface 
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`ALTER TABLE "evaluation_run" DROP COLUMN "errors";`)
+        await queryRunner.query(`ALTER TABLE \`evaluation_run\` DROP COLUMN \`errors\`;`)
     }
 }

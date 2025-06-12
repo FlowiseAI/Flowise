@@ -401,8 +401,11 @@ const AgentFlowNode = ({ data }) => {
                                     { tools: data.inputs?.llmTools, toolProperty: 'llmSelectedTool' },
                                     { tools: data.inputs?.agentTools, toolProperty: 'agentSelectedTool' },
                                     {
-                                        tools: data.inputs?.selectedTool ? [{ selectedTool: data.inputs?.selectedTool }] : [],
-                                        toolProperty: 'selectedTool'
+                                        tools:
+                                            data.inputs?.selectedTool ?? data.inputs?.toolAgentflowSelectedTool
+                                                ? [{ selectedTool: data.inputs?.selectedTool ?? data.inputs?.toolAgentflowSelectedTool }]
+                                                : [],
+                                        toolProperty: ['selectedTool', 'toolAgentflowSelectedTool']
                                     },
                                     { tools: data.inputs?.agentKnowledgeVSEmbeddings, toolProperty: ['vectorStore', 'embeddingModel'] }
                                 ]

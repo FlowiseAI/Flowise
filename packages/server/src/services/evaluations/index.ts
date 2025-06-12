@@ -15,10 +15,11 @@ import { getAppVersion } from '../../utils'
 import { In } from 'typeorm'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { v4 as uuidv4 } from 'uuid'
-import { calculateCost } from './CostCalculator'
+import { calculateCost, formatCost } from './CostCalculator'
 import { runAdditionalEvaluators } from './EvaluatorRunner'
 import evaluatorsService from '../evaluator'
 import { LLMEvaluationRunner } from './LLMEvaluationRunner'
+import { Assistant } from '../../database/entities/Assistant'
 
 const runAgain = async (id: string, baseURL: string, orgId: string) => {
     try {
@@ -27,7 +28,7 @@ const runAgain = async (id: string, baseURL: string, orgId: string) => {
             id: id
         })
         if (!evaluation) throw new Error(`Evaluation ${id} not found`)
-        const additionalConfig: any = JSON.parse(evaluation.additionalConfig)
+        const additionalConfig = evaluation.additionalConfig ? JSON.parse(evaluation.additionalConfig) : {}
         const data: ICommonObject = {
             chatflowId: evaluation.chatflowId,
             chatflowName: evaluation.chatflowName,
@@ -35,7 +36,8 @@ const runAgain = async (id: string, baseURL: string, orgId: string) => {
             datasetId: evaluation.datasetId,
             evaluationType: evaluation.evaluationType,
             selectedSimpleEvaluators: JSON.stringify(additionalConfig.simpleEvaluators),
-            datasetAsOneConversation: additionalConfig.datasetAsOneConversation
+            datasetAsOneConversation: additionalConfig.datasetAsOneConversation,
+            chatflowType: JSON.stringify(additionalConfig.chatflowTypes ? additionalConfig.chatflowTypes : [])
         }
         data.name = evaluation.name
         data.workspaceId = evaluation.workspaceId
@@ -69,7 +71,8 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         const row = appServer.AppDataSource.getRepository(Evaluation).create(newEval)
         row.average_metrics = JSON.stringify({})
 
-        const additionalConfig: any = {
+        const additionalConfig: ICommonObject = {
+            chatflowTypes: body.chatflowType ? JSON.parse(body.chatflowType) : [],
             datasetAsOneConversation: body.datasetAsOneConversation,
             simpleEvaluators: body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
         }
@@ -152,7 +155,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
         let evalMetrics = { passCount: 0, failCount: 0, errorCount: 0 }
         evalRunner
             .runEvaluations(data)
-            .then(async (result: any) => {
+            .then(async (result) => {
                 let totalTime = 0
                 // let us assume that the eval is successful
                 let allRowsSuccessful = true
@@ -171,8 +174,48 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                             totalTime += parseFloat(evaluationRow.latency)
                             let metricsObjFromRun: ICommonObject = {}
 
+                            let nested_metrics = evaluationRow.nested_metrics
+
+                            let promptTokens = 0,
+                                completionTokens = 0,
+                                totalTokens = 0
+                            let inputCost = 0,
+                                outputCost = 0,
+                                totalCost = 0
+                            if (nested_metrics && nested_metrics.length > 0) {
+                                for (let i = 0; i < nested_metrics.length; i++) {
+                                    const nested_metric = nested_metrics[i]
+                                    if (nested_metric.model && nested_metric.promptTokens > 0) {
+                                        promptTokens += nested_metric.promptTokens
+                                        completionTokens += nested_metric.completionTokens
+                                        totalTokens += nested_metric.totalTokens
+
+                                        inputCost += nested_metric.cost_values.input_cost
+                                        outputCost += nested_metric.cost_values.output_cost
+                                        totalCost += nested_metric.cost_values.total_cost
+
+                                        nested_metric['totalCost'] = formatCost(nested_metric.cost_values.total_cost)
+                                        nested_metric['promptCost'] = formatCost(nested_metric.cost_values.input_cost)
+                                        nested_metric['completionCost'] = formatCost(nested_metric.cost_values.output_cost)
+                                    }
+                                }
+                                nested_metrics = nested_metrics.filter((metric: any) => {
+                                    return metric.model && metric.provider
+                                })
+                            }
                             const metrics = evaluationRow.metrics
                             if (metrics) {
+                                if (nested_metrics && nested_metrics.length > 0) {
+                                    metrics.push({
+                                        promptTokens: promptTokens,
+                                        completionTokens: completionTokens,
+                                        totalTokens: totalTokens,
+                                        totalCost: formatCost(totalCost),
+                                        promptCost: formatCost(inputCost),
+                                        completionCost: formatCost(outputCost)
+                                    })
+                                    metricsObjFromRun.nested_metrics = nested_metrics
+                                }
                                 metrics.map((metric: any) => {
                                     if (metric) {
                                         const json = typeof metric === 'object' ? metric : JSON.parse(metric)
@@ -211,7 +254,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                         if (body.evaluationType === 'llm') {
                             resultRow.llmConfig = additionalConfig.llmConfig
                             resultRow.LLMEvaluators = body.selectedLLMEvaluators.length > 0 ? JSON.parse(body.selectedLLMEvaluators) : []
-                            const llmEvaluatorMap: any = []
+                            const llmEvaluatorMap: { evaluatorId: string; evaluator: any }[] = []
                             for (let i = 0; i < resultRow.LLMEvaluators.length; i++) {
                                 const evaluatorId = resultRow.LLMEvaluators[i]
                                 const evaluator = await evaluatorsService.getEvaluator(evaluatorId)
@@ -243,23 +286,27 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                     }
                     appServer.AppDataSource.getRepository(Evaluation)
                         .findOneBy({ id: newEvaluation.id })
-                        .then((evaluation: any) => {
-                            evaluation.status = allRowsSuccessful ? EvaluationStatus.COMPLETED : EvaluationStatus.ERROR
-                            evaluation.average_metrics = JSON.stringify({
-                                averageLatency: (totalTime / result.rows.length).toFixed(3),
-                                totalRuns: result.rows.length,
-                                ...evalMetrics,
-                                passPcnt: passPercent.toFixed(2)
-                            })
-                            appServer.AppDataSource.getRepository(Evaluation).save(evaluation)
+                        .then((evaluation) => {
+                            if (evaluation) {
+                                evaluation.status = allRowsSuccessful ? EvaluationStatus.COMPLETED : EvaluationStatus.ERROR
+                                evaluation.average_metrics = JSON.stringify({
+                                    averageLatency: (totalTime / result.rows.length).toFixed(3),
+                                    totalRuns: result.rows.length,
+                                    ...evalMetrics,
+                                    passPcnt: passPercent.toFixed(2)
+                                })
+                                appServer.AppDataSource.getRepository(Evaluation).save(evaluation)
+                            }
                         })
                 } catch (error) {
                     //update the evaluation with status as error
                     appServer.AppDataSource.getRepository(Evaluation)
                         .findOneBy({ id: newEvaluation.id })
-                        .then((evaluation: any) => {
-                            evaluation.status = EvaluationStatus.ERROR
-                            appServer.AppDataSource.getRepository(Evaluation).save(evaluation)
+                        .then((evaluation) => {
+                            if (evaluation) {
+                                evaluation.status = EvaluationStatus.ERROR
+                                appServer.AppDataSource.getRepository(Evaluation).save(evaluation)
+                            }
                         })
                 }
             })
@@ -268,12 +315,14 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                 console.error('Error running evaluations:', getErrorMessage(error))
                 appServer.AppDataSource.getRepository(Evaluation)
                     .findOneBy({ id: newEvaluation.id })
-                    .then((evaluation: any) => {
-                        evaluation.status = EvaluationStatus.ERROR
-                        evaluation.average_metrics = JSON.stringify({
-                            error: getErrorMessage(error)
-                        })
-                        appServer.AppDataSource.getRepository(Evaluation).save(evaluation)
+                    .then((evaluation) => {
+                        if (evaluation) {
+                            evaluation.status = EvaluationStatus.ERROR
+                            evaluation.average_metrics = JSON.stringify({
+                                error: getErrorMessage(error)
+                            })
+                            appServer.AppDataSource.getRepository(Evaluation).save(evaluation)
+                        }
                     })
                     .catch((dbError) => {
                         console.error('Error updating evaluation status:', getErrorMessage(dbError))
@@ -378,18 +427,31 @@ const isOutdated = async (id: string) => {
                 returnObj.dataset = dataset
             }
         } else {
-            returnObj.errors.push(`Dataset ${evaluation.datasetName} not found`)
+            returnObj.errors.push({
+                message: `Dataset ${evaluation.datasetName} not found`,
+                id: evaluation.datasetId
+            })
             isOutdated = true
         }
-        const chatflows = JSON.parse(evaluation.chatflowId)
-        const chatflowNames = JSON.parse(evaluation.chatflowName)
-
-        for (let i = 0; i < chatflows.length; i++) {
+        const chatflowIds = evaluation.chatflowId ? JSON.parse(evaluation.chatflowId) : []
+        const chatflowNames = evaluation.chatflowName ? JSON.parse(evaluation.chatflowName) : []
+        const chatflowTypes = evaluation.additionalConfig ? JSON.parse(evaluation.additionalConfig).chatflowTypes : []
+        for (let i = 0; i < chatflowIds.length; i++) {
+            // check for backward compatibility, as previous versions did not the types in additionalConfig
+            if (chatflowTypes && chatflowTypes.length >= 0) {
+                if (chatflowTypes[i] === 'Custom Assistant') {
+                    // if the chatflow type is custom assistant, then we should NOT check in the chatflows table
+                    continue
+                }
+            }
             const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-                id: chatflows[i]
+                id: chatflowIds[i]
             })
             if (!chatflow) {
-                returnObj.errors.push(`Chatflow ${chatflowNames[i]} not found`)
+                returnObj.errors.push({
+                    message: `Chatflow ${chatflowNames[i]} not found`,
+                    id: chatflowIds[i]
+                })
                 isOutdated = true
             } else {
                 const chatflowLastUpdated = chatflow.updatedDate.getTime()
@@ -397,9 +459,39 @@ const isOutdated = async (id: string) => {
                     isOutdated = true
                     returnObj.chatflows.push({
                         chatflowName: chatflowNames[i],
-                        chatflowId: chatflows[i],
+                        chatflowId: chatflowIds[i],
+                        chatflowType: chatflow.type === 'AGENTFLOW' ? 'Agentflow v2' : 'Chatflow',
                         isOutdated: true
                     })
+                }
+            }
+        }
+        if (chatflowTypes && chatflowTypes.length > 0) {
+            for (let i = 0; i < chatflowIds.length; i++) {
+                if (chatflowTypes[i] !== 'Custom Assistant') {
+                    // if the chatflow type is NOT custom assistant, then bail out for this item
+                    continue
+                }
+                const assistant = await appServer.AppDataSource.getRepository(Assistant).findOneBy({
+                    id: chatflowIds[i]
+                })
+                if (!assistant) {
+                    returnObj.errors.push({
+                        message: `Custom Assistant ${chatflowNames[i]} not found`,
+                        id: chatflowIds[i]
+                    })
+                    isOutdated = true
+                } else {
+                    const chatflowLastUpdated = assistant.updatedDate.getTime()
+                    if (chatflowLastUpdated > evaluationRunDate) {
+                        isOutdated = true
+                        returnObj.chatflows.push({
+                            chatflowName: chatflowNames[i],
+                            chatflowId: chatflowIds[i],
+                            chatflowType: 'Custom Assistant',
+                            isOutdated: true
+                        })
+                    }
                 }
             }
         }
@@ -424,7 +516,7 @@ const getEvaluation = async (id: string) => {
             where: { evaluationId: id }
         })
         const versions = (await getVersions(id)).versions
-        const versionNo = versions.findIndex((version: any) => version.id === id) + 1
+        const versionNo = versions.findIndex((version) => version.id === id) + 1
         return {
             ...evaluation,
             versionCount: versionCount,
@@ -451,7 +543,7 @@ const getVersions = async (id: string) => {
                 runDate: 'ASC'
             }
         })
-        const returnResults: any[] = []
+        const returnResults: { id: string; runDate: Date; version: number }[] = []
         versions.map((version, index) => {
             returnResults.push({
                 id: version.id,
