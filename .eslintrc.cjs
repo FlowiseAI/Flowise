@@ -24,7 +24,8 @@ module.exports = {
         '**/.gitbook/assets/*.json',
         '**/generated/**',
         '**/.turbo/**',
-        '**/coverage/**'
+        '**/coverage/**',
+        '**/scripts/bws-secure/**'
     ],
     plugins: ['unused-imports'],
     rules: {

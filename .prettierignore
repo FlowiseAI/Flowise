@@ -1,0 +1,9 @@
+ 
+# BWS Secure - Environment Files
+.env
+.env.*
+*.env
+scripts/bws-secure/.env*
+scripts/bws-secure/**/.env*
+.env.secure
+.env.secure.*

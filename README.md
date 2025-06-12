@@ -353,3 +353,63 @@ Reach out to us on [Discord](https://discord.gg/jbaHfsRVBW) if you have any ques
 ## 📄 License
 
 Source code in this repository is made available under the [Apache License Version 2.0](LICENSE.md).
+
+## 🔑 Seeding Default Credentials
+
+TheAnswer provides a script to automatically seed default credentials (API keys, service tokens, etc) into the Flowise database from environment variables. This is useful for setting up new environments or automating credential management.
+
+-   **Safe by default:** Running `pnpm seed-credentials` will perform a dry-run (test mode) and show what would be seeded, but will NOT write to the database.
+-   **To actually write credentials:** Use `pnpm seed-credentials:write` to perform the operation and insert/update credentials in the database.
+-   **Full documentation:** See [`scripts/seed-credentials/README.md`](./scripts/seed-credentials/README.md) for detailed instructions, environment variable requirements, and advanced usage.
+
+**Example:**
+
+```bash
+# Test mode (safe, dry-run, default)
+pnpm seed-credentials
+
+# Production mode (actually writes credentials)
+pnpm seed-credentials:write
+```
+
+The script supports a wide range of credential types and includes robust safety checks. For more details, troubleshooting, and environment variable examples, refer to the [seed-credentials README](./scripts/seed-credentials/README.md).
+
+<!-- BWS-SECURE-DOCS-START -->
+
+## BWS Secure Environmental Variable Integration
+
+This project uses [BWS Secure](https://github.com/last-rev-llc/bws-secure) for managing environment variables across different environments.
+
+### Creating an Access Token
+
+1. Visit your [Bitwarden Machine Accounts](https://vault.bitwarden.com/#/sm/${BWS_ORG_ID:-YOUR_BWS_ORG_ID_HERE}/machine-accounts) section
+    - **Note:** This link requires you to be a member of the Last Rev Bitwarden organization
+    - If you don't have access, please refer to the [BWS Secure documentation](https://github.com/last-rev-llc/bws-secure) or contact your team administrator
+2. After clicking the link, follow these steps:
+    - Select the appropriate Client/Set of Machine Accounts from the list
+    - Click on the "Access Tokens" tab
+    - Click "+ New Access Token" button
+    - Give the token a meaningful name (e.g., "Your Name - Local Development")
+    - Click "Save" to generate the token
+3. Copy the displayed token (you won't be able to see it again after closing)
+4. Add it to your .env file in your project root:
+    ```
+    BWS_ACCESS_TOKEN=your_token_here
+    ```
+5. Never commit this token to version control
+
+### Updating BWS Secure
+
+To update BWS Secure to the latest version, you can use the convenient script that was added to your package.json:
+
+```bash
+npm run bws-update  # Or use your project's package manager: yarn bws-update, pnpm bws-update
+```
+
+Alternatively, you can run the following command manually from your project root:
+
+```bash
+rm -rf scripts/bws-secure && git clone git@github.com:last-rev-llc/bws-secure.git scripts/bws-secure && rm -rf scripts/bws-secure/.git && bash scripts/bws-secure/install.sh
+```
+
+<!-- BWS-SECURE-DOCS-END -->
