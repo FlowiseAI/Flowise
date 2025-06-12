@@ -149,7 +149,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const [sourceDialogProps, setSourceDialogProps] = useState({})
     const [hardDeleteDialogOpen, setHardDeleteDialogOpen] = useState(false)
     const [hardDeleteDialogProps, setHardDeleteDialogProps] = useState({})
-    const [chatTypeFilter, setChatTypeFilter] = useState([])
+    const [chatTypeFilter, setChatTypeFilter] = useState(['INTERNAL', 'EXTERNAL'])
     const [feedbackTypeFilter, setFeedbackTypeFilter] = useState([])
     const [startDate, setStartDate] = useState(new Date(new Date().setMonth(new Date().getMonth() - 1)))
     const [endDate, setEndDate] = useState(new Date())
@@ -310,6 +310,15 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         }
     }
 
+    const getChatType = (chatType) => {
+        if (chatType === 'INTERNAL') {
+            return 'UI'
+        } else if (chatType === 'EVALUATION') {
+            return 'Evaluation'
+        }
+        return 'API/Embed'
+    }
+
     const exportMessages = async () => {
         if (!storagePath && getStoragePathFromServer.data) {
             storagePath = getStoragePathFromServer.data.storagePath
@@ -356,7 +365,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             if (!Object.prototype.hasOwnProperty.call(obj, chatPK)) {
                 obj[chatPK] = {
                     id: chatmsg.chatId,
-                    source: chatmsg.chatType === 'INTERNAL' ? 'UI' : 'API/Embed',
+                    source: getChatType(chatmsg.chatType),
                     sessionId: chatmsg.sessionId ?? null,
                     memoryType: chatmsg.memoryType ?? null,
                     email: chatmsg.leadEmail ?? null,
@@ -716,7 +725,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setChatLogs([])
             setAllChatLogs([])
             setChatMessages([])
-            setChatTypeFilter([])
+            setChatTypeFilter(['INTERNAL', 'EXTERNAL'])
             setFeedbackTypeFilter([])
             setSelectedMessageIndex(0)
             setSelectedChatId('')
@@ -880,6 +889,10 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                     {
                                         label: 'API/Embed',
                                         name: 'EXTERNAL'
+                                    },
+                                    {
+                                        label: 'Evaluations',
+                                        name: 'EVALUATION'
                                     }
                                 ]}
                                 onSelect={(newValue) => onChatTypeSelected(newValue)}
@@ -1016,7 +1029,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                             )}
                                             {chatMessages[1].chatType && (
                                                 <div>
-                                                    Source:&nbsp;<b>{chatMessages[1].chatType === 'INTERNAL' ? 'UI' : 'API/Embed'}</b>
+                                                    Source:&nbsp;<b>{getChatType(chatMessages[1].chatType)}</b>
                                                 </div>
                                             )}
                                             {chatMessages[1].memoryType && (

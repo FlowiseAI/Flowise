@@ -25,6 +25,7 @@ import {
 import { useTheme } from '@mui/material/styles'
 import moment from 'moment'
 import PaidIcon from '@mui/icons-material/Paid'
+import { IconHierarchy, IconUsersGroup, IconRobot } from '@tabler/icons-react'
 import LLMIcon from '@mui/icons-material/ModelTraining'
 import AlarmIcon from '@mui/icons-material/AlarmOn'
 import TokensIcon from '@mui/icons-material/AutoAwesomeMotion'
@@ -116,10 +117,13 @@ const EvalEvaluationRows = () => {
     const [expandTableProps, setExpandTableProps] = useState({})
     const [isTableLoading, setTableLoading] = useState(false)
 
+    const [additionalConfig, setAdditionalConfig] = useState({})
+
     const openDetailsDrawer = (item) => {
         setSideDrawerDialogProps({
             type: 'View',
             data: item,
+            additionalConfig: additionalConfig,
             evaluationType: evaluation.evaluationType,
             evaluationChatflows: evaluation.chatflowName
         })
@@ -169,7 +173,8 @@ const EvalEvaluationRows = () => {
                 showCustomEvals,
                 showTokenMetrics,
                 showLatencyMetrics,
-                showCostMetrics
+                showCostMetrics,
+                additionalConfig
             }
         })
         setShowExpandTableDialog(true)
@@ -239,6 +244,9 @@ const EvalEvaluationRows = () => {
             const data = getEvaluation.data
             setSelectedEvaluationName(data.name)
             getIsOutdatedApi.request(data.id)
+            if (data.additionalConfig) {
+                setAdditionalConfig(JSON.parse(data.additionalConfig))
+            }
             data.chatflowId = typeof data.chatflowId === 'object' ? data.chatflowId : JSON.parse(data.chatflowId)
             data.chatflowName = typeof data.chatflowName === 'object' ? data.chatflowName : JSON.parse(data.chatflowName)
             const rows = getEvaluation.data.rows
@@ -314,6 +322,51 @@ const EvalEvaluationRows = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getEvaluation.data])
 
+    const getOpenLink = (index) => {
+        if (index === undefined) {
+            return undefined
+        }
+        const id = evaluation.chatflowId[index]
+        // this is to check if the evaluation is deleted!
+        if (outdated?.errors?.length > 0 && outdated.errors.find((e) => e.id === id)) {
+            return undefined
+        }
+        if (additionalConfig.chatflowTypes) {
+            switch (additionalConfig.chatflowTypes[index]) {
+                case 'Chatflow':
+                    return '/canvas/' + evaluation.chatflowId[index]
+                case 'Custom Assistant':
+                    return '/assistants/custom/' + evaluation.chatflowId[index]
+                case 'Agentflow v2':
+                    return '/v2/agentcanvas/' + evaluation.chatflowId[index]
+            }
+        }
+        return '/canvas/' + evaluation.chatflowId[index]
+    }
+
+    const openFlow = (index) => {
+        const url = getOpenLink(index)
+        if (url) {
+            window.open(getOpenLink(index), '_blank')
+        }
+    }
+
+    const getFlowIcon = (index) => {
+        if (index === undefined) {
+            return <IconHierarchy size={17} />
+        }
+        if (additionalConfig.chatflowTypes) {
+            switch (additionalConfig.chatflowTypes[index]) {
+                case 'Chatflow':
+                    return <IconHierarchy size={17} />
+                case 'Custom Assistant':
+                    return <IconRobot size={17} />
+                case 'Agentflow v2':
+                    return <IconUsersGroup size={17} />
+            }
+        }
+        return <IconHierarchy />
+    }
     return (
         <>
             <MainCard>
@@ -405,14 +458,14 @@ const EvalEvaluationRows = () => {
                                                 }}
                                                 variant='outlined'
                                                 label={outdated.dataset.name}
-                                                onClick={() => navigate(`/dataset_rows/${outdated.dataset.id}`)}
+                                                onClick={() => window.open(`/dataset_rows/${outdated.dataset.id}`, '_blank')}
                                             ></Chip>
                                         </>
                                     )}
                                     {outdated.chatflows && outdated?.errors?.length === 0 && outdated.chatflows.length > 0 && (
                                         <>
                                             <br />
-                                            <b style={{ color: 'rgb(116,66,16)' }}>Chatflows:</b>
+                                            <b style={{ color: 'rgb(116,66,16)' }}>Flows:</b>
                                             <Stack sx={{ mt: 1, alignItems: 'center', flexWrap: 'wrap' }} flexDirection='row' gap={1}>
                                                 {outdated.chatflows.map((chatflow, index) => (
                                                     <Chip
@@ -429,14 +482,23 @@ const EvalEvaluationRows = () => {
                                                         }}
                                                         variant='outlined'
                                                         label={chatflow.chatflowName}
-                                                        onClick={() => navigate(`/canvas/${chatflow.chatflowId}`)}
+                                                        onClick={() =>
+                                                            window.open(
+                                                                chatflow.chatflowType === 'Chatflow'
+                                                                    ? '/canvas/' + chatflow.chatflowId
+                                                                    : chatflow.chatflowType === 'Custom Assistant'
+                                                                    ? '/assistants/custom/' + chatflow.chatflowId
+                                                                    : '/v2/agentcanvas/' + chatflow.chatflowId,
+                                                                '_blank'
+                                                            )
+                                                        }
                                                     ></Chip>
                                                 ))}
                                             </Stack>
                                         </>
                                     )}
                                     {outdated.errors.length > 0 &&
-                                        outdated.errors.map((error, index) => <ListItem key={index}>{error}</ListItem>)}
+                                        outdated.errors.map((error, index) => <ListItem key={index}>{error.message}</ListItem>)}
                                     <IconButton
                                         style={{ position: 'absolute', top: 10, right: 10 }}
                                         size='small'
@@ -501,7 +563,7 @@ const EvalEvaluationRows = () => {
                         {showCharts && (
                             <Grid container={true} spacing={2}>
                                 {customEvalsDefined && (
-                                    <Grid item={true} xs={12} sm={6} md={4} lg={4}>
+                                    <Grid item={true} xs={12} sm={12} md={4} lg={4}>
                                         <MetricsItemCard
                                             data={{
                                                 header: 'PASS RATE',
@@ -566,11 +628,12 @@ const EvalEvaluationRows = () => {
                                     }}
                                 >
                                     <IconVectorBezier2 style={{ marginRight: 5 }} size={17} />
-                                    Chatflows Used:
+                                    Flows Used:
                                 </div>
                                 {(evaluation.chatflowName || []).map((chatflowUsed, index) => (
                                     <Chip
                                         key={index}
+                                        icon={getFlowIcon(index)}
                                         clickable
                                         style={{
                                             width: 'max-content',
@@ -580,7 +643,7 @@ const EvalEvaluationRows = () => {
                                                 : '0 2px 14px 0 rgb(32 40 45 / 10%)'
                                         }}
                                         label={chatflowUsed}
-                                        onClick={() => navigate('/canvas/' + evaluation.chatflowId[index])}
+                                        onClick={() => openFlow(index)}
                                     ></Chip>
                                 ))}
                             </Stack>
