@@ -52,6 +52,7 @@
         "react-hook-form": "^7.45.2",
         "serpapi": "^1.1.1",
         "stripe": "^17.5.0",
+        "sharp": "^0.33.5",
         "typeorm": "^0.3.17",
         "ui": "workspace:*",
         "utils": "workspace:*",
@@ -78,6 +79,7 @@
         "webpack": "^5.88.2",
         "webpack-cli": "^5.1.4",
         "webpack-node-externals": "^3.0.0",
-        "file-loader": "^6.2.0"
+        "file-loader": "^6.2.0",
+        "url-loader": "^4.1.1"
     }
 }

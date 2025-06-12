@@ -317,6 +317,9 @@ importers:
       typescript:
         specifier: ^4.8.4
         version: 4.9.5
+      url-loader:
+        specifier: ^4.1.1
+        version: 4.1.1(file-loader@6.2.0(webpack@5.98.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(webpack-cli@5.1.4)))(webpack@5.98.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(webpack-cli@5.1.4))
       webpack:
         specifier: ^5.88.2
         version: 5.98.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(webpack-cli@5.1.4)
@@ -1889,6 +1892,9 @@ importers:
       clsx:
         specifier: ^1.1.1
         version: 1.2.1
+      contentful:
+        specifier: ^10.6.14
+        version: 10.15.2
       dotenv:
         specifier: ^16.0.0
         version: 16.4.7
@@ -51120,6 +51126,15 @@ snapshots:
   urix@0.1.0: {}
 
   url-join@4.0.1: {}
+
+  url-loader@4.1.1(file-loader@6.2.0(webpack@5.98.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(webpack-cli@5.1.4)))(webpack@5.98.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(webpack-cli@5.1.4)):
+    dependencies:
+      loader-utils: 2.0.4
+      mime-types: 2.1.35
+      schema-utils: 3.3.0
+      webpack: 5.98.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(webpack-cli@5.1.4)
+    optionalDependencies:
+      file-loader: 6.2.0(webpack@5.98.0(@swc/core@1.11.9(@swc/helpers@0.5.15))(webpack-cli@5.1.4))
 
   url-loader@4.1.1(file-loader@6.2.0(webpack@5.98.0))(webpack@5.98.0):
     dependencies:
