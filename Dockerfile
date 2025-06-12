@@ -8,7 +8,7 @@ FROM --platform=linux/amd64 node:20-alpine as base
 
 WORKDIR /app
 
-RUN apk add --update libc6-compat python3 make g++
+RUN apk add --update libc6-compat python3 make g++ bash
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev
 # Install Chromium
