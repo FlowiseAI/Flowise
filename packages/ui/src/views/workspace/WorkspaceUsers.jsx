@@ -29,7 +29,7 @@ import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import InviteUsersDialog from '@/ui-component/dialog/InviteUsersDialog'
-import EditUserDialog from '@/views/users/EditUserDialog'
+import EditWorkspaceUserRoleDialog from '@/views/workspace/EditWorkspaceUserRoleDialog'
 
 // API
 import userApi from '@/api/user'
@@ -66,8 +66,8 @@ const WorkspaceDetails = () => {
 
     const [showAddUserDialog, setShowAddUserDialog] = useState(false)
     const [dialogProps, setDialogProps] = useState({})
-    const [showEditDialog, setShowEditDialog] = useState(false)
-    const [editDialogProps, setEditDialogProps] = useState({})
+    const [showWorkspaceUserRoleDialog, setShowWorkspaceUserRoleDialog] = useState(false)
+    const [workspaceUserRoleDialogProps, setWorkspaceUserRoleDialogProps] = useState({})
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -152,7 +152,6 @@ const WorkspaceDetails = () => {
     }
 
     const editUser = (user) => {
-        // Not used for now
         const userObj = {
             ...user,
             assignedRoles: [
@@ -161,16 +160,16 @@ const WorkspaceDetails = () => {
                     active: true
                 }
             ],
-            activeWorkspaceId: workspaceId
+            workspaceId: workspaceId
         }
         const dialogProp = {
             type: 'EDIT',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            confirmButtonName: 'Update Role',
             data: userObj
         }
-        setEditDialogProps(dialogProp)
-        setShowEditDialog(true)
+        setWorkspaceUserRoleDialogProps(dialogProp)
+        setShowWorkspaceUserRoleDialog(true)
     }
 
     const unlinkUser = async () => {
@@ -253,7 +252,7 @@ const WorkspaceDetails = () => {
 
     const onConfirm = () => {
         setShowAddUserDialog(false)
-        setShowEditDialog(false)
+        setShowWorkspaceUserRoleDialog(false)
         getAllUsersByWorkspaceIdApi.request(workspaceId)
     }
 
@@ -511,6 +510,15 @@ const WorkspaceDetails = () => {
                                                                         <IconEdit />
                                                                     </IconButton>
                                                                 )}
+                                                                {!item.isOrgOwner && item.status.toUpperCase() === 'ACTIVE' && (
+                                                                    <IconButton
+                                                                        title='Change Role'
+                                                                        color='primary'
+                                                                        onClick={() => onEditClick(item)}
+                                                                    >
+                                                                        <IconEdit />
+                                                                    </IconButton>
+                                                                )}
                                                             </StyledTableCell>
                                                         </StyledTableRow>
                                                     ))}
@@ -532,14 +540,13 @@ const WorkspaceDetails = () => {
                     onConfirm={onConfirm}
                 ></InviteUsersDialog>
             )}
-            {showEditDialog && (
-                <EditUserDialog
-                    show={showEditDialog}
-                    dialogProps={editDialogProps}
-                    onCancel={() => setShowEditDialog(false)}
+            {showWorkspaceUserRoleDialog && (
+                <EditWorkspaceUserRoleDialog
+                    show={showWorkspaceUserRoleDialog}
+                    dialogProps={workspaceUserRoleDialogProps}
+                    onCancel={() => setShowWorkspaceUserRoleDialog(false)}
                     onConfirm={onConfirm}
-                    setError={setError}
-                ></EditUserDialog>
+                />
             )}
             <ConfirmDialog />
         </>
