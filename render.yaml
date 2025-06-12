@@ -1,7 +1,7 @@
 # Exported from Render on 2024-11-07T15:50:51Z
 services:
     - type: web
-      name: theanswer-flowise
+      name: theanswer
       runtime: docker
       repo: https://github.com/the-answerai/theanswer
       plan: starter
