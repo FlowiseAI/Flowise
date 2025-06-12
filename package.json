@@ -30,7 +30,7 @@
         "lint": "eslint \"**/*.{js,jsx,ts,tsx}\"",
         "lint-fix": "pnpm lint --fix",
         "quick": "pretty-quick --staged",
-        "postinstall": "sh ./scripts/bws-secure/bws-installer.sh && husky install",
+        "postinstall": "husky install",
         "migration:generate": "turbo typeorm:migration-generate",
         "migration:run": "pnpm secure-run \"turbo typeorm:migration-run\"",
         "migration:show": "pnpm secure-run \"turbo typeorm:migration-show\"",
