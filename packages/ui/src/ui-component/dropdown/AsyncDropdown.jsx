@@ -261,11 +261,9 @@ export const AsyncDropdown = ({
                         textField
                     ) : (
                         <Tooltip
-                            title={
-                                typeof internalValue === 'string'
-                                    ? internalValue.replace(/[[\]"]/g, '').replace(/,/g, ', ')
-                                    : internalValue
-                            }
+                            title={typeof internalValue === 'string'
+                                ? internalValue.replace(/[[\]"]/g, '').replace(/,/g, ', ')
+                                : internalValue}
                             placement='top'
                             arrow
                         >
