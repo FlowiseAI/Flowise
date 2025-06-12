@@ -223,7 +223,7 @@ export const AsyncDropdown = ({
                                         borderColor: theme.palette.grey[900] + 25
                                     }
                                 }
-                            }}                            
+                            }}
                             InputProps={{
                                 ...params.InputProps,
                                 startAdornment: (
@@ -257,10 +257,16 @@ export const AsyncDropdown = ({
                         />
                     )
 
-                    return !multiple ? textField : (
-                        <Tooltip 
-                            title={typeof internalValue === 'string' ? internalValue.replace(/[\[\]"]/g, '').replace(/,/g, ', ') : internalValue} 
-                            placement="top"
+                    return !multiple ? (
+                        textField
+                    ) : (
+                        <Tooltip
+                            title={
+                                typeof internalValue === 'string'
+                                    ? internalValue.replace(/[[\]"]/g, '').replace(/,/g, ', ')
+                                    : internalValue
+                            }
+                            placement='top'
                             arrow
                         >
                             {textField}
