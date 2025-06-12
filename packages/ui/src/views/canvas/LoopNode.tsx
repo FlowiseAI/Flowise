@@ -774,9 +774,10 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
             // 根据handle的位置添加偏移
             if (handle.getAttribute('data-handlepos') === 'left') {
                 x += handleOffset
-            } else if (handle.getAttribute('data-handlepos') === 'right') {
-                x -= handleOffset
             }
+            // else if (handle.getAttribute('data-handlepos') === 'right') {
+            //     x -= handleOffset
+            // }
             y += handleBounds.height / 2
             return { x, y }
         }
@@ -793,7 +794,7 @@ export const LoopNode: React.FC<NodeProps<LoopNodeData>> = ({ data, id }) => {
             }
 
             const pane = (mouseEvent.target as Element)?.closest('.react-flow__pane')
-            if (pane) {
+            if (pane && !handle) {
                 isCanvasDragging = true
                 clickPosition = {
                     x: mouseEvent.clientX,

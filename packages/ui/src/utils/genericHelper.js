@@ -341,8 +341,12 @@ export const updateOutdatedNodeEdge = (newComponentNodeData, edges) => {
 export const isValidConnection = (connection, reactFlowInstance) => {
     const sourceHandle = connection.sourceHandle
     const targetHandle = connection.targetHandle
+    const source = connection.source
     const target = connection.target
-
+    // 防止自连接
+    if (source === target) {
+        return false
+    }
     //sourceHandle: "llmChain_0-output-llmChain-BaseChain"
     //targetHandle: "mrlkAgentLLM_0-input-model-BaseLanguageModel"
 

@@ -1,6 +1,9 @@
 import PropTypes from 'prop-types'
-import { useContext, useState, memo } from 'react'
+import { useContext, useState, memo, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
+import NodeInputHandler from './NodeInputHandler'
+import NodeOutputHandler from './NodeOutputHandler'
+import { useUpdateNodeInternals } from 'reactflow'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
@@ -61,10 +64,40 @@ const YamlNode = (props) => {
         else return theme.palette.grey[900] + 50
     }
 
+    const updateNodeInternals = useUpdateNodeInternals()
+    const ref = useRef(null)
+    const [distance, setDistance] = useState(0)
+    useEffect(() => {
+        if (ref.current && ref.current.clientHeight) {
+            const distanceY = ref.current.clientHeight / 5
+            setDistance(distanceY)
+            updateNodeInternals(data.id)
+        }
+    }, [ref])
+
     return (
-        <div className='nowheel'>
+        <div ref={ref}>
+            <Box
+                sx={{
+                    transform: `translateY(${distance}px)`
+                }}
+            >
+                {data.inputAnchors.length > 0 &&
+                    data.inputAnchors.map((inputAnchor, index) => <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />)}
+            </Box>
+            <Box
+                sx={{
+                    transform: `translateY(${distance * 4}px)`
+                }}
+            >
+                {data.outputAnchors.length > 0 &&
+                    data.outputAnchors.map((outputAnchor) => (
+                        <NodeOutputHandler key={JSON.stringify(data)} outputAnchor={outputAnchor} data={data} />
+                    ))}
+            </Box>
             <NodeCardWrapper
                 content={false}
+                className='nowheel'
                 sx={{
                     padding: 0,
                     borderColor: getBorderColor()
@@ -149,7 +182,8 @@ const YamlNode = (props) => {
 }
 
 YamlNode.propTypes = {
-    data: PropTypes.object
+    data: PropTypes.object.isRequired,
+    id: PropTypes.string.isRequired
 }
 
 export default memo(YamlNode)

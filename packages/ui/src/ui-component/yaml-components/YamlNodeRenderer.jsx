@@ -98,24 +98,31 @@ const YamlNodeRenderer = ({ props }) => {
     }, [data])
 
     return (
-        <Box
-            sx={{
-                width: config.width,
-                height: config.height,
-                p: 2,
-                border: '1px solid #e0e0e0',
-                borderRadius: 1,
-                bgcolor: 'background.paper',
-                overflowY: 'auto'
-            }}
-        >
-            <Typography variant='h5' gutterBottom>
+        <>
+            <Typography
+                variant='h5'
+                gutterBottom
+                sx={{
+                    padding: '12px'
+                }}
+            >
                 {config.title}
             </Typography>
-            {widget && (
-                <YamlComponentRenderer config={widget} data={data} onValueChange={handleValueChange} parentTitles={[config.title]} />
-            )}
-        </Box>
+            <Box
+                sx={{
+                    width: config.width,
+                    height: config.height,
+                    p: 2,
+                    borderRadius: 1,
+                    bgcolor: 'background.paper',
+                    overflowY: 'auto'
+                }}
+            >
+                {widget && (
+                    <YamlComponentRenderer config={widget} data={data} onValueChange={handleValueChange} parentTitles={[config.title]} />
+                )}
+            </Box>
+        </>
     )
 }
 

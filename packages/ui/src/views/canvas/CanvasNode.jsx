@@ -24,6 +24,9 @@ import LlamaindexPNG from '@/assets/images/llamaindex.png'
 // yaml parser
 import { yamlToJson } from '@/utils/yaml-parser/yamlParser'
 
+// 节点名称、类型、标签
+const [YAML_NODE_NAME, YAML_NODE_TYPE, YAML_NODE_LABEL] = ['yamlNode', 'YamlNode', 'Yaml Node']
+
 // ===========================|| CANVAS NODE ||=========================== //
 
 const CanvasNode = (props) => {
@@ -53,21 +56,63 @@ const CanvasNode = (props) => {
             // 将 YAML 转换为 JSON
             const jsonData = yamlToJson(yamlContent)
             const totalNodes = reactFlowInstance.getNodes()
+            let index = 0
+            console.log('totalNodes', totalNodes)
             const newNodes = totalNodes.map((node) => {
+                if (node.type === YAML_NODE_NAME) {
+                    index++
+                }
                 if (node.id === props.id) {
+                    // 从jsonData中提取输入输出锚点数据
+                    const inputAnchors = [
+                        {
+                            label: '',
+                            name: 'inputValue',
+                            type: 'string | number | json | array | file',
+                            description: '',
+                            placeholder: 'Enter value or connect to other nodes',
+                            acceptVariable: true,
+                            optional: true,
+                            id: `${YAML_NODE_NAME}_${index}-input-inputValue-string | number | json | array | file`,
+                            display: true
+                        }
+                    ]
+
+                    const outputAnchors = [
+                        {
+                            label: '',
+                            name: 'outputValue',
+                            type: 'string | number | json | array | file',
+                            description: '',
+                            placeholder: 'Enter value or connect to other nodes',
+                            acceptVariable: true,
+                            optional: true,
+                            id: `${YAML_NODE_NAME}_${index}-output-result-string | number | json | array | file`
+                        }
+                    ]
+
                     return {
                         ...node,
-                        type: 'yamlNode',
+                        type: YAML_NODE_NAME,
+                        id: `${YAML_NODE_NAME}_${index}`,
                         data: {
                             ...node.data,
-                            inputParams: jsonData
+                            inputParams: jsonData,
+                            inputAnchors: inputAnchors,
+                            outputAnchors: outputAnchors,
+                            inputs: {},
+                            outputs: {},
+                            label: YAML_NODE_LABEL,
+                            type: YAML_NODE_TYPE,
+                            name: YAML_NODE_NAME,
+                            id: `${YAML_NODE_NAME}_${index}`
                         }
                     }
                 }
                 return node
             })
+            // console.log('newNodes', newNodes)
             reactFlowInstance.setNodes(newNodes)
-            console.log('newNodes', newNodes)
 
             // 返回原始的文件内容（为了保持与现有系统的兼容性）
             return yamlContent + `,filename:${fileName}`

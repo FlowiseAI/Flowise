@@ -5,7 +5,7 @@ import { Radio, FormControlLabel } from '@mui/material'
 const QRadioButton = forwardRef(({ label, text, disabled = false }, ref) => {
     useImperativeHandle(ref, () => ({}))
 
-    return <FormControlLabel control={<Radio value={label || text} disabled={disabled} />} label={label} />
+    return <FormControlLabel control={<Radio value={label || text} disabled={disabled} />} label={label || text} />
 })
 
 QRadioButton.propTypes = {

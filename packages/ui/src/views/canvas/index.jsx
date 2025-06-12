@@ -199,7 +199,7 @@ const Canvas = () => {
                         setTimeout(() => setDirty(), 0)
                         let value
                         const inputAnchor = node.data.inputAnchors.find((ancr) => ancr.name === targetInput)
-                        const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
+                        // const inputParam = node.data.inputParams.find((param) => param.name === targetInput)
 
                         if (inputAnchor && inputAnchor.list) {
                             const newValues = node.data.inputs[targetInput] || []
