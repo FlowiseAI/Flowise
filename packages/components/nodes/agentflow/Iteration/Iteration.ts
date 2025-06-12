@@ -1,4 +1,5 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { handleEscapeCharacters } from '../../../src/utils'
 
 class Iteration_Agentflow implements INode {
     label: string
@@ -40,11 +41,22 @@ class Iteration_Agentflow implements INode {
 
         // Helper function to clean JSON strings with redundant backslashes
         const cleanJsonString = (str: string): string => {
-            return str.replace(/\\(["'[\]{}])/g, '$1')
+            return str.replace(/\\(["'\[\]{}])/g, '$1')
         }
 
-        const iterationInputArray =
-            typeof iterationInput === 'string' && iterationInput !== '' ? JSON.parse(cleanJsonString(iterationInput)) : iterationInput
+        // Try robust parsing using handleEscapeCharacters
+        let iterationInputArray
+        if (typeof iterationInput === 'string' && iterationInput !== '') {
+            let cleaned = cleanJsonString(iterationInput)
+            try {
+                iterationInputArray = JSON.parse(handleEscapeCharacters(cleaned, true))
+            } catch (e) {
+                // fallback to previous logic if parsing fails
+                iterationInputArray = JSON.parse(cleaned)
+            }
+        } else {
+            iterationInputArray = iterationInput
+        }
 
         if (!iterationInputArray || !Array.isArray(iterationInputArray)) {
             throw new Error('Invalid input array')
@@ -66,4 +78,4 @@ class Iteration_Agentflow implements INode {
     }
 }
 
-module.exports = { nodeClass: Iteration_Agentflow }
+export const nodeClass = Iteration_Agentflow;
