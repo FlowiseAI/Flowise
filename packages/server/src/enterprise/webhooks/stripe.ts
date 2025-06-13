@@ -34,10 +34,11 @@ export class StripeWebhooks {
             }
 
             switch (event.type) {
-                case 'invoice.paid':
-                    // get an array of invoices from stripe and check if all of them are paid/none of them are uncollectible
-                    // update org status to active
+                case 'invoice.paid': {
+                    const stripeService = new StripeService()
+                    await stripeService.handleInvoicePaid(event.data.object as Stripe.Invoice, queryRunner)
                     break
+                }
 
                 case 'invoice.marked_uncollectible': {
                     const stripeService = new StripeService()

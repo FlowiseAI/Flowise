@@ -3,9 +3,10 @@ import { QueryRunner } from 'typeorm'
 import { StripeManager } from '../../StripeManager'
 import { UsageCacheManager } from '../../UsageCacheManager'
 import { Organization } from '../database/entities/organization.entity'
-import { WorkspaceUser } from '../database/entities/workspace-user.entity'
-import { OrganizationUserService } from './organization-user.service'
 import logger from '../../utils/logger'
+
+// Note: Organization entity will have a 'status' field added later
+// This will support values like 'active', 'suspended', etc.
 
 export class StripeService {
     private stripe: Stripe
@@ -20,6 +21,158 @@ export class StripeService {
             this.stripe = stripeManager.getStripe()
         }
         return this.stripe
+    }
+
+    public async handleInvoicePaid(invoice: Stripe.Invoice, queryRunner: QueryRunner): Promise<void> {
+        await this.getStripe() // Initialize stripe if not already done
+        logger.info(
+            `Invoice paid: ${JSON.stringify({
+                id: invoice.id,
+                customer: invoice.customer,
+                subscription: invoice.subscription,
+                amountPaid: invoice.amount_paid,
+                currency: invoice.currency
+            })}`
+        )
+
+        if (!invoice.subscription) {
+            logger.warn(`No subscription ID found in invoice: ${invoice.id}`)
+            return
+        }
+
+        const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id
+
+        try {
+            const organization = await queryRunner.manager.findOne(Organization, {
+                where: { subscriptionId }
+            })
+
+            if (!organization) {
+                logger.warn(`No organization found for subscription ID: ${subscriptionId}`)
+                return
+            }
+
+            logger.info(
+                `Found organization for subscription: ${JSON.stringify({
+                    organizationId: organization.id,
+                    subscriptionId,
+                    status: (organization as any).status
+                })}`
+            )
+
+            // Only proceed if organization is currently suspended
+            if ((organization as any).status !== 'suspended') {
+                logger.info(
+                    `Organization is not suspended, no action needed: ${JSON.stringify({
+                        subscriptionId,
+                        status: (organization as any).status
+                    })}`
+                )
+                return
+            }
+
+            // Get subscription details from Stripe
+            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+
+            logger.info(
+                `Current subscription details: ${JSON.stringify({
+                    subscriptionId,
+                    status: subscription.status
+                })}`
+            )
+
+            // Check if subscription is past_due - if so, don't reactivate yet
+            if (subscription.status === 'past_due') {
+                logger.info(`Subscription is still past_due, not reactivating: ${subscriptionId}`)
+                return
+            }
+
+            // Check for all uncollectible invoices and ensure they are all settled
+            // Customer must pay/settle ALL uncollectible invoices before reactivation
+            const uncollectibleInvoices = await this.stripe.invoices.list({
+                subscription: subscriptionId,
+                status: 'uncollectible',
+                limit: 100 // Get all uncollectible invoices
+            })
+
+            if (uncollectibleInvoices.data.length > 0) {
+                // Check if all uncollectible invoices have been settled (paid)
+                const unsettledUncollectible = uncollectibleInvoices.data.filter((invoice) => !invoice.paid)
+                if (unsettledUncollectible.length > 0) {
+                    logger.info(
+                        `Found ${unsettledUncollectible.length} unsettled uncollectible invoices for subscription: ${subscriptionId}. Keeping organization suspended.`,
+                        {
+                            unsettledInvoiceIds: unsettledUncollectible.map((inv) => inv.id)
+                        }
+                    )
+                    return
+                }
+                logger.info(
+                    `All ${uncollectibleInvoices.data.length} uncollectible invoices have been settled for subscription: ${subscriptionId}`
+                )
+            }
+
+            // Check for any unpaid invoices across all possible unpaid statuses
+            // This ensures no outstanding debt remains before reactivation
+            const unpaidStatuses = ['open', 'past_due', 'payment_failed']
+            let hasUnpaidInvoices = false
+            let unpaidInvoiceIds: string[] = []
+
+            for (const status of unpaidStatuses) {
+                const invoices = await this.stripe.invoices.list({
+                    subscription: subscriptionId,
+                    status: status as any,
+                    limit: 100
+                })
+
+                if (invoices.data.length > 0) {
+                    hasUnpaidInvoices = true
+                    unpaidInvoiceIds.push(...invoices.data.map((inv) => inv.id))
+                }
+            }
+
+            if (hasUnpaidInvoices) {
+                logger.info(`Found unpaid invoices for subscription: ${subscriptionId}. Keeping organization suspended.`, {
+                    unpaidInvoiceIds
+                })
+                return
+            }
+
+            // All debts are paid - reactivate organization
+            logger.info(`All invoices paid for subscription: ${subscriptionId}. Reactivating organization.`, {
+                subscriptionId,
+                organizationId: organization.id,
+                uncollectibleInvoicesChecked: uncollectibleInvoices.data.length,
+                unpaidStatusesChecked: unpaidStatuses
+            })
+
+            await queryRunner.startTransaction()
+            ;(organization as any).status = 'active'
+            await queryRunner.manager.save(Organization, organization)
+            await queryRunner.commitTransaction()
+
+            logger.info('Organization reactivated after payment', {
+                subscriptionId,
+                organizationId: organization.id,
+                status: (organization as any).status
+            })
+
+            // Update cache with latest subscription data
+            const stripeManager = await StripeManager.getInstance()
+            const cacheManager = await UsageCacheManager.getInstance()
+            const currentProductId = subscription.items.data[0]?.price.product as string
+
+            await cacheManager.updateSubscriptionDataToCache(subscriptionId, {
+                productId: currentProductId,
+                subsriptionDetails: stripeManager.getSubscriptionObject(subscription),
+                features: await stripeManager.getFeaturesByPlan(subscriptionId, true),
+                quotas: await cacheManager.getQuotas(subscriptionId, true)
+            })
+        } catch (error) {
+            logger.error(`Error handling invoice paid: ${error}`)
+            if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
+            throw error
+        }
     }
 
     public async handleInvoiceMarkedUncollectible(invoice: Stripe.Invoice, queryRunner: QueryRunner): Promise<void> {
@@ -54,147 +207,17 @@ export class StripeService {
 
             logger.info(`Found organization for subscription: ${JSON.stringify({ organizationId: organization.id, subscriptionId })}`)
 
-            const organizationUserService = new OrganizationUserService()
-            const organizationUsers = await organizationUserService.readOrganizationUserByOrganizationId(organization.id, queryRunner)
-            if (organizationUsers.length === 0) {
-                logger.warn(`No users found in organization: ${JSON.stringify({ organizationId: organization.id })}`)
-                await queryRunner.commitTransaction()
-                return
-            }
-
-            const userIds = organizationUsers.map((ou) => ou.userId)
-            logger.info(
-                `Found organization users: ${JSON.stringify({
-                    organizationId: organization.id,
-                    userCount: userIds.length
-                })}`
-            )
-
-            const now = new Date().toISOString()
+            // Set organization status to suspended
             await queryRunner.startTransaction()
-            const result = await queryRunner.manager
-                .createQueryBuilder()
-                .update(WorkspaceUser)
-                .set({ lastLogin: now })
-                .where('userId IN (:...userIds)', { userIds })
-                .execute()
+            ;(organization as any).status = 'suspended'
+            await queryRunner.manager.save(Organization, organization)
+            await queryRunner.commitTransaction()
 
-            logger.info(
-                `Updated workspace users lastLogin: ${JSON.stringify({
-                    organizationId: organization.id,
-                    subscriptionId,
-                    affectedRows: result.affected
-                })}`
-            )
-
-            const freeProductId = process.env.CLOUD_FREE_ID
-            if (!freeProductId) {
-                logger.error('CLOUD_FREE_ID environment variable not configured')
-                await queryRunner.commitTransaction()
-                return
-            }
-
-            try {
-                const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
-
-                const currentProductId = subscription.items.data[0]?.price.product as string
-                if (currentProductId === freeProductId) {
-                    logger.info('Subscription is already on free plan', { subscriptionId, productId: currentProductId })
-                } else {
-                    const prices = await this.stripe.prices.list({
-                        product: freeProductId,
-                        active: true,
-                        limit: 1
-                    })
-
-                    if (prices.data.length === 0) {
-                        logger.error('No active price found for free plan', { productId: freeProductId })
-                    } else {
-                        const freePlanPrice = prices.data[0]
-
-                        if (subscription.status === 'canceled' || subscription.status === 'incomplete_expired') {
-                            logger.warn('Cannot update canceled or expired subscription', {
-                                subscriptionId,
-                                status: subscription.status
-                            })
-                        } else {
-                            // Update subscription to free plan without creating automatic invoice
-                            await this.stripe.subscriptions.update(subscriptionId, {
-                                items: [
-                                    {
-                                        id: subscription.items.data[0].id,
-                                        price: freePlanPrice.id
-                                    }
-                                ],
-                                proration_behavior: 'none', // No automatic invoice or credits
-                                collection_method: 'charge_automatically'
-                            })
-
-                            // Manually create a $0 invoice for the free plan to activate subscription
-                            const newInvoice = await this.stripe.invoices.create({
-                                customer: subscription.customer as string,
-                                subscription: subscriptionId,
-                                collection_method: 'charge_automatically',
-                                description: 'Transition to free plan after payment failure'
-                            })
-
-                            // Finalize the invoice (this calculates the total - should be $0 for free plan)
-                            // Stripe automatically pays $0 invoices with charge_automatically collection method
-                            const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(newInvoice.id)
-
-                            logger.info('Created and finalized invoice for free plan subscription', {
-                                invoiceId: finalizedInvoice.id,
-                                subscriptionId,
-                                amountDue: finalizedInvoice.amount_due,
-                                status: finalizedInvoice.status,
-                                paid: finalizedInvoice.paid
-                            })
-
-                            if (finalizedInvoice.amount_due !== 0) {
-                                logger.warn('Created invoice has non-zero amount for free plan', {
-                                    invoiceId: finalizedInvoice.id,
-                                    subscriptionId,
-                                    amountDue: finalizedInvoice.amount_due
-                                })
-                            }
-
-                            // Get updated subscription status after payment
-                            const finalSubscription = await this.stripe.subscriptions.retrieve(subscriptionId)
-
-                            logger.info('Updated Stripe subscription to free plan', {
-                                subscriptionId,
-                                oldProductId: currentProductId,
-                                newProductId: freeProductId,
-                                subscriptionStatus: finalSubscription.status
-                            })
-
-                            // Get cache and stripe managers
-                            const cacheManager = await UsageCacheManager.getInstance()
-                            const stripeManager = await StripeManager.getInstance()
-
-                            // Update cache for the subscription
-                            await cacheManager.updateSubscriptionDataToCache(subscriptionId, {
-                                productId: freeProductId,
-                                subsriptionDetails: stripeManager.getSubscriptionObject(finalSubscription),
-                                features: await stripeManager.getFeaturesByPlan(subscriptionId, true),
-                                quotas: await cacheManager.getQuotas(subscriptionId, true)
-                            })
-
-                            logger.info('Updated Redis cache with new subscription data', {
-                                subscriptionId,
-                                productId: freeProductId
-                            })
-                        }
-                    }
-                }
-                await queryRunner.commitTransaction()
-            } catch (stripeError) {
-                logger.error('Failed to update Stripe subscription to free plan', {
-                    subscriptionId,
-                    error: stripeError instanceof Error ? stripeError.message : stripeError,
-                    stack: stripeError instanceof Error ? stripeError.stack : undefined
-                })
-            }
+            logger.info('Organization suspended due to uncollectible invoice', {
+                subscriptionId,
+                organizationId: organization.id,
+                status: (organization as any).status
+            })
         } catch (error) {
             logger.error(`Error handling invoice marked uncollectible: ${error}`)
             await queryRunner.rollbackTransaction()
