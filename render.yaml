@@ -36,7 +36,7 @@ services:
                 name: theanswer
                 property: port
           - key: DATABASE_NAME
-            value: theanswer
+            sync: false
           - key: DATABASE_USER
             fromDatabase:
                 name: theanswer
@@ -88,7 +88,7 @@ services:
           - key: SECRETKEY_PATH
             value: '/var/data'
           - key: APIKEY_STORAGE_TYPE
-            value: 'local'
+            value: 'db'
           - key: APIKEY_PATH
             value: '/var/data'
 
@@ -113,7 +113,7 @@ services:
           # Storage Configuration
           # =========================================
           - key: STORAGE_TYPE
-            value: local
+            value: db
           - key: BLOB_STORAGE_PATH
             value: '/var/data'
 
@@ -197,7 +197,7 @@ services:
                 name: theanswer
                 property: port
           - key: DATABASE_NAME
-            value: theanswer
+            sync: false
           - key: DATABASE_USER
             fromDatabase:
                 name: theanswer
