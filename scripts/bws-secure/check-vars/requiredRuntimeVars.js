@@ -1,6 +1,9 @@
 /**
  * requiredRuntimeVars.js
  * -----------------------
+ * This script scans specified directories.../**
+ * requiredRuntimeVars.js
+ * -----------------------
  * This script scans specified directories in your JavaScript/TypeScript project
  * (or default directories if none are specified) to find references to `process.env.*`.
  * It supports:
@@ -61,7 +64,8 @@ const defaultDirs = [
   'functions',
   'api',
   'apps/web/src',
-  'packages'
+  'packages',
+  'src'
 ];
 
 /**
@@ -316,10 +320,12 @@ const COMMENT_PATTERNS = {
  * Reads the content of a file and searches for references to process.env.<VAR>.
  * It returns an array of variable names discovered. For example, if the file
  * contains "process.env.API_KEY", the array will include "API_KEY".
+ * Also detects destructuring patterns like "const { API_KEY, DB_URL } = process.env".
  *
  * ---------------------------------------------
  * CHANGE #2: Support lower-case letters, i.e.
  *            ([a-zA-Z0-9_]+) in the capturing group
+ * CHANGE #3: Added support for destructuring patterns
  * ---------------------------------------------
  */
 async function findEnvVarsInFile(filePath) {
@@ -345,7 +351,19 @@ async function findEnvVarsInFile(filePath) {
   // Rejoin the lines and find env vars
   const activeContent = activeLines.join('\n');
   const matches = activeContent.match(/process\.env\.([a-zA-Z0-9_]+)/g) || [];
-  return matches.map((match) => match.replace('process.env.', ''));
+
+  // Also check for destructuring patterns
+  const destructuringMatches =
+    activeContent.match(/const\s*{\s*([^}]+)\s*}\s*=\s*process\.env/g) || [];
+  const destructuredVars = [];
+  destructuringMatches.forEach((match) => {
+    const varsString = match.match(/{\s*([^}]+)\s*}/)[1];
+    const vars = varsString.split(',').map((v) => v.trim().replace(/\s*:\s*\w+/, ''));
+    destructuredVars.push(...vars);
+  });
+
+  // Combine with existing matches
+  return [...matches.map((match) => match.replace('process.env.', '')), ...destructuredVars];
 }
 
 // Helper function to escape special regex characters
