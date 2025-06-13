@@ -44,6 +44,9 @@ RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm install
 # Copy the rest of the source files into the image.
 COPY --from=pruner /app/out/full/ .
 
+# Copy scripts directory explicitly since turbo prune doesn't include it
+COPY scripts/ ./scripts/
+
 # Run the build script.
 RUN --mount=type=cache,target=/app/node_modules/.cache pnpm run build --filter flowise
 
