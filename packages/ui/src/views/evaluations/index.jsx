@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import * as PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import { useNavigate } from 'react-router-dom'
@@ -20,7 +20,8 @@ import {
     TableBody,
     TableContainer,
     TableHead,
-    TableRow
+    TableRow,
+    ToggleButton
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
@@ -35,7 +36,6 @@ import useNotifier from '@/utils/useNotifier'
 
 // project
 import MainCard from '@/ui-component/cards/MainCard'
-import { StyledButton } from '@/ui-component/button/StyledButton'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import ErrorBoundary from '@/ErrorBoundary'
@@ -53,7 +53,9 @@ import {
     IconTrash,
     IconX,
     IconChevronsUp,
-    IconChevronsDown
+    IconChevronsDown,
+    IconPlayerPlay,
+    IconPlayerPause
 } from '@tabler/icons-react'
 import empty_evalSVG from '@/assets/images/empty_evals.svg'
 
@@ -79,6 +81,7 @@ const EvalsEvaluation = () => {
     const [loading, setLoading] = useState(false)
     const [isTableLoading, setTableLoading] = useState(false)
     const [selected, setSelected] = useState([])
+    const [autoRefresh, setAutoRefresh] = useState(false)
 
     const onSelectAllClick = (event) => {
         if (event.target.checked) {
@@ -240,13 +243,33 @@ const EvalsEvaluation = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [createNewEvaluation.error])
 
-    const onRefresh = () => {
+    const onRefresh = useCallback(() => {
         getAllEvaluations.request()
-    }
+    }, [getAllEvaluations])
 
     useEffect(() => {
         setTableLoading(getAllEvaluations.loading)
     }, [getAllEvaluations.loading])
+
+    useEffect(() => {
+        let intervalId = null
+
+        if (autoRefresh) {
+            intervalId = setInterval(() => {
+                onRefresh()
+            }, 5000)
+        }
+
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId)
+            }
+        }
+    }, [autoRefresh, onRefresh])
+
+    const toggleAutoRefresh = () => {
+        setAutoRefresh(!autoRefresh)
+    }
 
     return (
         <>
@@ -256,15 +279,52 @@ const EvalsEvaluation = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader isBackButton={false} isEditButton={false} search={false} title={'Evaluations'} description=''>
-                            <StyledButton
-                                color='secondary'
-                                variant='outlined'
-                                sx={{ borderRadius: 2, height: '100%' }}
-                                onClick={onRefresh}
-                                startIcon={<IconRefresh />}
+                            <ToggleButton
+                                value='auto-refresh'
+                                selected={autoRefresh}
+                                onChange={toggleAutoRefresh}
+                                size='small'
+                                sx={{
+                                    borderRadius: 2,
+                                    height: '100%',
+                                    backgroundColor: 'transparent',
+                                    color: autoRefresh ? '#ff9800' : '#4caf50',
+                                    border: '1px solid transparent',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                        color: autoRefresh ? '#f57c00' : '#388e3c',
+                                        border: '1px solid transparent'
+                                    },
+                                    '&.Mui-selected': {
+                                        backgroundColor: 'transparent',
+                                        color: '#ff9800',
+                                        border: '1px solid transparent',
+                                        '&:hover': {
+                                            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                            color: '#f57c00',
+                                            border: '1px solid transparent'
+                                        }
+                                    }
+                                }}
+                                title={autoRefresh ? 'Disable auto-refresh' : 'Enable auto-refresh (every 5s)'}
                             >
-                                Refresh
-                            </StyledButton>
+                                {autoRefresh ? <IconPlayerPause /> : <IconPlayerPlay />}
+                            </ToggleButton>
+                            <IconButton
+                                sx={{
+                                    borderRadius: 2,
+                                    height: '100%',
+                                    color: theme.palette.secondary.main,
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(0, 0, 0, 0.04)',
+                                        color: theme.palette.secondary.dark
+                                    }
+                                }}
+                                onClick={onRefresh}
+                                title='Refresh'
+                            >
+                                <IconRefresh />
+                            </IconButton>
                             <StyledPermissionButton
                                 permissionId={'evaluations:create'}
                                 sx={{ borderRadius: 2, height: '100%' }}
@@ -327,7 +387,7 @@ const EvalsEvaluation = () => {
                                             <TableCell>Latest Version</TableCell>
                                             <TableCell>Average Metrics</TableCell>
                                             <TableCell>Last Evaluated</TableCell>
-                                            <TableCell>Chatflow(s)</TableCell>
+                                            <TableCell>Flow(s)</TableCell>
                                             <TableCell>Dataset</TableCell>
                                             <TableCell> </TableCell>
                                         </TableRow>
@@ -438,7 +498,7 @@ function EvaluationRunRow(props) {
     }
 
     const goToDataset = (id) => {
-        navigate(`/dataset_rows/${id}`)
+        window.open(`/dataset_rows/${id}`, '_blank')
     }
 
     const onSelectAllChildClick = (event) => {
@@ -511,10 +571,6 @@ function EvaluationRunRow(props) {
                 })
             }
         }
-    }
-
-    const goToCanvas = (id) => {
-        navigate(`/canvas/${id}`)
     }
 
     const getStatusColor = (status) => {
@@ -619,16 +675,11 @@ function EvaluationRunRow(props) {
                         {props.item?.usedFlows?.map((usedFlow, index) => (
                             <Chip
                                 key={index}
-                                clickable
                                 style={{
                                     width: 'max-content',
-                                    borderRadius: '25px',
-                                    boxShadow: props.customization.isDarkMode
-                                        ? '0 2px 14px 0 rgb(255 255 255 / 10%)'
-                                        : '0 2px 14px 0 rgb(32 40 45 / 10%)'
+                                    borderRadius: '25px'
                                 }}
                                 label={usedFlow}
-                                onClick={() => goToCanvas(props.item.chatIds[index])}
                             ></Chip>
                         ))}
                     </Stack>
@@ -637,6 +688,7 @@ function EvaluationRunRow(props) {
                     <Chip
                         clickable
                         style={{
+                            border: 'none',
                             width: 'max-content',
                             borderRadius: '25px',
                             boxShadow: props.customization.isDarkMode

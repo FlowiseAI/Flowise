@@ -31,7 +31,7 @@ import useApi from '@/hooks/useApi'
 import { useAuth } from '@/hooks/useAuth'
 import useNotifier from '@/utils/useNotifier'
 import { baseURL } from '@/store/constant'
-import { initNode } from '@/utils/genericHelper'
+import { initNode, showHideInputParams } from '@/utils/genericHelper'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
@@ -83,6 +83,15 @@ const VectorStoreQuery = () => {
 
     const getVectorStoreNodeDetailsApi = useApi(nodesApi.getSpecificNode)
     const [selectedVectorStoreProvider, setSelectedVectorStoreProvider] = useState({})
+
+    const handleVectorStoreProviderDataChange = ({ inputParam, newValue }) => {
+        setSelectedVectorStoreProvider((prevData) => {
+            const updatedData = { ...prevData }
+            updatedData.inputs[inputParam.name] = newValue
+            updatedData.inputParams = showHideInputParams(updatedData)
+            return updatedData
+        })
+    }
 
     const chunkSelected = (chunkId, selectedChunkNumber) => {
         const selectedChunk = documentChunks.find((chunk) => chunk.id === chunkId)
@@ -354,14 +363,15 @@ const VectorStoreQuery = () => {
                                                     </Box>
                                                     {selectedVectorStoreProvider &&
                                                         Object.keys(selectedVectorStoreProvider).length > 0 &&
-                                                        (selectedVectorStoreProvider.inputParams ?? [])
-                                                            .filter((inputParam) => !inputParam.hidden)
+                                                        showHideInputParams(selectedVectorStoreProvider)
+                                                            .filter((inputParam) => !inputParam.hidden && inputParam.display !== false)
                                                             .map((inputParam, index) => (
                                                                 <DocStoreInputHandler
                                                                     key={index}
                                                                     data={selectedVectorStoreProvider}
                                                                     inputParam={inputParam}
                                                                     isAdditionalParams={inputParam.additionalParams}
+                                                                    onNodeDataChange={handleVectorStoreProviderDataChange}
                                                                 />
                                                             ))}
                                                 </div>

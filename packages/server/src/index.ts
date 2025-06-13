@@ -35,6 +35,7 @@ import { SSEStreamer } from './utils/SSEStreamer'
 import { Telemetry } from './utils/telemetry'
 import { getAPIKeyWorkspaceID, validateAPIKey } from './utils/validateKey'
 import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
+import { StripeWebhooks } from './enterprise/webhooks/stripe'
 
 declare global {
     namespace Express {
@@ -155,7 +156,8 @@ export class App {
 
     async config() {
         // Add Stripe webhook route BEFORE global JSON middleware to preserve raw body
-        this.app.post('/api/v1/webhooks/stripe', express.raw({ type: 'application/json' }), handleStripeWebhook)
+        const stripeWebhooks = new StripeWebhooks()
+        this.app.post('/api/v1/webhooks/stripe', express.raw({ type: 'application/json' }), stripeWebhooks.handler)
 
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'

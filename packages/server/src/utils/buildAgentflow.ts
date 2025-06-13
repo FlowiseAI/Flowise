@@ -1503,7 +1503,14 @@ export const executeAgentFlow = async ({
 
     try {
         if (chatflow.analytic) {
-            analyticHandlers = AnalyticHandler.getInstance({ inputs: {} } as any, {
+            // Override config analytics
+            let analyticInputs: ICommonObject = {}
+            if (overrideConfig?.analytics && Object.keys(overrideConfig.analytics).length > 0) {
+                analyticInputs = {
+                    ...overrideConfig.analytics
+                }
+            }
+            analyticHandlers = AnalyticHandler.getInstance({ inputs: { analytics: analyticInputs } } as any, {
                 orgId,
                 workspaceId,
                 appDataSource,
@@ -1798,7 +1805,7 @@ export const executeAgentFlow = async ({
         role: 'userMessage',
         content: finalUserInput,
         chatflowid,
-        chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+        chatType: evaluationRunId ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
         chatId,
         sessionId,
         createdDate: userMessageDateTime,
@@ -1813,7 +1820,7 @@ export const executeAgentFlow = async ({
         role: 'apiMessage',
         content: content,
         chatflowid,
-        chatType: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+        chatType: evaluationRunId ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
         chatId,
         sessionId,
         executionId: newExecution.id
@@ -1849,7 +1856,7 @@ export const executeAgentFlow = async ({
             version: await getAppVersion(),
             chatflowId: chatflowid,
             chatId,
-            type: isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
+            type: evaluationRunId ? ChatType.EVALUATION : isInternal ? ChatType.INTERNAL : ChatType.EXTERNAL,
             flowGraph: getTelemetryFlowObj(nodes, edges)
         },
         orgId

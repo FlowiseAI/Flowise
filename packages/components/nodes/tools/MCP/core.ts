@@ -53,10 +53,29 @@ export class MCPToolkit extends BaseToolkit {
 
             const baseUrl = new URL(this.serverParams.url)
             try {
-                transport = new StreamableHTTPClientTransport(baseUrl)
+                if (this.serverParams.headers) {
+                    transport = new StreamableHTTPClientTransport(baseUrl, {
+                        requestInit: {
+                            headers: this.serverParams.headers
+                        }
+                    })
+                } else {
+                    transport = new StreamableHTTPClientTransport(baseUrl)
+                }
                 await client.connect(transport)
             } catch (error) {
-                transport = new SSEClientTransport(baseUrl)
+                if (this.serverParams.headers) {
+                    transport = new SSEClientTransport(baseUrl, {
+                        requestInit: {
+                            headers: this.serverParams.headers
+                        },
+                        eventSourceInit: {
+                            fetch: (url, init) => fetch(url, { ...init, headers: this.serverParams.headers })
+                        }
+                    })
+                } else {
+                    transport = new SSEClientTransport(baseUrl)
+                }
                 await client.connect(transport)
             }
         }

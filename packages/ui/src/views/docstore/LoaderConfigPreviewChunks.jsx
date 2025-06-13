@@ -35,7 +35,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 import { useError } from '@/store/context/ErrorContext'
 
 // Utils
-import { initNode } from '@/utils/genericHelper'
+import { initNode, showHideInputParams } from '@/utils/genericHelper'
 import useNotifier from '@/utils/useNotifier'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
@@ -97,6 +97,24 @@ const LoaderConfigPreviewChunks = () => {
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
+
+    const handleDocumentLoaderDataChange = ({ inputParam, newValue }) => {
+        setSelectedDocumentLoader((prevData) => {
+            const updatedData = { ...prevData }
+            updatedData.inputs[inputParam.name] = newValue
+            updatedData.inputParams = showHideInputParams(updatedData)
+            return updatedData
+        })
+    }
+
+    const handleTextSplitterDataChange = ({ inputParam, newValue }) => {
+        setSelectedTextSplitter((prevData) => {
+            const updatedData = { ...prevData }
+            updatedData.inputs[inputParam.name] = newValue
+            updatedData.inputParams = showHideInputParams(updatedData)
+            return updatedData
+        })
+    }
 
     const onSplitterChange = (name) => {
         const textSplitter = (textSplitterNodes ?? []).find((splitter) => splitter.name === name)
@@ -452,13 +470,14 @@ const LoaderConfigPreviewChunks = () => {
                                         </Box>
                                         {selectedDocumentLoader &&
                                             Object.keys(selectedDocumentLoader).length > 0 &&
-                                            (selectedDocumentLoader.inputParams ?? [])
-                                                .filter((inputParam) => !inputParam.hidden)
+                                            showHideInputParams(selectedDocumentLoader)
+                                                .filter((inputParam) => !inputParam.hidden && inputParam.display !== false)
                                                 .map((inputParam, index) => (
                                                     <DocStoreInputHandler
                                                         key={index}
                                                         inputParam={inputParam}
                                                         data={selectedDocumentLoader}
+                                                        onNodeDataChange={handleDocumentLoaderDataChange}
                                                     />
                                                 ))}
                                         {textSplitterNodes && textSplitterNodes.length > 0 && (
@@ -511,10 +530,15 @@ const LoaderConfigPreviewChunks = () => {
                                             </>
                                         )}
                                         {Object.keys(selectedTextSplitter).length > 0 &&
-                                            (selectedTextSplitter.inputParams ?? [])
-                                                .filter((inputParam) => !inputParam.hidden)
+                                            showHideInputParams(selectedTextSplitter)
+                                                .filter((inputParam) => !inputParam.hidden && inputParam.display !== false)
                                                 .map((inputParam, index) => (
-                                                    <DocStoreInputHandler key={index} data={selectedTextSplitter} inputParam={inputParam} />
+                                                    <DocStoreInputHandler
+                                                        key={index}
+                                                        data={selectedTextSplitter}
+                                                        inputParam={inputParam}
+                                                        onNodeDataChange={handleTextSplitterDataChange}
+                                                    />
                                                 ))}
                                     </div>
                                 </Grid>

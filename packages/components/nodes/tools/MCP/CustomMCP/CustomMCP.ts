@@ -27,6 +27,16 @@ For example, you have a variable called "var1":
     }
 }
 \`\`\`
+
+For example, when using SSE, you can use the variable "var1" in the headers:
+\`\`\`json
+{
+    "url": "https://api.example.com/endpoint/sse",
+    "headers": {
+        "Authorization": "Bearer {{$vars.var1}}"
+    }
+}
+\`\`\`
 `
 
 class Custom_MCP implements INode {

@@ -1,6 +1,6 @@
 {
     "name": "flowise-ui",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "license": "SEE LICENSE IN LICENSE.md",
     "homepage": "https://flowiseai.com",
     "author": {
@@ -68,6 +68,7 @@
         "rehype-raw": "^7.0.0",
         "remark-gfm": "^3.0.1",
         "remark-math": "^5.1.1",
+        "showdown": "^2.1.0",
         "tippy.js": "^6.3.7",
         "uuid": "^9.0.1",
         "yup": "^0.32.9"
