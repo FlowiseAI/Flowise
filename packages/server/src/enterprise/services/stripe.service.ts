@@ -61,7 +61,7 @@ export class StripeService {
             )
 
             // Only proceed if organization is currently suspended
-            if ((organization as any).status !== 'suspended') {
+            if ((organization as any).status !== OrganizationStatus.PAST_DUE) {
                 logger.info(
                     `Organization is not suspended, no action needed: ${JSON.stringify({
                         subscriptionId,
