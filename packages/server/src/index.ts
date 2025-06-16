@@ -166,8 +166,35 @@ export class App {
 
         // Parse cookies
         this.app.use(cookieParser())
-
-        // Allow embedding from specified domains.
+        // ───────────────────────────────────────────────────────
+        // CORS: allow our Vercel UI origin AND credentials
+        // ───────────────────────────────────────────────────────
+        const corsOptions = {
+          // replace with your actual Vercel domain(s)
+          origin: ['https://flowise-ui-liart.vercel.app'],
+          credentials: true,                // <— enables Access-Control-Allow-Credentials
+          methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
+          allowedHeaders: ['Content-Type','Authorization','X-Requested-With'],
+         }
+         // Apply to all routes
+         this.app.use(cors(corsOptions))
+         // Pre-flight across-the-board
+         this.app.options('*', cors(corsOptions))
+ 
+         // If you also need to support iframe embedding or CSP, keep that below…
+         // Allow embedding from specified domains.
+         this.app.use((req, res, next) => {
+             const allowedOrigins = getAllowedIframeOrigins()
+             if (allowedOrigins === '*') {
+                 next()
+             } else {
+                 const csp = `frame-ancestors ${allowedOrigins}`
+                 res.setHeader('Content-Security-Policy', csp)
+                 next()
+             }
+         })
+ 
+         // (You can now remove your custom Access-Control-Allow-Credentials header middleware)        // Allow embedding from specified domains.
         this.app.use((req, res, next) => {
             const allowedOrigins = getAllowedIframeOrigins()
             if (allowedOrigins == '*') {
