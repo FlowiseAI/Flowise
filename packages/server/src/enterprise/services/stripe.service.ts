@@ -2,7 +2,7 @@ import Stripe from 'stripe'
 import { QueryRunner } from 'typeorm'
 import { StripeManager } from '../../StripeManager'
 import { UsageCacheManager } from '../../UsageCacheManager'
-import { Organization } from '../database/entities/organization.entity'
+import { Organization, OrganizationStatus } from '../database/entities/organization.entity'
 import logger from '../../utils/logger'
 
 // Note: Organization entity will have a 'status' field added later
@@ -114,7 +114,7 @@ export class StripeService {
 
             // Check for any unpaid invoices across all possible unpaid statuses
             // This ensures no outstanding debt remains before reactivation
-            const unpaidStatuses = ['open', 'past_due', 'payment_failed']
+            const unpaidStatuses = ['open', 'uncollectible']
             let hasUnpaidInvoices = false
             let unpaidInvoiceIds: string[] = []
 
@@ -209,7 +209,7 @@ export class StripeService {
 
             // Set organization status to suspended
             await queryRunner.startTransaction()
-            ;(organization as any).status = 'suspended'
+            ;(organization as any).status = OrganizationStatus.PAST_DUE
             await queryRunner.manager.save(Organization, organization)
             await queryRunner.commitTransaction()
 
