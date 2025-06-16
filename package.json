@@ -23,7 +23,7 @@
         "user": "run-script-os",
         "user:windows": "cd packages/server/bin && run user",
         "user:default": "cd packages/server/bin && ./run user",
-        "test": "turbo run test",
+        "test": "pnpm --filter ./packages/components build && turbo run test",
         "clean": "pnpm --filter \"./packages/**\" clean",
         "nuke": "pnpm --filter \"./packages/**\" nuke && rimraf node_modules .turbo",
         "format": "prettier --write \"**/*.{ts,tsx,md}\"",
