@@ -1,9 +1,10 @@
+// packages/ui/src/hooks/useApi.jsx
 import { useState } from 'react'
 import { useError } from '@/store/context/ErrorContext'
-import { API_ROOT } from '../api'    // ← the helper you created
+import { buildUrl } from '../api'         // ← use our helper
 
 export default (apiFunc) => {
-  const [data, setData] = useState(null)
+  const [data, setData]     = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setApiError] = useState(null)
   const { setError, handleError } = useError()
@@ -11,10 +12,10 @@ export default (apiFunc) => {
   const request = async (path, config = {}) => {
     setLoading(true)
     try {
-      // make sure we don’t end up with …/api/api/…
-      const cleanPath = path.startsWith('/') ? path : `/${path}`
-      const url = `${API_ROOT}${cleanPath}`
+      // builds exactly https://host.com/api/v1/whatever
+      const url = buildUrl(path)
       const result = await apiFunc(url, config)
+
       setData(result.data)
       setError(null)
       setApiError(null)
@@ -28,10 +29,5 @@ export default (apiFunc) => {
     }
   }
 
-  return {
-    data,
-    error,
-    loading,
-    request,
-  }
+  return { data, error, loading, request }
 }
