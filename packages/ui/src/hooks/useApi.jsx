@@ -1,7 +1,6 @@
-// packages/ui/src/hooks/useApi.jsx
 import { useState } from 'react'
 import { useError } from '@/store/context/ErrorContext'
-import { buildUrl } from '../api'         // ← use our helper
+import { buildUrl } from '../api'   // our helper
 
 export default (apiFunc) => {
   const [data, setData]     = useState(null)
@@ -9,12 +8,19 @@ export default (apiFunc) => {
   const [error, setApiError] = useState(null)
   const { setError, handleError } = useError()
 
-  const request = async (path, config = {}) => {
+  const request = async (pathOrArgs, config = {}) => {
     setLoading(true)
     try {
-      // builds exactly https://host.com/api/v1/whatever
-      const url = buildUrl(path)
-      const result = await apiFunc(url, config)
+      let result
+
+      if (typeof pathOrArgs === 'string') {
+        // you passed a relative path: build the full URL
+        const url = buildUrl(pathOrArgs)
+        result = await apiFunc(url, config)
+      } else {
+        // you passed some other signature (e.g. auto-gen apiFunc that already knows its path)
+        result = await apiFunc(pathOrArgs, config)
+      }
 
       setData(result.data)
       setError(null)
