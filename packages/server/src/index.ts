@@ -34,7 +34,7 @@ import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { Organization } from './enterprise/database/entities/organization.entity'
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
-import { ALLOWED_ORIGINS } from './config'
+import { ALLOWED_ORIGINS, isDev } from './config'
 
 declare global {
     namespace Express {
@@ -167,17 +167,22 @@ export class App {
 
         const corsOptions = {
             origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-                if (!origin || ALLOWED_ORIGINS.includes('*') || ALLOWED_ORIGINS.includes(origin)) {
-                    callback(null, true)
-                } else {
-                    callback(new Error('Not allowed by CORS'))
+                if (!origin) return callback(null, true)
+                if (isDev) return callback(null, true)
+                if (ALLOWED_ORIGINS.includes(origin)) {
+                    return callback(null, true)
                 }
+                return callback(new Error(`Origin ${origin} not allowed by CORS`))
             },
-            credentials: true
+            credentials: true,
+            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+            optionsSuccessStatus: 204,
+            maxAge: 86400
         }
 
         this.app.use(cors(corsOptions))
-        this.app.options('*', cors(corsOptions))
+        this.app.options('*', cors())
 
         // If you also need to support iframe embedding or CSP, keep that below…
         // Allow embedding from specified domains.
@@ -386,7 +391,11 @@ export async function start(): Promise<void> {
     await serverApp.config()
 
     server.listen(port, host, () => {
-        logger.info(`⚡️ [server]: Flowise Server is listening at ${host ? 'http://' + host : ''}:${port}`)
+        logger.info(
+            `[server] listening at ${host ? 'http://' + host : ''}:${port} • allowed origins: ${
+                isDev ? '* (dev mode)' : ALLOWED_ORIGINS
+            }`
+        )
     })
 }
 
