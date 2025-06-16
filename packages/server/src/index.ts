@@ -13,7 +13,7 @@ import { ChatFlow } from './database/entities/ChatFlow'
 import { CachePool } from './CachePool'
 import { AbortControllerPool } from './AbortControllerPool'
 import { RateLimiterManager } from './utils/rateLimit'
-import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
+import { getAllowedIframeOrigins, sanitizeMiddleware } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
@@ -161,40 +161,31 @@ export class App {
         // Enhanced trust proxy settings for load balancer
         this.app.set('trust proxy', true) // Trust all proxies
 
-        // Allow access from specified domains
-        this.app.use(cors(getCorsOptions()))
-
         // Parse cookies
         this.app.use(cookieParser())
-        // ───────────────────────────────────────────────────────
-        // CORS: allow our Vercel UI origin AND credentials
-        // ───────────────────────────────────────────────────────
+
         const corsOptions = {
-          // replace with your actual Vercel domain(s)
-          origin: ['https://flowise-ui-liart.vercel.app'],
-          credentials: true,                // <— enables Access-Control-Allow-Credentials
-          methods: ['GET','POST','PUT','PATCH','DELETE','OPTIONS'],
-          allowedHeaders: ['Content-Type','Authorization','X-Requested-With'],
-         }
-         // Apply to all routes
-         this.app.use(cors(corsOptions))
-         // Pre-flight across-the-board
-         this.app.options('*', cors(corsOptions))
- 
-         // If you also need to support iframe embedding or CSP, keep that below…
-         // Allow embedding from specified domains.
-         this.app.use((req, res, next) => {
-             const allowedOrigins = getAllowedIframeOrigins()
-             if (allowedOrigins === '*') {
-                 next()
-             } else {
-                 const csp = `frame-ancestors ${allowedOrigins}`
-                 res.setHeader('Content-Security-Policy', csp)
-                 next()
-             }
-         })
- 
-         // (You can now remove your custom Access-Control-Allow-Credentials header middleware)        // Allow embedding from specified domains.
+            origin: 'https://flowise-ui-liart.vercel.app',
+            credentials: true
+        }
+
+        this.app.use(cors(corsOptions))
+        this.app.options('*', cors(corsOptions))
+
+        // If you also need to support iframe embedding or CSP, keep that below…
+        // Allow embedding from specified domains.
+        this.app.use((req, res, next) => {
+            const allowedOrigins = getAllowedIframeOrigins()
+            if (allowedOrigins === '*') {
+                next()
+            } else {
+                const csp = `frame-ancestors ${allowedOrigins}`
+                res.setHeader('Content-Security-Policy', csp)
+                next()
+            }
+        })
+
+        // (You can now remove your custom Access-Control-Allow-Credentials header middleware)        // Allow embedding from specified domains.
         this.app.use((req, res, next) => {
             const allowedOrigins = getAllowedIframeOrigins()
             if (allowedOrigins == '*') {
@@ -214,11 +205,6 @@ export class App {
 
         // Add the sanitizeMiddleware to guard against XSS
         this.app.use(sanitizeMiddleware)
-
-        this.app.use((req, res, next) => {
-            res.header('Access-Control-Allow-Credentials', 'true') // Allow credentials (cookies, etc.)
-            if (next) next()
-        })
 
         const whitelistURLs = WHITELIST_URLS
         const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
