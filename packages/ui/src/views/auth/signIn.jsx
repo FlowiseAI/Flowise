@@ -82,10 +82,11 @@ const SignInPage = () => {
     useEffect(() => {
         if (loginApi.error) {
             setLoading(false)
-            if (loginApi.error.response.status === 401 && loginApi.error.response.data.redirectUrl) {
-                window.location.href = loginApi.error.response.data.data.redirectUrl
+            const resp = loginApi.error.response
+            if (resp?.status === 401 && resp?.data?.redirectUrl) {
+                window.location.href = resp.data.data.redirectUrl
             } else {
-                setAuthError(loginApi.error.response.data.message)
+                setAuthError(resp?.data?.message || loginApi.error.message)
             }
         }
     }, [loginApi.error])

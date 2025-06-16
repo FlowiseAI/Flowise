@@ -16,7 +16,7 @@ apiClient.interceptors.response.use(
         return response
     },
     async (error) => {
-        if (error.response.status === 401) {
+        if (error.response?.status === 401) {
             // check if refresh is needed
             if (error.response.data.message === ErrorMessage.TOKEN_EXPIRED && error.response.data.retry === true) {
                 const originalRequest = error.config

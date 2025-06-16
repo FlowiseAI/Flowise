@@ -34,6 +34,7 @@ import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { Organization } from './enterprise/database/entities/organization.entity'
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
+import { ALLOWED_ORIGINS } from './config'
 
 declare global {
     namespace Express {
@@ -165,7 +166,13 @@ export class App {
         this.app.use(cookieParser())
 
         const corsOptions = {
-            origin: 'https://flowise-ui-liart.vercel.app',
+            origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+                if (!origin || ALLOWED_ORIGINS.includes('*') || ALLOWED_ORIGINS.includes(origin)) {
+                    callback(null, true)
+                } else {
+                    callback(new Error('Not allowed by CORS'))
+                }
+            },
             credentials: true
         }
 
