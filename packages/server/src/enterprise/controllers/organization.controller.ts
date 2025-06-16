@@ -1,12 +1,13 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { OrganizationErrorMessage, OrganizationService } from '../services/organization.service'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { QueryRunner } from 'typeorm'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
-import { Organization } from '../database/entities/organization.entity'
 import { GeneralErrorMessage } from '../../utils/constants'
-import { OrganizationUserService } from '../services/organization-user.service'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { getCurrentUsage } from '../../utils/quotaUsage'
+import { Organization } from '../database/entities/organization.entity'
+import { OrganizationUserService } from '../services/organization-user.service'
+import { OrganizationErrorMessage, OrganizationService } from '../services/organization.service'
 
 export class OrganizationController {
     public async create(req: Request, res: Response, next: NextFunction) {
@@ -47,12 +48,18 @@ export class OrganizationController {
     }
 
     public async update(req: Request, res: Response, next: NextFunction) {
+        let queryRunner: QueryRunner | undefined
         try {
+            queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
+            await queryRunner.connect()
             const organizationService = new OrganizationService()
-            const organization = await organizationService.updateOrganization(req.body)
+            const organization = await organizationService.updateOrganization(req.body, queryRunner)
             return res.status(StatusCodes.OK).json(organization)
         } catch (error) {
+            if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
             next(error)
+        } finally {
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
     }
 
