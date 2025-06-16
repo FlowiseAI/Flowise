@@ -80,8 +80,6 @@ export const RequireAuth = ({ permission, display, children }) => {
         }
     }
 
-    console.log(organization)
-
     // Step 1: Authentication Check
     // Redirect to login if user is not authenticated
     if (!currentUser) {
