@@ -1,6 +1,5 @@
 export const ALLOWED_ORIGINS = (
-    process.env.CORS_ORIGINS ||
-    'https://flowise-3pwu813kc-marcus-thomas-projects-90ba4767.vercel.app,http://localhost:3000'
+    process.env.CORS_ORIGINS || 'https://flowise-772e48kex-marcus-thomas-projects-90ba4767.vercel.app,http://localhost:3000'
 )
     .split(',')
     .map((o) => o.trim())

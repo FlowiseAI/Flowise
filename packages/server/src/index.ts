@@ -1,6 +1,6 @@
+import 'dotenv/config'
 import express, { Request, Response } from 'express'
 import path from 'path'
-import cors from 'cors'
 import http from 'http'
 import cookieParser from 'cookie-parser'
 import { DataSource, IsNull } from 'typeorm'
@@ -165,24 +165,20 @@ export class App {
         // Parse cookies
         this.app.use(cookieParser())
 
-        const corsOptions = {
-            origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-                if (!origin) return callback(null, true)
-                if (isDev) return callback(null, true)
-                if (ALLOWED_ORIGINS.includes(origin)) {
-                    return callback(null, true)
-                }
-                return callback(new Error(`Origin ${origin} not allowed by CORS`))
-            },
-            credentials: true,
-            methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-            allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-            optionsSuccessStatus: 204,
-            maxAge: 86400
-        }
-
-        this.app.use(cors(corsOptions))
-        this.app.options('*', cors())
+        const allowedOrigins = ['https://flowise-772e48kex-marcus-thomas-projects-90ba4767.vercel.app', 'http://localhost:3000']
+        this.app.use((req, res, next) => {
+            const origin = req.headers.origin as string | undefined
+            if (origin && allowedOrigins.includes(origin)) {
+                res.setHeader('Access-Control-Allow-Origin', origin)
+                res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
+                res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+                res.setHeader('Access-Control-Allow-Credentials', 'true')
+            }
+            if (req.method === 'OPTIONS') {
+                return res.status(204).end()
+            }
+            next()
+        })
 
         // If you also need to support iframe embedding or CSP, keep that below…
         // Allow embedding from specified domains.
@@ -392,9 +388,7 @@ export async function start(): Promise<void> {
 
     server.listen(port, host, () => {
         logger.info(
-            `[server] listening at ${host ? 'http://' + host : ''}:${port} • allowed origins: ${
-                isDev ? '* (dev mode)' : ALLOWED_ORIGINS
-            }`
+            `[server] listening at ${host ? 'http://' + host : ''}:${port} • allowed origins: ${isDev ? '* (dev mode)' : ALLOWED_ORIGINS}`
         )
     })
 }
