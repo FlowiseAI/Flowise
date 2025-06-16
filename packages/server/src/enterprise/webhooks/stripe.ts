@@ -34,6 +34,11 @@ export class StripeWebhooks {
             }
 
             switch (event.type) {
+                case 'invoice.payment_failed': {
+                    // TODO: handle payment failed event when upgrading plans
+                    break
+                }
+
                 case 'invoice.paid': {
                     const stripeService = new StripeService()
                     await stripeService.handleInvoicePaid(event.data.object as Stripe.Invoice, queryRunner)

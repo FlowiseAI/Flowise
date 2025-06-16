@@ -60,17 +60,6 @@ export class StripeService {
                 })}`
             )
 
-            // Only proceed if organization is currently suspended
-            if ((organization as any).status !== OrganizationStatus.PAST_DUE) {
-                logger.info(
-                    `Organization is not suspended, no action needed: ${JSON.stringify({
-                        subscriptionId,
-                        status: (organization as any).status
-                    })}`
-                )
-                return
-            }
-
             // Get subscription details from Stripe
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
 
@@ -81,83 +70,95 @@ export class StripeService {
                 })}`
             )
 
-            // Check if subscription is past_due - if so, don't reactivate yet
-            if (subscription.status === 'past_due') {
-                logger.info(`Subscription is still past_due, not reactivating: ${subscriptionId}`)
-                return
-            }
+            // Always ensure organization is active when invoice is paid
+            // This handles both reactivation and plan upgrades
+            const shouldUpdateStatus = (organization as any).status !== OrganizationStatus.ACTIVE
 
-            // Check for all uncollectible invoices and ensure they are all settled
-            // Customer must pay/settle ALL uncollectible invoices before reactivation
-            const uncollectibleInvoices = await this.stripe.invoices.list({
-                subscription: subscriptionId,
-                status: 'uncollectible',
-                limit: 100 // Get all uncollectible invoices
-            })
-
-            if (uncollectibleInvoices.data.length > 0) {
-                // Check if all uncollectible invoices have been settled (paid)
-                const unsettledUncollectible = uncollectibleInvoices.data.filter((invoice) => !invoice.paid)
-                if (unsettledUncollectible.length > 0) {
-                    logger.info(
-                        `Found ${unsettledUncollectible.length} unsettled uncollectible invoices for subscription: ${subscriptionId}. Keeping organization suspended.`,
-                        {
-                            unsettledInvoiceIds: unsettledUncollectible.map((inv) => inv.id)
-                        }
-                    )
+            if (shouldUpdateStatus) {
+                // Check if subscription is past_due - if so, don't reactivate yet
+                if (subscription.status === 'past_due') {
+                    logger.info(`Subscription is still past_due, not reactivating: ${subscriptionId}`)
                     return
                 }
-                logger.info(
-                    `All ${uncollectibleInvoices.data.length} uncollectible invoices have been settled for subscription: ${subscriptionId}`
-                )
-            }
 
-            // Check for any unpaid invoices across all possible unpaid statuses
-            // This ensures no outstanding debt remains before reactivation
-            const unpaidStatuses = ['open', 'uncollectible']
-            let hasUnpaidInvoices = false
-            let unpaidInvoiceIds: string[] = []
-
-            for (const status of unpaidStatuses) {
-                const invoices = await this.stripe.invoices.list({
+                // Check for all uncollectible invoices and ensure they are all settled
+                // Customer must pay/settle ALL uncollectible invoices before reactivation
+                const uncollectibleInvoices = await this.stripe.invoices.list({
                     subscription: subscriptionId,
-                    status: status as any,
-                    limit: 100
+                    status: 'uncollectible',
+                    limit: 100 // Get all uncollectible invoices
                 })
 
-                if (invoices.data.length > 0) {
-                    hasUnpaidInvoices = true
-                    unpaidInvoiceIds.push(...invoices.data.map((inv) => inv.id))
+                if (uncollectibleInvoices.data.length > 0) {
+                    // Check if all uncollectible invoices have been settled (paid)
+                    const unsettledUncollectible = uncollectibleInvoices.data.filter((invoice) => !invoice.paid)
+                    if (unsettledUncollectible.length > 0) {
+                        logger.info(
+                            `Found ${unsettledUncollectible.length} unsettled uncollectible invoices for subscription: ${subscriptionId}. Keeping organization suspended.`,
+                            {
+                                unsettledInvoiceIds: unsettledUncollectible.map((inv) => inv.id)
+                            }
+                        )
+                        return
+                    }
+                    logger.info(
+                        `All ${uncollectibleInvoices.data.length} uncollectible invoices have been settled for subscription: ${subscriptionId}`
+                    )
                 }
-            }
 
-            if (hasUnpaidInvoices) {
-                logger.info(`Found unpaid invoices for subscription: ${subscriptionId}. Keeping organization suspended.`, {
-                    unpaidInvoiceIds
+                // Check for any unpaid invoices across all possible unpaid statuses
+                // This ensures no outstanding debt remains before reactivation
+                const unpaidStatuses = ['open', 'uncollectible']
+                let hasUnpaidInvoices = false
+                let unpaidInvoiceIds: string[] = []
+
+                for (const status of unpaidStatuses) {
+                    const invoices = await this.stripe.invoices.list({
+                        subscription: subscriptionId,
+                        status: status as any,
+                        limit: 100
+                    })
+
+                    if (invoices.data.length > 0) {
+                        hasUnpaidInvoices = true
+                        unpaidInvoiceIds.push(...invoices.data.map((inv) => inv.id))
+                    }
+                }
+
+                if (hasUnpaidInvoices) {
+                    logger.info(`Found unpaid invoices for subscription: ${subscriptionId}. Keeping organization suspended.`, {
+                        unpaidInvoiceIds
+                    })
+                    return
+                }
+
+                logger.info(`All invoices paid for subscription: ${subscriptionId}. Reactivating organization.`, {
+                    subscriptionId,
+                    organizationId: organization.id,
+                    uncollectibleInvoicesChecked: uncollectibleInvoices.data.length,
+                    unpaidStatusesChecked: unpaidStatuses
                 })
-                return
+
+                await queryRunner.startTransaction()
+                ;(organization as any).status = OrganizationStatus.ACTIVE
+                await queryRunner.manager.save(Organization, organization)
+                await queryRunner.commitTransaction()
+
+                logger.info('Organization reactivated after payment', {
+                    subscriptionId,
+                    organizationId: organization.id,
+                    status: (organization as any).status
+                })
+            } else {
+                logger.info('Organization already active, provisioning access for paid invoice', {
+                    subscriptionId,
+                    organizationId: organization.id,
+                    invoiceId: invoice.id
+                })
             }
 
-            // All debts are paid - reactivate organization
-            logger.info(`All invoices paid for subscription: ${subscriptionId}. Reactivating organization.`, {
-                subscriptionId,
-                organizationId: organization.id,
-                uncollectibleInvoicesChecked: uncollectibleInvoices.data.length,
-                unpaidStatusesChecked: unpaidStatuses
-            })
-
-            await queryRunner.startTransaction()
-            ;(organization as any).status = 'active'
-            await queryRunner.manager.save(Organization, organization)
-            await queryRunner.commitTransaction()
-
-            logger.info('Organization reactivated after payment', {
-                subscriptionId,
-                organizationId: organization.id,
-                status: (organization as any).status
-            })
-
-            // Update cache with latest subscription data
+            // Always update cache with latest subscription data when invoice is paid
+            // This ensures access is provisioned for plan upgrades even if org is already active
             const stripeManager = await StripeManager.getInstance()
             const cacheManager = await UsageCacheManager.getInstance()
             const currentProductId = subscription.items.data[0]?.price.product as string
@@ -167,6 +168,13 @@ export class StripeService {
                 subsriptionDetails: stripeManager.getSubscriptionObject(subscription),
                 features: await stripeManager.getFeaturesByPlan(subscriptionId, true),
                 quotas: await cacheManager.getQuotas(subscriptionId, true)
+            })
+
+            logger.info('Subscription access provisioned after payment', {
+                subscriptionId,
+                organizationId: organization.id,
+                productId: currentProductId,
+                invoiceId: invoice.id
             })
         } catch (error) {
             logger.error(`Error handling invoice paid: ${error}`)
