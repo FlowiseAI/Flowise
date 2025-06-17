@@ -165,7 +165,7 @@ export class App {
         // Parse cookies
         this.app.use(cookieParser())
 
-        const allowedOrigins = ['https://flowise-772e48kex-marcus-thomas-projects-90ba4767.vercel.app', 'http://localhost:3000']
+        const allowedOrigins = ALLOWED_ORIGINS
         this.app.use((req, res, next) => {
             const origin = req.headers.origin as string | undefined
             if (origin && allowedOrigins.includes(origin)) {
@@ -175,6 +175,7 @@ export class App {
                 res.setHeader('Access-Control-Allow-Credentials', 'true')
             }
             if (req.method === 'OPTIONS') {
+                res.setHeader('Content-Type', 'application/json')
                 return res.status(204).end()
             }
             next()
