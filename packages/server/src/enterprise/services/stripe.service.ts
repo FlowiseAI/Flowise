@@ -157,15 +157,59 @@ export class StripeService {
                 })
             }
 
+            // Check if subscription needs to be resumed after all debts are settled
+            if (subscription.status === 'unpaid') {
+                logger.info(`Subscription is in unpaid status, checking if it can be resumed: ${subscriptionId}`)
+
+                // Verify all debts are settled before resuming
+                const allUnpaidStatuses = ['open', 'uncollectible', 'past_due']
+                let hasAnyUnpaidInvoices = false
+                let allUnpaidInvoiceIds: string[] = []
+
+                for (const status of allUnpaidStatuses) {
+                    const invoices = await this.stripe.invoices.list({
+                        subscription: subscriptionId,
+                        status: status as any,
+                        limit: 100
+                    })
+
+                    if (invoices.data.length > 0) {
+                        hasAnyUnpaidInvoices = true
+                        allUnpaidInvoiceIds.push(...invoices.data.map((inv) => inv.id))
+                    }
+                }
+
+                if (!hasAnyUnpaidInvoices) {
+                    // All debts settled - resume the subscription
+                    try {
+                        await this.stripe.subscriptions.update(subscriptionId, {
+                            pause_collection: null // This resumes the subscription
+                        })
+
+                        logger.info(`Subscription resumed after all debts settled: ${subscriptionId}`)
+                    } catch (resumeError) {
+                        logger.error(`Failed to resume subscription ${subscriptionId}: ${resumeError}`)
+                        // Don't throw here - we still want to provision access even if resume fails
+                    }
+                } else {
+                    logger.info(`Subscription ${subscriptionId} still has unpaid invoices, not resuming yet`, {
+                        unpaidInvoiceIds: allUnpaidInvoiceIds
+                    })
+                }
+            }
+
             // Always update cache with latest subscription data when invoice is paid
             // This ensures access is provisioned for plan upgrades even if org is already active
             const stripeManager = await StripeManager.getInstance()
             const cacheManager = await UsageCacheManager.getInstance()
-            const currentProductId = subscription.items.data[0]?.price.product as string
+
+            // Refetch subscription after potential resume to get updated status
+            const updatedSubscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const currentProductId = updatedSubscription.items.data[0]?.price.product as string
 
             await cacheManager.updateSubscriptionDataToCache(subscriptionId, {
                 productId: currentProductId,
-                subsriptionDetails: stripeManager.getSubscriptionObject(subscription),
+                subsriptionDetails: stripeManager.getSubscriptionObject(updatedSubscription),
                 features: await stripeManager.getFeaturesByPlan(subscriptionId, true),
                 quotas: await cacheManager.getQuotas(subscriptionId, true)
             })
@@ -174,7 +218,8 @@ export class StripeService {
                 subscriptionId,
                 organizationId: organization.id,
                 productId: currentProductId,
-                invoiceId: invoice.id
+                invoiceId: invoice.id,
+                subscriptionStatus: updatedSubscription.status
             })
         } catch (error) {
             logger.error(`Error handling invoice paid: ${error}`)
