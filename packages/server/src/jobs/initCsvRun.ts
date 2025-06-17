@@ -25,14 +25,18 @@ const initCsvRun = async (csvParseRun: IAppCsvParseRuns) => {
     try {
         const appServer = getRunningExpressApp()
         // download csv from s3
+        const bucketName = process.env.S3_STORAGE_BUCKET_NAME ?? ''
+        const key = csvParseRun.originalCsvUrl.replace(`s3://${bucketName}/`, '')
+        logger.info(`Downloading csv ${key} from s3 bucket ${bucketName}`)
         const originalCsv = await s3Client.send(
             new GetObjectCommand({
-                Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
-                Key: csvParseRun.originalCsvUrl.replace(`s3://${process.env.S3_STORAGE_BUCKET_NAME ?? ''}/`, '')
+                Bucket: bucketName,
+                Key: key
             })
         )
         // Get the CSV content as string
         const originalCsvText = (await originalCsv.Body?.transformToString()) ?? ''
+        logger.info(`Original csv text: ${originalCsvText}`)
 
         // parse csv
         const records = parse(originalCsvText, {
