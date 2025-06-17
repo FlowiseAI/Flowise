@@ -1,3 +1,21 @@
 {
-    "rewrites": [{ "source": "/api/flowise/:path*", "destination": "https://flowise-ai-cqlx.onrender.com/api/v1/:path*" }]
+    "rewrites": [
+        {
+            "source": "/api/flowise/:path*",
+            "destination": "https://flowise-ai-cqlx.onrender.com/api/v1/:path*"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/api/flowise/(.*)",
+            "dest": "https://flowise-ai-cqlx.onrender.com/api/v1/$1",
+            "check": true
+        },
+        {
+            "handle": "error",
+            "src": "/api/flowise/(.*)",
+            "status": 502,
+            "dest": "https://flowise-fallback.onrender.com/api/v1/$1"
+        }
+    ]
 }

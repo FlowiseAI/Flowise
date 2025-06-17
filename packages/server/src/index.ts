@@ -17,6 +17,7 @@ import { getAllowedIframeOrigins, sanitizeMiddleware } from './utils/XSS'
 import { Telemetry } from './utils/telemetry'
 import flowiseApiV1Router from './routes'
 import errorHandlerMiddleware from './middlewares/errors'
+import prodCors from './middleware/prodCors'
 import { WHITELIST_URLS } from './utils/constants'
 import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
 import { IdentityManager } from './IdentityManager'
@@ -165,21 +166,7 @@ export class App {
         // Parse cookies
         this.app.use(cookieParser())
 
-        const allowedOrigins = ALLOWED_ORIGINS
-        this.app.use((req, res, next) => {
-            const origin = req.headers.origin as string | undefined
-            if (origin && allowedOrigins.includes(origin)) {
-                res.setHeader('Access-Control-Allow-Origin', origin)
-                res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-                res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-                res.setHeader('Access-Control-Allow-Credentials', 'true')
-            }
-            if (req.method === 'OPTIONS') {
-                res.setHeader('Content-Type', 'application/json')
-                return res.status(204).end()
-            }
-            next()
-        })
+        this.app.use(prodCors)
 
         // If you also need to support iframe embedding or CSP, keep that below…
         // Allow embedding from specified domains.
