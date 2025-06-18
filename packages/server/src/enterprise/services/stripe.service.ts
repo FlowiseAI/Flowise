@@ -3,6 +3,9 @@ import { QueryRunner } from 'typeorm'
 import { StripeManager } from '../../StripeManager'
 import { UsageCacheManager } from '../../UsageCacheManager'
 import { Organization, OrganizationStatus } from '../database/entities/organization.entity'
+import { OrganizationUser } from '../database/entities/organization-user.entity'
+import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
+import { WorkspaceUser } from '../database/entities/workspace-user.entity'
 import logger from '../../utils/logger'
 
 // Note: Organization entity will have a 'status' field added later
@@ -271,12 +274,83 @@ export class StripeService {
                 organizationId: organization.id,
                 status: (organization as any).status
             })
+
+            // Update lastLogin for workspace users in Default Workspace
+            await this.updateLastLoginForDefaultWorkspaceUsers(organization.id, queryRunner)
         } catch (error) {
             logger.error(`Error handling invoice marked uncollectible: ${error}`)
             await queryRunner.rollbackTransaction()
             throw error
         } finally {
             await queryRunner.release()
+        }
+    }
+
+    private async updateLastLoginForDefaultWorkspaceUsers(organizationId: string, queryRunner: QueryRunner): Promise<void> {
+        try {
+            // Get all organization users for the suspended organization
+            const organizationUsers = await queryRunner.manager.find(OrganizationUser, {
+                where: { organizationId }
+            })
+
+            if (organizationUsers.length === 0) {
+                logger.info(`No organization users found for organization: ${organizationId}`)
+                return
+            }
+
+            const userIds = organizationUsers.map((ou) => ou.userId)
+            logger.info(`Found ${userIds.length} users in suspended organization: ${organizationId}`)
+
+            // Find workspaces named "Default Workspace" for this organization
+            const defaultWorkspaces = await queryRunner.manager.find(Workspace, {
+                where: {
+                    organizationId,
+                    name: WorkspaceName.DEFAULT_WORKSPACE
+                }
+            })
+
+            if (defaultWorkspaces.length === 0) {
+                logger.info(`No Default Workspace found for organization: ${organizationId}`)
+                return
+            }
+
+            const workspaceIds = defaultWorkspaces.map((w) => w.id)
+            logger.info(`Found ${workspaceIds.length} Default Workspaces for organization: ${organizationId}`)
+
+            // Find workspace users for these users in Default Workspaces
+            const workspaceUsers = await queryRunner.manager
+                .createQueryBuilder(WorkspaceUser, 'wu')
+                .where('wu.userId IN (:...userIds)', { userIds })
+                .andWhere('wu.workspaceId IN (:...workspaceIds)', { workspaceIds })
+                .getMany()
+
+            if (workspaceUsers.length === 0) {
+                logger.info(`No workspace users found in Default Workspaces for organization: ${organizationId}`)
+                return
+            }
+
+            // Update lastLogin for all found workspace users
+            const currentTimestamp = new Date().toISOString()
+
+            await queryRunner.manager
+                .createQueryBuilder()
+                .update(WorkspaceUser)
+                .set({ lastLogin: currentTimestamp })
+                .where('userId IN (:...userIds)', { userIds })
+                .andWhere('workspaceId IN (:...workspaceIds)', { workspaceIds })
+                .execute()
+
+            logger.info(`Updated lastLogin for ${workspaceUsers.length} workspace users in Default Workspace`, {
+                organizationId,
+                affectedUserIds: userIds,
+                workspaceIds,
+                timestamp: currentTimestamp
+            })
+        } catch (error) {
+            logger.error(`Error updating lastLogin for Default Workspace users: ${error}`, {
+                organizationId
+            })
+            // Don't throw - this is not critical enough to fail the suspension
         }
     }
 }
