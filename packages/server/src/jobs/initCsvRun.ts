@@ -22,8 +22,8 @@ const ENABLE_INIT_CSV_RUN_CRON = process.env.ENABLE_INIT_CSV_RUN_CRON !== 'false
 const { s3Client } = getS3Config()
 
 const initCsvRun = async (csvParseRun: IAppCsvParseRuns) => {
+    const appServer = getRunningExpressApp()
     try {
-        const appServer = getRunningExpressApp()
         // download csv from s3
         const bucketName = process.env.S3_STORAGE_BUCKET_NAME ?? ''
         const key = csvParseRun.originalCsvUrl.replace(`s3://${bucketName}/`, '')
@@ -36,12 +36,13 @@ const initCsvRun = async (csvParseRun: IAppCsvParseRuns) => {
         )
         // Get the CSV content as string
         const originalCsvText = (await originalCsv.Body?.transformToString()) ?? ''
-        logger.info(`Original csv text: ${originalCsvText}`)
 
         // parse csv
         const records = parse(originalCsvText, {
             columns: true,
-            skip_empty_lines: true
+            skip_empty_lines: true,
+            comment: '#',
+            comment_no_infix: true
         })
 
         // create csv parse rows
@@ -70,6 +71,12 @@ const initCsvRun = async (csvParseRun: IAppCsvParseRuns) => {
         logger.info(`Csv run ${csvParseRun.id} initialized`)
     } catch (error) {
         logger.error(error)
+        await appServer.AppDataSource.getRepository(AppCsvParseRuns)
+            .createQueryBuilder()
+            .update()
+            .set({ status: AppCsvParseRunsStatus.COMPLETE_WITH_ERRORS, errorMessages: [String(error)] })
+            .where('id = :id', { id: csvParseRun.id })
+            .execute()
     }
 }
 

@@ -52,9 +52,9 @@ function convertToCSV<T extends object>(data: T[]): string {
 }
 
 const generateCsv = async (csvParseRun: AppCsvParseRuns) => {
+    const appServer = getRunningExpressApp()
     try {
         // update csvParseRun with generatingCsv status
-        const appServer = getRunningExpressApp()
         await appServer.AppDataSource.getRepository(AppCsvParseRuns)
             .createQueryBuilder()
             .update()
@@ -86,7 +86,9 @@ const generateCsv = async (csvParseRun: AppCsvParseRuns) => {
             // Parse the CSV content into records
             records = parse(originalCsvText, {
                 columns: true,
-                skip_empty_lines: true
+                skip_empty_lines: true,
+                comment: '#',
+                comment_no_infix: true
             })
         }
 
@@ -124,6 +126,12 @@ const generateCsv = async (csvParseRun: AppCsvParseRuns) => {
             .execute()
     } catch (error) {
         logger.error('Error generating csv', error)
+        await appServer.AppDataSource.getRepository(AppCsvParseRuns)
+            .createQueryBuilder()
+            .update()
+            .set({ status: AppCsvParseRunsStatus.COMPLETE_WITH_ERRORS, errorMessages: [String(error)] })
+            .where('id = :id', { id: csvParseRun.id })
+            .execute()
     }
 }
 
