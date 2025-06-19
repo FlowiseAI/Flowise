@@ -28,17 +28,21 @@ if (process.env.STORAGE_TYPE === 's3') {
     const customURL = process.env.S3_ENDPOINT_URL
     const forcePathStyle = process.env.S3_FORCE_PATH_STYLE === 'true'
 
-    if (!region || !s3Bucket) {
+    if (!region || region.trim() === '' || !s3Bucket || s3Bucket.trim() === '') {
         throw new Error('S3 storage configuration is missing')
     }
 
     const s3Config: S3ClientConfig = {
         region: region,
-        endpoint: customURL,
         forcePathStyle: forcePathStyle
     }
 
-    if (accessKeyId && secretAccessKey) {
+    // Only include endpoint if customURL is not empty
+    if (customURL && customURL.trim() !== '') {
+        s3Config.endpoint = customURL
+    }
+
+    if (accessKeyId && accessKeyId.trim() !== '' && secretAccessKey && secretAccessKey.trim() !== '') {
         s3Config.credentials = {
             accessKeyId: accessKeyId,
             secretAccessKey: secretAccessKey

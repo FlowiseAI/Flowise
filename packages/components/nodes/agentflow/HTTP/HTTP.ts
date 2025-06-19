@@ -336,6 +336,9 @@ class HTTP_Agentflow implements INode {
         } catch (error) {
             console.error('HTTP Request Error:', error)
 
+            const errorMessage =
+                error.response?.data?.message || error.response?.data?.error || error.message || 'An error occurred during the HTTP request'
+
             // Format error response
             const errorResponse: any = {
                 id: nodeData.id,
@@ -353,7 +356,7 @@ class HTTP_Agentflow implements INode {
                 },
                 error: {
                     name: error.name || 'Error',
-                    message: error.message || 'An error occurred during the HTTP request'
+                    message: errorMessage
                 },
                 state
             }
@@ -366,7 +369,7 @@ class HTTP_Agentflow implements INode {
                 errorResponse.error.headers = error.response.headers
             }
 
-            throw new Error(error)
+            throw new Error(errorMessage)
         }
     }
 }

@@ -15,6 +15,7 @@ class BabyAGI_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    badge: string
 
     constructor() {
         this.label = 'BabyAGI'
@@ -23,6 +24,7 @@ class BabyAGI_Agents implements INode {
         this.type = 'BabyAGI'
         this.category = 'Agents'
         this.icon = 'babyagi.svg'
+        this.badge = 'DEPRECATING'
         this.description = 'Task Driven Autonomous Agent which creates new task and reprioritizes task list based on objective'
         this.baseClasses = ['BabyAGI']
         this.inputs = [
