@@ -18,6 +18,7 @@ import getUploadFileRouter from './get-upload-file'
 import getUploadPathRouter from './get-upload-path'
 import internalChatmessagesRouter from './internal-chat-messages'
 import internalPredictionRouter from './internal-predictions'
+import langfuseRouter from './langfuse'
 import leadsRouter from './leads'
 import loadPromptRouter from './load-prompts'
 import marketplacesRouter from './marketplaces'
@@ -74,6 +75,7 @@ router.use('/fetch-links', fetchLinksRouter)
 router.use('/flow-config', flowConfigRouter)
 router.use('/internal-chatmessage', internalChatmessagesRouter)
 router.use('/internal-prediction', internalPredictionRouter)
+router.use('/langfuse', langfuseRouter)
 router.use('/get-upload-file', getUploadFileRouter)
 router.use('/get-upload-path', getUploadPathRouter)
 router.use('/leads', leadsRouter)
