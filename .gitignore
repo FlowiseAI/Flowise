@@ -150,6 +150,7 @@ yarn-error.log*
 .env.production.local
 .env.*
 .env
+!.env.template
 
 # turbo
 .turbo
@@ -173,3 +174,10 @@ daisy/preview
 
 **/swagger/yml
 **/swagger/md
+ 
+# BWS Secure
+.env.secure.*
+requiredVars.env
+.env-debug.html
+
+bwsconfig.json
