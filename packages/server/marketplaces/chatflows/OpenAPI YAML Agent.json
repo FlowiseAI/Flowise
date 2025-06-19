@@ -1,5 +1,5 @@
 {
-    "description": "Given API docs, agent automatically decide which API to call, generating url and body request from conversation",
+    "description": "Given an OpenAPI YAML file, agent automatically decide which API to call, generating url and body request from conversation",
     "framework": ["Langchain"],
     "usecases": ["Interacting with API"],
     "nodes": [

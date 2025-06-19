@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { JSDOM } from 'jsdom'
 import { z } from 'zod'
+import TurndownService from 'turndown'
 import { DataSource, Equal } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, IFileUpload, IMessage, INodeData, IVariable, MessageContentImageUrl } from './Interface'
 import { AES, enc } from 'crypto-js'
@@ -1308,4 +1309,12 @@ export const refreshOAuth2Token = async (
 
     // Token is not expired, return original data
     return credentialData
+}
+
+export const stripHTMLFromToolInput = (input: string) => {
+    const turndownService = new TurndownService()
+    let cleanedInput = turndownService.turndown(input)
+    // After conversion, replace any escaped underscores with regular underscores
+    cleanedInput = cleanedInput.replace(/\\_/g, '_')
+    return cleanedInput
 }

@@ -69,6 +69,8 @@ const getAllTemplates = async () => {
             templates.push(template)
         })
 
+        /*
+        * Agentflow is deprecated
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows')
         jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
         jsonsInDir.forEach((file) => {
@@ -87,7 +89,7 @@ const getAllTemplates = async () => {
                 description: fileDataObj?.description || ''
             }
             templates.push(template)
-        })
+        })*/
 
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2')
         jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
@@ -108,11 +110,24 @@ const getAllTemplates = async () => {
             }
             templates.push(template)
         })
-        const sortedTemplates = templates.sort((a, b) => a.templateName.localeCompare(b.templateName))
-        const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')
-        if (FlowiseDocsQnAIndex > 0) {
-            sortedTemplates.unshift(sortedTemplates.splice(FlowiseDocsQnAIndex, 1)[0])
-        }
+        const sortedTemplates = templates.sort((a, b) => {
+            // Prioritize AgentflowV2 templates first
+            if (a.type === 'AgentflowV2' && b.type !== 'AgentflowV2') {
+                return -1
+            }
+            if (b.type === 'AgentflowV2' && a.type !== 'AgentflowV2') {
+                return 1
+            }
+            // Put Tool templates last
+            if (a.type === 'Tool' && b.type !== 'Tool') {
+                return 1
+            }
+            if (b.type === 'Tool' && a.type !== 'Tool') {
+                return -1
+            }
+            // For same types, sort alphabetically by templateName
+            return a.templateName.localeCompare(b.templateName)
+        })
         const dbResponse = sortedTemplates
         return dbResponse
     } catch (error) {

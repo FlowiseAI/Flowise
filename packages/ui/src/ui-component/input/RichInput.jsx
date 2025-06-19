@@ -37,7 +37,7 @@ const extensions = (availableNodesForVariable, availableState, acceptNodeOutputA
 ]
 
 // Add styled component for editor wrapper
-const StyledEditorContent = styled(EditorContent)(({ theme, rows }) => ({
+const StyledEditorContent = styled(EditorContent)(({ theme, rows, disabled }) => ({
     '& .ProseMirror': {
         padding: '0px 14px',
         height: rows ? `${rows * 1.4375}rem` : '2.4rem',
@@ -45,30 +45,26 @@ const StyledEditorContent = styled(EditorContent)(({ theme, rows }) => ({
         overflowX: rows ? 'auto' : 'hidden',
         lineHeight: rows ? '1.4375em' : '0.875em',
         fontWeight: 500,
-        color: theme.palette.grey[900],
+        color: disabled ? theme.palette.action.disabled : theme.palette.grey[900],
         border: `1px solid ${theme.palette.grey[900] + 25}`,
         borderRadius: '10px',
         backgroundColor: theme.palette.textBackground.main,
         boxSizing: 'border-box',
         whiteSpace: rows ? 'pre-wrap' : 'nowrap',
         '&:hover': {
-            borderColor: theme.palette.text.primary,
-            cursor: 'text'
+            borderColor: disabled ? `${theme.palette.grey[900] + 25}` : theme.palette.text.primary,
+            cursor: disabled ? 'default' : 'text'
         },
         '&:focus': {
-            borderColor: theme.palette.primary.main,
+            borderColor: disabled ? `${theme.palette.grey[900] + 25}` : theme.palette.primary.main,
             outline: 'none'
-        },
-        '&[disabled]': {
-            backgroundColor: theme.palette.action.disabledBackground,
-            color: theme.palette.action.disabled
         },
         // Placeholder for first paragraph when editor is empty
         '& p.is-editor-empty:first-of-type::before': {
             content: 'attr(data-placeholder)',
             float: 'left',
-            color: theme.palette.text.primary,
-            opacity: 0.4,
+            color: disabled ? theme.palette.action.disabled : theme.palette.text.primary,
+            opacity: disabled ? 0.6 : 0.4,
             pointerEvents: 'none',
             height: 0
         }
@@ -121,7 +117,7 @@ export const RichInput = ({ inputParam, value, nodes, edges, nodeId, onChange, d
 
     return (
         <Box sx={{ mt: 1, border: '' }}>
-            <StyledEditorContent editor={editor} rows={inputParam?.rows} />
+            <StyledEditorContent editor={editor} rows={inputParam?.rows} disabled={disabled} />
         </Box>
     )
 }

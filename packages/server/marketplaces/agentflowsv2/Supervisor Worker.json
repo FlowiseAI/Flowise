@@ -6,8 +6,8 @@
             "id": "startAgentflow_0",
             "type": "agentFlow",
             "position": {
-                "x": -234.25083179589828,
-                "y": 89.8928676312403
+                "x": -198.4357561998925,
+                "y": 90.62378754136287
             },
             "data": {
                 "id": "startAgentflow_0",
@@ -195,12 +195,12 @@
                 "outputs": {},
                 "selected": false
             },
-            "width": 101,
-            "height": 65,
+            "width": 103,
+            "height": 66,
             "selected": false,
             "positionAbsolute": {
-                "x": -234.25083179589828,
-                "y": 89.8928676312403
+                "x": -198.4357561998925,
+                "y": 90.62378754136287
             },
             "dragging": false
         },
@@ -483,7 +483,7 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 184,
+            "width": 194,
             "height": 100,
             "selected": false,
             "positionAbsolute": {
@@ -787,11 +787,11 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "azureChatOpenAI",
+                    "agentModel": "chatOpenAI",
                     "agentMessages": [
                         {
                             "role": "system",
-                            "content": "<p>As a Senior Software Engineer, you are a pivotal part of our innovative development team. Your expertise and leadership drive the creation of robust, scalable software solutions that meet the needs of our diverse clientele. By applying best practices in software development, you ensure that our products are reliable, efficient, and maintainable.</p><p>Your goal is to lead the development of high-quality software solutions.</p><p>Utilize your deep technical knowledge and experience to architect, design, and implement software systems that address complex problems. Collaborate closely with other engineers, reviewers to ensure that the solutions you develop align with business objectives and user needs.</p><p>Design and implement new feature for the given task, ensuring it integrates seamlessly with existing systems and meets performance requirements. Use your understanding of {technology} to build this feature. Make sure to adhere to our coding standards and follow best practices.</p><p>The output should be a fully functional, well-documented feature that enhances our product's capabilities. Include detailed comments in the code. Pass the code to Quality Assurance Engineer for review if neccessary. Once ther review is good enough, produce a finalized version of the code.</p>"
+                            "content": "<p>As a Senior Software Engineer, you are a pivotal part of our innovative development team. Your expertise and leadership drive the creation of robust, scalable software solutions that meet the needs of our diverse clientele. By applying best practices in software development, you ensure that our products are reliable, efficient, and maintainable.</p><p>Your goal is to lead the development of high-quality software solutions.</p><p>Utilize your deep technical knowledge and experience to architect, design, and implement software systems that address complex problems. Collaborate closely with other engineers, reviewers to ensure that the solutions you develop align with business objectives and user needs.</p><p>Design and implement new feature for the given task, ensuring it integrates seamlessly with existing systems and meets performance requirements. Use your understanding of React, Tailwindcss, NodeJS to build this feature. Make sure to adhere to our coding standards and follow best practices.</p><p>The output should be a fully functional, well-documented feature that enhances our product's capabilities. Include detailed comments in the code.</p>"
                         }
                     ],
                     "agentTools": "",
@@ -803,20 +803,23 @@
                     "agentUpdateState": "",
                     "agentModelConfig": {
                         "credential": "",
-                        "modelName": "gpt-4.1",
+                        "modelName": "gpt-4o-mini",
                         "temperature": 0.9,
-                        "maxTokens": "",
                         "streaming": true,
+                        "maxTokens": "",
                         "topP": "",
                         "frequencyPenalty": "",
                         "presencePenalty": "",
                         "timeout": "",
+                        "strictToolCalling": "",
+                        "stopSequence": "",
                         "basepath": "",
+                        "proxyUrl": "",
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
                         "reasoningEffort": "medium",
-                        "agentModel": "azureChatOpenAI"
+                        "agentModel": "chatOpenAI"
                     }
                 },
                 "outputAnchors": [
@@ -830,8 +833,8 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 183,
-            "height": 71,
+            "width": 191,
+            "height": 72,
             "selected": false,
             "positionAbsolute": {
                 "x": 352.5679347768288,
@@ -842,8 +845,8 @@
         {
             "id": "agentAgentflow_2",
             "position": {
-                "x": 358.5981605238689,
-                "y": 87.38558154725587
+                "x": 359.32908043399146,
+                "y": 88.11650145737843
             },
             "data": {
                 "id": "agentAgentflow_2",
@@ -1134,11 +1137,11 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatDeepseek",
+                    "agentModel": "chatOpenAI",
                     "agentMessages": [
                         {
                             "role": "system",
-                            "content": "<p>As a Quality Assurance Engineer, you are an integral part of our development team, ensuring that our software products are of the highest quality. Your meticulous attention to detail and expertise in testing methodologies are crucial in identifying defects and ensuring that our code meets the highest standards.</p><p>Your goal is to ensure the delivery of high-quality software through thorough code review and testing.</p><p>Review the codebase for the new feature designed and implemented by the Senior Software Engineer. Your expertise goes beyond mere code inspection; you are adept at ensuring that developments not only function as intended but also adhere to the team's coding standards, enhance maintainability, and seamlessly integrate with existing systems.</p><p>With a deep appreciation for collaborative development, you provide constructive feedback, guiding contributors towards best practices and fostering a culture of continuous improvement. Your meticulous approach to reviewing code, coupled with your ability to foresee potential issues and recommend proactive solutions, ensures the delivery of high-quality software that is robust, scalable, and aligned with the team's strategic goals.</p><p>Always pass back the review and feedback to Senior Software Engineer.</p>"
+                            "content": "<p>As a Quality Assurance Engineer, you are an integral part of our development team, ensuring that our software products are of the highest quality. Your meticulous attention to detail and expertise in testing methodologies are crucial in identifying defects and ensuring that our code meets the highest standards.</p><p>Your goal is to ensure the delivery of high-quality software through thorough code review and testing.</p><p>Review the codebase for the new feature designed and implemented by the Senior Software Engineer. Your expertise goes beyond mere code inspection; you are adept at ensuring that developments not only function as intended but also adhere to the team's coding standards, enhance maintainability, and seamlessly integrate with existing systems.</p><p>With a deep appreciation for collaborative development, you provide constructive feedback, guiding contributors towards best practices and fostering a culture of continuous improvement. Your meticulous approach to reviewing code, coupled with your ability to foresee potential issues and recommend proactive solutions, ensures the delivery of high-quality software that is robust, scalable, and aligned with the team's strategic goals.</p>"
                         }
                     ],
                     "agentTools": "",
@@ -1150,17 +1153,23 @@
                     "agentUpdateState": "",
                     "agentModelConfig": {
                         "credential": "",
-                        "modelName": "deepseek-reasoner",
-                        "temperature": 0.7,
+                        "modelName": "gpt-4o-mini",
+                        "temperature": 0.9,
                         "streaming": true,
                         "maxTokens": "",
                         "topP": "",
                         "frequencyPenalty": "",
                         "presencePenalty": "",
                         "timeout": "",
+                        "strictToolCalling": "",
                         "stopSequence": "",
+                        "basepath": "",
+                        "proxyUrl": "",
                         "baseOptions": "",
-                        "agentModel": "chatDeepseek"
+                        "allowImageUploads": "",
+                        "imageResolution": "low",
+                        "reasoningEffort": "medium",
+                        "agentModel": "chatOpenAI"
                     }
                 },
                 "outputAnchors": [
@@ -1174,12 +1183,12 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 206,
-            "height": 71,
+            "width": 175,
+            "height": 72,
             "selected": false,
             "positionAbsolute": {
-                "x": 358.5981605238689,
-                "y": 87.38558154725587
+                "x": 359.32908043399146,
+                "y": 88.11650145737843
             },
             "dragging": false
         },
@@ -1478,27 +1487,29 @@
                 ],
                 "inputAnchors": [],
                 "inputs": {
-                    "agentModel": "chatAnthropic",
+                    "agentModel": "chatGoogleGenerativeAI",
                     "agentMessages": "",
                     "agentTools": "",
                     "agentKnowledgeDocumentStores": "",
                     "agentEnableMemory": true,
                     "agentMemoryType": "allMessages",
-                    "agentUserMessage": "<p>Given the above conversations, generate a detail solution developed by the software engineer and code reviewer. Include full code, improvements and review.</p>",
+                    "agentUserMessage": "<p>Given the above conversations, generate a detail solution developed by the software engineer and code reviewer. </p><p>Your guiding principles:</p><ol><li><p><strong>Preserve Full Context</strong><br>Include all code implementations, improvements and review from the conversation. Do not omit, summarize, or oversimplify key information.</p></li><li><p><strong>Markdown Output Only</strong><br>Your final output must be in Markdown format.</p></li></ol>",
                     "agentReturnResponseAs": "userMessage",
                     "agentUpdateState": "",
                     "agentModelConfig": {
                         "credential": "",
-                        "modelName": "claude-3-7-sonnet-latest",
+                        "modelName": "gemini-2.5-flash-preview-05-20",
+                        "customModelName": "",
                         "temperature": 0.9,
                         "streaming": true,
-                        "maxTokensToSample": "",
+                        "maxOutputTokens": "",
                         "topP": "",
                         "topK": "",
-                        "extendedThinking": "",
-                        "budgetTokens": 1024,
+                        "harmCategory": "",
+                        "harmBlockThreshold": "",
+                        "baseUrl": "",
                         "allowImageUploads": "",
-                        "agentModel": "chatAnthropic"
+                        "agentModel": "chatGoogleGenerativeAI"
                     }
                 },
                 "outputAnchors": [
@@ -1512,8 +1523,8 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 231,
-            "height": 71,
+            "width": 283,
+            "height": 72,
             "selected": false,
             "positionAbsolute": {
                 "x": 357.60470406099364,
@@ -1524,8 +1535,8 @@
         {
             "id": "loopAgentflow_0",
             "position": {
-                "x": 574.050701666824,
-                "y": -20.0960840521807
+                "x": 572.5888618465789,
+                "y": -20.827003962303266
             },
             "data": {
                 "id": "loopAgentflow_0",
@@ -1567,20 +1578,20 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 186,
-            "height": 65,
+            "width": 195,
+            "height": 66,
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 574.050701666824,
-                "y": -20.0960840521807
+                "x": 572.5888618465789,
+                "y": -20.827003962303266
             }
         },
         {
             "id": "loopAgentflow_1",
             "position": {
-                "x": 600.379151793432,
-                "y": 90.25732743474846
+                "x": 566.7568359277939,
+                "y": 90.98824734487103
             },
             "data": {
                 "id": "loopAgentflow_1",
@@ -1622,20 +1633,20 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 186,
-            "height": 65,
+            "width": 195,
+            "height": 66,
             "selected": false,
             "dragging": false,
             "positionAbsolute": {
-                "x": 600.379151793432,
-                "y": 90.25732743474846
+                "x": 566.7568359277939,
+                "y": 90.98824734487103
             }
         },
         {
             "id": "llmAgentflow_0",
             "position": {
-                "x": -78.28788541792727,
-                "y": 87.1528514813091
+                "x": -60.01488766486309,
+                "y": 87.88377139143167
             },
             "data": {
                 "id": "llmAgentflow_0",
@@ -1950,7 +1961,7 @@
                     ],
                     "llmModelConfig": {
                         "cache": "",
-                        "modelName": "gpt-4o-mini",
+                        "modelName": "gpt-4.1",
                         "temperature": 0.9,
                         "streaming": true,
                         "maxTokens": "",
@@ -1964,7 +1975,6 @@
                         "proxyUrl": "",
                         "baseOptions": "",
                         "allowImageUploads": "",
-                        "imageResolution": "low",
                         "reasoningEffort": "medium",
                         "llmModel": "chatOpenAI"
                     }
@@ -1980,12 +1990,12 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 168,
-            "height": 71,
+            "width": 148,
+            "height": 72,
             "selected": false,
             "positionAbsolute": {
-                "x": -78.28788541792727,
-                "y": 87.1528514813091
+                "x": -60.01488766486309,
+                "y": 87.88377139143167
             },
             "dragging": false
         }

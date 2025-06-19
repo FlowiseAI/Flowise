@@ -496,18 +496,21 @@ class Agent_Agentflow implements INode {
                     }
                 }
                 const toolInstance = await newToolNodeInstance.init(newNodeData, '', options)
-                if (tool.agentSelectedToolRequiresHumanInput) {
-                    toolInstance.requiresHumanInput = true
-                }
 
                 // toolInstance might returns a list of tools like MCP tools
                 if (Array.isArray(toolInstance)) {
                     for (const subTool of toolInstance) {
                         const subToolInstance = subTool as Tool
                         ;(subToolInstance as any).agentSelectedTool = tool.agentSelectedTool
+                        if (tool.agentSelectedToolRequiresHumanInput) {
+                            ;(subToolInstance as any).requiresHumanInput = true
+                        }
                         toolsInstance.push(subToolInstance)
                     }
                 } else {
+                    if (tool.agentSelectedToolRequiresHumanInput) {
+                        toolInstance.requiresHumanInput = true
+                    }
                     toolsInstance.push(toolInstance as Tool)
                 }
             }
@@ -929,7 +932,14 @@ class Agent_Agentflow implements INode {
             }
 
             // Prepare final response and output object
-            const finalResponse = (response.content as string) ?? JSON.stringify(response, null, 2)
+            let finalResponse = ''
+            if (response.content && Array.isArray(response.content)) {
+                finalResponse = response.content.map((item: any) => item.text).join('\n')
+            } else if (response.content && typeof response.content === 'string') {
+                finalResponse = response.content
+            } else {
+                finalResponse = JSON.stringify(response, null, 2)
+            }
             const output = this.prepareOutputObject(
                 response,
                 availableTools,
@@ -1374,6 +1384,7 @@ class Agent_Agentflow implements INode {
         const usedTools: IUsedTool[] = []
         let sourceDocuments: Array<any> = []
         let artifacts: any[] = []
+        let isWaitingForHumanInput: boolean | undefined
 
         // Process each tool call
         for (let i = 0; i < response.tool_calls.length; i++) {
@@ -1536,7 +1547,8 @@ class Agent_Agentflow implements INode {
                 usedTools: recursiveUsedTools,
                 sourceDocuments: recursiveSourceDocuments,
                 artifacts: recursiveArtifacts,
-                totalTokens: recursiveTokens
+                totalTokens: recursiveTokens,
+                isWaitingForHumanInput: recursiveIsWaitingForHumanInput
             } = await this.handleToolCalls({
                 response: newResponse,
                 messages,
@@ -1558,9 +1570,10 @@ class Agent_Agentflow implements INode {
             sourceDocuments = [...sourceDocuments, ...recursiveSourceDocuments]
             artifacts = [...artifacts, ...recursiveArtifacts]
             totalTokens += recursiveTokens
+            isWaitingForHumanInput = recursiveIsWaitingForHumanInput
         }
 
-        return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens }
+        return { response: newResponse, usedTools, sourceDocuments, artifacts, totalTokens, isWaitingForHumanInput }
     }
 
     /**
@@ -1660,7 +1673,14 @@ class Agent_Agentflow implements INode {
 
                 if (humanInput.type === 'reject') {
                     messages.pop()
-                    toolsInstance = toolsInstance.filter((tool) => tool.name !== toolCall.name)
+                    const toBeRemovedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
+                    if (toBeRemovedTool) {
+                        toolsInstance = toolsInstance.filter((tool) => tool.name !== toolCall.name)
+                        // Remove other tools with the same agentSelectedTool such as MCP tools
+                        toolsInstance = toolsInstance.filter(
+                            (tool) => (tool as any).agentSelectedTool !== (toBeRemovedTool as any).agentSelectedTool
+                        )
+                    }
                 }
                 if (humanInput.type === 'proceed') {
                     let toolIds: ICommonObject | undefined

@@ -243,6 +243,9 @@ const getTools = (
         const methods = paths[path]
         for (const method in methods) {
             // example of method: "get"
+            if (method !== 'get' && method !== 'post' && method !== 'put' && method !== 'delete' && method !== 'patch') {
+                continue
+            }
             const spec = methods[method]
             const toolName = spec.operationId
             const toolDesc = spec.description || spec.summary || toolName
@@ -318,7 +321,7 @@ const getTools = (
             dynamicStructuredTool.setVariables(variables)
             dynamicStructuredTool.setFlowObject(flow)
             dynamicStructuredTool.returnDirect = returnDirect
-            tools.push(dynamicStructuredTool)
+            if (toolName && toolDesc) tools.push(dynamicStructuredTool)
         }
     }
     return tools

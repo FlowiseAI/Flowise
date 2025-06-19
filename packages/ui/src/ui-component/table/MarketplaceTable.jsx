@@ -213,7 +213,13 @@ export const MarketplaceTable = ({
                                                             .split(';')
                                                             .map((tag, index) => (
                                                                 <Chip
-                                                                    color={tag === 'POPULAR' ? 'primary' : 'error'}
+                                                                    color={
+                                                                        tag === 'POPULAR'
+                                                                            ? 'primary'
+                                                                            : tag === 'DEPRECATED'
+                                                                            ? 'warning'
+                                                                            : 'error'
+                                                                    }
                                                                     key={index}
                                                                     size='small'
                                                                     label={tag.toUpperCase()}

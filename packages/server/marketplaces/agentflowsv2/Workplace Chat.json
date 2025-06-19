@@ -1,5 +1,5 @@
 {
-    "description": "An agent that can post message to Slack channel",
+    "description": "An agent that can post AI responses to Workplace channels like Slack and Teams",
     "usecases": ["Agent"],
     "nodes": [
         {
@@ -186,8 +186,8 @@
                 "outputs": {},
                 "selected": false
             },
-            "width": 101,
-            "height": 65,
+            "width": 103,
+            "height": 66,
             "selected": false,
             "positionAbsolute": {
                 "x": -192.5,
@@ -508,8 +508,8 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 168,
-            "height": 71,
+            "width": 175,
+            "height": 72,
             "selected": false,
             "positionAbsolute": {
                 "x": -31.25,
@@ -520,12 +520,12 @@
         {
             "id": "toolAgentflow_0",
             "position": {
-                "x": 182.75,
-                "y": 64.5
+                "x": 181.67112630208328,
+                "y": 28.357731119791666
             },
             "data": {
                 "id": "toolAgentflow_0",
-                "label": "Slack Reply",
+                "label": "Post to Slack",
                 "version": 1.1,
                 "name": "toolAgentflow",
                 "type": "Tool",
@@ -627,20 +627,20 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 142,
-            "height": 71,
+            "width": 156,
+            "height": 68,
             "selected": false,
             "positionAbsolute": {
-                "x": 182.75,
-                "y": 64.5
+                "x": 181.67112630208328,
+                "y": 28.357731119791666
             },
             "dragging": false
         },
         {
             "id": "directReplyAgentflow_0",
             "position": {
-                "x": 366.75,
-                "y": 67.5
+                "x": 373.22324218750003,
+                "y": 66.96056315104161
             },
             "data": {
                 "id": "directReplyAgentflow_0",
@@ -673,12 +673,138 @@
                 "selected": false
             },
             "type": "agentFlow",
-            "width": 194,
-            "height": 65,
+            "width": 204,
+            "height": 66,
             "selected": false,
             "positionAbsolute": {
-                "x": 366.75,
-                "y": 67.5
+                "x": 373.22324218750003,
+                "y": 66.96056315104161
+            },
+            "dragging": false
+        },
+        {
+            "id": "toolAgentflow_1",
+            "position": {
+                "x": 177.461181640625,
+                "y": 108.73382161458332
+            },
+            "data": {
+                "id": "toolAgentflow_1",
+                "label": "Post to Teams",
+                "version": 1.1,
+                "name": "toolAgentflow",
+                "type": "Tool",
+                "color": "#d4a373",
+                "baseClasses": ["Tool"],
+                "category": "Agent Flows",
+                "description": "Tools allow LLM to interact with external systems",
+                "inputParams": [
+                    {
+                        "label": "Tool",
+                        "name": "toolAgentflowSelectedTool",
+                        "type": "asyncOptions",
+                        "loadMethod": "listTools",
+                        "loadConfig": true,
+                        "id": "toolAgentflow_1-input-toolAgentflowSelectedTool-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Tool Input Arguments",
+                        "name": "toolInputArgs",
+                        "type": "array",
+                        "acceptVariable": true,
+                        "refresh": true,
+                        "array": [
+                            {
+                                "label": "Input Argument Name",
+                                "name": "inputArgName",
+                                "type": "asyncOptions",
+                                "loadMethod": "listToolInputArgs",
+                                "refresh": true
+                            },
+                            {
+                                "label": "Input Argument Value",
+                                "name": "inputArgValue",
+                                "type": "string",
+                                "acceptVariable": true
+                            }
+                        ],
+                        "show": {
+                            "toolAgentflowSelectedTool": ".+"
+                        },
+                        "id": "toolAgentflow_1-input-toolInputArgs-array",
+                        "display": true
+                    },
+                    {
+                        "label": "Update Flow State",
+                        "name": "toolUpdateState",
+                        "description": "Update runtime state during the execution of the workflow",
+                        "type": "array",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "array": [
+                            {
+                                "label": "Key",
+                                "name": "key",
+                                "type": "asyncOptions",
+                                "loadMethod": "listRuntimeStateKeys",
+                                "freeSolo": true
+                            },
+                            {
+                                "label": "Value",
+                                "name": "value",
+                                "type": "string",
+                                "acceptVariable": true,
+                                "acceptNodeOutputAsVariable": true
+                            }
+                        ],
+                        "id": "toolAgentflow_1-input-toolUpdateState-array",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "toolAgentflowSelectedTool": "microsoftTeams",
+                    "toolInputArgs": [
+                        {
+                            "inputArgName": "teamId",
+                            "inputArgValue": "<p>&lt;your-team-id&gt;</p>"
+                        },
+                        {
+                            "inputArgName": "chatChannelId",
+                            "inputArgValue": "<p>&lt;your-channel-id&gt;</p>"
+                        },
+                        {
+                            "inputArgName": "messageBody",
+                            "inputArgValue": "<p><span class=\"variable\" data-type=\"mention\" data-id=\"llmAgentflow_0\" data-label=\"llmAgentflow_0\">{{ llmAgentflow_0 }}</span> </p>"
+                        }
+                    ],
+                    "toolUpdateState": "",
+                    "toolAgentflowSelectedToolConfig": {
+                        "credential": "",
+                        "teamsType": "chatMessage",
+                        "chatMessageActions": "[\"sendMessage\"]",
+                        "toolAgentflowSelectedTool": "microsoftTeams",
+                        "chatChannelIdSendMessage": "ABCDEFG"
+                    }
+                },
+                "outputAnchors": [
+                    {
+                        "id": "toolAgentflow_1-output-toolAgentflow",
+                        "label": "Tool",
+                        "name": "toolAgentflow"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "type": "agentFlow",
+            "width": 163,
+            "height": 68,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 177.461181640625,
+                "y": 108.73382161458332
             },
             "dragging": false
         }
@@ -722,6 +848,32 @@
             },
             "type": "agentFlow",
             "id": "toolAgentflow_0-toolAgentflow_0-output-toolAgentflow-directReplyAgentflow_0-directReplyAgentflow_0"
+        },
+        {
+            "source": "llmAgentflow_0",
+            "sourceHandle": "llmAgentflow_0-output-llmAgentflow",
+            "target": "toolAgentflow_1",
+            "targetHandle": "toolAgentflow_1",
+            "data": {
+                "sourceColor": "#64B5F6",
+                "targetColor": "#d4a373",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "llmAgentflow_0-llmAgentflow_0-output-llmAgentflow-toolAgentflow_1-toolAgentflow_1"
+        },
+        {
+            "source": "toolAgentflow_1",
+            "sourceHandle": "toolAgentflow_1-output-toolAgentflow",
+            "target": "directReplyAgentflow_0",
+            "targetHandle": "directReplyAgentflow_0",
+            "data": {
+                "sourceColor": "#d4a373",
+                "targetColor": "#4DDBBB",
+                "isHumanInput": false
+            },
+            "type": "agentFlow",
+            "id": "toolAgentflow_1-toolAgentflow_1-output-toolAgentflow-directReplyAgentflow_0-directReplyAgentflow_0"
         }
     ]
 }
