@@ -117,6 +117,46 @@ spec:
               port: 3000
             initialDelaySeconds: 15
             periodSeconds: 20
+        - name: auth-proxy
+          image: 050451365515.dkr.ecr.eu-central-1.amazonaws.com/xheal/auth-proxy:auth-integration
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: oauth2-proxy-configmap
+                  key: CLIENT_ID
+            - name: CLIENT_SECRET
+              valueFrom:
+                configMapKeyRef:
+                  name: oauth2-proxy-configmap
+                  key: CLIENT_SECRET
+            - name: TOKEN_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: oauth2-proxy-configmap
+                  key: TOKEN_URL
+            - name: UPSTREAM_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: oauth2-proxy-configmap
+                  key: UPSTREAM_URL
+            - name: UPSTREAM_SCHEME
+              valueFrom:
+                configMapKeyRef:
+                  name: oauth2-proxy-configmap
+                  key: UPSTREAM_SCHEME
+            - name: UPSTREAM_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: oauth2-proxy-configmap
+                  key: UPSTREAM_PORT
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
       volumes:
       - name: api-keys-config
         configMap:
