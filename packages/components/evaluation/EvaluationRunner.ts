@@ -6,6 +6,26 @@ import { getModelConfigByModelName, MODEL_TYPE } from '../src/modelLoader'
 
 export class EvaluationRunner {
     static metrics = new Map<string, string[]>()
+
+    static getCostMetrics = async (selectedProvider: string, selectedModel: string) => {
+        let modelConfig = await getModelConfigByModelName(MODEL_TYPE.CHAT, selectedProvider, selectedModel)
+        if (modelConfig) {
+            if (modelConfig['cost_values']) {
+                return modelConfig.cost_values
+            }
+            return { cost_values: modelConfig }
+        } else {
+            modelConfig = await getModelConfigByModelName(MODEL_TYPE.LLM, selectedProvider, selectedModel)
+            if (modelConfig) {
+                if (modelConfig['cost_values']) {
+                    return modelConfig.cost_values
+                }
+                return { cost_values: modelConfig }
+            }
+        }
+        return undefined
+    }
+
     static async getAndDeleteMetrics(id: string) {
         const val = EvaluationRunner.metrics.get(id)
         if (val) {
@@ -34,11 +54,8 @@ export class EvaluationRunner {
                         }
                     }
                 }
-                let modelConfig = await getModelConfigByModelName(MODEL_TYPE.CHAT, selectedProvider, selectedModel)
-                if (modelConfig) {
-                    val.push(JSON.stringify({ cost_values: modelConfig }))
-                } else {
-                    modelConfig = await getModelConfigByModelName(MODEL_TYPE.LLM, selectedProvider, selectedModel)
+                if (selectedProvider && selectedModel) {
+                    const modelConfig = await EvaluationRunner.getCostMetrics(selectedProvider, selectedModel)
                     if (modelConfig) {
                         val.push(JSON.stringify({ cost_values: modelConfig }))
                     }
@@ -116,6 +133,40 @@ export class EvaluationRunner {
             }
             try {
                 let response = await axios.post(`${this.baseURL}/api/v1/prediction/${chatflowId}`, postData, axiosConfig)
+                let agentFlowMetrics: any[] = []
+                if (response?.data?.agentFlowExecutedData) {
+                    for (let i = 0; i < response.data.agentFlowExecutedData.length; i++) {
+                        const agentFlowExecutedData = response.data.agentFlowExecutedData[i]
+                        const input_tokens = agentFlowExecutedData?.data?.output?.usageMetadata?.input_tokens || 0
+                        const output_tokens = agentFlowExecutedData?.data?.output?.usageMetadata?.output_tokens || 0
+                        const total_tokens =
+                            agentFlowExecutedData?.data?.output?.usageMetadata?.total_tokens || input_tokens + output_tokens
+                        const metrics: any = {
+                            promptTokens: input_tokens,
+                            completionTokens: output_tokens,
+                            totalTokens: total_tokens,
+                            provider:
+                                agentFlowExecutedData.data?.input?.llmModelConfig?.llmModel ||
+                                agentFlowExecutedData.data?.input?.agentModelConfig?.agentModel,
+                            model:
+                                agentFlowExecutedData.data?.input?.llmModelConfig?.modelName ||
+                                agentFlowExecutedData.data?.input?.agentModelConfig?.modelName,
+                            nodeLabel: agentFlowExecutedData?.nodeLabel,
+                            nodeId: agentFlowExecutedData?.nodeId
+                        }
+                        if (metrics.provider && metrics.model) {
+                            const modelConfig = await EvaluationRunner.getCostMetrics(metrics.provider, metrics.model)
+                            if (modelConfig) {
+                                metrics.cost_values = {
+                                    input_cost: (modelConfig.cost_values.input_cost || 0) * (input_tokens / 1000),
+                                    output_cost: (modelConfig.cost_values.output_cost || 0) * (output_tokens / 1000)
+                                }
+                                metrics.cost_values.total_cost = metrics.cost_values.input_cost + metrics.cost_values.output_cost
+                            }
+                        }
+                        agentFlowMetrics.push(metrics)
+                    }
+                }
                 const endTime = performance.now()
                 const timeTaken = (endTime - startTime).toFixed(2)
                 if (response?.data?.metrics) {
@@ -129,6 +180,9 @@ export class EvaluationRunner {
                             apiLatency: timeTaken
                         }
                     ]
+                }
+                if (agentFlowMetrics.length > 0) {
+                    runData.nested_metrics = agentFlowMetrics
                 }
                 runData.status = 'complete'
                 let resultText = ''

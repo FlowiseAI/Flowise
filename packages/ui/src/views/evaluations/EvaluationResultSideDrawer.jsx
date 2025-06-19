@@ -1,8 +1,25 @@
 import PropTypes from 'prop-types'
-import { CardContent, Card, Box, SwipeableDrawer, Stack, Button, Chip, Divider, Typography } from '@mui/material'
+import {
+    CardContent,
+    Card,
+    Box,
+    SwipeableDrawer,
+    Stack,
+    Button,
+    Chip,
+    Divider,
+    Typography,
+    Table,
+    TableHead,
+    TableRow,
+    TableBody
+} from '@mui/material'
+import { IconHierarchy, IconUsersGroup, IconRobot } from '@tabler/icons-react'
+
 import { useSelector } from 'react-redux'
-import { IconSquareRoundedChevronsRight } from '@tabler/icons-react'
 import { evaluators as evaluatorsOptions, numericOperators } from '../evaluators/evaluatorConstant'
+import TableCell from '@mui/material/TableCell'
+import { Close } from '@mui/icons-material'
 
 const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
     const onOpen = () => {}
@@ -19,12 +36,32 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
         return ''
     }
 
+    const getFlowIcon = (index) => {
+        if (index === undefined) {
+            return <IconHierarchy size={24} />
+        }
+        if (dialogProps.additionalConfig.chatflowTypes) {
+            switch (dialogProps.additionalConfig.chatflowTypes[index]) {
+                case 'Chatflow':
+                    return <IconHierarchy size={20} />
+                case 'Custom Assistant':
+                    return <IconRobot size={20} />
+                case 'Agentflow v2':
+                    return <IconUsersGroup size={20} />
+            }
+        }
+        return <IconHierarchy />
+    }
+
     return (
         <SwipeableDrawer sx={{ zIndex: 2000 }} anchor='right' open={show} onClose={() => onClickFunction()} onOpen={onOpen}>
-            <Button startIcon={<IconSquareRoundedChevronsRight />} onClick={() => onClickFunction()}>
-                Close
-            </Button>
-            <Box sx={{ width: 450, p: 3 }} role='presentation'>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #ccc' }}>
+                <Typography variant='overline' sx={{ margin: 1, fontWeight: 'bold' }}>
+                    Evaluation Details
+                </Typography>
+                <Button endIcon={<Close />} onClick={() => onClickFunction()} />
+            </div>
+            <Box sx={{ width: 600, p: 2 }} role='presentation'>
                 <Box>
                     <Typography variant='overline' sx={{ fontWeight: 'bold' }}>
                         Evaluation Id
@@ -61,13 +98,19 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                             <CardContent>
                                 {dialogProps.evaluationChatflows?.length > 0 && (
                                     <>
-                                        <Box>
-                                            <Typography variant='overline' sx={{ fontWeight: 'bold' }}>
-                                                Chatflow
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'start',
+                                                alignItems: 'center',
+                                                marginBottom: 5
+                                            }}
+                                        >
+                                            {getFlowIcon(index)}
+                                            <Typography variant='overline' sx={{ fontWeight: 'bold', fontSize: '1.1rem', marginLeft: 1 }}>
+                                                {dialogProps.evaluationChatflows[index]}
                                             </Typography>
-                                            <Typography variant='body2'>{dialogProps.evaluationChatflows[index]}</Typography>
-                                        </Box>
-                                        <br />
+                                        </div>
                                         <Divider />
                                     </>
                                 )}
@@ -153,79 +196,222 @@ const EvaluationResultSideDrawer = ({ show, dialogProps, onClickFunction }) => {
                                 <br />
                                 <Divider />
                                 <br />
-                                <Box>
-                                    <Typography variant='overline' style={{ fontWeight: 'bold' }}>
-                                        Tokens
-                                    </Typography>
-                                    <Typography variant='body2'>
-                                        <Stack sx={{ mt: 1, alignItems: 'center', flexWrap: 'wrap' }} flexDirection='row' gap={1}>
-                                            <Chip
-                                                variant='outlined'
-                                                size='small'
-                                                label={
-                                                    dialogProps.data.metrics[index]?.totalTokens
-                                                        ? 'Total: ' + dialogProps.data.metrics[index]?.totalTokens
-                                                        : 'Total: N/A'
-                                                }
-                                            />
-                                            <Chip
-                                                variant='outlined'
-                                                size='small'
-                                                label={
-                                                    dialogProps.data.metrics[index]?.promptTokens
-                                                        ? 'Prompt: ' + dialogProps.data.metrics[index]?.promptTokens
-                                                        : 'Completion: N/A'
-                                                }
-                                            />
-                                            <Chip
-                                                variant='outlined'
-                                                size='small'
-                                                label={
-                                                    dialogProps.data.metrics[index]?.completionTokens
-                                                        ? 'Completion: ' + dialogProps.data.metrics[index]?.completionTokens
-                                                        : 'Completion: N/A'
-                                                }
-                                            />
-                                        </Stack>
-                                    </Typography>
-                                </Box>
+                                {dialogProps.data.metrics[index]?.nested_metrics ? (
+                                    <Box>
+                                        <Typography variant='overline' style={{ fontWeight: 'bold' }}>
+                                            Tokens
+                                        </Typography>
+                                        <Table size='small' style={{ border: '1px solid #ccc' }}>
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell align='left' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        Node
+                                                    </TableCell>
+                                                    <TableCell align='left' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        Provider & Model
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold', width: '15%' }}>
+                                                        Input
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold', width: '15%' }}>
+                                                        Output
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold', width: '15%' }}>
+                                                        Total
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody style={{ fontSize: '8px' }}>
+                                                {dialogProps.data.metrics[index]?.nested_metrics?.map((metric, index) => (
+                                                    <TableRow key={index}>
+                                                        <TableCell component='th' scope='row' style={{ fontSize: '11px' }}>
+                                                            {metric.nodeLabel}
+                                                        </TableCell>
+                                                        <TableCell component='th' scope='row' style={{ fontSize: '11px' }}>
+                                                            {metric.provider}
+                                                            <br />
+                                                            {metric.model}
+                                                        </TableCell>
+                                                        <TableCell align='right' style={{ fontSize: '11px' }}>
+                                                            {metric.promptTokens}
+                                                        </TableCell>
+                                                        <TableCell align='right' style={{ fontSize: '11px' }}>
+                                                            {metric.completionTokens}
+                                                        </TableCell>
+                                                        <TableCell align='right' style={{ fontSize: '11px' }}>
+                                                            {metric.totalTokens}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                                <TableRow key={index}>
+                                                    <TableCell
+                                                        align='right'
+                                                        style={{ fontSize: '11px', fontWeight: 'bold' }}
+                                                        component='th'
+                                                        scope='row'
+                                                        colspan={2}
+                                                    >
+                                                        Total
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        {dialogProps.data.metrics[index].promptTokens}
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        {dialogProps.data.metrics[index].completionTokens}
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        {dialogProps.data.metrics[index].totalTokens}
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </Box>
+                                ) : (
+                                    <Box>
+                                        <Typography variant='overline' style={{ fontWeight: 'bold' }}>
+                                            Tokens
+                                        </Typography>
+                                        <Typography variant='body2'>
+                                            <Stack sx={{ mt: 1, alignItems: 'center', flexWrap: 'wrap' }} flexDirection='row' gap={1}>
+                                                <Chip
+                                                    variant='outlined'
+                                                    size='small'
+                                                    label={
+                                                        dialogProps.data.metrics[index]?.totalTokens
+                                                            ? 'Total: ' + dialogProps.data.metrics[index]?.totalTokens
+                                                            : 'Total: N/A'
+                                                    }
+                                                />
+                                                <Chip
+                                                    variant='outlined'
+                                                    size='small'
+                                                    label={
+                                                        dialogProps.data.metrics[index]?.promptTokens
+                                                            ? 'Prompt: ' + dialogProps.data.metrics[index]?.promptTokens
+                                                            : 'Prompt: N/A'
+                                                    }
+                                                />
+                                                <Chip
+                                                    variant='outlined'
+                                                    size='small'
+                                                    label={
+                                                        dialogProps.data.metrics[index]?.completionTokens
+                                                            ? 'Completion: ' + dialogProps.data.metrics[index]?.completionTokens
+                                                            : 'Completion: N/A'
+                                                    }
+                                                />
+                                            </Stack>
+                                        </Typography>
+                                    </Box>
+                                )}
                                 <br />
-                                <Box>
-                                    <Typography variant='overline' style={{ fontWeight: 'bold' }}>
-                                        Cost
-                                    </Typography>
-                                    <Typography variant='body2'>
-                                        <Stack sx={{ mt: 1, alignItems: 'center', flexWrap: 'wrap' }} flexDirection='row' gap={1}>
-                                            <Chip
-                                                variant='outlined'
-                                                size='small'
-                                                label={
-                                                    dialogProps.data.metrics[index]?.totalCost
-                                                        ? 'Total: ' + dialogProps.data.metrics[index]?.totalCost
-                                                        : 'Total: N/A'
-                                                }
-                                            />
-                                            <Chip
-                                                variant='outlined'
-                                                size='small'
-                                                label={
-                                                    dialogProps.data.metrics[index]?.promptCost
-                                                        ? 'Prompt: ' + dialogProps.data.metrics[index]?.promptCost
-                                                        : 'Completion: N/A'
-                                                }
-                                            />
-                                            <Chip
-                                                variant='outlined'
-                                                size='small'
-                                                label={
-                                                    dialogProps.data.metrics[index]?.completionCost
-                                                        ? 'Completion: ' + dialogProps.data.metrics[index]?.completionCost
-                                                        : 'Completion: N/A'
-                                                }
-                                            />
-                                        </Stack>
-                                    </Typography>
-                                </Box>
+                                {dialogProps.data.metrics[index]?.nested_metrics ? (
+                                    <Box>
+                                        <Typography variant='overline' style={{ fontWeight: 'bold' }}>
+                                            Cost
+                                        </Typography>
+                                        <Table size='small' style={{ border: '1px solid #ccc' }}>
+                                            <TableHead>
+                                                <TableRow>
+                                                    <TableCell align='left' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        Node
+                                                    </TableCell>
+                                                    <TableCell align='left' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        Provider & Model
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', width: '15%', fontWeight: 'bold' }}>
+                                                        Input
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', width: '15%', fontWeight: 'bold' }}>
+                                                        Output
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', width: '15%', fontWeight: 'bold' }}>
+                                                        Total
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableHead>
+                                            <TableBody style={{ fontSize: '8px' }}>
+                                                {dialogProps.data.metrics[index]?.nested_metrics?.map((metric, index) => (
+                                                    <TableRow key={index}>
+                                                        <TableCell component='th' scope='row' style={{ fontSize: '11px' }}>
+                                                            {metric.nodeLabel}
+                                                        </TableCell>
+                                                        <TableCell component='th' scope='row' style={{ fontSize: '11px' }}>
+                                                            {metric.provider} <br />
+                                                            {metric.model}
+                                                        </TableCell>
+                                                        <TableCell align='right' style={{ fontSize: '11px' }}>
+                                                            {metric.promptCost}
+                                                        </TableCell>
+                                                        <TableCell align='right' style={{ fontSize: '11px' }}>
+                                                            {metric.completionCost}
+                                                        </TableCell>
+                                                        <TableCell align='right' style={{ fontSize: '11px' }}>
+                                                            {metric.totalCost}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                                <TableRow key={index}>
+                                                    <TableCell
+                                                        align='right'
+                                                        style={{ fontSize: '11px', fontWeight: 'bold' }}
+                                                        component='th'
+                                                        scope='row'
+                                                        colspan={2}
+                                                    >
+                                                        Total
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        {dialogProps.data.metrics[index].promptCost}
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        {dialogProps.data.metrics[index].completionCost}
+                                                    </TableCell>
+                                                    <TableCell align='right' style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                                        {dialogProps.data.metrics[index].totalCost}
+                                                    </TableCell>
+                                                </TableRow>
+                                            </TableBody>
+                                        </Table>
+                                    </Box>
+                                ) : (
+                                    <Box>
+                                        <Typography variant='overline' style={{ fontWeight: 'bold' }}>
+                                            Cost
+                                        </Typography>
+                                        <Typography variant='body2'>
+                                            <Stack sx={{ mt: 1, alignItems: 'center', flexWrap: 'wrap' }} flexDirection='row' gap={1}>
+                                                <Chip
+                                                    variant='outlined'
+                                                    size='small'
+                                                    label={
+                                                        dialogProps.data.metrics[index]?.totalCost
+                                                            ? 'Total: ' + dialogProps.data.metrics[index]?.totalCost
+                                                            : 'Total: N/A'
+                                                    }
+                                                />
+                                                <Chip
+                                                    variant='outlined'
+                                                    size='small'
+                                                    label={
+                                                        dialogProps.data.metrics[index]?.promptCost
+                                                            ? 'Prompt: ' + dialogProps.data.metrics[index]?.promptCost
+                                                            : 'Completion: N/A'
+                                                    }
+                                                />
+                                                <Chip
+                                                    variant='outlined'
+                                                    size='small'
+                                                    label={
+                                                        dialogProps.data.metrics[index]?.completionCost
+                                                            ? 'Completion: ' + dialogProps.data.metrics[index]?.completionCost
+                                                            : 'Completion: N/A'
+                                                    }
+                                                />
+                                            </Stack>
+                                        </Typography>
+                                    </Box>
+                                )}
                                 <br />
                                 <Divider />
                                 <br />

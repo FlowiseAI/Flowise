@@ -7,6 +7,8 @@ import { JSONLinesLoader, JSONLoader } from 'langchain/document_loaders/fs/json'
 import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
+import { LoadOfSheet } from '../MicrosoftExcel/ExcelLoader'
+import { PowerpointLoader } from '../MicrosoftPowerpoint/PowerpointLoader'
 import { handleEscapeCharacters } from '../../../src/utils'
 
 class Folder_DocumentLoaders implements INode {
@@ -135,10 +137,14 @@ class Folder_DocumentLoaders implements INode {
                 '.jsonl': (blob) => new JSONLinesLoader(blob, '/' + pointerName.trim()),
                 '.txt': (path) => new TextLoader(path),
                 '.csv': (path) => new CSVLoader(path),
-                '.xls': (path) => new CSVLoader(path),
-                '.xlsx': (path) => new CSVLoader(path),
+                '.xls': (path) => new LoadOfSheet(path),
+                '.xlsx': (path) => new LoadOfSheet(path),
+                '.xlsm': (path) => new LoadOfSheet(path),
+                '.xlsb': (path) => new LoadOfSheet(path),
                 '.doc': (path) => new DocxLoader(path),
                 '.docx': (path) => new DocxLoader(path),
+                '.ppt': (path) => new PowerpointLoader(path),
+                '.pptx': (path) => new PowerpointLoader(path),
                 '.pdf': (path) =>
                     pdfUsage === 'perFile'
                         ? // @ts-ignore

@@ -25,12 +25,12 @@ import { initializeDBClientAndStore, initializeRedisClientAndStore } from './Ses
 
 const localStrategy = require('passport-local').Strategy
 
-const jwtAudience = process.env.JWT_AUDIENCE ?? 'AUDIENCE'
-const jwtIssuer = process.env.JWT_ISSUER ?? 'ISSUER'
+const jwtAudience = process.env.JWT_AUDIENCE || 'AUDIENCE'
+const jwtIssuer = process.env.JWT_ISSUER || 'ISSUER'
 
 const expireAuthTokensOnRestart = process.env.EXPIRE_AUTH_TOKENS_ON_RESTART === 'true'
-const jwtAuthTokenSecret = process.env.JWT_AUTH_TOKEN_SECRET ?? 'auth_token'
-const jwtRefreshSecret = process.env.JWT_REFRESH_TOKEN_SECRET ?? process.env.JWT_AUTH_TOKEN_SECRET ?? 'refresh_token'
+const jwtAuthTokenSecret = process.env.JWT_AUTH_TOKEN_SECRET || 'auth_token'
+const jwtRefreshSecret = process.env.JWT_REFRESH_TOKEN_SECRET || process.env.JWT_AUTH_TOKEN_SECRET || 'refresh_token'
 
 const secureCookie = process.env.APP_URL?.startsWith('https') ? true : false
 const jwtOptions = {
@@ -218,7 +218,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
         if (!refreshToken) return res.sendStatus(401)
 
         jwt.verify(refreshToken, jwtRefreshSecret, async (err: any, payload: any) => {
-            if (err || !payload) return res.status(403).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
+            if (err || !payload) return res.status(401).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
             // @ts-ignore
             const loggedInUser = req.user as LoggedInUser
             let isSSO = false
@@ -227,16 +227,16 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                 try {
                     newTokenResponse = await identityManager.getRefreshToken(loggedInUser.ssoProvider, loggedInUser.ssoRefreshToken)
                     if (newTokenResponse.error) {
-                        return res.status(403).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
+                        return res.status(401).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
                     }
                     isSSO = true
                 } catch (error) {
-                    return res.status(403).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
+                    return res.status(401).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
                 }
             }
             const meta = decryptToken(payload.meta)
             if (!meta) {
-                return res.status(403).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
+                return res.status(401).json({ message: ErrorMessage.REFRESH_TOKEN_EXPIRED })
             }
             if (isSSO) {
                 loggedInUser.ssoToken = newTokenResponse.access_token

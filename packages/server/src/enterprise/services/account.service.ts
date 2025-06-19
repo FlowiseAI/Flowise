@@ -104,6 +104,11 @@ export class AccountService {
         }
     }
 
+    private async ensureOneOrganizationOnly(queryRunner: QueryRunner) {
+        const organizations = await this.organizationservice.readOrganization(queryRunner)
+        if (organizations.length > 0) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'You can only have one organization')
+    }
+
     private async createRegisterAccount(data: AccountDTO, queryRunner: QueryRunner) {
         data = this.initializeAccountDTO(data)
 
@@ -111,6 +116,7 @@ export class AccountService {
 
         switch (platform) {
             case Platform.OPEN_SOURCE:
+                await this.ensureOneOrganizationOnly(queryRunner)
                 data.organization.name = OrganizationName.DEFAULT_ORGANIZATION
                 data.organizationUser.role = await this.roleService.readGeneralRoleByName(GeneralRole.OWNER, queryRunner)
                 data.workspace.name = WorkspaceName.DEFAULT_WORKSPACE
@@ -196,6 +202,7 @@ export class AccountService {
                     data.workspace.name = WorkspaceName.DEFAULT_PERSONAL_WORKSPACE
                     data.workspaceUser.role = await this.roleService.readGeneralRoleByName(GeneralRole.PERSONAL_WORKSPACE, queryRunner)
                 } else {
+                    await this.ensureOneOrganizationOnly(queryRunner)
                     data.organizationUser.role = await this.roleService.readGeneralRoleByName(GeneralRole.OWNER, queryRunner)
                     data.workspace.name = WorkspaceName.DEFAULT_WORKSPACE
                     data.workspaceUser.role = data.organizationUser.role

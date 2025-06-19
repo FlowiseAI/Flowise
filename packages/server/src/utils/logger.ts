@@ -111,6 +111,7 @@ const logger = createLogger({
     defaultMeta: {
         package: 'server'
     },
+    exitOnError: false,
     transports: [
         new transports.Console(),
         ...(!process.env.STORAGE_TYPE || process.env.STORAGE_TYPE === 'local'
@@ -152,7 +153,11 @@ const logger = createLogger({
                   })
               ]
             : []),
-        ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsErrorStream] : [])
+        ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsErrorStream] : []),
+        // Always provide a fallback rejection handler when no other handlers are configured
+        ...((!process.env.DEBUG || process.env.DEBUG !== 'true') && process.env.STORAGE_TYPE !== 's3' && process.env.STORAGE_TYPE !== 'gcs'
+            ? [new transports.Console()]
+            : [])
     ]
 })
 

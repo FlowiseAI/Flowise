@@ -22,7 +22,13 @@ import {
     IStateWithMessages,
     ConversationHistorySelection
 } from '../../../src/Interface'
-import { ToolCallingAgentOutputParser, AgentExecutor, SOURCE_DOCUMENTS_PREFIX, ARTIFACTS_PREFIX } from '../../../src/agents'
+import {
+    ToolCallingAgentOutputParser,
+    AgentExecutor,
+    SOURCE_DOCUMENTS_PREFIX,
+    ARTIFACTS_PREFIX,
+    TOOL_ARGS_PREFIX
+} from '../../../src/agents'
 import {
     extractOutputFromArray,
     getInputVariables,
@@ -1041,6 +1047,17 @@ class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable
                     }
                 }
 
+                let toolInput
+                if (typeof output === 'string' && output.includes(TOOL_ARGS_PREFIX)) {
+                    const outputArray = output.split(TOOL_ARGS_PREFIX)
+                    output = outputArray[0]
+                    try {
+                        toolInput = JSON.parse(outputArray[1])
+                    } catch (e) {
+                        console.error('Error parsing tool input from tool')
+                    }
+                }
+
                 return new ToolMessage({
                     name: tool.name,
                     content: typeof output === 'string' ? output : JSON.stringify(output),
@@ -1048,11 +1065,11 @@ class ToolNode<T extends BaseMessage[] | MessagesState> extends RunnableCallable
                     additional_kwargs: {
                         sourceDocuments,
                         artifacts,
-                        args: call.args,
+                        args: toolInput ?? call.args,
                         usedTools: [
                             {
                                 tool: tool.name ?? '',
-                                toolInput: call.args,
+                                toolInput: toolInput ?? call.args,
                                 toolOutput: output
                             }
                         ]
