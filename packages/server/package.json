@@ -21,7 +21,7 @@
     },
     "scripts": {
         "build": "tsc && rimraf dist/enterprise/emails && gulp",
-        "start": "run-script-os",
+        "start": "node packages/server/dist/index.js",
         "clean": "rimraf dist",
         "nuke": "rimraf dist node_modules .turbo",
         "start:windows": "cd bin && run start",
