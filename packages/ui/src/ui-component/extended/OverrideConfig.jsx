@@ -48,21 +48,30 @@ const OverrideConfigTable = ({ columns, onToggle, rows, sx }) => {
             return <SwitchInput onChange={(enabled) => handleChange(enabled, row)} value={row.enabled} />
         } else if (key === 'type' && row.schema) {
             // If there's schema information, add a tooltip
-            const schemaContent =
-                '[<br>' +
-                row.schema
-                    .map(
-                        (item) =>
-                            `&nbsp;&nbsp;${JSON.stringify(
-                                {
-                                    [item.name]: item.type
-                                },
-                                null,
-                                2
-                            )}`
-                    )
-                    .join(',<br>') +
-                '<br>]'
+            let schemaContent
+            if (Array.isArray(row.schema)) {
+                // Handle array format: [{ name: "field", type: "string" }, ...]
+                schemaContent =
+                    '[<br>' +
+                    row.schema
+                        .map(
+                            (item) =>
+                                `&nbsp;&nbsp;${JSON.stringify(
+                                    {
+                                        [item.name]: item.type
+                                    },
+                                    null,
+                                    2
+                                )}`
+                        )
+                        .join(',<br>') +
+                    '<br>]'
+            } else if (typeof row.schema === 'object' && row.schema !== null) {
+                // Handle object format: { "field": "string", "field2": "number", ... }
+                schemaContent = JSON.stringify(row.schema, null, 2).replace(/\n/g, '<br>').replace(/ /g, '&nbsp;')
+            } else {
+                schemaContent = 'No schema available'
+            }
 
             return (
                 <Stack direction='row' alignItems='center' spacing={1}>
