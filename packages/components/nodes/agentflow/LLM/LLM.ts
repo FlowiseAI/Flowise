@@ -1,5 +1,5 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
+import { ICommonObject, IMessage, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { z } from 'zod'
@@ -359,6 +359,7 @@ class LLM_Agentflow implements INode {
             const state = options.agentflowRuntime?.state as ICommonObject
             const pastChatHistory = (options.pastChatHistory as BaseMessageLike[]) ?? []
             const runtimeChatHistory = (options.agentflowRuntime?.chatHistory as BaseMessageLike[]) ?? []
+            const prependedChatHistory = options.prependedChatHistory as IMessage[]
             const chatId = options.chatId as string
 
             // Initialize the LLM model instance
@@ -381,6 +382,18 @@ class LLM_Agentflow implements INode {
             let runtimeImageMessagesWithFileRef: BaseMessageLike[] = []
             // Use to keep track of past messages with image file references
             let pastImageMessagesWithFileRef: BaseMessageLike[] = []
+
+            // Prepend history ONLY if it is the first node
+            if (prependedChatHistory.length > 0 && !runtimeChatHistory.length) {
+                for (const msg of prependedChatHistory) {
+                    const role: string = msg.role === 'apiMessage' ? 'assistant' : 'user'
+                    const content: string = msg.content ?? ''
+                    messages.push({
+                        role,
+                        content
+                    })
+                }
+            }
 
             for (const msg of llmMessages) {
                 const role = msg.role
