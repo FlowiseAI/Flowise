@@ -87,7 +87,7 @@ export const FlowListTable = ({
         if (!isAgentCanvas) {
             return `/canvas/${row.id}`
         } else {
-            return localStorage.getItem('agentFlowVersion') === 'v2' ? `/v2/agentcanvas/${row.id}` : `/agentcanvas/${row.id}`
+            return isAgentflowV2 ? `/v2/agentcanvas/${row.id}` : `/agentcanvas/${row.id}`
         }
     }
 

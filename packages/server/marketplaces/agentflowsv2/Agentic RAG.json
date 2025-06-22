@@ -1,6 +1,6 @@
 {
     "description": "An agent based approach using AgentflowV2 to perform self-correcting question answering over documents",
-    "usecases": ["Reflective Agent"],
+    "usecases": ["Reflective Agent", "Documents QnA"],
     "nodes": [
         {
             "id": "startAgentflow_0",

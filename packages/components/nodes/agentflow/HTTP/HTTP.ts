@@ -18,6 +18,37 @@ class HTTP_Agentflow implements INode {
     credential: INodeParams
     inputs: INodeParams[]
 
+    private sanitizeJsonString(jsonString: string): string {
+        // Remove common problematic escape sequences that are not valid JSON
+        let sanitized = jsonString
+            // Remove escaped square brackets (not valid JSON)
+            .replace(/\\(\[|\])/g, '$1')
+            // Fix unquoted string values in JSON (simple case)
+            .replace(/:\s*([a-zA-Z][a-zA-Z0-9]*)\s*([,}])/g, ': "$1"$2')
+            // Fix trailing commas
+            .replace(/,(\s*[}\]])/g, '$1')
+
+        return sanitized
+    }
+
+    private parseJsonBody(body: string): any {
+        try {
+            // First try to parse as-is
+            return JSON.parse(body)
+        } catch (error) {
+            try {
+                // If that fails, try to sanitize and parse
+                const sanitized = this.sanitizeJsonString(body)
+                return JSON.parse(sanitized)
+            } catch (sanitizeError) {
+                // If sanitization also fails, throw the original error with helpful message
+                throw new Error(
+                    `Invalid JSON format in body. Original error: ${error.message}. Please ensure your JSON is properly formatted with quoted strings and valid escape sequences.`
+                )
+            }
+        }
+    }
+
     constructor() {
         this.label = 'HTTP'
         this.name = 'httpAgentflow'
@@ -272,10 +303,11 @@ class HTTP_Agentflow implements INode {
             // Handle request body based on body type
             if (method !== 'GET' && body) {
                 switch (bodyType) {
-                    case 'json':
-                        requestConfig.data = typeof body === 'string' ? JSON.parse(body) : body
+                    case 'json': {
+                        requestConfig.data = typeof body === 'string' ? this.parseJsonBody(body) : body
                         requestHeaders['Content-Type'] = 'application/json'
                         break
+                    }
                     case 'raw':
                         requestConfig.data = body
                         break
@@ -290,7 +322,7 @@ class HTTP_Agentflow implements INode {
                         break
                     }
                     case 'xWwwFormUrlencoded':
-                        requestConfig.data = querystring.stringify(typeof body === 'string' ? JSON.parse(body) : body)
+                        requestConfig.data = querystring.stringify(typeof body === 'string' ? this.parseJsonBody(body) : body)
                         requestHeaders['Content-Type'] = 'application/x-www-form-urlencoded'
                         break
                 }
@@ -336,6 +368,9 @@ class HTTP_Agentflow implements INode {
         } catch (error) {
             console.error('HTTP Request Error:', error)
 
+            const errorMessage =
+                error.response?.data?.message || error.response?.data?.error || error.message || 'An error occurred during the HTTP request'
+
             // Format error response
             const errorResponse: any = {
                 id: nodeData.id,
@@ -353,7 +388,7 @@ class HTTP_Agentflow implements INode {
                 },
                 error: {
                     name: error.name || 'Error',
-                    message: error.message || 'An error occurred during the HTTP request'
+                    message: errorMessage
                 },
                 state
             }
@@ -366,7 +401,7 @@ class HTTP_Agentflow implements INode {
                 errorResponse.error.headers = error.response.headers
             }
 
-            throw new Error(error)
+            throw new Error(errorMessage)
         }
     }
 }

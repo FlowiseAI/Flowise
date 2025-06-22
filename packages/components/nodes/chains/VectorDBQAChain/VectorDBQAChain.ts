@@ -17,6 +17,7 @@ class VectorDBQAChain_Chains implements INode {
     baseClasses: string[]
     description: string
     inputs: INodeParams[]
+    badge: string
 
     constructor() {
         this.label = 'VectorDB QA Chain'
@@ -25,6 +26,7 @@ class VectorDBQAChain_Chains implements INode {
         this.type = 'VectorDBQAChain'
         this.icon = 'vectordb.svg'
         this.category = 'Chains'
+        this.badge = 'DEPRECATING'
         this.description = 'QA chain for vector databases'
         this.baseClasses = [this.type, ...getBaseClasses(VectorDBQAChain)]
         this.inputs = [

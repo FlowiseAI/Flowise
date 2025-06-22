@@ -40,7 +40,8 @@ import {
     getGlobalVariable,
     getStartingNode,
     getTelemetryFlowObj,
-    QUESTION_VAR_PREFIX
+    QUESTION_VAR_PREFIX,
+    CURRENT_DATE_TIME_VAR_PREFIX
 } from '.'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { Variable } from '../database/entities/Variable'
@@ -294,9 +295,18 @@ export const resolveVariables = async (
                 resolvedValue = resolvedValue.replace(match, flowConfig?.runtimeChatHistoryLength ?? 0)
             }
 
+            if (variableFullPath === CURRENT_DATE_TIME_VAR_PREFIX) {
+                resolvedValue = resolvedValue.replace(match, new Date().toISOString())
+            }
+
             if (variableFullPath.startsWith('$iteration')) {
                 if (iterationContext && iterationContext.value) {
-                    if (typeof iterationContext.value === 'string') {
+                    if (variableFullPath === '$iteration') {
+                        // If it's exactly $iteration, stringify the entire value
+                        const formattedValue =
+                            typeof iterationContext.value === 'object' ? JSON.stringify(iterationContext.value) : iterationContext.value
+                        resolvedValue = resolvedValue.replace(match, formattedValue)
+                    } else if (typeof iterationContext.value === 'string') {
                         resolvedValue = resolvedValue.replace(match, iterationContext?.value)
                     } else if (typeof iterationContext.value === 'object') {
                         const iterationValue = get(iterationContext.value, variableFullPath.replace('$iteration.', ''))
@@ -342,8 +352,10 @@ export const resolveVariables = async (
                 const [, nodeIdPart, outputPath] = outputMatch
                 // Clean nodeId (handle escaped underscores)
                 const cleanNodeId = nodeIdPart.replace('\\', '')
+
                 // Find the last (most recent) matching node data instead of the first one
                 const nodeData = [...agentFlowExecutedData].reverse().find((d) => d.nodeId === cleanNodeId)
+
                 if (nodeData?.data?.output && outputPath.trim()) {
                     const variableValue = get(nodeData.data.output, outputPath)
                     if (variableValue !== undefined) {
@@ -1234,6 +1246,20 @@ const checkForMultipleStartNodes = (startingNodeIds: string[], isRecursive: bool
     }
 }
 
+const parseFormStringToJson = (formString: string): Record<string, string> => {
+    const result: Record<string, string> = {}
+    const lines = formString.split('\n')
+
+    for (const line of lines) {
+        const [key, value] = line.split(': ').map((part) => part.trim())
+        if (key && value) {
+            result[key] = value
+        }
+    }
+
+    return result
+}
+
 /*
  * Function to traverse the flow graph and execute the nodes
  */
@@ -1376,7 +1402,12 @@ export const executeAgentFlow = async ({
         if (previousStartAgent) {
             const previousStartAgentOutput = previousStartAgent.data.output
             if (previousStartAgentOutput && typeof previousStartAgentOutput === 'object' && 'form' in previousStartAgentOutput) {
-                agentflowRuntime.form = previousStartAgentOutput.form
+                const formValues = previousStartAgentOutput.form
+                if (typeof formValues === 'string') {
+                    agentflowRuntime.form = parseFormStringToJson(formValues)
+                } else {
+                    agentflowRuntime.form = formValues
+                }
             }
         }
     }

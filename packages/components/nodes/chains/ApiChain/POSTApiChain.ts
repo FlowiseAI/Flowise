@@ -15,6 +15,7 @@ class POSTApiChain_Chains implements INode {
     baseClasses: string[]
     description: string
     inputs: INodeParams[]
+    badge: string
 
     constructor() {
         this.label = 'POST API Chain'
@@ -23,6 +24,7 @@ class POSTApiChain_Chains implements INode {
         this.type = 'POSTApiChain'
         this.icon = 'post.svg'
         this.category = 'Chains'
+        this.badge = 'DEPRECATING'
         this.description = 'Chain to run queries against POST API'
         this.baseClasses = [this.type, ...getBaseClasses(APIChain)]
         this.inputs = [
