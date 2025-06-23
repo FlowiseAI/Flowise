@@ -482,8 +482,6 @@ class GoogleDrive_DocumentLoaders implements INode {
 
             const data = await response.json()
 
-            console.log('getFilesFromFolder = ', data)
-
             // Add drive context to each file
             const filesWithContext = data.files.map((file: any) => ({
                 ...file,
