@@ -3,7 +3,7 @@ import { ICommonObject, INode, INodeData, INodeParams } from '../../../../src/In
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../../src/utils'
 import axios from 'axios'
 
-// Dataset patterns from server.js
+// Dataset patterns
 const DATASET_PATTERNS = {
     'amazon_product': {
         pattern: /amazon\.com\/.*\/dp\//,
@@ -79,7 +79,7 @@ const DATASET_PATTERNS = {
         inputs: ['url']
     },
     'linkedin_posts': {
-        pattern: /linkedin\.com\/posts\//,
+        pattern: /linkedin\.com\/posts\/pulse\//,
         dataset_id: 'gd_lyy3tktm25m4avu764',
         description: 'LinkedIn posts data',
         inputs: ['url']
@@ -188,7 +188,7 @@ const DATASET_PATTERNS = {
         inputs: ['url']
     },
     'booking_hotel_listings': {
-        pattern: /booking\.com/,  // Matches any booking.com URL
+        pattern: /booking\.com/,
         dataset_id: 'gd_m5mbdl081229ln6t4a',
         description: 'Booking.com hotel and accommodation data',
         inputs: ['url']
@@ -207,9 +207,9 @@ const DATASET_PATTERNS = {
         defaults: { num_of_comments: '10' }
     },
     'reddit_posts': {
-        pattern: /reddit\.com\/r\/.*\/comments\//,
+        pattern: /reddit\.com\/(r\/[^\/]+|t\/[^\/]+)/,
         dataset_id: 'gd_lvz8ah06191smkebj4',
-        description: 'Reddit post data',
+        description: 'Reddit post and topic data',
         inputs: ['url']
     }
 }
