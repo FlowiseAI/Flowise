@@ -1,6 +1,5 @@
 name: Bug Report
 description: File a bug report to help us improve
-title: ''
 labels: ['bug']
 assignees: []
 body:
