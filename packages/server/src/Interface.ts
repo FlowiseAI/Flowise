@@ -322,7 +322,7 @@ export interface IOverrideConfig {
     label: string
     name: string
     type: string
-    schema?: ICommonObject[]
+    schema?: ICommonObject[] | Record<string, string>
 }
 
 export type ICredentialDataDecrypted = ICommonObject
