@@ -1103,12 +1103,13 @@ export const replaceInputsWithConfig = (
              * Several conditions:
              * 1. If config is 'analytics', always allow it
              * 2. If config is 'vars', check its object and filter out the variables that are not enabled for override
-             * 3. If typeof config's value is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
+             * 3. If typeof config's value is an array, check if the parameter is enabled and apply directly
+             * 4. If typeof config's value is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
              * Example:
              * "systemMessagePrompt": {
              *  "chatPromptTemplate_0": "You are an assistant"
              * }
-             * 4. If typeof config's value is a string, check if the parameter is enabled
+             * 5. If typeof config's value is a string, check if the parameter is enabled
              * Example:
              * "systemMessagePrompt": "You are an assistant"
              */
@@ -1129,6 +1130,12 @@ export const replaceInputsWithConfig = (
                     }
                     overrideConfig[config] = filteredVars
                 }
+            } else if (Array.isArray(overrideConfig[config])) {
+                // Handle arrays as direct parameter values
+                if (isParameterEnabled(flowNodeData.label, config)) {
+                    inputsObj[config] = overrideConfig[config]
+                }
+                continue
             } else if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
                 const nodeIds = Object.keys(overrideConfig[config])
                 if (nodeIds.includes(flowNodeData.id)) {
@@ -1350,6 +1357,48 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                         name: inputParam.name,
                         type: inputParam.type,
                         schema: arraySchema
+                    }
+                }
+            } else if (inputParam.loadConfig) {
+                const configData = flowNode?.data?.inputs?.[`${inputParam.name}Config`]
+                if (configData) {
+                    // Parse config data to extract schema
+                    let parsedConfig: any = {}
+                    try {
+                        parsedConfig = typeof configData === 'string' ? JSON.parse(configData) : configData
+                    } catch (e) {
+                        // If parsing fails, treat as empty object
+                        parsedConfig = {}
+                    }
+
+                    // Generate schema from config structure
+                    const configSchema: Record<string, string> = {}
+                    parsedConfig = _removeCredentialId(parsedConfig)
+                    for (const key in parsedConfig) {
+                        if (key === inputParam.name) continue
+                        const value = parsedConfig[key]
+                        let fieldType = 'string' // default type
+
+                        if (typeof value === 'boolean') {
+                            fieldType = 'boolean'
+                        } else if (typeof value === 'number') {
+                            fieldType = 'number'
+                        } else if (Array.isArray(value)) {
+                            fieldType = 'array'
+                        } else if (typeof value === 'object' && value !== null) {
+                            fieldType = 'object'
+                        }
+
+                        configSchema[key] = fieldType
+                    }
+
+                    obj = {
+                        node: flowNode.data.label,
+                        nodeId: flowNode.data.id,
+                        label: `${inputParam.label} Config`,
+                        name: `${inputParam.name}Config`,
+                        type: `json`,
+                        schema: configSchema
                     }
                 }
             } else {
@@ -1929,4 +1978,49 @@ export const getAllNodesInPath = (startNode: string, graph: INodeDirectedGraph):
     }
 
     return Array.from(nodes)
+}
+
+export const _removeCredentialId = (obj: any): any => {
+    if (!obj || typeof obj !== 'object') return obj
+
+    if (Array.isArray(obj)) {
+        return obj.map((item) => _removeCredentialId(item))
+    }
+
+    const newObj: Record<string, any> = {}
+    for (const [key, value] of Object.entries(obj)) {
+        if (key === 'FLOWISE_CREDENTIAL_ID') continue
+        newObj[key] = _removeCredentialId(value)
+    }
+    return newObj
+}
+
+/**
+ * Validates that history items follow the expected schema
+ * @param {any[]} history - Array of history items to validate
+ * @returns {boolean} - True if all items are valid, false otherwise
+ */
+export const validateHistorySchema = (history: any[]): boolean => {
+    if (!Array.isArray(history)) {
+        return false
+    }
+
+    return history.every((item) => {
+        // Check if item is an object
+        if (typeof item !== 'object' || item === null) {
+            return false
+        }
+
+        // Check if role exists and is valid
+        if (typeof item.role !== 'string' || !['apiMessage', 'userMessage'].includes(item.role)) {
+            return false
+        }
+
+        // Check if content exists and is a string
+        if (typeof item.content !== 'string') {
+            return false
+        }
+
+        return true
+    })
 }
