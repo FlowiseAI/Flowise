@@ -44,11 +44,22 @@ const deleteVariable = async (variableId: string): Promise<any> => {
     }
 }
 
-const getAllVariables = async (workspaceId?: string) => {
+const getAllVariables = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(Variable).findBy(getWorkspaceSearchOptions(workspaceId))
-        return dbResponse
+        const queryBuilder = appServer.AppDataSource.getRepository(Variable)
+            .createQueryBuilder('variable')
+            .orderBy('variable.updatedDate', 'DESC')
+
+        if (page > 0 && limit > 0) {
+            queryBuilder.skip((page - 1) * limit)
+            queryBuilder.take(limit)
+        }
+        if (workspaceId) queryBuilder.andWhere('variable.workspaceId = :workspaceId', { workspaceId })
+
+        const [data, total] = await queryBuilder.getManyAndCount()
+
+        return { data, total }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

@@ -46,6 +46,7 @@ import { IconTrash, IconPlus, IconX, IconUpload, IconArrowsDownUp } from '@table
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 
 import { useError } from '@/store/context/ErrorContext'
+import TablePagination from '@/ui-component/pagination/TablePagination'
 
 // ==============================|| Dataset Items ||============================== //
 
@@ -84,6 +85,25 @@ const EvalDatasetRows = () => {
     const [Draggable, setDraggable] = useState(false)
     const [startDragPos, setStartDragPos] = useState(-1)
     const [endDragPos, setEndDragPos] = useState(-1)
+
+    /* Table Pagination */
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageLimit, setPageLimit] = useState(10)
+    const [total, setTotal] = useState(0)
+    const onChange = (page, pageLimit) => {
+        setCurrentPage(page)
+        setPageLimit(pageLimit)
+        refresh(page, pageLimit)
+    }
+
+    const refresh = (page, limit) => {
+        setLoading(true)
+        const params = {
+            page: page || currentPage,
+            limit: limit || pageLimit
+        }
+        getDatasetRows.request(datasetId, params)
+    }
 
     const handleDragStart = (e, position) => {
         draggingItem.current = position
@@ -246,7 +266,7 @@ const EvalDatasetRows = () => {
     }
 
     useEffect(() => {
-        getDatasetRows.request(datasetId)
+        refresh(1, 10)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -254,6 +274,7 @@ const EvalDatasetRows = () => {
         if (getDatasetRows.data) {
             const dataset = getDatasetRows.data
             setDataset(dataset)
+            setTotal(dataset.total)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getDatasetRows.data])
@@ -449,9 +470,11 @@ const EvalDatasetRows = () => {
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
-                                <Typography sx={{ color: theme.palette.grey[600] }} variant='subtitle2'>
+                                <Typography sx={{ color: theme.palette.grey[600], marginTop: -2 }} variant='subtitle2'>
                                     <i>Use the drag icon at (extreme right) to reorder the dataset items</i>
                                 </Typography>
+                                {/* Pagination and Page Size Controls */}
+                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
                             </React.Fragment>
                         )}
                     </Stack>

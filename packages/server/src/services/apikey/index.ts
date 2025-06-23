@@ -9,21 +9,27 @@ import { Not, IsNull } from 'typeorm'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { v4 as uuidv4 } from 'uuid'
 
-const getAllApiKeysFromDB = async (workspaceId?: string) => {
+const getAllApiKeysFromDB = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
     const appServer = getRunningExpressApp()
-    const keys = await appServer.AppDataSource.getRepository(ApiKey).findBy(getWorkspaceSearchOptions(workspaceId))
-    const keysWithChatflows = await addChatflowsCount(keys)
-    return keysWithChatflows
+    const queryBuilder = appServer.AppDataSource.getRepository(ApiKey).createQueryBuilder('api_key').orderBy('api_key.updatedDate', 'DESC')
+    if (page > 0 && limit > 0) {
+        queryBuilder.skip((page - 1) * limit)
+        queryBuilder.take(limit)
+    }
+    if (workspaceId) queryBuilder.andWhere('api_key.workspaceId = :workspaceId', { workspaceId })
+    const [data, total] = await queryBuilder.getManyAndCount()
+    const keysWithChatflows = await addChatflowsCount(data)
+    return { total, data: keysWithChatflows }
 }
 
-const getAllApiKeys = async (workspaceId?: string, autoCreateNewKey?: boolean) => {
+const getAllApiKeys = async (workspaceId?: string, autoCreateNewKey?: boolean, page: number = -1, limit: number = -1) => {
     try {
-        let keys = await getAllApiKeysFromDB(workspaceId)
-        if (keys.length === 0 && autoCreateNewKey) {
+        let keys = await getAllApiKeysFromDB(workspaceId, page, limit)
+        if (keys.data.length === 0 && autoCreateNewKey) {
             await createApiKey('DefaultKey', workspaceId)
             keys = await getAllApiKeysFromDB(workspaceId)
         }
-        return keys
+        return { total: keys.total, data: keys.data }
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getAllApiKeys - ${getErrorMessage(error)}`)
     }

@@ -24,6 +24,7 @@ import { gridSpacing } from '@/store/constant'
 // icons
 import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import ToolEmptySVG from '@/assets/images/tools_empty.svg'
+import TablePagination from '@/ui-component/pagination/TablePagination'
 
 // ==============================|| TOOLS ||============================== //
 
@@ -38,6 +39,25 @@ const Tools = () => {
     const [view, setView] = useState(localStorage.getItem('toolsDisplayStyle') || 'card')
 
     const inputRef = useRef(null)
+
+    /* Table Pagination */
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageLimit, setPageLimit] = useState(10)
+    const [total, setTotal] = useState(0)
+
+    const onChange = (page, pageLimit) => {
+        setCurrentPage(page)
+        setPageLimit(pageLimit)
+        refresh(page, pageLimit)
+    }
+
+    const refresh = (page, limit) => {
+        const params = {
+            page: page || currentPage,
+            limit: limit || pageLimit
+        }
+        getAllToolsApi.request(params)
+    }
 
     const handleChange = (event, nextView) => {
         if (nextView === null) return
@@ -117,7 +137,10 @@ const Tools = () => {
     }
 
     useEffect(() => {
-        getAllToolsApi.request()
+        getAllToolsApi.request({
+            page: 1,
+            limit: 10
+        })
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -125,6 +148,12 @@ const Tools = () => {
     useEffect(() => {
         setLoading(getAllToolsApi.loading)
     }, [getAllToolsApi.loading])
+
+    useEffect(() => {
+        if (getAllToolsApi.data) {
+            setTotal(getAllToolsApi.data.total)
+        }
+    }, [getAllToolsApi.data])
 
     return (
         <>
@@ -144,6 +173,7 @@ const Tools = () => {
                                 sx={{ borderRadius: 2, maxHeight: 40 }}
                                 value={view}
                                 color='primary'
+                                disabled={total === 0}
                                 exclusive
                                 onChange={handleChange}
                             >
@@ -203,27 +233,29 @@ const Tools = () => {
                                 </StyledPermissionButton>
                             </ButtonGroup>
                         </ViewHeader>
-                        {!view || view === 'card' ? (
+                        {isLoading && (
+                            <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                                <Skeleton variant='rounded' height={160} />
+                            </Box>
+                        )}
+                        {!isLoading && total > 0 && (
                             <>
-                                {isLoading ? (
+                                {!view || view === 'card' ? (
                                     <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                        <Skeleton variant='rounded' height={160} />
-                                        <Skeleton variant='rounded' height={160} />
-                                        <Skeleton variant='rounded' height={160} />
+                                        {getAllToolsApi.data?.data?.filter(filterTools).map((data, index) => (
+                                            <ItemCard data={data} key={index} onClick={() => edit(data)} />
+                                        ))}
                                     </Box>
                                 ) : (
-                                    <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                        {getAllToolsApi.data &&
-                                            getAllToolsApi.data
-                                                ?.filter(filterTools)
-                                                .map((data, index) => <ItemCard data={data} key={index} onClick={() => edit(data)} />)}
-                                    </Box>
+                                    <ToolsTable data={getAllToolsApi.data.data} isLoading={isLoading} onSelect={edit} />
                                 )}
+                                {/* Pagination and Page Size Controls */}
+                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
                             </>
-                        ) : (
-                            <ToolsTable data={getAllToolsApi.data} isLoading={isLoading} onSelect={edit} />
                         )}
-                        {!isLoading && (!getAllToolsApi.data || getAllToolsApi.data.length === 0) && (
+                        {!isLoading && total === 0 && (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
                                     <img

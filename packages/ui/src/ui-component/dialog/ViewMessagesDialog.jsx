@@ -24,7 +24,9 @@ import {
     CardContent,
     FormControlLabel,
     Checkbox,
-    DialogActions
+    DialogActions,
+    Pagination,
+    Typography
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import DatePicker from 'react-datepicker'
@@ -161,74 +163,56 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     const getStoragePathFromServer = useApi(chatmessageApi.getStoragePath)
     let storagePath = ''
 
+    /* Table Pagination */
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageLimit, setPageLimit] = useState(10)
+    const [total, setTotal] = useState(0)
+    const onChange = (event, page) => {
+        setCurrentPage(page)
+        refresh(page, pageLimit, startDate, endDate, chatTypeFilter, feedbackTypeFilter)
+    }
+
+    const refresh = (page, limit, startDate, endDate, chatTypes, feedbackTypes) => {
+        getChatmessageApi.request(dialogProps.chatflow.id, {
+            chatType: chatTypes.length ? chatTypes : undefined,
+            feedbackType: feedbackTypes.length ? feedbackTypes : undefined,
+            startDate: startDate,
+            endDate: endDate,
+            order: 'ASC',
+            page: page,
+            limit: limit
+        })
+        getStatsApi.request(dialogProps.chatflow.id, {
+            chatType: chatTypes.length ? chatTypes : undefined,
+            feedbackType: feedbackTypes.length ? feedbackTypes : undefined,
+            startDate: startDate,
+            endDate: endDate
+        })
+        setCurrentPage(page)
+    }
+
     const onStartDateSelected = (date) => {
         const updatedDate = new Date(date)
         updatedDate.setHours(0, 0, 0, 0)
         setStartDate(updatedDate)
-        getChatmessageApi.request(dialogProps.chatflow.id, {
-            startDate: updatedDate,
-            endDate: endDate,
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
-            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
-        })
-        getStatsApi.request(dialogProps.chatflow.id, {
-            startDate: updatedDate,
-            endDate: endDate,
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
-            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
-        })
+        refresh(1, pageLimit, updatedDate, endDate, chatTypeFilter, feedbackTypeFilter)
     }
 
     const onEndDateSelected = (date) => {
         const updatedDate = new Date(date)
         updatedDate.setHours(23, 59, 59, 999)
         setEndDate(updatedDate)
-        getChatmessageApi.request(dialogProps.chatflow.id, {
-            endDate: updatedDate,
-            startDate: startDate,
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
-            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
-        })
-        getStatsApi.request(dialogProps.chatflow.id, {
-            endDate: updatedDate,
-            startDate: startDate,
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
-            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
-        })
+        refresh(1, pageLimit, startDate, updatedDate, chatTypeFilter, feedbackTypeFilter)
     }
 
     const onChatTypeSelected = (chatTypes) => {
         setChatTypeFilter(chatTypes)
-        getChatmessageApi.request(dialogProps.chatflow.id, {
-            chatType: chatTypes.length ? chatTypes : undefined,
-            startDate: startDate,
-            endDate: endDate,
-            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
-        })
-        getStatsApi.request(dialogProps.chatflow.id, {
-            chatType: chatTypes.length ? chatTypes : undefined,
-            startDate: startDate,
-            endDate: endDate,
-            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
-        })
+        refresh(1, pageLimit, startDate, endDate, chatTypes, feedbackTypeFilter)
     }
 
     const onFeedbackTypeSelected = (feedbackTypes) => {
         setFeedbackTypeFilter(feedbackTypes)
-
-        getChatmessageApi.request(dialogProps.chatflow.id, {
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
-            feedbackType: feedbackTypes.length ? feedbackTypes : undefined,
-            startDate: startDate,
-            endDate: endDate,
-            order: 'ASC'
-        })
-        getStatsApi.request(dialogProps.chatflow.id, {
-            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
-            feedbackType: feedbackTypes.length ? feedbackTypes : undefined,
-            startDate: startDate,
-            endDate: endDate
-        })
+        refresh(1, pageLimit, startDate, endDate, chatTypeFilter, feedbackTypes)
     }
 
     const onDeleteMessages = () => {
@@ -280,18 +264,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     )
                 }
             })
-            getChatmessageApi.request(chatflowid, {
-                chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
-                startDate: startDate,
-                endDate: endDate,
-                feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
-            })
-            getStatsApi.request(chatflowid, {
-                chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
-                startDate: startDate,
-                endDate: endDate,
-                feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined
-            })
+            refresh(1, pageLimit, startDate, endDate, chatTypeFilter, feedbackTypeFilter)
         } catch (error) {
             console.error(error)
             enqueueSnackbar({
@@ -706,6 +679,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     useEffect(() => {
         if (getStatsApi.data) {
             setStats(getStatsApi.data)
+            setTotal(getStatsApi.data?.totalSessions)
         }
     }, [getStatsApi.data])
 
@@ -733,6 +707,9 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             setEndDate(new Date())
             setStats([])
             setLeadEmail('')
+            setTotal(0)
+            setCurrentPage(1)
+            setPageLimit(10)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -938,13 +915,14 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     <div
                         style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
                             gap: 10,
                             marginBottom: 16,
                             marginLeft: 8,
                             marginRight: 8
                         }}
                     >
+                        <StatsCard title='Total Sessions' stat={`${stats.totalSessions}`} />
                         <StatsCard title='Total Messages' stat={`${stats.totalMessages}`} />
                         <StatsCard title='Total Feedback Received' stat={`${stats.totalFeedback}`} />
                         <StatsCard
@@ -953,7 +931,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                         />
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        {chatlogs && chatlogs.length == 0 && (
+                        {chatlogs && chatlogs.length === 0 && (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center', width: '100%' }} flexDirection='column'>
                                 <Box sx={{ p: 5, height: 'auto' }}>
                                     <img
@@ -976,6 +954,26 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                                         maxHeight: 'calc(100vh - 260px)'
                                     }}
                                 >
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            marginLeft: '15px',
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}
+                                    >
+                                        <Typography variant='h5'>
+                                            Sessions {pageLimit * (currentPage - 1) + 1} - {Math.min(pageLimit * currentPage, total)} of {total}
+                                        </Typography>
+                                        <Pagination
+                                            style={{ justifyItems: 'right', justifyContent: 'center' }}
+                                            count={Math.ceil(total / pageLimit)}
+                                            onChange={onChange}
+                                            page={currentPage}
+                                            color='primary'
+                                        />
+                                    </div>
                                     {chatlogs.map((chatmsg, index) => (
                                         <ListItemButton
                                             key={index}

@@ -78,14 +78,17 @@ const createDocumentStore = async (newDocumentStore: DocumentStore, orgId: strin
     }
 }
 
-const getAllDocumentStores = async (workspaceId?: string, page: number = 1, limit: number = 10) => {
+const getAllDocumentStores = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(DocumentStore)
             .createQueryBuilder('doc_store')
             .orderBy('doc_store.updatedDate', 'DESC')
-            .skip((page - 1) * limit)
-            .take(limit)
+
+        if (page > 0 && limit > 0) {
+            queryBuilder.skip((page - 1) * limit)
+            queryBuilder.take(limit)
+        }
         if (workspaceId) queryBuilder.andWhere('doc_store.workspaceId = :workspaceId', { workspaceId })
 
         const [data, total] = await queryBuilder.getManyAndCount()

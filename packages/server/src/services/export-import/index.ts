@@ -91,15 +91,17 @@ const FileDefaultName = 'ExportData.json'
 const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string): Promise<{ FileDefaultName: string } & ExportData> => {
     try {
         let AgentFlow: ChatFlow[] =
-            exportInput.agentflow === true ? await chatflowService.getAllChatflows('MULTIAGENT', activeWorkspaceId) : []
+            exportInput.agentflow === true ? (await chatflowService.getAllChatflows('MULTIAGENT', activeWorkspaceId, -1, -1))?.data : []
 
         let AgentFlowV2: ChatFlow[] =
-            exportInput.agentflowv2 === true ? await chatflowService.getAllChatflows('AGENTFLOW', activeWorkspaceId) : []
+            exportInput.agentflowv2 === true ? (await chatflowService.getAllChatflows('AGENTFLOW', activeWorkspaceId, -1, -1)).data : []
 
         let AssistantCustom: Assistant[] =
             exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM', activeWorkspaceId) : []
         let AssistantFlow: ChatFlow[] =
-            exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT', activeWorkspaceId) : []
+            exportInput.assistantCustom === true
+                ? (await chatflowService.getAllChatflows('ASSISTANT', activeWorkspaceId, -1, -1))?.data
+                : []
 
         let AssistantOpenAI: Assistant[] =
             exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI', activeWorkspaceId) : []
@@ -107,11 +109,12 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         let AssistantAzure: Assistant[] =
             exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE', activeWorkspaceId) : []
 
-        let ChatFlow: ChatFlow[] = exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW', activeWorkspaceId) : []
+        let ChatFlow: ChatFlow[] =
+            exportInput.chatflow === true ? (await chatflowService.getAllChatflows('CHATFLOW', activeWorkspaceId, -1, -1))?.data : []
 
         const allChatflow: ChatFlow[] =
             exportInput.chat_message === true || exportInput.chat_feedback === true
-                ? await chatflowService.getAllChatflows(undefined, activeWorkspaceId)
+                ? (await chatflowService.getAllChatflows(undefined, activeWorkspaceId, -1, -1))?.data
                 : []
         const chatflowIds = allChatflow.map((chatflow) => chatflow.id)
 
@@ -125,7 +128,7 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
             exportInput.custom_template === true ? await marketplacesService.getAllCustomTemplates(activeWorkspaceId) : []
 
         let DocumentStore: DocumentStore[] =
-            exportInput.document_store === true ? (await documenStoreService.getAllDocumentStores(activeWorkspaceId))?.data : []
+            exportInput.document_store === true ? (await documenStoreService.getAllDocumentStores(activeWorkspaceId, -1, -1))?.data : []
         const documentStoreIds = DocumentStore.map((documentStore) => documentStore.id)
 
         let DocumentStoreFileChunk: DocumentStoreFileChunk[] =
@@ -137,9 +140,10 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         const { data: totalExecutions } = exportInput.execution === true ? await executionService.getAllExecutions(filters) : { data: [] }
         let Execution: Execution[] = exportInput.execution === true ? totalExecutions : []
 
-        let Tool: Tool[] = exportInput.tool === true ? await toolsService.getAllTools(activeWorkspaceId) : []
+        let Tool: Tool[] = exportInput.tool === true ? (await toolsService.getAllTools(activeWorkspaceId, -1, -1))?.data : []
 
-        let Variable: Variable[] = exportInput.variable === true ? await variableService.getAllVariables(activeWorkspaceId) : []
+        let Variable: Variable[] =
+            exportInput.variable === true ? (await variableService.getAllVariables(activeWorkspaceId, -1, -1))?.data : []
 
         return {
             FileDefaultName,

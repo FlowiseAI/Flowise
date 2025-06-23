@@ -1,4 +1,4 @@
-import { MoreThanOrEqual, LessThanOrEqual, Between, In } from 'typeorm'
+import { MoreThanOrEqual, LessThanOrEqual, Between, In, IsNull, Not } from 'typeorm'
 import { ChatMessageRatingType, ChatType } from '../Interface'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'
@@ -19,6 +19,7 @@ import { aMonthAgo } from '.'
  * @param {boolean} feedback
  * @param {ChatMessageRatingType[]} feedbackTypes
  */
+
 interface GetChatMessageParams {
     chatflowid: string
     chatTypes?: ChatType[]
@@ -32,6 +33,8 @@ interface GetChatMessageParams {
     feedback?: boolean
     feedbackTypes?: ChatMessageRatingType[]
     activeWorkspaceId?: string
+    page?: number
+    pageSize?: number
 }
 
 export const utilGetChatMessage = async ({
@@ -46,18 +49,26 @@ export const utilGetChatMessage = async ({
     messageId,
     feedback,
     feedbackTypes,
-    activeWorkspaceId
+    activeWorkspaceId,
+    page,
+    pageSize
 }: GetChatMessageParams): Promise<ChatMessage[]> => {
+    if (!page) page = -1
+    if (!pageSize) pageSize = -1
+
     const appServer = getRunningExpressApp()
 
     // Check if chatflow workspaceId is same as activeWorkspaceId
     if (activeWorkspaceId) {
         const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-            id: chatflowid
+            id: chatflowid,
+            workspaceId: activeWorkspaceId
         })
-        if (chatflow?.workspaceId !== activeWorkspaceId) {
+        if (!chatflow) {
             throw new Error('Unauthorized access')
         }
+    } else {
+        throw new Error('Unauthorized access')
     }
 
     if (feedback) {
@@ -82,6 +93,9 @@ export const utilGetChatMessage = async ({
         if (sessionId) {
             query.andWhere('chat_message.sessionId = :sessionId', { sessionId })
         }
+        if (messageId) {
+            query.andWhere('chat_message.id = :messageId', { messageId })
+        }
 
         // set date range
         if (startDate) {
@@ -90,12 +104,17 @@ export const utilGetChatMessage = async ({
         if (endDate) {
             query.andWhere('chat_message.createdDate <= :endDateTime', { endDateTime: endDate ? new Date(endDate) : new Date() })
         }
-
         // sort
         query.orderBy('chat_message.createdDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
 
-        const messages = (await query.getMany()) as Array<ChatMessage & { feedback: ChatMessageFeedback }>
-
+        let messages = (await query.getMany()) as Array<ChatMessage & { feedback: ChatMessageFeedback }>
+        if (messages.length > 0 && page > -1 && pageSize > -1 && !sessionId && !messageId) {
+            const uniqueSessions = new Set(messages.map((message) => message.sessionId))
+            const startIndex = pageSize * (page - 1)
+            const endIndex = startIndex + pageSize
+            const sessionIds = Array.from(uniqueSessions).slice(startIndex, endIndex)
+            messages = messages.filter((message) => sessionIds.includes(message.sessionId))
+        }
         if (feedbackTypes && feedbackTypes.length > 0) {
             // just applying a filter to the messages array will only return the messages that have feedback,
             // but we also want the message before the feedback message which is the user message.

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import evaluationsService from '../../services/evaluations'
+import { getPageAndLimitParams } from '../../utils/pagination'
 
 const createEvaluation = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -81,7 +82,8 @@ const deleteEvaluation = async (req: Request, res: Response, next: NextFunction)
 
 const getAllEvaluations = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await evaluationsService.getAllEvaluations(req.user?.activeWorkspaceId)
+        const { page, limit } = getPageAndLimitParams(req)
+        const apiResponse = await evaluationsService.getAllEvaluations(req.user?.activeWorkspaceId, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

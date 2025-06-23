@@ -64,7 +64,8 @@ const TablePagination = ({ currentPage, limit, total, onChange }) => {
             </Box>
             {totalItems > 0 && (
                 <Typography variant='body'>
-                    Showing {(activePage - 1) * itemsPerPage + 1} to {Math.min(activePage * itemsPerPage, totalItems)} of {totalItems}{' '}
+                    Items {activePage * itemsPerPage - itemsPerPage + 1} to{' '}
+                    {activePage * itemsPerPage > totalItems ? totalItems : activePage * itemsPerPage} of {totalItems}
                 </Typography>
             )}
             <Pagination count={Math.ceil(totalItems / itemsPerPage)} onChange={handlePageChange} page={activePage} color='primary' />
