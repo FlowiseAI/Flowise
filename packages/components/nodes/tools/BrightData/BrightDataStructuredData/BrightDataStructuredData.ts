@@ -11,12 +11,6 @@ const DATASET_PATTERNS = {
         description: 'Amazon product data extraction',
         inputs: ['url']
     },
-    'amazon_product_reviews': {
-        pattern: /amazon\.com\/.*\/dp\/.*[?&]reviews/,
-        dataset_id: 'gd_le8e811kzy4ggddlq', 
-        description: 'Amazon product reviews data',
-        inputs: ['url']
-    },
     'amazon_product_search': {
         pattern: /amazon\.com\/s\?/,
         dataset_id: 'gd_lwdb4vjm1ehb499uxs',
@@ -49,7 +43,7 @@ const DATASET_PATTERNS = {
         inputs: ['url']
     },
     'zara_products': {
-        pattern: /zara\.com\/.*\/p\d+/,
+        pattern: /zara\.com\/.*\/.*-p\d+\.html/, 
         dataset_id: 'gd_lct4vafw1tgx27d4o0',
         description: 'Zara product data extraction',
         inputs: ['url']
@@ -182,7 +176,7 @@ const DATASET_PATTERNS = {
         inputs: ['url']
     },
     'x_posts': {
-        pattern: /(twitter\.com|x\.com)\/.*\/status\//,
+        pattern: /(x\.com)\/.*\/status\//,
         dataset_id: 'gd_lwxkxvnf1cynvib9co',
         description: 'X (Twitter) post data',
         inputs: ['url']
@@ -194,9 +188,9 @@ const DATASET_PATTERNS = {
         inputs: ['url']
     },
     'booking_hotel_listings': {
-        pattern: /booking\.com\/hotel\//,
+        pattern: /booking\.com/,  // Matches any booking.com URL
         dataset_id: 'gd_m5mbdl081229ln6t4a',
-        description: 'Booking.com hotel listing data',
+        description: 'Booking.com hotel and accommodation data',
         inputs: ['url']
     },
     'youtube_profiles': {
@@ -205,11 +199,12 @@ const DATASET_PATTERNS = {
         description: 'YouTube profile data',
         inputs: ['url']
     },
-    'youtube_videos': {
-        pattern: /youtube\.com\/watch\?v=/,
-        dataset_id: 'gd_m5mbdl081229ln6t4a',
-        description: 'YouTube video data',
-        inputs: ['url']
+    'youtube_video_comments': {
+        pattern: /youtube\.com\/watch\?v=[A-Za-z0-9_-]+/,
+        dataset_id: 'gd_lk9q0ew71spt1mxywf',
+        description: 'YouTube video comments data',
+        inputs: ['url', 'num_of_comments'],
+        defaults: { num_of_comments: '10' }
     },
     'reddit_posts': {
         pattern: /reddit\.com\/r\/.*\/comments\//,
@@ -221,8 +216,7 @@ const DATASET_PATTERNS = {
 
 class BrightDataStructuredDataTool extends Tool {
     name = 'brightdata_structured_data'
-    description = 'Extract structured data from supported websites using Bright Data datasets. Automatically detects the appropriate dataset based on URL. Supports 40+ platforms including Amazon, LinkedIn, Instagram, TikTok, Google Maps, and more. Input should be a URL from a supported platform.'
-
+    description = 'Extract structured data from 40+ supported websites including: Amazon (products, reviews, search), LinkedIn (profiles, companies, jobs, posts, people search), Instagram (profiles, posts, reels, comments), TikTok (profiles, posts, shop, comments), Facebook (posts, marketplace, events, company reviews), YouTube (profiles, videos, comments), Reddit posts, Google (Maps reviews, Shopping, Play Store), Apple App Store, X/Twitter posts, Walmart (products, sellers), eBay products, Best Buy products, Home Depot products, Zara products, Etsy products, Booking.com hotels, Zillow properties, Crunchbase companies, ZoomInfo companies, Yahoo Finance, Reuters news, GitHub repositories. Input must be a complete URL from any of these supported platforms.'
     constructor(
         private apiToken: string,
         private timeoutMs: number = 120000,
@@ -243,8 +237,59 @@ class BrightDataStructuredDataTool extends Tool {
     private detectDataset(url: string): { key: string; dataset: any } | null {
         console.log(`[BrightData Structured] Detecting dataset for URL: ${url}`)
         
-        for (const [key, dataset] of Object.entries(DATASET_PATTERNS)) {
-            if (dataset.pattern.test(url)) {
+        // Define pattern checking order - more specific patterns first
+        const orderedPatterns: (keyof typeof DATASET_PATTERNS)[] = [
+            // Amazon patterns (special handling)
+            'amazon_product',
+            'amazon_product_search', 
+            
+            // LinkedIn patterns (more specific first)
+            'linkedin_people_search',
+            'linkedin_posts',
+            'linkedin_job_listings',
+            'linkedin_company_profile',
+            'linkedin_person_profile',
+            
+            // Social media patterns (more specific first)
+            'instagram_reels',
+            'instagram_posts', 
+            'instagram_profiles',
+            'tiktok_posts',
+            'tiktok_profiles',
+            'facebook_marketplace_listings',
+            'facebook_posts',
+            'x_posts',
+            'youtube_video_comments',
+            'youtube_profiles',
+            
+            // E-commerce patterns
+            'walmart_seller',
+            'walmart_product',
+            'ebay_product',
+            'etsy_products',
+            'bestbuy_products',
+            'homedepot_products',
+            'zara_products',
+            
+            // Other patterns
+            'google_shopping',
+            'google_play_store',
+            'google_maps_reviews',
+            'apple_app_store',
+            'crunchbase_company',
+            'zoominfo_company_profile',
+            'yahoo_finance_business',
+            'zillow_properties_listing',
+            'booking_hotel_listings',
+            'reddit_posts'
+        ]
+        
+        // Check patterns in order
+        for (const key of orderedPatterns) {
+            if (key.startsWith('amazon_product')) continue // Already handled above
+            
+            const dataset = DATASET_PATTERNS[key]
+            if (dataset && dataset.pattern.test(url)) {
                 console.log(`[BrightData Structured] Detected dataset: ${key} - ${dataset.description}`)
                 return { key, dataset }
             }
@@ -415,7 +460,7 @@ class BrightDataStructuredData_Tools implements INode {
         this.type = 'BrightDataStructuredData'
         this.icon = 'brightdata-data.svg'
         this.category = 'Tools'
-        this.description = 'Extract structured data from 40+ supported platforms using Bright Data datasets with automatic platform detection'
+        this.description = 'Extract structured data from 40+ platforms: Amazon, LinkedIn, Instagram, TikTok, Facebook, YouTube, Reddit, Google services, Apple App Store, X/Twitter, Walmart, eBay, Best Buy, Home Depot, Zara, Etsy, Booking.com, Zillow, Crunchbase, ZoomInfo, Yahoo Finance, Reuters, GitHub with automatic platform detection'
         this.baseClasses = [this.type, ...getBaseClasses(BrightDataStructuredDataTool)]
         
         this.credential = {
