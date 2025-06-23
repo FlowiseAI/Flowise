@@ -54,7 +54,6 @@ import { DOCUMENTSTORE_TOOL_DESCRIPTION_PROMPT_GENERATOR } from '../../utils/pro
 import { checkStorage, updateStorageUsage } from '../../utils/quotaUsage'
 import { Telemetry } from '../../utils/telemetry'
 import nodesService from '../nodes'
-import { Execution } from '../../database/entities/Execution'
 
 const createDocumentStore = async (newDocumentStore: DocumentStore, orgId: string) => {
     try {

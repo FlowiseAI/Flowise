@@ -40,11 +40,7 @@ const getAllDocumentStores = async (req: Request, res: Response, next: NextFunct
     try {
         const { page, limit } = getPageAndLimitParams(req)
 
-        const apiResponse = await documentStoreService.getAllDocumentStores (
-            req.user?.activeWorkspaceId,
-            page,
-            limit
-        )
+        const apiResponse = await documentStoreService.getAllDocumentStores(req.user?.activeWorkspaceId, page, limit)
         return res.json({
             total: apiResponse.total,
             data: DocumentStoreDTO.fromEntities(apiResponse.data)

@@ -368,7 +368,9 @@ const AgentExecutions = () => {
                             />
 
                             {/* Pagination and Page Size Controls */}
-                            {!isLoading && total > 0 && <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />}
+                            {!isLoading && total > 0 && (
+                                <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                            )}
 
                             <ExecutionDetails
                                 open={openDrawer}

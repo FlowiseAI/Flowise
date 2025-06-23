@@ -4,7 +4,6 @@ import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { getAppVersion } from '../../utils'
-import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { QueryRunner } from 'typeorm'
 import { validate } from 'uuid'
 

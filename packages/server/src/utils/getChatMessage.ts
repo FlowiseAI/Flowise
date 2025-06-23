@@ -1,4 +1,4 @@
-import { MoreThanOrEqual, LessThanOrEqual, Between, In, IsNull, Not } from 'typeorm'
+import { MoreThanOrEqual, LessThanOrEqual, Between, In } from 'typeorm'
 import { ChatMessageRatingType, ChatType } from '../Interface'
 import { ChatMessage } from '../database/entities/ChatMessage'
 import { ChatMessageFeedback } from '../database/entities/ChatMessageFeedback'

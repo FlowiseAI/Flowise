@@ -9,12 +9,7 @@ const getAllApiKeys = async (req: Request, res: Response, next: NextFunction) =>
     try {
         const autoCreateNewKey = true
         const { page, limit } = getPageAndLimitParams(req)
-        const apiResponse = await apikeyService.getAllApiKeys(
-            req.user?.activeWorkspaceId,
-            autoCreateNewKey,
-            page,
-            limit
-        )
+        const apiResponse = await apikeyService.getAllApiKeys(req.user?.activeWorkspaceId, autoCreateNewKey, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
