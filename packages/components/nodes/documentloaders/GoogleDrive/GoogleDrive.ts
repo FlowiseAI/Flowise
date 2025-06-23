@@ -69,7 +69,8 @@ class GoogleDrive_DocumentLoaders implements INode {
                 type: 'asyncMultiOptions',
                 loadMethod: 'listFiles',
                 description: 'Select files from your Google Drive',
-                refresh: true
+                refresh: true,
+                optional: true
             },
             {
                 label: 'Folder ID',
@@ -480,6 +481,8 @@ class GoogleDrive_DocumentLoaders implements INode {
             }
 
             const data = await response.json()
+
+            console.log('getFilesFromFolder = ', data)
 
             // Add drive context to each file
             const filesWithContext = data.files.map((file: any) => ({
