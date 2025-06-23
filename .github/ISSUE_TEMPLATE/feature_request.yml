@@ -1,6 +1,6 @@
 name: Feature Request
 description: Suggest a new feature or enhancement for Flowise
-title: '[FEATURE] '
+title: ''
 labels: ['enhancement']
 assignees: []
 body:
