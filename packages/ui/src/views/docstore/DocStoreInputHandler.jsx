@@ -243,6 +243,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                             value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                                             onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
                                             onCreateNew={() => addAsyncOption(inputParam.name)}
+                                            fullWidth={true}
                                         />
                                     </div>
                                     {inputParam.refresh && (

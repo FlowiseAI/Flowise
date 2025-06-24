@@ -32,6 +32,11 @@ const fetchList = async ({ name, nodeData, previousNodes, currentNode }) => {
     const selectedParam = nodeData.inputParams.find((param) => param.name === name)
     const loadMethod = selectedParam?.loadMethod
 
+    let credentialId = nodeData.credential
+    if (!credentialId && (nodeData.inputs?.credential || nodeData.inputs?.['FLOWISE_CREDENTIAL_ID'])) {
+        credentialId = nodeData.inputs.credential || nodeData.inputs?.['FLOWISE_CREDENTIAL_ID']
+    }
+
     let config = {
         headers: {
             'x-request-from': 'internal',
@@ -41,7 +46,11 @@ const fetchList = async ({ name, nodeData, previousNodes, currentNode }) => {
     }
 
     let lists = await axios
-        .post(`${baseURL}/api/v1/node-load-method/${nodeData.name}`, { ...nodeData, loadMethod, previousNodes, currentNode }, config)
+        .post(
+            `${baseURL}/api/v1/node-load-method/${nodeData.name}`,
+            { ...nodeData, loadMethod, previousNodes, currentNode, credential: credentialId },
+            config
+        )
         .then(async function (response) {
             return response.data
         })
@@ -62,7 +71,8 @@ export const AsyncDropdown = ({
     disabled = false,
     freeSolo = false,
     disableClearable = false,
-    multiple = false
+    multiple = false,
+    fullWidth = false
 }) => {
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
@@ -175,7 +185,7 @@ export const AsyncDropdown = ({
                 multiple={multiple}
                 filterSelectedOptions={multiple}
                 size='small'
-                sx={{ mt: 1, width: multiple ? '90%' : '100%' }}
+                sx={{ mt: 1, width: fullWidth ? '100%' : multiple ? '90%' : '100%' }}
                 open={open}
                 onOpen={() => {
                     setOpen(true)
@@ -309,5 +319,6 @@ AsyncDropdown.propTypes = {
     credentialNames: PropTypes.array,
     disableClearable: PropTypes.bool,
     isCreateNewOption: PropTypes.bool,
-    multiple: PropTypes.bool
+    multiple: PropTypes.bool,
+    fullWidth: PropTypes.bool
 }
