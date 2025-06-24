@@ -64,8 +64,6 @@ import {
     SecretsManagerClient,
     SecretsManagerClientConfig
 } from '@aws-sdk/client-secrets-manager'
-import { checkStorage, updateStorageUsage } from './quotaUsage'
-import { UsageCacheManager } from '../UsageCacheManager'
 
 export const QUESTION_VAR_PREFIX = 'question'
 export const FILE_ATTACHMENT_PREFIX = 'file_attachment'
@@ -504,8 +502,10 @@ type BuildFlowParams = {
     orgId?: string
     workspaceId?: string
     subscriptionId?: string
-    usageCacheManager?: UsageCacheManager
+    usageCacheManager?: any
     uploadedFilesContent?: string
+    updateStorageUsage?: (orgId: string, workspaceId: string, totalSize: number, usageCacheManager?: any) => void
+    checkStorage?: (orgId: string, subscriptionId: string, usageCacheManager: any) => Promise<any>
 }
 
 /**
@@ -540,7 +540,9 @@ export const buildFlow = async ({
     orgId,
     workspaceId,
     subscriptionId,
-    usageCacheManager
+    usageCacheManager,
+    updateStorageUsage,
+    checkStorage
 }: BuildFlowParams) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
