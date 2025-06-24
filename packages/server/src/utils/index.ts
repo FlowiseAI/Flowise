@@ -1135,7 +1135,13 @@ export const replaceInputsWithConfig = (
             } else if (Array.isArray(overrideConfig[config])) {
                 // Handle arrays as direct parameter values
                 if (isParameterEnabled(flowNodeData.label, config)) {
-                    inputsObj[config] = overrideConfig[config]
+                    // If existing value is also an array, concatenate; otherwise replace
+                    const existingValue = inputsObj[config]
+                    if (Array.isArray(existingValue)) {
+                        inputsObj[config] = [...new Set([...existingValue, ...overrideConfig[config]])]
+                    } else {
+                        inputsObj[config] = overrideConfig[config]
+                    }
                 }
                 continue
             } else if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
@@ -1168,24 +1174,36 @@ export const replaceInputsWithConfig = (
             const overrideConfigValue = overrideConfig[config]
             if (overrideConfigValue) {
                 if (typeof overrideConfigValue === 'object') {
-                    switch (typeof paramValue) {
-                        case 'string':
-                            if (paramValue.startsWith('{') && paramValue.endsWith('}')) {
-                                try {
-                                    paramValue = Object.assign({}, JSON.parse(paramValue), overrideConfigValue)
-                                    break
-                                } catch (e) {
-                                    // ignore
+                    // Handle arrays specifically - concatenate instead of replace
+                    if (Array.isArray(overrideConfigValue) && Array.isArray(paramValue)) {
+                        paramValue = [...new Set([...paramValue, ...overrideConfigValue])]
+                    } else if (Array.isArray(overrideConfigValue)) {
+                        paramValue = overrideConfigValue
+                    } else {
+                        switch (typeof paramValue) {
+                            case 'string':
+                                if (paramValue.startsWith('{') && paramValue.endsWith('}')) {
+                                    try {
+                                        paramValue = Object.assign({}, JSON.parse(paramValue), overrideConfigValue)
+                                        break
+                                    } catch (e) {
+                                        // ignore
+                                    }
                                 }
-                            }
-                            paramValue = overrideConfigValue
-                            break
-                        case 'object':
-                            paramValue = Object.assign({}, paramValue, overrideConfigValue)
-                            break
-                        default:
-                            paramValue = overrideConfigValue
-                            break
+                                paramValue = overrideConfigValue
+                                break
+                            case 'object':
+                                // Make sure we're not dealing with arrays here
+                                if (!Array.isArray(paramValue)) {
+                                    paramValue = Object.assign({}, paramValue, overrideConfigValue)
+                                } else {
+                                    paramValue = overrideConfigValue
+                                }
+                                break
+                            default:
+                                paramValue = overrideConfigValue
+                                break
+                        }
                     }
                 } else {
                     paramValue = overrideConfigValue
