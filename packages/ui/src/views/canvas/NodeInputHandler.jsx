@@ -1057,7 +1057,7 @@ const NodeInputHandler = ({
                                     style={{
                                         marginTop: '10px',
                                         border: '1px solid',
-                                        borderColor: theme.palette.grey['300'],
+                                        borderColor: theme.palette.grey[900] + 25,
                                         borderRadius: '6px',
                                         height: inputParam.rows ? '100px' : '200px'
                                     }}
@@ -1077,7 +1077,8 @@ const NodeInputHandler = ({
                         )}
 
                         {(inputParam.type === 'string' || inputParam.type === 'password' || inputParam.type === 'number') &&
-                            (inputParam?.acceptVariable && window.location.href.includes('v2/agentcanvas') ? (
+                            (inputParam?.acceptVariable &&
+                            (window.location.href.includes('v2/agentcanvas') || window.location.href.includes('v2/marketplace')) ? (
                                 <RichInput
                                     key={data.inputs[inputParam.name]}
                                     placeholder={inputParam.placeholder}

@@ -28,17 +28,21 @@ if (process.env.STORAGE_TYPE === 's3') {
     const customURL = process.env.S3_ENDPOINT_URL
     const forcePathStyle = process.env.S3_FORCE_PATH_STYLE === 'true'
 
-    if (!region || !s3Bucket) {
+    if (!region || region.trim() === '' || !s3Bucket || s3Bucket.trim() === '') {
         throw new Error('S3 storage configuration is missing')
     }
 
     const s3Config: S3ClientConfig = {
         region: region,
-        endpoint: customURL,
         forcePathStyle: forcePathStyle
     }
 
-    if (accessKeyId && secretAccessKey) {
+    // Only include endpoint if customURL is not empty
+    if (customURL && customURL.trim() !== '') {
+        s3Config.endpoint = customURL
+    }
+
+    if (accessKeyId && accessKeyId.trim() !== '' && secretAccessKey && secretAccessKey.trim() !== '') {
         s3Config.credentials = {
             accessKeyId: accessKeyId,
             secretAccessKey: secretAccessKey
@@ -111,6 +115,7 @@ const logger = createLogger({
     defaultMeta: {
         package: 'server'
     },
+    exitOnError: false,
     transports: [
         new transports.Console(),
         ...(!process.env.STORAGE_TYPE || process.env.STORAGE_TYPE === 'local'
@@ -152,7 +157,11 @@ const logger = createLogger({
                   })
               ]
             : []),
-        ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsErrorStream] : [])
+        ...(process.env.STORAGE_TYPE === 'gcs' ? [gcsErrorStream] : []),
+        // Always provide a fallback rejection handler when no other handlers are configured
+        ...((!process.env.DEBUG || process.env.DEBUG !== 'true') && process.env.STORAGE_TYPE !== 's3' && process.env.STORAGE_TYPE !== 'gcs'
+            ? [new transports.Console()]
+            : [])
     ]
 })
 

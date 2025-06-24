@@ -19,3 +19,45 @@
     border-width: 1px !important;
     padding: 10px !important;
 }
+
+.react-markdown h1,
+.react-markdown h2,
+.react-markdown h3,
+.react-markdown h4,
+.react-markdown h5,
+.react-markdown h6 {
+    line-height: 1.4;
+    margin: 0.8em 0 0.4em 0;
+    font-weight: 600;
+}
+
+.react-markdown h1 {
+    font-size: 1.8em;
+}
+
+.react-markdown h2 {
+    font-size: 1.5em;
+}
+
+.react-markdown h3 {
+    font-size: 1.3em;
+}
+
+.react-markdown h4 {
+    font-size: 1.1em;
+}
+
+.react-markdown h5 {
+    font-size: 1em;
+    font-weight: 700;
+}
+
+.react-markdown h6 {
+    font-size: 0.9em;
+    font-weight: 700;
+}
+
+.react-markdown p {
+    line-height: 1.6;
+    margin: 0.5em 0;
+}

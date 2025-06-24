@@ -60,6 +60,12 @@ export const suggestionOptions = (
                 category: 'Chat Context'
             },
             {
+                id: 'current_date_time',
+                mentionLabel: 'current_date_time',
+                description: 'Current date and time',
+                category: 'Chat Context'
+            },
+            {
                 id: 'runtime_messages_length',
                 mentionLabel: 'runtime_messages_length',
                 description: 'Total messsages between LLM and Agent',

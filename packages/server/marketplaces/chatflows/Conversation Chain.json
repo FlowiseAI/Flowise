@@ -1,8 +1,7 @@
 {
     "description": "Basic example of Conversation Chain with built-in memory - works exactly like ChatGPT",
-    "usecases": ["Chatbot"],
+    "usecases": ["Basic"],
     "framework": ["Langchain"],
-    "badge": "POPULAR",
     "nodes": [
         {
             "width": 300,

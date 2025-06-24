@@ -193,7 +193,9 @@ export const executeUpsert = async ({
         variableOverrides,
         orgId,
         workspaceId,
-        subscriptionId
+        subscriptionId,
+        updateStorageUsage,
+        checkStorage
     })
 
     // Save to DB
