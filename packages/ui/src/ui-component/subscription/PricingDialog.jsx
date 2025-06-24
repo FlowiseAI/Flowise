@@ -99,7 +99,7 @@ const PricingDialog = ({ open, onClose }) => {
             }
         } catch (error) {
             console.error('Error updating plan:', error)
-            const errorMessage = err.response?.data?.message || 'Failed to verify subscription'
+            const errorMessage = error.response?.data?.message || 'Failed to update subscription'
             enqueueSnackbar(errorMessage, { variant: 'error' })
             onClose()
         } finally {

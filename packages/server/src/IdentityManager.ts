@@ -394,7 +394,7 @@ export class IdentityManager {
             }
 
             const additionalSeatsItem = subscription.items.data.find(
-                (item) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
+                (item: any) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
             )
             quotas[LICENSE_QUOTAS.ADDITIONAL_SEATS_LIMIT] = additionalSeatsItem?.quantity || 0
 

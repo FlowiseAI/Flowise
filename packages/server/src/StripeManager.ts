@@ -592,13 +592,28 @@ export class StripeManager {
             throw new Error('Stripe is not initialized')
         }
 
+        let originalProductId: string | undefined
+        let subscription: Stripe.Subscription | undefined
+
         try {
-            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
             const customerId = subscription.customer as string
+
+            // Store original product ID for potential reversion
+            originalProductId = subscription.items.data[0]?.price.product as string
 
             // Get customer details and metadata
             const customer = await this.stripe.customers.retrieve(customerId)
             const customerMetadata = (customer as Stripe.Customer).metadata || {}
+
+            // If subscription is past_due, validate payment method exists
+            if (subscription.status === 'past_due') {
+                const defaultPaymentMethod = (customer as Stripe.Customer).invoice_settings?.default_payment_method
+
+                if (!defaultPaymentMethod) {
+                    throw new Error('No payment method available. Cannot process upgrade for subscription with payment issues.')
+                }
+            }
 
             // Get the price ID for the new plan
             const prices = await this.stripe.prices.list({
@@ -741,6 +756,55 @@ export class StripeManager {
             }
         } catch (error) {
             console.error('Error updating subscription plan:', error)
+
+            // If we have an original product ID, attempt to revert the subscription
+            if (originalProductId && subscription) {
+                try {
+                    console.log(`Attempting to revert subscription ${subscriptionId} to original product ${originalProductId}`)
+
+                    // Get the latest invoice to void it
+                    const invoices = await this.stripe.invoices.list({
+                        subscription: subscriptionId,
+                        limit: 1
+                    })
+
+                    if (invoices.data.length > 0) {
+                        const latestInvoice = invoices.data[0]
+
+                        // Void the unpaid invoice if it exists
+                        if (latestInvoice.status === 'open') {
+                            await this.stripe.invoices.voidInvoice(latestInvoice.id)
+                            console.log(`Voided invoice ${latestInvoice.id}`)
+                        }
+                    }
+
+                    // Get price for original product
+                    const originalPrices = await this.stripe.prices.list({
+                        product: originalProductId,
+                        active: true,
+                        limit: 1
+                    })
+
+                    if (originalPrices.data.length > 0) {
+                        // Revert subscription to original product
+                        const revertedSubscription = await this.stripe.subscriptions.update(subscriptionId, {
+                            items: [
+                                {
+                                    id: subscription.items.data[0].id,
+                                    price: originalPrices.data[0].id
+                                }
+                            ],
+                            proration_behavior: 'none' // No proration to avoid credit balance
+                        })
+
+                        console.log(`Successfully reverted subscription ${subscriptionId} to original product ${originalProductId}`)
+                    }
+                } catch (revertError) {
+                    console.error('Error reverting subscription after payment failure:', revertError)
+                    // Don't throw revert error - still want to throw original payment error
+                }
+            }
+
             throw error
         }
     }
