@@ -4,8 +4,8 @@ import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { convertMultiOptionsToStringArray, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
-import { ChatGoogleGenerativeAI, GoogleGenerativeAIChatInput } from './FlowiseChatGoogleGenerativeAI'
-import type FlowiseGoogleAICacheManager from '../../cache/GoogleGenerativeAIContextCache/FlowiseGoogleAICacheManager'
+import { ChatGoogleGenerativeAI } from './FlowiseChatGoogleGenerativeAI'
+import { GoogleGenerativeAIChatInput } from '@langchain/google-genai'
 
 class GoogleGenerativeAI_ChatModels implements INode {
     label: string
@@ -41,12 +41,6 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 label: 'Cache',
                 name: 'cache',
                 type: 'BaseCache',
-                optional: true
-            },
-            {
-                label: 'Context Cache',
-                name: 'contextCache',
-                type: 'GoogleAICacheManager',
                 optional: true
             },
             {
@@ -204,15 +198,14 @@ class GoogleGenerativeAI_ChatModels implements INode {
         const harmCategory = nodeData.inputs?.harmCategory as string
         const harmBlockThreshold = nodeData.inputs?.harmBlockThreshold as string
         const cache = nodeData.inputs?.cache as BaseCache
-        const contextCache = nodeData.inputs?.contextCache as FlowiseGoogleAICacheManager
         const streaming = nodeData.inputs?.streaming as boolean
         const baseUrl = nodeData.inputs?.baseUrl as string | undefined
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
-        const obj: Partial<GoogleGenerativeAIChatInput> = {
+        const obj: GoogleGenerativeAIChatInput = {
             apiKey: apiKey,
-            modelName: customModelName || modelName,
+            model: customModelName || modelName,
             streaming: streaming ?? true
         }
 
@@ -248,7 +241,6 @@ class GoogleGenerativeAI_ChatModels implements INode {
 
         const model = new ChatGoogleGenerativeAI(nodeData.id, obj)
         model.setMultiModalOption(multiModalOption)
-        if (contextCache) model.setContextCache(contextCache)
 
         return model
     }

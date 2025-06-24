@@ -69,7 +69,8 @@ class GoogleDrive_DocumentLoaders implements INode {
                 type: 'asyncMultiOptions',
                 loadMethod: 'listFiles',
                 description: 'Select files from your Google Drive',
-                refresh: true
+                refresh: true,
+                optional: true
             },
             {
                 label: 'Folder ID',
