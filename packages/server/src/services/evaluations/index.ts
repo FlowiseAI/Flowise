@@ -368,34 +368,49 @@ const getAllEvaluations = async (workspaceId?: string, page: number = -1, limit:
         }
 
         const evaluationNames = await namesQueryBuilder.getRawMany()
-        // Get the latest evaluation for each name
+        // Get all evaluations for all names at once in a single query
         const returnResults: IEvaluationResult[] = []
 
-        for (const item of evaluationNames) {
-            // Find the latest evaluation by name and the exact max date we determined
-            // This subquery approach is more reliable than direct date comparison
-            const evaluations = await appServer.AppDataSource.getRepository(Evaluation)
+        if (evaluationNames.length > 0) {
+            const names = evaluationNames.map((item) => item.name)
+            // Fetch all evaluations for these names in a single query
+            const allEvaluations = await appServer.AppDataSource.getRepository(Evaluation)
                 .createQueryBuilder('ev')
-                .where('ev.name = :name', { name: item.name })
-                .andWhere('ev.workspaceId = :workspaceId', { workspaceId: workspaceId })
-                .orderBy('ev.runDate', 'DESC')
+                .where('ev.name IN (:...names)', { names })
+                .andWhere('ev.workspaceId = :workspaceId', { workspaceId })
+                .orderBy('ev.name', 'ASC')
+                .addOrderBy('ev.runDate', 'DESC')
                 .getMany()
 
-            if (evaluations && evaluations.length > 0) {
-                for (let i = 0; i < evaluations.length; i++) {
-                    const evaluation = evaluations[i] as IEvaluationResult
-                    // find the first index with this name in the evaluations array
-                    // as it is sorted desc, make the first evaluation with this name as the latestEval
-                    evaluation.latestEval = i == 0
+            // Process the results by name
+            const evaluationsByName = new Map<string, Evaluation[]>()
+            // Group evaluations by name
+            for (const evaluation of allEvaluations) {
+                if (!evaluationsByName.has(evaluation.name)) {
+                    evaluationsByName.set(evaluation.name, [])
+                }
+                evaluationsByName.get(evaluation.name)!.push(evaluation)
+            }
+
+            // Process each name's evaluations
+            for (const item of evaluationNames) {
+                const evaluationsForName = evaluationsByName.get(item.name) || []
+                for (let i = 0; i < evaluationsForName.length; i++) {
+                    const evaluation = evaluationsForName[i] as IEvaluationResult
+                    evaluation.latestEval = i === 0
                     evaluation.version = parseInt(item.count) - i
                     returnResults.push(evaluation)
                 }
             }
         }
 
-        return {
-            total: total,
-            data: returnResults
+        if (page > 0 && limit > 0) {
+            return {
+                total: total,
+                data: returnResults
+            }
+        } else {
+            return returnResults
         }
     } catch (error) {
         throw new InternalFlowiseError(

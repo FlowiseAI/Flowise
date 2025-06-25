@@ -43,7 +43,7 @@ const deleteTool = async (toolId: string): Promise<any> => {
     }
 }
 
-const getAllTools = async (workspaceId?: string, page: number = -1, limit: number = -1): Promise<{ data: Tool[]; total: number }> => {
+const getAllTools = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
         const queryBuilder = appServer.AppDataSource.getRepository(Tool).createQueryBuilder('tool').orderBy('tool.updatedDate', 'DESC')
@@ -55,7 +55,11 @@ const getAllTools = async (workspaceId?: string, page: number = -1, limit: numbe
         if (workspaceId) queryBuilder.andWhere('tool.workspaceId = :workspaceId', { workspaceId })
         const [data, total] = await queryBuilder.getManyAndCount()
 
-        return { data, total }
+        if (page > 0 && limit > 0) {
+            return { data, total }
+        } else {
+            return data
+        }
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getAllTools - ${getErrorMessage(error)}`)
     }

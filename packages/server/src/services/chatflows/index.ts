@@ -152,7 +152,11 @@ const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: 
         if (workspaceId) queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
         const [data, total] = await queryBuilder.getManyAndCount()
 
-        return { data, total }
+        if (page > 0 && limit > 0) {
+            return { data, total }
+        } else {
+            return data
+        }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

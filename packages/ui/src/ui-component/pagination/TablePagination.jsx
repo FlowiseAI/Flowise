@@ -4,12 +4,14 @@ import { useTheme } from '@mui/material/styles'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 
+export const DEFAULT_ITEMS_PER_PAGE = 12
+
 const TablePagination = ({ currentPage, limit, total, onChange }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const borderColor = theme.palette.grey[900] + 25
 
-    const [itemsPerPage, setItemsPerPage] = useState(10)
+    const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [activePage, setActivePage] = useState(1)
     const [totalItems, setTotalItems] = useState(0)
 
@@ -55,9 +57,9 @@ const TablePagination = ({ currentPage, limit, total, onChange }) => {
                     }}
                 >
                     <Select value={itemsPerPage} onChange={handleLimitChange} displayEmpty>
-                        <MenuItem value={10}>10</MenuItem>
-                        <MenuItem value={25}>25</MenuItem>
-                        <MenuItem value={50}>50</MenuItem>
+                        <MenuItem value={12}>12</MenuItem>
+                        <MenuItem value={24}>24</MenuItem>
+                        <MenuItem value={48}>48</MenuItem>
                         <MenuItem value={100}>100</MenuItem>
                     </Select>
                 </FormControl>

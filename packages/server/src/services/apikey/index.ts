@@ -19,7 +19,12 @@ const getAllApiKeysFromDB = async (workspaceId?: string, page: number = -1, limi
     if (workspaceId) queryBuilder.andWhere('api_key.workspaceId = :workspaceId', { workspaceId })
     const [data, total] = await queryBuilder.getManyAndCount()
     const keysWithChatflows = await addChatflowsCount(data)
-    return { total, data: keysWithChatflows }
+
+    if (page > 0 && limit > 0) {
+        return { total, data: keysWithChatflows }
+    } else {
+        return keysWithChatflows
+    }
 }
 
 const getAllApiKeys = async (workspaceId?: string, autoCreateNewKey?: boolean, page: number = -1, limit: number = -1) => {

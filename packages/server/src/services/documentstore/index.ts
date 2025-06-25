@@ -92,7 +92,11 @@ const getAllDocumentStores = async (workspaceId?: string, page: number = -1, lim
 
         const [data, total] = await queryBuilder.getManyAndCount()
 
-        return { data, total }
+        if (page > 0 && limit > 0) {
+            return { data, total }
+        } else {
+            return data
+        }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

@@ -9,7 +9,7 @@ import { useTheme } from '@mui/material/styles'
 import ErrorBoundary from '@/ErrorBoundary'
 import { useError } from '@/store/context/ErrorContext'
 import MainCard from '@/ui-component/cards/MainCard'
-import TablePagination from '@/ui-component/pagination/TablePagination'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -81,14 +81,14 @@ const Documents = () => {
     }
 
     useEffect(() => {
-        applyFilters(1, 10)
+        applyFilters(currentPage, pageLimit)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(10)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)

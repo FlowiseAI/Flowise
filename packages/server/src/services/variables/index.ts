@@ -58,7 +58,11 @@ const getAllVariables = async (workspaceId?: string, page: number = -1, limit: n
 
         const [data, total] = await queryBuilder.getManyAndCount()
 
-        return { data, total }
+        if (page > 0 && limit > 0) {
+            return { data, total }
+        } else {
+            return data
+        }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

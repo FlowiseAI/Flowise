@@ -30,7 +30,11 @@ const getAllDatasets = async (workspaceId?: string, page: number = -1, limit: nu
             })
             returnObj.push(dataset)
         }
-        return { total, data: returnObj }
+        if (page > 0 && limit > 0) {
+            return { total, data: returnObj }
+        } else {
+            return returnObj
+        }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

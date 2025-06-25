@@ -50,8 +50,8 @@ export const utilGetChatMessage = async ({
     feedback,
     feedbackTypes,
     activeWorkspaceId,
-    page,
-    pageSize
+    page = -1,
+    pageSize = -1
 }: GetChatMessageParams): Promise<ChatMessage[]> => {
     if (!page) page = -1
     if (!pageSize) pageSize = -1

@@ -26,9 +26,11 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import AddEditDatasetRowDialog from './AddEditDatasetRowDialog'
 import UploadCSVFileDialog from '@/views/datasets/UploadCSVFileDialog'
 import ErrorBoundary from '@/ErrorBoundary'
+import { useError } from '@/store/context/ErrorContext'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import AddEditDatasetDialog from '@/views/datasets/AddEditDatasetDialog'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // API
 import datasetsApi from '@/api/dataset'
@@ -44,9 +46,6 @@ import { useAuth } from '@/hooks/useAuth'
 import empty_datasetSVG from '@/assets/images/empty_datasets.svg'
 import { IconTrash, IconPlus, IconX, IconUpload, IconArrowsDownUp } from '@tabler/icons-react'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
-
-import { useError } from '@/store/context/ErrorContext'
-import TablePagination from '@/ui-component/pagination/TablePagination'
 
 // ==============================|| Dataset Items ||============================== //
 
@@ -88,7 +87,7 @@ const EvalDatasetRows = () => {
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(10)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
@@ -266,7 +265,7 @@ const EvalDatasetRows = () => {
     }
 
     useEffect(() => {
-        refresh(1, 10)
+        refresh(currentPage, pageLimit)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 

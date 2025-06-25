@@ -14,6 +14,8 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import AddEditEvaluatorDialog from '@/views/evaluators/AddEditEvaluatorDialog'
 import { StyledTableCell, StyledTableRow } from '@/ui-component/table/TableStyles'
 import { PermissionIconButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
+import { truncateString } from '@/utils/genericHelper'
 
 // API
 import evaluatorsApi from '@/api/evaluators'
@@ -23,16 +25,14 @@ import moment from 'moment/moment'
 import useNotifier from '@/utils/useNotifier'
 import useConfirm from '@/hooks/useConfirm'
 import useApi from '@/hooks/useApi'
+import { useError } from '@/store/context/ErrorContext'
 
 // icons
 import empty_evaluatorSVG from '@/assets/images/empty_evaluators.svg'
 import { IconTrash, IconPlus, IconJson, IconX, IconNumber123, IconAbc, IconAugmentedReality } from '@tabler/icons-react'
-import { truncateString } from '@/utils/genericHelper'
 
 // const
 import { evaluators as evaluatorsOptions, numericOperators } from '../evaluators/evaluatorConstant'
-import { useError } from '@/store/context/ErrorContext'
-import TablePagination from '@/ui-component/pagination/TablePagination'
 
 // ==============================|| Evaluators ||============================== //
 
@@ -57,7 +57,7 @@ const Evaluators = () => {
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(10)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
@@ -156,7 +156,7 @@ const Evaluators = () => {
     }
 
     useEffect(() => {
-        refresh(0, 10)
+        refresh(currentPage, pageLimit)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 

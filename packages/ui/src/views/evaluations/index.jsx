@@ -33,6 +33,7 @@ import useApi from '@/hooks/useApi'
 // Hooks
 import useConfirm from '@/hooks/useConfirm'
 import useNotifier from '@/utils/useNotifier'
+import { useError } from '@/store/context/ErrorContext'
 
 // project
 import MainCard from '@/ui-component/cards/MainCard'
@@ -43,6 +44,7 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import { StyledTableCell, StyledTableRow } from '@/ui-component/table/TableStyles'
 import CreateEvaluationDialog from '@/views/evaluations/CreateEvaluationDialog'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // icons
 import {
@@ -58,9 +60,6 @@ import {
     IconPlayerPause
 } from '@tabler/icons-react'
 import empty_evalSVG from '@/assets/images/empty_evals.svg'
-
-import { useError } from '@/store/context/ErrorContext'
-import TablePagination from '@/ui-component/pagination/TablePagination'
 
 const EvalsEvaluation = () => {
     const theme = useTheme()
@@ -86,7 +85,7 @@ const EvalsEvaluation = () => {
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(10)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)

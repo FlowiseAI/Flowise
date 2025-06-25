@@ -15,6 +15,7 @@ import { FlowListTable } from '@/ui-component/table/FlowListTable'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -28,7 +29,6 @@ import { useError } from '@/store/context/ErrorContext'
 
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
-import TablePagination from '@/ui-component/pagination/TablePagination'
 
 // ==============================|| CHATFLOWS ||============================== //
 
@@ -46,7 +46,7 @@ const Chatflows = () => {
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(10)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
 
     const onChange = (page, pageLimit) => {

@@ -15,9 +15,13 @@ const getAllEvaluators = async (workspaceId?: string, page: number = -1, limit: 
             queryBuilder.take(limit)
         }
         const [data, total] = await queryBuilder.getManyAndCount()
-        return {
-            total,
-            data: EvaluatorDTO.fromEntities(data)
+        if (page > 0 && limit > 0) {
+            return {
+                total,
+                data: EvaluatorDTO.fromEntities(data)
+            }
+        } else {
+            return EvaluatorDTO.fromEntities(data)
         }
     } catch (error) {
         throw new InternalFlowiseError(

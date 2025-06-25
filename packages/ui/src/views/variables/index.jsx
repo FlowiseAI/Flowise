@@ -33,6 +33,7 @@ import ErrorBoundary from '@/ErrorBoundary'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import { Available } from '@/ui-component/rbac/available'
 import { refreshVariablesCache } from '@/ui-component/input/suggestionOption'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // API
 import variablesApi from '@/api/variables'
@@ -50,7 +51,6 @@ import VariablesEmptySVG from '@/assets/images/variables_empty.svg'
 
 // const
 import { useError } from '@/store/context/ErrorContext'
-import TablePagination from '@/ui-component/pagination/TablePagination'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     borderColor: theme.palette.grey[900] + 25,
@@ -96,7 +96,7 @@ const Variables = () => {
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(10)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
 
     const onChange = (page, pageLimit) => {
@@ -197,7 +197,7 @@ const Variables = () => {
     }
 
     useEffect(() => {
-        getAllVariables.request()
+        refresh(currentPage, pageLimit)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 

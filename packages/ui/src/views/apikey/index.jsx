@@ -33,6 +33,8 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import { Available } from '@/ui-component/rbac/available'
+import UploadJSONFileDialog from '@/views/apikey/UploadJSONFileDialog'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // API
 import apiKeyApi from '@/api/apikey'
@@ -59,8 +61,6 @@ import {
     IconFileUpload
 } from '@tabler/icons-react'
 import APIEmptySVG from '@/assets/images/api_empty.svg'
-import UploadJSONFileDialog from '@/views/apikey/UploadJSONFileDialog'
-import TablePagination from '@/ui-component/pagination/TablePagination'
 
 // ==============================|| APIKey ||============================== //
 
@@ -226,7 +226,7 @@ const APIKey = () => {
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(10)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
 
     const onChange = (page, pageLimit) => {
@@ -361,12 +361,11 @@ const APIKey = () => {
     const onConfirm = () => {
         setShowDialog(false)
         setShowUploadDialog(false)
-        refresh()
+        refresh(currentPage, pageLimit)
     }
 
     useEffect(() => {
-        refresh()
-
+        refresh(currentPage, pageLimit)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 

@@ -12,6 +12,7 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 import { ToolsTable } from '@/ui-component/table/ToolsListTable'
 import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // API
 import toolsApi from '@/api/tools'
@@ -24,7 +25,6 @@ import { gridSpacing } from '@/store/constant'
 // icons
 import { IconPlus, IconFileUpload, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import ToolEmptySVG from '@/assets/images/tools_empty.svg'
-import TablePagination from '@/ui-component/pagination/TablePagination'
 
 // ==============================|| TOOLS ||============================== //
 
@@ -42,7 +42,7 @@ const Tools = () => {
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageLimit, setPageLimit] = useState(10)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
     const [total, setTotal] = useState(0)
 
     const onChange = (page, pageLimit) => {
@@ -137,11 +137,7 @@ const Tools = () => {
     }
 
     useEffect(() => {
-        getAllToolsApi.request({
-            page: 1,
-            limit: 10
-        })
-
+        refresh(currentPage, pageLimit)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
