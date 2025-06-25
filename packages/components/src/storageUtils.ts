@@ -747,8 +747,8 @@ export const streamStorageFile = async (
     }
 
     // Check for path traversal attempts
-    if (isPathTraversal(chatflowId) || isPathTraversal(chatId)) {
-        throw new Error('Invalid path characters detected in chatflowId or chatId')
+    if (isPathTraversal(chatflowId)) {
+        throw new Error('Invalid path characters detected in chatflowId')
     }
 
     const storageType = getStorageType()
