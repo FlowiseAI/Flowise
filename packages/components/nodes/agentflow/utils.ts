@@ -343,7 +343,8 @@ export const getPastChatHistoryImageMessages = async (
                         const nodeOptions = {
                             retrieveAttachmentChatId: true,
                             chatflowid: options.chatflowid,
-                            chatId: options.chatId
+                            chatId: options.chatId,
+                            orgId: options.orgId
                         }
                         let fileInputFieldFromMimeType = 'txtFile'
                         fileInputFieldFromMimeType = mapMimeTypeToInputField(upload.mime)
