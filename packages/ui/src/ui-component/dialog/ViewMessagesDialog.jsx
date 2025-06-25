@@ -738,10 +738,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
 
     useEffect(() => {
         if (dialogProps.chatflow) {
-            getChatmessageApi.request(dialogProps.chatflow.id, {
-                startDate: startDate,
-                endDate: endDate
-            })
+            refresh(currentPage, pageLimit, startDate, endDate, chatTypeFilter, feedbackTypeFilter)
             getStatsApi.request(dialogProps.chatflow.id, {
                 startDate: startDate,
                 endDate: endDate
