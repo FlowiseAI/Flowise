@@ -12,6 +12,7 @@ import {
 import { Storage } from '@google-cloud/storage'
 import { Readable } from 'node:stream'
 import { getUserHome } from './utils'
+import { isValidUUID, isPathTraversal } from './validator'
 import sanitize from 'sanitize-filename'
 
 const dirSize = async (directoryPath: string) => {
@@ -40,6 +41,16 @@ export const addBase64FilesToStorage = async (
     fileNames: string[],
     orgId: string
 ): Promise<{ path: string; totalSize: number }> => {
+    // Validate chatflowid
+    if (!chatflowid || !isValidUUID(chatflowid)) {
+        throw new Error('Invalid chatflowId format - must be a valid UUID')
+    }
+
+    // Check for path traversal attempts
+    if (isPathTraversal(chatflowid)) {
+        throw new Error('Invalid path characters detected in chatflowId')
+    }
+
     const storageType = getStorageType()
     if (storageType === 's3') {
         const { s3Client, Bucket } = getS3Config()
@@ -730,6 +741,16 @@ export const streamStorageFile = async (
     fileName: string,
     orgId: string
 ): Promise<fs.ReadStream | Buffer | undefined> => {
+    // Validate chatflowId
+    if (!chatflowId || !isValidUUID(chatflowId)) {
+        throw new Error('Invalid chatflowId format - must be a valid UUID')
+    }
+
+    // Check for path traversal attempts
+    if (isPathTraversal(chatflowId)) {
+        throw new Error('Invalid path characters detected in chatflowId')
+    }
+
     const storageType = getStorageType()
     const sanitizedFilename = sanitize(fileName)
     if (storageType === 's3') {
