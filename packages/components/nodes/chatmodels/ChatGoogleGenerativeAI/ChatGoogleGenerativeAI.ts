@@ -105,7 +105,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 name: 'safetySettings',
                 type: 'array',
                 description:
-                    'Safety settings for the model. Refer to the <a href="https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/configure-safety-attributes#safety_attribute_definitions">official guide</a> on how to use Safety Settings',
+                    'Safety settings for the model. Refer to the <a href="https://ai.google.dev/gemini-api/docs/safety-settings">official guide</a> on how to use Safety Settings',
                 array: [
                     {
                         label: 'Harm Category',
@@ -114,19 +114,28 @@ class GoogleGenerativeAI_ChatModels implements INode {
                         options: [
                             {
                                 label: 'Dangerous',
-                                name: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT
+                                name: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                                description: 'Promotes, facilitates, or encourages harmful acts.'
                             },
                             {
                                 label: 'Harassment',
-                                name: HarmCategory.HARM_CATEGORY_HARASSMENT
+                                name: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                                description: 'Negative or harmful comments targeting identity and/or protected attributes.'
                             },
                             {
                                 label: 'Hate Speech',
-                                name: HarmCategory.HARM_CATEGORY_HATE_SPEECH
+                                name: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                                description: 'Content that is rude, disrespectful, or profane.'
                             },
                             {
                                 label: 'Sexually Explicit',
-                                name: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT
+                                name: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                                description: 'Contains references to sexual acts or other lewd content.'
+                            },
+                            {
+                                label: 'Civic Integrity',
+                                name: HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY,
+                                description: 'Election-related queries.'
                             }
                         ]
                     },
@@ -136,24 +145,29 @@ class GoogleGenerativeAI_ChatModels implements INode {
                         type: 'options',
                         options: [
                             {
-                                label: 'Low and Above',
-                                name: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE
-                            },
-                            {
-                                label: 'Medium and Above',
-                                name: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
-                            },
-                            {
                                 label: 'None',
-                                name: HarmBlockThreshold.BLOCK_NONE
+                                name: HarmBlockThreshold.BLOCK_NONE,
+                                description: 'Always show regardless of probability of unsafe content'
                             },
                             {
                                 label: 'Only High',
-                                name: HarmBlockThreshold.BLOCK_ONLY_HIGH
+                                name: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                                description: 'Block when high probability of unsafe content'
                             },
                             {
-                                label: 'Threshold Unspecified',
-                                name: HarmBlockThreshold.HARM_BLOCK_THRESHOLD_UNSPECIFIED
+                                label: 'Medium and Above',
+                                name: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                                description: 'Block when medium or high probability of unsafe content'
+                            },
+                            {
+                                label: 'Low and Above',
+                                name: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                                description: 'Block when low, medium or high probability of unsafe content'
+                            },
+                            {
+                                label: 'Threshold Unspecified (Default Threshold)',
+                                name: HarmBlockThreshold.HARM_BLOCK_THRESHOLD_UNSPECIFIED,
+                                description: 'Threshold is unspecified, block using default threshold'
                             }
                         ]
                     }
