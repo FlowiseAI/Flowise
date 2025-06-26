@@ -308,7 +308,7 @@ const _generateSelectedTools = async (config: Record<string, any>, question: str
         const model = (await newToolNodeInstance.init(config.selectedChatModel, '', options)) as BaseChatModel
 
         // Create a parser to validate the output
-        const parser = StructuredOutputParser.fromZodSchema(ToolType)
+        const parser = StructuredOutputParser.fromZodSchema(ToolType as any)
 
         // Generate JSON schema from our Zod schema
         const formatInstructions = parser.getFormatInstructions()
@@ -364,7 +364,7 @@ const generateNodesEdges = async (config: Record<string, any>, question: string,
         const model = (await newToolNodeInstance.init(config.selectedChatModel, '', options)) as BaseChatModel
 
         // Create a parser to validate the output
-        const parser = StructuredOutputParser.fromZodSchema(NodesEdgesType)
+        const parser = StructuredOutputParser.fromZodSchema(NodesEdgesType as any)
 
         // Generate JSON schema from our Zod schema
         const formatInstructions = parser.getFormatInstructions()

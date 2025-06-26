@@ -56,7 +56,7 @@ export const generateFollowUpPrompts = async (
                     temperature: parseFloat(`${providerConfig.temperature}`)
                 })
                 // use structured output parser because withStructuredOutput is not working
-                const parser = StructuredOutputParser.fromZodSchema(FollowUpPromptType)
+                const parser = StructuredOutputParser.fromZodSchema(FollowUpPromptType as any)
                 const formatInstructions = parser.getFormatInstructions()
                 const prompt = PromptTemplate.fromTemplate(`
                     ${providerConfig.prompt}
