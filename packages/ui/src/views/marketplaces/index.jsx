@@ -645,9 +645,25 @@ const Marketplace = () => {
                                                                 : selectedUsecases.filter((item) => item !== usecase)
                                                         )
                                                     }}
+                                                    sx={{
+                                                        '& .MuiSvgIcon-root': {
+                                                            color:
+                                                                eligibleUsecases.length === 0 || !eligibleUsecases.includes(usecase)
+                                                                    ? '#888 !important'
+                                                                    : undefined
+                                                        }
+                                                    }}
                                                 />
                                             }
                                             label={usecase}
+                                            sx={{
+                                                '& .MuiFormControlLabel-label': {
+                                                    color:
+                                                        eligibleUsecases.length === 0 || !eligibleUsecases.includes(usecase)
+                                                            ? '#888 !important'
+                                                            : undefined
+                                                }
+                                            }}
                                         />
                                     ))}
                                 </Stack>

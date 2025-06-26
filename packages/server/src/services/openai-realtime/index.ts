@@ -146,6 +146,7 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     const agent = await nodeInstance.init(nodeToExecuteData, '', {
         chatflowid,
         chatId,
+        orgId,
         appDataSource: appServer.AppDataSource,
         databaseEntities,
         analytic: chatflow.analytic
