@@ -24,7 +24,7 @@ export abstract class BaseQueue {
         this.queueEvents = new QueueEvents(queueName, { connection: this.connection })
     }
 
-    abstract processJob(data: any): Promise<any>
+    public abstract processJob(data: any): Promise<any>
 
     abstract getQueueName(): string
 
