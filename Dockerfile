@@ -8,7 +8,7 @@ FROM --platform=linux/amd64 node:20-alpine as base
 
 WORKDIR /app
 
-RUN apk add --update libc6-compat python3 make g++
+RUN apk add --update libc6-compat python3 make g++ bash
 # needed for pdfjs-dist
 RUN apk add --no-cache build-base cairo-dev pango-dev
 # Install Chromium
@@ -37,6 +37,9 @@ FROM base as build
 
 # Copy package.json files and patches directory first
 COPY --from=pruner /app/out/json/ .
+
+# Copy scripts directory before pnpm install since postinstall script needs it
+COPY scripts/ ./scripts/
 
 # First install the dependencies (as they change less often)
 RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm install 

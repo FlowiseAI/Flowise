@@ -164,9 +164,18 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                     const lines = content
                         .split('\n')
                         .map((line) => line.trim())
+                        .filter((line) => !line.startsWith('#'))
                         .filter((line) => line.length > 0)
                         .map((line) => line.split(',').map((cell) => cell.trim()))
                     const [headers, ...rows] = lines
+                    // check if number of columns in header is the same as the number of columns in the rows
+                    if (headers.length !== rows[0].length) {
+                        setSnackbarMessage(
+                            'The number of columns in the header and rows are not the same. Please remove the comments from the CSV file.'
+                        )
+                        setSnackbarOpen(true)
+                        return
+                    }
                     setHeaders(headers)
                     setRows(rows)
                     // Set the rowsRequested value to the number of rows in the CSV

@@ -1,0 +1,19 @@
+{
+  "name": "bws-secure",
+  "version": "1.0.0-scripts/bws-secure",
+  "description": "Secure environment management with Bitwarden Secrets Manager",
+  "type": "module",
+  "scripts": {
+    "start": "node secureRun.js",
+    "upload": "node secureRun.js --upload-secrets",
+    "list": "node list-projects.js",
+    "scan": "node check-vars/requiredRuntimeVars.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "dotenv-cli": "^8.0.0",
+    "glob": "^11.0.1",
+    "yargs": "^17.7.2"
+  }
+}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { getHref } from '@/utils/navigation'
 
 // material-ui
 import { Box, Stack, Skeleton } from '@mui/material'
@@ -127,6 +128,7 @@ const CustomAssistantLayout = () => {
                                             images={getImages(JSON.parse(data.details))}
                                             key={index}
                                             onClick={() => navigate('/assistants/custom/' + data.id)}
+                                            href={getHref(`/assistants/custom/${data.id}`)}
                                         />
                                     ))}
                             </Box>

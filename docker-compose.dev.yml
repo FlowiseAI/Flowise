@@ -21,6 +21,7 @@ services:
     #     - DATABASE_URL=postgresql://example_user:example_password@postgres:5432/example_db?schema=public
     #   depends_on:
     #     - postgres
+
     redis:
         image: redis:latest
         ports:

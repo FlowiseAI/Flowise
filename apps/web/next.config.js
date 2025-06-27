@@ -6,10 +6,25 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE === 'true'
 })
 
+console.log('Auth0 configs', {
+    AUTH0_BASE_URL: process.env.AUTH0_BASE_URL,
+    AUTH0_ORGANIZATION_ID: process.env.AUTH0_ORGANIZATION_ID,
+    AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
+    AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
+    AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
+    AUTH0_CLIENT_SECRET: process.env.AUTH0_CLIENT_SECRET,
+    AUTH0_SECRET: process.env.AUTH0_SECRET
+})
 /**
  * @type {import('next').NextConfig}
  */
 let nextConfig = withBundleAnalyzer({
+    // Enable standalone output for Docker deployments
+    ...(!process.env.VERCEL
+        ? {
+              output: 'standalone'
+          }
+        : {}),
     experimental: {
         turbo: {
             resolveAlias: {

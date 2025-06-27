@@ -28,6 +28,7 @@
         "@uiw/react-codemirror": "^4.21.21",
         "axios": "1.7.9",
         "clsx": "^1.1.1",
+        "contentful": "^10.6.14",
         "dotenv": "^16.0.0",
         "flagsmith": "^4.0.3",
         "aai-embed": "workspace:*",
