@@ -2,7 +2,7 @@ import { cloneDeep, set } from 'lodash'
 import { memo, useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, useParams } from 'react-router-dom'
-import { FullPageChat } from 'flowise-embed-react'
+import { FullPageChat } from 'aai-embed-react'
 import PropTypes from 'prop-types'
 
 // Hooks
@@ -1000,7 +1000,7 @@ const CustomAssistantConfigurePreview = () => {
                                                         sx={{ borderRadius: 20 }}
                                                         size='small'
                                                         variant='text'
-                                                        onClick={() => generateInstruction(customAssistantInstruction)}
+                                                        onClick={() => generateInstruction()}
                                                         startIcon={<IconWand size={20} />}
                                                     >
                                                         Generate

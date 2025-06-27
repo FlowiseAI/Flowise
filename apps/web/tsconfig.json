@@ -24,7 +24,8 @@
             "@/ui-component/*": ["../../packages/ui/src/ui-component/*"],
             "@/assets/images/*": ["../../packages/ui/src/assets/images/*"],
             "@aai-utils/*": ["../../packages/server/src/aai-utils/*"],
-            "@/*": ["../../packages/ui/src/*"]
+            "@/*": ["../../packages/ui/src/*"],
+            "react-router-dom":["../../packages/ui/src/utils/navigation"]
         },
         "plugins": [
             {

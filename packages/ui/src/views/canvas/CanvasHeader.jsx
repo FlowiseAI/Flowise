@@ -43,7 +43,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const flags = useFlags(['chatflow:share:external'])
     const dispatch = useDispatch()
@@ -130,13 +130,18 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
             setChatflowConfigurationDialogOpen(true)
         } else if (setting === 'duplicateChatflow') {
             try {
-                const flowData = generateExportFlowData(chatflow)
-                // Remove the id when duplicating
-                delete flowData.id
-                flowData.name = `Copy of ${flowData.name}`
-                flowData.visibility = ['Private']
-                localStorage.setItem('duplicatedFlowData', JSON.stringify(flowData))
-                window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
+                let flowData = chatflow.flowData
+                const parsedFlowData = JSON.parse(flowData)
+                parsedFlowData.name = `${chatflow.name}`
+                flowData = JSON.stringify(parsedFlowData)
+                localStorage.setItem('duplicatedFlowData', flowData)
+                if (isAgentflowV2) {
+                    window.open(`${uiBaseURL}/v2/agentcanvas`, '_blank')
+                } else if (isAgentCanvas) {
+                    window.open(`${uiBaseURL}/agentcanvas`, '_blank')
+                } else {
+                    window.open(`${uiBaseURL}/canvas`, '_blank')
+                }
             } catch (e) {
                 console.error(e)
             }
@@ -284,13 +289,10 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                 }}
                                 color='inherit'
                                 onClick={() => {
-                                    try {
+                                    if (window.history.state && window.history.state.idx > 0) {
                                         navigate(-1)
-                                        setTimeout(() => {
-                                            navigate('/chatflows')
-                                        }, 100)
-                                    } catch (error) {
-                                        navigate('/chatflows')
+                                    } else {
+                                        navigate('/', { replace: true })
                                     }
                                 }}
                             >
@@ -549,7 +551,8 @@ CanvasHeader.propTypes = {
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isAgentflowV2: PropTypes.bool
 }
 
 export default CanvasHeader

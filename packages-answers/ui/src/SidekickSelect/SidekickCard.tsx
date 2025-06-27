@@ -45,8 +45,8 @@ const SidekickCard = ({
     const theme = useTheme()
     const handleClone = useCallback(
         (sidekick: Sidekick, e: React.MouseEvent) => {
+            e.preventDefault()
             e.stopPropagation()
-
             if (!sidekick) return
 
             const isAgentCanvas = (sidekick.flowData?.nodes || []).some(
@@ -209,13 +209,28 @@ const SidekickCard = ({
                         ) : null}
                         {sidekick.isExecutable ? (
                             <Tooltip title='Clone this sidekick'>
-                                <WhiteIconButton size='small' onClick={(e) => handleClone(sidekick, e)}>
+                                <WhiteIconButton 
+                                    size='small' 
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        handleClone(sidekick, e)
+                                    }}
+                                >
                                     <IconCopy />
                                 </WhiteIconButton>
                             </Tooltip>
                         ) : (
                             <Tooltip title='Clone this sidekick'>
-                                <WhiteButton variant='outlined' endIcon={<IconCopy />} onClick={(e) => handleClone(sidekick, e)}>
+                                <WhiteButton 
+                                    variant='outlined' 
+                                    endIcon={<IconCopy />} 
+                                    onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        handleClone(sidekick, e)
+                                    }}
+                                >
                                     Clone
                                 </WhiteButton>
                             </Tooltip>

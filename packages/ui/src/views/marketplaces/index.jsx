@@ -47,12 +47,12 @@ import useApi from '@/hooks/useApi'
 import useConfirm from '@/hooks/useConfirm'
 
 // const
-import { baseURL } from '@/store/constant'
+import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import { gridSpacing } from '@/store/constant'
 import useNotifier from '@/utils/useNotifier'
 
 const badges = ['POPULAR', 'NEW']
-const types = ['Chatflow', 'Agentflow', 'Tool']
+const types = ['Chatflow', 'Agentflow', 'AgentflowV2', 'Tool']
 const framework = ['Langchain', 'LlamaIndex']
 const MenuProps = {
     PaperProps: {
@@ -61,11 +61,7 @@ const MenuProps = {
         }
     }
 }
-const SelectStyles = {
-    '& .MuiOutlinedInput-notchedOutline': {
-        borderRadius: 2
-    }
-}
+
 // ==============================|| Marketplace ||============================== //
 
 const Marketplace = () => {
@@ -78,6 +74,7 @@ const Marketplace = () => {
     const [isLoading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [images, setImages] = useState({})
+    const [icons, setIcons] = useState({})
     const [usecases, setUsecases] = useState([])
     const [eligibleUsecases, setEligibleUsecases] = useState([])
     const [selectedUsecases, setSelectedUsecases] = useState([])
@@ -96,12 +93,23 @@ const Marketplace = () => {
     const getAllCustomTemplatesApi = useApi(marketplacesApi.getAllCustomTemplates)
     const [activeTabValue, setActiveTabValue] = useState(0)
     const [templateImages, setTemplateImages] = useState({})
+    const [templateIcons, setTemplateIcons] = useState({})
     const [templateUsecases, setTemplateUsecases] = useState([])
     const [eligibleTemplateUsecases, setEligibleTemplateUsecases] = useState([])
     const [selectedTemplateUsecases, setSelectedTemplateUsecases] = useState([])
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
     const { confirm } = useConfirm()
+
+    const getSelectStyles = (borderColor, isDarkMode) => ({
+        '& .MuiOutlinedInput-notchedOutline': {
+            borderRadius: 2,
+            borderColor: borderColor
+        },
+        '& .MuiSvgIcon-root': {
+            color: isDarkMode ? '#fff' : 'inherit'
+        }
+    })
 
     const handleTabChange = (event, newValue) => {
         if (newValue === 1 && !getAllCustomTemplatesApi.data) {
@@ -305,7 +313,11 @@ const Marketplace = () => {
     }
 
     const goToCanvas = (selectedChatflow) => {
-        navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
+        if (selectedChatflow.type === 'AgentflowV2') {
+            navigate(`/v2/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
+        } else {
+            navigate(`/marketplace/${selectedChatflow.id}`, { state: selectedChatflow })
+        }
     }
 
     useEffect(() => {
@@ -324,6 +336,7 @@ const Marketplace = () => {
                 const flows = getAllTemplatesMarketplacesApi.data
                 const usecases = []
                 const images = {}
+                const icons = {}
                 for (let i = 0; i < flows.length; i += 1) {
                     if (flows[i].flowData) {
                         const flowDataStr = flows[i].flowData
@@ -331,15 +344,22 @@ const Marketplace = () => {
                         usecases.push(...flows[i].usecases)
                         const nodes = flowData.nodes || []
                         images[flows[i].id] = []
+                        icons[flows[i].id] = []
                         for (let j = 0; j < nodes.length; j += 1) {
-                            const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                            if (!images[flows[i].id].includes(imageSrc)) {
-                                images[flows[i].id].push(imageSrc)
+                            const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
+                            if (foundIcon) {
+                                icons[flows[i].id].push(foundIcon)
+                            } else {
+                                const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+                                if (!images[flows[i].id].includes(imageSrc)) {
+                                    images[flows[i].id].push(imageSrc)
+                                }
                             }
                         }
                     }
                 }
                 setImages(images)
+                setIcons(icons)
                 setUsecases(Array.from(new Set(usecases)).sort())
                 setEligibleUsecases(Array.from(new Set(usecases)).sort())
             } catch (e) {
@@ -364,6 +384,7 @@ const Marketplace = () => {
                 const flows = getAllCustomTemplatesApi.data
                 const usecases = []
                 const tImages = {}
+                const tIcons = {}
                 for (let i = 0; i < flows.length; i += 1) {
                     if (flows[i].flowData) {
                         const flowDataStr = flows[i].flowData
@@ -374,15 +395,22 @@ const Marketplace = () => {
                         }
                         const nodes = flowData.nodes || []
                         tImages[flows[i].id] = []
+                        tIcons[flows[i].id] = []
                         for (let j = 0; j < nodes.length; j += 1) {
-                            const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
-                            if (!tImages[flows[i].id].includes(imageSrc)) {
-                                tImages[flows[i].id].push(imageSrc)
+                            const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
+                            if (foundIcon) {
+                                tIcons[flows[i].id].push(foundIcon)
+                            } else {
+                                const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
+                                if (!tImages[flows[i].id].includes(imageSrc)) {
+                                    tImages[flows[i].id].push(imageSrc)
+                                }
                             }
                         }
                     }
                 }
                 setTemplateImages(tImages)
+                setTemplateIcons(tIcons)
                 setTemplateUsecases(Array.from(new Set(usecases)).sort())
                 setEligibleTemplateUsecases(Array.from(new Set(usecases)).sort())
             } catch (e) {
@@ -427,10 +455,10 @@ const Marketplace = () => {
                                             multiple
                                             value={badgeFilter}
                                             onChange={handleBadgeFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
+                                            input={<OutlinedInput label='Tag' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
-                                            sx={SelectStyles}
+                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
                                         >
                                             {badges.map((name) => (
                                                 <MenuItem
@@ -463,10 +491,10 @@ const Marketplace = () => {
                                             multiple
                                             value={typeFilter}
                                             onChange={handleTypeFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
+                                            input={<OutlinedInput label='Type' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
-                                            sx={SelectStyles}
+                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
                                         >
                                             {types.map((name) => (
                                                 <MenuItem
@@ -499,10 +527,10 @@ const Marketplace = () => {
                                             multiple
                                             value={frameworkFilter}
                                             onChange={handleFrameworkFilterChange}
-                                            input={<OutlinedInput label='Badge' />}
+                                            input={<OutlinedInput label='Framework' />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
-                                            sx={SelectStyles}
+                                            sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
                                         >
                                             {framework.map((name) => (
                                                 <MenuItem
@@ -522,6 +550,7 @@ const Marketplace = () => {
                             search={true}
                             searchPlaceholder='Search Name/Description/Node'
                             title='Marketplace'
+                            description='Explore and use pre-built templates'
                         >
                             <ToggleButtonGroup
                                 sx={{ borderRadius: 2, height: '100%' }}
@@ -625,11 +654,14 @@ const Marketplace = () => {
                                                                 badgeContent={data.badge}
                                                                 color={data.badge === 'POPULAR' ? 'primary' : 'error'}
                                                             >
-                                                                {(data.type === 'Chatflow' || data.type === 'Agentflow') && (
+                                                                {(data.type === 'Chatflow' ||
+                                                                    data.type === 'Agentflow' ||
+                                                                    data.type === 'AgentflowV2') && (
                                                                     <ItemCard
                                                                         onClick={() => goToCanvas(data)}
                                                                         data={data}
                                                                         images={images[data.id]}
+                                                                        icons={icons[data.id]}
                                                                     />
                                                                 )}
                                                                 {data.type === 'Tool' && (
@@ -637,13 +669,17 @@ const Marketplace = () => {
                                                                 )}
                                                             </Badge>
                                                         )}
-                                                        {!data.badge && (data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                            <ItemCard
-                                                                onClick={() => goToCanvas(data)}
-                                                                data={data}
-                                                                images={images[data.id]}
-                                                            />
-                                                        )}
+                                                        {!data.badge &&
+                                                            (data.type === 'Chatflow' ||
+                                                                data.type === 'Agentflow' ||
+                                                                data.type === 'AgentflowV2') && (
+                                                                <ItemCard
+                                                                    onClick={() => goToCanvas(data)}
+                                                                    data={data}
+                                                                    images={images[data.id]}
+                                                                    icons={icons[data.id]}
+                                                                />
+                                                            )}
                                                         {!data.badge && data.type === 'Tool' && (
                                                             <ItemCard data={data} onClick={() => goToTool(data)} />
                                                         )}
@@ -748,11 +784,14 @@ const Marketplace = () => {
                                                                 badgeContent={data.badge}
                                                                 color={data.badge === 'POPULAR' ? 'primary' : 'error'}
                                                             >
-                                                                {(data.type === 'Chatflow' || data.type === 'Agentflow') && (
+                                                                {(data.type === 'Chatflow' ||
+                                                                    data.type === 'Agentflow' ||
+                                                                    data.type === 'AgentflowV2') && (
                                                                     <ItemCard
                                                                         onClick={() => goToCanvas(data)}
                                                                         data={data}
                                                                         images={templateImages[data.id]}
+                                                                        icons={templateIcons[data.id]}
                                                                     />
                                                                 )}
                                                                 {data.type === 'Tool' && (
@@ -760,13 +799,17 @@ const Marketplace = () => {
                                                                 )}
                                                             </Badge>
                                                         )}
-                                                        {!data.badge && (data.type === 'Chatflow' || data.type === 'Agentflow') && (
-                                                            <ItemCard
-                                                                onClick={() => goToCanvas(data)}
-                                                                data={data}
-                                                                images={templateImages[data.id]}
-                                                            />
-                                                        )}
+                                                        {!data.badge &&
+                                                            (data.type === 'Chatflow' ||
+                                                                data.type === 'Agentflow' ||
+                                                                data.type === 'AgentflowV2') && (
+                                                                <ItemCard
+                                                                    onClick={() => goToCanvas(data)}
+                                                                    data={data}
+                                                                    images={templateImages[data.id]}
+                                                                    icons={templateIcons[data.id]}
+                                                                />
+                                                            )}
                                                         {!data.badge && data.type === 'Tool' && (
                                                             <ItemCard data={data} onClick={() => goToTool(data)} />
                                                         )}

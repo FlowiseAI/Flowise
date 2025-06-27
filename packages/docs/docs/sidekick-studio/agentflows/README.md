@@ -2,7 +2,7 @@
 description: Learn about the different Agent Flows available in Flowise
 ---
 
-# Agent Flows
+# Agent Flows (Depricated)
 
 Flowise provides multiple approaches to building agent systems, each designed for specific use cases and offering different levels of control and abstraction. This guide explores the two main agent architectures: **Multi-Agents** and **Sequential Agents**.
 

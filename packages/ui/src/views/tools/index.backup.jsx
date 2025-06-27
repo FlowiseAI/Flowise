@@ -1,3 +1,4 @@
+'use client'
 import PropTypes from 'prop-types'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import { Box, Stack, Tabs, Tab, FormControl, InputLabel, Select, MenuItem, Button } from '@mui/material'

@@ -8,6 +8,7 @@ import { AppCsvParseRunsStatus, AppCsvParseRowStatus, IAppCsvParseRuns, IAppCsvP
 import { AppCsvParseRuns } from '../database/entities/AppCsvParseRuns'
 import { AppCsvParseRows } from '../database/entities/AppCsvParseRows'
 import { ChatFlow } from '../database/entities/ChatFlow'
+import { User } from '../database/entities/User'
 /**
  * Cron job schedule for processing csv rows
  * Default: Every 15 minutes ('0/15 * * * *')
@@ -31,9 +32,24 @@ const runChatFlow = async (row: IAppCsvParseRows, chatflowChatId: string) => {
     if (!chatflow) {
         throw new Error(`Chatflow ${chatflowChatId} not found`)
     }
+    const csvParseRun = await appServer.AppDataSource.getRepository(AppCsvParseRuns).findOneBy({
+        id: row.csvParseRunId
+    })
+    if (!csvParseRun) {
+        throw new Error(`CSV parse run ${row.csvParseRunId} not found`)
+    }
+    const user = await appServer.AppDataSource.getRepository(User).findOneBy({
+        id: csvParseRun.userId
+    })
+    if (!user) {
+        throw new Error(`User ${csvParseRun.userId} not found`)
+    }
+
     const response = await executeFlow({
+        user: user,
         incomingInput: {
-            question: JSON.stringify(row.rowData)
+            question: JSON.stringify(row.rowData),
+            user: user
         },
         chatflow,
         chatId: uuidv4(),

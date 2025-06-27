@@ -2,54 +2,22 @@
 <!-- TODO: Add banner for answerAI  -->
 <!-- <img width="100%" src="https://github.com/the-answerai/theanswer/blob/main/images/flowise.png?raw=true"></a> -->
 
-# TheAnswer - Build LLM Apps Easily with Flowise
+<!-- <p align="center">
+<img src="https://github.com/the-answerai/theanswer/blob/main/images/flowise_white.svg#gh-light-mode-only">
+<img src="https://github.com/the-answerai/theanswer/blob/main/images/flowise_dark.svg#gh-dark-mode-only">
+</p> -->
 
+[![Release Notes](https://img.shields.io/github/release/the-answerai/theanswer)](https://github.com/the-answerai/theanswer/releases)
 [![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
 [![Twitter Follow](https://img.shields.io/twitter/follow/TheAnswerAI?style=social)](https://twitter.com/TheAnswerAI)
 [![GitHub star chart](https://img.shields.io/github/stars/the-answerai/theanswer?style=social)](https://star-history.com/#the-answerai/theanswer)
 [![GitHub fork](https://img.shields.io/github/forks/the-answerai/theanswer?style=social)](https://github.com/the-answerai/theanswer/fork)
 
-English | [繁體中文](./i18n/README-TW.md) | [簡體中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
+English | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
 
-<h3>Drag & drop UI to build your customized LLM Flowise with The AnswerAI</h3>
+<h3>Build AI Agents, Visually</h3>
 <a href="https://github.com/the-answerai/theanswer">
-<img width="100%" src="https://github.com/the-answerai/theanswer/blob/main/images/flowise.gif?raw=true"></a>
-
-## 🌟 What is TheAnswer?
-
-TheAnswer is a revolutionary AI-powered productivity suite that empowers individuals and organizations to streamline their workflows, enhance decision-making, and boost creativity. Built on top of the popular open-source project Flowise, TheAnswer extends its capabilities to provide a comprehensive set of tools designed to tackle a wide range of tasks with unprecedented efficiency and intelligence.
-
-### TheAnswer and Flowise
-
-TheAnswer builds upon Flowise, a powerful open-source tool for creating customized LLM flows. While Flowise provides the foundation for AI-powered workflows, TheAnswer extends these capabilities and integrates a wide range of additional services to create a comprehensive productivity suite.
-
-Key aspects of TheAnswer's approach:
-
--   Leverages Flowise's drag-and-drop interface for building AI workflows
--   Extends Flowise's functionality with additional UI components and features
--   Integrates seamlessly with Flowise projects
-
-### Integration with Multiple Services
-
-TheAnswer goes beyond Flowise integration, offering a growing ecosystem of services to enhance your AI-powered workflows:
-
-1. **Langfuse**: For LLM observability and analytics
-2. **Make.com**: To create complex automated workflows
-3. **n8n**: For workflow automation and integration
-4. **Auth0**: For robust user management, organizations, and permissions
-5. **Other AI and Productivity Tools**: Continuously expanding integrations with various services
-
-This multi-service approach allows TheAnswer to offer a more versatile and powerful solution, catering to a wide range of business needs and use cases.
-
-### Key Features
-
-1. **AI Sidekicks (Chatflows)**: Task-specific AI assistants for various purposes, built using Flowise and enhanced with TheAnswer's capabilities.
-2. **Document Stores**: Connect and access data from multiple third-party services.
-3. **Powerful Tools Integration**: Leverage various tools and services to extend AI capabilities beyond Flowise's core functionality.
-4. **Developer-Friendly Platform**: Customizable AI models and workflows with API access, compatible with Flowise and other integrated services.
-5. **Shareable Chatbots**: Easily deploy and share custom AI Sidekicks.
-6. **Composable Architecture**: Mix and match services like Flowise, Langfuse, Make.com, and n8n to create tailored solutions.
-7. **Advanced User Management**: Utilize Auth0 for secure user authentication, organization management, and granular permissions control.
+<img width="100%" src="https://github.com/the-answerai/theanswer/blob/main/images/flowise_agentflow.gif?raw=true"></a>
 
 ## ⚡Quick Start
 
@@ -298,9 +266,9 @@ Deploy TheAnswer self-hosted in your existing infrastructure. We support various
 
         [![Deploy on Elestio](https://elest.io/images/logos/deploy-to-elestio-btn.png)](https://elest.io/open-source/theanswer)
 
-    -   [Sealos](https://cloud.sealos.io/?openapp=system-template%3Dtheanswer)
+    -   [Sealos](https://template.sealos.io/deploy?templateName=flowise)
 
-        [![](https://raw.githubusercontent.com/labring-actions/templates/main/Deploy-on-Sealos.svg)](https://cloud.sealos.io/?openapp=system-template%3Dtheanswer)
+        [![Deploy on Sealos](https://sealos.io/Deploy-on-Sealos.svg)](https://template.sealos.io/deploy?templateName=flowise)
 
     -   [RepoCloud](https://repocloud.io/details/?app_id=29)
 

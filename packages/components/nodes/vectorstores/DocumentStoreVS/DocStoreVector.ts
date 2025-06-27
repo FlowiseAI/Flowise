@@ -56,7 +56,7 @@ class DocStore_VectorStores implements INode {
                 return returnData
             }
 
-            const stores = await appDataSource.getRepository(databaseEntities['DocumentStore']).find()
+            const stores = await appDataSource.getRepository(databaseEntities['DocumentStore']).find({ where: { userId: options.userId } })
             for (const store of stores) {
                 if (store.status === 'UPSERTED') {
                     const obj = {

@@ -1,7 +1,7 @@
 import { ICommonObject } from 'flowise-components'
 import { DocumentStore } from './database/entities/DocumentStore'
 import { DataSource } from 'typeorm'
-import { IComponentNodes } from './Interface'
+import { IComponentNodes, IUser } from './Interface'
 import { Telemetry } from './utils/telemetry'
 import { CachePool } from './CachePool'
 
@@ -27,6 +27,8 @@ export interface IDocumentStore {
     vectorStoreConfig: string | null // JSON string
     embeddingConfig: string | null // JSON string
     recordManagerConfig: string | null // JSON string
+    userId: string
+    organizationId: string
 }
 
 export interface IDocumentStoreFileChunk {
@@ -66,14 +68,15 @@ export interface IDocumentStoreLoader {
     files?: IDocumentStoreLoaderFile[]
     source?: string
     credential?: string
+    userId: string
+    organizationId: string
 }
 
 export interface IDocumentStoreLoaderForPreview extends IDocumentStoreLoader {
     rehydrated?: boolean
     preview?: boolean
     previewChunkCount?: number
-    userId: string
-    organizationId: string
+    user: IUser
 }
 
 export interface IDocumentStoreUpsertData {
@@ -102,14 +105,12 @@ export interface IDocumentStoreUpsertData {
         name: string
         config: ICommonObject
     }
-    userId: string
-    organizationId: string
+    user: IUser
 }
 
 export interface IDocumentStoreRefreshData {
     items: IDocumentStoreUpsertData[]
-    userId: string
-    organizationId: string
+    user: IUser
 }
 
 export interface IDocumentStoreLoaderFile {
@@ -119,15 +120,13 @@ export interface IDocumentStoreLoaderFile {
     size: number
     status: DocumentStoreStatus
     uploaded: Date
-    userId: string
-    organizationId: string
+    user: IUser
 }
 
 export interface IDocumentStoreWhereUsed {
     id: string
     name: string
-    userId: string
-    organizationId: string
+    user: IUser
 }
 
 export interface IUpsertQueueAppServer {
@@ -135,8 +134,7 @@ export interface IUpsertQueueAppServer {
     componentNodes: IComponentNodes
     telemetry: Telemetry
     cachePool?: CachePool
-    userId: string
-    organizationId: string
+    user: IUser
 }
 
 export interface IExecuteDocStoreUpsert extends IUpsertQueueAppServer {
@@ -144,8 +142,7 @@ export interface IExecuteDocStoreUpsert extends IUpsertQueueAppServer {
     totalItems: IDocumentStoreUpsertData[]
     files: Express.Multer.File[]
     isRefreshAPI: boolean
-    userId: string
-    organizationId: string
+    user: IUser
 }
 
 export interface IExecutePreviewLoader extends Omit<IUpsertQueueAppServer, 'telemetry'> {
@@ -164,8 +161,7 @@ export interface IExecuteVectorStoreInsert extends IUpsertQueueAppServer {
     data: ICommonObject
     isStrictSave: boolean
     isVectorStoreInsert: boolean
-    userId: string
-    organizationId: string
+    user: IUser
 }
 
 const getFileName = (fileBase64: string) => {
@@ -206,6 +202,7 @@ export const addLoaderSource = (loader: IDocumentStoreLoader, isGetFileNameOnly 
 
     switch (loader.loaderId) {
         case 'pdfFile':
+        case 'docxFile':
         case 'jsonFile':
         case 'csvFile':
         case 'file':

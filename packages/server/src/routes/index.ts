@@ -36,6 +36,7 @@ import predictionRouter from './predictions'
 import promptListsRouter from './prompts-lists'
 import publicChatbotRouter from './public-chatbots'
 import publicChatflowsRouter from './public-chatflows'
+import publicExecutionsRouter from './public-executions'
 import statsRouter from './stats'
 import toolsRouter from './tools'
 import upsertHistoryRouter from './upsert-history'
@@ -53,6 +54,9 @@ import csvParserRouter from './csv-parser'
 import browserExtensionRouter from './browser-extension'
 import dalleImageUploadRouter from './dalle-image-upload'
 import dalleImageRouter from './dalle-image'
+import executionsRouter from './executions'
+import validationRouter from './validation'
+import agentflowv2GeneratorRouter from './agentflowv2-generator'
 
 const router = express.Router()
 
@@ -95,6 +99,7 @@ router.use('/prediction', predictionRouter)
 router.use('/prompts-list', promptListsRouter)
 router.use('/public-chatbotConfig', publicChatbotRouter)
 router.use('/public-chatflows', publicChatflowsRouter)
+router.use('/public-executions', publicExecutionsRouter)
 router.use('/stats', statsRouter)
 router.use('/tools', toolsRouter)
 router.use('/upload-dalle-image', dalleImageUploadRouter)
@@ -110,5 +115,8 @@ router.use('/nvidia-nim', nvidiaNimRouter)
 router.use('/gmail', gmailRouter)
 router.use('/csv-parser', csvParserRouter)
 router.use('/browser-extension', browserExtensionRouter)
+router.use('/executions', executionsRouter)
+router.use('/validation', validationRouter)
+router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
 
 export default router

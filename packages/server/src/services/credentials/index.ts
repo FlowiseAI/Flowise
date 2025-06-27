@@ -182,14 +182,15 @@ const updateAndRefreshToken = async (credentialId: string, userId?: string): Pro
             googleAccessToken: decryptedCredentialData.googleAccessToken,
             googleRefreshToken: decryptedCredentialData.googleRefreshToken
         })
-        const { expiry_date } = await googleOauth2Client.refreshToken()
+        const { access_token, expiry_date } = await googleOauth2Client.refreshToken()
 
         const updateBody = {
             name: credential.name,
             credentialName: credential.credentialName,
             plainDataObj: {
                 ...decryptedCredentialData,
-                expiresAt: new Date(expiry_date)
+                googleAccessToken: access_token,  // ✅ ACTUALIZA el nuevo access token
+                expiresAt: new Date(expiry_date)  // ✅ ACTUALIZA la fecha de expiración
                 // expiresAt: new Date(Date.now() + 1 * 60 * 1000)
             },
             userId: credential.userId,

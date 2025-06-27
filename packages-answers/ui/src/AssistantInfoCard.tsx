@@ -24,7 +24,7 @@ interface AssistantInfoCardProps {
 }
 
 const WhiteIconButton = styled(IconButton)(({ theme }) => ({
-    color: theme.palette.common.white,
+    color: theme.palette?.common?.white,
     '&:hover': {
         backgroundColor: alpha(theme.palette.primary.main, 0.08),
         color: theme.palette.primary.main
@@ -239,7 +239,7 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
                                                             height: 24,
                                                             borderRadius: '50%',
                                                             backgroundColor: customization.isDarkMode
-                                                                ? theme.palette.common.white
+                                                                ? theme.palette?.common?.white
                                                                 : alpha(theme.palette.grey[300], 0.75)
                                                         }}
                                                     >

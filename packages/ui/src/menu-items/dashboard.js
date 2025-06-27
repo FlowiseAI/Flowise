@@ -9,11 +9,12 @@ import {
     IconRobot,
     IconVariable,
     IconFiles,
-    IconBuilding
+    IconListCheck
 } from '@tabler/icons-react'
 
 // constant
 const icons = {
+    IconListCheck,
     IconUsersGroup,
     IconHierarchy,
     IconBuildingStore,
@@ -22,8 +23,7 @@ const icons = {
     IconLock,
     IconRobot,
     IconVariable,
-    IconFiles,
-    IconBuilding
+    IconFiles
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -47,8 +47,15 @@ const dashboard = {
             type: 'item',
             url: '/agentflows',
             icon: icons.IconUsersGroup,
-            breadcrumbs: true,
-            isBeta: true
+            breadcrumbs: true
+        },
+        {
+            id: 'executions',
+            title: 'Executions',
+            type: 'item',
+            url: '/executions',
+            icon: icons.IconListCheck,
+            breadcrumbs: true
         },
         {
             id: 'assistants',

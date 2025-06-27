@@ -1,7 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import fetch from 'node-fetch'
+// import fetch from 'node-fetch'
 
 interface DalleGenerationRequest {
     prompt: string

@@ -86,7 +86,7 @@ export class App {
             // Initialize abort controllers pool
             this.abortControllerPool = new AbortControllerPool()
 
-            // Initialize API keys
+            // Initialize API keys 
             await getAPIKeys()
 
             // Initialize encryption key
@@ -292,7 +292,7 @@ export class App {
             })
         })
 
-        if (process.env.MODE === MODE.QUEUE) {
+        if (process.env.MODE === MODE.QUEUE && process.env.ENABLE_BULLMQ_DASHBOARD === 'true') {
             this.app.use('/admin/queues', this.queueManager.getBullBoardRouter())
         }
 

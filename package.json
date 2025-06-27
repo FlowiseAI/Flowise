@@ -1,6 +1,6 @@
 {
     "name": "theanswer",
-    "version": "2.2.7",
+    "version": "3.0.0",
     "private": true,
     "homepage": "https://theanswer.ai",
     "workspaces": [
@@ -125,11 +125,11 @@
         "pnpm": ">=9"
     },
     "resolutions": {
-        "@google/generative-ai": "^0.22.0",
+        "@google/generative-ai": "^0.24.0",
         "@grpc/grpc-js": "^1.10.10",
         "@langchain/core": "0.3.37",
         "@qdrant/openapi-typescript-fetch": "1.2.6",
-        "openai": "4.82.0",
+        "openai": "4.96.0",
         "protobufjs": "7.4.0"
     },
     "eslintIgnore": [

@@ -3,7 +3,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-const View = dynamic(() => import('@/views/marketplaces/MarketplaceLanding'), { ssr: false })
+const View = dynamic(() => import('@/views/marketplaces/MarketplaceCanvas'), { ssr: false })
 
 interface PageProps {
     params: {

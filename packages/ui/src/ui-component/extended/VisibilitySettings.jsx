@@ -21,8 +21,6 @@ import { TooltipWithParser } from '../tooltip/TooltipWithParser'
 const visibilityOptions = [
     { name: 'Private', description: 'Only visible to you' },
     { name: 'Organization', description: 'Visible to all members of your organization' },
-    { name: 'AnswerAI', description: 'Visible to AnswerAI users' },
-    { name: 'Marketplace', description: 'Available in the public marketplace' },
     { name: 'Browser Extension', description: 'Accessible via browser extension' }
 ]
 

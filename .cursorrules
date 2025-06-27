@@ -1,0 +1,488 @@
+# Flowise Resource Implementation Architecture
+
+This rule documents the standardized patterns for implementing resources (like "Chatflow") across the Flowise codebase, covering both server-side and client-side implementations.
+
+## Server Architecture Pattern
+
+### 1. Routes Layer (`packages/server/src/routes/{resource}/index.ts`)
+- **Purpose**: Express route definitions with authentication middleware
+- **Pattern**: RESTful endpoint mapping to controller methods
+- **Structure**:
+  ```typescript
+  import express from 'express'
+  import {resource}Controller from '../../controllers/{resource}'
+  import enforceAbility from '../../middlewares/authentication/enforceAbility'
+  
+  const router = express.Router()
+  
+  // CREATE
+  router.post('/', enforceAbility('{Resource}'), {resource}Controller.save{Resource})
+  router.post('/import{resource}s', enforceAbility('{Resource}'), {resource}Controller.import{Resource}s)
+  
+  // READ
+  router.get('/', enforceAbility('{Resource}'), {resource}Controller.getAll{Resource}s)
+  router.get(['/', '/:id'], enforceAbility('{Resource}'), {resource}Controller.get{Resource}ById)
+  router.get(['/apikey/', '/apikey/:apikey'], enforceAbility('{Resource}'), {resource}Controller.get{Resource}ByApiKey)
+  
+  // UPDATE
+  router.put(['/', '/:id'], enforceAbility('{Resource}'), {resource}Controller.update{Resource})
+  
+  // DELETE
+  router.delete(['/', '/:id'], enforceAbility('{Resource}'), {resource}Controller.delete{Resource})
+  ```
+
+### 2. Controllers Layer (`packages/server/src/controllers/{resource}/index.ts`)
+- **Purpose**: Request/response handling, validation, error handling
+- **Pattern**: Async functions that delegate to services
+- **Key Responsibilities**:
+  - Request parameter validation
+  - User authentication/authorization checks
+  - Calling service layer methods
+  - Error handling with try/catch
+  - HTTP response formatting
+- **Structure**:
+  ```typescript
+  import { NextFunction, Request, Response } from 'express'
+  import { StatusCodes } from 'http-status-codes'
+  import {resource}Service from '../../services/{resource}'
+  import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+  import checkOwnership from '../../utils/checkOwnership'
+  
+  const get{Resource}ById = async (req: Request, res: Response, next: NextFunction) => {
+      try {
+          if (!req.params.id) {
+              throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'ID required')
+          }
+          const apiResponse = await {resource}Service.get{Resource}ById(req.params.id, req.user)
+          
+          // Authorization checks
+          if (req.user && !(await checkOwnership(apiResponse, req.user, req))) {
+              throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Unauthorized')
+          }
+          
+          return res.json(apiResponse)
+      } catch (error) {
+          next(error)
+      }
+  }
+  ```
+
+### 3. Services Layer (`packages/server/src/services/{resource}/index.ts`)
+- **Purpose**: Business logic, data processing, database operations
+- **Pattern**: Pure business logic functions with database interactions
+- **Key Responsibilities**:
+  - Database queries and mutations
+  - Business rule validation
+  - Data transformation
+  - Complex operations (file handling, external API calls)
+- **Structure**:
+  ```typescript
+  import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+  import { {Resource} } from '../../database/entities/{Resource}'
+  import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+  import { StatusCodes } from 'http-status-codes'
+  
+  const get{Resource}ById = async (id: string, user?: IUser): Promise<{Resource}> => {
+      try {
+          const appServer = getRunningExpressApp()
+          const dbResponse = await appServer.AppDataSource.getRepository({Resource})
+              .createQueryBuilder('{resource}')
+              .where('{resource}.id = :id', { id })
+              .getOne()
+              
+          if (!dbResponse) {
+              throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `{Resource} not found`)
+          }
+          
+          return dbResponse
+      } catch (error) {
+          throw new InternalFlowiseError(
+              StatusCodes.INTERNAL_SERVER_ERROR,
+              `Error: {resource}Service.get{Resource}ById - ${getErrorMessage(error)}`
+          )
+      }
+  }
+  ```
+
+### 4. Entities Layer (`packages/server/src/database/entities/{Resource}.ts`)
+- **Purpose**: TypeORM database model definitions
+- **Pattern**: Class-based entities with decorators
+- **Key Features**:
+  - UUID primary keys
+  - Audit fields (createdDate, updatedDate, deletedDate)
+  - User/Organization relationships
+  - Soft delete support
+- **Structure**:
+  ```typescript
+  import { Entity, Column, Index, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn, DeleteDateColumn } from 'typeorm'
+  
+  @Entity()
+  export class {Resource} {
+      @PrimaryGeneratedColumn('uuid')
+      id: string
+      
+      @Column()
+      name: string
+      
+      @Column({ nullable: true, type: 'text' })
+      description?: string
+      
+      @Index()
+      @Column({ type: 'uuid', nullable: true })
+      userId: string
+      
+      @Index()
+      @Column({ type: 'uuid', nullable: true })
+      organizationId: string
+      
+      @CreateDateColumn()
+      createdDate: Date
+      
+      @UpdateDateColumn()
+      updatedDate: Date
+      
+      @DeleteDateColumn()
+      deletedDate: Date
+  }
+  ```
+
+## Client Architecture Pattern
+
+### 1. API Client (`packages/ui/src/api/{resource}.js`)
+- **Purpose**: HTTP client functions that mirror server endpoints
+- **Pattern**: Simple functions wrapping HTTP calls
+- **Structure**:
+  ```javascript
+  import client from './client'
+  
+  const getAll{Resource}s = () => client.get('/{resource}s')
+  const get{Resource}ById = (id) => client.get(`/{resource}s/${id}`)
+  const create{Resource} = (body) => client.post('/{resource}s', body)
+  const update{Resource} = (id, body) => client.put(`/{resource}s/${id}`, body)
+  const delete{Resource} = (id) => client.delete(`/{resource}s/${id}`)
+  
+  export default {
+      getAll{Resource}s,
+      get{Resource}ById,
+      create{Resource},
+      update{Resource},
+      delete{Resource}
+  }
+  ```
+
+### 2. Custom Hooks (`packages/ui/src/hooks/useApi.jsx`)
+- **Purpose**: React hooks for API state management
+- **Pattern**: Reusable hook pattern for async operations
+- **Features**:
+  - Loading states
+  - Error handling
+  - Data caching
+  - Automatic authentication redirect
+- **Usage**:
+  ```javascript
+  const get{Resource}sApi = useApi({resource}Api.getAll{Resource}s)
+  
+  useEffect(() => {
+      get{Resource}sApi.request()
+  }, [])
+  ```
+
+### 3. Views/Components (`packages/ui/src/views/{resource}/index.jsx`)
+- **Purpose**: UI components and page layouts
+- **Pattern**: React functional components with hooks
+- **Key Features**:
+  - State management with useState/useEffect
+  - API integration via custom hooks
+  - Material-UI components
+  - Error boundaries
+  - Search and filtering
+  - Multiple view modes (card/list)
+- **Structure**:
+  ```javascript
+  import { useEffect, useState } from 'react'
+  import { useNavigate } from 'react-router-dom'
+  import {resource}Api from '@/api/{resource}'
+  import useApi from '@/hooks/useApi'
+  
+  const {Resource}s = () => {
+      const navigate = useNavigate()
+      const [search, setSearch] = useState('')
+      const get{Resource}sApi = useApi({resource}Api.getAll{Resource}s)
+      
+      useEffect(() => {
+          get{Resource}sApi.request()
+      }, [])
+      
+      const addNew = () => navigate('/canvas')
+      const goTo{Resource} = (selected{Resource}) => navigate(`/canvas/${selected{Resource}.id}`)
+      
+      return (
+          <MainCard>
+              <ViewHeader onSearchChange={setSearch} title="{Resource}s">
+                  <StyledButton onClick={addNew}>Add New</StyledButton>
+              </ViewHeader>
+              <ItemGrid data={get{Resource}sApi.data} onClick={goTo{Resource}} />
+          </MainCard>
+      )
+  }
+  ```
+
+### 4. Web App Layer (`apps/web/app/`)
+- **Purpose**: Next.js application with additional API routes
+- **Pattern**: App router with nested layouts
+- **Features**:
+  - SSR/SSG capabilities
+  - Additional API endpoints
+  - Authentication integration
+  - Multi-tenant support
+
+## Implementation Guidelines
+
+### When Creating New Resources:
+
+1. **Server Implementation**:
+   - Create route file in `packages/server/src/routes/{resource}/`
+   - Implement controller in `packages/server/src/controllers/{resource}/`
+   - Add service logic in `packages/server/src/services/{resource}/`
+   - Define entity in `packages/server/src/database/entities/`
+   - Register routes in main router
+
+2. **Client Implementation**:
+   - Add API client in `packages/ui/src/api/{resource}.js`
+   - Create view component in `packages/ui/src/views/{resource}/`
+   - Add routing configuration
+   - Update navigation menus
+
+### Common Patterns to Follow:
+
+- **Error Handling**: Use `InternalFlowiseError` with appropriate HTTP status codes
+- **Authentication**: Apply `enforceAbility` middleware to all protected routes
+- **Authorization**: Check ownership with `checkOwnership` utility
+- **Validation**: Validate all inputs in controllers before processing
+- **Async Operations**: Always use try/catch blocks with proper error forwarding
+- **Database Queries**: Use TypeORM query builders for complex operations
+- **State Management**: Use custom hooks for API state on client
+- **UI Consistency**: Follow Material-UI design patterns with theme integration
+
+### Security Considerations:
+
+- All routes must have authentication middleware
+- Implement proper authorization checks
+- Validate all user inputs
+- Use parameterized queries
+- Implement rate limiting where appropriate
+- Follow principle of least privilege for user permissions
+
+# Git Phased Commit Process Rule
+
+## Overview
+This rule provides a systematic approach to reviewing and committing git changes in phases, with proper categorization and without interactive commands.
+
+## Important Guidelines
+
+### 1. **NEVER Use Interactive Git Commands**
+Always use non-interactive flags to prevent paging/scrolling:
+- Use `git --no-pager` prefix for commands that might page
+- Use `| cat` suffix as alternative for commands that might page
+- Avoid `git log` without `--no-pager`
+- Avoid `git diff` without `--no-pager` or limiting output
+
+### 2. **Correct Git Command Examples**
+```bash
+# Good - Non-interactive commands
+git --no-pager log --oneline -n 10
+git --no-pager diff --name-only
+git --no-pager diff --stat
+git status --porcelain
+git diff --name-status | head -20
+
+# Bad - Interactive commands
+git log  # Will open pager
+git diff # Will open pager for large diffs
+```
+
+### 3. **Pre-Commit Hook Handling**
+Check for pre-commit hooks before committing:
+```bash
+# Check if hooks exist
+ls -la .git/hooks/pre-commit
+
+# If commits fail due to hooks, use --no-verify
+git commit --no-verify -m "commit message"
+```
+
+### 4. **Commit Message Format**
+- Use conventional commit format: `type: description`
+- Keep messages on single line (no newlines)
+- Types: feat, fix, chore, docs, style, refactor, test, build
+
+### 5. **Phased Commit Process**
+
+#### Phase 1: Initial Assessment
+```bash
+# Get overview of changes
+git status --porcelain
+
+# Get recent commit history
+git --no-pager log --oneline -n 5
+
+# Check file change statistics
+git --no-pager diff --stat HEAD | head -30
+```
+
+#### Phase 2: Categorize Changes
+Examine files to understand change types:
+```bash
+# Check specific file changes (limit output)
+git --no-pager diff path/to/file | head -50
+
+# List changed files by directory
+git diff --name-only | sort | grep "^packages/"
+git diff --name-only | sort | grep "^apps/"
+```
+
+#### Phase 3: Create Categorized Commits
+
+**Common Categories:**
+1. **Features** (feat:)
+   - New functionality
+   - New UI components
+   - New API endpoints
+   
+2. **Bug Fixes** (fix:)
+   - Compatibility fixes
+   - Error corrections
+   - Performance fixes
+
+3. **Dependencies** (chore:)
+   - Package.json updates
+   - Lock file changes
+   - Version bumps
+
+4. **Documentation** (docs:)
+   - API documentation
+   - README updates
+   - Code comments
+
+5. **Refactoring** (refactor:)
+   - Code structure improvements
+   - Interface updates
+   - Type improvements
+
+### 6. **Handling Special Cases**
+
+#### Submodules
+```bash
+# Check for submodules
+git submodule status
+
+# Avoid adding submodule internals
+# Instead, update submodule reference
+git add path/to/submodule  # Without trailing slash
+```
+
+#### Large File Sets
+```bash
+# Stage specific patterns
+git add "packages/*/src/**/*.ts"
+git add "apps/**/pages/*.tsx"
+
+# Or stage directories carefully
+git add packages/components/src/
+git add packages/server/src/
+```
+
+### 7. **Commit Workflow Template**
+
+```bash
+# 1. Initial status check
+git status --porcelain
+
+# 2. Review recent history
+git --no-pager log --oneline -n 5
+
+# 3. Stage and commit by category
+
+# Features
+git add [feature files]
+git commit --no-verify -m "feat: concise description of feature"
+
+# Fixes
+git add [fix files]
+git commit --no-verify -m "fix: what was fixed and why"
+
+# Dependencies
+git add package*.json **/package*.json pnpm-lock.yaml
+git commit --no-verify -m "chore: update dependencies for X compatibility"
+
+# Documentation
+git add docs/ *.md
+git commit --no-verify -m "docs: update documentation for X"
+
+# 4. Verify all changes committed
+git status --porcelain
+```
+
+### 8. **Final Validation**
+
+After all commits:
+```bash
+# Review commit history
+git --no-pager log --oneline -n 10
+
+# Check nothing left unstaged
+git status --porcelain
+
+# Review the full diff of commits
+git --no-pager diff HEAD~[number_of_commits]..HEAD --stat
+```
+
+### 9. **Common Pitfalls to Avoid**
+- Don't use multi-line commit messages in CLI
+- Don't forget --no-verify if pre-commit hooks fail
+- Don't mix unrelated changes in one commit
+- Don't commit generated files unless necessary
+- Don't forget to handle new untracked files
+- Always check `git status` after each commit
+
+### 10. **Quick Reference Commands**
+```bash
+# Status without aliases
+/usr/bin/git status --porcelain
+
+# Add all files of a type
+git add '**/*.ts' '**/*.tsx'
+
+# Commit with specific type
+git commit --no-verify -m "type: description"
+
+# Undo last commit (keep changes)
+git reset --soft HEAD~1
+
+# Check what will be committed
+git diff --cached --name-only
+```
+
+## Example Workflow for Merge Commits
+
+When dealing with merge commits like `upgrade/v3_0_3__merge`:
+
+1. **Identify merge changes**
+   ```bash
+   git --no-pager diff HEAD~1 --name-only | wc -l
+   git --no-pager diff HEAD~1 --stat | head -50
+   ```
+
+2. **Group by impact**
+   - Core features/additions
+   - Compatibility fixes
+   - Dependency updates
+   - Documentation updates
+   - UI/UX improvements
+
+3. **Commit in logical order**
+   - Core changes first
+   - Dependent changes next
+   - Documentation last
+
+This approach ensures clean, organized commit history that clearly shows what changed and why. 

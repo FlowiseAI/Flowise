@@ -42,7 +42,7 @@ Sidekick Studio offers nodes in the following categories:
 -   [**Moderation**](chatflows/moderation/): Filter and monitor content for appropriateness.
 -   [**Output Parsers**](chatflows/output-parsers/): Extract structured data from AI-generated outputs.
 -   [**Prompts**](chatflows/prompts/): Design and manage input prompts for AI models.
--   [**Record Managers**](../sidekick-studio/documents/record-manager.md): Organize and maintain data records within workflows.
+-   [**Record Managers**](documents/record-manager.md): Organize and maintain data records within workflows.
 -   [**Retrievers**](chatflows/retrievers/): Fetch relevant information from knowledge bases or databases.
 -   [**Text Splitters**](chatflows/text-splitters/): Divide large text inputs into manageable chunks.
 -   [**Tools**](chatflows/tools/): Utility nodes for various helper functions and integrations.

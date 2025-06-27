@@ -178,7 +178,7 @@ const importKeys = async (body: any, user: IUser) => {
             return await addChatflowsCount(keys)
         } else if (_apikeysStoredInDb()) {
             const appServer = getRunningExpressApp()
-            const allApiKeys = await appServer.AppDataSource.getRepository(ApiKey).find()
+            const allApiKeys = await appServer.AppDataSource.getRepository(ApiKey).find({ where: { userId: user.id } })
             if (body.importMode === 'replaceAll') {
                 await appServer.AppDataSource.getRepository(ApiKey).delete({
                     id: Not(IsNull())

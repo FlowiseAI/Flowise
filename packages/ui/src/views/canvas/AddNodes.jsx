@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, memo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
@@ -35,18 +35,17 @@ import PerfectScrollbar from 'react-perfect-scrollbar'
 import MainCard from '@/ui-component/cards/MainCard'
 import Transitions from '@/ui-component/extended/Transitions'
 import { StyledFab } from '@/ui-component/button/StyledFab'
+import AgentflowGeneratorDialog from '@/ui-component/dialog/AgentflowGeneratorDialog'
 
 // icons
-import { IconPlus, IconSearch, IconMinus, IconX } from '@tabler/icons-react'
+import { IconPlus, IconSearch, IconMinus, IconX, IconSparkles } from '@tabler/icons-react'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 import LangChainPNG from '@/assets/images/langchain.png'
 import utilNodesPNG from '@/assets/images/utilNodes.png'
-import AAIPNG from '@/assets/images/aai.png'
 
 // const
-import { baseURL } from '@/store/constant'
+import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import { SET_COMPONENT_NODES } from '@/store/actions'
-import Image from 'next/image'
 
 // ==============================|| ADD NODES||============================== //
 function a11yProps(index) {
@@ -58,7 +57,7 @@ function a11yProps(index) {
 
 const blacklistCategoriesForAgentCanvas = ['Agents', 'Memory', 'Record Manager', 'Utilities']
 
-const agentMemoryNodes = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory', 'answerAiAgentMemory']
+const agentMemoryNodes = ['agentMemory', 'sqliteAgentMemory', 'postgresAgentMemory', 'mySQLAgentMemory']
 
 // Show blacklisted nodes (exceptions) for agent canvas
 const exceptionsForAgentCanvas = {
@@ -71,7 +70,7 @@ const blacklistForChatflowCanvas = {
     Memory: agentMemoryNodes
 }
 
-const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
+const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerated }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -81,6 +80,11 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     const [open, setOpen] = useState(false)
     const [categoryExpanded, setCategoryExpanded] = useState({})
     const [tabValue, setTabValue] = useState(0)
+
+    const [openDialog, setOpenDialog] = useState(false)
+    const [dialogProps, setDialogProps] = useState({})
+
+    const isAgentCanvasV2 = window.location.pathname.includes('/v2/agentcanvas')
 
     const anchorRef = useRef(null)
     const prevOpen = useRef(open)
@@ -155,19 +159,16 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
     }
 
     const groupByTags = (nodes, newTabValue = 0) => {
-        const aaiNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('AAI'))
-        const langchainNodes = nodes.filter((nd) => !nd.tags || !nd.tags.includes('AAI'))
-        const llmaindexNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('LlamaIndex'))
-        const utilitiesNodes = nodes.filter((nd) => nd.tags && nd.tags.includes('Utilities'))
+        const langchainNodes = nodes.filter((nd) => !nd.tags || nd.tags?.includes('AAI'))
+        const llmaindexNodes = nodes.filter((nd) => nd.tags?.includes('LlamaIndex'))
+        const utilitiesNodes = nodes.filter((nd) => nd.tags?.includes('Utilities'))
         if (newTabValue === 0) {
-            return aaiNodes
-        } else if (newTabValue === 1) {
             return langchainNodes
-        } else if (newTabValue === 2) {
-            return llmaindexNodes
-        } else {
-            return utilitiesNodes
         }
+        if (newTabValue === 1) {
+            return llmaindexNodes
+        }
+        return utilitiesNodes
     }
 
     const groupByCategory = (nodes, newTabValue, isFilter) => {
@@ -182,6 +183,15 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
             const filteredResult = {}
             for (const category in result) {
+                if (isAgentCanvasV2) {
+                    if (category !== 'Agent Flows') {
+                        continue
+                    }
+                } else {
+                    if (category === 'Agent Flows') {
+                        continue
+                    }
+                }
                 // Filter out blacklisted categories
                 if (!blacklistCategoriesForAgentCanvas.includes(category)) {
                     // Filter out LlamaIndex nodes
@@ -200,6 +210,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             accordianCategories['Multi Agents'] = true
             accordianCategories['Sequential Agents'] = true
             accordianCategories['Memory'] = true
+            accordianCategories['Agent Flows'] = true
             setCategoryExpanded(accordianCategories)
         } else {
             const taggedNodes = groupByTags(nodes, newTabValue)
@@ -213,7 +224,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
             const filteredResult = {}
             for (const category in result) {
-                if (category === 'Multi Agents' || category === 'Sequential Agents') {
+                if (category === 'Agent Flows' || category === 'Multi Agents' || category === 'Sequential Agents') {
                     continue
                 }
                 if (Object.keys(blacklistForChatflowCanvas).includes(category)) {
@@ -252,14 +263,19 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 
     const getImage = (tabValue) => {
         if (tabValue === 0) {
-            return AAIPNG
-        } else if (tabValue === 1) {
             return LangChainPNG
-        } else if (tabValue === 2) {
+        } else if (tabValue === 1) {
             return LlamaindexPNG
         } else {
             return utilNodesPNG
         }
+    }
+
+    const renderIcon = (node) => {
+        const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === node.name)
+
+        if (!foundIcon) return null
+        return <foundIcon.icon size={30} color={node.color} />
     }
 
     useEffect(() => {
@@ -283,6 +299,25 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [nodesData, dispatch])
 
+    // Handle dialog open/close
+    const handleOpenDialog = () => {
+        setOpenDialog(true)
+        setDialogProps({
+            title: 'What would you like to build?',
+            description:
+                'Enter your prompt to generate an agentflow. Performance may vary with different models. Only nodes and edges are generated, you will need to fill in the input fields for each node.'
+        })
+    }
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false)
+    }
+
+    const handleConfirmDialog = () => {
+        setOpenDialog(false)
+        onFlowGenerated()
+    }
+
     return (
         <>
             <StyledFab
@@ -296,11 +331,37 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
             >
                 {open ? <IconMinus /> : <IconPlus />}
             </StyledFab>
+            {isAgentflowv2 && (
+                <StyledFab
+                    sx={{
+                        left: 40,
+                        top: 20,
+                        background: 'linear-gradient(45deg, #FF6B6B 30%, #FF8E53 90%)',
+                        '&:hover': {
+                            background: 'linear-gradient(45deg, #FF8E53 30%, #FF6B6B 90%)'
+                        }
+                    }}
+                    onClick={handleOpenDialog}
+                    size='small'
+                    color='primary'
+                    aria-label='generate'
+                    title='Generate Agentflow'
+                >
+                    <IconSparkles />
+                </StyledFab>
+            )}
+
+            <AgentflowGeneratorDialog
+                show={openDialog}
+                dialogProps={dialogProps}
+                onCancel={handleCloseDialog}
+                onConfirm={handleConfirmDialog}
+            />
+
             <Popper
                 placement='bottom-end'
                 open={open}
                 anchorEl={anchorRef.current}
-                role={undefined}
                 transition
                 disablePortal
                 popperOptions={{
@@ -372,7 +433,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                 onChange={handleTabChange}
                                                 aria-label='tabs'
                                             >
-                                                {['AAI', 'All', 'LlamaIndex', 'Utilities'].map((item, index) => (
+                                                {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
                                                     <Tab
                                                         icon={
                                                             <div
@@ -380,7 +441,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                                     borderRadius: '50%'
                                                                 }}
                                                             >
-                                                                <Image
+                                                                <img
                                                                     style={{
                                                                         width: '20px',
                                                                         height: '20px',
@@ -397,7 +458,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                         key={index}
                                                         label={item}
                                                         {...a11yProps(index)}
-                                                    ></Tab>
+                                                    />
                                                 ))}
                                             </Tabs>
                                         )}
@@ -418,7 +479,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                             <List
                                                 sx={{
                                                     width: '100%',
-                                                    maxWidth: 455,
+                                                    maxWidth: 370,
                                                     py: 0,
                                                     borderRadius: '10px',
                                                     [theme.breakpoints.down('md')]: {
@@ -439,7 +500,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                     .sort()
                                                     .map((category) => (
                                                         <Accordion
-                                                            expanded={categoryExpanded[category] || tabValue === 0 || false}
+                                                            expanded={categoryExpanded[category] || false}
                                                             onChange={handleAccordionChange(category)}
                                                             key={category}
                                                             disableGutters
@@ -496,27 +557,43 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
                                                                             }}
                                                                         >
                                                                             <ListItem alignItems='center'>
-                                                                                <ListItemAvatar>
-                                                                                    <div
-                                                                                        style={{
-                                                                                            width: 50,
-                                                                                            height: 50,
-                                                                                            borderRadius: '50%',
-                                                                                            backgroundColor: 'white'
-                                                                                        }}
-                                                                                    >
-                                                                                        <img
+                                                                                {node.color && !node.icon ? (
+                                                                                    <ListItemAvatar>
+                                                                                        <div
                                                                                             style={{
-                                                                                                width: '100%',
-                                                                                                height: '100%',
-                                                                                                padding: 10,
-                                                                                                objectFit: 'contain'
+                                                                                                width: 50,
+                                                                                                height: 'auto',
+                                                                                                display: 'flex',
+                                                                                                alignItems: 'center',
+                                                                                                justifyContent: 'center'
                                                                                             }}
-                                                                                            alt={node.name}
-                                                                                            src={`${baseURL}/api/v1/node-icon/${node.name}`}
-                                                                                        />
-                                                                                    </div>
-                                                                                </ListItemAvatar>
+                                                                                        >
+                                                                                            {renderIcon(node)}
+                                                                                        </div>
+                                                                                    </ListItemAvatar>
+                                                                                ) : (
+                                                                                    <ListItemAvatar>
+                                                                                        <div
+                                                                                            style={{
+                                                                                                width: 50,
+                                                                                                height: 50,
+                                                                                                borderRadius: '50%',
+                                                                                                backgroundColor: 'white'
+                                                                                            }}
+                                                                                        >
+                                                                                            <img
+                                                                                                style={{
+                                                                                                    width: '100%',
+                                                                                                    height: '100%',
+                                                                                                    padding: 10,
+                                                                                                    objectFit: 'contain'
+                                                                                                }}
+                                                                                                alt={node.name}
+                                                                                                src={`${baseURL}/api/v1/node-icon/${node.name}`}
+                                                                                            />
+                                                                                        </div>
+                                                                                    </ListItemAvatar>
+                                                                                )}
                                                                                 <ListItemText
                                                                                     sx={{ ml: 1 }}
                                                                                     primary={
@@ -590,7 +667,9 @@ const AddNodes = ({ nodesData, node, isAgentCanvas }) => {
 AddNodes.propTypes = {
     nodesData: PropTypes.array,
     node: PropTypes.object,
-    isAgentCanvas: PropTypes.bool
+    onFlowGenerated: PropTypes.func,
+    isAgentCanvas: PropTypes.bool,
+    isAgentflowv2: PropTypes.bool
 }
 
-export default AddNodes
+export default memo(AddNodes)

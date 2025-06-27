@@ -29,14 +29,16 @@ import PasswordIcon from '@mui/icons-material/Password'
 import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/IntegrationInstructionsOutlined'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import ContactSupport from '@mui/icons-material/ContactSupport'
-import AssessmentIcon from '@mui/icons-material/Assessment'
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined'
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
 import { useHelpChatContext } from './HelpChatContext' // Import the context
 import { ExportImportMenuItems } from './components/ExportImportComponent'
 import { useSubscriptionDialog } from './SubscriptionDialogContext'
 
 import ChatDrawer from './ChatDrawer'
 import StarIcon from '@mui/icons-material/Star'
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined'
 
 const drawerWidth = 240
 
@@ -103,7 +105,17 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
     const pathname = usePathname()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
-    const MEMBER_ACTIONS = ['chatflows', 'agentflows', 'documentstores', 'apikey', 'credentials', 'billing', 'apps']
+    const MEMBER_ACTIONS = [
+        'chatflows',
+        'executions',
+        'marketplaces',
+        'agentflows',
+        'documentstores',
+        'apikey',
+        'credentials',
+        'billing',
+        'apps'
+    ]
     const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin', 'apps']
 
     const filterMenuItems = (items: MenuConfig[]) => {
@@ -135,6 +147,24 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                               icon: <GroupsOutlinedIcon color='primary' />
                           },
                           {
+                              id: 'executions',
+                              text: 'Executions',
+                              link: '/sidekick-studio/executions',
+                              icon: <PlayCircleOutlineIcon color='primary' />
+                          },
+                          {
+                              id: 'assistants',
+                              text: 'Assistants',
+                              link: '/sidekick-studio/assistants',
+                              icon: <GroupsOutlinedIcon color='primary' />
+                          },
+                          {
+                              id: 'marketplaces',
+                              text: 'Marketplaces',
+                              link: '/sidekick-studio/marketplaces',
+                              icon: <StorefrontOutlinedIcon color='primary' />
+                          },
+                          {
                               id: 'documentstores',
                               text: 'Document Stores',
                               link: '/sidekick-studio/document-stores',
@@ -164,17 +194,11 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                               link: '/sidekick-studio/apikey',
                               icon: <VpnKeyOutlinedIcon color='primary' />
                           },
-                          //   {
-                          //       id: 'admin',
-                          //       text: 'Admin',
-                          //       link: '/sidekick-studio/admin',
-                          //       icon: <AdminOutlinedIcon color='primary' />
-                          //   },
                           {
                               id: 'billing',
                               text: 'Billing',
                               link: '/billing',
-                              icon: <AssessmentIcon color='primary' />
+                              icon: <AssessmentOutlinedIcon color='primary' />
                           },
                           {
                               id: 'apps',
@@ -350,7 +374,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                             href={subItem.link || '#'}
                                             selected={pathname === subItem.link}
                                         >
-                                            <Tooltip title={drawerOpen ? null : subItem.text}>
+                                            <Tooltip title={drawerOpen ? null : subItem.text} placement='right'>
                                                 <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
                                             </Tooltip>
                                             <Typography>{subItem.text}</Typography>

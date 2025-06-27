@@ -4,7 +4,8 @@ import { AxiosError } from 'axios'
 import { useFlags } from 'flagsmith/react'
 import Image from 'next/image'
 import { JsonViewer } from '@textea/json-viewer'
-import { Box, Typography, Avatar, Chip, Button, Divider, IconButton } from '@mui/material'
+import { Box, Typography, Avatar, Chip, Button, Divider, IconButton, Link } from '@mui/material'
+import { IconDownload } from '@tabler/icons-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
 
@@ -22,6 +23,7 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown'
 import dynamic from 'next/dynamic'
 import { FileUpload } from '../types'
 import isArray from 'lodash/isArray'
+import { Block } from '@mui/icons-material'
 
 const ReactMarkdown = dynamic(() => import('react-markdown'))
 const remarkGfm = dynamic(() => import('remark-gfm'))
@@ -716,21 +718,18 @@ export const MessageCard = ({
 
                                             return (
                                                 <Box
-                                                    component='a'
-                                                    href={image.properties.src}
-                                                    target='_blank'
                                                     sx={{
                                                         display: 'block',
-                                                        height: '40vh',
+                                                        position: 'relative',
                                                         width: '100%',
-                                                        img: { objectFit: 'contain' }
                                                     }}
                                                 >
                                                     <Image
                                                         src={image.properties.src}
-                                                        // width={width}
-                                                        // height={height}
-                                                        layout='fill'
+                                                        width={width || 700}
+                                                        height={height || 400}
+                                                        layout='responsive'
+                                                        objectFit='contain'
                                                         className='postImg'
                                                         alt={alt}
                                                         priority={isPriority}
@@ -740,6 +739,26 @@ export const MessageCard = ({
                                                             {caption}
                                                         </div>
                                                     ) : null}
+                                                    <Box sx={{ mt: 1, textAlign: 'center' }}>
+                                                        <Link 
+                                                            href={image.properties.src}
+                                                            download
+                                                            target="_blank"
+                                                            sx={{ 
+                                                                display: 'inline-flex',
+                                                                alignItems: 'center',
+                                                                gap: 0.5,
+                                                                fontSize: '0.875rem',
+                                                                textDecoration: 'none',
+                                                                '&:hover': { 
+                                                                    textDecoration: 'underline'
+                                                                }
+                                                            }}
+                                                        >
+                                                            <IconDownload size={16} />
+                                                            Download Image
+                                                        </Link>
+                                                    </Box>
                                                 </Box>
                                             )
                                         }
