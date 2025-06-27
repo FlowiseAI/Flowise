@@ -1,9 +1,9 @@
 import client from './client'
 
-const getAllDatasets = () => client.get('/datasets')
+const getAllDatasets = (params) => client.get('/datasets', { params })
 
 //dataset
-const getDataset = (id) => client.get(`/datasets/set/${id}`)
+const getDataset = (id, params) => client.get(`/datasets/set/${id}`, { params })
 const createDataset = (body) => client.post(`/datasets/set`, body)
 const updateDataset = (id, body) => client.put(`/datasets/set/${id}`, body)
 const deleteDataset = (id) => client.delete(`/datasets/set/${id}`)

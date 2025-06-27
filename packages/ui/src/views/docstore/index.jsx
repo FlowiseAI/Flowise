@@ -1,32 +1,18 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
 
 // material-ui
-import {
-    Box,
-    Paper,
-    Skeleton,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    ToggleButton,
-    ToggleButtonGroup,
-    Typography
-} from '@mui/material'
+import { Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
+import ErrorBoundary from '@/ErrorBoundary'
+import { useError } from '@/store/context/ErrorContext'
 import MainCard from '@/ui-component/cards/MainCard'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 import DocumentStoreCard from '@/ui-component/cards/DocumentStoreCard'
 import AddDocStoreDialog from '@/views/docstore/AddDocStoreDialog'
-import ErrorBoundary from '@/ErrorBoundary'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import DocumentStoreStatus from '@/views/docstore/DocumentStoreStatus'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 
 // API
@@ -39,13 +25,12 @@ import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
-import { useError } from '@/store/context/ErrorContext'
+import { DocumentStoreTable } from '@/ui-component/table/DocumentStoreTable'
 
 // ==============================|| DOCUMENTS ||============================== //
 
 const Documents = () => {
     const theme = useTheme()
-    const customization = useSelector((state) => state.customization)
 
     const navigate = useNavigate()
     const getAllDocumentStores = useApi(documentsApi.getAllDocumentStores)
@@ -66,7 +51,9 @@ const Documents = () => {
     }
 
     function filterDocStores(data) {
-        return data.name.toLowerCase().indexOf(search.toLowerCase()) > -1
+        return (
+            data.name.toLowerCase().indexOf(search.toLowerCase()) > -1 || data.description.toLowerCase().indexOf(search.toLowerCase()) > -1
+        )
     }
 
     const onSearchChange = (event) => {
@@ -90,41 +77,61 @@ const Documents = () => {
 
     const onConfirm = () => {
         setShowDialog(false)
-        getAllDocumentStores.request()
+        applyFilters(currentPage, pageLimit)
     }
 
     useEffect(() => {
-        getAllDocumentStores.request()
+        applyFilters(currentPage, pageLimit)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
+    /* Table Pagination */
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
+    const [total, setTotal] = useState(0)
+    const onChange = (page, pageLimit) => {
+        setCurrentPage(page)
+        setPageLimit(pageLimit)
+        applyFilters(page, pageLimit)
+    }
+
+    const applyFilters = (page, limit) => {
+        setLoading(true)
+        const params = {
+            page: page || currentPage,
+            limit: limit || pageLimit
+        }
+        getAllDocumentStores.request(params)
+    }
+
     useEffect(() => {
         if (getAllDocumentStores.data) {
             try {
-                const docStores = getAllDocumentStores.data
-                if (!Array.isArray(docStores)) return
+                const { data, total } = getAllDocumentStores.data
+                if (!Array.isArray(data)) return
                 const loaderImages = {}
 
-                for (let i = 0; i < docStores.length; i += 1) {
-                    const loaders = docStores[i].loaders ?? []
+                for (let i = 0; i < data.length; i += 1) {
+                    const loaders = data[i].loaders ?? []
 
                     let totalChunks = 0
                     let totalChars = 0
-                    loaderImages[docStores[i].id] = []
+                    loaderImages[data[i].id] = []
                     for (let j = 0; j < loaders.length; j += 1) {
                         const imageSrc = `${baseURL}/api/v1/node-icon/${loaders[j].loaderId}`
-                        if (!loaderImages[docStores[i].id].includes(imageSrc)) {
-                            loaderImages[docStores[i].id].push(imageSrc)
+                        if (!loaderImages[data[i].id].includes(imageSrc)) {
+                            loaderImages[data[i].id].push(imageSrc)
                         }
                         totalChunks += loaders[j]?.totalChunks ?? 0
                         totalChars += loaders[j]?.totalChars ?? 0
                     }
-                    docStores[i].totalDocs = loaders?.length ?? 0
-                    docStores[i].totalChunks = totalChunks
-                    docStores[i].totalChars = totalChars
+                    data[i].totalDocs = loaders?.length ?? 0
+                    data[i].totalChunks = totalChunks
+                    data[i].totalChars = totalChars
                 }
-                setDocStores(docStores)
+                setDocStores(data)
+                setTotal(total)
                 setImages(loaderImages)
             } catch (e) {
                 console.error(e)
@@ -136,6 +143,8 @@ const Documents = () => {
         setLoading(getAllDocumentStores.loading)
     }, [getAllDocumentStores.loading])
 
+    const hasDocStores = docStores && docStores.length > 0
+
     return (
         <MainCard>
             {error ? (
@@ -144,43 +153,45 @@ const Documents = () => {
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
                     <ViewHeader
                         onSearchChange={onSearchChange}
-                        search={true}
+                        search={hasDocStores}
                         searchPlaceholder='Search Name'
                         title='Document Store'
                         description='Store and upsert documents for LLM retrieval (RAG)'
                     >
-                        <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
-                            value={view}
-                            color='primary'
-                            exclusive
-                            onChange={handleChange}
-                        >
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='card'
-                                title='Card View'
+                        {hasDocStores && (
+                            <ToggleButtonGroup
+                                sx={{ borderRadius: 2, maxHeight: 40 }}
+                                value={view}
+                                color='primary'
+                                exclusive
+                                onChange={handleChange}
                             >
-                                <IconLayoutGrid />
-                            </ToggleButton>
-                            <ToggleButton
-                                sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
-                                }}
-                                variant='contained'
-                                value='list'
-                                title='List View'
-                            >
-                                <IconList />
-                            </ToggleButton>
-                        </ToggleButtonGroup>
+                                <ToggleButton
+                                    sx={{
+                                        borderColor: theme.palette.grey[900] + 25,
+                                        borderRadius: 2,
+                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    }}
+                                    variant='contained'
+                                    value='card'
+                                    title='Card View'
+                                >
+                                    <IconLayoutGrid />
+                                </ToggleButton>
+                                <ToggleButton
+                                    sx={{
+                                        borderColor: theme.palette.grey[900] + 25,
+                                        borderRadius: 2,
+                                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    }}
+                                    variant='contained'
+                                    value='list'
+                                    title='List View'
+                                >
+                                    <IconList />
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+                        )}
                         <StyledPermissionButton
                             permissionId={'documentStores:create'}
                             variant='contained'
@@ -192,142 +203,7 @@ const Documents = () => {
                             Add New
                         </StyledPermissionButton>
                     </ViewHeader>
-                    {!view || view === 'card' ? (
-                        <>
-                            {isLoading && !docStores ? (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
-                                </Box>
-                            ) : (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {docStores?.filter(filterDocStores).map((data, index) => (
-                                        <DocumentStoreCard
-                                            key={index}
-                                            images={images[data.id]}
-                                            data={data}
-                                            onClick={() => goToDocumentStore(data.id)}
-                                        />
-                                    ))}
-                                </Box>
-                            )}
-                        </>
-                    ) : (
-                        <TableContainer sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} component={Paper}>
-                            <Table aria-label='documents table'>
-                                <TableHead
-                                    sx={{
-                                        backgroundColor: customization.isDarkMode ? theme.palette.common.black : theme.palette.grey[100],
-                                        height: 56
-                                    }}
-                                >
-                                    <TableRow>
-                                        <TableCell>&nbsp;</TableCell>
-                                        <TableCell>Name</TableCell>
-                                        <TableCell>Description</TableCell>
-                                        <TableCell>Connected flows</TableCell>
-                                        <TableCell>Total characters</TableCell>
-                                        <TableCell>Total chunks</TableCell>
-                                        <TableCell>Loader types</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {docStores?.filter(filterDocStores).map((data, index) => (
-                                        <TableRow
-                                            onClick={() => goToDocumentStore(data.id)}
-                                            hover
-                                            key={index}
-                                            sx={{ cursor: 'pointer', '&:last-child td, &:last-child th': { border: 0 } }}
-                                        >
-                                            <TableCell align='center'>
-                                                <DocumentStoreStatus isTableView={true} status={data.status} />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    sx={{
-                                                        display: '-webkit-box',
-                                                        WebkitLineClamp: 5,
-                                                        WebkitBoxOrient: 'vertical',
-                                                        textOverflow: 'ellipsis',
-                                                        overflow: 'hidden'
-                                                    }}
-                                                >
-                                                    {data.name}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    sx={{
-                                                        display: '-webkit-box',
-                                                        WebkitLineClamp: 5,
-                                                        WebkitBoxOrient: 'vertical',
-                                                        textOverflow: 'ellipsis',
-                                                        overflow: 'hidden'
-                                                    }}
-                                                >
-                                                    {data?.description}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>{data.whereUsed?.length ?? 0}</TableCell>
-                                            <TableCell>{data.totalChars}</TableCell>
-                                            <TableCell>{data.totalChunks}</TableCell>
-                                            <TableCell>
-                                                {images[data.id] && (
-                                                    <Box
-                                                        sx={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'start',
-                                                            gap: 1
-                                                        }}
-                                                    >
-                                                        {images[data.id].slice(0, images.length > 3 ? 3 : images.length).map((img) => (
-                                                            <Box
-                                                                key={img}
-                                                                sx={{
-                                                                    width: 30,
-                                                                    height: 30,
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: customization.isDarkMode
-                                                                        ? theme.palette.common.white
-                                                                        : theme.palette.grey[300] + 75
-                                                                }}
-                                                            >
-                                                                <img
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        padding: 5,
-                                                                        objectFit: 'contain'
-                                                                    }}
-                                                                    alt=''
-                                                                    src={img}
-                                                                />
-                                                            </Box>
-                                                        ))}
-                                                        {images.length > 3 && (
-                                                            <Typography
-                                                                sx={{
-                                                                    alignItems: 'center',
-                                                                    display: 'flex',
-                                                                    fontSize: '.9rem',
-                                                                    fontWeight: 200
-                                                                }}
-                                                            >
-                                                                + {images.length - 3} More
-                                                            </Typography>
-                                                        )}
-                                                    </Box>
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    )}
-                    {!isLoading && (!docStores || docStores.length === 0) && (
+                    {!hasDocStores ? (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img
@@ -338,6 +214,30 @@ const Documents = () => {
                             </Box>
                             <div>No Document Stores Created Yet</div>
                         </Stack>
+                    ) : (
+                        <React.Fragment>
+                            {!view || view === 'card' ? (
+                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                    {docStores?.filter(filterDocStores).map((data, index) => (
+                                        <DocumentStoreCard
+                                            key={index}
+                                            images={images[data.id]}
+                                            data={data}
+                                            onClick={() => goToDocumentStore(data.id)}
+                                        />
+                                    ))}
+                                </Box>
+                            ) : (
+                                <DocumentStoreTable
+                                    isLoading={isLoading}
+                                    data={docStores?.filter(filterDocStores)}
+                                    images={images}
+                                    onRowClick={(row) => goToDocumentStore(row.id)}
+                                />
+                            )}
+                            {/* Pagination and Page Size Controls */}
+                            <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                        </React.Fragment>
                     )}
                 </Stack>
             )}

@@ -1,7 +1,7 @@
 import client from './client'
 
 //evaluation
-const getAllEvaluations = () => client.get('/evaluations')
+const getAllEvaluations = (params) => client.get('/evaluations', { params })
 const getIsOutdated = (id) => client.get(`/evaluations/is-outdated/${id}`)
 const getEvaluation = (id) => client.get(`/evaluations/${id}`)
 const createEvaluation = (body) => client.post(`/evaluations`, body)

@@ -2,10 +2,12 @@ import { Request, Response, NextFunction } from 'express'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import evaluatorService from '../../services/evaluator'
+import { getPageAndLimitParams } from '../../utils/pagination'
 
 const getAllEvaluators = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await evaluatorService.getAllEvaluators(req.user?.activeWorkspaceId)
+        const { page, limit } = getPageAndLimitParams(req)
+        const apiResponse = await evaluatorService.getAllEvaluators(req.user?.activeWorkspaceId, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
