@@ -17,6 +17,7 @@ import { SwitchInput } from '@/ui-component/switch/Switch'
 import { JsonEditorInput } from '@/ui-component/json/JsonEditor'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
+import { ArrayRenderer } from '@/ui-component/array/ArrayRenderer'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import ManageScrapedLinksDialog from '@/ui-component/dialog/ManageScrapedLinksDialog'
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
@@ -243,6 +244,7 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                             value={data.inputs[inputParam.name] ?? inputParam.default ?? 'choose an option'}
                                             onSelect={(newValue) => handleDataChange({ inputParam, newValue })}
                                             onCreateNew={() => addAsyncOption(inputParam.name)}
+                                            fullWidth={true}
                                         />
                                     </div>
                                     {inputParam.refresh && (
@@ -257,6 +259,9 @@ const DocStoreInputHandler = ({ inputParam, data, disabled = false, onNodeDataCh
                                     )}
                                 </div>
                             </>
+                        )}
+                        {inputParam.type === 'array' && (
+                            <ArrayRenderer inputParam={inputParam} data={data} disabled={disabled} isDocStore={true} />
                         )}
                         {(data.name === 'cheerioWebScraper' ||
                             data.name === 'puppeteerWebScraper' ||

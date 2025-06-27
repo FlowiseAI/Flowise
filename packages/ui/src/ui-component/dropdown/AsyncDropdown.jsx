@@ -5,7 +5,7 @@ import axios from 'axios'
 
 // Material
 import Autocomplete, { autocompleteClasses } from '@mui/material/Autocomplete'
-import { Popper, CircularProgress, TextField, Box, Typography } from '@mui/material'
+import { Popper, CircularProgress, TextField, Box, Typography, Tooltip } from '@mui/material'
 import { useTheme, styled } from '@mui/material/styles'
 
 // API
@@ -32,6 +32,11 @@ const fetchList = async ({ name, nodeData, previousNodes, currentNode }) => {
     const selectedParam = nodeData.inputParams.find((param) => param.name === name)
     const loadMethod = selectedParam?.loadMethod
 
+    let credentialId = nodeData.credential
+    if (!credentialId && (nodeData.inputs?.credential || nodeData.inputs?.['FLOWISE_CREDENTIAL_ID'])) {
+        credentialId = nodeData.inputs.credential || nodeData.inputs?.['FLOWISE_CREDENTIAL_ID']
+    }
+
     let config = {
         headers: {
             'x-request-from': 'internal',
@@ -41,7 +46,11 @@ const fetchList = async ({ name, nodeData, previousNodes, currentNode }) => {
     }
 
     let lists = await axios
-        .post(`${baseURL}/api/v1/node-load-method/${nodeData.name}`, { ...nodeData, loadMethod, previousNodes, currentNode }, config)
+        .post(
+            `${baseURL}/api/v1/node-load-method/${nodeData.name}`,
+            { ...nodeData, loadMethod, previousNodes, currentNode, credential: credentialId },
+            config
+        )
         .then(async function (response) {
             return response.data
         })
@@ -62,7 +71,8 @@ export const AsyncDropdown = ({
     disabled = false,
     freeSolo = false,
     disableClearable = false,
-    multiple = false
+    multiple = false,
+    fullWidth = false
 }) => {
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
@@ -175,7 +185,7 @@ export const AsyncDropdown = ({
                 multiple={multiple}
                 filterSelectedOptions={multiple}
                 size='small'
-                sx={{ mt: 1, width: '100%' }}
+                sx={{ mt: 1, width: fullWidth ? '100%' : multiple ? '90%' : '100%' }}
                 open={open}
                 onOpen={() => {
                     setOpen(true)
@@ -210,7 +220,8 @@ export const AsyncDropdown = ({
                     const matchingOptions = multiple
                         ? findMatchingOptions(options, internalValue)
                         : [findMatchingOptions(options, internalValue)].filter(Boolean)
-                    return (
+
+                    const textField = (
                         <TextField
                             {...params}
                             value={internalValue}
@@ -255,6 +266,20 @@ export const AsyncDropdown = ({
                             }}
                         />
                     )
+
+                    return !multiple ? (
+                        textField
+                    ) : (
+                        <Tooltip
+                            title={
+                                typeof internalValue === 'string' ? internalValue.replace(/[[\]"]/g, '').replace(/,/g, ', ') : internalValue
+                            }
+                            placement='top'
+                            arrow
+                        >
+                            {textField}
+                        </Tooltip>
+                    )
                 }}
                 renderOption={(props, option) => (
                     <Box component='li' {...props} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -294,5 +319,6 @@ AsyncDropdown.propTypes = {
     credentialNames: PropTypes.array,
     disableClearable: PropTypes.bool,
     isCreateNewOption: PropTypes.bool,
-    multiple: PropTypes.bool
+    multiple: PropTypes.bool,
+    fullWidth: PropTypes.bool
 }

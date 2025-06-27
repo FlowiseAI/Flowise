@@ -5,7 +5,7 @@ import { Execution } from '../../database/entities/Execution'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { ExecutionState, IAgentflowExecutedData } from '../../Interface'
-import { _removeCredentialId } from '../../utils/buildAgentflow'
+import { _removeCredentialId } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 
 export interface ExecutionFilters {

@@ -40,7 +40,10 @@ import {
     getGlobalVariable,
     getStartingNode,
     getTelemetryFlowObj,
-    QUESTION_VAR_PREFIX
+    QUESTION_VAR_PREFIX,
+    CURRENT_DATE_TIME_VAR_PREFIX,
+    _removeCredentialId,
+    validateHistorySchema
 } from '.'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { Variable } from '../database/entities/Variable'
@@ -104,6 +107,7 @@ interface IExecuteNodeParams {
     evaluationRunId?: string
     isInternal: boolean
     pastChatHistory: IMessage[]
+    prependedChatHistory: IMessage[]
     appDataSource: DataSource
     usageCacheManager: UsageCacheManager
     telemetry: Telemetry
@@ -202,21 +206,6 @@ const updateExecution = async (appDataSource: DataSource, executionId: string, w
     await appDataSource.getRepository(Execution).save(execution)
 }
 
-export const _removeCredentialId = (obj: any): any => {
-    if (!obj || typeof obj !== 'object') return obj
-
-    if (Array.isArray(obj)) {
-        return obj.map((item) => _removeCredentialId(item))
-    }
-
-    const newObj: Record<string, any> = {}
-    for (const [key, value] of Object.entries(obj)) {
-        if (key === 'FLOWISE_CREDENTIAL_ID') continue
-        newObj[key] = _removeCredentialId(value)
-    }
-    return newObj
-}
-
 export const resolveVariables = async (
     reactFlowNodeData: INodeData,
     question: string,
@@ -294,9 +283,18 @@ export const resolveVariables = async (
                 resolvedValue = resolvedValue.replace(match, flowConfig?.runtimeChatHistoryLength ?? 0)
             }
 
+            if (variableFullPath === CURRENT_DATE_TIME_VAR_PREFIX) {
+                resolvedValue = resolvedValue.replace(match, new Date().toISOString())
+            }
+
             if (variableFullPath.startsWith('$iteration')) {
                 if (iterationContext && iterationContext.value) {
-                    if (typeof iterationContext.value === 'string') {
+                    if (variableFullPath === '$iteration') {
+                        // If it's exactly $iteration, stringify the entire value
+                        const formattedValue =
+                            typeof iterationContext.value === 'object' ? JSON.stringify(iterationContext.value) : iterationContext.value
+                        resolvedValue = resolvedValue.replace(match, formattedValue)
+                    } else if (typeof iterationContext.value === 'string') {
                         resolvedValue = resolvedValue.replace(match, iterationContext?.value)
                     } else if (typeof iterationContext.value === 'object') {
                         const iterationValue = get(iterationContext.value, variableFullPath.replace('$iteration.', ''))
@@ -342,8 +340,10 @@ export const resolveVariables = async (
                 const [, nodeIdPart, outputPath] = outputMatch
                 // Clean nodeId (handle escaped underscores)
                 const cleanNodeId = nodeIdPart.replace('\\', '')
+
                 // Find the last (most recent) matching node data instead of the first one
                 const nodeData = [...agentFlowExecutedData].reverse().find((d) => d.nodeId === cleanNodeId)
+
                 if (nodeData?.data?.output && outputPath.trim()) {
                     const variableValue = get(nodeData.data.output, outputPath)
                     if (variableValue !== undefined) {
@@ -558,7 +558,6 @@ function hasReceivedRequiredInputs(waitingNode: IWaitingNode): boolean {
 async function determineNodesToIgnore(
     currentNode: IReactFlowNode,
     result: any,
-    humanInput: IHumanInput | undefined,
     edges: IReactFlowEdge[],
     nodeId: string
 ): Promise<string[]> {
@@ -568,7 +567,7 @@ async function determineNodesToIgnore(
     const isDecisionNode =
         currentNode.data.name === 'conditionAgentflow' ||
         currentNode.data.name === 'conditionAgentAgentflow' ||
-        (currentNode.data.name === 'humanInputAgentflow' && humanInput)
+        currentNode.data.name === 'humanInputAgentflow'
 
     if (isDecisionNode && result.output?.conditions) {
         const outputConditions: ICondition[] = result.output.conditions
@@ -619,7 +618,7 @@ async function processNodeOutputs({
     if (!currentNode) return { humanInput: updatedHumanInput }
 
     // Get nodes to ignore based on conditions
-    const ignoreNodeIds = await determineNodesToIgnore(currentNode, result, humanInput, edges, nodeId)
+    const ignoreNodeIds = await determineNodesToIgnore(currentNode, result, edges, nodeId)
     if (ignoreNodeIds.length) {
         logger.debug(`  ⏭️  Skipping nodes: [${ignoreNodeIds.join(', ')}]`)
     }
@@ -808,6 +807,7 @@ const executeNode = async ({
     evaluationRunId,
     parentExecutionId,
     pastChatHistory,
+    prependedChatHistory,
     appDataSource,
     usageCacheManager,
     telemetry,
@@ -837,6 +837,7 @@ const executeNode = async ({
     result: any
     shouldStop?: boolean
     agentFlowExecutedData?: IAgentflowExecutedData[]
+    humanInput?: IHumanInput
 }> => {
     try {
         if (abortController?.signal?.aborted) {
@@ -909,16 +910,22 @@ const executeNode = async ({
 
         // Handle human input if present
         let humanInputAction: Record<string, any> | undefined
+        let updatedHumanInput = humanInput
 
         if (agentFlowExecutedData.length) {
             const lastNodeOutput = agentFlowExecutedData[agentFlowExecutedData.length - 1]?.data?.output as ICommonObject | undefined
             humanInputAction = lastNodeOutput?.humanInputAction
         }
 
+        // This is when human in the loop is resumed
         if (humanInput && nodeId === humanInput.startNodeId) {
             reactFlowNodeData.inputs = { ...reactFlowNodeData.inputs, humanInput }
             // Remove the stopped humanInput from execution data
             agentFlowExecutedData = agentFlowExecutedData.filter((execData) => execData.nodeId !== nodeId)
+
+            // Clear humanInput after it's been consumed to prevent subsequent humanInputAgentflow nodes from proceeding
+            logger.debug(`🧹 Clearing humanInput after consumption by node: ${nodeId}`)
+            updatedHumanInput = undefined
         }
 
         // Check if this is the last node for streaming purpose
@@ -961,6 +968,7 @@ const executeNode = async ({
             isLastNode,
             sseStreamer,
             pastChatHistory,
+            prependedChatHistory,
             agentflowRuntime,
             abortController,
             analyticHandlers,
@@ -1162,7 +1170,7 @@ const executeNode = async ({
 
             sseStreamer?.streamActionEvent(chatId, humanInputAction)
 
-            return { result: results, shouldStop: true, agentFlowExecutedData }
+            return { result: results, shouldStop: true, agentFlowExecutedData, humanInput: updatedHumanInput }
         }
 
         // Stop going through the current route if the node is a agent node waiting for human input before using the tool
@@ -1209,10 +1217,10 @@ const executeNode = async ({
 
             sseStreamer?.streamActionEvent(chatId, humanInputAction)
 
-            return { result: results, shouldStop: true, agentFlowExecutedData }
+            return { result: results, shouldStop: true, agentFlowExecutedData, humanInput: updatedHumanInput }
         }
 
-        return { result: results, agentFlowExecutedData }
+        return { result: results, agentFlowExecutedData, humanInput: updatedHumanInput }
     } catch (error) {
         logger.error(`[server]: Error executing node ${nodeId}: ${getErrorMessage(error)}`)
         throw error
@@ -1232,6 +1240,20 @@ const checkForMultipleStartNodes = (startingNodeIds: string[], isRecursive: bool
     if (!isRecursive && startingNodeIds.length > 1) {
         throw new Error('Multiple starting nodes are not allowed')
     }
+}
+
+const parseFormStringToJson = (formString: string): Record<string, string> => {
+    const result: Record<string, string> = {}
+    const lines = formString.split('\n')
+
+    for (const line of lines) {
+        const [key, value] = line.split(': ').map((part) => part.trim())
+        if (key && value) {
+            result[key] = value
+        }
+    }
+
+    return result
 }
 
 /*
@@ -1271,6 +1293,17 @@ export const executeAgentFlow = async ({
     const chatflowid = chatflow.id
     const sessionId = incomingInput.sessionId ?? chatId
     const humanInput: IHumanInput | undefined = incomingInput.humanInput
+
+    // Validate history schema if provided
+    if (incomingInput.history && incomingInput.history.length > 0) {
+        if (!validateHistorySchema(incomingInput.history)) {
+            throw new Error(
+                'Invalid history format. Each history item must have: ' + '{ role: "apiMessage" | "userMessage", content: string }'
+            )
+        }
+    }
+
+    const prependedChatHistory = incomingInput.history ?? []
     const apiMessageId = uuidv4()
 
     /*** Get chatflows and prepare data  ***/
@@ -1376,40 +1409,100 @@ export const executeAgentFlow = async ({
         if (previousStartAgent) {
             const previousStartAgentOutput = previousStartAgent.data.output
             if (previousStartAgentOutput && typeof previousStartAgentOutput === 'object' && 'form' in previousStartAgentOutput) {
-                agentflowRuntime.form = previousStartAgentOutput.form
+                const formValues = previousStartAgentOutput.form
+                if (typeof formValues === 'string') {
+                    agentflowRuntime.form = parseFormStringToJson(formValues)
+                } else {
+                    agentflowRuntime.form = formValues
+                }
             }
         }
     }
 
     // If it is human input, find the last checkpoint and resume
-    if (humanInput?.startNodeId) {
+    if (humanInput) {
         if (!previousExecution) {
             throw new Error(`No previous execution found for session ${sessionId}`)
         }
 
-        if (previousExecution.state !== 'STOPPED') {
+        let executionData = JSON.parse(previousExecution.executionData) as IAgentflowExecutedData[]
+        let shouldUpdateExecution = false
+
+        // Handle different execution states
+        if (previousExecution.state === 'STOPPED') {
+            // Normal case - execution is stopped and ready to resume
+            logger.debug(`  ✅ Previous execution is in STOPPED state, ready to resume`)
+        } else if (previousExecution.state === 'ERROR') {
+            // Check if second-to-last execution item is STOPPED and last is ERROR
+            if (executionData.length >= 2) {
+                const lastItem = executionData[executionData.length - 1]
+                const secondLastItem = executionData[executionData.length - 2]
+
+                if (lastItem.status === 'ERROR' && secondLastItem.status === 'STOPPED') {
+                    logger.debug(`  🔄 Found ERROR after STOPPED - removing last error item to allow retry`)
+                    logger.debug(`    Removing: ${lastItem.nodeId} (${lastItem.nodeLabel}) - ${lastItem.data?.error || 'Unknown error'}`)
+
+                    // Remove the last ERROR item
+                    executionData = executionData.slice(0, -1)
+                    shouldUpdateExecution = true
+                } else {
+                    throw new Error(
+                        `Cannot resume execution ${previousExecution.id} because it is in 'ERROR' state ` +
+                            `and the previous item is not in 'STOPPED' state. Only executions that ended with a ` +
+                            `STOPPED state (or ERROR after STOPPED) can be resumed.`
+                    )
+                }
+            } else {
+                throw new Error(
+                    `Cannot resume execution ${previousExecution.id} because it is in 'ERROR' state ` +
+                        `with insufficient execution data. Only executions in 'STOPPED' state can be resumed.`
+                )
+            }
+        } else {
             throw new Error(
                 `Cannot resume execution ${previousExecution.id} because it is in '${previousExecution.state}' state. ` +
-                    `Only executions in 'STOPPED' state can be resumed.`
+                    `Only executions in 'STOPPED' state (or 'ERROR' after 'STOPPED') can be resumed.`
             )
         }
 
-        startingNodeIds.push(humanInput.startNodeId)
-        checkForMultipleStartNodes(startingNodeIds, isRecursive, nodes)
+        let startNodeId = humanInput.startNodeId
 
-        const executionData = JSON.parse(previousExecution.executionData) as IAgentflowExecutedData[]
+        // If startNodeId is not provided, find the last node with STOPPED status from execution data
+        if (!startNodeId) {
+            // Search in reverse order to find the last (most recent) STOPPED node
+            const stoppedNode = [...executionData].reverse().find((data) => data.status === 'STOPPED')
 
-        // Verify that the humanInputAgentflow node exists in previous execution
-        const humanInputNodeExists = executionData.some((data) => data.nodeId === humanInput.startNodeId)
+            if (!stoppedNode) {
+                throw new Error('No stopped node found in previous execution data to resume from')
+            }
 
-        if (!humanInputNodeExists) {
+            startNodeId = stoppedNode.nodeId
+            logger.debug(`  🔍 Auto-detected stopped node to resume from: ${startNodeId} (${stoppedNode.nodeLabel})`)
+        }
+
+        // Verify that the node exists in previous execution
+        const nodeExists = executionData.some((data) => data.nodeId === startNodeId)
+
+        if (!nodeExists) {
             throw new Error(
-                `Human Input node ${humanInput.startNodeId} not found in previous execution. ` +
+                `Node ${startNodeId} not found in previous execution. ` +
                     `This could indicate an invalid resume attempt or a modified flow.`
             )
         }
 
+        startingNodeIds.push(startNodeId)
+        checkForMultipleStartNodes(startingNodeIds, isRecursive, nodes)
+
         agentFlowExecutedData.push(...executionData)
+
+        // Update execution data if we removed an error item
+        if (shouldUpdateExecution) {
+            logger.debug(`  📝 Updating execution data after removing error item`)
+            await updateExecution(appDataSource, previousExecution.id, workspaceId, {
+                executionData: JSON.stringify(executionData),
+                state: 'INPROGRESS'
+            })
+        }
 
         // Get last state
         const lastState = executionData[executionData.length - 1].data.state
@@ -1423,6 +1516,9 @@ export const executeAgentFlow = async ({
         })
         newExecution = previousExecution
         parentExecutionId = previousExecution.id
+
+        // Update humanInput with the resolved startNodeId
+        humanInput.startNodeId = startNodeId
     } else if (isRecursive && parentExecutionId) {
         const { startingNodeIds: startingNodeIdsFromFlow } = getStartingNode(nodeDependencies)
         startingNodeIds.push(...startingNodeIdsFromFlow)
@@ -1573,6 +1669,7 @@ export const executeAgentFlow = async ({
                 parentExecutionId,
                 isInternal,
                 pastChatHistory,
+                prependedChatHistory,
                 appDataSource,
                 usageCacheManager,
                 telemetry,
@@ -1601,6 +1698,11 @@ export const executeAgentFlow = async ({
 
             if (executionResult.agentFlowExecutedData) {
                 agentFlowExecutedData = executionResult.agentFlowExecutedData
+            }
+
+            // Update humanInput if it was cleared by the executed node
+            if (executionResult.humanInput !== currentHumanInput) {
+                currentHumanInput = executionResult.humanInput
             }
 
             if (executionResult.shouldStop) {

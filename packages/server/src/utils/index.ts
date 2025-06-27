@@ -64,13 +64,12 @@ import {
     SecretsManagerClient,
     SecretsManagerClientConfig
 } from '@aws-sdk/client-secrets-manager'
-import { checkStorage, updateStorageUsage } from './quotaUsage'
-import { UsageCacheManager } from '../UsageCacheManager'
 
 export const QUESTION_VAR_PREFIX = 'question'
 export const FILE_ATTACHMENT_PREFIX = 'file_attachment'
 export const CHAT_HISTORY_VAR_PREFIX = 'chat_history'
 export const RUNTIME_MESSAGES_LENGTH_VAR_PREFIX = 'runtime_messages_length'
+export const CURRENT_DATE_TIME_VAR_PREFIX = 'current_date_time'
 export const REDACTED_CREDENTIAL_VALUE = '_FLOWISE_BLANK_07167752-1a71-43b1-bf8f-4f32252165db'
 
 let secretsManagerClient: SecretsManagerClient | null = null
@@ -503,8 +502,10 @@ type BuildFlowParams = {
     orgId?: string
     workspaceId?: string
     subscriptionId?: string
-    usageCacheManager?: UsageCacheManager
+    usageCacheManager?: any
     uploadedFilesContent?: string
+    updateStorageUsage?: (orgId: string, workspaceId: string, totalSize: number, usageCacheManager?: any) => void
+    checkStorage?: (orgId: string, subscriptionId: string, usageCacheManager: any) => Promise<any>
 }
 
 /**
@@ -539,7 +540,9 @@ export const buildFlow = async ({
     orgId,
     workspaceId,
     subscriptionId,
-    usageCacheManager
+    usageCacheManager,
+    updateStorageUsage,
+    checkStorage
 }: BuildFlowParams) => {
     const flowNodes = cloneDeep(reactFlowNodes)
 
@@ -1102,12 +1105,13 @@ export const replaceInputsWithConfig = (
              * Several conditions:
              * 1. If config is 'analytics', always allow it
              * 2. If config is 'vars', check its object and filter out the variables that are not enabled for override
-             * 3. If typeof config's value is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
+             * 3. If typeof config's value is an array, check if the parameter is enabled and apply directly
+             * 4. If typeof config's value is an object, check if the node id is in the overrideConfig object and if the parameter (systemMessagePrompt) is enabled
              * Example:
              * "systemMessagePrompt": {
              *  "chatPromptTemplate_0": "You are an assistant"
              * }
-             * 4. If typeof config's value is a string, check if the parameter is enabled
+             * 5. If typeof config's value is a string, check if the parameter is enabled
              * Example:
              * "systemMessagePrompt": "You are an assistant"
              */
@@ -1128,12 +1132,50 @@ export const replaceInputsWithConfig = (
                     }
                     overrideConfig[config] = filteredVars
                 }
+            } else if (Array.isArray(overrideConfig[config])) {
+                // Handle arrays as direct parameter values
+                if (isParameterEnabled(flowNodeData.label, config)) {
+                    // If existing value is also an array, concatenate; otherwise replace
+                    const existingValue = inputsObj[config]
+                    if (Array.isArray(existingValue)) {
+                        inputsObj[config] = [...new Set([...existingValue, ...overrideConfig[config]])]
+                    } else {
+                        inputsObj[config] = overrideConfig[config]
+                    }
+                }
+                continue
             } else if (overrideConfig[config] && typeof overrideConfig[config] === 'object') {
                 const nodeIds = Object.keys(overrideConfig[config])
                 if (nodeIds.includes(flowNodeData.id)) {
                     // Check if this parameter is enabled
                     if (isParameterEnabled(flowNodeData.label, config)) {
-                        inputsObj[config] = overrideConfig[config][flowNodeData.id]
+                        const existingValue = inputsObj[config]
+                        const overrideValue = overrideConfig[config][flowNodeData.id]
+
+                        // Merge objects instead of completely overriding
+                        if (
+                            typeof existingValue === 'object' &&
+                            typeof overrideValue === 'object' &&
+                            !Array.isArray(existingValue) &&
+                            !Array.isArray(overrideValue) &&
+                            existingValue !== null &&
+                            overrideValue !== null
+                        ) {
+                            inputsObj[config] = Object.assign({}, existingValue, overrideValue)
+                        } else if (typeof existingValue === 'string' && existingValue.startsWith('{') && existingValue.endsWith('}')) {
+                            try {
+                                const parsedExisting = JSON.parse(existingValue)
+                                if (typeof overrideValue === 'object' && !Array.isArray(overrideValue)) {
+                                    inputsObj[config] = Object.assign({}, parsedExisting, overrideValue)
+                                } else {
+                                    inputsObj[config] = overrideValue
+                                }
+                            } catch (e) {
+                                inputsObj[config] = overrideValue
+                            }
+                        } else {
+                            inputsObj[config] = overrideValue
+                        }
                     }
                     continue
                 } else if (nodeIds.some((nodeId) => nodeId.includes(flowNodeData.name))) {
@@ -1158,24 +1200,36 @@ export const replaceInputsWithConfig = (
             const overrideConfigValue = overrideConfig[config]
             if (overrideConfigValue) {
                 if (typeof overrideConfigValue === 'object') {
-                    switch (typeof paramValue) {
-                        case 'string':
-                            if (paramValue.startsWith('{') && paramValue.endsWith('}')) {
-                                try {
-                                    paramValue = Object.assign({}, JSON.parse(paramValue), overrideConfigValue)
-                                    break
-                                } catch (e) {
-                                    // ignore
+                    // Handle arrays specifically - concatenate instead of replace
+                    if (Array.isArray(overrideConfigValue) && Array.isArray(paramValue)) {
+                        paramValue = [...new Set([...paramValue, ...overrideConfigValue])]
+                    } else if (Array.isArray(overrideConfigValue)) {
+                        paramValue = overrideConfigValue
+                    } else {
+                        switch (typeof paramValue) {
+                            case 'string':
+                                if (paramValue.startsWith('{') && paramValue.endsWith('}')) {
+                                    try {
+                                        paramValue = Object.assign({}, JSON.parse(paramValue), overrideConfigValue)
+                                        break
+                                    } catch (e) {
+                                        // ignore
+                                    }
                                 }
-                            }
-                            paramValue = overrideConfigValue
-                            break
-                        case 'object':
-                            paramValue = Object.assign({}, paramValue, overrideConfigValue)
-                            break
-                        default:
-                            paramValue = overrideConfigValue
-                            break
+                                paramValue = overrideConfigValue
+                                break
+                            case 'object':
+                                // Make sure we're not dealing with arrays here
+                                if (!Array.isArray(paramValue)) {
+                                    paramValue = Object.assign({}, paramValue, overrideConfigValue)
+                                } else {
+                                    paramValue = overrideConfigValue
+                                }
+                                break
+                            default:
+                                paramValue = overrideConfigValue
+                                break
+                        }
                     }
                 } else {
                     paramValue = overrideConfigValue
@@ -1349,6 +1403,48 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                         name: inputParam.name,
                         type: inputParam.type,
                         schema: arraySchema
+                    }
+                }
+            } else if (inputParam.loadConfig) {
+                const configData = flowNode?.data?.inputs?.[`${inputParam.name}Config`]
+                if (configData) {
+                    // Parse config data to extract schema
+                    let parsedConfig: any = {}
+                    try {
+                        parsedConfig = typeof configData === 'string' ? JSON.parse(configData) : configData
+                    } catch (e) {
+                        // If parsing fails, treat as empty object
+                        parsedConfig = {}
+                    }
+
+                    // Generate schema from config structure
+                    const configSchema: Record<string, string> = {}
+                    parsedConfig = _removeCredentialId(parsedConfig)
+                    for (const key in parsedConfig) {
+                        if (key === inputParam.name) continue
+                        const value = parsedConfig[key]
+                        let fieldType = 'string' // default type
+
+                        if (typeof value === 'boolean') {
+                            fieldType = 'boolean'
+                        } else if (typeof value === 'number') {
+                            fieldType = 'number'
+                        } else if (Array.isArray(value)) {
+                            fieldType = 'array'
+                        } else if (typeof value === 'object' && value !== null) {
+                            fieldType = 'object'
+                        }
+
+                        configSchema[key] = fieldType
+                    }
+
+                    obj = {
+                        node: flowNode.data.label,
+                        nodeId: flowNode.data.id,
+                        label: `${inputParam.label} Config`,
+                        name: `${inputParam.name}Config`,
+                        type: `json`,
+                        schema: configSchema
                     }
                 }
             } else {
@@ -1928,4 +2024,49 @@ export const getAllNodesInPath = (startNode: string, graph: INodeDirectedGraph):
     }
 
     return Array.from(nodes)
+}
+
+export const _removeCredentialId = (obj: any): any => {
+    if (!obj || typeof obj !== 'object') return obj
+
+    if (Array.isArray(obj)) {
+        return obj.map((item) => _removeCredentialId(item))
+    }
+
+    const newObj: Record<string, any> = {}
+    for (const [key, value] of Object.entries(obj)) {
+        if (key === 'FLOWISE_CREDENTIAL_ID') continue
+        newObj[key] = _removeCredentialId(value)
+    }
+    return newObj
+}
+
+/**
+ * Validates that history items follow the expected schema
+ * @param {any[]} history - Array of history items to validate
+ * @returns {boolean} - True if all items are valid, false otherwise
+ */
+export const validateHistorySchema = (history: any[]): boolean => {
+    if (!Array.isArray(history)) {
+        return false
+    }
+
+    return history.every((item) => {
+        // Check if item is an object
+        if (typeof item !== 'object' || item === null) {
+            return false
+        }
+
+        // Check if role exists and is valid
+        if (typeof item.role !== 'string' || !['apiMessage', 'userMessage'].includes(item.role)) {
+            return false
+        }
+
+        // Check if content exists and is a string
+        if (typeof item.content !== 'string') {
+            return false
+        }
+
+        return true
+    })
 }

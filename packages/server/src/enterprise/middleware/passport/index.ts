@@ -1,26 +1,26 @@
+import { HttpStatusCode } from 'axios'
+import { RedisStore } from 'connect-redis'
+import express, { NextFunction, Request, Response } from 'express'
+import session from 'express-session'
+import { StatusCodes } from 'http-status-codes'
+import jwt, { JwtPayload, sign } from 'jsonwebtoken'
 import passport from 'passport'
 import { VerifiedCallback } from 'passport-jwt'
-import express, { NextFunction, Request, Response } from 'express'
-import { ErrorMessage, IAssignedWorkspace, LoggedInUser } from '../../Interface.Enterprise'
-import { decryptToken, encryptToken, generateSafeCopy } from '../../utils/tempTokenUtils'
-import jwt, { JwtPayload, sign } from 'jsonwebtoken'
-import { getAuthStrategy } from './AuthStrategy'
-import { IdentityManager } from '../../../IdentityManager'
-import { HttpStatusCode } from 'axios'
-import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
-import session from 'express-session'
-import { OrganizationService } from '../../services/organization.service'
-import { AccountService } from '../../services/account.service'
-import { WorkspaceUser, WorkspaceUserStatus } from '../../database/entities/workspace-user.entity'
-import { RoleErrorMessage, RoleService } from '../../services/role.service'
-import { GeneralRole } from '../../database/entities/role.entity'
-import { RedisStore } from 'connect-redis'
-import { WorkspaceUserService } from '../../services/workspace-user.service'
-import { OrganizationUserErrorMessage, OrganizationUserService } from '../../services/organization-user.service'
 import { InternalFlowiseError } from '../../../errors/internalFlowiseError'
-import { StatusCodes } from 'http-status-codes'
-import { OrganizationUserStatus } from '../../database/entities/organization-user.entity'
+import { IdentityManager } from '../../../IdentityManager'
 import { Platform } from '../../../Interface'
+import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
+import { OrganizationUserStatus } from '../../database/entities/organization-user.entity'
+import { GeneralRole } from '../../database/entities/role.entity'
+import { WorkspaceUser, WorkspaceUserStatus } from '../../database/entities/workspace-user.entity'
+import { ErrorMessage, IAssignedWorkspace, LoggedInUser } from '../../Interface.Enterprise'
+import { AccountService } from '../../services/account.service'
+import { OrganizationUserErrorMessage, OrganizationUserService } from '../../services/organization-user.service'
+import { OrganizationService } from '../../services/organization.service'
+import { RoleErrorMessage, RoleService } from '../../services/role.service'
+import { WorkspaceUserService } from '../../services/workspace-user.service'
+import { decryptToken, encryptToken, generateSafeCopy } from '../../utils/tempTokenUtils'
+import { getAuthStrategy } from './AuthStrategy'
 import { initializeDBClientAndStore, initializeRedisClientAndStore } from './SessionPersistance'
 
 const localStrategy = require('passport-local').Strategy
@@ -123,7 +123,7 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                     if (!organizationUser)
                         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, OrganizationUserErrorMessage.ORGANIZATION_USER_NOT_FOUND)
                     organizationUser.status = OrganizationUserStatus.ACTIVE
-                    await workspaceUserService.updateWorkspaceUser(workspaceUser)
+                    await workspaceUserService.updateWorkspaceUser(workspaceUser, queryRunner)
                     await organizationUserService.updateOrganizationUser(organizationUser)
 
                     const workspaceUsers = await workspaceUserService.readWorkspaceUserByUserId(organizationUser.userId, queryRunner)

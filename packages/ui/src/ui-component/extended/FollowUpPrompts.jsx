@@ -15,6 +15,7 @@ import azureOpenAiIcon from '@/assets/images/azure_openai.svg'
 import mistralAiIcon from '@/assets/images/mistralai.svg'
 import openAiIcon from '@/assets/images/openai.svg'
 import groqIcon from '@/assets/images/groq.png'
+import geminiIcon from '@/assets/images/gemini.png'
 import ollamaIcon from '@/assets/images/ollama.svg'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
@@ -117,7 +118,7 @@ const followUpPromptsOptions = {
     [FollowUpPromptProviders.GOOGLE_GENAI]: {
         label: 'Google Gemini',
         name: FollowUpPromptProviders.GOOGLE_GENAI,
-        icon: azureOpenAiIcon,
+        icon: geminiIcon,
         inputs: [
             {
                 label: 'Connect Credential',
@@ -128,12 +129,8 @@ const followUpPromptsOptions = {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                default: 'gemini-1.5-pro-latest',
-                options: [
-                    { label: 'gemini-1.5-flash-latest', name: 'gemini-1.5-flash-latest' },
-                    { label: 'gemini-1.5-pro-latest', name: 'gemini-1.5-pro-latest' }
-                ]
+                type: 'asyncOptions',
+                loadMethod: 'listModels'
             },
             {
                 label: 'Prompt',
@@ -204,11 +201,8 @@ const followUpPromptsOptions = {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    { label: 'mistral-large-latest', name: 'mistral-large-latest' },
-                    { label: 'mistral-large-2402', name: 'mistral-large-2402' }
-                ]
+                type: 'asyncOptions',
+                loadMethod: 'listModels'
             },
             {
                 label: 'Prompt',

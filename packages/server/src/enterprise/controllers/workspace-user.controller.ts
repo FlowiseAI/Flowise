@@ -1,10 +1,11 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
-import { WorkspaceUserService } from '../services/workspace-user.service'
-import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { WorkspaceUser } from '../database/entities/workspace-user.entity'
+import { QueryRunner } from 'typeorm'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { GeneralErrorMessage } from '../../utils/constants'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { WorkspaceUser } from '../database/entities/workspace-user.entity'
+import { WorkspaceUserService } from '../services/workspace-user.service'
 
 export class WorkspaceUserController {
     public async create(req: Request, res: Response, next: NextFunction) {
@@ -57,12 +58,18 @@ export class WorkspaceUserController {
     }
 
     public async update(req: Request, res: Response, next: NextFunction) {
+        let queryRunner: QueryRunner | undefined
         try {
+            queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
+            await queryRunner.connect()
             const workspaceUserService = new WorkspaceUserService()
-            const workspaceUser = await workspaceUserService.updateWorkspaceUser(req.body)
+            const workspaceUser = await workspaceUserService.updateWorkspaceUser(req.body, queryRunner)
             return res.status(StatusCodes.OK).json(workspaceUser)
         } catch (error) {
+            if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
             next(error)
+        } finally {
+            if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
     }
 
