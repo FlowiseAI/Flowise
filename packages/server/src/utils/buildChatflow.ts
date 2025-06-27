@@ -68,7 +68,7 @@ import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerService
 import { OMIT_QUEUE_JOB_DATA } from './constants'
 import { executeAgentFlow } from './buildAgentflow'
 import { Workspace } from '../enterprise/database/entities/workspace.entity'
-import { Organization } from '../enterprise/database/entities/organization.entity'
+import { Organization, OrganizationStatus } from '../enterprise/database/entities/organization.entity'
 
 /*
  * Initialize the ending node to be executed
@@ -946,6 +946,10 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
 
         const orgId = org.id
         const subscriptionId = org.subscriptionId as string
+
+        if (org.status === OrganizationStatus.PAST_DUE) {
+            throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, 'Organization suspended due to non-payment')
+        }
 
         await checkPredictions(orgId, subscriptionId, appServer.usageCacheManager)
 

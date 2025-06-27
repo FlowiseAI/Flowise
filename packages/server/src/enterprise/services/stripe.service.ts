@@ -28,15 +28,6 @@ export class StripeService {
 
     public async handleInvoicePaid(invoice: Stripe.Invoice, queryRunner: QueryRunner): Promise<void> {
         await this.getStripe() // Initialize stripe if not already done
-        logger.info(
-            `Invoice paid: ${JSON.stringify({
-                id: invoice.id,
-                customer: invoice.customer,
-                subscription: invoice.subscription,
-                amountPaid: invoice.amount_paid,
-                currency: invoice.currency
-            })}`
-        )
 
         if (!invoice.subscription) {
             logger.warn(`No subscription ID found in invoice: ${invoice.id}`)
@@ -55,23 +46,8 @@ export class StripeService {
                 return
             }
 
-            logger.info(
-                `Found organization for subscription: ${JSON.stringify({
-                    organizationId: organization.id,
-                    subscriptionId,
-                    status: (organization as any).status
-                })}`
-            )
-
             // Get subscription details from Stripe
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
-
-            logger.info(
-                `Current subscription details: ${JSON.stringify({
-                    subscriptionId,
-                    status: subscription.status
-                })}`
-            )
 
             // Always ensure organization is active when invoice is paid
             // This handles both reactivation and plan upgrades
@@ -80,7 +56,6 @@ export class StripeService {
             if (shouldUpdateStatus) {
                 // Check if subscription is past_due - if so, don't reactivate yet
                 if (subscription.status === 'past_due') {
-                    logger.info(`Subscription is still past_due, not reactivating: ${subscriptionId}`)
                     return
                 }
 
@@ -96,17 +71,8 @@ export class StripeService {
                     // Check if all uncollectible invoices have been settled (paid)
                     const unsettledUncollectible = uncollectibleInvoices.data.filter((invoice) => !invoice.paid)
                     if (unsettledUncollectible.length > 0) {
-                        logger.info(
-                            `Found ${unsettledUncollectible.length} unsettled uncollectible invoices for subscription: ${subscriptionId}. Keeping organization suspended.`,
-                            {
-                                unsettledInvoiceIds: unsettledUncollectible.map((inv) => inv.id)
-                            }
-                        )
                         return
                     }
-                    logger.info(
-                        `All ${uncollectibleInvoices.data.length} uncollectible invoices have been settled for subscription: ${subscriptionId}`
-                    )
                 }
 
                 // Check for any unpaid invoices across all possible unpaid statuses
@@ -129,41 +95,17 @@ export class StripeService {
                 }
 
                 if (hasUnpaidInvoices) {
-                    logger.info(`Found unpaid invoices for subscription: ${subscriptionId}. Keeping organization suspended.`, {
-                        unpaidInvoiceIds
-                    })
                     return
                 }
-
-                logger.info(`All invoices paid for subscription: ${subscriptionId}. Reactivating organization.`, {
-                    subscriptionId,
-                    organizationId: organization.id,
-                    uncollectibleInvoicesChecked: uncollectibleInvoices.data.length,
-                    unpaidStatusesChecked: unpaidStatuses
-                })
 
                 await queryRunner.startTransaction()
                 ;(organization as any).status = OrganizationStatus.ACTIVE
                 await queryRunner.manager.save(Organization, organization)
                 await queryRunner.commitTransaction()
-
-                logger.info('Organization reactivated after payment', {
-                    subscriptionId,
-                    organizationId: organization.id,
-                    status: (organization as any).status
-                })
-            } else {
-                logger.info('Organization already active, provisioning access for paid invoice', {
-                    subscriptionId,
-                    organizationId: organization.id,
-                    invoiceId: invoice.id
-                })
             }
 
             // Check if subscription needs to be resumed after all debts are settled
             if (subscription.status === 'unpaid') {
-                logger.info(`Subscription is in unpaid status, checking if it can be resumed: ${subscriptionId}`)
-
                 // Verify all debts are settled before resuming
                 const allUnpaidStatuses = ['open', 'uncollectible', 'past_due']
                 let hasAnyUnpaidInvoices = false
@@ -188,16 +130,10 @@ export class StripeService {
                         await this.stripe.subscriptions.update(subscriptionId, {
                             pause_collection: null // This resumes the subscription
                         })
-
-                        logger.info(`Subscription resumed after all debts settled: ${subscriptionId}`)
                     } catch (resumeError) {
                         logger.error(`Failed to resume subscription ${subscriptionId}: ${resumeError}`)
                         // Don't throw here - we still want to provision access even if resume fails
                     }
-                } else {
-                    logger.info(`Subscription ${subscriptionId} still has unpaid invoices, not resuming yet`, {
-                        unpaidInvoiceIds: allUnpaidInvoiceIds
-                    })
                 }
             }
 
@@ -216,14 +152,6 @@ export class StripeService {
                 features: await stripeManager.getFeaturesByPlan(subscriptionId, true),
                 quotas: await cacheManager.getQuotas(subscriptionId, true)
             })
-
-            logger.info('Subscription access provisioned after payment', {
-                subscriptionId,
-                organizationId: organization.id,
-                productId: currentProductId,
-                invoiceId: invoice.id,
-                subscriptionStatus: updatedSubscription.status
-            })
         } catch (error) {
             logger.error(`Error handling invoice paid: ${error}`)
             if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
@@ -233,15 +161,6 @@ export class StripeService {
 
     public async handleInvoiceMarkedUncollectible(invoice: Stripe.Invoice, queryRunner: QueryRunner): Promise<void> {
         await this.getStripe() // Initialize stripe if not already done
-        logger.info(
-            `Invoice marked uncollectible: ${JSON.stringify({
-                id: invoice.id,
-                customer: invoice.customer,
-                subscription: invoice.subscription,
-                amountPaid: invoice.amount_paid,
-                currency: invoice.currency
-            })}`
-        )
 
         if (!invoice.subscription) {
             logger.warn(`No subscription ID found in invoice: ${invoice.id}`)
@@ -261,19 +180,11 @@ export class StripeService {
                 return
             }
 
-            logger.info(`Found organization for subscription: ${JSON.stringify({ organizationId: organization.id, subscriptionId })}`)
-
             // Set organization status to suspended
             await queryRunner.startTransaction()
             ;(organization as any).status = OrganizationStatus.PAST_DUE
             await queryRunner.manager.save(Organization, organization)
             await queryRunner.commitTransaction()
-
-            logger.info('Organization suspended due to uncollectible invoice', {
-                subscriptionId,
-                organizationId: organization.id,
-                status: (organization as any).status
-            })
 
             // Update lastLogin for workspace users in Default Workspace
             await this.updateLastLoginForDefaultWorkspaceUsers(organization.id, queryRunner)
@@ -294,12 +205,10 @@ export class StripeService {
             })
 
             if (organizationUsers.length === 0) {
-                logger.info(`No organization users found for organization: ${organizationId}`)
                 return
             }
 
             const userIds = organizationUsers.map((ou) => ou.userId)
-            logger.info(`Found ${userIds.length} users in suspended organization: ${organizationId}`)
 
             // Find workspaces named "Default Workspace" for this organization
             const defaultWorkspaces = await queryRunner.manager.find(Workspace, {
@@ -310,12 +219,10 @@ export class StripeService {
             })
 
             if (defaultWorkspaces.length === 0) {
-                logger.info(`No Default Workspace found for organization: ${organizationId}`)
                 return
             }
 
             const workspaceIds = defaultWorkspaces.map((w) => w.id)
-            logger.info(`Found ${workspaceIds.length} Default Workspaces for organization: ${organizationId}`)
 
             // Find workspace users for these users in Default Workspaces
             const workspaceUsers = await queryRunner.manager
@@ -325,7 +232,6 @@ export class StripeService {
                 .getMany()
 
             if (workspaceUsers.length === 0) {
-                logger.info(`No workspace users found in Default Workspaces for organization: ${organizationId}`)
                 return
             }
 
@@ -339,13 +245,6 @@ export class StripeService {
                 .where('userId IN (:...userIds)', { userIds })
                 .andWhere('workspaceId IN (:...workspaceIds)', { workspaceIds })
                 .execute()
-
-            logger.info(`Updated lastLogin for ${workspaceUsers.length} workspace users in Default Workspace`, {
-                organizationId,
-                affectedUserIds: userIds,
-                workspaceIds,
-                timestamp: currentTimestamp
-            })
         } catch (error) {
             logger.error(`Error updating lastLogin for Default Workspace users: ${error}`, {
                 organizationId
