@@ -25,6 +25,39 @@ import { validateDeployment } from './update-environments/utils.js';
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
+// Helper function to properly parse multiline environment variables from BWS output
+function parseEnvironmentOutput(output) {
+  const result = {};
+  const lines = output.split('\n');
+  let currentKey = null;
+  let currentValue = '';
+
+  for (const line of lines) {
+    // Check if this line starts a new variable (has = and doesn't start with whitespace)
+    if (line.includes('=') && !line.startsWith(' ') && !line.startsWith('\t')) {
+      // Save previous variable if exists
+      if (currentKey !== null) {
+        result[currentKey] = currentValue;
+      }
+
+      // Start new variable
+      const equalIndex = line.indexOf('=');
+      currentKey = line.substring(0, equalIndex).trim();
+      currentValue = line.substring(equalIndex + 1);
+    } else if (currentKey !== null && line.trim() !== '') {
+      // This is a continuation line for the current variable
+      currentValue += '\n' + line;
+    }
+  }
+
+  // Don't forget the last variable
+  if (currentKey !== null) {
+    result[currentKey] = currentValue;
+  }
+
+  return result;
+}
+
 // Helper function to get BWS organization ID with fallback
 function getBwsOrgId() {
   return process.env.BWS_ORG_ID || 'YOUR_BWS_ORG_ID_HERE';
@@ -691,7 +724,7 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
           const decrypted = decryptContent(content, process.env.BWS_EPHEMERAL_KEY);
 
           // Parse decrypted content but don't override existing env vars
-          const decryptedVariables = dotenv.parse(decrypted);
+          const decryptedVariables = parseEnvironmentOutput(decrypted);
           for (const key of Object.keys(decryptedVariables)) {
             // Only set if not already defined in process.env
             if (!(key in process.env)) {
@@ -875,10 +908,10 @@ function loadSecureEnvironment(environment) {
     const decrypted = decryptContent(encryptedText, process.env.BWS_EPHEMERAL_KEY);
 
     // Load decrypted vars into process.env
-    for (const line of decrypted.split('\n')) {
-      const [k, ...rest] = line.split('=');
-      if (k && rest.length > 0) {
-        process.env[k.trim()] = rest.join('=').trim();
+    const parsedVariables = parseEnvironmentOutput(decrypted);
+    for (const [key, value] of Object.entries(parsedVariables)) {
+      if (key && value !== undefined) {
+        process.env[key.trim()] = value;
       }
     }
     console.log(`${environment} environment secrets loaded into process.env`);

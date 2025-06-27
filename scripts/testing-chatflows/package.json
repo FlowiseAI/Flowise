@@ -1,7 +1,7 @@
 {
     "name": "chatflow-tester",
     "version": "1.0.0",
-    "description": "Script to test chatflows API",
+    "description": "Comprehensive testing script for chatflows with multi-turn conversation support",
     "main": "testingChatflows.js",
     "scripts": {
         "test": "node testingChatflows.js"
@@ -9,6 +9,7 @@
     "dependencies": {
         "axios": "^1.6.7",
         "dotenv": "^16.4.5",
+        "inquirer": "^8.2.6",
         "yargs": "^17.7.2"
     }
 }

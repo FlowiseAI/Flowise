@@ -7,6 +7,39 @@ import path from 'node:path';
 import dotenv from 'dotenv';
 import logger from './logger.js';
 
+// Helper function to properly parse multiline environment variables from BWS output
+function parseEnvironmentOutput(output) {
+  const result = {};
+  const lines = output.split('\n');
+  let currentKey = null;
+  let currentValue = '';
+
+  for (const line of lines) {
+    // Check if this line starts a new variable (has = and doesn't start with whitespace)
+    if (line.includes('=') && !line.startsWith(' ') && !line.startsWith('\t')) {
+      // Save previous variable if exists
+      if (currentKey !== null) {
+        result[currentKey] = currentValue;
+      }
+
+      // Start new variable
+      const equalIndex = line.indexOf('=');
+      currentKey = line.substring(0, equalIndex).trim();
+      currentValue = line.substring(equalIndex + 1);
+    } else if (currentKey !== null && line.trim() !== '') {
+      // This is a continuation line for the current variable
+      currentValue += '\n' + line;
+    }
+  }
+
+  // Don't forget the last variable
+  if (currentKey !== null) {
+    result[currentKey] = currentValue;
+  }
+
+  return result;
+}
+
 // Helper function to get BWS organization ID with fallback
 function getBwsOrgId() {
   return process.env.BWS_ORG_ID || 'YOUR_BWS_ORG_ID_HERE';
@@ -122,16 +155,10 @@ function loadBwsSecrets(encryptionKey) {
 
       // These are data processing operations, not command executions
       const cleanOutput = output.replaceAll(/\u001B\[\d+m/g, '').trim();
-      const globalSecrets = cleanOutput.split('\n').reduce((accumulator, line) => {
-        const [key, value] = line.split('=');
-        if (key && value) {
-          accumulator[key] = value;
-        }
-        return accumulator;
-      }, {});
+      const globalSecrets = parseEnvironmentOutput(cleanOutput);
 
       // Also just data processing
-      for (const { key, value } of globalSecrets) {
+      for (const [key, value] of Object.entries(globalSecrets)) {
         if (key === 'NETLIFY_AUTH_TOKEN' || key === 'VERCEL_AUTH_TOKEN') {
           mergedVariables[key] = value;
           console.log('Debug: Found auth token:', key);
@@ -155,16 +182,10 @@ function loadBwsSecrets(encryptionKey) {
           }
         );
 
-        const projectSecrets = projectOutput.split('\n').reduce((accumulator, line) => {
-          const [key, value] = line.split('=');
-          if (key && value) {
-            accumulator[key] = value;
-          }
-          return accumulator;
-        }, {});
+        const projectSecrets = parseEnvironmentOutput(projectOutput);
 
         // More data processing
-        for (const { key, value } of projectSecrets) {
+        for (const [key, value] of Object.entries(projectSecrets)) {
           if (key && value) {
             mergedVariables[key] = value;
           }

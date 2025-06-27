@@ -45,6 +45,7 @@
         "test": "pnpm turbo run test:auth",
         "test:e2e": "pnpm cypress run",
         "test:cmp": "pnpm cypress run --component",
+        "test:chatflows": "pnpm secure-run \"node ./scripts/testing-chatflows/testingChatflows.js\"",
         "logs": "docker-compose logs -f",
         "dev-inngest": "npx inngest-cli@latest dev -u http://localhost:3001/api/inngest --no-discovery > /dev/null 2>&1",
         "scripts:processCsvRows": "pnpm secure-run \"ts-node ./packages-answers/scripts/processCsvRows.ts\"",
