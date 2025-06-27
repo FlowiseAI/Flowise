@@ -11,6 +11,14 @@ import Header from './Header'
 import Sidebar from './Sidebar'
 import { drawerWidth, headerHeight } from '@/store/constant'
 import { SET_MENU } from '@/store/actions'
+import { store } from '@/store'
+import { organizationUpdated } from '@/store/reducers/authSlice'
+
+// hooks
+import useApi from '@/hooks/useApi'
+
+// api
+import organizationApi from '@/api/organization'
 
 // styles
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })(({ theme, open }) => ({
@@ -60,12 +68,34 @@ const MainLayout = () => {
     const theme = useTheme()
     const matchDownMd = useMediaQuery(theme.breakpoints.down('lg'))
 
+    // authenticated user
+    const user = useSelector((state) => state.auth.user)
+    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
+
     // Handle left drawer
     const leftDrawerOpened = useSelector((state) => state.customization.opened)
     const dispatch = useDispatch()
     const handleLeftDrawerToggle = () => {
         dispatch({ type: SET_MENU, opened: !leftDrawerOpened })
     }
+
+    const getOrganizationsByIdApi = useApi(organizationApi.getOrganizationById)
+
+    useEffect(() => {
+        if (isAuthenticated && user) {
+            getOrganizationsByIdApi.request(user.activeOrganizationId)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAuthenticated, user])
+
+    useEffect(() => {
+        if (getOrganizationsByIdApi.data) {
+            store.dispatch(organizationUpdated(getOrganizationsByIdApi.data))
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [getOrganizationsByIdApi.data])
 
     useEffect(() => {
         setTimeout(() => dispatch({ type: SET_MENU, opened: !matchDownMd }), 0)

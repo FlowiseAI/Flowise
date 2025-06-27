@@ -99,7 +99,7 @@ const PricingDialog = ({ open, onClose }) => {
             }
         } catch (error) {
             console.error('Error updating plan:', error)
-            const errorMessage = err.response?.data?.message || 'Failed to verify subscription'
+            const errorMessage = error.response?.data?.message || 'Failed to update subscription'
             enqueueSnackbar(errorMessage, { variant: 'error' })
             onClose()
         } finally {
@@ -523,8 +523,8 @@ const PricingDialog = ({ open, onClose }) => {
                                             <Box
                                                 sx={{
                                                     p: 1.5,
-                                                    bgcolor: 'warning.light',
-                                                    color: 'warning.dark',
+                                                    bgcolor: customization.isDarkMode ? 'success.dark' : 'success.light',
+                                                    color: customization.isDarkMode ? 'success.light' : 'success.dark',
                                                     borderRadius: 1,
                                                     display: 'flex',
                                                     alignItems: 'center',
