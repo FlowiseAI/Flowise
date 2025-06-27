@@ -192,7 +192,7 @@ const Variables = () => {
 
     const onConfirm = () => {
         setShowVariableDialog(false)
-        getAllVariables.request()
+        refresh(currentPage, pageLimit)
         refreshVariablesCache()
     }
 

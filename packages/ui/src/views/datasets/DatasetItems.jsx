@@ -261,7 +261,7 @@ const EvalDatasetRows = () => {
         setShowRowDialog(false)
         setShowUploadDialog(false)
         setShowDatasetDialog(false)
-        getDatasetRows.request(datasetId)
+        refresh(currentPage, pageLimit)
     }
 
     useEffect(() => {

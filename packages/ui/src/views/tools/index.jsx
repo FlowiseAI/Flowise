@@ -122,7 +122,7 @@ const Tools = () => {
 
     const onConfirm = () => {
         setShowDialog(false)
-        getAllToolsApi.request()
+        refresh(currentPage, pageLimit)
     }
 
     const [search, setSearch] = useState('')
