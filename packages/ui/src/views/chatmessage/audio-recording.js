@@ -236,7 +236,7 @@ function computeElapsedTime(startTime) {
 
 //API to handle audio recording
 
-export const audioRecorder = {
+const audioRecorder = {
     /** Stores the recorded audio as Blob objects of audio data as the recording continues*/
     audioBlobs: [] /*of type Blob[]*/,
     /** Stores the reference of the MediaRecorder instance that handles the MediaStream when recording starts*/

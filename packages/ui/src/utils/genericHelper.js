@@ -1,5 +1,4 @@
 import { uniq, get, isEqual } from 'lodash'
-import moment from 'moment'
 
 export const getUniqueNodeId = (nodeData, nodes) => {
     let suffix = 0
@@ -432,16 +431,6 @@ const wouldCreateCycle = (sourceId, targetId, reactFlowInstance) => {
     return hasPath(targetId, sourceId)
 }
 
-export const convertDateStringToDateObject = (dateString) => {
-    if (dateString === undefined || !dateString) return undefined
-
-    const date = moment(dateString)
-    if (!date.isValid) return undefined
-
-    // Sat Sep 24 2022 07:30:14
-    return new Date(date.year(), date.month(), date.date(), date.hours(), date.minutes())
-}
-
 export const getFileName = (fileBase64) => {
     let fileNames = []
     if (fileBase64.startsWith('FILE-STORAGE::')) {
@@ -465,22 +454,6 @@ export const getFileName = (fileBase64) => {
         const splitDataURI = fileBase64.split(',')
         const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
         return filename
-    }
-}
-
-export const getFolderName = (base64ArrayStr) => {
-    try {
-        const base64Array = JSON.parse(base64ArrayStr)
-        const filenames = []
-        for (let i = 0; i < base64Array.length; i += 1) {
-            const fileBase64 = base64Array[i]
-            const splitDataURI = fileBase64.split(',')
-            const filename = splitDataURI[splitDataURI.length - 1].split(':')[1]
-            filenames.push(filename)
-        }
-        return filenames.length ? filenames.join(',') : ''
-    } catch (e) {
-        return ''
     }
 }
 
@@ -691,26 +664,6 @@ export const rearrangeToolsOrdering = (newValues, sourceNodeId) => {
     }
 
     newValues.sort((a, b) => sortKey(a) - sortKey(b))
-}
-
-export const throttle = (func, limit) => {
-    let lastFunc
-    let lastRan
-
-    return (...args) => {
-        if (!lastRan) {
-            func(...args)
-            lastRan = Date.now()
-        } else {
-            clearTimeout(lastFunc)
-            lastFunc = setTimeout(() => {
-                if (Date.now() - lastRan >= limit) {
-                    func(...args)
-                    lastRan = Date.now()
-                }
-            }, limit - (Date.now() - lastRan))
-        }
-    }
 }
 
 export const generateRandomGradient = () => {
@@ -1228,6 +1181,6 @@ export const showHideInputParams = (nodeData) => {
     return showHideInputs(nodeData, 'inputParams')
 }
 
-export const showHideInputAnchors = (nodeData) => {
+const showHideInputAnchors = (nodeData) => {
     return showHideInputs(nodeData, 'inputAnchors')
 }

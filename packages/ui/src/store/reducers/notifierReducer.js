@@ -1,6 +1,6 @@
 import { ENQUEUE_SNACKBAR, CLOSE_SNACKBAR, REMOVE_SNACKBAR } from '../actions'
 
-export const initialState = {
+const initialState = {
     notifications: []
 }
 
