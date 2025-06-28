@@ -85,7 +85,7 @@ const App = () => {
 };`
 }
 
-export const defaultThemeConfig = {
+const defaultThemeConfig = {
     button: {
         backgroundColor: '#3B81F6',
         right: 20,

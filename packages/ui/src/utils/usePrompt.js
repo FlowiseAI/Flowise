@@ -3,7 +3,7 @@ import { UNSAFE_NavigationContext as NavigationContext } from 'react-router-dom'
 
 // https://stackoverflow.com/questions/71572678/react-router-v-6-useprompt-typescript
 
-export function useBlocker(blocker, when = true) {
+function useBlocker(blocker, when = true) {
     const { navigator } = useContext(NavigationContext)
 
     useEffect(() => {

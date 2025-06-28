@@ -1,7 +1,7 @@
 // action - state management
 import * as actionTypes from '../actions'
 
-export const initialState = {
+const initialState = {
     isDirty: false,
     chatflow: null,
     canvasDialogShow: false,

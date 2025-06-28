@@ -4,7 +4,7 @@ import config from '@/config'
 // action - state management
 import * as actionTypes from '../actions'
 
-export const initialState = {
+const initialState = {
     isOpen: [], // for active default menu
     fontFamily: config.fontFamily,
     borderRadius: config.borderRadius,
