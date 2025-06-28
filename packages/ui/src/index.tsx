@@ -15,7 +15,7 @@ import { ReactFlowContext } from '@/store/context/ReactFlowContext'
 import { ConfigProvider } from '@/store/context/ConfigContext'
 import { ErrorProvider } from '@/store/context/ErrorContext'
 
-const container = document.getElementById('root')
+const container = document.getElementById('root')!
 const root = createRoot(container)
 
 root.render(
