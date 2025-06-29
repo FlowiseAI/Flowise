@@ -1149,7 +1149,33 @@ export const replaceInputsWithConfig = (
                 if (nodeIds.includes(flowNodeData.id)) {
                     // Check if this parameter is enabled
                     if (isParameterEnabled(flowNodeData.label, config)) {
-                        inputsObj[config] = overrideConfig[config][flowNodeData.id]
+                        const existingValue = inputsObj[config]
+                        const overrideValue = overrideConfig[config][flowNodeData.id]
+
+                        // Merge objects instead of completely overriding
+                        if (
+                            typeof existingValue === 'object' &&
+                            typeof overrideValue === 'object' &&
+                            !Array.isArray(existingValue) &&
+                            !Array.isArray(overrideValue) &&
+                            existingValue !== null &&
+                            overrideValue !== null
+                        ) {
+                            inputsObj[config] = Object.assign({}, existingValue, overrideValue)
+                        } else if (typeof existingValue === 'string' && existingValue.startsWith('{') && existingValue.endsWith('}')) {
+                            try {
+                                const parsedExisting = JSON.parse(existingValue)
+                                if (typeof overrideValue === 'object' && !Array.isArray(overrideValue)) {
+                                    inputsObj[config] = Object.assign({}, parsedExisting, overrideValue)
+                                } else {
+                                    inputsObj[config] = overrideValue
+                                }
+                            } catch (e) {
+                                inputsObj[config] = overrideValue
+                            }
+                        } else {
+                            inputsObj[config] = overrideValue
+                        }
                     }
                     continue
                 } else if (nodeIds.some((nodeId) => nodeId.includes(flowNodeData.name))) {
