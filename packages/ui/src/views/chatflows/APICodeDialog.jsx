@@ -203,26 +203,7 @@ const APICodeDialog = ({ show, dialogProps, onCancel }) => {
             result[node].nodeIds.sort()
         }
         setNodeConfig(result)
-
-        if (!overrideConfigStatus) {
-            setNodeOverrides(newNodeOverrides)
-        } else {
-            const updatedNodeOverrides = { ...nodeOverrides }
-
-            Object.keys(updatedNodeOverrides).forEach((node) => {
-                if (!seenNodes.has(node)) {
-                    delete updatedNodeOverrides[node]
-                }
-            })
-
-            seenNodes.forEach((node) => {
-                if (!updatedNodeOverrides[node]) {
-                    updatedNodeOverrides[node] = newNodeOverrides[node]
-                }
-            })
-
-            setNodeOverrides(updatedNodeOverrides)
-        }
+        setNodeOverrides(newNodeOverrides)
     }
 
     const groupByVariableLabel = (variables) => {
@@ -629,26 +610,63 @@ query({
     }
 
     const getMultiConfigCodeWithFormData = (codeLang) => {
-        if (codeLang === 'Python') {
-            return `# Specify multiple values for a config parameter by specifying the node id
+        if (dialogProps.isAgentflowV2) {
+            if (codeLang === 'Python') {
+                return `# Specify multiple values for a config parameter by specifying the node id
+body_data = {
+    "agentModelConfig": {
+        "agentAgentflow_0": {
+            "openAIApiKey": "sk-my-openai-1st-key"
+        },
+        "agentAgentflow_1": {
+            "openAIApiKey": "sk-my-openai-2nd-key"
+        }
+    }
+}`
+            } else if (codeLang === 'JavaScript') {
+                return `// Specify multiple values for a config parameter by specifying the node id
+formData.append("agentModelConfig[agentAgentflow_0][openAIApiKey]", "sk-my-openai-1st-key")
+formData.append("agentModelConfig[agentAgentflow_1][openAIApiKey]", "sk-my-openai-2nd-key")`
+            } else if (codeLang === 'cURL') {
+                return `-F "agentModelConfig[agentAgentflow_0][openAIApiKey]=sk-my-openai-1st-key" \\
+-F "agentModelConfig[agentAgentflow_1][openAIApiKey]=sk-my-openai-2nd-key" \\`
+            }
+        } else {
+            if (codeLang === 'Python') {
+                return `# Specify multiple values for a config parameter by specifying the node id
 body_data = {
     "openAIApiKey": {
         "chatOpenAI_0": "sk-my-openai-1st-key",
         "openAIEmbeddings_0": "sk-my-openai-2nd-key"
     }
 }`
-        } else if (codeLang === 'JavaScript') {
-            return `// Specify multiple values for a config parameter by specifying the node id
+            } else if (codeLang === 'JavaScript') {
+                return `// Specify multiple values for a config parameter by specifying the node id
 formData.append("openAIApiKey[chatOpenAI_0]", "sk-my-openai-1st-key")
 formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
-        } else if (codeLang === 'cURL') {
-            return `-F "openAIApiKey[chatOpenAI_0]=sk-my-openai-1st-key" \\
+            } else if (codeLang === 'cURL') {
+                return `-F "openAIApiKey[chatOpenAI_0]=sk-my-openai-1st-key" \\
 -F "openAIApiKey[openAIEmbeddings_0]=sk-my-openai-2nd-key" \\`
+            }
         }
     }
 
     const getMultiConfigCode = () => {
-        return `{
+        if (dialogProps.isAgentflowV2) {
+            return `{
+    "overrideConfig": {
+        "agentModelConfig": {
+            "agentAgentflow_0": {
+                "openAIApiKey": "sk-my-openai-1st-key"
+            },
+            "agentAgentflow_1": {
+                "openAIApiKey": "sk-my-openai-2nd-key"
+            }
+        }
+    }
+}`
+        } else {
+            return `{
     "overrideConfig": {
         "openAIApiKey": {
             "chatOpenAI_0": "sk-my-openai-1st-key",
@@ -656,6 +674,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
         }
     }
 }`
+        }
     }
 
     useEffect(() => {
@@ -773,7 +792,7 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                     <a
                                                         rel='noreferrer'
                                                         target='_blank'
-                                                        href='https://docs.flowiseai.com/using-flowise/api#override-config'
+                                                        href='https://docs.flowiseai.com/using-flowise/prediction#configuration-override'
                                                     >
                                                         here
                                                     </a>{' '}
@@ -838,7 +857,9 @@ formData.append("openAIApiKey[openAIEmbeddings_0]", "sk-my-openai-2nd-key")`
                                                                     rows={nodeOverrides[nodeLabel]}
                                                                     columns={
                                                                         nodeOverrides[nodeLabel].length > 0
-                                                                            ? Object.keys(nodeOverrides[nodeLabel][0])
+                                                                            ? Object.keys(nodeOverrides[nodeLabel][0]).filter(
+                                                                                  (key) => key !== 'schema'
+                                                                              )
                                                                             : []
                                                                     }
                                                                 />

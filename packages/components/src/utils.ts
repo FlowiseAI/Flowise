@@ -758,7 +758,7 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = [], orgI
                                 }
                             }
                             const documents: string = await fileLoaderNodeInstance.init(nodeData, '', options)
-                            messageWithFileUploads += `<doc name='${upload.name}'>${documents}</doc>\n\n`
+                            messageWithFileUploads += `<doc name='${upload.name}'>${handleEscapeCharacters(documents, true)}</doc>\n\n`
                         }
                     }
                     const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content

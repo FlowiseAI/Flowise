@@ -3,8 +3,7 @@ import { VectorStore, VectorStoreRetriever, VectorStoreRetrieverInput } from '@l
 import { INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
 import { handleEscapeCharacters } from '../../../src'
 import { z } from 'zod'
-import { convertStructuredSchemaToZod, ExtractTool } from '../../sequentialagents/commonUtils'
-import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
+import { convertStructuredSchemaToZod } from '../../sequentialagents/commonUtils'
 
 const queryPrefix = 'query'
 const defaultPrompt = `Extract keywords from the query: {{${queryPrefix}}}`
@@ -126,19 +125,8 @@ class ExtractMetadataRetriever_Retrievers implements INode {
             try {
                 const structuredOutput = z.object(convertStructuredSchemaToZod(llmStructuredOutput))
 
-                if (llm instanceof ChatGoogleGenerativeAI) {
-                    const tool = new ExtractTool({
-                        schema: structuredOutput
-                    })
-                    // @ts-ignore
-                    const modelWithTool = llm.bind({
-                        tools: [tool]
-                    }) as any
-                    llm = modelWithTool
-                } else {
-                    // @ts-ignore
-                    llm = llm.withStructuredOutput(structuredOutput)
-                }
+                // @ts-ignore
+                llm = llm.withStructuredOutput(structuredOutput)
             } catch (exception) {
                 console.error(exception)
             }
