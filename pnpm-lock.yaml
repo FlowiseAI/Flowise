@@ -456,6 +456,9 @@ importers:
             redis:
                 specifier: ^4.6.7
                 version: 4.6.13
+            remove-markdown:
+                specifier: ^0.6.2
+                version: 0.6.2
             replicate:
                 specifier: ^0.31.1
                 version: 0.31.1
@@ -15707,6 +15710,9 @@ packages:
     remove-bom-stream@1.2.0:
         resolution: { integrity: sha512-wigO8/O08XHb8YPzpDDT+QmRANfW6vLqxfaXm1YXhnFf3AkSLyjfG3GEFg4McZkmgL7KvCj5u2KczkvSP6NfHA== }
         engines: { node: '>= 0.10' }
+
+    remove-markdown@0.6.2:
+        resolution: { integrity: sha512-EijDXJZbzpGbQBd852ViUzcqgpMujthM+SAEHiWCMcZonRbZ+xViWKLJA/vrwbDwYdxrs1aFDjpBhcGrZoJRGA== }
 
     remove-trailing-separator@1.1.0:
         resolution: { integrity: sha512-/hS+Y0u3aOfIETiaiirUFwDBDzmXPvO+jAfKTitUngIPzdKc6Z0LoFjM/CK5PL4C+eKwHohlHAb6H0VFfmmUsw== }
@@ -38297,6 +38303,8 @@ snapshots:
             remove-bom-buffer: 3.0.0
             safe-buffer: 5.2.1
             through2: 2.0.5
+
+    remove-markdown@0.6.2: {}
 
     remove-trailing-separator@1.1.0: {}
 
