@@ -41,6 +41,7 @@ import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import PromptGeneratorDialog from '@/ui-component/dialog/PromptGeneratorDialog'
 import { Available } from '@/ui-component/rbac/available'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
+import { SwitchInput } from '@/ui-component/switch/Switch'
 
 // API
 import assistantsApi from '@/api/assistants'
@@ -351,6 +352,7 @@ const CustomAssistantConfigurePreview = () => {
                 const retrieverToolNodeData = cloneDeep(initNode(retrieverToolNode.data, retrieverToolId))
 
                 set(docStoreVSNodeData, 'inputs.selectedStore', selectedDocumentStores[i].id)
+                set(docStoreVSNodeData, 'outputs.output', 'retriever')
 
                 const docStoreOption = documentStoreOptions.find((ds) => ds.name === selectedDocumentStores[i].id)
                 // convert to small case and replace space with underscore
@@ -364,7 +366,7 @@ const CustomAssistantConfigurePreview = () => {
                     name,
                     description: desc,
                     retriever: `{{${docStoreVSId}.data.instance}}`,
-                    returnSourceDocuments: true
+                    returnSourceDocuments: selectedDocumentStores[i].returnSourceDocuments ?? false
                 })
 
                 const docStoreVS = {
@@ -671,7 +673,8 @@ const CustomAssistantConfigurePreview = () => {
             const newDocStore = {
                 id: docStoreId,
                 name: foundDocumentStoreOption?.label || '',
-                description: foundSelectedDocumentStore?.description || foundDocumentStoreOption?.description || ''
+                description: foundSelectedDocumentStore?.description || foundDocumentStoreOption?.description || '',
+                returnSourceDocuments: foundSelectedDocumentStore?.returnSourceDocuments ?? false
             }
 
             newSelectedDocumentStores.push(newDocStore)
@@ -1130,6 +1133,18 @@ const CustomAssistantConfigurePreview = () => {
                                                             onChange={(event) => {
                                                                 const newSelectedDocumentStores = [...selectedDocumentStores]
                                                                 newSelectedDocumentStores[index].description = event.target.value
+                                                                setSelectedDocumentStores(newSelectedDocumentStores)
+                                                            }}
+                                                        />
+                                                        <Stack sx={{ mt: 2, position: 'relative', alignItems: 'center' }} direction='row'>
+                                                            <Typography>Return Source Documents</Typography>
+                                                            <TooltipWithParser title='Return the actual source documents that were used to answer the question' />
+                                                        </Stack>
+                                                        <SwitchInput
+                                                            value={ds.returnSourceDocuments ?? false}
+                                                            onChange={(newValue) => {
+                                                                const newSelectedDocumentStores = [...selectedDocumentStores]
+                                                                newSelectedDocumentStores[index].returnSourceDocuments = newValue
                                                                 setSelectedDocumentStores(newSelectedDocumentStores)
                                                             }}
                                                         />

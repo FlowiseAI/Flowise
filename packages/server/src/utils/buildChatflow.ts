@@ -515,7 +515,9 @@ export const executeFlow = async ({
         baseURL,
         orgId,
         workspaceId,
-        subscriptionId
+        subscriptionId,
+        updateStorageUsage,
+        checkStorage
     })
 
     const setVariableNodesOutput = getSetVariableNodesOutput(reactFlowNodes)

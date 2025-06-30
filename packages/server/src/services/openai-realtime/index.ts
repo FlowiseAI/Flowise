@@ -10,6 +10,7 @@ import {
     getStartingNodes,
     resolveVariables
 } from '../../utils'
+import { checkStorage, updateStorageUsage } from '../../utils/quotaUsage'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { IDepthQueue, IReactFlowNode } from '../../Interface'
@@ -110,7 +111,9 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
         variableOverrides,
         orgId,
         workspaceId,
-        subscriptionId
+        subscriptionId,
+        updateStorageUsage,
+        checkStorage
     })
 
     const nodeToExecute =
@@ -143,6 +146,7 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
     const agent = await nodeInstance.init(nodeToExecuteData, '', {
         chatflowid,
         chatId,
+        orgId,
         appDataSource: appServer.AppDataSource,
         databaseEntities,
         analytic: chatflow.analytic
