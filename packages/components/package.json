@@ -131,6 +131,7 @@
         "puppeteer": "^20.7.1",
         "pyodide": ">=0.21.0-alpha.2",
         "redis": "^4.6.7",
+        "remove-markdown": "^0.6.2",
         "replicate": "^0.31.1",
         "sanitize-filename": "^1.6.3",
         "srt-parser-2": "^1.2.3",
