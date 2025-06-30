@@ -1,0 +1,67 @@
+---
+description: 
+globs: packages/components/**
+alwaysApply: false
+---
+# Components Package (flowise-components)
+
+## Overview
+The components package serves as a core library of LangChain components for building AI workflows. It provides integrations with various AI models, databases, and tools that can be used to create conversational AI applications within TheAnswer platform.
+
+## Purpose in the Monorepo
+This package is a foundational dependency that provides the building blocks for AI workflows in TheAnswer platform. Other packages like the server rely on these components to create and execute AI chains and workflows.
+
+## Key Features
+- Integrations with various LLM providers (OpenAI, Anthropic, Google, etc.)
+- Vector database connections (Pinecone, Qdrant, Weaviate, etc.)
+- Document processing utilities
+- Memory implementations
+- Tool integrations for various external services
+
+## Technical Details
+
+### Technologies Used
+- **TypeScript**: For type-safe development
+- **LangChain**: Core framework for AI workflows
+- **Various AI SDKs**: OpenAI, Anthropic, Google, Mistral, etc.
+- **Database Connectors**: For MongoDB, PostgreSQL, Pinecone, Qdrant, etc.
+- **Document Processing Libraries**: For handling PDFs, CSVs, and other document formats
+
+### Dependencies
+The package includes a wide range of dependencies for:
+- AI model integrations (OpenAI, Anthropic, Google, etc.)
+- Vector databases (Pinecone, Qdrant, etc.)
+- Document processing (PDF parsing, HTML processing)
+- API integrations (Contentful, Notion, etc.)
+- Utilities for various data transformations
+
+### Project Structure
+The package follows a modular structure organized by component types and providers.
+
+### Build Process
+Uses TypeScript compilation and Gulp for building.
+
+## Development Guidelines
+
+### Coding Standards
+- Use TypeScript for all new components
+- Follow existing patterns for model and database integrations
+- Implement proper error handling and logging
+- Ensure components are properly typed and exported
+
+### Testing
+- Test components with various inputs and environments
+- Validate integrations with external services
+
+### Documentation
+- Document all public APIs and component interfaces
+- Include usage examples for complex components
+
+## Scripts and Commands
+- `build`: Compiles TypeScript and runs Gulp
+- `dev`: Watches for changes and rebuilds automatically
+- `clean`: Removes build artifacts
+- `nuke`: Completely cleans the project including node_modules
+
+## Versioning and Publishing
+The package is versioned according to the monorepo versioning strategy and is not individually published to NPM. 

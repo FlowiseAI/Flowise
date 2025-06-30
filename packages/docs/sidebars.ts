@@ -5,6 +5,15 @@ const sidebars: SidebarsConfig = {
         'intro',
         {
             type: 'category',
+            label: 'Apps',
+            link: {
+                type: 'doc',
+                id: 'apps'
+            },
+            items: []
+        },
+        {
+            type: 'category',
             label: 'Browser Extension',
             link: {
                 type: 'doc',

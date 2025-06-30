@@ -1,6 +1,6 @@
 ---
-description: Use these rules when working with the documentation site and get information about how the application works
-globs: 
+description: 
+globs: packages/docs/**
 alwaysApply: false
 ---
 # Docs Package
