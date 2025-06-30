@@ -1,0 +1,131 @@
+---
+description: Flowise Resource Implementation Architecture
+globs: 
+alwaysApply: false
+---
+# Client Architecture Pattern
+
+### 1. API Client (`packages/ui/src/api/{resource}.js`)
+- **Purpose**: HTTP client functions that mirror server endpoints
+- **Pattern**: Simple functions wrapping HTTP calls
+- **Structure**:
+  ```javascript
+  import client from './client'
+  
+  const getAll{Resource}s = () => client.get('/{resource}s')
+  const get{Resource}ById = (id) => client.get(`/{resource}s/${id}`)
+  const create{Resource} = (body) => client.post('/{resource}s', body)
+  const update{Resource} = (id, body) => client.put(`/{resource}s/${id}`, body)
+  const delete{Resource} = (id) => client.delete(`/{resource}s/${id}`)
+  
+  export default {
+      getAll{Resource}s,
+      get{Resource}ById,
+      create{Resource},
+      update{Resource},
+      delete{Resource}
+  }
+  ```
+
+### 2. Custom Hooks (`packages/ui/src/hooks/useApi.jsx`)
+- **Purpose**: React hooks for API state management
+- **Pattern**: Reusable hook pattern for async operations
+- **Features**:
+  - Loading states
+  - Error handling
+  - Data caching
+  - Automatic authentication redirect
+- **Usage**:
+  ```javascript
+  const get{Resource}sApi = useApi({resource}Api.getAll{Resource}s)
+  
+  useEffect(() => {
+      get{Resource}sApi.request()
+  }, [])
+  ```
+
+### 3. Views/Components (`packages/ui/src/views/{resource}/index.jsx`)
+- **Purpose**: UI components and page layouts
+- **Pattern**: React functional components with hooks
+- **Key Features**:
+  - State management with useState/useEffect
+  - API integration via custom hooks
+  - Material-UI components
+  - Error boundaries
+  - Search and filtering
+  - Multiple view modes (card/list)
+- **Structure**:
+  ```javascript
+  import { useEffect, useState } from 'react'
+  import { useNavigate } from 'react-router-dom'
+  import {resource}Api from '@/api/{resource}'
+  import useApi from '@/hooks/useApi'
+  
+  const {Resource}s = () => {
+      const navigate = useNavigate()
+      const [search, setSearch] = useState('')
+      const get{Resource}sApi = useApi({resource}Api.getAll{Resource}s)
+      
+      useEffect(() => {
+          get{Resource}sApi.request()
+      }, [])
+      
+      const addNew = () => navigate('/canvas')
+      const goTo{Resource} = (selected{Resource}) => navigate(`/canvas/${selected{Resource}.id}`)
+      
+      return (
+          <MainCard>
+              <ViewHeader onSearchChange={setSearch} title="{Resource}s">
+                  <StyledButton onClick={addNew}>Add New</StyledButton>
+              </ViewHeader>
+              <ItemGrid data={get{Resource}sApi.data} onClick={goTo{Resource}} />
+          </MainCard>
+      )
+  }
+  ```
+
+### 4. Web App Layer (`apps/web/app/`)
+- **Purpose**: Next.js application with additional API routes
+- **Pattern**: App router with nested layouts
+- **Features**:
+  - SSR/SSG capabilities
+  - Additional API endpoints
+  - Authentication integration
+  - Multi-tenant support
+
+## Implementation Guidelines
+
+### When Creating New Resources:
+
+1. **Server Implementation**:
+   - Create route file in `packages/server/src/routes/{resource}/`
+   - Implement controller in `packages/server/src/controllers/{resource}/`
+   - Add service logic in `packages/server/src/services/{resource}/`
+   - Define entity in `packages/server/src/database/entities/`
+   - Register routes in main router
+
+2. **Client Implementation**:
+   - Add API client in `packages/ui/src/api/{resource}.js`
+   - Create view component in `packages/ui/src/views/{resource}/`
+   - Add routing configuration
+   - Update navigation menus
+
+### Common Patterns to Follow:
+
+- **Error Handling**: Use `InternalFlowiseError` with appropriate HTTP status codes
+- **Authentication**: Apply `enforceAbility` middleware to all protected routes
+- **Authorization**: Check ownership with `checkOwnership` utility
+- **Validation**: Validate all inputs in controllers before processing
+- **Async Operations**: Always use try/catch blocks with proper error forwarding
+- **Database Queries**: Use TypeORM query builders for complex operations
+- **State Management**: Use custom hooks for API state on client
+- **UI Consistency**: Follow Material-UI design patterns with theme integration
+
+### Security Considerations:
+
+- All routes must have authentication middleware
+- Implement proper authorization checks
+- Validate all user inputs
+- Use parameterized queries
+- Implement rate limiting where appropriate
+- Follow principle of least privilege for user permissions 

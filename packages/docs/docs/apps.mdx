@@ -1,0 +1,80 @@
+---
+id: apps
+title: AnswerAI Apps
+---
+
+import clsx from 'clsx'
+import styles from '@site/src/pages/index.module.css'
+
+<div className={clsx(styles.missionSection, styles.appsPageSection)}>
+  <div className="container">
+    <h1 className="text--center">AnswerAI Apps: Empowering Your Workflow</h1>
+    <p className="text--center">Unlock the full potential of your data and creativity with AnswerAI's powerful, intuitive applications. Designed to integrate seamlessly into your daily operations, our apps bring advanced AI capabilities directly to your fingertips.</p>
+
+    <h2 className="text--center">Current Apps</h2>
+
+    <div className={clsx("row", styles.featureItem)}>
+      <div className="col col--10 col--offset-1">
+        <h3>CSV Transformer</h3>
+        <p>The CSV Transformer app allows you to effortlessly clean, reformat, and analyze your CSV data using intelligent AI algorithms. Simply upload your CSV file, define your desired transformations (e.g., normalize text, extract specific columns, merge data), and let AnswerAI handle the complexities. Ideal for data preparation, reporting, and ensuring data quality across your projects.</p>
+        <h4>How it works:</h4>
+        <ol>
+          <li><strong>Upload:</strong> Securely upload your CSV file to the app.</li>
+          <li><strong>Configure:</strong> Use a user-friendly interface to specify the transformations you need.</li>
+          <li><strong>Process:</strong> AnswerAI's engine processes your data, applying the specified rules.</li>
+          <li><strong>Download:</strong> Download your transformed, clean CSV file, ready for use.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div className={clsx("row", styles.featureItem)}>
+      <div className="col col--10 col--offset-1">
+        <h3>Image Creator</h3>
+        <p>Unleash your creativity with the Image Creator app. Generate stunning, unique images from text descriptions, or transform existing images with AI-powered enhancements. Whether you need visuals for marketing, design, or personal projects, the Image Creator provides a powerful tool to bring your ideas to life.</p>
+        <h4>How it works:</h4>
+        <ol>
+          <li><strong>Describe:</strong> Enter a text prompt describing the image you want to create.</li>
+          <li><strong>Generate:</strong> AnswerAI's advanced image generation model creates an image based on your description.</li>
+          <li><strong>Refine (Optional):</strong> Adjust parameters or provide additional prompts to refine the output.</li>
+          <li><strong>Download:</strong> Save your high-quality, AI-generated image.</li>
+        </ol>
+      </div>
+    </div>
+
+    <h2 className="text--center">Coming Soon</h2>
+
+    <div className="row">
+      <div className="col col--4">
+        <div className={clsx(styles.comingSoonItem, "text--center")}>
+          <h3>Call Analysis</h3>
+          <p>Automated insights from your voice communications.</p>
+        </div>
+      </div>
+      <div className="col col--4">
+        <div className={clsx(styles.comingSoonItem, "text--center")}>
+          <h3>Ticket Analysis</h3>
+          <p>Streamline customer support with AI-driven ticket insights.</p>
+        </div>
+      </div>
+      <div className="col col--4">
+        <div className={clsx(styles.comingSoonItem, "text--center")}>
+          <h3>Video Creation</h3>
+          <p>Generate compelling videos from text or simple inputs.</p>
+        </div>
+      </div>
+      <div className="col col--4">
+        <div className={clsx(styles.comingSoonItem, "text--center")}>
+          <h3>Agent Builder</h3>
+          <p>Visually design and deploy custom AI agents for any task.</p>
+        </div>
+      </div>
+      <div className="col col--4">
+        <div className={clsx(styles.comingSoonItem, "text--center")}>
+          <h3>Company Dashboards</h3>
+          <p>Unified AI-powered insights across your business operations.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

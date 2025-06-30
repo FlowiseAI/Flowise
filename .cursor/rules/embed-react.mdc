@@ -1,0 +1,38 @@
+---
+description: Rules for the embed-react package
+globs: packages/embed-react/**
+alwaysApply: false
+---
+# React Embed Package (aai-embed-react)
+
+## Overview
+The `packages/embed-react` directory contains a React component that wraps the `aai-embed` library. This allows for easy integration of the chatbot into React applications.
+
+## Purpose in the Monorepo
+This package provides a convenient way for developers to embed TheAnswer chatbots into their React applications with a simple component-based approach.
+
+## Key Features
+- A React component that can be easily integrated into any React application.
+- Props for configuring the chatbot, such as `chatflowId`, `apiHost`, and `theme`.
+- Handles the initialization and communication with the underlying `aai-embed` library.
+
+## Technical Details
+
+### Technologies Used
+- **React**: UI library
+- **TypeScript**: For type-safe development
+
+### Dependencies
+- **`aai-embed`**: The core embeddable chatbot library.
+- **`react`**: The peer dependency for the component.
+
+## Development Guidelines
+
+### Coding Standards
+- Follow React best practices.
+- Use TypeScript for all new code.
+- Ensure that the component is well-documented and easy to use.
+
+### Props
+- The component should accept all the configuration options of the `aai-embed` library as props.
+- Props should be well-typed and documented.

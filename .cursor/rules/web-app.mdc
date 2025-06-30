@@ -1,0 +1,52 @@
+---
+description: Rules for the Next.js web application
+globs: apps/web/**
+alwaysApply: false
+---
+# Web Application (apps/web)
+
+## Overview
+The `apps/web` directory contains the Next.js front-end application for TheAnswer. This is the main user interface that consumes the API provided by the server.
+
+## Key Features
+- Next.js App Router
+- React Server Components (RSCs)
+- Server-side rendering (SSR) and static site generation (SSG)
+- API routes for proxying or handling specific front-end needs
+- Authentication and session management
+- Integration with the `packages/ui` library for shared components
+
+## Technical Details
+
+### Technologies Used
+- **Next.js**: React framework for production
+- **React**: UI library
+- **TypeScript**: For type-safe development
+- **Tailwind CSS**: For styling
+- **Sentry**: For error tracking
+
+### Project Structure
+- **`app/`**: The main application directory using the Next.js App Router.
+  - **`api/`**: API routes.
+  - **`[...slug]/`**: Dynamic routes.
+  - **`layout.tsx`**: The root layout.
+  - **`page.tsx`**: The root page.
+- **`public/`**: Static assets.
+- **`middleware.ts`**: Next.js middleware for handling requests.
+- **`next.config.js`**: Next.js configuration.
+- **`sentry.*.config.js`**: Sentry configuration files.
+
+## Development Guidelines
+
+### Coding Standards
+- Follow Next.js best practices, including the use of Server Components where possible.
+- Use TypeScript for all new code.
+- Adhere to the existing coding style and linting rules.
+
+### State Management
+- For client-side state, use React hooks (`useState`, `useContext`, `useReducer`).
+- For server-side state, leverage Next.js data fetching methods (`fetch` in Server Components, Route Handlers).
+
+### Authentication
+- Authentication is handled through middleware and API routes, which communicate with the main server.
+- Client-side authentication state should be managed securely.
