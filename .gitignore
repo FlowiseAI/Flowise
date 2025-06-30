@@ -104,3 +104,6 @@
 ## S/MIME message
 *.smime
 *.vsix
+docker/docker-compose.dev.yml
+docker/docker-compose.dev2.yml
+/packages/components/nodes/agentflow/CustomFunction2
