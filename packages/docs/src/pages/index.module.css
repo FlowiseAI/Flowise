@@ -564,13 +564,16 @@
 .pricingCard {
     background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
     border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 16px;
     text-align: center;
-    min-height: 450px;
+    min-height: 500px;
     height: 100%;
     display: flex;
     flex-direction: column;
     position: relative;
     transition: all 0.3s ease;
+    padding: 2rem;
+    margin-bottom: 2rem;
 }
 
 .pricingCard:hover {
@@ -613,7 +616,13 @@
 .pricingCallout {
     background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
     border: 2px solid rgba(0, 255, 255, 0.3);
+    border-radius: 16px;
     padding: 2rem;
+    margin-bottom: 2rem;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 @media screen and (max-width: 1200px) {

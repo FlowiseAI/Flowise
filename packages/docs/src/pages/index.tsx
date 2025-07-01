@@ -304,9 +304,8 @@ function PricingSection() {
                             <div style={{ textAlign: 'center' }}>
                                 <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>💡 Full Cost Transparency</h3>
                                 <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
-                                    We provide completely transparent metrics and cost calculators inside the app. See exactly what you're
-                                    spending, when, and why. We take only a small nominal fee on commercial AI tools and licensed AnswerAI
-                                    versions to keep the platform running.
+                                    We provide completely transparent metrics and cost calculators inside the app. See exactly what you&apos;re spending, when, and why. We take only a small nominal fee on commercial AI tools and licensed
+                                    AnswerAI versions to keep the platform running.
                                 </p>
                                 <div style={{ marginTop: '2rem' }}>
                                     <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
