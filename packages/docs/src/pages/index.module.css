@@ -39,9 +39,11 @@
     align-items: center;
     height: 100%;
     width: 100%;
+    max-width: 800px;
     padding: 2rem;
     box-sizing: border-box;
     color: white;
+    margin: 0 auto;
 }
 
 .heroSubtitle {
@@ -163,7 +165,8 @@
 
 .missionSection,
 .featuresSection,
-.macAppTeaserSection {
+.macAppTeaserSection,
+.pricingSection {
     background-color: rgba(0, 0, 0, 0.8);
     color: #fff;
     padding: 4rem 2rem;
@@ -171,7 +174,8 @@
 
 .missionSection h2,
 .featuresSection h2,
-.macAppTeaserSection h2 {
+.macAppTeaserSection h2,
+.pricingSection h2 {
     color: #00ffff;
     margin-bottom: 2rem;
 }
@@ -219,46 +223,112 @@
     margin: 0 auto;
 }
 
-.commandment {
-    display: flex;
-    align-items: flex-start;
-    gap: 1.5rem;
-    padding: 2rem;
-    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
-    border: 1px solid rgba(0, 255, 255, 0.3);
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    text-align: left;
-    transition: all 0.3s ease;
+/* Commandments Grid Layout */
+.pyramidContainer {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 0;
 }
 
-.commandment:hover {
+.commandmentsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.commandmentCard {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+    border: 2px solid rgba(0, 255, 255, 0.4);
+    border-radius: 12px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.commandmentCard:hover {
+    border-color: rgba(0, 255, 255, 0.8);
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(0, 255, 255, 0.15));
     transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
-    border-color: rgba(0, 255, 255, 0.6);
+    box-shadow: 0 15px 40px rgba(0, 255, 255, 0.3);
+}
+
+.commandmentCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.commandmentCard:hover::before {
+    opacity: 1;
 }
 
 .commandmentNumber {
-    font-size: 2rem;
+    font-size: 3rem;
     font-weight: bold;
     background: linear-gradient(45deg, #ff00ff, #00ffff);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    min-width: 3rem;
-    text-align: center;
     font-family: 'Courier New', monospace;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.6));
+    margin-bottom: 1rem;
+    text-align: center;
 }
 
-.commandmentText {
-    flex: 1;
-}
-
-.commandmentText strong {
+.commandmentTitle {
+    font-size: 1.4rem;
+    font-weight: bold;
     color: #00ffff;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.commandmentDescription {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+}
+
+.commandmentCardFull {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(0, 255, 255, 0.15));
+    border: 2px solid rgba(0, 255, 255, 0.6);
+}
+
+.commandmentCardFull .commandmentNumber {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+}
+
+.commandmentCardFull .commandmentTitle {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.commandmentCardFull .commandmentDescription {
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Remove old pyramid styles */
+.pyramidRow {
+    display: none;
+}
+
+.pyramidCard {
+    display: none;
 }
 
 .featuresSection {
@@ -331,7 +401,233 @@
     filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.5));
 }
 
+/* Apps Page Specific Styles */
+.appIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3));
+}
+
+.appFeatures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.appFeatures span {
+    background: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.comingSoonSection {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(10, 0, 20, 0.8));
+}
+
+.comingSoonCard {
+    min-height: 200px;
+    margin-bottom: 2rem;
+}
+
+.comingSoonIcon {
+    font-size: 2.5rem;
+    min-width: 4rem;
+    text-align: center;
+    filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.5));
+}
+
+.stepCard {
+    text-align: center;
+    min-height: 250px;
+}
+
+.stepNumber {
+    font-size: 3rem;
+    font-weight: bold;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+    font-family: 'Courier New', monospace;
+}
+
+.ctaSection {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.05), rgba(0, 255, 255, 0.05));
+    border-top: 1px solid rgba(0, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+/* Integration Section Styles */
+.integrationCard {
+    min-height: 180px;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.integrationCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 255, 255, 0.15);
+    border-color: rgba(0, 255, 255, 0.6);
+}
+
+.integrationIcon {
+    font-size: 2.5rem;
+    min-width: 4rem;
+    text-align: center;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.4));
+    margin-bottom: 0.5rem;
+}
+
+/* YouTube Video Styles */
+.videoCard {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.08), rgba(0, 255, 255, 0.08));
+    border: 1px solid rgba(0, 255, 255, 0.4);
+    min-height: 500px;
+}
+
+.videoCard:hover {
+    border-color: rgba(0, 255, 255, 0.8);
+    box-shadow: 0 25px 50px rgba(0, 255, 255, 0.15);
+}
+
+/* Subscription Banner Styles */
+.subscriptionBanner {
+    margin: 0 auto !important;
+    padding: 1.5rem 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.12), rgba(0, 255, 255, 0.12)) !important;
+    border: 1px solid rgba(0, 255, 255, 0.5) !important;
+    transition: all 0.3s ease;
+}
+
+.subscriptionBanner:hover {
+    border-color: rgba(0, 255, 255, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.subscriptionBannerContent {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.subscriptionBannerIcon {
+    font-size: 2rem !important;
+    margin: 0 !important;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.6));
+}
+
+.subscriptionBannerText {
+    text-align: left !important;
+    margin: 0 !important;
+}
+
+.subscriptionBannerButton {
+    flex-shrink: 0;
+}
+
+@media screen and (max-width: 768px) {
+    .subscriptionBanner {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 1.5rem !important;
+    }
+
+    .subscriptionBannerContent {
+        justify-content: center;
+        min-width: auto;
+        text-align: center;
+    }
+
+    .subscriptionBannerText {
+        text-align: center !important;
+    }
+}
+
+/* Pricing Section Styles */
+.pricingSection {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(10, 0, 20, 0.8));
+}
+
+.pricingCard {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    text-align: center;
+    min-height: 450px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.pricingCard:hover {
+    border-color: rgba(0, 255, 255, 0.6);
+    box-shadow: 0 20px 40px rgba(0, 255, 255, 0.2);
+    transform: translateY(-5px);
+}
+
+.pricingCardHighlighted {
+    border: 2px solid #00ffff;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(255, 0, 255, 0.15));
+    transform: scale(1.08) translateY(-10px);
+    box-shadow: 0 25px 50px rgba(0, 255, 255, 0.3);
+    z-index: 2;
+}
+
+.pricingCardHighlighted:hover {
+    transform: scale(1.08) translateY(-15px);
+    box-shadow: 0 30px 60px rgba(0, 255, 255, 0.4);
+}
+
+.pricingIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+}
+
+.pricingHighlight {
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.pricingCallout {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    padding: 2rem;
+}
+
+@media screen and (max-width: 1200px) {
+    .heroContent {
+        max-width: 700px;
+    }
+}
+
 @media screen and (max-width: 996px) {
+    .heroContent {
+        max-width: 90%;
+        padding: 1.5rem;
+    }
+
     .heroTitle {
         font-size: 2rem;
     }
@@ -369,5 +665,43 @@
 
     .beliefsSection h2 {
         font-size: 2rem;
+    }
+
+    /* Pyramid Responsive Adjustments */
+    .pyramidContainer {
+        padding: 1rem 0;
+    }
+
+    .pyramidCard {
+        height: 60px;
+    }
+
+    .pyramidCard .commandmentNumber {
+        font-size: 2rem;
+    }
+
+    .pyramidTop,
+    .pyramidLeft,
+    .pyramidRight,
+    .pyramidCenter {
+        width: 100px;
+    }
+
+    .pyramidBase {
+        width: 280px;
+    }
+
+    .pyramidFlyout {
+        min-width: 280px;
+        max-width: 300px;
+        padding: 1rem;
+    }
+
+    .flyoutTitle strong {
+        font-size: 1rem;
+    }
+
+    .flyoutContent {
+        font-size: 0.85rem;
     }
 }
