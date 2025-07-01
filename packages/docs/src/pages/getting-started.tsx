@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
+import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
 
 import styles from './index.module.css'
 
@@ -12,7 +13,7 @@ function GettingStartedHero() {
                 <ThreeJsScene className={styles.threeJsCanvas} />
             </div>
             <div className={styles.heroContent}>
-                <h1 className={styles.heroTitle}>Get Started in 3 Simple Steps</h1>
+                <h1 className={styles.heroTitle}>Start You AI Jounrey Today</h1>
                 <p className={styles.heroSubtitle}>
                     Transform your workflow with AI-powered productivity tools. From browser extension to intelligent chat—everything you
                     need is just minutes away.
@@ -384,6 +385,7 @@ export default function GettingStarted(): JSX.Element {
                 description='Transform your productivity in minutes. Install the Chrome extension, sign up for free, and start chatting with AI sidekicks that understand your workflow.'
             >
                 <GettingStartedHero />
+                <UsingAnswerAISubmenu />
                 <main>
                     <ThreeSteps />
                     <LearningResources />

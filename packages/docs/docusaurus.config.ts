@@ -524,11 +524,6 @@ const config: Config = {
                     position: 'left'
                 },
                 {
-                    to: '/blog/answerai-manifesto',
-                    label: 'Manifesto',
-                    position: 'left'
-                },
-                {
                     type: 'dropdown',
                     label: 'Using AnswerAI',
                     position: 'left',
