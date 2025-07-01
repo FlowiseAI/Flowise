@@ -70,6 +70,8 @@ const WorkspaceDetails = Loadable(lazy(() => import('@/views/workspace/Workspace
 const SSOConfig = Loadable(lazy(() => import('@/views/auth/ssoConfig')))
 const SSOSuccess = Loadable(lazy(() => import('@/views/auth/ssoSuccess')))
 
+const GitConfigList = Loadable(lazy(() => import('@/views/gitconfig')))
+
 // ==============================|| MAIN ROUTING ||============================== //
 
 const MainRoutes = {
@@ -355,7 +357,15 @@ const MainRoutes = {
         {
             path: '/sso-success',
             element: <SSOSuccess />
-        }
+        },
+        {
+            path: '/git-configs',
+            element: (
+                <RequireAuth display={'feat:files'}>
+                    <GitConfigList />
+                </RequireAuth>
+            )
+        },
     ]
 }
 

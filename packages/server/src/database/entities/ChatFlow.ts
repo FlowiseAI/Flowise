@@ -53,4 +53,13 @@ export class ChatFlow implements IChatFlow {
 
     @Column({ nullable: true, type: 'text' })
     workspaceId?: string
+
+    @Column({ nullable: true, type: 'timestamp' })
+    lastPublishedAt?: Date
+
+    @Column({ nullable: true, type: 'text' })
+    lastPublishedCommit?: string
+
+    @Column({ nullable: true, type: 'boolean', default: true })
+    isDirty?: boolean
 }

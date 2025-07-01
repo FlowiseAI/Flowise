@@ -25,6 +25,7 @@ import { OrganizationUser } from '../../enterprise/database/entities/organizatio
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
 import { WorkspaceUser } from '../../enterprise/database/entities/workspace-user.entity'
 import { LoginMethod } from '../../enterprise/database/entities/login-method.entity'
+import { GitConfig } from '../../enterprise/database/entities/git-config.entity'
 
 export const entities = {
     ChatFlow,
@@ -55,5 +56,6 @@ export const entities = {
     OrganizationUser,
     Workspace,
     WorkspaceUser,
-    LoginMethod
+    LoginMethod,
+    GitConfig
 }
