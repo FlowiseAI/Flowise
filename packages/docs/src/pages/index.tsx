@@ -53,6 +53,11 @@ function MissionSection() {
                             technocrats. These entities harvest our data, profit from our creativity, and shape our digital reality. The
                             most powerful technology ever created is being used not to uplift, but to manipulate.
                         </p>
+                        <div style={{ marginTop: '2rem' }}>
+                            <a href='/blog/answerai-manifesto' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                Read Our Manifesto
+                            </a>
+                        </div>
                     </div>
                     <div className='col col--6'>
                         <div className={styles.videoContainer}>
@@ -70,7 +75,7 @@ function MissionSection() {
                     </div>
                 </div>
                 <div className={styles.beliefsSection}>
-                    <h2>The Steps to AI Independence</h2>
+                    <h2>Our Commitment to AI Independence</h2>
 
                     {/* Pyramid Container */}
                     <div className={styles.pyramidContainer}>
@@ -298,47 +303,6 @@ function PricingSection() {
                         </div>
                     </div>
                 </div>
-                <div className='row' style={{ marginTop: '3rem' }}>
-                    <div className='col col--6'>
-                        <div className={clsx(styles.pricingCallout, styles.commandment)}>
-                            <div style={{ textAlign: 'center' }}>
-                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>💡 Full Cost Transparency</h3>
-                                <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
-                                    We provide completely transparent metrics and cost calculators inside the app. See exactly what you&apos;re spending, when, and why. We take only a small nominal fee on commercial AI tools and licensed
-                                    AnswerAI versions to keep the platform running.
-                                </p>
-                                <div style={{ marginTop: '2rem' }}>
-                                    <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
-                                        Start Free Today
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className='col col--6'>
-                        <div className={clsx(styles.pricingCard, styles.commandment)}>
-                            <div className={styles.pricingIcon}>🔑</div>
-                            <div>
-                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>Bring Your Own API Token</h3>
-                                <div className={styles.pricingHighlight}>Maximum Savings</div>
-                                <p style={{ marginBottom: '1.5rem' }}>
-                                    Use your own API keys from OpenAI, Anthropic, Google, and others to drastically reduce costs. You
-                                    maintain direct control and billing relationships.
-                                </p>
-                                <div style={{ marginBottom: '1.5rem' }}>
-                                    <div style={{ marginBottom: '0.5rem' }}>✓ Direct API key integration</div>
-                                    <div style={{ marginBottom: '0.5rem' }}>✓ Massive cost savings</div>
-                                    <div style={{ marginBottom: '0.5rem' }}>✓ Zero markup on your usage</div>
-                                </div>
-                                <div style={{ marginTop: '1.5rem' }}>
-                                    <a href='/getting-started' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
-                                        Learn How
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 <div className='row' style={{ marginTop: '2rem' }}>
                     <div className='col col--6'>
                         <div className={clsx(styles.pricingCard, styles.commandment)}>
@@ -387,6 +351,48 @@ function PricingSection() {
                         </div>
                     </div>
                 </div>
+                <div className='row' style={{ marginTop: '3rem' }}>
+                    <div className='col col--6'>
+                        <div className={clsx(styles.pricingCallout, styles.commandment)}>
+                            <div style={{ textAlign: 'center' }}>
+                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>💡 Full Cost Transparency</h3>
+                                <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+                                    We provide completely transparent metrics and cost calculators inside the app. See exactly what you&apos;re spending, when, and why. We take only a small nominal fee on commercial AI tools and licensed
+                                    AnswerAI versions to keep the platform running.
+                                </p>
+                                <div style={{ marginTop: '2rem' }}>
+                                    <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Start Free Today
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className='col col--6'>
+                        <div className={clsx(styles.pricingCard, styles.commandment)}>
+                            <div className={styles.pricingIcon}>🔑</div>
+                            <div>
+                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>Bring Your Own API Token</h3>
+                                <div className={styles.pricingHighlight}>Maximum Savings</div>
+                                <p style={{ marginBottom: '1.5rem' }}>
+                                    Use your own API keys from OpenAI, Anthropic, Google, and others to drastically reduce costs. You
+                                    maintain direct control and billing relationships.
+                                </p>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Direct API key integration</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Massive cost savings</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Zero markup on your usage</div>
+                                </div>
+                                <div style={{ marginTop: '1.5rem' }}>
+                                    <a href='/getting-started' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Learn How
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
             </div>
         </section>
     )
