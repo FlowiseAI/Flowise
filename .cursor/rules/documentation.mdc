@@ -54,6 +54,9 @@ Uses Docusaurus build system for generating static site.
 - Organize content in a logical hierarchy
 - Target both beginner and advanced users
 - Keep API references up-to-date with the codebase
+- Use emojis strategically to add visual appeal and break up text.
+- Follow the card/section-based layout for new documentation.
+- Leverage MDX components to create more dynamic and visually appealing documentation.
 
 ### Contributing Guidelines
 - Follow Docusaurus best practices
