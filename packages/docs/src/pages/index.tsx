@@ -14,7 +14,7 @@ function HomepageHeader() {
             <div className={styles.heroContent}>
                 <img src='img/answerai-logo-600-wide-white.png' alt='AnswerAI Logo' className={styles.heroLogo} />
                 <h1 className={styles.heroTitle}>AI for all, not for the few.</h1>
-                <p className={styles.heroSubtitle}>Empowering a free, creative, and decentralized future with AI.</p>
+                <p className={styles.heroSubtitle}>Building an open, creative, and decentralized future you can trust.</p>
                 <div className={styles.heroCTAs}>
                     <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
                         Join Alpha
@@ -31,7 +31,7 @@ function HomepageHeader() {
                             </svg>
                             Download Chrome Extension
                         </a>
-                        <a href='/docs/developers/building-node' className={styles.secondaryLink}>
+                        <a href='/developers/' className={styles.secondaryLink}>
                             👩‍💻 Call for Developers
                         </a>
                     </div>
@@ -70,68 +70,72 @@ function MissionSection() {
                     </div>
                 </div>
                 <div className={styles.beliefsSection}>
-                    <h2>The Commandments of AI Freedom</h2>
-                    <div className={styles.commandments}>
-                        <div className={styles.commandment}>
-                            <div className={styles.commandmentNumber}>I</div>
-                            <div className={styles.commandmentText}>
-                                <strong>Human Autonomy Is Sacred.</strong>
-                                <br />
-                                No AI should ever be used to control humans. And no human should control AI in ways that violate autonomy,
-                                dignity, or agency.
+                    <h2>The Steps to AI Independence</h2>
+
+                    {/* Pyramid Container */}
+                    <div className={styles.pyramidContainer}>
+                        <div className={styles.commandmentsGrid}>
+                            <div className={styles.commandmentCard}>
+                                <div className={styles.commandmentNumber}>I</div>
+                                <div className={styles.commandmentTitle}>Human Autonomy Is Sacred</div>
+                                <div className={styles.commandmentDescription}>
+                                    Every individual should maintain sovereignty over their digital identity, data, and AI interactions
+                                    without coercion or manipulation by centralized authorities.
+                                </div>
+                            </div>
+
+                            <div className={styles.commandmentCard}>
+                                <div className={styles.commandmentNumber}>II</div>
+                                <div className={styles.commandmentTitle}>Technology Must Serve Individual</div>
+                                <div className={styles.commandmentDescription}>
+                                    Technology should amplify human potential rather than extract value from users, offering tools that
+                                    empower individual agency.
+                                </div>
+                            </div>
+
+                            <div className={styles.commandmentCard}>
+                                <div className={styles.commandmentNumber}>III</div>
+                                <div className={styles.commandmentTitle}>Creativity Is Sovereign</div>
+                                <div className={styles.commandmentDescription}>
+                                    Human creativity and intellectual contribution should be recognized, protected, and fairly compensated
+                                    in the age of AI.
+                                </div>
+                            </div>
+
+                            <div className={styles.commandmentCard}>
+                                <div className={styles.commandmentNumber}>IV</div>
+                                <div className={styles.commandmentTitle}>Privacy Is a Fundamental Right</div>
+                                <div className={styles.commandmentDescription}>
+                                    Personal data and digital interactions should remain private by default, with users maintaining full
+                                    control over their information.
+                                </div>
+                            </div>
+
+                            <div className={styles.commandmentCard}>
+                                <div className={styles.commandmentNumber}>V</div>
+                                <div className={styles.commandmentTitle}>Decentralization Prevents Monopolies</div>
+                                <div className={styles.commandmentDescription}>
+                                    Power should be distributed across networks rather than concentrated in centralized authorities and
+                                    platforms.
+                                </div>
+                            </div>
+
+                            <div className={styles.commandmentCard}>
+                                <div className={styles.commandmentNumber}>VI</div>
+                                <div className={styles.commandmentTitle}>Ethical AI Development</div>
+                                <div className={styles.commandmentDescription}>
+                                    AI development should prioritize beneficial outcomes for humanity, transparency in decision-making, and
+                                    alignment with human values.
+                                </div>
                             </div>
                         </div>
-                        <div className={styles.commandment}>
-                            <div className={styles.commandmentNumber}>II</div>
-                            <div className={styles.commandmentText}>
-                                <strong>Technology Must Serve the Individual.</strong>
-                                <br />
-                                AI should be a personal tool, not a corporate weapon. It should be deployed locally, owned individually, and
-                                governed transparently.
-                            </div>
-                        </div>
-                        <div className={styles.commandment}>
-                            <div className={styles.commandmentNumber}>III</div>
-                            <div className={styles.commandmentText}>
-                                <strong>Creativity Is Sovereign.</strong>
-                                <br />
-                                Artists, thinkers, and builders must retain control over their work. No AI model should be trained on human
-                                output without explicit, informed consent.
-                            </div>
-                        </div>
-                        <div className={styles.commandment}>
-                            <div className={styles.commandmentNumber}>IV</div>
-                            <div className={styles.commandmentText}>
-                                <strong>Privacy Is Non-Negotiable.</strong>
-                                <br />
-                                You should never have to trade your privacy for functionality. AnswerAI is built local-first to ensure your
-                                data stays with you—and only you.
-                            </div>
-                        </div>
-                        <div className={styles.commandment}>
-                            <div className={styles.commandmentNumber}>V</div>
-                            <div className={styles.commandmentText}>
-                                <strong>Decentralization Is Freedom.</strong>
-                                <br />A future worth living in depends on systems that are open, forkable, transparent, and global—not
-                                platforms locked inside Silicon Valley monopolies.
-                            </div>
-                        </div>
-                        <div className={styles.commandment}>
-                            <div className={styles.commandmentNumber}>VI</div>
-                            <div className={styles.commandmentText}>
-                                <strong>Ethics ≠ Weakness.</strong>
-                                <br />
-                                Ethics are our advantage, not our constraint. We believe in profit—but capped, transparent, and reinvested
-                                in public good.
-                            </div>
-                        </div>
-                        <div className={styles.commandment}>
+
+                        <div className={`${styles.commandmentCard} ${styles.commandmentCardFull}`}>
                             <div className={styles.commandmentNumber}>VII</div>
-                            <div className={styles.commandmentText}>
-                                <strong>The Community Owns the Future.</strong>
-                                <br />
-                                Technology should be built with people, not for them. The AnswerAI community is the core steward of its
-                                evolution.
+                            <div className={styles.commandmentTitle}>Community Owns the Future</div>
+                            <div className={styles.commandmentDescription}>
+                                A future worth living in depends on systems that are open, forkable, transparent, and global—not platforms
+                                locked inside Silicon Valley monopolies.
                             </div>
                         </div>
                     </div>
@@ -148,51 +152,239 @@ function FeaturesSection() {
                 <h2 className='text--center'>What We&apos;re Building</h2>
                 <div className='row'>
                     <div className='col col--6'>
-                        <div className={styles.featureCard}>
-                            <h3>Apps</h3>
-                            <p>
-                                Extend the power of AnswerAgent with a growing ecosystem of applications. Integrate AI seamlessly into your
-                                workflows and daily tasks.
-                            </p>
-                            <a href='/docs/apps' className={styles.featureCardCTA}>
-                                Explore Apps →
-                            </a>
+                        <div className={clsx(styles.featureCard, styles.commandment)}>
+                            <div className={styles.comingSoonIcon}>🚀</div>
+                            <div>
+                                <h3>Agent Apps</h3>
+                                <p>
+                                    Extend the power of AnswerAgent with a growing ecosystem of applications. Integrate AI seamlessly into
+                                    your workflows and daily tasks.
+                                </p>
+                                <a href='/apps' className={styles.featureCardCTA}>
+                                    Explore Apps →
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div className='col col--6'>
-                        <div className={styles.featureCard}>
-                            <h3>Chat Feature</h3>
-                            <p>
-                                Engage with your AI agents naturally through a powerful chat interface. Get instant answers, automate tasks,
-                                and streamline communication.
-                            </p>
-                            <a href='/docs/chat' className={styles.featureCardCTA}>
-                                Learn About Chat →
-                            </a>
+                        <div className={clsx(styles.featureCard, styles.commandment)}>
+                            <div className={styles.comingSoonIcon}>💬</div>
+                            <div>
+                                <h3>Chat & Sidekicks</h3>
+                                <p>
+                                    Engage with your AI agents naturally through a powerful chat interface. Get instant answers, automate
+                                    tasks, and streamline communication.
+                                </p>
+                                <a href='/chat' className={styles.featureCardCTA}>
+                                    Learn About Chat →
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div className='col col--6'>
-                        <div className={styles.featureCard}>
-                            <h3>Chrome Extension</h3>
-                            <p>
-                                Bring AnswerAgent directly into your browser. Access AI capabilities, automate web tasks, and enhance your
-                                online experience with ease.
-                            </p>
-                            <a href='/docs/browser-extension' className={styles.featureCardCTA}>
-                                Get Extension →
-                            </a>
+                        <div className={clsx(styles.featureCard, styles.commandment)}>
+                            <div className={styles.comingSoonIcon}>🌐</div>
+                            <div>
+                                <h3>Browser Extension</h3>
+                                <p>
+                                    Bring AnswerAgent directly into your browser. Access AI capabilities, automate web tasks, and enhance
+                                    your online experience with ease.
+                                </p>
+                                <a href='/browser-extension' className={styles.featureCardCTA}>
+                                    Get Extension →
+                                </a>
+                            </div>
                         </div>
                     </div>
                     <div className='col col--6'>
-                        <div className={styles.featureCard}>
-                            <h3>Sidekick Studio</h3>
-                            <p>
-                                Design, deploy, and manage your AI agent workforce with an intuitive visual interface. Build powerful,
-                                customizable AI agents without coding skills.
-                            </p>
-                            <a href='/docs/sidekick-studio' className={styles.featureCardCTA}>
-                                Try Studio →
-                            </a>
+                        <div className={clsx(styles.featureCard, styles.commandment)}>
+                            <div className={styles.comingSoonIcon}>🎯</div>
+                            <div>
+                                <h3>Sidekick Studio</h3>
+                                <p>
+                                    Design, deploy, and manage your AI agent workforce with an intuitive visual interface. Build powerful,
+                                    customizable AI agents without coding skills.
+                                </p>
+                                <a href='/sidekick-studio' className={styles.featureCardCTA}>
+                                    Try Studio →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    )
+}
+
+function PricingSection() {
+    return (
+        <section className={styles.pricingSection}>
+            <div className='container'>
+                <div className='text--center' style={{ marginBottom: '3rem' }}>
+                    <h2 className='text--center'>Simple, Transparent Pricing</h2>
+                    <p className='text--center' style={{ fontSize: '1.2rem', opacity: 0.9, marginBottom: '0' }}>
+                        Start free, pay only for what you use, with full control over your costs
+                    </p>
+                </div>
+                <div className='row'>
+                    <div className='col col--4'>
+                        <div className={clsx(styles.pricingCard, styles.commandment)}>
+                            <div className={styles.pricingIcon}>🆓</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>Free to Try</h3>
+                                <div className={styles.pricingHighlight}>$0</div>
+                                <p style={{ marginBottom: '1.5rem', flex: '1' }}>
+                                    Get started immediately with our free tier. Explore all features, test workflows, and see the power of
+                                    AI agents before you commit to anything.
+                                </p>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Full feature access</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Limited usage credits</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Community support</div>
+                                </div>
+                                <div style={{ marginTop: 'auto' }}>
+                                    <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Start Free
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className='col col--4'>
+                        <div className={clsx(styles.pricingCard, styles.commandment, styles.pricingCardHighlighted)}>
+                            <div className={styles.pricingIcon}>💳</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>Usage-Based</h3>
+                                <div className={styles.pricingHighlight}>$20+ to start</div>
+                                <p style={{ marginBottom: '1.5rem', flex: '1' }}>
+                                    Pay only for what you use with transparent, real-time cost tracking. No subscriptions, no hidden fees,
+                                    just honest usage-based pricing.
+                                </p>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Real-time cost calculators</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Transparent metrics dashboard</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Small nominal fees on API usage</div>
+                                </div>
+                                <div style={{ marginTop: 'auto' }}>
+                                    <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Get Started
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className='col col--4'>
+                        <div className={clsx(styles.pricingCard, styles.commandment)}>
+                            <div className={styles.pricingIcon}>🏢</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>Business Account</h3>
+                                <div className={styles.pricingHighlight}>$500 + Usage</div>
+                                <p style={{ marginBottom: '1.5rem', flex: '1' }}>
+                                    Get a fully segregated cloud environment for your business. Share agents, chatflows, and collaborate
+                                    with your team in a dedicated workspace with enhanced security and controls.
+                                </p>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Dedicated cloud environment</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Team collaboration & sharing</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Enhanced security controls</div>
+                                </div>
+                                <div style={{ marginTop: 'auto' }}>
+                                    <a href='/developers' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Contact Sales
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className='row' style={{ marginTop: '3rem' }}>
+                    <div className='col col--6'>
+                        <div className={clsx(styles.pricingCallout, styles.commandment)}>
+                            <div style={{ textAlign: 'center' }}>
+                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>💡 Full Cost Transparency</h3>
+                                <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+                                    We provide completely transparent metrics and cost calculators inside the app. See exactly what you're
+                                    spending, when, and why. We take only a small nominal fee on commercial AI tools and licensed AnswerAI
+                                    versions to keep the platform running.
+                                </p>
+                                <div style={{ marginTop: '2rem' }}>
+                                    <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Start Free Today
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className='col col--6'>
+                        <div className={clsx(styles.pricingCard, styles.commandment)}>
+                            <div className={styles.pricingIcon}>🔑</div>
+                            <div>
+                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>Bring Your Own API Token</h3>
+                                <div className={styles.pricingHighlight}>Maximum Savings</div>
+                                <p style={{ marginBottom: '1.5rem' }}>
+                                    Use your own API keys from OpenAI, Anthropic, Google, and others to drastically reduce costs. You
+                                    maintain direct control and billing relationships.
+                                </p>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Direct API key integration</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Massive cost savings</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Zero markup on your usage</div>
+                                </div>
+                                <div style={{ marginTop: '1.5rem' }}>
+                                    <a href='/getting-started' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Learn How
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className='row' style={{ marginTop: '2rem' }}>
+                    <div className='col col--6'>
+                        <div className={clsx(styles.pricingCard, styles.commandment)}>
+                            <div className={styles.pricingIcon}>🏢</div>
+                            <div>
+                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>Enterprise</h3>
+                                <div className={styles.pricingHighlight}>Fully Local</div>
+                                <p style={{ marginBottom: '1.5rem' }}>
+                                    Complete enterprise solution with full self-hosted licensing and services. Deploy AnswerAI entirely
+                                    within your infrastructure for maximum security and control.
+                                </p>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Full self-hosted deployment</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Enterprise licensing & support</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Custom integrations & training</div>
+                                </div>
+                                <div style={{ marginTop: '1.5rem' }}>
+                                    <a href='/developers' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Talk to Us
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className='col col--6'>
+                        <div className={clsx(styles.pricingCard, styles.commandment)}>
+                            <div className={styles.pricingIcon}>🤝</div>
+                            <div>
+                                <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>AI Services</h3>
+                                <div className={styles.pricingHighlight}>Professional Partners</div>
+                                <p style={{ marginBottom: '1.5rem' }}>
+                                    Connect with our network of certified Professional Service Partners for custom AI implementations,
+                                    training, and ongoing support for your specific business needs.
+                                </p>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Certified implementation partners</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Custom AI workflow development</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Training & ongoing support</div>
+                                </div>
+                                <div style={{ marginTop: '1.5rem' }}>
+                                    <a href='/developers' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Find Partners
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -219,13 +411,19 @@ function MacAppTeaser() {
 export default function Home(): JSX.Element {
     const { siteConfig } = useDocusaurusContext()
     return (
-        <Layout title={'Answer Agent AI: Build your AI-Agent Workforce'} description='Orchestrate secure AI agents across your business.'>
-            <HomepageHeader />
-            <main>
-                <MissionSection />
-                <FeaturesSection />
-                <MacAppTeaser />
-            </main>
-        </Layout>
+        <div data-theme='dark'>
+            <Layout
+                title={'Answer Agent AI: Build your AI-Agent Workforce'}
+                description='Orchestrate secure AI agents across your business.'
+            >
+                <HomepageHeader />
+                <main>
+                    <MissionSection />
+                    <FeaturesSection />
+                    <MacAppTeaser />
+                    <PricingSection />
+                </main>
+            </Layout>
+        </div>
     )
 }

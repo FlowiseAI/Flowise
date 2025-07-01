@@ -1,0 +1,250 @@
+/* Submenu Container */
+.submenuContainer {
+    position: sticky;
+    top: 60px;
+    z-index: 100;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(10, 0, 20, 0.95));
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 255, 255, 0.1);
+    margin-top: 0; /* Better bleed with nav */
+}
+
+.submenuContainer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.6), transparent);
+}
+
+.submenuContainer::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.4), transparent);
+}
+
+/* Main Submenu */
+.submenu {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0;
+    min-height: 70px;
+}
+
+/* Brand Section */
+.submenuBrand {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.submenuTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #00ffff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    font-family: 'Courier New', monospace;
+}
+
+.submenuGlow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120%;
+    height: 120%;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.1), transparent 70%);
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: pulse 3s ease-in-out infinite;
+}
+
+/* Menu Items */
+.submenuItems {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.submenuItem {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.05), rgba(0, 255, 255, 0.05));
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    min-width: 160px;
+    backdrop-filter: blur(10px);
+}
+
+.submenuItem:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 255, 255, 0.6);
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(0, 255, 255, 0.15));
+    box-shadow: 0 8px 25px rgba(0, 255, 255, 0.2);
+    color: #fff;
+    text-decoration: none;
+}
+
+.submenuItemActive {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(255, 0, 255, 0.15));
+    border-color: #00ffff;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.submenuItemActive::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ff00ff, #00ffff, #ff00ff);
+    background-size: 200% 100%;
+    animation: activeGlow 2s linear infinite;
+}
+
+.submenuItemIcon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.6));
+    flex-shrink: 0;
+}
+
+.submenuItemContent {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+}
+
+.submenuItemLabel {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.1rem;
+    white-space: nowrap;
+}
+
+.submenuItemDescription {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    white-space: nowrap;
+}
+
+.submenuItemGlow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(0, 255, 255, 0.3), transparent 70%);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.submenuItem:hover .submenuItemGlow {
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 0.7;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+@keyframes activeGlow {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 200% 0%;
+    }
+}
+
+/* Responsive Design */
+@media screen and (max-width: 996px) {
+    .submenuContainer {
+        top: 56px; /* Adjust for mobile navbar height */
+    }
+
+    .submenu {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.5rem 0;
+    }
+
+    .submenuItems {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .submenuItem {
+        min-width: 140px;
+        padding: 0.6rem 1rem;
+    }
+
+    .submenuItemLabel {
+        font-size: 0.8rem;
+    }
+
+    .submenuItemDescription {
+        font-size: 0.65rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .submenuContainer {
+        position: relative;
+        top: 0;
+        margin-top: 0;
+    }
+
+    .submenuItems {
+        width: 100%;
+    }
+
+    .submenuItem {
+        flex: 1;
+        min-width: auto;
+        text-align: center;
+        padding: 0.8rem 0.5rem;
+    }
+
+    .submenuItemContent {
+        align-items: center;
+    }
+
+    .submenuItemIcon {
+        font-size: 1.2rem;
+    }
+}

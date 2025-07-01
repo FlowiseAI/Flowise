@@ -1,10 +1,10 @@
 ---
-description: Learn how to use the AnswerAI Chat and Sidekicks
+description: Learn how to use the Answer Chat and Sidekicks
 ---
 
 # Chat
 
-The AnswerAI Chat is the central interface for interacting with various AI-powered assistants. It provides a versatile platform for analyzing data, creating content, and getting specialized help across different domains.
+The Answer Chat is the central interface for interacting with various AI-powered assistants. It provides a versatile platform for analyzing data, creating content, and getting specialized help across different domains.
 
 ## Selecting a Sidekick
 
