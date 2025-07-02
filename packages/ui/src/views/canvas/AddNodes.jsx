@@ -433,7 +433,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                 onChange={handleTabChange}
                                                 aria-label='tabs'
                                             >
-                                                {['Answer', 'LlamaIndex', 'Utilities'].map((item, index) => (
+                                                {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
                                                     <Tab
                                                         icon={
                                                             <div

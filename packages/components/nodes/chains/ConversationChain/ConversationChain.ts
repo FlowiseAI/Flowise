@@ -42,7 +42,6 @@ class ConversationChain_Chains implements INode {
     baseClasses: string[]
     description: string
     inputs: INodeParams[]
-    tags: string[]
     sessionId?: string
 
     constructor(fields?: { sessionId?: string }) {
@@ -54,7 +53,6 @@ class ConversationChain_Chains implements INode {
         this.category = 'Chains'
         this.description = 'Chat models specific conversational chain with memory'
         this.baseClasses = [this.type, ...getBaseClasses(ConversationChain)]
-        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Chat Model',
