@@ -2,28 +2,45 @@ import { NextResponse } from 'next/server'
 import getCachedSession from '@ui/getCachedSession'
 import { findSidekicksForChat } from '@utils/findSidekicksForChat'
 import { respond401 } from '@utils/auth/respond401'
+import type { Chatflow } from 'types'
+
+interface SidekickListResponse {
+    sidekicks: Array<SidekickSummary>
+    categories: { top: string[]; more: string[] }
+}
+
+interface SidekickSummary {
+    id: string
+    label: string
+    chatflow: Chatflow
+    isExecutable: boolean
+}
 
 export async function GET(req: Request) {
     const session = await getCachedSession()
+    const { searchParams } = new URL(req.url)
+    const lightweight = searchParams.get('lightweight') !== 'false' // Default to true
 
     const user = session?.user
     if (!session?.user?.email) return respond401()
     try {
-        const data = await findSidekicksForChat(user)
-        // Use the requiresClone field from the chatbotConfig
-        const sidekicksWithCloneInfo = data.sidekicks.map((sidekick: any) => {
-            const chatbotConfig = JSON.parse(sidekick.chatflow.chatbotConfig || '{}')
-            return {
-                ...sidekick,
-                isExecutable: true
-                // sidekick.chatflow.userId === user.id ||
-                // (sidekick.chatflow.visibility?.includes('AnswerAI') && sidekick.chatflow.organizationId === user.organizationId),
-                // requiresClone: chatbotConfig.requiresClone || !sidekick.chatflow.isPublic
-            }
-        })
-        // console.log({ sidekicks: sidekicksWithCloneInfo })
-        return NextResponse.json({ ...data, sidekicks: sidekicksWithCloneInfo })
+        const data = await findSidekicksForChat(user, { lightweight })
+        const sidekicksWithCloneInfo: SidekickSummary[] = data.sidekicks.map((sidekick) => ({
+            ...sidekick,
+            isExecutable: true
+        }))
+
+        const response: SidekickListResponse = {
+            sidekicks: sidekicksWithCloneInfo,
+            categories: data.categories
+        }
+
+        return NextResponse.json(response)
     } catch (error) {
-        return respond401()
+        if (error instanceof Error && error.message === 'Unauthorized') {
+            return respond401()
+        }
+        console.error('Error fetching sidekicks:', error)
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     }
 }
