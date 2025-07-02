@@ -16,11 +16,13 @@ class MultiPromptChain_Chains implements INode {
     baseClasses: string[]
     description: string
     inputs: INodeParams[]
+    badge: string
 
     constructor() {
         this.label = 'Multi Prompt Chain'
         this.name = 'multiPromptChain'
         this.version = 2.0
+        this.badge = 'DEPRECATING'
         this.type = 'MultiPromptChain'
         this.icon = 'prompt.svg'
         this.category = 'Chains'

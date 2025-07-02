@@ -65,7 +65,7 @@ class GoogleVertexAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleVertexAI'
         this.name = 'chatGoogleVertexAI'
-        this.version = 5.1
+        this.version = 5.2
         this.type = 'ChatGoogleVertexAI'
         this.icon = 'GoogleVertex.svg'
         this.category = 'Chat Models'
@@ -157,7 +157,8 @@ class GoogleVertexAI_ChatModels implements INode {
                 name: 'thinkingBudget',
                 type: 'number',
                 description: 'Number of tokens to use for thinking process (0 to disable)',
-                default: 0,
+                step: 1,
+                placeholder: '1024',
                 optional: true,
                 additionalParams: true
             }
@@ -201,7 +202,7 @@ class GoogleVertexAI_ChatModels implements INode {
         const cache = nodeData.inputs?.cache as BaseCache
         const topK = nodeData.inputs?.topK as string
         const streaming = nodeData.inputs?.streaming as boolean
-        const thinkingBudget = nodeData.inputs?.thinkingBudget as number
+        const thinkingBudget = nodeData.inputs?.thinkingBudget as string
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
@@ -221,7 +222,7 @@ class GoogleVertexAI_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (cache) obj.cache = cache
         if (topK) obj.topK = parseFloat(topK)
-        if (thinkingBudget) obj.thinkingBudget = thinkingBudget
+        if (thinkingBudget) obj.thinkingBudget = parseInt(thinkingBudget, 10)
 
         const model = new ChatVertexAI(nodeData.id, obj)
         model.setMultiModalOption(multiModalOption)

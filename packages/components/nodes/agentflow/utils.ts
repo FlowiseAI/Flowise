@@ -4,7 +4,7 @@ import { getFileFromStorage } from '../../src/storageUtils'
 import { ICommonObject, IFileUpload } from '../../src/Interface'
 import { BaseMessageLike } from '@langchain/core/messages'
 import { IFlowState } from './Interface.Agentflow'
-import { mapMimeTypeToInputField } from '../../src/utils'
+import { handleEscapeCharacters, mapMimeTypeToInputField } from '../../src/utils'
 
 export const addImagesToMessages = async (
     options: ICommonObject,
@@ -343,7 +343,8 @@ export const getPastChatHistoryImageMessages = async (
                         const nodeOptions = {
                             retrieveAttachmentChatId: true,
                             chatflowid: options.chatflowid,
-                            chatId: options.chatId
+                            chatId: options.chatId,
+                            orgId: options.orgId
                         }
                         let fileInputFieldFromMimeType = 'txtFile'
                         fileInputFieldFromMimeType = mapMimeTypeToInputField(upload.mime)
@@ -353,7 +354,7 @@ export const getPastChatHistoryImageMessages = async (
                             }
                         }
                         const documents: string = await fileLoaderNodeInstance.init(nodeData, '', nodeOptions)
-                        messageWithFileUploads += `<doc name='${upload.name}'>${documents}</doc>\n\n`
+                        messageWithFileUploads += `<doc name='${upload.name}'>${handleEscapeCharacters(documents, true)}</doc>\n\n`
                     }
                 }
                 const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content

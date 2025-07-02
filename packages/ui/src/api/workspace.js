@@ -16,6 +16,8 @@ const deleteWorkspace = (id) => client.delete(`/workspace/${id}`)
 const getSharedWorkspacesForItem = (id) => client.get(`/workspace/shared/${id}`)
 const setSharedWorkspacesForItem = (id, body) => client.post(`/workspace/shared/${id}`, body)
 
+const updateWorkspaceUserRole = (body) => client.put(`/workspaceuser`, body)
+
 export default {
     getAllWorkspacesByOrganizationId,
     getWorkspaceById,
@@ -26,5 +28,7 @@ export default {
     linkUsers,
     switchWorkspace,
     getSharedWorkspacesForItem,
-    setSharedWorkspacesForItem
+    setSharedWorkspacesForItem,
+
+    updateWorkspaceUserRole
 }

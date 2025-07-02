@@ -57,7 +57,7 @@ import { gridSpacing } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 const badges = ['POPULAR', 'NEW']
-const types = ['Chatflow', 'Agentflow', 'AgentflowV2', 'Tool']
+const types = ['Chatflow', 'AgentflowV2', 'Tool']
 const framework = ['Langchain', 'LlamaIndex']
 const MenuProps = {
     PaperProps: {
@@ -645,9 +645,25 @@ const Marketplace = () => {
                                                                 : selectedUsecases.filter((item) => item !== usecase)
                                                         )
                                                     }}
+                                                    sx={{
+                                                        '& .MuiSvgIcon-root': {
+                                                            color:
+                                                                eligibleUsecases.length === 0 || !eligibleUsecases.includes(usecase)
+                                                                    ? '#888 !important'
+                                                                    : undefined
+                                                        }
+                                                    }}
                                                 />
                                             }
                                             label={usecase}
+                                            sx={{
+                                                '& .MuiFormControlLabel-label': {
+                                                    color:
+                                                        eligibleUsecases.length === 0 || !eligibleUsecases.includes(usecase)
+                                                            ? '#888 !important'
+                                                            : undefined
+                                                }
+                                            }}
                                         />
                                     ))}
                                 </Stack>

@@ -23,7 +23,7 @@ class ChatflowTool_Tools implements INode {
     constructor() {
         this.label = 'Chatflow Tool'
         this.name = 'ChatflowTool'
-        this.version = 5.0
+        this.version = 5.1
         this.type = 'ChatflowTool'
         this.icon = 'chatflowTool.svg'
         this.category = 'Tools'
@@ -106,7 +106,10 @@ class ChatflowTool_Tools implements INode {
                 type: 'string',
                 description: 'Custom input to be passed to the chatflow. Leave empty to let LLM decides the input.',
                 optional: true,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    useQuestionFromChat: false
+                }
             }
         ]
     }
@@ -126,9 +129,20 @@ class ChatflowTool_Tools implements INode {
             const chatflows = await appDataSource.getRepository(databaseEntities['ChatFlow']).findBy(searchOptions)
 
             for (let i = 0; i < chatflows.length; i += 1) {
+                let type = chatflows[i].type
+                if (type === 'AGENTFLOW') {
+                    type = 'AgentflowV2'
+                } else if (type === 'MULTIAGENT') {
+                    type = 'AgentflowV1'
+                } else if (type === 'ASSISTANT') {
+                    type = 'Custom Assistant'
+                } else {
+                    type = 'Chatflow'
+                }
                 const data = {
                     label: chatflows[i].name,
-                    name: chatflows[i].id
+                    name: chatflows[i].id,
+                    description: type
                 } as INodeOptionsValue
                 returnData.push(data)
             }

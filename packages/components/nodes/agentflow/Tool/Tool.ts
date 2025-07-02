@@ -161,7 +161,7 @@ class Tool_Agentflow implements INode {
                     toolInputArgs = { properties: allProperties }
                 } else {
                     // Handle single tool instance
-                    toolInputArgs = toolInstance.schema ? zodToJsonSchema(toolInstance.schema) : {}
+                    toolInputArgs = toolInstance.schema ? zodToJsonSchema(toolInstance.schema as any) : {}
                 }
 
                 if (toolInputArgs && Object.keys(toolInputArgs).length > 0) {
@@ -227,6 +227,37 @@ class Tool_Agentflow implements INode {
 
         let toolCallArgs: Record<string, any> = {}
 
+        const parseInputValue = (value: string): any => {
+            if (typeof value !== 'string') {
+                return value
+            }
+
+            // Remove escape characters (backslashes before special characters)
+            // ex: \["a", "b", "c", "d", "e"\]
+            let cleanedValue = value
+                .replace(/\\"/g, '"') // \" -> "
+                .replace(/\\\\/g, '\\') // \\ -> \
+                .replace(/\\\[/g, '[') // \[ -> [
+                .replace(/\\\]/g, ']') // \] -> ]
+                .replace(/\\\{/g, '{') // \{ -> {
+                .replace(/\\\}/g, '}') // \} -> }
+
+            // Try to parse as JSON if it looks like JSON/array
+            if (
+                (cleanedValue.startsWith('[') && cleanedValue.endsWith(']')) ||
+                (cleanedValue.startsWith('{') && cleanedValue.endsWith('}'))
+            ) {
+                try {
+                    return JSON.parse(cleanedValue)
+                } catch (e) {
+                    // If parsing fails, return the cleaned value
+                    return cleanedValue
+                }
+            }
+
+            return cleanedValue
+        }
+
         if (newToolNodeInstance.transformNodeInputsToToolArgs) {
             const defaultParams = newToolNodeInstance.transformNodeInputsToToolArgs(newNodeData)
 
@@ -239,7 +270,7 @@ class Tool_Agentflow implements INode {
         for (const item of toolInputArgs) {
             const variableName = item.inputArgName
             const variableValue = item.inputArgValue
-            toolCallArgs[variableName] = variableValue
+            toolCallArgs[variableName] = parseInputValue(variableValue)
         }
 
         const flowConfig = {

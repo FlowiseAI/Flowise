@@ -1,5 +1,5 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
+import { ICommonObject, IMessage, INode, INodeData, INodeOptionsValue, INodeParams, IServerSideEventStreamer } from '../../../src/Interface'
 import { AIMessageChunk, BaseMessageLike, MessageContentText } from '@langchain/core/messages'
 import { DEFAULT_SUMMARIZER_TEMPLATE } from '../prompt'
 import { z } from 'zod'
@@ -262,6 +262,7 @@ class LLM_Agentflow implements INode {
 }`,
                         description: 'JSON schema for the structured output',
                         optional: true,
+                        hideCodeExecute: true,
                         show: {
                             'llmStructuredOutput[$index].type': 'jsonArray'
                         }
@@ -358,6 +359,7 @@ class LLM_Agentflow implements INode {
             const state = options.agentflowRuntime?.state as ICommonObject
             const pastChatHistory = (options.pastChatHistory as BaseMessageLike[]) ?? []
             const runtimeChatHistory = (options.agentflowRuntime?.chatHistory as BaseMessageLike[]) ?? []
+            const prependedChatHistory = options.prependedChatHistory as IMessage[]
             const chatId = options.chatId as string
 
             // Initialize the LLM model instance
@@ -380,6 +382,18 @@ class LLM_Agentflow implements INode {
             let runtimeImageMessagesWithFileRef: BaseMessageLike[] = []
             // Use to keep track of past messages with image file references
             let pastImageMessagesWithFileRef: BaseMessageLike[] = []
+
+            // Prepend history ONLY if it is the first node
+            if (prependedChatHistory.length > 0 && !runtimeChatHistory.length) {
+                for (const msg of prependedChatHistory) {
+                    const role: string = msg.role === 'apiMessage' ? 'assistant' : 'user'
+                    const content: string = msg.content ?? ''
+                    messages.push({
+                        role,
+                        content
+                    })
+                }
+            }
 
             for (const msg of llmMessages) {
                 const role = msg.role
@@ -486,8 +500,15 @@ class LLM_Agentflow implements INode {
             }
 
             // Prepare final response and output object
-            const finalResponse = (response.content as string) ?? JSON.stringify(response, null, 2)
-            const output = this.prepareOutputObject(response, finalResponse, startTime, endTime, timeDelta)
+            let finalResponse = ''
+            if (response.content && Array.isArray(response.content)) {
+                finalResponse = response.content.map((item: any) => item.text).join('\n')
+            } else if (response.content && typeof response.content === 'string') {
+                finalResponse = response.content
+            } else {
+                finalResponse = JSON.stringify(response, null, 2)
+            }
+            const output = this.prepareOutputObject(response, finalResponse, startTime, endTime, timeDelta, isStructuredOutput)
 
             // End analytics tracking
             if (analyticHandlers && llmIds) {
@@ -853,7 +874,8 @@ class LLM_Agentflow implements INode {
         finalResponse: string,
         startTime: number,
         endTime: number,
-        timeDelta: number
+        timeDelta: number,
+        isStructuredOutput: boolean
     ): any {
         const output: any = {
             content: finalResponse,
@@ -870,6 +892,15 @@ class LLM_Agentflow implements INode {
 
         if (response.usage_metadata) {
             output.usageMetadata = response.usage_metadata
+        }
+
+        if (isStructuredOutput && typeof response === 'object') {
+            const structuredOutput = response as Record<string, any>
+            for (const key in structuredOutput) {
+                if (structuredOutput[key]) {
+                    output[key] = structuredOutput[key]
+                }
+            }
         }
 
         return output

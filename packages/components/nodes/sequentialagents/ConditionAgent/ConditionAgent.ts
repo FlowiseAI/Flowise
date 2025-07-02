@@ -18,7 +18,6 @@ import {
 } from '../../../src/Interface'
 import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, transformBracesWithColon } from '../../../src/utils'
 import {
-    ExtractTool,
     checkCondition,
     convertStructuredSchemaToZod,
     customGet,
@@ -27,7 +26,6 @@ import {
     filterConversationHistory,
     restructureMessages
 } from '../commonUtils'
-import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
 
 interface IConditionGridItem {
     variable: string
@@ -485,20 +483,8 @@ const runCondition = async (
         try {
             const structuredOutput = z.object(convertStructuredSchemaToZod(conditionAgentStructuredOutput))
 
-            if (llm instanceof ChatGoogleGenerativeAI) {
-                const tool = new ExtractTool({
-                    schema: structuredOutput
-                })
-                // @ts-ignore
-                const modelWithTool = llm.bind({
-                    tools: [tool],
-                    signal: abortControllerSignal ? abortControllerSignal.signal : undefined
-                })
-                model = modelWithTool
-            } else {
-                // @ts-ignore
-                model = llm.withStructuredOutput(structuredOutput)
-            }
+            // @ts-ignore
+            model = llm.withStructuredOutput(structuredOutput)
         } catch (exception) {
             console.error('Invalid JSON in Condition Agent Structured Output: ' + exception)
             model = llm

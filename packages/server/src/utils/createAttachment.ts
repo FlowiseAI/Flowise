@@ -30,16 +30,11 @@ export const createFileAttachment = async (req: Request) => {
     if (!chatflowid || !isValidUUID(chatflowid)) {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatflowId format - must be a valid UUID')
     }
-
-    const chatId = req.params.chatId
-    if (!chatId || !isValidUUID(chatId)) {
-        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid chatId format - must be a valid UUID')
-    }
-
-    // Check for path traversal attempts
-    if (isPathTraversal(chatflowid) || isPathTraversal(chatId)) {
+    if (isPathTraversal(chatflowid)) {
         throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid path characters detected')
     }
+
+    const chatId = req.params.chatId
 
     // Validate chatflow exists and check API key
     const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
