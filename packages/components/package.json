@@ -38,7 +38,7 @@
         "@google/generative-ai": "^0.24.0",
         "@huggingface/inference": "^2.6.1",
         "@langchain/anthropic": "0.3.14",
-        "@langchain/aws": "0.1.4",
+        "@langchain/aws": "^0.1.11",
         "@langchain/baidu-qianfan": "^0.1.0",
         "@langchain/cohere": "^0.0.7",
         "@langchain/community": "^0.3.29",
