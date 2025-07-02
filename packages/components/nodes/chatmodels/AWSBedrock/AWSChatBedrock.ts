@@ -23,7 +23,7 @@ class AWSChatBedrock_ChatModels implements INode {
     constructor() {
         this.label = 'AWS ChatBedrock'
         this.name = 'awsChatBedrock'
-        this.version = 6.0
+        this.version = 6.1
         this.type = 'AWSChatBedrock'
         this.icon = 'aws.svg'
         this.category = 'Chat Models'
@@ -139,10 +139,12 @@ class AWSChatBedrock_ChatModels implements INode {
             model: customModel ? customModel : iModel,
             maxTokens: parseInt(iMax_tokens_to_sample, 10),
             temperature: parseFloat(iTemperature),
-            streaming: streaming ?? true,
-            performanceConfig: { latency: latencyOptimized ? 'optimized' : 'standard' }
+            streaming: streaming ?? true
         }
 
+        if (latencyOptimized) {
+            obj.performanceConfig = { latency: 'optimized' }
+        }
 
         /**
          * Long-term credentials specified in LLM configuration are optional.
