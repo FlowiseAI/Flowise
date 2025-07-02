@@ -1,11 +1,12 @@
 bradtaylorsf:
     name: Bradley Taylor
-    title: CEO @ The Answer
+    title: Founder & CEO @ The Answer
     url: https://theanswer.ai
-    image_url: https://docs.theanswer.ai/img/answerai-logo-600-wide-white.png
+    image_url: /img/brad-blackand-white.png
     page: true
     socials:
         x: digitalatscale_
         github: bradtaylorsf
         linkedin: bradtaylorsf
-        youtube: digitalatascale
+        youtube: digitalatscale
+        instagram: digitalatscale

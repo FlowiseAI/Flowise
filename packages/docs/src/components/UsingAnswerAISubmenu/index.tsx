@@ -34,6 +34,12 @@ const submenuItems = [
         label: 'Learn',
         icon: '🎓',
         description: 'Master AI fundamentals'
+    },
+    {
+        to: '/ai-workshops',
+        label: 'AI Workshops',
+        icon: '🎯',
+        description: 'Expert-led team training'
     }
 ]
 
@@ -44,10 +50,6 @@ export default function UsingAnswerAISubmenu(): JSX.Element {
         <div className={styles.submenuContainer}>
             <div className='container'>
                 <nav className={styles.submenu}>
-                    <div className={styles.submenuBrand}>
-                        <span className={styles.submenuTitle}>Using AnswerAI</span>
-                        <div className={styles.submenuGlow}></div>
-                    </div>
                     <div className={styles.submenuItems}>
                         {submenuItems.map((item) => {
                             const isActive = location.pathname === item.to
