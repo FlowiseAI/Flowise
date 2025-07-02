@@ -11,14 +11,14 @@ export async function POST(req: Request) {
     // Use org_id from Auth0 if organizationId is not properly set
     const organizationId = session.user.organizationId || session.user.org_id
 
-    console.log('Generate API - Session user data:', {
-        id: session.user.id,
-        organizationId: session.user.organizationId,
-        org_id: session.user.org_id,
-        finalOrganizationId: organizationId,
-        email: session.user.email,
-        chatflowDomain: session.user.chatflowDomain
-    })
+    // console.log('Generate API - Session user data:', {
+    //     id: session.user.id,
+    //     organizationId: session.user.organizationId,
+    //     org_id: session.user.org_id,
+    //     finalOrganizationId: organizationId,
+    //     email: session.user.email,
+    //     chatflowDomain: session.user.chatflowDomain
+    // })
 
     // Get user's access token for Flowise authentication
     const { accessToken } = await auth0.getAccessToken({
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         // Use the same domain resolution as chat flow - user's chatflowDomain or fallback
         const flowiseDomain =
             session.user.chatflowDomain || process.env.CHATFLOW_DOMAIN_OVERRIDE || process.env.DOMAIN || 'http://localhost:4000'
-        console.log('Using Flowise domain:', flowiseDomain)
+        // console.log('Using Flowise domain:', flowiseDomain)
 
         const response = await fetch(`${flowiseDomain}/api/v1/dalle-image/generate`, {
             method: 'POST',

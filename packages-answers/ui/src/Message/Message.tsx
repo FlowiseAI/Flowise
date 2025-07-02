@@ -23,7 +23,6 @@ import ThumbDownIcon from '@mui/icons-material/ThumbDown'
 import dynamic from 'next/dynamic'
 import { FileUpload } from '../types'
 import isArray from 'lodash/isArray'
-import { Block } from '@mui/icons-material'
 
 const ReactMarkdown = dynamic(() => import('react-markdown'))
 const remarkGfm = dynamic(() => import('remark-gfm'))
@@ -458,7 +457,7 @@ export const MessageCard = ({
                                                             >,
                                                             idx: number
                                                         ) => {
-                                                            console.log(agentObjectMessage)
+                                                            // console.log(agentObjectMessage)
                                                             if (typeof agentObjectMessage === 'string') {
                                                                 return (
                                                                     <Typography
@@ -721,7 +720,7 @@ export const MessageCard = ({
                                                     sx={{
                                                         display: 'block',
                                                         position: 'relative',
-                                                        width: '100%',
+                                                        width: '100%'
                                                     }}
                                                 >
                                                     <Image
@@ -740,17 +739,17 @@ export const MessageCard = ({
                                                         </div>
                                                     ) : null}
                                                     <Box sx={{ mt: 1, textAlign: 'center' }}>
-                                                        <Link 
+                                                        <Link
                                                             href={image.properties.src}
                                                             download
-                                                            target="_blank"
-                                                            sx={{ 
+                                                            target='_blank'
+                                                            sx={{
                                                                 display: 'inline-flex',
                                                                 alignItems: 'center',
                                                                 gap: 0.5,
                                                                 fontSize: '0.875rem',
                                                                 textDecoration: 'none',
-                                                                '&:hover': { 
+                                                                '&:hover': {
                                                                     textDecoration: 'underline'
                                                                 }
                                                             }}
@@ -872,7 +871,7 @@ export const MessageCard = ({
                                                     action: (other as any).action
                                                 })
 
-                                                console.log(`Action clicked: ${element.label}`)
+                                                // console.log(`Action clicked: ${element.label}`)
                                             } catch (err) {
                                                 console.error('Error handling action click:', err)
                                             }

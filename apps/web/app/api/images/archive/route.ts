@@ -16,14 +16,14 @@ export async function GET(req: Request) {
     // Use org_id from Auth0 if organizationId is not properly set (same as generate API)
     const organizationId = session.user.organizationId || session.user.org_id
 
-    console.log('Archive API - Session user data:', {
-        id: session.user.id,
-        organizationId: session.user.organizationId,
-        org_id: session.user.org_id,
-        finalOrganizationId: organizationId,
-        email: session.user.email,
-        chatflowDomain: session.user.chatflowDomain
-    })
+    // console.log('Archive API - Session user data:', {
+    //     id: session.user.id,
+    //     organizationId: session.user.organizationId,
+    //     org_id: session.user.org_id,
+    //     finalOrganizationId: organizationId,
+    //     email: session.user.email,
+    //     chatflowDomain: session.user.chatflowDomain
+    // })
 
     // Get user's access token for Flowise authentication
     const { accessToken } = await auth0.getAccessToken({
@@ -42,7 +42,7 @@ export async function GET(req: Request) {
         // Use the same domain resolution as chat flow and generate API
         const flowiseDomain =
             session.user.chatflowDomain || process.env.CHATFLOW_DOMAIN_OVERRIDE || process.env.DOMAIN || 'http://localhost:4000'
-        console.log('Archive API - Using Flowise domain:', flowiseDomain)
+        // console.log('Archive API - Using Flowise domain:', flowiseDomain)
 
         const response = await fetch(`${flowiseDomain}/api/v1/dalle-image/archive?page=${page}&limit=${limit}`, {
             method: 'GET',

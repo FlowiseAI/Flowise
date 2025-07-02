@@ -26,16 +26,16 @@
         "prisma-json-types-generator": "^3.0.4"
     },
     "devDependencies": {
-        "@types/jest": "^29.5.0",
-        "@types/node": "^18.15.11",
+        "@types/jest": "^29.5.12",
+        "@types/node": "18.15.11",
         "concurrently": "^7.6.0",
         "eslint": "^7.32.0",
         "eslint-config-custom": "workspace:*",
-        "jest": "^29.5.0",
+        "jest": "^29.7.0",
         "prisma": "^5.10.2",
         "ts-node": "^10.9.1",
         "tsconfig": "workspace:*",
-        "typescript": "^4.8.4"
+        "typescript": "~5.5.2"
     },
     "engines": {
         "node": ">=14.0.0"

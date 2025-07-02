@@ -33,7 +33,7 @@ const useSidekickSelectionHandlers = ({
 
     const handleSidekickSelect = useCallback(
         (sidekick: Sidekick) => {
-            console.log('[SidekickSelect] Sidekick selected:', sidekick.id)
+            // console.log('[SidekickSelect] Sidekick selected:', sidekick.id)
             if (!chat?.id) {
                 // Update local storage first
                 const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')

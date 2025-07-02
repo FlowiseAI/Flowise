@@ -97,16 +97,19 @@ const useGooglePicker = (accessToken, onFilesSelected) => {
         }
     }, [])
 
-    const pickerCallback = useCallback((data) => {
-        if (data.action === window.google.picker.Action.PICKED) {
-            const newFiles = data.docs.map((file) => ({
-                fileId: file.id,
-                fileName: file.name,
-                iconUrl: file.iconUrl
-            }))
-            onFilesSelected(newFiles)
-        }
-    }, [onFilesSelected])
+    const pickerCallback = useCallback(
+        (data) => {
+            if (data.action === window.google.picker.Action.PICKED) {
+                const newFiles = data.docs.map((file) => ({
+                    fileId: file.id,
+                    fileName: file.name,
+                    iconUrl: file.iconUrl
+                }))
+                onFilesSelected(newFiles)
+            }
+        },
+        [onFilesSelected]
+    )
 
     const createPicker = useCallback(async () => {
         if (!accessToken || !window.google?.picker) {
@@ -158,22 +161,25 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
     const [accessToken, setAccessToken] = useState(null)
     const [isTokenExpired, setIsTokenExpired] = useState(false)
     const [isRefreshing, setIsRefreshing] = useState(false)
-    
+
     const enqueueSnackbar = useCallback((...args) => dispatch(enqueueSnackbarAction(...args)), [dispatch])
     const closeSnackbar = useCallback((...args) => dispatch(closeSnackbarAction(...args)), [dispatch])
-    
+
     const getCredentialDataApi = useApi(credentialsApi.getSpecificCredential)
     const scriptsLoaded = useGoogleAPILoader(accessToken)
 
     // Handle new files selection from picker
-    const handleFilesSelected = useCallback((newFiles) => {
-        const uniqueNewFiles = newFiles.filter(
-            (newFile) => !selectedFiles.some((existingFile) => existingFile.fileId === newFile.fileId)
-        )
-        const updatedFiles = [...selectedFiles, ...uniqueNewFiles]
-        setSelectedFiles(updatedFiles)
-        onChange(JSON.stringify(updatedFiles))
-    }, [selectedFiles, onChange])
+    const handleFilesSelected = useCallback(
+        (newFiles) => {
+            const uniqueNewFiles = newFiles.filter(
+                (newFile) => !selectedFiles.some((existingFile) => existingFile.fileId === newFile.fileId)
+            )
+            const updatedFiles = [...selectedFiles, ...uniqueNewFiles]
+            setSelectedFiles(updatedFiles)
+            onChange(JSON.stringify(updatedFiles))
+        },
+        [selectedFiles, onChange]
+    )
 
     const { createPicker, closePicker, pickerInstance } = useGooglePicker(accessToken, handleFilesSelected)
 
@@ -181,11 +187,11 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
     useEffect(() => {
         if (credentialId) {
             getCredentialDataApi.request(credentialId)
-            
+
             // Clear selected files when credential changes
             setSelectedFiles([])
             onChange(JSON.stringify([]))
-            
+
             // Reset token state
             setAccessToken(null)
             setIsTokenExpired(false)
@@ -248,52 +254,58 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
         onChange(JSON.stringify([]))
     }, [onChange])
 
-    const handleRemoveFile = useCallback((fileId) => {
-        const updatedFiles = selectedFiles.filter((file) => file.fileId !== fileId)
-        setSelectedFiles(updatedFiles)
-        onChange(JSON.stringify(updatedFiles))
-    }, [selectedFiles, onChange])
+    const handleRemoveFile = useCallback(
+        (fileId) => {
+            const updatedFiles = selectedFiles.filter((file) => file.fileId !== fileId)
+            setSelectedFiles(updatedFiles)
+            onChange(JSON.stringify(updatedFiles))
+        },
+        [selectedFiles, onChange]
+    )
 
-    const showSnackbar = useCallback((message, variant = 'info') => {
-        enqueueSnackbar({
-            message,
-            options: {
-                key: new Date().getTime() + Math.random(),
-                variant,
-                action: (key) => (
-                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                        <IconX />
-                    </Button>
-                )
-            }
-        })
-    }, [enqueueSnackbar, closeSnackbar])
+    const showSnackbar = useCallback(
+        (message, variant = 'info') => {
+            enqueueSnackbar({
+                message,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        },
+        [enqueueSnackbar, closeSnackbar]
+    )
 
     const handleRefreshAccessToken = useCallback(async () => {
         if (!credentialId) return
 
         try {
             setIsRefreshing(true)
-            console.log('🔄 [FRONTEND] Iniciando refresh para credential:', credentialId)
-            
+            // console.log('🔄 [FRONTEND] Iniciando refresh para credential:', credentialId)
+
             // Obtener token actual antes del refresh
-            const currentCred = await credentialsApi.getSpecificCredential(credentialId)
-            const oldToken = currentCred?.data?.plainDataObj?.googleAccessToken?.substring(0, 20)
-            console.log('🔄 [FRONTEND] Token actual:', oldToken + '...')
-            
+            // const currentCred = await credentialsApi.getSpecificCredential(credentialId)
+            // const oldToken = currentCred?.data?.plainDataObj?.googleAccessToken?.substring(0, 20)
+            // console.log('🔄 [FRONTEND] Token actual:', oldToken + '...')
+
             const response = await credentialsApi.refreshAccessToken({ credentialId })
 
             if (response.status === 200) {
                 getCredentialDataApi.request(credentialId)
-                
+
                 // Verificar que el token cambió
                 setTimeout(async () => {
-                    const newCred = await credentialsApi.getSpecificCredential(credentialId)
-                    const newToken = newCred?.data?.plainDataObj?.googleAccessToken?.substring(0, 20)
-                    console.log('✅ [FRONTEND] Token nuevo:', newToken + '...')
-                    console.log('🔍 [FRONTEND] ¿Token cambió?', oldToken !== newToken)
+                    // const newCred = await credentialsApi.getSpecificCredential(credentialId)
+                    // const newToken = newCred?.data?.plainDataObj?.googleAccessToken?.substring(0, 20)
+                    // console.log('✅ [FRONTEND] Token nuevo:', newToken + '...')
+                    // console.log('🔍 [FRONTEND] ¿Token cambió?', oldToken !== newToken)
                 }, 1000)
-                
+
                 setIsTokenExpired(false)
                 showSnackbar('Successfully refreshed access token', 'success')
             }
@@ -325,18 +337,13 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
                 >
                     Select Files from Google Drive
                 </Button>
-                
+
                 {hasSelectedFiles && (
-                    <Button 
-                        variant='outlined' 
-                        onClick={handleClearAll} 
-                        color='error' 
-                        startIcon={<IconTrash size={20} />}
-                    >
+                    <Button variant='outlined' onClick={handleClearAll} color='error' startIcon={<IconTrash size={20} />}>
                         Clear All
                     </Button>
                 )}
-                
+
                 {isTokenExpired && (
                     <Button
                         variant='outlined'
@@ -353,13 +360,13 @@ export const GoogleDrivePicker = ({ onChange, value, disabled, credentialId, cre
                     </Button>
                 )}
             </Stack>
-            
+
             {isTokenExpired && (
-                <Alert severity="warning" sx={{ mb: 1 }}>
+                <Alert severity='warning' sx={{ mb: 1 }}>
                     Access token has expired. Please re-authenticate or refresh the access token.
                 </Alert>
             )}
-            
+
             {hasSelectedFiles && (
                 <List sx={{ bgcolor: 'background.paper', p: 0 }}>
                     {selectedFiles.map((file) => (

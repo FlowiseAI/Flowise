@@ -33,7 +33,7 @@ export function createRedisClient() {
 }
 
 export const createRedisStore = () => {
-    console.log('🔑 [server]: Creating Redis Store')
+    // console.log('🔑 [server]: Creating Redis Store')
     if (!process.env.REDIS_URL) {
         throw new Error('REDIS_URL is not set')
     }

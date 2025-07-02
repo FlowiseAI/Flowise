@@ -92,7 +92,7 @@ class LangchainChatGoogleGenerativeAI
     private contextCache?: FlowiseGoogleAICacheManager
 
     get _isMultimodalModel() {
-        return this.modelName.includes('vision') || this.modelName.startsWith('gemini-1.5')
+        return this.modelName.includes('vision') || this.modelName.startsWith('gemini-1.5') || this.modelName.startsWith('gemini-2.5')
     }
 
     constructor(fields?: GoogleGenerativeAIChatInput) {
@@ -237,6 +237,15 @@ class LangchainChatGoogleGenerativeAI
         return totalTokens
     }
 
+    /**
+     * Handles non-streaming (single-shot) generation from the Google Generative AI API.
+     * Prepares the prompt, manages tools, and returns a ChatResult with generations and usage metadata.
+     *
+     * @param prompt - The prompt in Google API Content[] format.
+     * @param options - Parsed call options, including tools and signal.
+     * @param _runManager - Optional callback manager for handling new tokens.
+     * @returns Promise resolving to a ChatResult object.
+     */
     async _generateNonStreaming(
         prompt: Content[],
         options: this['ParsedCallOptions'],
@@ -245,20 +254,25 @@ class LangchainChatGoogleGenerativeAI
         //@ts-ignore
         const tools = options.tools ?? []
 
+        // Convert any function response parts in the prompt for compatibility
         this.convertFunctionResponse(prompt)
 
+        // Re-initialize client if tools are provided
         if (tools.length > 0) {
             await this.getClient(prompt, tools as Tool[])
         } else {
             await this.getClient(prompt)
         }
+        // Call the API and handle errors
         const res = await this.caller.callWithOptions({ signal: options?.signal }, async () => {
             let output
             try {
+                // Make the actual API call to generate content
                 output = await this.client.generateContent({
                     contents: prompt
                 })
             } catch (e: any) {
+                // If a 400 Bad Request error occurs, annotate the error object
                 if (e.message?.includes('400 Bad Request')) {
                     e.status = 400
                 }
@@ -266,56 +280,144 @@ class LangchainChatGoogleGenerativeAI
             }
             return output
         })
-        const generationResult = mapGenerateContentResultToChatResult(res.response)
+
+        // Extract usage metadata from the response for reporting token usage
+        let genAIUsageMetadata = {
+            usageMetadata: res.response.usageMetadata as {
+                promptTokenCount: number
+                candidatesTokenCount: number
+                totalTokenCount: number
+            }
+        }
+
+        // Map the API response to a ChatResult object for LangChain
+        const generationResult = mapGenerateContentResultToChatResult(res.response, this.modelName, genAIUsageMetadata)
+
+        // Optionally notify the run manager of the new token (for streaming UI updates)
         await _runManager?.handleLLMNewToken(generationResult.generations?.length ? generationResult.generations[0].text : '')
         return generationResult
     }
 
+    /**
+     * Main generation method for the chat model. Handles both streaming and non-streaming cases.
+     * Converts messages to prompt format, manages streaming, and aggregates results.
+     *
+     * @param messages - The array of BaseMessage objects representing the conversation so far.
+     * @param options - Parsed call options, including tools and streaming usage flags.
+     * @param runManager - Optional callback manager for handling new tokens.
+     * @returns Promise resolving to a ChatResult object.
+     */
     async _generate(
         messages: BaseMessage[],
         options: this['ParsedCallOptions'],
         runManager?: CallbackManagerForLLMRun
     ): Promise<ChatResult> {
+        // Convert input messages to Google API content format
         let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
         prompt = checkIfEmptyContentAndSameRole(prompt)
 
-        // Handle streaming
+        // Handle streaming mode
         if (this.streaming) {
             const tokenUsage: TokenUsage = {}
+            // Start streaming response chunks from the API
             const stream = this._streamResponseChunks(messages, options, runManager)
+            // Store the final chunks by their index (for multi-candidate support)
             const finalChunks: Record<number, ChatGenerationChunk> = {}
 
+            // Aggregate all streamed chunks by their index
             for await (const chunk of stream) {
+                // Get the candidate index for this chunk
                 const index = (chunk.generationInfo as NewTokenIndices)?.completion ?? 0
+
+                // Attach model name to generation info if missing
+                if (chunk.generationInfo) {
+                    if (!chunk.generationInfo.model_name && this.modelName) {
+                        chunk.generationInfo.model_name = this.modelName
+                    }
+                }
+
                 if (finalChunks[index] === undefined) {
+                    // First chunk for this index
                     finalChunks[index] = chunk
                 } else {
-                    finalChunks[index] = finalChunks[index].concat(chunk)
+                    // Concatenate the chunks for the same index
+                    const existingChunk = finalChunks[index]
+                    const concatenated = existingChunk.concat(chunk)
+                    // Use the latest chunk's usage_metadata (which has the correct diff details)
+                    // @ts-ignore - Custom metadata structure
+                    concatenated.message.usage_metadata = chunk.message.usage_metadata
+                    finalChunks[index] = concatenated
+                }
+
+                // Aggregate token usage for all chunks
+                // @ts-ignore - Custom metadata structure
+                if (chunk.message.usage_metadata) {
+                    // @ts-ignore - Custom metadata structure
+                    const usage = chunk.message.usage_metadata as UsageMetadata
+
+                    for (const key of ['input_tokens', 'output_tokens', 'total_tokens'] as const) {
+                        // @ts-ignore - Custom metadata structure
+                        tokenUsage[key] = (tokenUsage[key] ?? 0) + (usage[key] ?? 0)
+                    }
+
+                    for (const detailKey of ['input_token_details', 'output_token_details'] as const) {
+                        // @ts-ignore - Custom metadata structure
+                        tokenUsage[detailKey] ??= {}
+                        // @ts-ignore - Custom metadata structure
+                        const detail = usage[detailKey] ?? {}
+                        for (const modality in detail) {
+                            // @ts-ignore - Custom metadata structure
+                            tokenUsage[detailKey][modality] = (tokenUsage[detailKey][modality] ?? 0) + detail[modality]
+                        }
+                    }
                 }
             }
+
+            // Sort and collect all generations in order by index
             const generations = Object.entries(finalChunks)
                 .sort(([aKey], [bKey]) => parseInt(aKey, 10) - parseInt(bKey, 10))
                 .map(([_, value]) => value)
 
+            // Attach aggregated token usage to each generation
+            for (const generation of generations) {
+                // @ts-ignore - Custom metadata structure
+                generation.message.usage_metadata = tokenUsage
+            }
+
+            // Return all generations and estimated token usage
             return { generations, llmOutput: { estimatedTokenUsage: tokenUsage } }
         }
+
+        // Fallback to non-streaming mode
         return this._generateNonStreaming(prompt, options, runManager)
     }
 
+    /**
+     * Streams response chunks from the Google Generative AI API as they arrive.
+     * Handles token usage calculation and yields ChatGenerationChunk objects for each chunk.
+     *
+     * @param messages - The array of BaseMessage objects representing the conversation so far.
+     * @param options - Parsed call options, including tools and streaming usage flags.
+     * @param runManager - Optional callback manager for handling new tokens.
+     * @returns AsyncGenerator yielding ChatGenerationChunk objects as they are received from the API.
+     */
     async *_streamResponseChunks(
         messages: BaseMessage[],
         options: this['ParsedCallOptions'],
         runManager?: CallbackManagerForLLMRun
     ): AsyncGenerator<ChatGenerationChunk> {
+        // Convert input messages to Google API content format
         let prompt = convertBaseMessagesToContent(messages, this._isMultimodalModel)
         prompt = checkIfEmptyContentAndSameRole(prompt)
 
+        // Prepare API request parameters
         const parameters = this.invocationParams(options)
         const request = {
             ...parameters,
             contents: prompt
         }
 
+        // Re-initialize client if tools are provided
         const tools = options.tools ?? []
         if (tools.length > 0) {
             await this.getClient(prompt, tools as Tool[])
@@ -323,48 +425,104 @@ class LangchainChatGoogleGenerativeAI
             await this.getClient(prompt)
         }
 
+        // Start streaming from the API
         const stream = await this.caller.callWithOptions({ signal: options?.signal }, async () => {
             const { stream } = await this.client.generateContentStream(request)
             return stream
         })
 
-        let usageMetadata: UsageMetadata | ICommonObject | undefined
-        let index = 0
+        let index = 0 // Tracks the chunk index for multi-candidate support
+        let prevInputTokenDetails: Record<string, number> = {} // For diffing input tokens
+        let prevOutputTokenDetails: Record<string, number> = {} // For diffing output tokens
+
+        // Iterate over each streamed response chunk
         for await (const response of stream) {
+            let usageMetadata: UsageMetadata | undefined
+
+            // If usage metadata is available and streaming usage is enabled, calculate token diffs
             if ('usageMetadata' in response && this.streamUsage !== false && options.streamUsage !== false) {
-                const genAIUsageMetadata = response.usageMetadata as {
-                    promptTokenCount: number
-                    candidatesTokenCount: number
-                    totalTokenCount: number
+                const meta = response.usageMetadata as {
+                    promptTokenCount?: number
+                    candidatesTokenCount?: number
+                    thoughtsTokenCount?: number
+                    totalTokenCount?: number
+                    promptTokensDetails?: { modality: string; tokenCount: number }[]
+                    candidatesTokensDetails?: { modality: string; tokenCount: number }[]
                 }
-                if (!usageMetadata) {
-                    usageMetadata = {
-                        input_tokens: genAIUsageMetadata.promptTokenCount,
-                        output_tokens: genAIUsageMetadata.candidatesTokenCount,
-                        total_tokens: genAIUsageMetadata.totalTokenCount
+
+                // Extract current input token details by modality
+                const currentInputTokenDetails = Array.isArray(meta.promptTokensDetails)
+                    ? meta.promptTokensDetails.reduce((acc: Record<string, number>, { modality, tokenCount }) => {
+                          if (modality && typeof tokenCount === 'number') {
+                              acc[modality.toLowerCase()] = tokenCount // e.g., text, image
+                          }
+                          return acc
+                      }, {})
+                    : {}
+
+                // Extract current output token details by modality
+                const currentOutputTokenDetails = Array.isArray(meta.candidatesTokensDetails)
+                    ? meta.candidatesTokensDetails.reduce((acc: Record<string, number>, { modality, tokenCount }) => {
+                          if (modality && typeof tokenCount === 'number') {
+                              acc[modality.toLowerCase()] = tokenCount
+                          }
+                          return acc
+                      }, {})
+                    : {
+                          text: meta.candidatesTokenCount ?? 0,
+                          reasoning: meta.thoughtsTokenCount ?? 0
+                      }
+
+                // Calculate the difference in input tokens since the last chunk
+                const diffInputTokenDetails: Record<string, number> = {}
+                for (const modality in currentInputTokenDetails) {
+                    const prev = prevInputTokenDetails[modality] ?? 0
+                    const curr = currentInputTokenDetails[modality]
+                    const diff = curr - prev
+                    if (diff > 0) {
+                        diffInputTokenDetails[modality] = diff // Only count new tokens
                     }
-                } else {
-                    // Under the hood, LangChain combines the prompt tokens. Google returns the updated
-                    // total each time, so we need to find the difference between the tokens.
-                    const outputTokenDiff = genAIUsageMetadata.candidatesTokenCount - (usageMetadata as ICommonObject).output_tokens
-                    usageMetadata = {
-                        input_tokens: 0,
-                        output_tokens: outputTokenDiff,
-                        total_tokens: outputTokenDiff
+                }
+
+                // Calculate the difference in output tokens since the last chunk
+                const diffOutputTokenDetails: Record<string, number> = {}
+                for (const modality in currentOutputTokenDetails) {
+                    const prev = prevOutputTokenDetails[modality] ?? 0
+                    const curr = currentOutputTokenDetails[modality]
+                    const diff = curr - prev
+                    if (diff > 0) {
+                        diffOutputTokenDetails[modality] = diff
                     }
+                }
+
+                // Update previous values for next iteration
+                prevInputTokenDetails = currentInputTokenDetails
+                prevOutputTokenDetails = currentOutputTokenDetails
+
+                // Compose a standard usageMetadata object for this chunk
+                usageMetadata = {
+                    // @ts-ignore
+                    input_tokens: Object.values(diffInputTokenDetails).reduce((sum, val) => sum + val, 0),
+                    output_tokens: Object.values(diffOutputTokenDetails).reduce((sum, val) => sum + val, 0),
+                    total_tokens:
+                        Object.values(diffInputTokenDetails).reduce((sum, val) => sum + val, 0) +
+                        Object.values(diffOutputTokenDetails).reduce((sum, val) => sum + val, 0),
+                    input_token_details: diffInputTokenDetails,
+                    output_token_details: diffOutputTokenDetails
                 }
             }
 
+            // Convert the API response chunk to a ChatGenerationChunk
             const chunk = convertResponseContentToChatGenerationChunk(response, {
-                usageMetadata: usageMetadata as UsageMetadata,
+                usageMetadata,
                 index
             })
-            index += 1
-            if (!chunk) {
-                continue
-            }
+            index += 1 // Increment chunk index for next chunk
+            if (!chunk) continue // Skip if chunk is null
 
+            // Yield the chunk to the consumer
             yield chunk
+            // Optionally notify the run manager of the new token (for streaming UI updates)
             await runManager?.handleLLMNewToken(chunk.text ?? '')
         }
     }
@@ -598,8 +756,18 @@ function convertBaseMessagesToContent(messages: BaseMessage[], isMultimodalModel
     ).content
 }
 
+/**
+ * Maps the Google Generative AI API response to a ChatResult object for LangChain.
+ * Handles function calls, usage metadata, and error/rejection cases.
+ *
+ * @param response - The EnhancedGenerateContentResponse from the API.
+ * @param model_name - The name of the model used for generation.
+ * @param extra - Optional extra data, such as usage metadata.
+ * @returns ChatResult object with generations and optional LLM output details.
+ */
 function mapGenerateContentResultToChatResult(
     response: EnhancedGenerateContentResponse,
+    model_name?: string,
     extra?: {
         usageMetadata: UsageMetadata | undefined
     }
@@ -609,27 +777,57 @@ function mapGenerateContentResultToChatResult(
         return {
             generations: [],
             llmOutput: {
-                filters: response.promptFeedback
+                filters: response.promptFeedback // Provide feedback for why generation failed
             }
         }
     }
 
+    // Extract function calls if present (for tool/function calling)
     const functionCalls = response.functionCalls()
+    // Use the first candidate (Google API may return multiple candidates)
     const [candidate] = response.candidates
+
+    // Extract content and generation info from the candidate
     const { content, ...generationInfo } = candidate
+    // Get the generated text (if any)
     const text = content?.parts[0]?.text ?? ''
 
+    // Extract usage metadata if available (for reporting token usage)
+    const usageMetadata: any = extra?.usageMetadata
+
+    // Build the ChatGeneration object for LangChain
     const generation: ChatGeneration = {
         text,
         message: new AIMessage({
             content: text,
             tool_calls: functionCalls,
             additional_kwargs: {
+                model_name,
                 ...generationInfo
             },
-            usage_metadata: extra?.usageMetadata as any
+            usage_metadata: {
+                input_tokens: usageMetadata?.promptTokenCount ?? 0, // Number of prompt tokens used
+                output_tokens: usageMetadata?.candidatesTokenCount ?? 0 + usageMetadata?.thoughtsTokenCount ?? 0, // Output tokens
+                total_tokens: usageMetadata?.totalTokenCount ?? 0, // Total tokens used
+                input_token_details: Array.isArray(usageMetadata?.promptTokensDetails)
+                    ? usageMetadata?.promptTokensDetails.reduce((acc: any, curr: any) => {
+                          if (curr.modality && typeof curr.tokenCount === 'number') {
+                              acc[curr.modality.toLowerCase()] = curr.tokenCount // e.g., text, image
+                          }
+                          return acc
+                      }, {})
+                    : {},
+
+                output_token_details: {
+                    text: usageMetadata?.candidatesTokenCount ?? 0,
+                    reasoning: usageMetadata?.thoughtsTokenCount ?? 0
+                }
+            }
         }),
-        generationInfo
+        generationInfo: {
+            model_name,
+            ...generationInfo
+        }
     }
 
     return {
@@ -662,6 +860,7 @@ function convertResponseContentToChatGenerationChunk(
             }))
         )
     }
+
     return new ChatGenerationChunk({
         text,
         message: new AIMessageChunk({

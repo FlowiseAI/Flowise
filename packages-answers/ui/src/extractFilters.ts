@@ -21,10 +21,10 @@ async function extractFilters(prompt: string, filters: AnswersFilters) {
         try {
             const regex = /{.*}/s
             const match = filtersResponse.match(regex)
-            console.log('Parsing AI Filter', { filtersResponse, match })
+            // console.log('Parsing AI Filter', { filtersResponse, match })
             if (match) {
                 filters = JSON.parse(match[0])
-                console.log('Using AI Filter:', filters)
+                // console.log('Using AI Filter:', filters)
             }
         } catch (error) {
             console.log('PINECONE ERROR: Could not parse filters', error)

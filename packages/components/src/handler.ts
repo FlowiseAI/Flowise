@@ -499,7 +499,6 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                 baseUrl: process.env.LANGFUSE_HOST ?? 'https://cloud.langfuse.com',
                 sdkIntegration: 'Flowise'
             }
-            // console.log('Langfuse override enabled', analytic)
         }
         const callbacks: any = []
 
@@ -532,25 +531,25 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     const tracer = new LangChainTracer(langSmithField)
                     callbacks.push(tracer)
                 } else if (provider === 'langFuse') {
-                    console.debug('Starting LangFuse configuration for provider:', provider)
+                    //console.debug('Starting LangFuse configuration for provider:', provider)
 
-                    const release = analytic[provider].release as string
-                    console.debug('Release:', release)
+                    // const release = analytic[provider].release as string
+                    //console.debug('Release:', release)
 
                     const langFuseSecretKey =
                         analytic[provider]?.secretKey ?? getCredentialParam('langFuseSecretKey', credentialData, nodeData)
-                    console.debug('LangFuse Secret Key:', langFuseSecretKey)
+                    //console.debug('LangFuse Secret Key:', langFuseSecretKey)
 
                     const langFusePublicKey =
                         analytic[provider]?.publicKey ?? getCredentialParam('langFusePublicKey', credentialData, nodeData)
-                    console.debug('LangFuse Public Key:', langFusePublicKey)
+                    //console.debug('LangFuse Public Key:', langFusePublicKey)
 
                     const langFuseEndpoint =
                         analytic[provider]?.endpoint ?? getCredentialParam('langFuseEndpoint', credentialData, nodeData)
-                    console.debug('LangFuse Endpoint:', langFuseEndpoint)
+                    //console.debug('LangFuse Endpoint:', langFuseEndpoint)
 
-                    const langfuse = new Langfuse()
-                    console.debug('Langfuse instance created.')
+                    // const langfuse = new Langfuse()
+                    //console.debug('Langfuse instance created.')
 
                     const chatflow = await options.appDataSource
                         .getRepository(options.databaseEntities['ChatFlow'])
@@ -561,7 +560,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         .getRepository(options.databaseEntities['Credential'])
                         .findBy({ id: In(credentialIds?.credentials?.map((credential) => credential.credentialId) ?? []) })
 
-                    console.debug('Credentials::::', credentials)
+                    // console.debug('Credentials::::', credentials)
                     let aiCredentialsOwnership = 'platform'
                     if (credentials.every((credential: { visibility: string[] }) => !credential.visibility?.includes('Platform'))) {
                         aiCredentialsOwnership = 'user'
@@ -572,13 +571,13 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                         publicKey: langFusePublicKey,
                         baseUrl: langFuseEndpoint ?? 'https://cloud.langfuse.com'
                     }
-                    console.debug('LangFuse Options:', langFuseOptions)
-                    console.debug('User:', options?.user)
+                    // console.debug('LangFuse Options:', langFuseOptions)
+                    // console.debug('User:', options?.user)
                     // console.debug('Options:', options)
 
                     if (nodeData?.inputs?.analytics?.langFuse) {
                         langFuseOptions = { ...langFuseOptions, ...nodeData?.inputs?.analytics?.langFuse }
-                        console.debug('LangFuse Options updated with nodeData inputs:', langFuseOptions)
+                        //console.debug('LangFuse Options updated with nodeData inputs:', langFuseOptions)
                     }
                     const metadata: TraceMetadata = {
                         name: `${chatflow.id}`,
@@ -617,7 +616,7 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     })
 
                     callbacks.push(handler)
-                    console.debug('Handler added to callbacks.')
+                    //console.debug('Handler added to callbacks.')
                 } else if (provider === 'lunary') {
                     const lunaryPublicKey = getCredentialParam('lunaryAppId', credentialData, nodeData)
                     const lunaryEndpoint = getCredentialParam('lunaryEndpoint', credentialData, nodeData)
@@ -957,10 +956,10 @@ export class AnalyticHandler {
                     metadata: { tags: ['openai-assistant'] },
                     ...this.nodeData?.inputs?.analytics?.langFuse
                 })
-                console.log(`Langfuse trace created: ${langfuseTraceClient.id}`)
+                // console.log(`Langfuse trace created: ${langfuseTraceClient.id}`)
             } else {
                 langfuseTraceClient = this.handlers['langFuse'].trace[parentIds['langFuse']]
-                console.log(`Langfuse trace retrieved: ${langfuseTraceClient.id}`)
+                // console.log(`Langfuse trace retrieved: ${langfuseTraceClient.id}`)
             }
 
             if (langfuseTraceClient) {
@@ -979,7 +978,7 @@ export class AnalyticHandler {
                 this.handlers['langFuse'].span = { [span.id]: span }
                 returnIds['langFuse'].trace = langfuseTraceClient.id
                 returnIds['langFuse'].span = span.id
-                console.log(`Langfuse span created: ${span.id}`)
+                // console.log(`Langfuse span created: ${span.id}`)
             }
         }
 
@@ -1162,7 +1161,7 @@ export class AnalyticHandler {
                 if (shutdown) {
                     const langfuse: Langfuse = this.handlers['langFuse'].client
                     await langfuse.shutdownAsync()
-                    console.log('Langfuse shutdown completed')
+                    // console.log('Langfuse shutdown completed')
                 }
             }
         }
@@ -1256,7 +1255,7 @@ export class AnalyticHandler {
                 if (shutdown) {
                     const langfuse: Langfuse = this.handlers['langFuse'].client
                     await langfuse.shutdownAsync()
-                    console.log('Langfuse shutdown completed')
+                    // console.log('Langfuse shutdown completed')
                 }
             }
         }
@@ -1348,7 +1347,7 @@ export class AnalyticHandler {
                 })
                 this.handlers['langFuse'].generation = { [generation.id]: generation }
                 returnIds['langFuse'].generation = generation.id
-                console.log(`Langfuse generation created: ${generation.id}`)
+                // console.log(`Langfuse generation created: ${generation.id}`)
             }
         }
 
@@ -1460,7 +1459,7 @@ export class AnalyticHandler {
                 generation.end({
                     output: output
                 })
-                console.log(`Langfuse generation ended: ${generation.id}`)
+                // console.log(`Langfuse generation ended: ${generation.id}`)
             }
         }
 
@@ -1535,7 +1534,7 @@ export class AnalyticHandler {
                 generation.end({
                     output: error
                 })
-                console.log(`Langfuse generation errored: ${generation.id}`)
+                // console.log(`Langfuse generation errored: ${generation.id}`)
             }
         }
 
@@ -1815,7 +1814,7 @@ export class AnalyticHandler {
                 toolSpan.end({
                     output: error
                 })
-                console.log(`Langfuse tool span errored: ${toolSpan.id}`)
+                // console.log(`Langfuse tool span errored: ${toolSpan.id}`)
             }
         }
 

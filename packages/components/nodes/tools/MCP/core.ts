@@ -113,6 +113,7 @@ export async function MCPTool({
             const client = await toolkit.createClient()
 
             try {
+                // @ts-ignore: input may be unknown, but is safe for CallToolRequest here
                 const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input } }
                 const res = await client.request(req, CallToolResultSchema)
                 const content = res.content

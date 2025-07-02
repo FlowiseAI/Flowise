@@ -1,45 +1,35 @@
-import { BaseCache } from '@langchain/core/caches'
-import { ChatGroq, ChatGroqInput } from '@langchain/groq'
+// Groq_ChatModels.ts
+
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
+import { FlowiseChatGroq } from './FlowiseChatGroq'
+
 class Groq_ChatModels implements INode {
-    label: string
-    name: string
-    version: number
-    type: string
-    icon: string
-    category: string
-    description: string
-    baseClasses: string[]
+    label = 'GroqChat'
+    name = 'groqChat'
+    version = 1.0
+    type = 'GroqChat'
+    icon = 'groq.png'
+    category = 'Chat Models'
+    description = 'LangChain-compatible wrapper around Groq API'
+    baseClasses = [this.type, ...getBaseClasses(FlowiseChatGroq)]
+    tags = ['Groq', 'LangChain']
     credential: INodeParams
     inputs: INodeParams[]
-    tags: string[]
+
     constructor() {
-        this.label = 'GroqChat'
-        this.name = 'groqChat'
-        this.tags = ['AAI']
-        this.version = 4.0
-        this.type = 'GroqChat'
-        this.icon = 'groq.png'
-        this.category = 'Chat Models'
-        this.description = 'Wrapper around Groq API with LPU Inference Engine'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatGroq)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
             type: 'credential',
             credentialNames: ['groqApi'],
-            optional: true
+            optional: false
         }
+
         this.inputs = [
-            {
-                label: 'Cache',
-                name: 'cache',
-                type: 'BaseCache',
-                optional: true
-            },
             {
                 label: 'Model Name',
                 name: 'modelName',
@@ -52,7 +42,7 @@ class Groq_ChatModels implements INode {
                 name: 'temperature',
                 type: 'number',
                 step: 0.1,
-                default: 0.9,
+                default: 0.7,
                 optional: true
             },
             {
@@ -60,8 +50,7 @@ class Groq_ChatModels implements INode {
                 name: 'maxTokens',
                 type: 'number',
                 step: 1,
-                optional: true,
-                additionalParams: true
+                optional: true
             },
             {
                 label: 'Streaming',
@@ -73,41 +62,28 @@ class Groq_ChatModels implements INode {
         ]
     }
 
-    //@ts-ignore
     loadMethods = {
         async listModels(): Promise<INodeOptionsValue[]> {
-            return await getModels(MODEL_TYPE.CHAT, 'groqChat').then((models) => [
-                ...models,
-                {
-                    label: 'DeepSeek-R1-Distill-Llama-70b',
-                    name: 'DeepSeek-R1-Distill-Llama-70b',
-                    description: 'DeepSeek-R1-Distill-Llama-70b'
-                }
-            ])
+            return await getModels(MODEL_TYPE.CHAT, 'groqChat')
         }
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const modelName = nodeData.inputs?.modelName as string
-        const maxTokens = nodeData.inputs?.maxTokens as string
-        const cache = nodeData.inputs?.cache as BaseCache
-        const temperature = nodeData.inputs?.temperature as string
-        const streaming = nodeData.inputs?.streaming as boolean
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<FlowiseChatGroq> {
+        const model = nodeData.inputs?.modelName as string
+        const temperature = parseFloat(nodeData.inputs?.temperature ?? '0.7')
+        const maxTokens = nodeData.inputs?.maxTokens ? parseInt(nodeData.inputs?.maxTokens as string, 10) : undefined
+        const streaming = nodeData.inputs?.streaming ?? true
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const groqApiKey = getCredentialParam('groqApiKey', credentialData, nodeData)
 
-        const obj: ChatGroqInput = {
-            modelName,
-            temperature: parseFloat(temperature),
-            apiKey: groqApiKey,
-            streaming: streaming ?? true
-        }
-        if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
-        if (cache) obj.cache = cache
-
-        const model = new ChatGroq(obj)
-        return model
+        return new FlowiseChatGroq({
+            model,
+            temperature,
+            maxTokens,
+            streaming,
+            apiKey: groqApiKey
+        })
     }
 }
 

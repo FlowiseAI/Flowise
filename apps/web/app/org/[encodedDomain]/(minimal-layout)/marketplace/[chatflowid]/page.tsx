@@ -27,7 +27,7 @@ const Page: React.FC<PageProps> = ({ params }) => {
                 onClose={handleClose}
                 onUse={(template) => {
                     // Handle use case if needed
-                    console.log('Template used:', template)
+                    // console.log('Template used:', template)
                 }}
             />
         </>

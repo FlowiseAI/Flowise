@@ -297,7 +297,17 @@ export const executeFlow = async ({
             }
 
             // Run Speech to Text conversion
-            if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg') {
+            if (
+                upload.mime === 'audio/wav' ||
+                upload.mime === 'audio/webm' ||
+                upload.mime === 'audio/mpeg' ||
+                upload.mime === 'audio/m4a' ||
+                upload.mime === 'audio/mp4' ||
+                upload.mime === 'audio/ogg' ||
+                upload.mime === 'audio/x-m4a' ||
+                upload.mime === 'audio/mp3' ||
+                upload.mime === 'audio/mpga'
+            ) {
                 logger.debug(`Attempting a speech to text conversion...`)
                 let speechToTextConfig: ICommonObject = {}
                 if (chatflow.speechToText) {
@@ -311,7 +321,9 @@ export const executeFlow = async ({
                         }
                     }
                 }
-                if (speechToTextConfig) {
+                // If there is a speech-to-text configuration present, proceed to convert audio
+                if (Object.keys(speechToTextConfig)?.length) {
+                    // Prepare options object with context for the conversion (chat, user, org, db, etc.)
                     const options: ICommonObject = {
                         chatId,
                         chatflowid,
@@ -320,11 +332,20 @@ export const executeFlow = async ({
                         userId: user?.id,
                         organizationId: user?.organizationId
                     }
+                    // Call the speech-to-text conversion utility with the uploaded file and config
                     const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
                     logger.debug(`Speech to text result: ${speechToTextResult}`)
+                    // If conversion was successful and returned a transcript
                     if (speechToTextResult) {
-                        incomingInput.question = speechToTextResult
-                        question = speechToTextResult
+                        // If there is an existing question and the upload is not itself a question, append the transcript to the question
+                        // Otherwise, use the transcript as the question
+                        const newQuestion =
+                            incomingInput.question && !upload.isQuestion
+                                ? `${incomingInput.question}\n\n ###Audio file: "${upload.name}"\n${speechToTextResult}`
+                                : speechToTextResult
+                        // Update the input and question with the new value (now including the transcript)
+                        incomingInput.question = newQuestion
+                        question = newQuestion
                     }
                 }
             }
@@ -540,7 +561,7 @@ export const executeFlow = async ({
                 sessionId,
                 createdDate: userMessageDateTime,
                 fileUploads: uploads ? JSON.stringify(fileUploads) : undefined,
-                leadEmail: incomingInput.leadEmail, 
+                leadEmail: incomingInput.leadEmail,
                 userId: user?.id ?? agentflow.userId,
                 organizationId: user?.organizationId ?? agentflow.organizationId
             }

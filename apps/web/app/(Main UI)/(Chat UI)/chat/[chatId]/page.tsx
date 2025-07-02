@@ -110,7 +110,7 @@ async function getMessages(chat: Partial<ChatType>, user: User) {
         } catch (err) {
             console.error('Error parsing messages:', err)
         }
-        console.log('Messages', messages)
+        // console.log('Messages', messages)
         return messages?.map((m: any) => ({
             ...m,
             // agentReasoning: JSON.parse(m.agentReasoning ?? '[]'),
@@ -155,7 +155,7 @@ const ChatDetailPage = async ({ params }: { params: { chatId: string } }) => {
             messages
         }
 
-        console.log('Chat', chat)
+        // console.log('Chat', chat)
 
         return <Chat {...params} chat={chatWithMessages} journey={chatWithMessages?.journey} sidekicks={sidekicks} />
     } catch (error) {
