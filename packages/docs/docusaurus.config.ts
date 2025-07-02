@@ -583,6 +583,10 @@ const config: Config = {
                             label: 'Learn'
                         },
                         {
+                            to: '/ai-workshops',
+                            label: 'AI Workshops'
+                        },
+                        {
                             to: '/docs/use-cases',
                             label: 'Use Cases'
                         },
@@ -634,6 +638,10 @@ const config: Config = {
                         {
                             to: '/sidekick-studio',
                             label: 'Studio'
+                        },
+                        {
+                            to: '/ai-workshops',
+                            label: 'AI Workshops'
                         },
                         {
                             to: '/developers',
