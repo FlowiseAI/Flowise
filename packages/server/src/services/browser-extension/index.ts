@@ -13,7 +13,7 @@ const BROWSER_EXTENSION = 'Browser Extension'
 /**
  * Get all public chatflows that are available for the browser extension
  * @param user - The authenticated user object
- * @returns An array of public chatflows available for the browser extension with isUserDefaultChatflow flag
+ * @returns An array of public chatflows available for the browser extension with isUserDefaultChatflow and isOwner flags
  */
 const getBrowserExtensionChatflows = async (user: IUser): Promise<ChatFlow[]> => {
     try {
@@ -47,7 +47,8 @@ const getBrowserExtensionChatflows = async (user: IUser): Promise<ChatFlow[]> =>
         // Add isUserDefaultChatflow field to each chatflow
         const chatflowsWithDefaultFlag = dbResponse.map((chatflow) => ({
             ...chatflow,
-            isUserDefaultChatflow: chatflow.userId === user.id && chatflow.id === dbUser.defaultChatflowId
+            isUserDefaultChatflow: chatflow.userId === user.id && chatflow.id === dbUser.defaultChatflowId,
+            isOwner: chatflow.userId === user.id
         }))
 
         // Return the chatflows with the default flag

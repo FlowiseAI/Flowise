@@ -6,7 +6,7 @@ import browserExtensionService from '../../services/browser-extension'
 /**
  * Get public chatflows available for the browser extension
  * Returns only public chatflows with Browser Extension visibility
- * Each chatflow includes an isUserDefaultChatflow flag
+ * Each chatflow includes isUserDefaultChatflow and isOwner flags
  * Requires standard Bearer authentication like other endpoints
  */
 const getBrowserExtensionChatflows = async (req: Request, res: Response, next: NextFunction) => {
