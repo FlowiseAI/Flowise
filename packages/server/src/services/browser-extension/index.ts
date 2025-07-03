@@ -1,5 +1,6 @@
 import { StatusCodes } from 'http-status-codes'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { User } from '../../database/entities/User'
 import { IUser } from '../../Interface'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -18,6 +19,13 @@ const getBrowserExtensionChatflows = async (user: IUser): Promise<ChatFlow[]> =>
     try {
         const appServer = getRunningExpressApp()
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
+        const userRepository = appServer.AppDataSource.getRepository(User)
+
+        // Get the user from database to access defaultChatflowId
+        const dbUser = await userRepository.findOneBy({ id: user.id })
+        if (!dbUser) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'User not found')
+        }
 
         // Query chatflows that:
         // 1. Belong to the user or their organization
@@ -37,8 +45,14 @@ const getBrowserExtensionChatflows = async (user: IUser): Promise<ChatFlow[]> =>
         // Return the complete chatflow objects with all fields
         const dbResponse = await queryBuilder.getMany()
 
-        // Return the entire chatflow objects to match the behavior of the /chatflows endpoint
-        return dbResponse
+        // Add isUserDefaultChatflow field to each chatflow
+        const chatflowsWithDefaultFlag = dbResponse.map((chatflow) => ({
+            ...chatflow,
+            isUserDefaultChatflow: chatflow.id === dbUser.defaultChatflowId
+        }))
+
+        // Return the chatflows with the default flag
+        return chatflowsWithDefaultFlag
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
