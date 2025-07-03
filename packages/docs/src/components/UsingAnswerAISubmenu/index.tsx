@@ -6,14 +6,14 @@ import styles from './styles.module.css'
 
 const submenuItems = [
     {
-        to: '/apps',
-        label: 'Apps',
-        icon: '🚀',
-        description: 'AI-powered applications'
+        to: '/agents',
+        label: 'Agents',
+        icon: '🤖',
+        description: 'AI-powered sidekicks'
     },
     {
         to: '/chat',
-        label: 'Chat & Sidekicks',
+        label: 'Chat',
         icon: '💬',
         description: 'Intelligent conversations'
     },

@@ -529,8 +529,8 @@ const config: Config = {
                     position: 'left',
                     items: [
                         {
-                            to: '/apps',
-                            label: 'Apps'
+                            to: '/agents',
+                            label: 'Agents'
                         },
                         {
                             to: '/chat',
@@ -624,8 +624,8 @@ const config: Config = {
                             label: 'Getting Started'
                         },
                         {
-                            to: '/apps',
-                            label: 'Apps'
+                            to: '/agents',
+                            label: 'Agents'
                         },
                         {
                             to: '/browser-extension',

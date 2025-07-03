@@ -13,7 +13,7 @@ function GettingStartedHero() {
                 <ThreeJsScene className={styles.threeJsCanvas} />
             </div>
             <div className={styles.heroContent}>
-                <h1 className={styles.heroTitle}>Start Your AI Jounrey Today</h1>
+                <h1 className={styles.heroTitle}>Start Your AI Journey Today</h1>
                 <p className={styles.heroSubtitle}>
                     Transform your workflow with AI-powered productivity tools. From browser extension to intelligent chat—everything you
                     need is just minutes away.
