@@ -101,29 +101,11 @@ export const getHref = (path: string) => {
     }
 }
 
-// Utility function to generate hrefs that work in both local and staging environments
-export const getHref = (path: string) => {
-    if (typeof window === 'undefined') {
-        // Server-side: always include the base path
-        return `/sidekick-studio${path}`
-    }
-
-    // Client-side: check if we're in an environment that uses the base path
-    const currentPath = window.location.pathname
-    const hasBasePath = currentPath.startsWith('/sidekick-studio')
-
-    if (hasBasePath) {
-        return `/sidekick-studio${path}`
-    } else {
-        return path
-    }
-}
-
 export const useNavigate = () => {
     const nextRouter = useNextRouter()
     const [, setNavigationState] = useNavigationState()
     const navigate = (url: string | number, options?: { state?: any; replace?: boolean }) => {
-        console.log('[Navigation] navigate', url, options)
+        // console.log('[Navigation] navigate', url, options)
         logger.info('Navigation initiated', { url, options })
 
         // Log state changes

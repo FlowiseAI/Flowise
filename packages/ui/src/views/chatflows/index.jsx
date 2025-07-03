@@ -126,26 +126,6 @@ const Chatflows = () => {
         }
     }, [getAllChatflowsApi.data])
 
-    // Helper functions to generate hrefs for different types
-    const getChatflowHref = (chatflow) => {
-        return getHref(`/canvas/${chatflow.id}`)
-    }
-
-    const getMarketplaceHref = (chatflow) => {
-        // Marketplace items don't have direct URLs since they open dialogs
-        return null
-    }
-
-    // Helper functions to generate hrefs for different types
-    const getChatflowHref = (chatflow) => {
-        return getHref(`/canvas/${chatflow.id}`)
-    }
-
-    const getMarketplaceHref = (chatflow) => {
-        // Marketplace items don't have direct URLs since they open dialogs
-        return null
-    }
-
     return (
         <MainCard>
             {error ? (
