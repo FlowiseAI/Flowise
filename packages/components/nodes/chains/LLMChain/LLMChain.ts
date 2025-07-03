@@ -42,7 +42,7 @@ class LLMChain_Chains implements INode {
         this.category = 'Chains'
         this.description = 'Chain to run queries against LLMs'
         this.baseClasses = [this.type, ...getBaseClasses(LLMChain)]
-        this.tags = ['AAI']
+        this.tags = []
         this.inputs = [
             {
                 label: 'Language Model',

@@ -19,7 +19,7 @@ class Groq_ChatModels implements INode {
     constructor() {
         this.label = 'GroqChat'
         this.name = 'groqChat'
-        this.tags = ['AAI']
+        // Note: AAI tag removed - use AAIGroq for Answer tab
         this.version = 4.0
         this.type = 'GroqChat'
         this.icon = 'groq.png'

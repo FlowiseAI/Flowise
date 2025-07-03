@@ -33,7 +33,7 @@ class ChatOpenAI_ChatModels implements INode {
             type: 'credential',
             credentialNames: ['openAIApi']
         }
-        this.tags = ['AAI']
+        // Note: AAI tag removed - use AAIChatOpenAI for Answer tab
         this.inputs = [
             {
                 label: 'Cache',

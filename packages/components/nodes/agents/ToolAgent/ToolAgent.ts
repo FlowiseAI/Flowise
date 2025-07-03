@@ -52,7 +52,7 @@ class ToolAgent_Agents implements INode {
         this.icon = 'toolAgent.png'
         this.description = `Agent that uses Function Calling to pick the tools and args to call`
         this.baseClasses = [this.type, ...getBaseClasses(AgentExecutor)]
-        this.tags = ['AAI']
+        this.tags = []
         this.inputs = [
             {
                 label: 'Tools',

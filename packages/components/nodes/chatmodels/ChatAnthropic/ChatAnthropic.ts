@@ -115,7 +115,7 @@ class ChatAnthropic_ChatModels implements INode {
                 optional: true
             }
         ]
-        this.tags = ['AAI']
+        // Note: AAI tag removed - use AAIChatAnthropic for Answer tab
     }
 
     //@ts-ignore
