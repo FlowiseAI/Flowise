@@ -5,10 +5,10 @@ import { useEffect, useRef, useState } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
-import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
+import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button, Dialog, DialogTitle, DialogContent, DialogActions, OutlinedInput, Chip } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
+import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode, IconGitBranch, IconBrandGit } from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
@@ -20,9 +20,11 @@ import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 import { Available } from '@/ui-component/rbac/available'
+import GitCommitDialog from '@/ui-component/dialog/GitCommitDialog'
 
 // API
 import chatflowsApi from '@/api/chatflows'
+import flowVersionApi from '@/api/flowversion'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -31,6 +33,7 @@ import useApi from '@/hooks/useApi'
 import { generateExportFlowData } from '@/utils/genericHelper'
 import { uiBaseURL } from '@/store/constant'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction, SET_CHATFLOW } from '@/store/actions'
+import VersionsSideDrawer from './VersionSideDrawer'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
@@ -67,6 +70,22 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
+
+    const [showVersionSideDrawer, setShowVersionSideDrawer] = useState(false)
+    const [versionDrawerDialogProps, setVersionDrawerDialogProps] = useState({})
+    const [gitVersioningEnabled, setGitVersioningEnabled] = useState(false)
+
+    const openVersionsDrawer = () => {
+        setVersionDrawerDialogProps({
+            id: chatflow?.id,
+            isDirty: chatflow?.isDirty
+        })
+        setShowVersionSideDrawer(true)
+    }
+
+    const closeVersionsDrawer = (refreshData) => {
+        setShowVersionSideDrawer(false)
+    }
 
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
@@ -237,6 +256,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     useEffect(() => {
         if (chatflow) {
             setFlowName(chatflow.name)
+            setGitVersioningEnabled(false)
+            if (chatflow.chatbotConfig) {
+                const chatbotConfig = JSON.parse(chatflow.chatbotConfig)
+                console.log(chatbotConfig)
+                setGitVersioningEnabled(chatbotConfig?.gitVersioning?.status)
+            }
+            
             // if configuration dialog is open, update its data
             if (chatflowConfigurationDialogOpen) {
                 setChatflowConfigurationDialogProps({
@@ -387,6 +413,38 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     </Box>
                 </Stack>
                 <Box>
+                    {gitVersioningEnabled && (
+                        <>
+                        {chatflow?.isDirty ? (
+                            <Chip label='You have unpublished changes' size='small' color='error' sx={{ mr: 2 }}/>
+                        ) : (
+                            <Chip label='Published' size='small' color='success' sx={{ mr: 2 }}/>
+                        )}
+                        {chatflow?.id && (
+                            <ButtonBase title='Version history' sx={{ borderRadius: '50%', mr: 2 }}>
+                                    <Avatar
+                                        variant='rounded'
+                                        sx={{
+                                            ...theme.typography.commonAvatar,
+                                            ...theme.typography.mediumAvatar,
+                                            transition: 'all .2s ease-in-out',
+                                            background: theme.palette.canvasHeader.saveLight,
+                                            color: theme.palette.canvasHeader.saveDark,
+                                            '&:hover': {
+                                                background: theme.palette.canvasHeader.saveDark,
+                                                color: theme.palette.canvasHeader.saveLight
+                                            }
+                                        }}
+                                        color='inherit'
+                                        onClick={openVersionsDrawer}
+                                    >
+                                        <IconGitBranch stroke={1.5} size='1.3rem' />
+                                    </Avatar>
+                                </ButtonBase>
+                            )}
+                        </>
+                    )}
+
                     {chatflow?.id && (
                         <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
                             <Avatar
@@ -496,6 +554,12 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                 dialogProps={chatflowConfigurationDialogProps}
                 onCancel={() => setChatflowConfigurationDialogOpen(false)}
                 isAgentCanvas={isAgentCanvas}
+            />
+            <VersionsSideDrawer
+                show={showVersionSideDrawer}
+                dialogProps={versionDrawerDialogProps}
+                onClickFunction={closeVersionsDrawer}
+                onSelectVersion={(versionId) => {}}
             />
         </>
     )

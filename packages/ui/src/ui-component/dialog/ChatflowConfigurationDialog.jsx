@@ -6,6 +6,7 @@ import { tabsClasses } from '@mui/material/Tabs'
 import SpeechToText from '@/ui-component/extended/SpeechToText'
 import Security from '@/ui-component/extended/Security'
 import ChatFeedback from '@/ui-component/extended/ChatFeedback'
+import GitVersioning from '@/ui-component/extended/GitVersioning'
 import AnalyseFlow from '@/ui-component/extended/AnalyseFlow'
 import StarterPrompts from '@/ui-component/extended/StarterPrompts'
 import Leads from '@/ui-component/extended/Leads'
@@ -33,6 +34,10 @@ const CHATFLOW_CONFIGURATION_TABS = [
     {
         label: 'Chat Feedback',
         id: 'chatFeedback'
+    },
+    {
+        label: 'Git Versioning',
+        id: 'gitVersioning'
     },
     {
         label: 'Analyse Chatflow',
@@ -138,6 +143,7 @@ const ChatflowConfigurationDialog = ({ show, isAgentCanvas, dialogProps, onCance
                         {item.id === 'followUpPrompts' ? <FollowUpPrompts dialogProps={dialogProps} /> : null}
                         {item.id === 'speechToText' ? <SpeechToText dialogProps={dialogProps} /> : null}
                         {item.id === 'chatFeedback' ? <ChatFeedback dialogProps={dialogProps} /> : null}
+                        {item.id === 'gitVersioning' ? <GitVersioning dialogProps={dialogProps} /> : null}
                         {item.id === 'analyseChatflow' ? <AnalyseFlow dialogProps={dialogProps} /> : null}
                         {item.id === 'leads' ? <Leads dialogProps={dialogProps} /> : null}
                         {item.id === 'fileUpload' ? <FileUpload dialogProps={dialogProps} /> : null}

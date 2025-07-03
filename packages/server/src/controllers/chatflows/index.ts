@@ -200,6 +200,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
         }
         const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
         const body = req.body
+        body.isDirty = true
         const updateChatFlow = new ChatFlow()
         Object.assign(updateChatFlow, body)
 

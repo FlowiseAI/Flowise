@@ -60,3 +60,4 @@ export class LoginActivity implements ILoginActivity {
     @UpdateDateColumn()
     attemptedDateTime: Date
 }
+

@@ -68,6 +68,9 @@ import accountRouter from '../enterprise/routes/account.route'
 import loginMethodRouter from '../enterprise/routes/login-method.route'
 import { IdentityManager } from '../IdentityManager'
 
+import gitConfigRouter from '../enterprise/routes/git-config.route'
+import flowVersionRouter from '../enterprise/routes/flow-version.route'
+
 const router = express.Router()
 
 router.use('/ping', pingRouter)
@@ -137,5 +140,7 @@ router.use('/account', accountRouter)
 router.use('/loginmethod', loginMethodRouter)
 router.use('/logs', IdentityManager.checkFeatureByPlan('feat:logs'), logsRouter)
 router.use('/files', IdentityManager.checkFeatureByPlan('feat:files'), filesRouter)
+router.use('/git-config', gitConfigRouter)
+router.use('/flow-version', flowVersionRouter)
 
 export default router

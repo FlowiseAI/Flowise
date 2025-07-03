@@ -23,7 +23,8 @@ import {
     IconLockCheck,
     IconFileDatabase,
     IconShieldLock,
-    IconListCheck
+    IconListCheck,
+    IconGitBranch
 } from '@tabler/icons-react'
 
 // constant
@@ -51,7 +52,8 @@ const icons = {
     IconLockCheck,
     IconFileDatabase,
     IconShieldLock,
-    IconListCheck
+    IconListCheck,
+    IconGitBranch
 }
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -257,6 +259,16 @@ const dashboard = {
             title: 'Others',
             type: 'group',
             children: [
+                {
+                    id: 'git',
+                    title: 'Git Configs',
+                    type: 'item',
+                    url: '/git-configs',
+                    icon: icons.IconGitBranch,
+                    breadcrumbs: true,
+                    display: 'feat:logs',
+                    permission: 'logs:view'
+                },
                 {
                     id: 'logs',
                     title: 'Logs',
