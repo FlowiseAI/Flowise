@@ -529,8 +529,8 @@ const config: Config = {
                     position: 'left',
                     items: [
                         {
-                            to: '/apps',
-                            label: 'Apps'
+                            to: '/agents',
+                            label: 'Agents'
                         },
                         {
                             to: '/chat',
@@ -583,6 +583,10 @@ const config: Config = {
                             label: 'Learn'
                         },
                         {
+                            to: '/ai-workshops',
+                            label: 'AI Workshops'
+                        },
+                        {
                             to: '/docs/use-cases',
                             label: 'Use Cases'
                         },
@@ -620,8 +624,8 @@ const config: Config = {
                             label: 'Getting Started'
                         },
                         {
-                            to: '/apps',
-                            label: 'Apps'
+                            to: '/agents',
+                            label: 'Agents'
                         },
                         {
                             to: '/browser-extension',
@@ -634,6 +638,10 @@ const config: Config = {
                         {
                             to: '/sidekick-studio',
                             label: 'Studio'
+                        },
+                        {
+                            to: '/ai-workshops',
+                            label: 'AI Workshops'
                         },
                         {
                             to: '/developers',

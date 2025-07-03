@@ -30,7 +30,6 @@ class LLMChain_Chains implements INode {
     description: string
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
-    tags: string[]
     outputParser: BaseOutputParser
 
     constructor() {

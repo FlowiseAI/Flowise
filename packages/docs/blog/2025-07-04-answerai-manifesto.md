@@ -1,6 +1,6 @@
 ---
 slug: what-is-the-answer-ai
-title: 📜 What is the Answer?
+title: 📜 What Is The Answer?
 authors: [bradtaylorsf]
 tags: [manifesto, vision, philosophy, ai-ethics, decentralization]
 ---

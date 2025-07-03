@@ -6,14 +6,14 @@ import styles from './styles.module.css'
 
 const submenuItems = [
     {
-        to: '/apps',
-        label: 'Apps',
-        icon: '🚀',
-        description: 'AI-powered applications'
+        to: '/agents',
+        label: 'Agents',
+        icon: '🤖',
+        description: 'AI-powered sidekicks'
     },
     {
         to: '/chat',
-        label: 'Chat & Sidekicks',
+        label: 'Chat',
         icon: '💬',
         description: 'Intelligent conversations'
     },
@@ -34,6 +34,12 @@ const submenuItems = [
         label: 'Learn',
         icon: '🎓',
         description: 'Master AI fundamentals'
+    },
+    {
+        to: '/ai-workshops',
+        label: 'AI Workshops',
+        icon: '🎯',
+        description: 'Expert-led team training'
     }
 ]
 
@@ -44,10 +50,6 @@ export default function UsingAnswerAISubmenu(): JSX.Element {
         <div className={styles.submenuContainer}>
             <div className='container'>
                 <nav className={styles.submenu}>
-                    <div className={styles.submenuBrand}>
-                        <span className={styles.submenuTitle}>Using AnswerAI</span>
-                        <div className={styles.submenuGlow}></div>
-                    </div>
                     <div className={styles.submenuItems}>
                         {submenuItems.map((item) => {
                             const isActive = location.pathname === item.to

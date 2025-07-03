@@ -40,7 +40,6 @@ class ToolAgent_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
-    tags: string[]
     sessionId?: string
 
     constructor(fields?: { sessionId?: string }) {
