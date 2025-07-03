@@ -24,6 +24,7 @@
         "prism-react-renderer": "^2.3.0",
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
+        "three": "^0.160.0",
         "troika-three-text": "^0.49.1"
     },
     "devDependencies": {

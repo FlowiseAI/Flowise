@@ -1019,7 +1019,7 @@ const validateAndSaveChat = async (
                 if (isOverLimit) {
                     throw new InternalFlowiseError(
                         StatusCodes.PAYMENT_REQUIRED,
-                        'Usage limit reached. Please upgrade your plan to continue using this service.'
+                        'Usage limit reached. Please upgrade your plan to continue using this service. <a href="https://studio.theanswer.ai/billing">Upgrade Now</a>'
                     )
                 }
             } catch (billingError) {
