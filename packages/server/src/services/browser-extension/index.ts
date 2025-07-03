@@ -11,9 +11,9 @@ import checkOwnership from '../../utils/checkOwnership'
 const BROWSER_EXTENSION = 'Browser Extension'
 
 /**
- * Get all chatflows that are available for the browser extension
+ * Get all public chatflows that are available for the browser extension
  * @param user - The authenticated user object
- * @returns An array of chatflows available for the browser extension
+ * @returns An array of public chatflows available for the browser extension with isUserDefaultChatflow flag
  */
 const getBrowserExtensionChatflows = async (user: IUser): Promise<ChatFlow[]> => {
     try {
@@ -30,9 +30,8 @@ const getBrowserExtensionChatflows = async (user: IUser): Promise<ChatFlow[]> =>
         // Query chatflows that:
         // 1. Belong to the user or their organization
         // 2. Have 'Browser Extension' in their visibility settings
-        const queryBuilder = chatFlowRepository
-            .createQueryBuilder('chatflow')
-            .where('chatflow.visibility LIKE :visibility', { visibility: `%${BROWSER_EXTENSION}%` })
+        // 3. Are public (isPublic must be true)
+        const queryBuilder = chatFlowRepository.createQueryBuilder('chatflow').where('chatflow.isPublic = true')
 
         // If user is an org admin, show all org chatflows with Browser Extension visibility
         if (user.permissions?.includes('org:manage')) {
@@ -48,7 +47,7 @@ const getBrowserExtensionChatflows = async (user: IUser): Promise<ChatFlow[]> =>
         // Add isUserDefaultChatflow field to each chatflow
         const chatflowsWithDefaultFlag = dbResponse.map((chatflow) => ({
             ...chatflow,
-            isUserDefaultChatflow: chatflow.id === dbUser.defaultChatflowId
+            isUserDefaultChatflow: chatflow.userId === user.id && chatflow.id === dbUser.defaultChatflowId
         }))
 
         // Return the chatflows with the default flag

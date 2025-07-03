@@ -4,7 +4,9 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import browserExtensionService from '../../services/browser-extension'
 
 /**
- * Get chatflows available for the browser extension
+ * Get public chatflows available for the browser extension
+ * Returns only public chatflows with Browser Extension visibility
+ * Each chatflow includes an isUserDefaultChatflow flag
  * Requires standard Bearer authentication like other endpoints
  */
 const getBrowserExtensionChatflows = async (req: Request, res: Response, next: NextFunction) => {
@@ -14,7 +16,7 @@ const getBrowserExtensionChatflows = async (req: Request, res: Response, next: N
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Unauthorized access to browser extension endpoint')
         }
 
-        // Get chatflows visible to browser extension for the authenticated user
+        // Get public chatflows visible to browser extension for the authenticated user
         const apiResponse = await browserExtensionService.getBrowserExtensionChatflows(req.user)
         return res.json(apiResponse)
     } catch (error) {
