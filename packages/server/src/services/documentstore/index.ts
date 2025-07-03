@@ -69,13 +69,13 @@ const createDocumentStore = async (newDocumentStore: DocumentStore, userId: stri
     }
 }
 
-const getAllDocumentStores = async (userId: string, organizationId: string, _user?: IUser) => {
+const getAllDocumentStores = async (user: IUser) => {
     try {
         const appServer = getRunningExpressApp()
         let entities
 
         entities = await appServer.AppDataSource.getRepository(DocumentStore).find({
-            where: { userId, organizationId }
+            where: { userId: user.id, organizationId: user.organizationId }
         })
 
         return entities
@@ -87,10 +87,12 @@ const getAllDocumentStores = async (userId: string, organizationId: string, _use
     }
 }
 
-const getAllDocumentFileChunks = async (userId: string, organizationId: string) => {
+const getAllDocumentFileChunks = async (user: IUser) => {
     try {
         const appServer = getRunningExpressApp()
-        const entities = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find({ where: { userId, organizationId } })
+        const entities = await appServer.AppDataSource.getRepository(DocumentStoreFileChunk).find({
+            where: { userId: user.id, organizationId: user.organizationId }
+        })
         return entities
     } catch (error) {
         throw new InternalFlowiseError(
@@ -149,7 +151,7 @@ const deleteLoaderFromDocumentStore = async (storeId: string, loaderId: string, 
     }
 }
 
-const getDocumentStoreById = async (storeId: string, userId: string, organizationId: string, user?: IUser) => {
+const getDocumentStoreById = async (user: IUser, storeId: string) => {
     try {
         const appServer = getRunningExpressApp()
         let queryOptions: FindOptionsWhere<DocumentStore> = {
@@ -160,14 +162,14 @@ const getDocumentStoreById = async (storeId: string, userId: string, organizatio
             // Regular users can only see their own document stores
             queryOptions = {
                 ...queryOptions,
-                userId,
-                organizationId
+                userId: user.id,
+                organizationId: user.organizationId
             }
         } else {
             // Admin users can see all document stores in their organization
             queryOptions = {
                 ...queryOptions,
-                organizationId
+                organizationId: user.organizationId
             }
         }
 
@@ -188,7 +190,7 @@ const getDocumentStoreById = async (storeId: string, userId: string, organizatio
     }
 }
 
-const getUsedChatflowNames = async (entity: DocumentStore, userId: string, organizationId: string) => {
+const getUsedChatflowNames = async (user: IUser, entity: DocumentStore) => {
     try {
         const appServer = getRunningExpressApp()
         if (entity.whereUsed) {
@@ -203,8 +205,7 @@ const getUsedChatflowNames = async (entity: DocumentStore, userId: string, organ
                     updatedWhereUsed.push({
                         id: whereUsed[i],
                         name: associatedChatflow.name,
-                        userId,
-                        organizationId
+                        user: user
                     })
                 }
             }
@@ -610,14 +611,19 @@ const editDocumentStoreFileChunk = async (
     }
 }
 
-const updateDocumentStore = async (
-    documentStore: DocumentStore,
-    updatedDocumentStore: DocumentStore,
-    userId: string,
-    organizationId: string
-) => {
+const updateDocumentStore = async (user: IUser, documentStore: DocumentStore, updatedDocumentStore: DocumentStore) => {
     try {
         const appServer = getRunningExpressApp()
+        // check if the user has access to the document store
+        const documentStoreEntity = await appServer.AppDataSource.getRepository(DocumentStore).findOneBy({
+            id: documentStore.id,
+            userId: user.id,
+            organizationId: user.organizationId
+        })
+        if (!documentStoreEntity) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Document store ${documentStore.id} not found`)
+        }
+
         const tmpUpdatedDocumentStore = appServer.AppDataSource.getRepository(DocumentStore).merge(documentStore, updatedDocumentStore)
         const dbResponse = await appServer.AppDataSource.getRepository(DocumentStore).save(tmpUpdatedDocumentStore)
         return dbResponse
@@ -629,7 +635,7 @@ const updateDocumentStore = async (
     }
 }
 
-const _saveFileToStorage = async (fileBase64: string, entity: DocumentStore, userId: string, organizationId: string) => {
+const _saveFileToStorage = async (user: IUser, fileBase64: string, entity: DocumentStore) => {
     const splitDataURI = fileBase64.split(',')
     const filename = splitDataURI.pop()?.split(':')[1] ?? ''
     const bf = Buffer.from(splitDataURI.pop() || '', 'base64')
@@ -758,8 +764,7 @@ const previewChunksMiddleware = async (data: IDocumentStoreLoaderForPreview) => 
             componentNodes,
             data,
             isPreviewOnly: true,
-            userId: data.userId,
-            organizationId: data.organizationId
+            user: data.user
         }
 
         if (process.env.MODE === MODE.QUEUE) {
@@ -866,6 +871,8 @@ const saveProcessingLoader = async (appDataSource: DataSource, data: IDocumentSt
             entity.loaders = JSON.stringify(existingLoaders)
         } else {
             let loader: IDocumentStoreLoader = {
+                userId: data.userId,
+                organizationId: data.organizationId,
                 id: newDocLoaderId,
                 loaderId: data.loaderId,
                 loaderName: data.loaderName,
@@ -899,9 +906,10 @@ const saveProcessingLoader = async (appDataSource: DataSource, data: IDocumentSt
     }
 }
 
-export const processLoader = async ({ appDataSource, componentNodes, data, docLoaderId }: IExecuteProcessLoader) => {
+export const processLoader = async ({ appDataSource, componentNodes, data, docLoaderId, user }: IExecuteProcessLoader) => {
     const entity = await appDataSource.getRepository(DocumentStore).findOneBy({
-        id: data.storeId
+        id: data.storeId,
+        userId: user.id
     })
     if (!entity) {
         throw new InternalFlowiseError(
@@ -913,7 +921,12 @@ export const processLoader = async ({ appDataSource, componentNodes, data, docLo
     return getDocumentStoreFileChunks(appDataSource, data.storeId as string, docLoaderId)
 }
 
-const processLoaderMiddleware = async (data: IDocumentStoreLoaderForPreview, docLoaderId: string) => {
+const processLoaderMiddleware = async (
+    user: IUser,
+    data: IDocumentStoreLoaderForPreview,
+    docLoaderId: string,
+    isInternalRequest = false
+) => {
     try {
         const appServer = getRunningExpressApp()
         const appDataSource = appServer.AppDataSource
@@ -923,18 +936,23 @@ const processLoaderMiddleware = async (data: IDocumentStoreLoaderForPreview, doc
         const executeData: IExecuteProcessLoader = {
             appDataSource,
             componentNodes,
-            data,
+            data: { ...data, user },
             docLoaderId,
             isProcessWithoutUpsert: true,
             telemetry,
-            userId: data.userId,
-            organizationId: data.organizationId
+            user
         }
 
         if (process.env.MODE === MODE.QUEUE) {
             const upsertQueue = appServer.queueManager.getQueue('upsert')
             const job = await upsertQueue.addJob(omit(executeData, OMIT_QUEUE_JOB_DATA))
             logger.debug(`[server]: Job added to queue: ${job.id}`)
+
+            if (isInternalRequest) {
+                return {
+                    jobId: job.id
+                }
+            }
 
             const queueEvents = upsertQueue.getQueueEvents()
             const result = await job.waitUntilFinished(queueEvents)
@@ -973,8 +991,7 @@ const _saveChunksToStorage = async (
             componentNodes,
             data,
             isPreviewOnly: false,
-            userId: data.userId,
-            organizationId: data.organizationId
+            user: data.user
         })
 
         //step 3: remove all files associated with the loader
@@ -1015,7 +1032,7 @@ const _saveChunksToStorage = async (
                 for (let j = 0; j < files.length; j++) {
                     const file = files[j]
                     if (re.test(file)) {
-                        const fileMetadata = await _saveFileToStorage(file, entity, data.userId, data.organizationId)
+                        const fileMetadata = await _saveFileToStorage(data.user, file, entity)
                         fileNames.push(fileMetadata.name)
                         filesWithMetadata.push(fileMetadata)
                     }
@@ -1023,7 +1040,7 @@ const _saveChunksToStorage = async (
                 if (fileNames.length) data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
             } else if (re.test(input)) {
                 const fileNames: string[] = []
-                const fileMetadata = await _saveFileToStorage(input, entity, data.userId, data.organizationId)
+                const fileMetadata = await _saveFileToStorage(data.user, input, entity)
                 fileNames.push(fileMetadata.name)
                 filesWithMetadata.push(fileMetadata)
                 data.loaderConfig[keys[i]] = 'FILE-STORAGE::' + JSON.stringify(fileNames)
@@ -1176,13 +1193,7 @@ const updateVectorStoreConfigOnly = async (data: ICommonObject) => {
         )
     }
 }
-const saveVectorStoreConfig = async (
-    appDataSource: DataSource,
-    data: ICommonObject,
-    isStrictSave = true,
-    userId: string,
-    organizationId: string
-) => {
+const saveVectorStoreConfig = async (user: IUser, appDataSource: DataSource, data: ICommonObject, isStrictSave = true) => {
     try {
         const entity = await appDataSource.getRepository(DocumentStore).findOneBy({
             id: data.storeId
@@ -1251,23 +1262,14 @@ export const insertIntoVectorStore = async ({
     telemetry,
     data,
     isStrictSave,
-    userId,
-    organizationId
+    user
 }: IExecuteVectorStoreInsert) => {
     try {
-        const entity = await saveVectorStoreConfig(appDataSource, data, isStrictSave, userId, organizationId)
+        const entity = await saveVectorStoreConfig(user, appDataSource, data, isStrictSave)
         entity.status = DocumentStoreStatus.UPSERTING
         await appDataSource.getRepository(DocumentStore).save(entity)
 
-        const indexResult = await _insertIntoVectorStoreWorkerThread(
-            appDataSource,
-            componentNodes,
-            telemetry,
-            data,
-            isStrictSave,
-            userId,
-            organizationId
-        )
+        const indexResult = await _insertIntoVectorStoreWorkerThread(user, appDataSource, componentNodes, telemetry, data, isStrictSave)
         return indexResult
     } catch (error) {
         throw new InternalFlowiseError(
@@ -1277,7 +1279,7 @@ export const insertIntoVectorStore = async ({
     }
 }
 
-const insertIntoVectorStoreMiddleware = async (data: ICommonObject, isStrictSave = true, userId: string, organizationId: string) => {
+const insertIntoVectorStoreMiddleware = async (user: IUser, data: ICommonObject, isStrictSave = true) => {
     try {
         const appServer = getRunningExpressApp()
         const appDataSource = appServer.AppDataSource
@@ -1291,8 +1293,7 @@ const insertIntoVectorStoreMiddleware = async (data: ICommonObject, isStrictSave
             data,
             isStrictSave,
             isVectorStoreInsert: true,
-            userId,
-            organizationId
+            user
         }
 
         if (process.env.MODE === MODE.QUEUE) {
@@ -1319,23 +1320,21 @@ const insertIntoVectorStoreMiddleware = async (data: ICommonObject, isStrictSave
 }
 
 const _insertIntoVectorStoreWorkerThread = async (
+    user: IUser,
     appDataSource: DataSource,
     componentNodes: IComponentNodes,
     telemetry: Telemetry,
     data: ICommonObject,
-    isStrictSave = true,
-    userId: string,
-    organizationId: string
+    isStrictSave = true
 ) => {
     try {
-        const entity = await saveVectorStoreConfig(appDataSource, data, isStrictSave, userId, organizationId)
+        const entity = await saveVectorStoreConfig(user, appDataSource, data, isStrictSave)
         let upsertHistory: Record<string, any> = {}
         const chatflowid = data.storeId // fake chatflowid because this is not tied to any chatflow
 
         const options: ICommonObject = {
             chatflowid,
-            userId,
-            organizationId,
+            user,
             appDataSource,
             databaseEntities,
             logger
@@ -1652,15 +1651,14 @@ const _createVectorStoreObject = async (
 }
 
 const upsertDocStore = async (
+    user: IUser,
     appDataSource: DataSource,
     componentNodes: IComponentNodes,
     telemetry: Telemetry,
     storeId: string,
     data: IDocumentStoreUpsertData,
     files: Express.Multer.File[] = [],
-    isRefreshExisting = false,
-    userId: string,
-    organizationId: string
+    isRefreshExisting = false
 ) => {
     const docId = data.docId
     let metadata = {}
@@ -1746,7 +1744,9 @@ const upsertDocStore = async (
         const docStoreBody = typeof data.docStore === 'string' ? JSON.parse(data.docStore) : data.docStore
         const newDocumentStore = docStoreBody ?? { name: `Document Store ${Date.now().toString()}` }
         const docStore = DocumentStoreDTO.toEntity(newDocumentStore)
-        const documentStore = appDataSource.getRepository(DocumentStore).create({ ...docStore, userId, organizationId })
+        const documentStore = appDataSource
+            .getRepository(DocumentStore)
+            .create({ ...docStore, userId: user.id, organizationId: user.organizationId })
         const dbResponse = await appDataSource.getRepository(DocumentStore).save(documentStore)
         storeId = dbResponse.id
     }
@@ -1867,8 +1867,9 @@ const upsertDocStore = async (
         splitterId,
         splitterName,
         splitterConfig,
-        userId: data.userId,
-        organizationId: data.organizationId
+        user: data.user,
+        userId: data.user.id,
+        organizationId: data.user.organizationId
     }
 
     if (isRefreshExisting || replaceExisting) {
@@ -1884,8 +1885,7 @@ const upsertDocStore = async (
             docLoaderId: newLoader.id || '',
             isProcessWithoutUpsert: false,
             telemetry,
-            userId: data.userId,
-            organizationId: data.organizationId
+            user: data.user
         })
         const newDocId = result.docId
 
@@ -1907,8 +1907,7 @@ const upsertDocStore = async (
             data: insertData,
             isStrictSave: false,
             isVectorStoreInsert: true,
-            userId: data.userId,
-            organizationId: data.organizationId
+            user: data.user
         })
         res.docId = newDocId
         if (createNewDocStore) res.storeId = storeId
@@ -1930,22 +1929,11 @@ export const executeDocStoreUpsert = async ({
     totalItems,
     files,
     isRefreshAPI,
-    userId,
-    organizationId
+    user
 }: IExecuteDocStoreUpsert) => {
     const results = []
     for (const item of totalItems) {
-        const res = await upsertDocStore(
-            appDataSource,
-            componentNodes,
-            telemetry,
-            storeId,
-            item,
-            files,
-            isRefreshAPI,
-            userId,
-            organizationId
-        )
+        const res = await upsertDocStore(user, appDataSource, componentNodes, telemetry, storeId, item, files, isRefreshAPI)
         results.push(res)
     }
     return isRefreshAPI ? results : results[0]
@@ -1966,8 +1954,7 @@ const upsertDocStoreMiddleware = async (storeId: string, data: IDocumentStoreUps
             totalItems: [data],
             files,
             isRefreshAPI: false,
-            userId: data.userId,
-            organizationId: data.organizationId
+            user: data.user
         }
 
         if (process.env.MODE === MODE.QUEUE) {
@@ -2026,8 +2013,7 @@ const refreshDocStoreMiddleware = async (storeId: string, data: IDocumentStoreRe
             totalItems,
             files: [],
             isRefreshAPI: true,
-            userId: data.userId,
-            organizationId: data.organizationId
+            user: data.user
         }
 
         if (process.env.MODE === MODE.QUEUE) {

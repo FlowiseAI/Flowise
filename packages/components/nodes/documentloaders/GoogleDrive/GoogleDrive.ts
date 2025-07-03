@@ -25,15 +25,16 @@
  *
  * Updated: Uses proper document loaders instead of generic text processing
  */
-
-import { INode, INodeData, INodeParams } from '../../../src/Interface'
+import { INode, INodeData, INodeOutputsValue, INodeParams, ICommonObject, IGoogleDriveFile } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { Document } from 'langchain/document'
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf'
 import { CSVLoader } from '@langchain/community/document_loaders/fs/csv'
 import { DocxLoader } from '@langchain/community/document_loaders/fs/docx'
 import { DriveService } from './DriveService'
-import _, { omit } from 'lodash'
+import { handleEscapeCharacters } from '../../../src/utils'
+import _, { omit, isEmpty } from 'lodash'
+import { getCredentialData } from '../../../src/utils'
 
 class GoogleDrive implements INode {
     label: string
@@ -46,16 +47,17 @@ class GoogleDrive implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    outputs: INodeOutputsValue[]
 
     constructor() {
         this.label = 'Google Drive'
         this.name = 'googleDrive'
         this.version = 1.0
-        this.type = 'GoogleDrive'
+        this.type = 'Document'
         this.icon = 'drive.svg'
         this.category = 'Document Loaders'
         this.description = 'Load documents from Google Drive'
-        this.baseClasses = [this.type, 'DocumentLoader']
+        this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -66,7 +68,7 @@ class GoogleDrive implements INode {
             {
                 label: 'Selected Files',
                 name: 'selectedFiles',
-                type: 'string',
+                type: 'googleDrive',
                 description: 'Selected file IDs from Google Drive',
                 optional: false
             },
@@ -119,18 +121,129 @@ class GoogleDrive implements INode {
         ]
     }
 
-    async init(nodeData: INodeData): Promise<any> {
+    private parseSelectedFiles(selectedFilesInput: any): IGoogleDriveFile[] {
+        if (!selectedFilesInput) {
+            throw new Error('No files selected')
+        }
+
+        try {
+            // Handle different selectedFiles formats:
+            // 1. JSON array string: '[{"fileId": "...", "fileName": "...", "iconUrl": "..."}]'
+            // 2. Simple file ID string: "b88d306c-1234-5678-9abc-def012345678"
+            // 3. Comma-separated file IDs: "id1,id2,id3"
+            
+            const selectedFilesStr = selectedFilesInput.toString().trim()
+            let selectedFiles: IGoogleDriveFile[]
+            
+            if (selectedFilesStr.startsWith('[') && selectedFilesStr.endsWith(']')) {
+                // JSON array format
+                selectedFiles = JSON.parse(selectedFilesStr)
+            } else if (selectedFilesStr.includes(',')) {
+                // Comma-separated file IDs
+                const fileIds = selectedFilesStr.split(',').map((id: string) => id.trim()).filter((id: string) => id)
+                selectedFiles = fileIds.map((fileId: string) => ({
+                    fileId,
+                    fileName: `File ${fileId}`,
+                    iconUrl: 'https://drive-thirdparty.googleusercontent.com/16/type/application/octet-stream'
+                }))
+            } else {
+                // Single file ID
+                selectedFiles = [{
+                    fileId: selectedFilesStr,
+                    fileName: `File ${selectedFilesStr}`,
+                    iconUrl: 'https://drive-thirdparty.googleusercontent.com/16/type/application/octet-stream'
+                }]
+            }
+            
+            // Validate that we have a valid array
+            if (!Array.isArray(selectedFiles) || selectedFiles.length === 0) {
+                throw new Error('No valid files found in selectedFiles')
+            }
+            
+            // Ensure each file has required properties
+            return selectedFiles.map((file, index) => {
+                if (typeof file === 'string') {
+                    // Handle case where array contains strings instead of objects
+                    return {
+                        fileId: file,
+                        fileName: `File ${file}`,
+                        iconUrl: 'https://drive-thirdparty.googleusercontent.com/16/type/application/octet-stream'
+                    }
+                } else if (typeof file === 'object' && file.fileId) {
+                    return {
+                        fileId: file.fileId,
+                        fileName: file.fileName || `File ${file.fileId}`,
+                        iconUrl: file.iconUrl || 'https://drive-thirdparty.googleusercontent.com/16/type/application/octet-stream'
+                    }
+                } else {
+                    throw new Error(`Invalid file format at index ${index}: missing fileId`)
+                }
+            })
+            
+        } catch (error) {
+            if (error instanceof SyntaxError) {
+                throw new Error(`Invalid selectedFiles format: expected JSON array or comma-separated file IDs, got: ${selectedFilesInput}`)
+            }
+            throw error
+        }
+    }
+
+    // Helper method to get credential data
+    private async getCredentialData(nodeData: INodeData, options: ICommonObject): Promise<any> {
+        // If the credential is a string (ID), fetch the actual credential data
+        if (nodeData.credential && typeof nodeData.credential === 'string') {
+            // Check if it's a stringified JSON object (legacy format)
+            try {
+                const parsed = JSON.parse(nodeData.credential)
+                if (parsed.plainDataObj) {
+                    return parsed.plainDataObj
+                }
+                // If it parsed but doesn't have plainDataObj, treat as credential ID
+                return await getCredentialData(nodeData.credential, options)
+            } catch {
+                // Not JSON, treat as credential ID
+                return await getCredentialData(nodeData.credential, options)
+            }
+        }
+        // If the credential is already an object, just return it
+        if (nodeData.credential && typeof nodeData.credential === 'object') {
+            const result = JSON.parse(nodeData.credential).plainDataObj
+            return result
+        }
+        return null
+    }
+
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
-        const selectedFiles = nodeData.inputs?.selectedFiles && JSON.parse(nodeData.inputs?.selectedFiles)
-        const fileIds = selectedFiles.map((file: any) => file.fileId)
+        
+        const selectedFiles = this.parseSelectedFiles(nodeData.inputs?.selectedFiles)
+        const fileIds = selectedFiles.map((file) => file.fileId)
         const pdfUsage = nodeData.inputs?.pdfUsage as string
         const columnName = nodeData.inputs?.columnName as string
-        const credentialData = nodeData.credential ? JSON.parse(nodeData.credential).plainDataObj : {}
-        const omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
-        const _omitMetadataKeys = omitMetadataKeys === '*' ? '*' : omitMetadataKeys.split(',')
+        
+        // Get credential data - handle both ID and object cases
+        let credentialData: any
 
-        if (!credentialData || _.isEmpty(credentialData)) {
+        if (options?.appDataSource) {
+            credentialData = await this.getCredentialData(nodeData, options)
+        } else {
+            // Fallback for older format
+            try {
+                if (!nodeData.credential) {
+                    throw new Error('No credential provided')
+                }
+                const parsed = JSON.parse(nodeData.credential)
+                credentialData = parsed.plainDataObj || parsed
+            } catch (error) {
+                throw new Error('Credential data not available. Please check your Google OAuth credential configuration.')
+            }
+        }
+        
+        const omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
+        const _omitMetadataKeys = omitMetadataKeys === '*' ? '*' : (omitMetadataKeys || '').split(',')
+
+        if (!credentialData || isEmpty(credentialData)) {
             throw new Error('Credentials not found')
         }
 
@@ -150,15 +263,29 @@ class GoogleDrive implements INode {
     async syncAndRefresh(nodeData: INodeData): Promise<any> {
         const textSplitter = nodeData.inputs?.textSplitter as TextSplitter
         const metadata = nodeData.inputs?.metadata
-        const selectedFiles = nodeData.inputs?.selectedFiles && JSON.parse(nodeData.inputs?.selectedFiles)
-        const fileIds = selectedFiles.map((file: any) => file.fileId)
+        
+        // Validate and parse selectedFiles - use the same robust parsing as init()
+        const selectedFiles = this.parseSelectedFiles(nodeData.inputs?.selectedFiles)
+        const fileIds = selectedFiles.map((file) => file.fileId)
         const pdfUsage = nodeData.inputs?.pdfUsage as string
         const columnName = nodeData.inputs?.columnName as string
-        const credentialData = nodeData.credential ? JSON.parse(nodeData.credential).plainDataObj : {}
+        
+        // Get credential data - handle both ID and object cases (no options available in syncAndRefresh)
+        let credentialData: any
+        try {
+            if (!nodeData.credential) {
+                throw new Error('No credential provided')
+            }
+            const parsed = JSON.parse(nodeData.credential)
+            credentialData = parsed.plainDataObj || parsed
+        } catch (error) {
+            throw new Error('Credential data not available. Please check your Google OAuth credential configuration.')
+        }
+        
         const omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
-        const _omitMetadataKeys = omitMetadataKeys === '*' ? '*' : omitMetadataKeys.split(',')
+        const _omitMetadataKeys = omitMetadataKeys === '*' ? '*' : (omitMetadataKeys || '').split(',')
 
-        if (!credentialData || _.isEmpty(credentialData)) {
+        if (!credentialData || isEmpty(credentialData)) {
             throw new Error('Credentials not found')
         }
 
@@ -167,8 +294,8 @@ class GoogleDrive implements INode {
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             redirectUrl: process.env.GOOGLE_CALLBACK_URL,
             accessToken: credentialData.googleAccessToken,
-            refreshToken: credentialData.refreshToken,
-            expiryDate: credentialData.expiryDate
+            refreshToken: credentialData.googleRefreshToken,
+            expiresAt: credentialData.expiresAt
         }
 
         const driveService = new DriveService(credentials)

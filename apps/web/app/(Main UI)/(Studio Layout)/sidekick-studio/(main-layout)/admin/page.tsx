@@ -1,7 +1,7 @@
 import React from 'react'
 import dynamic from 'next/dynamic'
 
-const View = dynamic(() => import('@/views/admin'), { ssr: true })
+const View = dynamic(() => import('@/views/admin'), { ssr: false })
 
 const Page = () => {
     return (

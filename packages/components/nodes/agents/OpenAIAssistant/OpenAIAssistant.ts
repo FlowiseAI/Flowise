@@ -107,7 +107,7 @@ class OpenAIAssistant_Agents implements INode {
                 return returnData
             }
 
-            const assistants = await appDataSource.getRepository(databaseEntities['Assistant']).find()
+            const assistants = await appDataSource.getRepository(databaseEntities['Assistant']).find({ where: { userId: options.userId } })
 
             for (let i = 0; i < assistants.length; i += 1) {
                 const assistantDetails = JSON.parse(assistants[i].details)
@@ -224,7 +224,7 @@ class OpenAIAssistant_Agents implements INode {
         const openai = new OpenAI({ apiKey: openAIApiKey })
 
         // Start analytics
-        const analyticHandlers = new AnalyticHandler(nodeData, options)
+        const analyticHandlers = AnalyticHandler.getInstance(nodeData, options)
         await analyticHandlers.init()
         const parentIds = await analyticHandlers.onChainStart('OpenAIAssistant', input)
 
@@ -743,7 +743,7 @@ class OpenAIAssistant_Agents implements INode {
                     state = await promise(threadId, newRunThread.id)
                 } else {
                     const errMsg = `Error processing thread: ${state}, Thread ID: ${threadId}`
-                    await analyticHandlers.onChainError(parentIds, errMsg)
+                    await analyticHandlers.onChainError(parentIds, errMsg, true)
                     throw new Error(errMsg)
                 }
             }

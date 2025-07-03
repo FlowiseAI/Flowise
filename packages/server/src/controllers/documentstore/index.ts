@@ -26,7 +26,7 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
 
 const getAllDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await documentStoreService.getAllDocumentStores(req.user?.id!, req.user?.organizationId!)
+        const apiResponse = await documentStoreService.getAllDocumentStores(req.user!)
         return res.json(DocumentStoreDTO.fromEntities(apiResponse))
     } catch (error) {
         next(error)
@@ -64,16 +64,9 @@ const getDocumentStoreById = async (req: Request, res: Response, next: NextFunct
                 `Error: documentStoreController.getDocumentStoreById - id not provided!`
             )
         }
-        const apiResponse = await documentStoreService.getDocumentStoreById(
-            req.params.id,
-            req.user?.id!,
-            req.user?.organizationId!,
-            req.user
-        )
+        const apiResponse = await documentStoreService.getDocumentStoreById(req.user!, req.params.id)
         if (apiResponse && apiResponse.whereUsed) {
-            apiResponse.whereUsed = JSON.stringify(
-                await documentStoreService.getUsedChatflowNames(apiResponse, req.user?.id!, req.user?.organizationId!)
-            )
+            apiResponse.whereUsed = JSON.stringify(await documentStoreService.getUsedChatflowNames(req.user!, apiResponse))
         }
         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {
@@ -239,10 +232,8 @@ const processLoader = async (req: Request, res: Response, next: NextFunction) =>
         }
         const docLoaderId = req.params.loaderId
         const body = req.body
-        const apiResponse = await documentStoreService.processLoaderMiddleware(
-            { ...body, userId: req.user?.id!, organizationId: req.user?.organizationId! },
-            docLoaderId
-        )
+        const isInternalRequest = req.headers['x-request-from'] === 'internal'
+        const apiResponse = await documentStoreService.processLoaderMiddleware(req.user!, body, docLoaderId, isInternalRequest)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -263,7 +254,7 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
                 `Error: documentStoreController.updateDocumentStore - body not provided!`
             )
         }
-        const store = await documentStoreService.getDocumentStoreById(req.params.id, req.user?.id!, req.user?.organizationId!)
+        const store = await documentStoreService.getDocumentStoreById(req.user!, req.params.id)
         if (!store) {
             throw new InternalFlowiseError(
                 StatusCodes.NOT_FOUND,
@@ -273,7 +264,7 @@ const updateDocumentStore = async (req: Request, res: Response, next: NextFuncti
         const body = req.body
         const updateDocStore = new DocumentStore()
         Object.assign(updateDocStore, body)
-        const apiResponse = await documentStoreService.updateDocumentStore(store, updateDocStore, req.user?.id!, req.user?.organizationId!)
+        const apiResponse = await documentStoreService.updateDocumentStore(req.user!, store, updateDocStore)
         return res.json(DocumentStoreDTO.fromEntity(apiResponse))
     } catch (error) {
         next(error)
@@ -332,10 +323,9 @@ const insertIntoVectorStore = async (req: Request, res: Response, next: NextFunc
         }
         const body = req.body
         const apiResponse = await documentStoreService.insertIntoVectorStoreMiddleware(
+            req.user!,
             { ...body, userId: req.user?.id!, organizationId: req.user?.organizationId! },
-            true,
-            req.user?.id!,
-            req.user?.organizationId!
+            true
         )
         getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
             status: FLOWISE_COUNTER_STATUS.SUCCESS
@@ -392,14 +382,7 @@ const saveVectorStoreConfig = async (req: Request, res: Response, next: NextFunc
         }
         const body = req.body
         const appDataSource = getRunningExpressApp().AppDataSource
-        const componentNodes = getRunningExpressApp().nodesPool.componentNodes
-        const apiResponse = await documentStoreService.saveVectorStoreConfig(
-            appDataSource,
-            body,
-            true,
-            req.user?.id!,
-            req.user?.organizationId!
-        )
+        const apiResponse = await documentStoreService.saveVectorStoreConfig(req.user!, appDataSource, body)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

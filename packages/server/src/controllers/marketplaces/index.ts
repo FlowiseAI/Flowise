@@ -62,7 +62,7 @@ const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunct
 
 const getAllCustomTemplates = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await marketplacesService.getAllCustomTemplates()
+        const apiResponse = await marketplacesService.getAllCustomTemplates(req.user!)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

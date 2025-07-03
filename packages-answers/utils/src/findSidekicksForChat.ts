@@ -186,7 +186,19 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                         isImageUploadAllowed,
                         uploadSizeAndTypes: [
                             ...imgUploadSizeAndTypes,
-                            { fileTypes: ['audio/mpeg', 'audio/wav', 'audio/webm'], maxUploadSize: 10 }
+                            {
+                                fileTypes: [
+                                    'audio/mpeg', // .mp3, .mpeg
+                                    'audio/x-m4a',
+                                    'audio/mp3', // .mp3 (some browsers)
+                                    'audio/mp4', // .mp4, .m4a
+                                    'audio/mpga', // .mpga
+                                    'audio/m4a', // .m4a (some browsers)
+                                    'audio/wav', // .wav
+                                    'audio/webm' // .webm
+                                ],
+                                maxUploadSize: 10
+                            }
                         ]
                     }
                 }

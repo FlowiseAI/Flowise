@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
 import { Dialog, DialogContent, DialogTitle, Button } from '@mui/material'
-import { ChatMessage } from './ChatMessage'
+import ChatMessage from './ChatMessage'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { IconEraser } from '@tabler/icons-react'
 

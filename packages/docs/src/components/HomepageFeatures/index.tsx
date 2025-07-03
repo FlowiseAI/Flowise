@@ -15,7 +15,7 @@ type FeatureItem = {
 const FeatureList: FeatureItem[] = [
     {
         title: 'Visual Agent Builder',
-        description: 'Prompt to Agent, Use Drag-and-drop blocks to fine-tune, no code required.',
+        description: 'Prompt to Agent, Use Drag-and-drop blocks to fine-tune, built on the top of Flowise, no code required.',
         icon: '🔧',
         buttonText: 'Learn More',
         url: '/docs/sidekick-studio'
@@ -24,15 +24,15 @@ const FeatureList: FeatureItem[] = [
         title: 'Sidekick Browser Extension',
         description: 'Search the web, chat with your AI agent, and more, directly from your browser.',
         icon: '🤖',
-        buttonText: 'Explore Sidekicks',
-        url: '/docs'
+        buttonText: 'Learn More',
+        url: '/docs/browser'
     },
     {
-        title: 'Plug-in Ecosystem',
+        title: 'Use any LLM',
         description: '50+ ready connectors; swap OpenAI (ChatGPT), Anthropic (Claude), Google (Gemini), and more.',
         icon: '📚',
-        buttonText: 'Discover Knowledge Bases',
-        url: '/docs/sidekick-studio/documents/'
+        buttonText: 'Learn More',
+        url: '/docs/sidekick-studio/chatflows/chat-models'
     }
 ]
 

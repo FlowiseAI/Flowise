@@ -2,8 +2,10 @@ import {
     IAction,
     ICommonObject,
     IFileUpload,
+    IHumanInput,
     INode,
     INodeData as INodeDataFromComponent,
+    INodeExecutionData,
     INodeParams,
     IServerSideEventStreamer
 } from 'flowise-components'
@@ -14,9 +16,11 @@ import { ChatflowVisibility } from './database/entities/ChatFlow'
 
 export type MessageType = 'apiMessage' | 'userMessage'
 
-export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'ASSISTANT'
+export type ChatflowType = 'CHATFLOW' | 'MULTIAGENT' | 'ASSISTANT' | 'AGENTFLOW'
 
 export type AssistantType = 'CUSTOM' | 'OPENAI' | 'AZURE'
+
+export type ExecutionState = 'INPROGRESS' | 'FINISHED' | 'ERROR' | 'TERMINATED' | 'TIMEOUT' | 'STOPPED'
 
 export enum MODE {
     QUEUE = 'queue',
@@ -103,6 +107,7 @@ export interface IChatMessage {
     role: MessageType
     content: string
     chatflowid: string
+    executionId?: string
     sourceDocuments?: string
     usedTools?: string
     fileAnnotations?: string
@@ -188,6 +193,21 @@ export interface IUpsertHistory {
     date: Date
 }
 
+export interface IExecution {
+    id: string
+    executionData: string
+    state: ExecutionState
+    agentflowId: string
+    sessionId: string
+    isPublic?: boolean
+    action?: string
+    userId?: string
+    organizationId?: string
+    createdDate: Date
+    updatedDate: Date
+    stoppedDate: Date
+}
+
 export interface IComponentNodes {
     [key: string]: INode
 }
@@ -235,6 +255,8 @@ export interface IReactFlowNode {
     height: number
     selected: boolean
     dragging: boolean
+    parentNode?: string
+    extent?: string
 }
 
 export interface IReactFlowEdge {
@@ -275,6 +297,14 @@ export interface IDepthQueue {
     [key: string]: number
 }
 
+export interface IAgentflowExecutedData {
+    nodeLabel: string
+    nodeId: string
+    data: INodeExecutionData
+    previousNodeIds: string[]
+    status?: ExecutionState
+}
+
 export interface IMessage {
     message: string
     type: MessageType
@@ -283,9 +313,11 @@ export interface IMessage {
 }
 
 export interface IncomingInput {
+    user: IUser
     question: string
     overrideConfig?: ICommonObject
     chatId?: string
+    sessionId?: string
     stopNodeId?: string
     uploads?: IFileUpload[]
     leadEmail?: string
@@ -293,6 +325,12 @@ export interface IncomingInput {
     action?: IAction
     chatType?: string
     streaming?: boolean
+}
+
+export interface IncomingAgentflowInput extends Omit<IncomingInput, 'question'> {
+    question?: string
+    form?: Record<string, any>
+    humanInput?: IHumanInput
 }
 
 export interface IActiveChatflows {
@@ -315,6 +353,7 @@ export interface IOverrideConfig {
     label: string
     name: string
     type: string
+    schema?: ICommonObject[]
 }
 
 export type ICredentialDataDecrypted = ICommonObject
@@ -390,6 +429,8 @@ export interface IFlowConfig {
     chatHistory: IMessage[]
     apiMessageId: string
     overrideConfig?: ICommonObject
+    state?: ICommonObject
+    runtimeChatHistoryLength?: number
 }
 
 export interface IPredictionQueueAppServer {
@@ -408,8 +449,14 @@ export interface IExecuteFlowParams extends IPredictionQueueAppServer {
     isInternal: boolean
     signal?: AbortController
     files?: Express.Multer.File[]
+    fileUploads?: IFileUpload[]
+    uploadedFilesContent?: string
     isUpsert?: boolean
-    user?: IUser
+    user: IUser
+    isRecursive?: boolean
+    parentExecutionId?: string
+    iterationContext?: ICommonObject
+    isTool?: boolean
 }
 
 export interface INodeOverrides {

@@ -8,6 +8,7 @@ import { Moderation } from '../nodes/moderation/Moderation'
 
 export type NodeParamsType =
     | 'asyncOptions'
+    | 'asyncMultiOptions'
     | 'options'
     | 'multiOptions'
     | 'datagrid'
@@ -22,6 +23,7 @@ export type NodeParamsType =
     | 'folder'
     | 'tabs'
     | 'contentfulConfig'
+    | 'googleDrive'
 
 export type CommonType = string | number | boolean | undefined | null
 
@@ -47,6 +49,12 @@ export type IDatabaseEntity = {
     [key: string]: any
 }
 
+export interface IGoogleDriveFile {
+    fileId: string
+    fileName: string
+    iconUrl: string
+}
+
 export interface IAttachment {
     content: string
     contentType: string
@@ -58,12 +66,13 @@ export interface INodeOptionsValue {
     label: string
     name: string
     description?: string
+    imageSrc?: string
 }
 
 export interface INodeOutputsValue {
     label: string
     name: string
-    baseClasses: string[]
+    baseClasses?: string[]
     description?: string
     hidden?: boolean
     isAnchor?: boolean
@@ -84,10 +93,12 @@ export interface INodeParams {
     rows?: number
     list?: boolean
     acceptVariable?: boolean
+    acceptNodeOutputAsVariable?: boolean
     placeholder?: string
     fileType?: string
     additionalParams?: boolean
     loadMethod?: string
+    loadConfig?: boolean
     hidden?: boolean
     hideCodeExecute?: boolean
     codeExample?: string
@@ -99,6 +110,11 @@ export interface INodeParams {
     freeSolo?: boolean
     loadPreviousNodes?: boolean
     loadOptionsOnOpen?: boolean
+    array?: Array<INodeParams>
+    show?: INodeDisplay
+    hide?: INodeDisplay
+    generateDocStoreDescription?: boolean
+    generateInstruction?: boolean
 }
 
 export interface INodeExecutionData {
@@ -106,7 +122,7 @@ export interface INodeExecutionData {
 }
 
 export interface INodeDisplay {
-    [key: string]: string[] | string
+    [key: string]: string[] | string | boolean | number | ICommonObject
 }
 
 export interface INodeProperties {
@@ -123,11 +139,15 @@ export interface INodeProperties {
     badge?: string
     deprecateMessage?: string
     hideOutput?: boolean
+    hideInput?: boolean
     author?: string
     documentation?: string
+    color?: string
+    hint?: string
 }
 
 export interface INode extends INodeProperties {
+    credential?: INodeParams
     inputs?: INodeParams[]
     output?: INodeOutputsValue[]
     loadMethods?: {
@@ -149,6 +169,8 @@ export interface INodeData extends INodeProperties {
     credential?: string
     instance?: any
     loadMethod?: string // method to load async options
+    userId: string
+    organizationId: string
 }
 
 export interface INodeCredential {
@@ -250,6 +272,8 @@ export interface IFileUpload {
     type: string
     name: string
     mime: string
+    duration?: number
+    isQuestion?: boolean
 }
 
 export interface IMultiModalOption {
@@ -415,14 +439,19 @@ export interface IServerSideEventStreamer {
     streamCustomEvent(chatId: string, eventType: string, data: any): void
     streamSourceDocumentsEvent(chatId: string, data: any): void
     streamUsedToolsEvent(chatId: string, data: any): void
+    streamCalledToolsEvent(chatId: string, data: any): void
     streamFileAnnotationsEvent(chatId: string, data: any): void
     streamToolEvent(chatId: string, data: any): void
     streamAgentReasoningEvent(chatId: string, data: any): void
+    streamAgentFlowExecutedDataEvent(chatId: string, data: any): void
+    streamAgentFlowEvent(chatId: string, data: any): void
     streamNextAgentEvent(chatId: string, data: any): void
+    streamNextAgentFlowEvent(chatId: string, data: any): void
     streamActionEvent(chatId: string, data: any): void
     streamArtifactsEvent(chatId: string, data: any): void
     streamAbortEvent(chatId: string): void
     streamEndEvent(chatId: string): void
+    streamUsageMetadataEvent(chatId: string, data: any): void
 }
 
 export enum FollowUpPromptProvider {
@@ -439,6 +468,7 @@ export type FollowUpPromptProviderConfig = {
     [key in FollowUpPromptProvider]: {
         credentialId: string
         modelName: string
+        baseUrl: string
         prompt: string
         temperature: string
     }
@@ -448,3 +478,17 @@ export type FollowUpPromptConfig = {
     status: boolean
     selectedProvider: FollowUpPromptProvider
 } & FollowUpPromptProviderConfig
+
+export interface ICondition {
+    type: string
+    value1: CommonType
+    operation: string
+    value2: CommonType
+    isFulfilled?: boolean
+}
+
+export interface IHumanInput {
+    type: 'proceed' | 'reject'
+    startNodeId: string
+    feedback?: string
+}

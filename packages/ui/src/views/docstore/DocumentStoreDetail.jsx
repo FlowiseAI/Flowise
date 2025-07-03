@@ -236,7 +236,7 @@ const DocumentStoreDetails = () => {
             }
         } else if (type === 'LOADER') {
             try {
-                const deleteResp = await documentsApi.deleteLoaderFromStore(storeId, loaderId)
+                const deleteResp = await documentsApi.deleteLoaderFromStore(storeId, file.id)
                 setBackdropLoading(false)
                 if (deleteResp.data) {
                     enqueueSnackbar({

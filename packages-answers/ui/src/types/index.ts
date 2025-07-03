@@ -4,6 +4,8 @@ export interface FileUpload {
     type: 'file' | 'url' | 'audio'
     name: string
     mime?: string
+    duration?: number
+    isQuestion?: boolean
 }
 
 export interface Message {

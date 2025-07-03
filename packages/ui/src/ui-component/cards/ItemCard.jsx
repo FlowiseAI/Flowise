@@ -1,13 +1,11 @@
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
-import { useState } from 'react'
 // material-ui
 import { styled } from '@mui/material/styles'
-import { Box, Grid, Typography, useTheme, Chip, Tooltip } from '@mui/material'
+import { Box, Grid, Typography, useTheme, Tooltip } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
-import FlowListMenu from '@/ui-component/button/FlowListMenu'
 
 const CardWrapper = styled(MainCard)(({ theme }) => ({
     background: theme.palette.card.main,
@@ -28,55 +26,11 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
     whiteSpace: 'pre-line'
 }))
 
-// ===========================|| ITEM CARD ||=========================== //
+// ===========================|| CONTRACT CARD ||=========================== //
 
-const ItemCard = ({ data: initialData, images, nodeTypes, onClick, type, updateFlowsApi, setError, href }) => {
+const ItemCard = ({ data, images, icons, onClick }) => {
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
-    const [data, setData] = useState(initialData)
-
-    if (!data) {
-        return null
-    }
-
-    const handleCardClick = (event) => {
-        if (!event.target.closest('.flow-list-menu') && !event.target.closest('.use-template-button')) {
-            // Check if it's a right-click, middle-click, or cmd/ctrl+click
-            if (event.button === 2 || event.button === 1 || event.ctrlKey || event.metaKey) {
-                // Let the browser handle it naturally if there's an href
-                if (href) {
-                    return
-                }
-            }
-            onClick(data)
-        }
-    }
-
-    const renderActionButton = () => {
-        if (type !== 'marketplace' && type !== 'tools') {
-            return (
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        bottom: 8,
-                        right: 8
-                    }}
-                    className='flow-list-menu'
-                >
-                    <FlowListMenu
-                        isAgentCanvas={type === 'agentflows'}
-                        chatflow={data}
-                        setError={setError}
-                        updateFlowsApi={updateFlowsApi}
-                        onUpdateChatflow={(updatedChatflow) => {
-                            setData(updatedChatflow)
-                        }}
-                    />
-                </Box>
-            )
-        }
-        return null
-    }
 
     // Wrap the card content in an anchor tag if href is provided
     const CardContent = ({ children }) => {
@@ -106,81 +60,18 @@ const ItemCard = ({ data: initialData, images, nodeTypes, onClick, type, updateF
     }
 
     return (
-        <CardWrapper content={false} sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }} data-href={href}>
-            <CardContent>
-                <Box sx={{ height: '100%', p: 2.25 }}>
-                    <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
-                        <Box display='flex' flexDirection='column' sx={{ width: '100%' }}>
-                            <div
-                                style={{
-                                    width: '100%',
-                                    display: 'flex',
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    overflow: 'hidden'
-                                }}
-                            >
-                                {data.iconSrc && (
-                                    <div
-                                        style={{
-                                            width: 35,
-                                            height: 35,
-                                            display: 'flex',
-                                            flexShrink: 0,
-                                            marginRight: 10,
-                                            borderRadius: '50%',
-                                            background: `url(${data.iconSrc})`,
-                                            backgroundSize: 'contain',
-                                            backgroundRepeat: 'no-repeat',
-                                            backgroundPosition: 'center center'
-                                        }}
-                                    ></div>
-                                )}
-                                {!data.iconSrc && data.color && (
-                                    <div
-                                        style={{
-                                            width: 35,
-                                            height: 35,
-                                            display: 'flex',
-                                            flexShrink: 0,
-                                            marginRight: 10,
-                                            borderRadius: '50%',
-                                            background: data.color
-                                        }}
-                                    ></div>
-                                )}
-                                <Typography
-                                    sx={{
-                                        display: '-webkit-box',
-                                        fontSize: '1.25rem',
-                                        fontWeight: 500,
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: 'vertical',
-                                        textOverflow: 'ellipsis',
-                                        overflow: 'hidden'
-                                    }}
-                                >
-                                    {data.templateName || data.name}
-                                </Typography>
-                            </div>
-                            {data.description && (
-                                <span
-                                    style={{
-                                        display: '-webkit-box',
-                                        marginTop: 10,
-                                        overflowWrap: 'break-word',
-                                        WebkitLineClamp: 3,
-                                        WebkitBoxOrient: 'vertical',
-                                        textOverflow: 'ellipsis',
-                                        overflow: 'hidden'
-                                    }}
-                                >
-                                    {data.description}
-                                </span>
-                            )}
-                        </Box>
-                        <Box
-                            sx={{
+        <CardWrapper
+            content={false}
+            onClick={onClick}
+            sx={{ border: 1, borderColor: theme.palette.grey[900] + 25, borderRadius: 2 }}
+            // data-href={href}
+        >
+            <Box sx={{ height: '100%', p: 2.25 }}>
+                <Grid container justifyContent='space-between' direction='column' sx={{ height: '100%', gap: 3 }}>
+                    <Box display='flex' flexDirection='column' sx={{ width: '100%' }}>
+                        <div
+                            style={{
+                                width: '100%',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'start',
@@ -192,9 +83,13 @@ const ItemCard = ({ data: initialData, images, nodeTypes, onClick, type, updateF
                                 <Box
                                     sx={{
                                         display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'start',
-                                        gap: 1
+                                        flexShrink: 0,
+                                        marginRight: 10,
+                                        borderRadius: '50%',
+                                        backgroundImage: `url(${data.iconSrc})`,
+                                        backgroundSize: 'contain',
+                                        backgroundRepeat: 'no-repeat',
+                                        backgroundPosition: 'center center'
                                     }}
                                 >
                                     {images.slice(0, images.length > 3 ? 3 : images.length).map((img, index) => (
@@ -224,35 +119,102 @@ const ItemCard = ({ data: initialData, images, nodeTypes, onClick, type, updateF
                                     )}
                                 </Box>
                             )}
-                            {data.category && (
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                    {data.category.split(';').map((tag, index) => (
-                                        <Chip
-                                            key={`chip-category-${tag}${index}`}
-                                            label={tag}
-                                            size='small'
+                            {!data.iconSrc && data.color && (
+                                <div
+                                    style={{
+                                        width: 35,
+                                        height: 35,
+                                        display: 'flex',
+                                        flexShrink: 0,
+                                        marginRight: 10,
+                                        borderRadius: '50%',
+                                        background: data.color
+                                    }}
+                                ></div>
+                            )}
+                            <Typography
+                                sx={{
+                                    display: '-webkit-box',
+                                    fontSize: '1.25rem',
+                                    fontWeight: 500,
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {data.templateName || data.name}
+                            </Typography>
+                        </div>
+                        {data.description && (
+                            <span
+                                style={{
+                                    display: '-webkit-box',
+                                    marginTop: 10,
+                                    overflowWrap: 'break-word',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    textOverflow: 'ellipsis',
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {data.description}
+                            </span>
+                        )}
+                    </Box>
+                    {(images?.length > 0 || icons?.length > 0) && (
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'start',
+                                gap: 1
+                            }}
+                        >
+                            {[
+                                ...(images || []).map((img) => ({ type: 'image', src: img })),
+                                ...(icons || []).map((ic) => ({ type: 'icon', icon: ic.icon, color: ic.color }))
+                            ]
+                                .slice(0, 3)
+                                .map((item, index) =>
+                                    item.type === 'image' ? (
+                                        <Box
+                                            key={item.src}
                                             sx={{
                                                 bgcolor: theme.palette.teal.main,
                                                 border: `1px solid ${theme.palette.divider}`,
                                                 color: theme.palette.text.primary
                                             }}
-                                        />
-                                    ))}
-                                </Box>
+                                        >
+                                            <img
+                                                style={{ width: '100%', height: '100%', padding: 5, objectFit: 'contain' }}
+                                                alt=''
+                                                src={item.src}
+                                            />
+                                        </Box>
+                                    ) : (
+                                        <div
+                                            key={index}
+                                            style={{
+                                                width: 30,
+                                                height: 30,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                        >
+                                            <item.icon size={25} color={item.color} />
+                                        </div>
+                                    )
+                                )}
+                            {images?.length + (icons?.length || 0) > 3 && (
+                                <Typography sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}>
+                                    + {images?.length + (icons?.length || 0) - 3} More
+                                </Typography>
                             )}
                         </Box>
-                    </Grid>
-                </Box>
-            </CardContent>
-            <Box
-                sx={{
-                    position: 'absolute',
-                    bottom: 8,
-                    right: 8
-                }}
-                className='flow-list-menu'
-            >
-                {renderActionButton()}
+                    )}
+                </Grid>
             </Box>
         </CardWrapper>
     )
@@ -261,12 +223,9 @@ const ItemCard = ({ data: initialData, images, nodeTypes, onClick, type, updateF
 ItemCard.propTypes = {
     data: PropTypes.object,
     images: PropTypes.array,
+    icons: PropTypes.array,
     nodeTypes: PropTypes.array,
-    onClick: PropTypes.func,
-    type: PropTypes.string,
-    updateFlowsApi: PropTypes.object,
-    setError: PropTypes.func,
-    href: PropTypes.string
+    onClick: PropTypes.func
 }
 
 export default ItemCard

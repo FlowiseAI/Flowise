@@ -9,10 +9,16 @@ const createAssistant = async (req: Request, res: Response, next: NextFunction) 
         if (!req.body) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
-                `Error: assistantsController.createAssistant - body not provided!`
+                'Error: assistantsController.createAssistant - body not provided!'
             )
         }
-        const apiResponse = await assistantsService.createAssistant(req.body)
+        if (!req.user) {
+            throw new InternalFlowiseError(
+                StatusCodes.UNAUTHORIZED,
+                'Error: assistantsController.createAssistant - User not authenticated!'
+            )
+        }
+        const apiResponse = await assistantsService.createAssistant(req.body, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -37,7 +43,7 @@ const deleteAssistant = async (req: Request, res: Response, next: NextFunction) 
 const getAllAssistants = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const type = req.query.type as AssistantType
-        const apiResponse = await assistantsService.getAllAssistants(type)
+        const apiResponse = await assistantsService.getAllAssistants(req.user!, type)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -91,7 +97,7 @@ const getChatModels = async (req: Request, res: Response, next: NextFunction) =>
 
 const getDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await assistantsService.getDocumentStores()
+        const apiResponse = await assistantsService.getDocumentStores(req.user!)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

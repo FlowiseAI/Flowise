@@ -85,9 +85,9 @@ class Jira_MCP implements INode {
 
     async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const jiraApiKey = getCredentialParam('jiraApiKey', credentialData, nodeData)
-        const jiraApiEmail = getCredentialParam('jiraApiEmail', credentialData, nodeData)
-        const jiraUrl = getCredentialParam('jiraUrl', credentialData, nodeData)
+        const jiraApiKey = getCredentialParam('accessToken', credentialData, nodeData)
+        const jiraApiEmail = getCredentialParam('username', credentialData, nodeData)
+        const jiraUrl = getCredentialParam('host', credentialData, nodeData)
         const packagePath = getNodeModulesPackagePath('@answerai/jira-mcp/build/index.js')
 
         const serverParams = {

@@ -43,11 +43,11 @@ export const addImagesToMessages = async (
 }
 
 export const getAudioUploads = (uploads: IFileUpload[]) => {
-    return uploads.filter((upload: IFileUpload) => upload.mime.startsWith('audio/'))
+    return uploads.filter((upload: IFileUpload) => !!upload?.mime?.startsWith('audio/'))
 }
 
 export const getImageUploads = (uploads: IFileUpload[]) => {
-    return uploads.filter((upload: IFileUpload) => upload.mime.startsWith('image/'))
+    return uploads.filter((upload: IFileUpload) => !!upload?.mime?.startsWith('image/'))
 }
 
 export const llmSupportsVision = (value: any): value is IVisionChatModal => !!value?.multiModalOption

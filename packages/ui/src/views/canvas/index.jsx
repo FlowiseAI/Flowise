@@ -27,8 +27,8 @@ import StickyNote from './StickyNote'
 import CanvasHeader from './CanvasHeader'
 import AddNodes from './AddNodes'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
-import { ChatPopUp } from '@/views/chatmessage/ChatPopUp'
-import { VectorStorePopUp } from '@/views/vectorstore/VectorStorePopUp'
+import ChatPopUp from '@/views/chatmessage/ChatPopUp'
+import VectorStorePopUp from '@/views/vectorstore/VectorStorePopUp'
 import { flowContext } from '@/store/context/ReactFlowContext'
 
 // API
@@ -575,14 +575,13 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
             if (duplicatedFlowData) {
                 const parsedData = JSON.parse(duplicatedFlowData)
-
                 setNodes(parsedData.nodes || [])
                 setEdges(parsedData.edges || [])
 
                 const newChatflow = {
                     ...parsedData,
                     id: undefined,
-                    name: `Copy of ${parsedData.name ?? templateName}`,
+                    name: `Copy of ${parsedData.name || templateName || 'Untitled Chatflow'}`,
                     deployed: false,
                     isPublic: false
                 }

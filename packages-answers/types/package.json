@@ -8,10 +8,10 @@
     },
     "devDependencies": {
         "db": "workspace:*",
-        "openai": "^3.2.1",
+        "openai": "4.96.0",
         "@algolia/client-search": "^4.19.1",
-        "@types/node": "^18.15.11",
+        "@types/node": "18.15.11",
         "tsconfig": "workspace:*",
-        "typescript": "^4.8.4"
+        "typescript": "~5.5.2"
     }
 }

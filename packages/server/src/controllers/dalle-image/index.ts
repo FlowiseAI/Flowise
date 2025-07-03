@@ -242,11 +242,11 @@ const listArchivedImages = async (req: Request, res: Response, next: NextFunctio
         const organizationId = user.organizationId
         const userId = user.id
 
-        console.log('Archive endpoint - Using Flowise user IDs:', {
-            userId: userId,
-            organizationId: organizationId,
-            email: user.email
-        })
+        // console.log('Archive endpoint - Using Flowise user IDs:', {
+        //     userId: userId,
+        //     organizationId: organizationId,
+        //     email: user.email
+        // })
 
         const page = Number.parseInt(req.query.page as string) || 1
         const limit = Number.parseInt(req.query.limit as string) || 20

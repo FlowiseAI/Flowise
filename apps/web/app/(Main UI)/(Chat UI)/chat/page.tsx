@@ -14,7 +14,7 @@ const ChatDetailPage = async ({ params }: any) => {
     // const user = session?.user
 
     const chatcomponent = <Chat {...params} />
-    console.log('chatcomponent', chatcomponent)
+    // console.log('chatcomponent', chatcomponent)
     return chatcomponent
 }
 

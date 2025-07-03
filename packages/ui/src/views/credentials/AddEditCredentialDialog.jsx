@@ -47,6 +47,7 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { useFlags } from 'flagsmith/react'
 import { GoogleAuthButton } from '@/ui-component/button/GoogleAuthButton'
+import keySVG from '@/assets/images/key.svg'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
     const portalElement = typeof document !== 'undefined' ? document.getElementById('portal') : null
@@ -331,6 +332,11 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                                 }}
                                 alt={componentCredential.name}
                                 src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
+                                onError={(e) => {
+                                    e.target.onerror = null
+                                    e.target.style.padding = '5px'
+                                    e.target.src = keySVG
+                                }}
                             />
                         </div>
                         {componentCredential.label}

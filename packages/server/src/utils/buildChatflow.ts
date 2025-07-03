@@ -14,7 +14,8 @@ import {
     mapMimeTypeToInputField,
     mapExtToInputField,
     getFileFromUpload,
-    removeSpecificFileFromUpload
+    removeSpecificFileFromUpload,
+    handleEscapeCharacters
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -69,6 +70,7 @@ import { Chat } from '../database/entities/Chat'
 import { User } from '../database/entities/User'
 import checkOwnership from './checkOwnership'
 import { BillingService } from '../aai-utils/billing'
+import { executeAgentFlow } from './buildAgentflow'
 
 /*
  * Initialize the ending node to be executed
@@ -86,7 +88,7 @@ const initEndingNode = async ({
     nodeOverrides,
     variableOverrides
 }: {
-    user?: IUser
+    user: IUser
     endingNodeIds: string[]
     componentNodes: IComponentNodes
     reactFlowNodes: IReactFlowNode[]
@@ -166,9 +168,9 @@ const getChatHistory = async ({
 
     if (isAgentFlow) {
         const startNode = nodes.find((node) => node.data.name === 'seqStart')
-        if (!startNode?.data?.inputs?.memory) return []
+        if (!startNode?.data?.inputs?.agentMemory) return prependMessages
 
-        const memoryNodeId = startNode.data.inputs.memory.split('.')[0].replace('{{', '')
+        const memoryNodeId = startNode.data.inputs.agentMemory.split('.')[0].replace('{{', '')
         const memoryNode = nodes.find((node) => node.data.id === memoryNodeId)
 
         if (memoryNode) {
@@ -246,7 +248,8 @@ export const executeFlow = async ({
     isInternal,
     files,
     signal,
-    user
+    user,
+    isTool
 }: IExecuteFlowParams) => {
     // Ensure incomingInput has all required properties with default values
     incomingInput = {
@@ -255,7 +258,7 @@ export const executeFlow = async ({
         ...incomingInput
     }
 
-    const question = incomingInput.question || '' // Ensure question is never undefined
+    let question = incomingInput.question || '' // Ensure question is never undefined
     let overrideConfig = incomingInput.overrideConfig ?? {}
     const uploads = incomingInput.uploads
     const prependMessages = incomingInput.history ?? []
@@ -270,8 +273,8 @@ export const executeFlow = async ({
      */
     let fileUploads: IFileUpload[] = []
     let uploadedFilesContent = ''
-    if (incomingInput.uploads) {
-        fileUploads = incomingInput.uploads
+    if (uploads) {
+        fileUploads = uploads
         for (let i = 0; i < fileUploads.length; i += 1) {
             const upload = fileUploads[i]
 
@@ -294,7 +297,17 @@ export const executeFlow = async ({
             }
 
             // Run Speech to Text conversion
-            if (upload.mime === 'audio/webm' || upload.mime === 'audio/mp4' || upload.mime === 'audio/ogg') {
+            if (
+                upload.mime === 'audio/wav' ||
+                upload.mime === 'audio/webm' ||
+                upload.mime === 'audio/mpeg' ||
+                upload.mime === 'audio/m4a' ||
+                upload.mime === 'audio/mp4' ||
+                upload.mime === 'audio/ogg' ||
+                upload.mime === 'audio/x-m4a' ||
+                upload.mime === 'audio/mp3' ||
+                upload.mime === 'audio/mpga'
+            ) {
                 logger.debug(`Attempting a speech to text conversion...`)
                 let speechToTextConfig: ICommonObject = {}
                 if (chatflow.speechToText) {
@@ -308,7 +321,9 @@ export const executeFlow = async ({
                         }
                     }
                 }
-                if (speechToTextConfig) {
+                // If there is a speech-to-text configuration present, proceed to convert audio
+                if (Object.keys(speechToTextConfig)?.length) {
+                    // Prepare options object with context for the conversion (chat, user, org, db, etc.)
                     const options: ICommonObject = {
                         chatId,
                         chatflowid,
@@ -317,10 +332,20 @@ export const executeFlow = async ({
                         userId: user?.id,
                         organizationId: user?.organizationId
                     }
+                    // Call the speech-to-text conversion utility with the uploaded file and config
                     const speechToTextResult = await convertSpeechToText(upload, speechToTextConfig, options)
                     logger.debug(`Speech to text result: ${speechToTextResult}`)
+                    // If conversion was successful and returned a transcript
                     if (speechToTextResult) {
-                        incomingInput.question = speechToTextResult
+                        // If there is an existing question and the upload is not itself a question, append the transcript to the question
+                        // Otherwise, use the transcript as the question
+                        const newQuestion =
+                            incomingInput.question && !upload.isQuestion
+                                ? `${incomingInput.question}\n\n ###Audio file: "${upload.name}"\n${speechToTextResult}`
+                                : speechToTextResult
+                        // Update the input and question with the new value (now including the transcript)
+                        incomingInput.question = newQuestion
+                        question = newQuestion
                     }
                 }
             }
@@ -382,6 +407,27 @@ export const executeFlow = async ({
             overrideConfig,
             chatId
         }
+    }
+
+    const isAgentFlowV2 = chatflow.type === 'AGENTFLOW'
+    if (isAgentFlowV2) {
+        return executeAgentFlow({
+            user: user,
+            componentNodes,
+            incomingInput,
+            chatflow,
+            chatId,
+            appDataSource,
+            telemetry,
+            cachePool,
+            sseStreamer,
+            baseURL,
+            isInternal,
+            uploadedFilesContent,
+            fileUploads,
+            signal,
+            isTool
+        })
     }
 
     /*** Get chatflows and prepare data  ***/
@@ -514,7 +560,7 @@ export const executeFlow = async ({
                 memoryType,
                 sessionId,
                 createdDate: userMessageDateTime,
-                fileUploads: incomingInput.uploads ? JSON.stringify(fileUploads) : undefined,
+                fileUploads: uploads ? JSON.stringify(fileUploads) : undefined,
                 leadEmail: incomingInput.leadEmail,
                 userId: user?.id ?? agentflow.userId,
                 organizationId: user?.organizationId ?? agentflow.organizationId
@@ -693,6 +739,7 @@ export const executeFlow = async ({
                     const postProcessingFunction = JSON.parse(chatflowConfig?.postProcessing?.customFunction)
                     const nodeInstanceFilePath = componentNodes['customFunction'].filePath as string
                     const nodeModule = await import(nodeInstanceFilePath)
+                    //set the outputs.output to EndingNode to prevent json escaping of content...
                     const nodeData = {
                         inputs: { javascriptFunction: postProcessingFunction },
                         outputs: { output: 'output' }
@@ -711,9 +758,13 @@ export const executeFlow = async ({
                     }
                     const customFuncNodeInstance = new nodeModule.nodeClass()
                     let moderatedResponse = await customFuncNodeInstance.init(nodeData, question, options)
-                    result.text = moderatedResponse
-                    // Post Processing Custom function doesn't format the raw output, so leaving this here in case we want to test more.
-                    // result.text = handleEscapeCharacters(moderatedResponse, true)
+                    if (typeof moderatedResponse === 'string') {
+                        result.text = handleEscapeCharacters(moderatedResponse, true)
+                    } else if (typeof moderatedResponse === 'object') {
+                        result.text = '```json\n' + JSON.stringify(moderatedResponse, null, 2) + '\n```'
+                    } else {
+                        result.text = moderatedResponse
+                    }
                     resultText = result.text
                 } catch (e) {
                     logger.log('[server]: Post Processing Error:', e)
@@ -843,12 +894,14 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }
     const isAgentFlow = chatflow.type === 'MULTIAGENT'
+
     const httpProtocol = req.get('x-forwarded-proto') || req.protocol
     const baseURL = `${httpProtocol}://${req.get('host')}`
     const incomingInput: IncomingInput = req.body || {} // Ensure incomingInput is never undefined
     const chatId = incomingInput.chatId ?? incomingInput.overrideConfig?.sessionId ?? uuidv4()
     const files = (req.files as Express.Multer.File[]) || []
     const abortControllerId = `${chatflow.id}_${chatId}`
+    const isTool = req.get('flowise-tool') === 'true'
 
     await validateAndSaveChat(req, chatflow, isInternal, chatId, incomingInput, chatflowid)
 
@@ -873,7 +926,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             telemetry: appServer.telemetry,
             cachePool: appServer.cachePool,
             componentNodes: appServer.nodesPool.componentNodes,
-            user: req.user!
+            user: req.user!,
+            isTool // used to disable streaming if incoming request its from ChatflowTool
         }
 
         if (process.env.MODE === MODE.QUEUE) {
@@ -895,7 +949,6 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const signal = new AbortController()
             appServer.abortControllerPool.add(abortControllerId, signal)
             executeData.signal = signal
-
             const result = await executeFlow(executeData)
 
             appServer.abortControllerPool.remove(abortControllerId)

@@ -340,7 +340,7 @@ class AirtableLoader extends BaseDocumentLoader {
             pageContent = JSON.stringify(page.fields, null, 2)
         }
 
-        console.log('Page Content', pageContent)
+        // console.log('Page Content', pageContent)
 
         // Return a langchain document
         return new Document({

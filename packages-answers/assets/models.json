@@ -1,0 +1,1981 @@
+{
+    "chat": [
+        {
+            "name": "awsChatBedrock",
+            "models": [
+                {
+                    "label": "anthropic.claude-sonnet-4-20250514-v1:0",
+                    "name": "anthropic.claude-sonnet-4-20250514-v1:0",
+                    "description": "Claude 4 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "anthropic.claude-opus-4-20250514-v1:0",
+                    "name": "anthropic.claude-opus-4-20250514-v1:0",
+                    "description": "Claude 4 Opus",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
+                    "label": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+                    "name": "anthropic.claude-3-7-sonnet-20250219-v1:0",
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "anthropic.claude-3-5-haiku-20241022-v1:0",
+                    "name": "anthropic.claude-3-5-haiku-20241022-v1:0",
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5",
+                    "input_cost": 8e-7,
+                    "output_cost": 4e-6
+                },
+                {
+                    "label": "anthropic.claude-3.5-sonnet-20241022-v2:0",
+                    "name": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "anthropic.claude-3.5-sonnet-20240620-v1:0",
+                    "name": "anthropic.claude-3.5-sonnet-20240620-v1:0",
+                    "description": "(20240620-v1:0) specific version of Claude Sonnet 3.5",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "anthropic.claude-3-opus",
+                    "name": "anthropic.claude-3-opus-20240229-v1:0",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
+                    "label": "anthropic.claude-3-sonnet",
+                    "name": "anthropic.claude-3-sonnet-20240229-v1:0",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "anthropic.claude-3-haiku",
+                    "name": "anthropic.claude-3-haiku-20240307-v1:0",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 1.25e-6
+                },
+                {
+                    "label": "anthropic.claude-instant-v1",
+                    "name": "anthropic.claude-instant-v1",
+                    "description": "Text generation, conversation",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
+                },
+                {
+                    "label": "anthropic.claude-v2:1",
+                    "name": "anthropic.claude-v2:1",
+                    "description": "Text generation, conversation, complex reasoning and analysis",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
+                },
+                {
+                    "label": "anthropic.claude-v2",
+                    "name": "anthropic.claude-v2",
+                    "description": "Text generation, conversation, complex reasoning and analysis",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
+                },
+                {
+                    "label": "meta.llama2-13b-chat-v1",
+                    "name": "meta.llama2-13b-chat-v1",
+                    "description": "Text generation, conversation",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.0006
+                },
+                {
+                    "label": "meta.llama2-70b-chat-v1",
+                    "name": "meta.llama2-70b-chat-v1",
+                    "description": "Text generation, conversation",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.0006
+                },
+                {
+                    "label": "meta.llama3-8b-instruct-v1:0",
+                    "name": "meta.llama3-8b-instruct-v1:0",
+                    "description": "Text summarization, text classification, sentiment analysis",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.0006
+                },
+                {
+                    "label": "meta.llama3-70b-instruct-v1:0",
+                    "name": "meta.llama3-70b-instruct-v1:0",
+                    "description": "Language modeling, dialog systems, code generation, text summarization, text classification, sentiment analysis",
+                    "input_cost": 0.00195,
+                    "output_cost": 0.00256
+                },
+                {
+                    "label": "mistral.mistral-7b-instruct-v0:2",
+                    "name": "mistral.mistral-7b-instruct-v0:2",
+                    "description": "Classification, text generation, code generation",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
+                },
+                {
+                    "label": "mistral.mixtral-8x7b-instruct-v0:1",
+                    "name": "mistral.mixtral-8x7b-instruct-v0:1",
+                    "description": "Complex reasoning and analysis, text generation, code generation",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
+                },
+                {
+                    "label": "mistral.mistral-large-2402-v1:0",
+                    "name": "mistral.mistral-large-2402-v1:0",
+                    "description": "Complex reasoning and analysis, text generation, code generation, RAG, agents",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
+                }
+            ],
+            "regions": [
+                {
+                    "label": "af-south-1",
+                    "name": "af-south-1"
+                },
+                {
+                    "label": "ap-east-1",
+                    "name": "ap-east-1"
+                },
+                {
+                    "label": "ap-northeast-1",
+                    "name": "ap-northeast-1"
+                },
+                {
+                    "label": "ap-northeast-2",
+                    "name": "ap-northeast-2"
+                },
+                {
+                    "label": "ap-northeast-3",
+                    "name": "ap-northeast-3"
+                },
+                {
+                    "label": "ap-south-1",
+                    "name": "ap-south-1"
+                },
+                {
+                    "label": "ap-south-2",
+                    "name": "ap-south-2"
+                },
+                {
+                    "label": "ap-southeast-1",
+                    "name": "ap-southeast-1"
+                },
+                {
+                    "label": "ap-southeast-2",
+                    "name": "ap-southeast-2"
+                },
+                {
+                    "label": "ap-southeast-3",
+                    "name": "ap-southeast-3"
+                },
+                {
+                    "label": "ap-southeast-4",
+                    "name": "ap-southeast-4"
+                },
+                {
+                    "label": "ap-southeast-5",
+                    "name": "ap-southeast-5"
+                },
+                {
+                    "label": "ap-southeast-6",
+                    "name": "ap-southeast-6"
+                },
+                {
+                    "label": "ca-central-1",
+                    "name": "ca-central-1"
+                },
+                {
+                    "label": "ca-west-1",
+                    "name": "ca-west-1"
+                },
+                {
+                    "label": "cn-north-1",
+                    "name": "cn-north-1"
+                },
+                {
+                    "label": "cn-northwest-1",
+                    "name": "cn-northwest-1"
+                },
+                {
+                    "label": "eu-central-1",
+                    "name": "eu-central-1"
+                },
+                {
+                    "label": "eu-central-2",
+                    "name": "eu-central-2"
+                },
+                {
+                    "label": "eu-north-1",
+                    "name": "eu-north-1"
+                },
+                {
+                    "label": "eu-south-1",
+                    "name": "eu-south-1"
+                },
+                {
+                    "label": "eu-south-2",
+                    "name": "eu-south-2"
+                },
+                {
+                    "label": "eu-west-1",
+                    "name": "eu-west-1"
+                },
+                {
+                    "label": "eu-west-2",
+                    "name": "eu-west-2"
+                },
+                {
+                    "label": "eu-west-3",
+                    "name": "eu-west-3"
+                },
+                {
+                    "label": "il-central-1",
+                    "name": "il-central-1"
+                },
+                {
+                    "label": "me-central-1",
+                    "name": "me-central-1"
+                },
+                {
+                    "label": "me-south-1",
+                    "name": "me-south-1"
+                },
+                {
+                    "label": "sa-east-1",
+                    "name": "sa-east-1"
+                },
+                {
+                    "label": "us-east-1",
+                    "name": "us-east-1"
+                },
+                {
+                    "label": "us-east-2",
+                    "name": "us-east-2"
+                },
+                {
+                    "label": "us-gov-east-1",
+                    "name": "us-gov-east-1"
+                },
+                {
+                    "label": "us-gov-west-1",
+                    "name": "us-gov-west-1"
+                },
+                {
+                    "label": "us-west-1",
+                    "name": "us-west-1"
+                },
+                {
+                    "label": "us-west-2",
+                    "name": "us-west-2"
+                }
+            ]
+        },
+        {
+            "name": "azureChatOpenAI",
+            "models": [
+                {
+                    "label": "gpt-4.1",
+                    "name": "gpt-4.1",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "o3-mini",
+                    "name": "o3-mini",
+                    "input_cost": 1.1e-6,
+                    "output_cost": 4.4e-6
+                },
+                {
+                    "label": "o1",
+                    "name": "o1",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "o1-preview",
+                    "name": "o1-preview",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "o1-mini",
+                    "name": "o1-mini",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000012
+                },
+                {
+                    "label": "gpt-4o-mini",
+                    "name": "gpt-4o-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
+                },
+                {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gpt-4",
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "gpt-4-32k",
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
+                },
+                {
+                    "label": "gpt-35-turbo",
+                    "name": "gpt-35-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
+                },
+                {
+                    "label": "gpt-35-turbo-16k",
+                    "name": "gpt-35-turbo-16k",
+                    "input_cost": 3e-6,
+                    "output_cost": 4e-6
+                },
+                {
+                    "label": "gpt-4-vision-preview",
+                    "name": "gpt-4-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4.5-preview",
+                    "name": "gpt-4.5-preview",
+                    "input_cost": 0.000075,
+                    "output_cost": 0.00015
+                }
+            ]
+        },
+        {
+            "name": "azureChatOpenAI_LlamaIndex",
+            "models": [
+                {
+                    "label": "gpt-4o-mini",
+                    "name": "gpt-4o-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
+                },
+                {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gpt-4",
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "gpt-4-turbo",
+                    "name": "gpt-4-turbo",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-32k",
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
+                },
+                {
+                    "label": "gpt-35-turbo",
+                    "name": "gpt-35-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
+                },
+                {
+                    "label": "gpt-35-turbo-16k",
+                    "name": "gpt-35-turbo-16k",
+                    "input_cost": 5e-7,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "gpt-4-vision-preview",
+                    "name": "gpt-4-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-1106-preview",
+                    "name": "gpt-4-1106-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                }
+            ]
+        },
+        {
+            "name": "chatAnthropic",
+            "models": [
+                {
+                    "label": "claude-sonnet-4-0",
+                    "name": "claude-sonnet-4-0",
+                    "description": "Claude 4 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-opus-4-0",
+                    "name": "claude-opus-4-0",
+                    "description": "Claude 4 Opus",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
+                    "label": "claude-3-7-sonnet-latest",
+                    "name": "claude-3-7-sonnet-latest",
+                    "description": "Most recent snapshot version of Claude Sonnet 3.7",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-3-5-haiku-latest",
+                    "name": "claude-3-5-haiku-latest",
+                    "description": "Most recent snapshot version of Claude Haiku 3.5",
+                    "input_cost": 8e-7,
+                    "output_cost": 4e-6
+                },
+                {
+                    "label": "claude-3.5-sonnet-latest",
+                    "name": "claude-3-5-sonnet-latest",
+                    "description": "Most recent snapshot version of Claude Sonnet 3.5 model",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-3-opus",
+                    "name": "claude-3-opus-20240229",
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
+                    "label": "claude-3-sonnet",
+                    "name": "claude-3-sonnet-20240229",
+                    "description": "Ideal balance of intelligence and speed for enterprise workloads",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-3-haiku",
+                    "name": "claude-3-haiku-20240307",
+                    "description": "Fastest and most compact model, designed for near-instant responsiveness",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 1.25e-6
+                }
+            ]
+        },
+        {
+            "name": "chatAnthropic_LlamaIndex",
+            "models": [
+                {
+                    "label": "claude-3-haiku",
+                    "name": "claude-3-haiku",
+                    "description": "Fastest and most compact model, designed for near-instant responsiveness",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 1.25e-6
+                },
+                {
+                    "label": "claude-3-opus",
+                    "name": "claude-3-opus",
+                    "description": "Most powerful model for highly complex tasks",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
+                    "label": "claude-3-sonnet",
+                    "name": "claude-3-sonnet",
+                    "description": "Ideal balance of intelligence and speed for enterprise workloads",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-2.1 (legacy)",
+                    "name": "claude-2.1",
+                    "description": "Claude 2 latest major version, automatically get updates to the model as they are released",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
+                },
+                {
+                    "label": "claude-instant-1.2 (legacy)",
+                    "name": "claude-instant-1.2",
+                    "description": "Claude Instant latest major version, automatically get updates to the model as they are released",
+                    "input_cost": 0.000008,
+                    "output_cost": 0.000024
+                }
+            ]
+        },
+        {
+            "name": "chatGoogleGenerativeAI",
+            "models": [
+                {
+                    "label": "gemini-2.5-flash-preview-05-20",
+                    "name": "gemini-2.5-flash-preview-05-20",
+                    "input_cost": 0.15e-6,
+                    "output_cost": 6e-7
+                },
+                {
+                    "label": "gemini-2.5-pro-preview-03-25",
+                    "name": "gemini-2.5-pro-preview-03-25",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gemini-2.0-flash",
+                    "name": "gemini-2.0-flash",
+                    "input_cost": 1e-7,
+                    "output_cost": 4e-7
+                },
+                {
+                    "label": "gemini-2.0-flash-lite",
+                    "name": "gemini-2.0-flash-lite",
+                    "input_cost": 7.5e-8,
+                    "output_cost": 3e-7
+                },
+                {
+                    "label": "gemini-1.5-flash",
+                    "name": "gemini-1.5-flash",
+                    "input_cost": 7.5e-8,
+                    "output_cost": 3e-7
+                },
+                {
+                    "label": "gemini-1.5-flash-8b",
+                    "name": "gemini-1.5-flash-8b",
+                    "input_cost": 3.75e-8,
+                    "output_cost": 1.5e-7
+                },
+                {
+                    "label": "gemini-1.5-pro",
+                    "name": "gemini-1.5-pro",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 5e-6
+                }
+            ]
+        },
+        {
+            "name": "chatAlibabaTongyi",
+            "models": [
+                {
+                    "label": "qwen-plus",
+                    "name": "qwen-plus",
+                    "input_cost": 0.0016,
+                    "output_cost": 0.0064
+                }
+            ]
+        },
+        {
+            "name": "chatGoogleVertexAI",
+            "models": [
+                {
+                    "label": "gemini-1.5-flash-002",
+                    "name": "gemini-1.5-flash-002",
+                    "input_cost": 7.5e-8,
+                    "output_cost": 3e-7
+                },
+                {
+                    "label": "gemini-1.5-flash-001",
+                    "name": "gemini-1.5-flash-001",
+                    "input_cost": 7.5e-8,
+                    "output_cost": 3e-7
+                },
+                {
+                    "label": "gemini-1.5-pro-002",
+                    "name": "gemini-1.5-pro-002",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 5e-6
+                },
+                {
+                    "label": "gemini-1.5-pro-001",
+                    "name": "gemini-1.5-pro-001",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 5e-6
+                },
+                {
+                    "label": "gemini-1.0-pro",
+                    "name": "gemini-1.0-pro",
+                    "input_cost": 1.25e-7,
+                    "output_cost": 3.75e-7
+                },
+                {
+                    "label": "gemini-1.0-pro-vision",
+                    "name": "gemini-1.0-pro-vision",
+                    "input_cost": 1.25e-7,
+                    "output_cost": 3.75e-7
+                },
+                {
+                    "label": "claude-sonnet-4@20250514",
+                    "name": "claude-sonnet-4@20250514",
+                    "description": "Claude 4 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-opus-4@20250514",
+                    "name": "claude-opus-4@20250514",
+                    "description": "Claude 4 Opus",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
+                    "label": "claude-3-7-sonnet@20250219",
+                    "name": "claude-3-7-sonnet@20250219",
+                    "description": "(20250219-v1:0) specific version of Claude Sonnet 3.7",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-3-5-haiku@20241022",
+                    "name": "claude-3-5-haiku@20241022",
+                    "description": "(20241022-v1:0) specific version of Claude Haiku 3.5",
+                    "input_cost": 8e-7,
+                    "output_cost": 4e-6
+                },
+                {
+                    "label": "claude-3-5-sonnet-v2@20241022",
+                    "name": "claude-3-5-sonnet-v2@20241022",
+                    "description": "(20241022-v2:0) specific version of Claude Sonnet 3.5",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-3-opus@20240229",
+                    "name": "claude-3-opus@20240229",
+                    "description": "Powerful model for highly complex tasks, reasoning and analysis",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
+                    "label": "claude-3-sonnet@20240229",
+                    "name": "claude-3-sonnet@20240229",
+                    "description": "Balance of intelligence and speed",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
+                    "label": "claude-3-haiku@20240307",
+                    "name": "claude-3-haiku@20240307",
+                    "description": "Fastest and most compact model for near-instant responsiveness",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 1.25e-6
+                }
+            ]
+        },
+        {
+            "name": "groqChat",
+            "models": [
+                {
+                    "label": "meta-llama/llama-4-maverick-17b-128e-instruct",
+                    "name": "meta-llama/llama-4-maverick-17b-128e-instruct"
+                },
+                {
+                    "label": "meta-llama/llama-4-scout-17b-16e-instruct",
+                    "name": "meta-llama/llama-4-scout-17b-16e-instruct"
+                },
+                {
+                    "label": "coumpound-beta",
+                    "name": "compound-beta"
+                },
+                {
+                    "label": "compound-beta-mini",
+                    "name": "compound-beta-mini"
+                },
+                {
+                    "label": "deepseek-r1-distill-llama-70b",
+                    "name": "deepseek-r1-distill-llama-70b"
+                },
+                {
+                    "label": "llama-3.3-70b-versatile",
+                    "name": "llama-3.3-70b-versatile"
+                },
+                {
+                    "label": "llama-3.3-70b-specdec",
+                    "name": "llama-3.3-70b-specdec"
+                },
+                {
+                    "label": "llama-3.2-1b-preview",
+                    "name": "llama-3.2-1b-preview"
+                },
+                {
+                    "label": "llama-3.2-3b-preview",
+                    "name": "llama-3.2-3b-preview"
+                },
+                {
+                    "label": "llama-3.2-11b-text-preview",
+                    "name": "llama-3.2-11b-text-preview"
+                },
+                {
+                    "label": "llama-3.2-90b-text-preview",
+                    "name": "llama-3.2-90b-text-preview"
+                },
+                {
+                    "label": "llama-3.1-8b-instant",
+                    "name": "llama-3.1-8b-instant"
+                },
+                {
+                    "label": "gemma-2-9b-it",
+                    "name": "gemma-2-9b-it"
+                },
+                {
+                    "label": "llama3-70b-8192",
+                    "name": "llama3-70b-8192"
+                },
+                {
+                    "label": "llama3-8b-8192",
+                    "name": "llama3-8b-8192"
+                },
+                {
+                    "label": "mixtral-saba-24b",
+                    "name": "mixtral-saba-24b"
+                },
+                {
+                    "label": "qwen-qwq-32b",
+                    "name": "qwen-qwq-32b"
+                },
+                {
+                    "label": "allam-2-7b",
+                    "name": "allam-2-7b"
+                }
+            ]
+        },
+        {
+            "name": "chatCohere",
+            "models": [
+                {
+                    "label": "command-a",
+                    "name": "command-a",
+                    "input_cost": 0.0025,
+                    "output_cost": 0.01
+                },
+                {
+                    "label": "command-r-plus",
+                    "name": "command-r-plus",
+                    "input_cost": 0.0025,
+                    "output_cost": 0.01
+                }
+            ]
+        },
+        {
+            "name": "deepseek",
+            "models": [
+                {
+                    "label": "deepseek-chat",
+                    "name": "deepseek-chat",
+                    "input_cost": 0.00027,
+                    "output_cost": 0.0011
+                },
+                {
+                    "label": "deepseek-reasoner",
+                    "name": "deepseek-reasoner",
+                    "input_cost": 0.00055,
+                    "output_cost": 0.00219
+                }
+            ]
+        },
+        {
+            "name": "chatOpenAI",
+            "models": [
+                {
+                    "label": "gpt-4.1",
+                    "name": "gpt-4.1",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "gpt-4.1-mini",
+                    "name": "gpt-4.1-mini",
+                    "input_cost": 4e-7,
+                    "output_cost": 1.6e-6
+                },
+                {
+                    "label": "gpt-4.1-nano",
+                    "name": "gpt-4.1-nano",
+                    "input_cost": 1e-7,
+                    "output_cost": 4e-7
+                },
+                {
+                    "label": "gpt-4.5-preview",
+                    "name": "gpt-4.5-preview",
+                    "input_cost": 0.000075,
+                    "output_cost": 0.00015
+                },
+                {
+                    "label": "gpt-4o-mini (latest)",
+                    "name": "gpt-4o-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
+                },
+                {
+                    "label": "gpt-4o-mini-2024-07-18",
+                    "name": "gpt-4o-mini-2024-07-18",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
+                },
+                {
+                    "label": "gpt-4o (latest)",
+                    "name": "gpt-4o",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gpt-4o-2024-11-20",
+                    "name": "gpt-4o-2024-11-20",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gpt-4o-2024-08-06",
+                    "name": "gpt-4o-2024-08-06",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gpt-4o-2024-05-13",
+                    "name": "gpt-4o-2024-05-13",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "o3-mini (latest)",
+                    "name": "o3-mini",
+                    "input_cost": 1.1e-6,
+                    "output_cost": 4.4e-6
+                },
+                {
+                    "label": "o3-mini-2025-01-31",
+                    "name": "o3-mini-2025-01-31",
+                    "input_cost": 1.1e-6,
+                    "output_cost": 4.4e-6
+                },
+                {
+                    "label": "o1-preview (latest)",
+                    "name": "o1-preview",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "o1-preview-2024-09-12",
+                    "name": "o1-preview-2024-09-12",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "o1-mini (latest)",
+                    "name": "o1-mini",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000012
+                },
+                {
+                    "label": "o1-mini-2024-09-12",
+                    "name": "o1-mini-2024-09-12",
+                    "input_cost": 3e-6,
+                    "output_cost": 0.000012
+                },
+                {
+                    "label": "gpt-4 (latest)",
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "gpt-4-turbo (latest)",
+                    "name": "gpt-4-turbo",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-turbo-preview",
+                    "name": "gpt-4-turbo-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-0125-preview",
+                    "name": "gpt-4-0125-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-1106-preview",
+                    "name": "gpt-4-1106-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-1106-vision-preview",
+                    "name": "gpt-4-1106-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-vision-preview",
+                    "name": "gpt-4-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-0613",
+                    "name": "gpt-4-0613",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "gpt-4-32k",
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
+                },
+                {
+                    "label": "gpt-4-32k-0613",
+                    "name": "gpt-4-32k-0613",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
+                },
+                {
+                    "label": "gpt-3.5-turbo",
+                    "name": "gpt-3.5-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
+                },
+                {
+                    "label": "gpt-3.5-turbo-0125",
+                    "name": "gpt-3.5-turbo-0125",
+                    "input_cost": 5e-7,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "gpt-3.5-turbo-1106",
+                    "name": "gpt-3.5-turbo-1106",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "gpt-3.5-turbo-0613",
+                    "name": "gpt-3.5-turbo-0613",
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "gpt-3.5-turbo-16k",
+                    "name": "gpt-3.5-turbo-16k",
+                    "input_cost": 5e-7,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "gpt-3.5-turbo-16k-0613",
+                    "name": "gpt-3.5-turbo-16k-0613",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000004
+                },
+                {
+                    "label": "o4-mini",
+                    "name": "o4-mini",
+                    "input_cost": 1.5e-7,
+                    "output_cost": 6e-7
+                }
+            ]
+        },
+        {
+            "name": "chatOpenAI_LlamaIndex",
+            "models": [
+                {
+                    "label": "gpt-4o",
+                    "name": "gpt-4o",
+                    "input_cost": 2.5e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gpt-4",
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "gpt-4-turbo",
+                    "name": "gpt-4-turbo",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-turbo-preview",
+                    "name": "gpt-4-turbo-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-0125-preview",
+                    "name": "gpt-4-0125-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-1106-preview",
+                    "name": "gpt-4-1106-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-vision-preview",
+                    "name": "gpt-4-vision-preview",
+                    "input_cost": 0.00001,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "gpt-4-0613",
+                    "name": "gpt-4-0613",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "gpt-4-32k",
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
+                },
+                {
+                    "label": "gpt-4-32k-0613",
+                    "name": "gpt-4-32k-0613",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
+                },
+                {
+                    "label": "gpt-3.5-turbo",
+                    "name": "gpt-3.5-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
+                },
+                {
+                    "label": "gpt-3.5-turbo-1106",
+                    "name": "gpt-3.5-turbo-1106",
+                    "input_cost": 0.000001,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "gpt-3.5-turbo-0613",
+                    "name": "gpt-3.5-turbo-0613",
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "gpt-3.5-turbo-16k",
+                    "name": "gpt-3.5-turbo-16k",
+                    "input_cost": 5e-7,
+                    "output_cost": 0.0000015
+                },
+                {
+                    "label": "gpt-3.5-turbo-16k-0613",
+                    "name": "gpt-3.5-turbo-16k-0613",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000004
+                }
+            ]
+        },
+        {
+            "name": "chatPerplexity",
+            "models": [
+                {
+                    "label": "sonar",
+                    "name": "sonar",
+                    "input_cost": 1e-6,
+                    "output_cost": 1e-6
+                },
+                {
+                    "label": "sonar-pro",
+                    "name": "sonar-pro",
+                    "input_cost": 3e-6,
+                    "output_cost": 1.5e-5
+                },
+                {
+                    "label": "sonar-reasoning",
+                    "name": "sonar-reasoning",
+                    "input_cost": 1e-6,
+                    "output_cost": 5e-6
+                },
+                {
+                    "label": "sonar-reasoning-pro",
+                    "name": "sonar-reasoning-pro",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "sonar-deep-research",
+                    "name": "sonar",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                },
+                {
+                    "label": "r1-1776",
+                    "name": "r1-1776",
+                    "input_cost": 2e-6,
+                    "output_cost": 8e-6
+                }
+            ]
+        },
+        {
+            "name": "chatMistralAI",
+            "models": [
+                {
+                    "label": "open-mistral-nemo",
+                    "name": "open-mistral-nemo",
+                    "input_cost": 0.00015,
+                    "output_cost": 0.00015
+                },
+                {
+                    "label": "open-mistral-7b",
+                    "name": "open-mistral-7b",
+                    "input_cost": 0.00025,
+                    "output_cost": 0.00025
+                },
+                {
+                    "label": "mistral-tiny-2312",
+                    "name": "mistral-tiny-2312",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
+                },
+                {
+                    "label": "mistral-tiny",
+                    "name": "mistral-tiny",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
+                },
+                {
+                    "label": "open-mixtral-8x7b",
+                    "name": "open-mixtral-8x7b",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
+                },
+                {
+                    "label": "open-mixtral-8x22b",
+                    "name": "open-mixtral-8x22b",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
+                },
+                {
+                    "label": "mistral-small-2312",
+                    "name": "mistral-small-2312",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
+                },
+                {
+                    "label": "mistral-small",
+                    "name": "mistral-small",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
+                },
+                {
+                    "label": "mistral-small-2402",
+                    "name": "mistral-small-2402",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
+                },
+                {
+                    "label": "mistral-small-latest",
+                    "name": "mistral-small-latest",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
+                },
+                {
+                    "label": "mistral-medium-latest",
+                    "name": "mistral-medium-latest",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
+                },
+                {
+                    "label": "mistral-medium-2312",
+                    "name": "mistral-medium-2312",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
+                },
+                {
+                    "label": "mistral-medium",
+                    "name": "mistral-medium",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
+                },
+                {
+                    "label": "mistral-large-latest",
+                    "name": "mistral-large-latest",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
+                },
+                {
+                    "label": "mistral-large-2402",
+                    "name": "mistral-large-2402",
+                    "input_cost": 0.002,
+                    "output_cost": 0.006
+                },
+                {
+                    "label": "codestral-latsest",
+                    "name": "codestral-latest",
+                    "input_cost": 0.0002,
+                    "output_cost": 0.0006
+                },
+                {
+                    "label": "devstral-small-2505",
+                    "name": "devstral-small-2505",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
+                }
+            ]
+        },
+        {
+            "name": "chatMistral_LlamaIndex",
+            "models": [
+                {
+                    "label": "mistral-tiny",
+                    "name": "mistral-tiny",
+                    "input_cost": 0.0007,
+                    "output_cost": 0.0007
+                },
+                {
+                    "label": "mistral-small",
+                    "name": "mistral-small",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
+                },
+                {
+                    "label": "mistral-medium",
+                    "name": "mistral-medium",
+                    "input_cost": 0.001,
+                    "output_cost": 0.003
+                }
+            ]
+        }
+    ],
+    "llm": [
+        {
+            "name": "awsBedrock",
+            "models": [
+                {
+                    "label": "amazon.titan-tg1-large",
+                    "name": "amazon.titan-tg1-large"
+                },
+                {
+                    "label": "amazon.titan-e1t-medium",
+                    "name": "amazon.titan-e1t-medium"
+                },
+                {
+                    "label": "cohere.command-text-v14",
+                    "name": "cohere.command-text-v14",
+                    "input_cost": 0.0015,
+                    "output_cost": 0.002
+                },
+                {
+                    "label": "cohere.command-light-text-v14",
+                    "name": "cohere.command-light-text-v14",
+                    "input_cost": 0.0003,
+                    "output_cost": 0.0006
+                },
+                {
+                    "label": "ai21.j2-grande-instruct",
+                    "name": "ai21.j2-grande-instruct",
+                    "input_cost": 0.0005,
+                    "output_cost": 0.0007
+                },
+                {
+                    "label": "ai21.j2-jumbo-instruct",
+                    "name": "ai21.j2-jumbo-instruct",
+                    "input_cost": 0.0005,
+                    "output_cost": 0.0007
+                },
+                {
+                    "label": "ai21.j2-mid",
+                    "name": "ai21.j2-mid",
+                    "input_cost": 0.0125,
+                    "output_cost": 0.0125
+                },
+                {
+                    "label": "ai21.j2-ultra",
+                    "name": "ai21.j2-ultra",
+                    "input_cost": 0.0188,
+                    "output_cost": 0.0188
+                }
+            ],
+            "regions": [
+                {
+                    "label": "af-south-1",
+                    "name": "af-south-1"
+                },
+                {
+                    "label": "ap-east-1",
+                    "name": "ap-east-1"
+                },
+                {
+                    "label": "ap-northeast-1",
+                    "name": "ap-northeast-1"
+                },
+                {
+                    "label": "ap-northeast-2",
+                    "name": "ap-northeast-2"
+                },
+                {
+                    "label": "ap-northeast-3",
+                    "name": "ap-northeast-3"
+                },
+                {
+                    "label": "ap-south-1",
+                    "name": "ap-south-1"
+                },
+                {
+                    "label": "ap-south-2",
+                    "name": "ap-south-2"
+                },
+                {
+                    "label": "ap-southeast-1",
+                    "name": "ap-southeast-1"
+                },
+                {
+                    "label": "ap-southeast-2",
+                    "name": "ap-southeast-2"
+                },
+                {
+                    "label": "ap-southeast-3",
+                    "name": "ap-southeast-3"
+                },
+                {
+                    "label": "ap-southeast-4",
+                    "name": "ap-southeast-4"
+                },
+                {
+                    "label": "ap-southeast-5",
+                    "name": "ap-southeast-5"
+                },
+                {
+                    "label": "ap-southeast-6",
+                    "name": "ap-southeast-6"
+                },
+                {
+                    "label": "ca-central-1",
+                    "name": "ca-central-1"
+                },
+                {
+                    "label": "ca-west-1",
+                    "name": "ca-west-1"
+                },
+                {
+                    "label": "cn-north-1",
+                    "name": "cn-north-1"
+                },
+                {
+                    "label": "cn-northwest-1",
+                    "name": "cn-northwest-1"
+                },
+                {
+                    "label": "eu-central-1",
+                    "name": "eu-central-1"
+                },
+                {
+                    "label": "eu-central-2",
+                    "name": "eu-central-2"
+                },
+                {
+                    "label": "eu-north-1",
+                    "name": "eu-north-1"
+                },
+                {
+                    "label": "eu-south-1",
+                    "name": "eu-south-1"
+                },
+                {
+                    "label": "eu-south-2",
+                    "name": "eu-south-2"
+                },
+                {
+                    "label": "eu-west-1",
+                    "name": "eu-west-1"
+                },
+                {
+                    "label": "eu-west-2",
+                    "name": "eu-west-2"
+                },
+                {
+                    "label": "eu-west-3",
+                    "name": "eu-west-3"
+                },
+                {
+                    "label": "il-central-1",
+                    "name": "il-central-1"
+                },
+                {
+                    "label": "me-central-1",
+                    "name": "me-central-1"
+                },
+                {
+                    "label": "me-south-1",
+                    "name": "me-south-1"
+                },
+                {
+                    "label": "sa-east-1",
+                    "name": "sa-east-1"
+                },
+                {
+                    "label": "us-east-1",
+                    "name": "us-east-1"
+                },
+                {
+                    "label": "us-east-2",
+                    "name": "us-east-2"
+                },
+                {
+                    "label": "us-gov-east-1",
+                    "name": "us-gov-east-1"
+                },
+                {
+                    "label": "us-gov-west-1",
+                    "name": "us-gov-west-1"
+                },
+                {
+                    "label": "us-west-1",
+                    "name": "us-west-1"
+                },
+                {
+                    "label": "us-west-2",
+                    "name": "us-west-2"
+                }
+            ]
+        },
+        {
+            "name": "azureOpenAI",
+            "models": [
+                {
+                    "label": "text-davinci-003",
+                    "name": "text-davinci-003",
+                    "total_cost": 0.00002
+                },
+                {
+                    "label": "ada",
+                    "name": "ada",
+                    "total_cost": 0.00004
+                },
+                {
+                    "label": "text-ada-001",
+                    "name": "text-ada-001",
+                    "total_cost": 0.00004
+                },
+                {
+                    "label": "babbage",
+                    "name": "babbage",
+                    "total_cost": 0.00005
+                },
+                {
+                    "label": "text-babbage-001",
+                    "name": "text-babbage-001",
+                    "total_cost": 0.00005
+                },
+                {
+                    "label": "curie",
+                    "name": "curie",
+                    "total_cost": 0.00002
+                },
+                {
+                    "label": "text-curie-001",
+                    "name": "text-curie-001",
+                    "total_cost": 0.00002
+                },
+                {
+                    "label": "davinci",
+                    "name": "davinci",
+                    "total_cost": 0.00002
+                },
+                {
+                    "label": "text-davinci-001",
+                    "name": "text-davinci-001",
+                    "total_cost": 0.00002
+                },
+                {
+                    "label": "text-davinci-002",
+                    "name": "text-davinci-002",
+                    "total_cost": 0.00002
+                },
+                {
+                    "label": "text-davinci-fine-tune-002",
+                    "name": "text-davinci-fine-tune-002",
+                    "total_cost": 0.00002
+                },
+                {
+                    "label": "gpt-35-turbo",
+                    "name": "gpt-35-turbo",
+                    "input_cost": 1.5e-6,
+                    "output_cost": 2e-6
+                },
+                {
+                    "label": "gpt-4",
+                    "name": "gpt-4",
+                    "input_cost": 0.00003,
+                    "output_cost": 0.00006
+                },
+                {
+                    "label": "gpt-4-32k",
+                    "name": "gpt-4-32k",
+                    "input_cost": 0.00006,
+                    "output_cost": 0.00012
+                }
+            ]
+        },
+        {
+            "name": "cohere",
+            "models": [
+                {
+                    "label": "command",
+                    "name": "command"
+                },
+                {
+                    "label": "command-light",
+                    "name": "command-light"
+                },
+                {
+                    "label": "command-nightly",
+                    "name": "command-nightly"
+                },
+                {
+                    "label": "command-light-nightly",
+                    "name": "command-light-nightly"
+                },
+                {
+                    "label": "base",
+                    "name": "base"
+                },
+                {
+                    "label": "base-light",
+                    "name": "base-light"
+                }
+            ]
+        },
+        {
+            "name": "googlevertexai",
+            "models": [
+                {
+                    "label": "text-bison",
+                    "name": "text-bison",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
+                },
+                {
+                    "label": "code-bison",
+                    "name": "code-bison",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
+                },
+                {
+                    "label": "code-gecko",
+                    "name": "code-gecko",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
+                },
+                {
+                    "label": "text-bison-32k",
+                    "name": "text-bison-32k",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
+                },
+                {
+                    "label": "code-bison-32k",
+                    "name": "code-bison-32k",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
+                },
+                {
+                    "label": "code-gecko-32k",
+                    "name": "code-gecko-32k",
+                    "input_cost": 2.5e-7,
+                    "output_cost": 5e-7
+                }
+            ]
+        },
+        {
+            "name": "openAI",
+            "models": [
+                {
+                    "label": "gpt-3.5-turbo-instruct",
+                    "name": "gpt-3.5-turbo-instruct",
+                    "input_cost": 0.0000015,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "babbage-002",
+                    "name": "babbage-002",
+                    "input_cost": 4e-7,
+                    "output_cost": 0.0000016
+                },
+                {
+                    "label": "davinci-002",
+                    "name": "davinci-002",
+                    "input_cost": 0.000006,
+                    "output_cost": 0.000012
+                }
+            ]
+        }
+    ],
+    "embedding": [
+        {
+            "name": "openAIEmbeddings",
+            "models": [
+                {
+                    "label": "text-embedding-3-large",
+                    "name": "text-embedding-3-large"
+                },
+                {
+                    "label": "text-embedding-3-small",
+                    "name": "text-embedding-3-small"
+                },
+                {
+                    "label": "text-embedding-ada-002",
+                    "name": "text-embedding-ada-002"
+                }
+            ]
+        },
+        {
+            "name": "openAIEmbedding_LlamaIndex",
+            "models": [
+                {
+                    "label": "text-embedding-3-large",
+                    "name": "text-embedding-3-large"
+                },
+                {
+                    "label": "text-embedding-3-small",
+                    "name": "text-embedding-3-small"
+                },
+                {
+                    "label": "text-embedding-ada-002",
+                    "name": "text-embedding-ada-002"
+                }
+            ]
+        },
+        {
+            "name": "mistralAIEmbeddings",
+            "models": [
+                {
+                    "label": "mistral-embed",
+                    "name": "mistral-embed"
+                }
+            ]
+        },
+        {
+            "name": "voyageAIEmbeddings",
+            "models": [
+                {
+                    "label": "voyage-3",
+                    "name": "voyage-3",
+                    "description": "High-performance embedding model with excellent retrieval quality, 32K token context, and 1024 dimension size."
+                },
+                {
+                    "label": "voyage-3-lite",
+                    "name": "voyage-3-lite",
+                    "description": "Lightweight embedding model optimized for low latency and cost, 32K token context, and 512 dimension size."
+                },
+                {
+                    "label": "voyage-2",
+                    "name": "voyage-2",
+                    "description": "General-purpose embedding model optimized for a balance between cost, latency, and retrieval quality."
+                },
+                {
+                    "label": "voyage-code-2",
+                    "name": "voyage-code-2",
+                    "description": "Optimized for code retrieval."
+                },
+                {
+                    "label": "voyage-finance-2",
+                    "name": "voyage-finance-2",
+                    "description": "Optimized for finance retrieval and RAG."
+                },
+                {
+                    "label": "voyage-large-2",
+                    "name": "voyage-large-2",
+                    "description": "General-purpose embedding model that is optimized for retrieval quality."
+                },
+                {
+                    "label": "voyage-large-2-instruct",
+                    "name": "voyage-large-2-instruct",
+                    "description": "Instruction-tuned general-purpose embedding model optimized for clustering, classification, and retrieval."
+                },
+                {
+                    "label": "voyage-law-2",
+                    "name": "voyage-law-2",
+                    "description": "Optimized for legal and long-context retrieval and RAG. Also improved performance across all domains."
+                },
+                {
+                    "label": "voyage-lite-02-instruct",
+                    "name": "voyage-lite-02-instruct",
+                    "description": "Instruction-tuned for classification, clustering, and sentence textual similarity tasks"
+                },
+                {
+                    "label": "voyage-multilingual-2",
+                    "name": "voyage-multilingual-2",
+                    "description": "Optimized for multilingual retrieval and RAG."
+                }
+            ]
+        },
+        {
+            "name": "googlevertexaiEmbeddings",
+            "models": [
+                {
+                    "label": "multimodalembedding",
+                    "name": "multimodalembedding"
+                },
+                {
+                    "label": "text-embedding-004",
+                    "name": "text-embedding-004"
+                },
+                {
+                    "label": "text-multilingual-embedding-002",
+                    "name": "text-multilingual-embedding-002"
+                },
+                {
+                    "label": "textembedding-gecko@001",
+                    "name": "textembedding-gecko@001"
+                },
+                {
+                    "label": "textembedding-gecko@latest",
+                    "name": "textembedding-gecko@latest"
+                },
+                {
+                    "label": "textembedding-gecko-multilingual@latest",
+                    "name": "textembedding-gecko-multilingual@latest"
+                }
+            ]
+        },
+        {
+            "name": "googleGenerativeAiEmbeddings",
+            "models": [
+                {
+                    "label": "embedding-001",
+                    "name": "embedding-001"
+                },
+                {
+                    "label": "text-embedding-004",
+                    "name": "text-embedding-004"
+                },
+                {
+                    "label": "gemini-embedding-exp-03-07",
+                    "name": "gemini-embedding-exp-03-07"
+                }
+            ]
+        },
+        {
+            "name": "cohereEmbeddings",
+            "models": [
+                {
+                    "label": "embed-english-v3.0",
+                    "name": "embed-english-v3.0",
+                    "description": "Embedding Dimensions: 1024"
+                },
+                {
+                    "label": "embed-english-light-v3.0",
+                    "name": "embed-english-light-v3.0",
+                    "description": "Embedding Dimensions: 384"
+                },
+                {
+                    "label": "embed-multilingual-v3.0",
+                    "name": "embed-multilingual-v3.0",
+                    "description": "Embedding Dimensions: 1024"
+                },
+                {
+                    "label": "embed-multilingual-light-v3.0",
+                    "name": "embed-multilingual-light-v3.0",
+                    "description": "Embedding Dimensions: 384"
+                },
+                {
+                    "label": "embed-english-v2.0",
+                    "name": "embed-english-v2.0",
+                    "description": "Embedding Dimensions: 4096"
+                },
+                {
+                    "label": "embed-english-light-v2.0",
+                    "name": "embed-english-light-v2.0",
+                    "description": "Embedding Dimensions: 1024"
+                },
+                {
+                    "label": "embed-multilingual-v2.0",
+                    "name": "embed-multilingual-v2.0",
+                    "description": "Embedding Dimensions: 768"
+                }
+            ]
+        },
+        {
+            "name": "AWSBedrockEmbeddings",
+            "models": [
+                {
+                    "label": "amazon.titan-embed-text-v1",
+                    "name": "amazon.titan-embed-text-v1",
+                    "description": "Embedding Dimensions: 1536"
+                },
+                {
+                    "label": "amazon.titan-embed-text-v2",
+                    "name": "amazon.titan-embed-text-v2:0",
+                    "description": "Embedding Dimensions: 1024"
+                },
+                {
+                    "label": "amazon.titan-embed-g1-text-02",
+                    "name": "amazon.titan-embed-g1-text-02",
+                    "description": "Embedding Dimensions: 1536"
+                },
+                {
+                    "label": "cohere.embed-english-v3",
+                    "name": "cohere.embed-english-v3",
+                    "description": "Embedding Dimensions: 1024"
+                },
+                {
+                    "label": "cohere.embed-multilingual-v3",
+                    "name": "cohere.embed-multilingual-v3",
+                    "description": "Embedding Dimensions: 1024"
+                }
+            ],
+            "regions": [
+                {
+                    "label": "af-south-1",
+                    "name": "af-south-1"
+                },
+                {
+                    "label": "ap-east-1",
+                    "name": "ap-east-1"
+                },
+                {
+                    "label": "ap-northeast-1",
+                    "name": "ap-northeast-1"
+                },
+                {
+                    "label": "ap-northeast-2",
+                    "name": "ap-northeast-2"
+                },
+                {
+                    "label": "ap-northeast-3",
+                    "name": "ap-northeast-3"
+                },
+                {
+                    "label": "ap-south-1",
+                    "name": "ap-south-1"
+                },
+                {
+                    "label": "ap-south-2",
+                    "name": "ap-south-2"
+                },
+                {
+                    "label": "ap-southeast-1",
+                    "name": "ap-southeast-1"
+                },
+                {
+                    "label": "ap-southeast-2",
+                    "name": "ap-southeast-2"
+                },
+                {
+                    "label": "ap-southeast-3",
+                    "name": "ap-southeast-3"
+                },
+                {
+                    "label": "ap-southeast-4",
+                    "name": "ap-southeast-4"
+                },
+                {
+                    "label": "ap-southeast-5",
+                    "name": "ap-southeast-5"
+                },
+                {
+                    "label": "ap-southeast-6",
+                    "name": "ap-southeast-6"
+                },
+                {
+                    "label": "ca-central-1",
+                    "name": "ca-central-1"
+                },
+                {
+                    "label": "ca-west-1",
+                    "name": "ca-west-1"
+                },
+                {
+                    "label": "cn-north-1",
+                    "name": "cn-north-1"
+                },
+                {
+                    "label": "cn-northwest-1",
+                    "name": "cn-northwest-1"
+                },
+                {
+                    "label": "eu-central-1",
+                    "name": "eu-central-1"
+                },
+                {
+                    "label": "eu-central-2",
+                    "name": "eu-central-2"
+                },
+                {
+                    "label": "eu-north-1",
+                    "name": "eu-north-1"
+                },
+                {
+                    "label": "eu-south-1",
+                    "name": "eu-south-1"
+                },
+                {
+                    "label": "eu-south-2",
+                    "name": "eu-south-2"
+                },
+                {
+                    "label": "eu-west-1",
+                    "name": "eu-west-1"
+                },
+                {
+                    "label": "eu-west-2",
+                    "name": "eu-west-2"
+                },
+                {
+                    "label": "eu-west-3",
+                    "name": "eu-west-3"
+                },
+                {
+                    "label": "il-central-1",
+                    "name": "il-central-1"
+                },
+                {
+                    "label": "me-central-1",
+                    "name": "me-central-1"
+                },
+                {
+                    "label": "me-south-1",
+                    "name": "me-south-1"
+                },
+                {
+                    "label": "sa-east-1",
+                    "name": "sa-east-1"
+                },
+                {
+                    "label": "us-east-1",
+                    "name": "us-east-1"
+                },
+                {
+                    "label": "us-east-2",
+                    "name": "us-east-2"
+                },
+                {
+                    "label": "us-gov-east-1",
+                    "name": "us-gov-east-1"
+                },
+                {
+                    "label": "us-gov-west-1",
+                    "name": "us-gov-west-1"
+                },
+                {
+                    "label": "us-west-1",
+                    "name": "us-west-1"
+                },
+                {
+                    "label": "us-west-2",
+                    "name": "us-west-2"
+                }
+            ]
+        }
+    ]
+}
