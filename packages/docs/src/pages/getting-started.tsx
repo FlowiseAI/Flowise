@@ -237,7 +237,7 @@ function AppOverview() {
                     <div className='col col--6'>
                         <div className={styles.featureCard}>
                             <div className={styles.appIcon}>💬</div>
-                            <h3>Chat & Sidekicks</h3>
+                            <h3>Chat</h3>
                             <p>
                                 Your conversation hub with specialized AI assistants. Chat histories are automatically stored, switch
                                 between different agents, organize knowledge bases, and manage all your AI interactions.
@@ -307,7 +307,7 @@ function AppOverview() {
                                 <span>🎨 Image Generation</span>
                                 <span>🔗 Tool Integration</span>
                             </div>
-                            <a href='/browser-extension' className={styles.featureCardCTA}>
+                            <a href='/browser-sidekick' className={styles.featureCardCTA}>
                                 Get Extension →
                             </a>
                         </div>

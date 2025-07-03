@@ -44,68 +44,70 @@ function FlowiseFoundation() {
                 <p className='text--center' style={{ marginBottom: '3rem', fontSize: '1.2rem', opacity: 0.9 }}>
                     Leverage the proven power of Flowise with AnswerAI enhancements
                 </p>
-                <div className='row' style={{ alignItems: 'center' }}>
-                    <div className='col col--6'>
-                        <div className='row'>
-                            <div className='col col--12'>
-                                <div className={clsx(styles.commandment, styles.comingSoonCard)} style={{ marginBottom: '1.5rem' }}>
-                                    <div className={styles.comingSoonIcon}>🔗</div>
-                                    <div className={styles.commandmentText}>
-                                        <strong>Flowise Foundation</strong>
-                                        <br />
-                                        Built as a powerful fork of Flowise, inheriting years of community development and battle-tested stability
-                                        for enterprise workflows.
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='col col--12'>
-                                <div className={clsx(styles.commandment, styles.comingSoonCard)} style={{ marginBottom: '1.5rem' }}>
-                                    <div className={styles.comingSoonIcon}>⚡</div>
-                                    <div className={styles.commandmentText}>
-                                        <strong>Instant Migration</strong>
-                                        <br />
-                                        Import your existing Flowise chatflows and agent flows instantly. No rebuilding required—just seamless
-                                        migration to enhanced capabilities.
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='col col--12'>
-                                <div className={clsx(styles.commandment, styles.comingSoonCard)} style={{ marginBottom: '1.5rem' }}>
-                                    <div className={styles.comingSoonIcon}>🌐</div>
-                                    <div className={styles.commandmentText}>
-                                        <strong>Thriving Community</strong>
-                                        <br />
-                                        Join the rapidly growing Flowise community with thousands of developers sharing workflows, templates, and
-                                        innovations.
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='col col--12'>
-                                <div className={clsx(styles.commandment, styles.comingSoonCard)}>
-                                    <div className={styles.comingSoonIcon}>🔧</div>
-                                    <div className={styles.commandmentText}>
-                                        <strong>Enhanced Features</strong>
-                                        <br />
-                                        All the power of Flowise plus AnswerAI-specific enhancements, integrations, and enterprise-grade security
-                                        features.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className='col col--6'>
+
+                {/* Image at the top */}
+                <div className='row' style={{ marginBottom: '3rem' }}>
+                    <div className='col col--12'>
                         <div style={{ textAlign: 'center' }}>
-                            <img 
-                                src='/.gitbook/assets/agentflowsv2/agentflowsv2-1-flow-types.png' 
+                            <img
+                                src='/.gitbook/assets/agentflowsv2/agentflowsv2-1-flow-types.png'
                                 alt='AnswerAI Flow Types'
-                                style={{ 
-                                    maxWidth: '100%', 
+                                style={{
+                                    maxWidth: '100%',
                                     height: 'auto',
                                     borderRadius: '12px',
                                     boxShadow: '0 8px 32px rgba(0, 255, 255, 0.15)',
                                     border: '1px solid rgba(0, 255, 255, 0.2)'
                                 }}
                             />
+                        </div>
+                    </div>
+                </div>
+
+                {/* 4 cards in one row */}
+                <div className='row'>
+                    <div className='col col--3'>
+                        <div className={clsx(styles.commandment, styles.comingSoonCard)}>
+                            <div className={styles.comingSoonIcon}>🔗</div>
+                            <div className={styles.commandmentText}>
+                                <strong>Flowise Foundation</strong>
+                                <br />
+                                Built as a powerful fork of Flowise, inheriting years of community development and battle-tested stability
+                                for enterprise workflows.
+                            </div>
+                        </div>
+                    </div>
+                    <div className='col col--3'>
+                        <div className={clsx(styles.commandment, styles.comingSoonCard)}>
+                            <div className={styles.comingSoonIcon}>⚡</div>
+                            <div className={styles.commandmentText}>
+                                <strong>Instant Migration</strong>
+                                <br />
+                                Import your existing Flowise chatflows and agent flows instantly. No rebuilding required—just seamless
+                                migration to enhanced capabilities.
+                            </div>
+                        </div>
+                    </div>
+                    <div className='col col--3'>
+                        <div className={clsx(styles.commandment, styles.comingSoonCard)}>
+                            <div className={styles.comingSoonIcon}>🌐</div>
+                            <div className={styles.commandmentText}>
+                                <strong>Thriving Community</strong>
+                                <br />
+                                Join the rapidly growing Flowise community with thousands of developers sharing workflows, templates, and
+                                innovations.
+                            </div>
+                        </div>
+                    </div>
+                    <div className='col col--3'>
+                        <div className={clsx(styles.commandment, styles.comingSoonCard)}>
+                            <div className={styles.comingSoonIcon}>🔧</div>
+                            <div className={styles.commandmentText}>
+                                <strong>Enhanced Features</strong>
+                                <br />
+                                All the power of Flowise plus AnswerAI-specific enhancements, integrations, and enterprise-grade security
+                                features.
+                            </div>
                         </div>
                     </div>
                 </div>

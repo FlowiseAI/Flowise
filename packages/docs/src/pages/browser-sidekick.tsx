@@ -13,9 +13,9 @@ function BrowserExtensionHero() {
                 <ThreeJsScene className={styles.threeJsCanvas} />
             </div>
             <div className={styles.heroContent}>
-                <h1 className={styles.heroTitle}>Browser Extension</h1>
+                <h1 className={styles.heroTitle}>Browser Sidekick</h1>
                 <p className={styles.heroSubtitle}>
-                    Transform your browser into an AI-powered productivity hub. Access specialized sidekicks, connect to your tools, and
+                   Bring Alpha along as you browse the web as well as access specialized sidekicks, connect to your tools, and
                     supercharge your workflow without leaving your tab.
                 </p>
                 <div className={styles.heroCTAs}>
