@@ -4,6 +4,7 @@ services:
     flowise:
         image: flowiseai/flowise:latest
         restart: always
+
         environment:
             - PORT=${PORT}
 
@@ -123,14 +124,43 @@ services:
             - REDIS_CA=${REDIS_CA}
             - REDIS_KEEP_ALIVE=${REDIS_KEEP_ALIVE}
             - ENABLE_BULLMQ_DASHBOARD=${ENABLE_BULLMQ_DASHBOARD}
+
         ports:
             - '${PORT}:${PORT}'
+
         healthcheck:
             test: ['CMD', 'curl', '-f', 'http://localhost:${PORT}/api/v1/ping']
             interval: 10s
             timeout: 5s
             retries: 5
             start_period: 30s
+
+        # monta un volumen nombrado para que persista la clave y datos de Flowise
         volumes:
-            - ~/.flowise:/root/.flowise
+            - flowise_data:/root/.flowise
+
         entrypoint: /bin/sh -c "sleep 3; flowise start"
+
+        labels:
+            - traefik.docker.network=dokploy-network
+            - traefik.http.routers.accesoit-flowise-1ixwmk-3-web.rule=Host(`flowise.accesoit.com.ar`)
+            - traefik.http.routers.accesoit-flowise-1ixwmk-3-web.entrypoints=web
+            - traefik.http.services.accesoit-flowise-1ixwmk-3-web.loadbalancer.server.port=3002
+            - traefik.http.routers.accesoit-flowise-1ixwmk-3-web.service=accesoit-flowise-1ixwmk-3-web
+            - traefik.http.routers.accesoit-flowise-1ixwmk-3-web.middlewares=redirect-to-https@file
+            - traefik.http.routers.accesoit-flowise-1ixwmk-3-websecure.rule=Host(`flowise.accesoit.com.ar`)
+            - traefik.http.routers.accesoit-flowise-1ixwmk-3-websecure.entrypoints=websecure
+            - traefik.http.services.accesoit-flowise-1ixwmk-3-websecure.loadbalancer.server.port=3002
+            - traefik.http.routers.accesoit-flowise-1ixwmk-3-websecure.service=accesoit-flowise-1ixwmk-3-websecure
+            - traefik.http.routers.accesoit-flowise-1ixwmk-3-websecure.tls.certresolver=letsencrypt
+            - traefik.enable=true
+
+        networks:
+            - dokploy-network
+
+networks:
+    dokploy-network:
+        external: true
+
+volumes:
+    flowise_data:
