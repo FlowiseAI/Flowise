@@ -232,6 +232,7 @@ const APIKey = () => {
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
+        refresh(page, pageLimit)
     }
 
     const refresh = (page, limit) => {
