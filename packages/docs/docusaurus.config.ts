@@ -525,7 +525,7 @@ const config: Config = {
                 },
                 {
                     type: 'dropdown',
-                    label: 'Using AnswerAI',
+                    label: 'Using Answer',
                     position: 'left',
                     items: [
                         {
