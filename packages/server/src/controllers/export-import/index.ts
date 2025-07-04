@@ -39,7 +39,7 @@ const importData = async (req: Request, res: Response, next: NextFunction) => {
         }
 
         await exportImportService.importData(importData, orgId, workspaceId, subscriptionId)
-        return res.json({ message: 'success' })
+        return res.status(StatusCodes.OK).json({ message: 'success' })
     } catch (error) {
         next(error)
     }
