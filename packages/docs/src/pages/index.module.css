@@ -663,6 +663,10 @@
         grid-template-columns: 1fr;
     }
 
+    .commandmentsGrid {
+        grid-template-columns: 1fr !important;
+    }
+
     .commandment {
         flex-direction: column;
         text-align: center;
@@ -712,6 +716,75 @@
 
     .flyoutContent {
         font-size: 0.85rem;
+    }
+
+    /* Feature Cards Mobile Responsiveness */
+    .featuresSection .row .col {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .featuresSection .row .col.col--6 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Also target pricing section and any other grids */
+    .pricingSection .row .col {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .pricingSection .row .col.col--4,
+    .pricingSection .row .col.col--6 {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    /* Global override for any section with cards */
+    .container .row .col {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .featureCard {
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+    }
+
+    .featureCard h3 {
+        font-size: 1.3rem;
+    }
+
+    .featureCard p {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .featureCardCTA {
+        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
+    }
+
+    /* Pricing Cards Mobile */
+    .pricingCard {
+        margin-bottom: 1.5rem;
+        min-height: auto;
+        padding: 1.5rem;
+    }
+
+    .pricingCardHighlighted {
+        transform: none;
+        margin-bottom: 1.5rem;
+    }
+
+    .pricingCardHighlighted:hover {
+        transform: translateY(-5px);
     }
 }
 

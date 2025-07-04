@@ -13,7 +13,9 @@ function HomepageHeader() {
             </div>
             <div className={styles.heroContent}>
                 <img src='img/answerai-logo-600-wide-white.png' alt='AnswerAI Logo' className={styles.heroLogo} />
-                <h1 className={styles.heroTitle}>AI for ALL, <em>not for the few.</em> </h1>
+                <h1 className={styles.heroTitle}>
+                    AI for ALL, <em>not for the few.</em>{' '}
+                </h1>
                 <p className={styles.heroSubtitle}>Building a decentralized, open, and creative future you can trust.</p>
                 <div className={styles.heroCTAs}>
                     <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
@@ -46,7 +48,7 @@ function MissionSection() {
         <section className={styles.missionSection}>
             <div className='container'>
                 <div className='row'>
-                    <div className='col col--12'>
+                    <div className='col col--6'>
                         <h2>The Problem We Face</h2>
                         <p>
                             We live in a world where power over AI is centralized—controlled by corporations, governments, and unelected
@@ -63,12 +65,12 @@ function MissionSection() {
                             </a>
                         </div>
                     </div>
-                    {/* <div className='col col--6'>
+                    <div className='col col--6'>
                         <div className={styles.videoContainer}>
                             <iframe
                                 width='100%'
                                 height='315'
-                                src='https://www.youtube.com/embed/McrDhKBA5Ac'
+                                src='https://www.youtube.com/embed/2HVcHMaaMM0'
                                 title='AnswerAI Vision'
                                 frameBorder='0'
                                 allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
@@ -76,7 +78,7 @@ function MissionSection() {
                                 className={styles.youtubeVideo}
                             ></iframe>
                         </div>
-                    </div> */}
+                    </div>
                 </div>
                 <div className={styles.beliefsSection}>
                     <h2>Our Commitment to AI Independence</h2>
@@ -159,6 +161,34 @@ function FeaturesSection() {
         <section className={styles.featuresSection}>
             <div className='container'>
                 <h2 className='text--center'>What We&apos;re Building</h2>
+                <div
+                    style={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        padding: '1.5rem',
+                        marginBottom: '2rem',
+                        borderRadius: '8px',
+                        textAlign: 'center'
+                    }}
+                >
+                    <h3 style={{ color: 'white', margin: '0 0 0.5rem 0', fontSize: '1.2rem' }}>
+                        🚀 Introducing Alpha 0.42 - Our Complete AI Workforce Platform
+                    </h3>
+                    <a
+                        href='/blog/what-we-are-building'
+                        style={{
+                            background: 'white',
+                            color: '#667eea',
+                            fontWeight: 'bold',
+                            textDecoration: 'none',
+                            padding: '0.5rem 1rem',
+                            borderRadius: '4px',
+                            display: 'inline-block',
+                            fontSize: '0.9rem'
+                        }}
+                    >
+                        Read Our Full Story →
+                    </a>
+                </div>
                 <div className='row'>
                     <div className='col col--6'>
                         <div className={clsx(styles.featureCard, styles.commandment)}>
@@ -200,7 +230,7 @@ function FeaturesSection() {
                                     your online experience with ease.
                                 </p>
                                 <a href='/browser-sidekick' className={styles.featureCardCTA}>
-                                   Learn About Sidekick →
+                                    Learn About Sidekick →
                                 </a>
                             </div>
                         </div>
@@ -338,8 +368,8 @@ function PricingSection() {
                                 <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>AI Services</h3>
                                 <div className={styles.pricingHighlight}>Professional Partners</div>
                                 <p style={{ marginBottom: '1.5rem' }}>
-                                    Connect with Last Rev for custom AI implementations,
-                                    training, and ongoing support for your specific business needs.
+                                    Connect with Last Rev for custom AI implementations, training, and ongoing support for your specific
+                                    business needs.
                                 </p>
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <div style={{ marginBottom: '0.5rem' }}>✓ Certified implementation partner</div>
