@@ -505,7 +505,7 @@ const config: Config = {
 
     themeConfig: {
         // Replace with your project's social card
-        image: 'img/answerai-social-card.png',
+        image: 'img/answer-angent-ai-ogimage.png',
         colorMode: {
             defaultMode: 'dark',
             disableSwitch: false,
