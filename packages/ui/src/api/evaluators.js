@@ -1,6 +1,6 @@
 import client from './client'
 
-const getAllEvaluators = () => client.get('/evaluators')
+const getAllEvaluators = (params) => client.get('/evaluators', { params })
 
 //evaluators
 const createEvaluator = (body) => client.post(`/evaluators`, body)

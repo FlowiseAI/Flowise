@@ -39,7 +39,9 @@ const getAllChatMessages = async (
     messageId?: string,
     feedback?: boolean,
     feedbackTypes?: ChatMessageRatingType[],
-    activeWorkspaceId?: string
+    activeWorkspaceId?: string,
+    page?: number,
+    pageSize?: number
 ): Promise<ChatMessage[]> => {
     try {
         const dbResponse = await utilGetChatMessage({
@@ -54,7 +56,9 @@ const getAllChatMessages = async (
             messageId,
             feedback,
             feedbackTypes,
-            activeWorkspaceId
+            activeWorkspaceId,
+            page,
+            pageSize
         })
         return dbResponse
     } catch (error) {

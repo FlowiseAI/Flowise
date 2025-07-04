@@ -510,7 +510,8 @@ const CustomAssistantConfigurePreview = () => {
         } else if (setting === 'viewMessages') {
             setViewMessagesDialogProps({
                 title: 'View Messages',
-                chatflow: canvas.chatflow
+                chatflow: canvas.chatflow,
+                isChatflow: false
             })
             setViewMessagesDialogOpen(true)
         } else if (setting === 'viewLeads') {

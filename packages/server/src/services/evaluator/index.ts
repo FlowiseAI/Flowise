@@ -4,13 +4,25 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { Evaluator } from '../../database/entities/Evaluator'
 import { EvaluatorDTO } from '../../Interface.Evaluation'
-import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 
-const getAllEvaluators = async (workspaceId?: string) => {
+const getAllEvaluators = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
-        const results: Evaluator[] = await appServer.AppDataSource.getRepository(Evaluator).findBy(getWorkspaceSearchOptions(workspaceId))
-        return EvaluatorDTO.fromEntities(results)
+        const queryBuilder = appServer.AppDataSource.getRepository(Evaluator).createQueryBuilder('ev').orderBy('ev.updatedDate', 'DESC')
+        if (workspaceId) queryBuilder.andWhere('ev.workspaceId = :workspaceId', { workspaceId })
+        if (page > 0 && limit > 0) {
+            queryBuilder.skip((page - 1) * limit)
+            queryBuilder.take(limit)
+        }
+        const [data, total] = await queryBuilder.getManyAndCount()
+        if (page > 0 && limit > 0) {
+            return {
+                total,
+                data: EvaluatorDTO.fromEntities(data)
+            }
+        } else {
+            return EvaluatorDTO.fromEntities(data)
+        }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

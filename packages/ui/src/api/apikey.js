@@ -1,6 +1,6 @@
 import client from './client'
 
-const getAllAPIKeys = () => client.get('/apikey')
+const getAllAPIKeys = (params) => client.get('/apikey', { params })
 
 const createNewAPI = (body) => client.post(`/apikey`, body)
 
