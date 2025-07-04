@@ -1,0 +1,174 @@
+---
+id: apps
+title: Answer Agent Apps Documentation
+sidebar_label: Apps
+---
+
+import clsx from 'clsx'
+import styles from '@site/src/pages/index.module.css'
+
+# Answer Agent Apps Documentation
+
+Answer Agent Apps are modular, AI-powered applications built on top of our Flowise infrastructure. Each app leverages specific AI models and processing pipelines to solve targeted business problems.
+
+:::tip Marketing Overview
+For a comprehensive overview of our apps with demos and use cases, visit our [Apps Marketing Page](/apps).
+:::
+
+## Architecture Overview
+
+Answer Agent Apps follow a microservice architecture pattern where each app:
+
+-   **Operates independently** with its own processing pipeline
+-   **Shares common infrastructure** (authentication, storage, monitoring)
+-   **Utilizes specialized AI models** optimized for specific tasks
+-   **Provides RESTful APIs** for integration with external systems
+
+<div className={clsx(styles.missionSection, styles.appsPageSection)}>
+  <div className="container">
+
+    <h2 className="text--center">Current Apps</h2>
+
+### CSV Transformer
+
+**Technical Stack:** Python pandas, OpenAI GPT-4, custom data validation pipelines
+
+The CSV Transformer leverages natural language processing and structured data algorithms to intelligently clean, transform, and validate CSV data.
+
+**Core Features:**
+
+-   **Schema Detection:** Automatic column type inference and validation
+-   **Data Cleaning:** Null handling, duplicate detection, format standardization
+-   **AI-Powered Transformations:** Natural language descriptions converted to pandas operations
+-   **Validation Rules:** Configurable data quality checks and constraints
+
+**API Endpoints:**
+
+```http
+POST /api/v1/csv-transformer/upload
+POST /api/v1/csv-transformer/transform
+GET  /api/v1/csv-transformer/status/{job_id}
+GET  /api/v1/csv-transformer/download/{job_id}
+```
+
+**Processing Pipeline:**
+
+1. **File Validation:** Format validation, size checks, security scanning
+2. **Schema Analysis:** Column detection, type inference, relationship mapping
+3. **Transformation Engine:** AI-guided data operations with rollback capability
+4. **Quality Assurance:** Automated testing against specified criteria
+5. **Export Generation:** Multiple format outputs (CSV, Excel, JSON, Parquet)
+
+### Image Creator
+
+**Technical Stack:** DALL-E 3, Stable Diffusion XL, custom fine-tuned models, CDN delivery
+
+The Image Creator combines multiple state-of-the-art generative AI models with intelligent prompt engineering and post-processing pipelines.
+
+**Core Capabilities:**
+
+-   **Text-to-Image Generation:** Multi-model ensemble for optimal results
+-   **Style Transfer:** Neural style transfer using VGG-based architectures
+-   **Image Enhancement:** Super-resolution, noise reduction, artifact removal
+-   **Batch Processing:** Queue-based generation for multiple images
+
+**API Endpoints:**
+
+```http
+POST /api/v1/image-creator/generate
+POST /api/v1/image-creator/enhance
+POST /api/v1/image-creator/style-transfer
+GET  /api/v1/image-creator/job/{job_id}
+```
+
+**Generation Pipeline:**
+
+1. **Prompt Analysis:** NLP preprocessing, intent classification, safety filtering
+2. **Model Selection:** Dynamic routing based on prompt characteristics and quality requirements
+3. **Generation Engine:** Multi-stage diffusion process with guidance control
+4. **Post-Processing:** Upscaling, color correction, format optimization
+5. **Content Delivery:** CDN-optimized delivery with progressive loading
+
+**Supported Formats:** PNG, JPEG, WebP, SVG (vector outputs)
+**Resolution Options:** 512x512, 1024x1024, 1536x1536, 2048x2048
+
+## Apps in Development
+
+### Call Analysis (Q2 2025)
+
+**Technical Foundation:** Whisper ASR, GPT-4 Turbo, custom NER models, real-time streaming
+
+-   **Speech Recognition:** Multi-language ASR with custom vocabulary adaptation
+-   **Sentiment Analysis:** Real-time emotion detection using fine-tuned transformers
+-   **Entity Extraction:** Custom NER for business-specific terminology
+-   **Integration:** Webhooks for CRM systems, calendar applications
+
+### Ticket Analysis (Q2 2025)
+
+**Technical Foundation:** BERT-based classification, priority scoring algorithms, knowledge graphs
+
+-   **Auto-Classification:** Multi-label ticket categorization with confidence scoring
+-   **Priority Routing:** ML-based urgency prediction and agent matching
+-   **Knowledge Mining:** Automated solution extraction from historical tickets
+-   **API Integration:** Zendesk, ServiceNow, Jira Service Management connectors
+
+### Video Creation (Q3 2025)
+
+**Technical Foundation:** RunwayML, stable video diffusion, custom synthesis pipelines
+
+-   **Text-to-Video:** Prompt-based video generation with scene composition
+-   **Avatar Generation:** Custom spokesperson creation with voice synthesis
+-   **Template Engine:** Configurable video templates for marketing workflows
+-   **Multi-format Export:** MP4, WebM, GIF with compression optimization
+
+### Agent Builder (Q4 2025)
+
+**Technical Foundation:** Flowise visual editor, LangChain integration, containerized deployment
+
+-   **Visual Workflow Designer:** Drag-and-drop agent configuration interface
+-   **Multi-LLM Support:** Provider-agnostic model switching and fallback chains
+-   **Custom Connectors:** API integration builder with authentication handling
+-   **Deployment Pipeline:** One-click deployment to cloud or on-premise environments
+
+### Company Dashboards (Q1 2026)
+
+**Technical Foundation:** Time-series databases, real-time analytics, custom visualization engine
+
+-   **Data Aggregation:** Multi-source data connectors with ETL pipelines
+-   **Predictive Analytics:** Trend analysis and forecasting models
+-   **Custom Visualizations:** Interactive charts with drill-down capabilities
+-   **Role-based Access:** Granular permissions and data filtering
+
+## Integration & Deployment
+
+### Authentication
+
+All apps use the centralized AnswerAI authentication system supporting:
+
+-   OAuth 2.0 / OpenID Connect
+-   API key authentication
+-   Role-based access control (RBAC)
+-   Multi-tenant isolation
+
+### Deployment Options
+
+-   **Cloud Hosted:** Managed infrastructure with auto-scaling
+-   **On-Premise:** Self-hosted deployment with Docker/Kubernetes
+-   **Hybrid:** Edge computing for sensitive data processing
+
+### Monitoring & Observability
+
+-   **Performance Metrics:** Request latency, throughput, error rates
+-   **Cost Tracking:** Per-app usage monitoring and billing
+-   **Audit Logging:** Complete activity trails for compliance
+-   **Health Checks:** Automated monitoring with alerting
+
+## Getting Started
+
+1. **Access Apps:** Visit [studio.theanswer.ai](https://studio.theanswer.ai)
+2. **API Access:** Generate API keys in your dashboard
+3. **Documentation:** Explore specific app endpoints in our [API Reference](/docs/api)
+4. **Support:** Join our [Discord community](https://discord.gg/X54ywt8pzj) for technical support
+
+  </div>
+</div>
