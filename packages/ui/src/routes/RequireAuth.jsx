@@ -4,17 +4,20 @@ import PropTypes from 'prop-types'
 import { useLocation } from 'react-router-dom'
 import { useConfig } from '@/store/context/ConfigContext'
 import { useAuth } from '@/hooks/useAuth'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import useNotifier from '@/utils/useNotifier'
 
 import { enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
 // material-ui
-import { Button, Dialog, DialogContent, Typography, Stack, DialogActions, CircularProgress } from '@mui/material'
-import { IconExternalLink, IconCreditCard } from '@tabler/icons-react'
+import { Button, Dialog, DialogContent, Typography, Stack, DialogActions, CircularProgress, Box } from '@mui/material'
+import { IconExternalLink, IconCreditCard, IconLogout, IconHelp, IconX } from '@tabler/icons-react'
 
 // API
 import accountApi from '@/api/account.api'
+
+// Hooks
+import useApi from '@/hooks/useApi'
 
 /**
  * Checks if a feature flag is enabled
@@ -40,6 +43,7 @@ const checkFeatureFlag = (features, display, children) => {
 
 export const RequireAuth = ({ permission, display, children }) => {
     const location = useLocation()
+    const dispatch = useDispatch()
     const { isCloud, isOpenSource, isEnterpriseLicensed } = useConfig()
     const { hasPermission } = useAuth()
     const isGlobal = useSelector((state) => state.auth.isGlobal)
@@ -50,6 +54,8 @@ export const RequireAuth = ({ permission, display, children }) => {
     useNotifier()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+
+    const logoutApi = useApi(accountApi.logout)
 
     const [showOrgPastDueDialog, setShowOrgPastDueDialog] = useState(false)
     const [isBillingLoading, setIsBillingLoading] = useState(false)
@@ -78,6 +84,22 @@ export const RequireAuth = ({ permission, display, children }) => {
         } finally {
             setIsBillingLoading(false)
         }
+    }
+
+    const handleLogout = () => {
+        logoutApi.request()
+        enqueueSnackbar({
+            message: 'Logging out...',
+            options: {
+                key: new Date().getTime() + Math.random(),
+                variant: 'success',
+                action: (key) => (
+                    <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                        <IconX />
+                    </Button>
+                )
+            }
+        })
     }
 
     // Step 1: Authentication Check
@@ -143,21 +165,54 @@ export const RequireAuth = ({ permission, display, children }) => {
                         </DialogContent>
 
                         <DialogActions sx={{ p: 3, pt: 0 }}>
-                            <Button
-                                variant='contained'
-                                color='primary'
-                                onClick={handleBillingPortalClick}
-                                disabled={isBillingLoading}
-                                startIcon={isBillingLoading ? <CircularProgress size={20} /> : <IconExternalLink />}
-                                fullWidth
-                                sx={{
-                                    borderRadius: 2,
-                                    height: 48,
-                                    fontSize: '1rem'
-                                }}
-                            >
-                                {isBillingLoading ? 'Opening Billing Portal...' : 'Go to Billing Portal'}
-                            </Button>
+                            <Stack spacing={2} sx={{ width: '100%' }}>
+                                <Button
+                                    variant='contained'
+                                    color='primary'
+                                    onClick={handleBillingPortalClick}
+                                    disabled={isBillingLoading}
+                                    startIcon={isBillingLoading ? <CircularProgress size={20} /> : <IconExternalLink />}
+                                    fullWidth
+                                    sx={{
+                                        borderRadius: 2,
+                                        height: 48,
+                                        fontSize: '1rem'
+                                    }}
+                                >
+                                    {isBillingLoading ? 'Opening Billing Portal...' : 'Go to Billing Portal'}
+                                </Button>
+
+                                <Box sx={{ display: 'flex', gap: 2 }}>
+                                    <a href='mailto:support@flowiseai.com' rel='noopener noreferrer' target='_blank'>
+                                        <Button
+                                            variant='outlined'
+                                            color='primary'
+                                            startIcon={<IconHelp />}
+                                            fullWidth
+                                            sx={{
+                                                borderRadius: 2,
+                                                height: 40
+                                            }}
+                                        >
+                                            Contact Support
+                                        </Button>
+                                    </a>
+
+                                    <Button
+                                        variant='outlined'
+                                        color='error'
+                                        onClick={handleLogout}
+                                        startIcon={<IconLogout />}
+                                        fullWidth
+                                        sx={{
+                                            borderRadius: 2,
+                                            height: 40
+                                        }}
+                                    >
+                                        Logout
+                                    </Button>
+                                </Box>
+                            </Stack>
                         </DialogActions>
                     </Dialog>
                 </>
