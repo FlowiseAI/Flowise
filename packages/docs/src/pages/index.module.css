@@ -1,9 +1,8 @@
-.features {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 2rem 0;
-    width: 100%;
+.heroTitle {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
 }
 
 .heroSection {
@@ -40,53 +39,11 @@
     align-items: center;
     height: 100%;
     width: 100%;
+    max-width: 800px;
     padding: 2rem;
     box-sizing: border-box;
     color: white;
-}
-
-.heroChat {
-    font-size: 2rem;
-    font-weight: bold;
-    text-align: center;
-    padding-top: 2rem;
-    width: 100%;
-}
-
-.heroChatInput {
-    width: 100%;
-    max-width: 600px;
-    height: 10px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 2px solid #00ffff;
-    border-radius: 25px;
-    color: #ffffff;
-    font-size: 2rem;
-    padding: 0 20px;
-    outline: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.heroChatInput:focus {
-    background-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-}
-
-.heroChatTypeAhead {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 3.2rem;
-    color: #00ffff;
-    text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
-    opacity: 0.7;
-    pointer-events: none;
+    margin: 0 auto;
 }
 
 .heroSubtitle {
@@ -106,8 +63,8 @@
 
 .heroCTAs {
     display: flex;
-    flex-direction: row;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     gap: 1.5rem;
     margin-top: 2rem;
     width: 100%;
@@ -115,70 +72,674 @@
 
 .ctaButton {
     display: inline-block;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
     font-weight: bold;
     text-decoration: none;
-    border-radius: 4px;
     transition: all 0.3s ease;
+    border: 2px solid;
+}
+
+.ctaPrimary {
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    color: #fff;
+    border-radius: 50px;
+    padding: 1.2rem 3rem;
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+    border: none;
+}
+
+.ctaPrimary:hover {
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+    transform: translateY(-2px);
+    color: #fff;
+}
+
+.secondaryLinks {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.secondaryLink {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.secondaryLink:hover {
+    color: #00ffff;
+    background: rgba(0, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.chromeIcon {
+    width: 16px;
+    height: 16px;
+}
+
+.ctaDevelopers {
     background-color: #00ffff;
     color: #000;
-    border: 2px solid #00ffff;
 }
 
-.ctaButton:hover {
+.ctaDevelopers:hover {
     background-color: transparent;
     color: #00ffff;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
-.visionSection,
-.missionSection {
+.ctaAlpha {
+    background-color: #ff00ff;
+    color: #fff;
+    border-color: #ff00ff;
+}
+
+.ctaAlpha:hover {
+    background-color: transparent;
+    color: #ff00ff;
+}
+
+.ctaChromeExtension {
+    background-color: #00ff00;
+    color: #000;
+    border-color: #00ff00;
+}
+
+.ctaChromeExtension:hover {
+    background-color: transparent;
+    color: #00ff00;
+}
+
+.missionSection,
+.featuresSection,
+.macAppTeaserSection,
+.pricingSection {
     background-color: rgba(0, 0, 0, 0.8);
     color: #fff;
     padding: 4rem 2rem;
+}
+
+.missionSection h2,
+.featuresSection h2,
+.macAppTeaserSection h2,
+.pricingSection h2 {
+    color: #00ffff;
+    margin-bottom: 2rem;
+}
+
+.videoContainer {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+}
+
+.youtubeVideo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.beliefsSection {
+    margin-top: 4rem;
     text-align: center;
 }
 
-.visionSection h2,
-.missionSection h2 {
-    color: #00ffff;
-    margin-bottom: 1rem;
+.beliefsSection h2 {
+    font-size: 2.5rem;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 3rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
-.featureIcon {
+.commandments {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Commandments Grid Layout */
+.pyramidContainer {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 0;
+}
+
+.commandmentsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.commandmentCard {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+    border: 2px solid rgba(0, 255, 255, 0.4);
+    border-radius: 12px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.commandmentCard:hover {
+    border-color: rgba(0, 255, 255, 0.8);
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(0, 255, 255, 0.15));
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 255, 255, 0.3);
+}
+
+.commandmentCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.commandmentCard:hover::before {
+    opacity: 1;
+}
+
+.commandmentNumber {
+    font-size: 3rem;
+    font-weight: bold;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: 'Courier New', monospace;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.6));
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.commandmentTitle {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #00ffff;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.commandmentDescription {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+}
+
+.commandmentCardFull {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.15), rgba(0, 255, 255, 0.15));
+    border: 2px solid rgba(0, 255, 255, 0.6);
+}
+
+.commandmentCardFull .commandmentNumber {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+}
+
+.commandmentCardFull .commandmentTitle {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.commandmentCardFull .commandmentDescription {
+    font-size: 1.2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Remove old pyramid styles */
+.pyramidRow {
+    display: none;
+}
+
+.pyramidCard {
+    display: none;
+}
+
+.featuresSection {
+    text-align: center;
+}
+
+.featureCard {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    margin-bottom: 2rem;
+}
+
+.featureCard:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 255, 255, 0.2);
+    border-color: rgba(0, 255, 255, 0.6);
+}
+
+.featureCard h3 {
+    color: #00ffff;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.featureCard p {
+    flex: 1;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.featureCardCTA {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
+}
+
+.featureCardCTA:hover {
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 0, 255, 0.3);
+    color: #fff;
+}
+
+.macAppTeaserSection {
+    text-align: center;
+}
+
+.macAppIcon {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 20px rgba(0, 255, 255, 0.5));
+}
+
+/* Apps Page Specific Styles */
+.appIcon {
     font-size: 3rem;
     margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.3));
+}
+
+.appFeatures {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.appFeatures span {
+    background: rgba(0, 255, 255, 0.1);
+    color: #00ffff;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    border: 1px solid rgba(0, 255, 255, 0.3);
+}
+
+.comingSoonSection {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(10, 0, 20, 0.8));
+}
+
+.comingSoonCard {
+    min-height: 200px;
+    margin-bottom: 2rem;
+}
+
+.comingSoonIcon {
+    font-size: 2.5rem;
+    min-width: 4rem;
+    text-align: center;
+    filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.5));
+}
+
+.stepCard {
+    text-align: center;
+    min-height: 250px;
+}
+
+.stepNumber {
+    font-size: 3rem;
+    font-weight: bold;
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+    font-family: 'Courier New', monospace;
+}
+
+.ctaSection {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.05), rgba(0, 255, 255, 0.05));
+    border-top: 1px solid rgba(0, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+/* Integration Section Styles */
+.integrationCard {
+    min-height: 180px;
+    margin-bottom: 2rem;
+    transition: all 0.3s ease;
+}
+
+.integrationCard:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 255, 255, 0.15);
+    border-color: rgba(0, 255, 255, 0.6);
+}
+
+.integrationIcon {
+    font-size: 2.5rem;
+    min-width: 4rem;
+    text-align: center;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.4));
+    margin-bottom: 0.5rem;
+}
+
+/* YouTube Video Styles */
+.videoCard {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.08), rgba(0, 255, 255, 0.08));
+    border: 1px solid rgba(0, 255, 255, 0.4);
+    min-height: 500px;
+}
+
+.videoCard:hover {
+    border-color: rgba(0, 255, 255, 0.8);
+    box-shadow: 0 25px 50px rgba(0, 255, 255, 0.15);
+}
+
+/* Subscription Banner Styles */
+.subscriptionBanner {
+    margin: 0 auto !important;
+    padding: 1.5rem 2rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.12), rgba(0, 255, 255, 0.12)) !important;
+    border: 1px solid rgba(0, 255, 255, 0.5) !important;
+    transition: all 0.3s ease;
+}
+
+.subscriptionBanner:hover {
+    border-color: rgba(0, 255, 255, 0.8);
+    box-shadow: 0 10px 30px rgba(0, 255, 255, 0.25);
+    transform: translateY(-2px);
+}
+
+.subscriptionBannerContent {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 300px;
+}
+
+.subscriptionBannerIcon {
+    font-size: 2rem !important;
+    margin: 0 !important;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.6));
+}
+
+.subscriptionBannerText {
+    text-align: left !important;
+    margin: 0 !important;
+}
+
+.subscriptionBannerButton {
+    flex-shrink: 0;
+}
+
+@media screen and (max-width: 768px) {
+    .subscriptionBanner {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 1.5rem !important;
+    }
+
+    .subscriptionBannerContent {
+        justify-content: center;
+        min-width: auto;
+        text-align: center;
+    }
+
+    .subscriptionBannerText {
+        text-align: center !important;
+    }
+}
+
+/* Pricing Section Styles */
+.pricingSection {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(10, 0, 20, 0.8));
+}
+
+.pricingCard {
+    background: linear-gradient(135deg, rgba(255, 0, 255, 0.1), rgba(0, 255, 255, 0.1));
+    border: 1px solid rgba(0, 255, 255, 0.3);
+    border-radius: 16px;
+    text-align: center;
+    min-height: 500px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: all 0.3s ease;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.pricingCard:hover {
+    border-color: rgba(0, 255, 255, 0.6);
+    box-shadow: 0 20px 40px rgba(0, 255, 255, 0.2);
+    transform: translateY(-5px);
+}
+
+.pricingCardHighlighted {
+    border: 2px solid #00ffff;
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.15), rgba(255, 0, 255, 0.15));
+    transform: scale(1.08) translateY(-10px);
+    box-shadow: 0 25px 50px rgba(0, 255, 255, 0.3);
+    z-index: 2;
+}
+
+.pricingCardHighlighted:hover {
+    transform: scale(1.08) translateY(-15px);
+    box-shadow: 0 30px 60px rgba(0, 255, 255, 0.4);
+}
+
+.pricingIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.5));
+}
+
+.pricingHighlight {
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 1rem 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.pricingCallout {
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+    border: 2px solid rgba(0, 255, 255, 0.3);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+@media screen and (max-width: 1200px) {
+    .heroContent {
+        max-width: 700px;
+    }
 }
 
 @media screen and (max-width: 996px) {
-    .heroChat {
-        font-size: 1.5rem;
+    .heroContent {
+        max-width: 90%;
+        padding: 1.5rem;
+    }
+
+    .heroTitle {
+        font-size: 2rem;
     }
 
     .heroSubtitle {
         font-size: 1.2rem;
     }
 
-    .heroChatInput {
-        max-width: 90%;
-        height: 40px;
-        font-size: 0.9rem;
-    }
-
-    .heroChatTypeAhead {
-        font-size: 2rem;
-        top: 20px;
-    }
-
     .heroCTAs {
-        flex-direction: column;
-        align-items: center;
         gap: 1rem;
     }
 
-    .ctaButton {
-        width: 80%;
+    .ctaPrimary {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+    }
+
+    .secondaryLinks {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .commandments {
+        grid-template-columns: 1fr;
+    }
+
+    .commandment {
+        flex-direction: column;
         text-align: center;
     }
+
+    .commandmentNumber {
+        align-self: center;
+    }
+
+    .beliefsSection h2 {
+        font-size: 2rem;
+    }
+
+    /* Pyramid Responsive Adjustments */
+    .pyramidContainer {
+        padding: 1rem 0;
+    }
+
+    .pyramidCard {
+        height: 60px;
+    }
+
+    .pyramidCard .commandmentNumber {
+        font-size: 2rem;
+    }
+
+    .pyramidTop,
+    .pyramidLeft,
+    .pyramidRight,
+    .pyramidCenter {
+        width: 100px;
+    }
+
+    .pyramidBase {
+        width: 280px;
+    }
+
+    .pyramidFlyout {
+        min-width: 280px;
+        max-width: 300px;
+        padding: 1rem;
+    }
+
+    .flyoutTitle strong {
+        font-size: 1rem;
+    }
+
+    .flyoutContent {
+        font-size: 0.85rem;
+    }
+}
+
+.animatedIntegrationsWrapper {
+    margin: 2rem 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(15, 20, 25, 0.8) 0%, rgba(25, 35, 45, 0.8) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.animatedIntegrationsWrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.animatedIntegrationsWrapper:hover::before {
+    opacity: 1;
 }

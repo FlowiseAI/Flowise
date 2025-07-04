@@ -50,3 +50,93 @@
 .button--primary:hover {
     color: var(--color-primary-contrast);
 }
+
+/* Marketing Pages Dark Theme Enforcement */
+[data-theme='dark'] {
+    --ifm-background-color: #000000;
+    --ifm-background-surface-color: #111111;
+    --ifm-navbar-background-color: rgba(0, 0, 0, 0.95);
+    --ifm-navbar-link-color: #ffffff;
+}
+
+/* Hide theme toggle on marketing pages (pages with forced dark theme) */
+body[data-theme='dark'] .navbar__toggle,
+[data-theme='dark'] .navbar__toggle {
+    display: none !important;
+}
+
+/* Show theme toggle only on docs pages */
+.docs-wrapper .navbar__toggle,
+.docs-doc-page .navbar__toggle,
+[class*='docusaurus-'] .navbar__toggle {
+    display: flex !important;
+}
+
+/* Force theme toggle to show on any page under /docs */
+[data-theme] .navbar__toggle {
+    display: none !important;
+}
+
+.docs-wrapper [data-theme] .navbar__toggle,
+.docs-doc-page [data-theme] .navbar__toggle {
+    display: flex !important;
+}
+
+/* Enhanced Marketing Page Styles */
+[data-theme='dark'] .navbar {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.95), rgba(10, 0, 20, 0.95));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+[data-theme='dark'] .navbar__brand img {
+    filter: brightness(1.1);
+}
+
+[data-theme='dark'] .navbar__link {
+    color: rgba(255, 255, 255, 0.9);
+    transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .navbar__link:hover {
+    color: #00ffff;
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+}
+
+[data-theme='dark'] .navbar__link--active {
+    color: #00ffff;
+}
+
+/* Footer enhancements for dark theme */
+[data-theme='dark'] .footer {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(10, 0, 20, 0.95));
+    border-top: 1px solid rgba(0, 255, 255, 0.2);
+}
+
+/* Enhanced button styles for marketing pages */
+[data-theme='dark'] .button--primary {
+    background: linear-gradient(45deg, #ff00ff, #00ffff);
+    border: none;
+    color: #fff;
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+[data-theme='dark'] .button--primary:hover {
+    background: linear-gradient(45deg, #00ffff, #ff00ff);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Responsive navbar enhancements */
+@media (max-width: 996px) {
+    [data-theme='dark'] .navbar-sidebar {
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(10, 0, 20, 0.95));
+        backdrop-filter: blur(20px);
+    }
+
+    [data-theme='dark'] .navbar-sidebar__brand {
+        border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    }
+}

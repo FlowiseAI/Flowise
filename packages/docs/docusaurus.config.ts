@@ -519,7 +519,7 @@ const config: Config = {
             },
             items: [
                 {
-                    to: '/docs/intro',
+                    to: '/getting-started',
                     label: 'Getting Started',
                     position: 'left'
                 },
@@ -529,15 +529,19 @@ const config: Config = {
                     position: 'left',
                     items: [
                         {
-                            to: '/docs/browser',
-                            label: 'Browser Extension'
+                            to: '/agents',
+                            label: 'Agents'
                         },
                         {
-                            to: '/docs/chat',
-                            label: 'Chatbot'
+                            to: '/chat',
+                            label: 'Chat'
                         },
                         {
-                            to: '/docs/sidekick-studio',
+                            to: '/browser-sidekick',
+                            label: 'Browser Sidekick'
+                        },
+                        {
+                            to: '/sidekick-studio',
                             label: 'Studio'
                         }
                     ]
@@ -547,6 +551,10 @@ const config: Config = {
                     label: 'Developers',
                     position: 'left',
                     items: [
+                        {
+                            to: '/developers',
+                            label: 'Join the Sprint'
+                        },
                         {
                             to: '/docs/developers',
                             label: 'Developer Guide'
@@ -566,13 +574,31 @@ const config: Config = {
                     ]
                 },
                 {
-                    to: '/docs/use-cases',
-                    label: 'Use Cases',
-                    position: 'left'
+                    type: 'dropdown',
+                    label: 'Resources',
+                    position: 'left',
+                    items: [
+                        {
+                            to: '/learn',
+                            label: 'Learn'
+                        },
+                        {
+                            to: '/ai-workshops',
+                            label: 'AI Workshops'
+                        },
+                        {
+                            to: '/docs/use-cases',
+                            label: 'Use Cases'
+                        },
+                        {
+                            to: '/docs/community',
+                            label: 'Support'
+                        }
+                    ]
                 },
                 {
-                    to: '/docs/community',
-                    label: 'Support',
+                    to: '/blog',
+                    label: 'Blog',
                     position: 'left'
                 },
                 {
@@ -594,24 +620,36 @@ const config: Config = {
                     title: 'Docs',
                     items: [
                         {
-                            to: '/docs/intro',
+                            to: '/getting-started',
                             label: 'Getting Started'
                         },
                         {
-                            to: '/docs/browser',
-                            label: 'Browser Extension'
+                            to: '/agents',
+                            label: 'Agents'
                         },
                         {
-                            to: '/docs/chat',
-                            label: 'Chatbot'
+                            to: '/browser-sidekick',
+                            label: 'Browser Sidekick'
                         },
                         {
-                            to: '/docs/sidekick-studio',
+                            to: '/chat',
+                            label: 'Chat'
+                        },
+                        {
+                            to: '/sidekick-studio',
                             label: 'Studio'
                         },
                         {
+                            to: '/ai-workshops',
+                            label: 'AI Workshops'
+                        },
+                        {
+                            to: '/developers',
+                            label: 'Join the Sprint'
+                        },
+                        {
                             to: '/docs/developers',
-                            label: 'Developers'
+                            label: 'Developer Docs'
                         }
                     ]
                 },
