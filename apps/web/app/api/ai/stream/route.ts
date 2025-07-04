@@ -38,12 +38,12 @@ export async function POST(req: Request) {
         } = await req.json()
 
         const sidekickId = sidekick?.id
-        console.log('POST /api/ai/stream', {
-            user: user.id,
-            chatId,
-            organzation: user.organizationId,
-            sidekickId
-        })
+        // console.log('POST /api/ai/stream', {
+        //     user: user.id,
+        //     chatId,
+        //     organzation: user.organizationId,
+        //     sidekickId
+        // })
 
         const { accessToken } = await auth0.getAccessToken({
             authorizationParams: { organization: user.organizationId }

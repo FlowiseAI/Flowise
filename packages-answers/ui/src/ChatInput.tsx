@@ -9,7 +9,6 @@ import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import { IconCircleDot } from '@tabler/icons-react'
 
-import { throttle } from '@utils/throttle'
 import { useAnswers } from './AnswersContext'
 
 import type { Sidekick, StarterPrompt } from 'types'
@@ -25,11 +24,10 @@ interface ChatInputProps {
     isWidget?: boolean
     sidekicks?: Sidekick[]
     uploadedFiles: FileUpload[]
-    setUploadedFiles: (files: FileUpload[]) => void
+    setUploadedFiles: React.Dispatch<React.SetStateAction<FileUpload[]>>
 }
 
-const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedFiles }: ChatInputProps) => {
-    const defaultPlaceholderValue = 'How can you help me accomplish my goal?'
+const ChatInput = ({ uploadedFiles, setUploadedFiles }: ChatInputProps) => {
     const [inputValue, setInputValue] = useState('')
     const [isDragging, setIsDragging] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
@@ -40,22 +38,23 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
     const [isLoadingRecording, setIsLoadingRecording] = useState(false)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
     const recordingIntervalRef = useRef<number | undefined>(undefined)
-    const { chat, journey, messages, sendMessage, isLoading, sidekick, gptModel, startNewChat, chatbotConfig, handleAbort } = useAnswers()
+    const { messages, sendMessage, isLoading, sidekick, gptModel, chatbotConfig, handleAbort } = useAnswers()
     const constraints = sidekick?.constraints
     const [isMessageStopping, setIsMessageStopping] = useState(false)
-    const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
-    const [sourceDialogProps, setSourceDialogProps] = useState({})
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-    const throttledScroll = React.useCallback(
-        throttle(() => {
-            scrollRef?.current?.scrollTo({ top: scrollRef.current.scrollHeight })
-        }, 300),
-        [scrollRef]
-    )
+    const recordedAudioUrl = React.useMemo(() => {
+        if (!recordedAudio) return ''
+        return URL.createObjectURL(recordedAudio)
+    }, [recordedAudio])
 
-    // useEffect(() => {
-    //     // if (messages?.length && isLoading) throttledScroll()
-    // }, [chat, journey, messages, scrollRef])
+    useEffect(() => {
+        return () => {
+            if (recordedAudioUrl) {
+                URL.revokeObjectURL(recordedAudioUrl)
+            }
+        }
+    }, [recordedAudioUrl])
 
     useEffect(() => {
         if (isRecording) {
@@ -75,46 +74,77 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         setInputValue(event.target.value)
     }
 
-    const handleSubmit = async () => {
-        if (!inputValue && uploadedFiles.length === 0 && !recordedAudio) return
-
-        const files = uploadedFiles.map((file: FileUpload) => ({
-            data: file.data,
-            type: file.type,
-            name: file.name,
-            mime: file.mime
-        }))
-
-        if (recordedAudio) {
+    const convertAudioFileToFileUpload = (file: File): Promise<FileUpload> => {
+        return new Promise((resolve) => {
             const reader = new FileReader()
-            reader.readAsDataURL(recordedAudio)
+            reader.readAsDataURL(file)
+
             reader.onload = (evt) => {
-                if (!evt?.target?.result) return
-                files.push({
-                    data: evt.target.result as string,
-                    type: 'file',
-                    name: `audio_${Date.now()}.wav`,
-                    mime: recordedAudio?.type
+                if (!evt?.target?.result) {
+                    console.warn('[convertAudioFileToFileUpload] FileReader result is empty')
+                    return
+                }
+
+                const audioUrl = URL.createObjectURL(file)
+                const audio = new Audio(audioUrl)
+
+                const finalize = (duration: number) => {
+                    URL.revokeObjectURL(audioUrl)
+                    resolve({
+                        data: evt.target?.result as string,
+                        preview: '',
+                        type: 'audio',
+                        name: file.name,
+                        mime: file.type,
+                        duration
+                    })
+                }
+
+                audio.addEventListener('loadedmetadata', () => {
+                    if (audio.duration === Infinity) {
+                        console.warn('[convertAudioFileToFileUpload] Duration is Infinity. Seeking to trigger timeupdate...')
+                        audio.currentTime = 1e10
+
+                        audio.addEventListener('timeupdate', function onTimeUpdate() {
+                            audio.removeEventListener('timeupdate', onTimeUpdate)
+                            finalize(audio.duration)
+                        })
+                    } else {
+                        finalize(audio.duration)
+                    }
                 })
 
-                sendMessage({
-                    content: inputValue,
-                    chatId: chat?.id,
-                    files,
-                    sidekick,
-                    gptModel
+                audio.addEventListener('error', (e) => {
+                    console.error('[convertAudioFileToFileUpload] Audio failed to load:', e)
+                    URL.revokeObjectURL(audioUrl)
                 })
             }
-        } else {
-            sendMessage({
-                content: inputValue,
-                chatId: chat?.id,
-                files,
-                sidekick,
-                gptModel
-            })
+
+            reader.onerror = (e) => {
+                console.error('[convertAudioFileToFileUpload] FileReader error:', e)
+            }
+        })
+    }
+
+    const handleSubmit = async () => {
+        if (!inputValue && !!uploadedFiles?.length && !recordedAudio) return
+
+        const fileUploads: FileUpload[] = [...uploadedFiles]
+
+        if (recordedAudio) {
+            const audioUpload = await convertAudioFileToFileUpload(recordedAudio)
+            audioUpload.isQuestion = true
+            fileUploads.push(audioUpload)
         }
 
+        sendMessage({
+            content: inputValue,
+            files: fileUploads,
+            sidekick,
+            gptModel
+        })
+
+        // Clear all states *after* message is sent
         setInputValue('')
         setUploadedFiles([])
         setRecordedAudio(null)
@@ -124,20 +154,60 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
     }
 
     const isFileAllowedForUpload = (file: File) => {
-        let acceptFile = false
-        if (constraints?.isImageUploadAllowed) {
-            const fileType = file.type
-            const sizeInMB = file.size / 1024 / 1024
+        const fileType = file.type
+        const sizeInMB = file.size / 1024 / 1024
+        let isAllowed = false
+        let error = ''
+        const isImageType = fileType.startsWith('image/')
+        const isAudioType = fileType.startsWith('audio/')
+        if (isAudioType && constraints?.isSpeechToTextEnabled) {
+            if (sizeInMB > 25) {
+                error = `Audio file too large (max 25MB): ${file.name}`
+            } else {
+                let found = false
+                constraints?.uploadSizeAndTypes?.forEach((allowed) => {
+                    if (allowed.fileTypes.includes(fileType)) {
+                        found = true
+                    }
+                })
+                if (!found) {
+                    error = `Audio file type not supported: ${file.name}`
+                } else {
+                    isAllowed = true
+                }
+            }
+        } else if (isImageType && constraints?.isImageUploadAllowed) {
+            let found = false
             constraints?.uploadSizeAndTypes?.forEach((allowed) => {
                 if (allowed.fileTypes.includes(fileType) && sizeInMB <= allowed.maxUploadSize) {
-                    acceptFile = true
+                    found = true
+                } else if (allowed.fileTypes.includes(fileType) && sizeInMB > allowed.maxUploadSize) {
+                    error = `Image file too large (max ${allowed.maxUploadSize}MB): ${file.name}`
                 }
             })
+            if (!found && !error) {
+                error = `Image file type not supported: ${file.name}`
+            } else if (found) {
+                isAllowed = true
+            }
+        } else {
+            error = `File type not supported: ${file.name}`
         }
-        if (!acceptFile) {
-            alert(`Cannot upload file. Kindly check the allowed file types and maximum allowed size.`)
+        if (!isAllowed && error) {
+            setErrorMessage(error)
         }
-        return acceptFile
+        return isAllowed
+    }
+
+    const getAcceptedFileTypes = () => {
+        const acceptedTypes: string[] = []
+        if (constraints?.isImageUploadAllowed) {
+            acceptedTypes.push('image/*')
+        }
+        if (constraints?.isSpeechToTextEnabled) {
+            acceptedTypes.push('audio/*')
+        }
+        return acceptedTypes.join(',')
     }
 
     const handleFileUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -151,6 +221,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         setIsDragging(false)
 
         const files: File[] = []
+
         if (event.dataTransfer.files.length > 0) {
             files.push(...Array.from(event.dataTransfer.files))
         }
@@ -199,18 +270,21 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
     }
 
     const processFiles = async (files: FileList | File[]) => {
-        let validFiles = []
-        for (const file of files) {
+        setErrorMessage(null)
+        const allFileUploads: FileUpload[] = []
+        for (const file of Array.from(files)) {
             if (isFileAllowedForUpload(file)) {
-                const preview = await createFilePreview(file)
-                validFiles.push(preview)
+                const upload = await createFilePreview(file)
+                allFileUploads.push(upload)
             }
         }
-        setUploadedFiles((prevFiles) => [...prevFiles, ...validFiles])
+        if (allFileUploads.length > 0) {
+            setUploadedFiles((prevFiles) => [...prevFiles, ...allFileUploads])
+        }
     }
 
     const handleRemoveFile = (index: number) => {
-        setUploadedFiles((prevFiles: FileUpload[]) => prevFiles.filter((_, i) => i !== index))
+        setUploadedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index))
     }
 
     const handleRemoveAudio = () => {
@@ -222,30 +296,60 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         return new Promise((resolve) => {
             const reader = new FileReader()
             const { name } = file
+
             reader.onload = (evt) => {
                 if (!evt?.target?.result) return
                 const { result } = evt.target
-                let previewUrl
-                if (file.type.startsWith('audio/')) {
-                    previewUrl = '' // Could use audio icon like ChatMessage
-                } else if (file.type.startsWith('image/')) {
-                    previewUrl = URL.createObjectURL(file)
-                }
-                resolve({
+
+                const base: Omit<FileUpload, 'preview'> = {
                     data: result as string,
-                    preview: previewUrl || '',
                     type: 'file',
                     name,
                     mime: file.type
-                })
+                }
+
+                if (file.type.startsWith('audio/')) {
+                    const audioUrl = URL.createObjectURL(file)
+                    const audio = new Audio(audioUrl)
+
+                    audio.addEventListener('loadedmetadata', () => {
+                        const finalize = (duration: number) => {
+                            URL.revokeObjectURL(audioUrl)
+                            const audioPreviewSvg = `data:image/svg+xml;utf8,
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <polygon points="5 3 19 12 5 21 5 3" fill="%230099FF" />
+</svg>`
+                            resolve({
+                                ...base,
+                                preview: audioPreviewSvg,
+                                duration
+                            })
+                        }
+
+                        if (audio.duration === Infinity) {
+                            const onDurationChange = () => {
+                                audio.removeEventListener('durationchange', onDurationChange)
+                                finalize(audio.duration)
+                            }
+                            audio.addEventListener('durationchange', onDurationChange)
+                        } else {
+                            finalize(audio.duration)
+                        }
+                    })
+                } else if (file.type.startsWith('image/')) {
+                    const imagePreviewUrl = URL.createObjectURL(file)
+                    resolve({
+                        ...base,
+                        preview: imagePreviewUrl
+                    })
+                } else {
+                    // For non-audio/image files (e.g., PDF, docx)
+                    resolve({ ...base, preview: '' })
+                }
             }
+
             reader.readAsDataURL(file)
         })
-    }
-
-    const clearPreviews = () => {
-        uploadedFiles.forEach((file) => URL.revokeObjectURL(file.preview))
-        setUploadedFiles([])
     }
 
     const handleAudioRecordStart = () => {
@@ -254,20 +358,44 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
             .then((stream) => {
                 mediaRecorderRef.current = new MediaRecorder(stream)
                 mediaRecorderRef.current.start()
+
+                // [handleAudioRecordStart] Recording started
                 setIsRecording(true)
                 setRecordingTime(0)
                 setRecordingStatus('')
 
-                mediaRecorderRef.current.ondataavailable = (event) => {
+                mediaRecorderRef.current.ondataavailable = async (event) => {
+                    // [ondataavailable] Event received
+
                     const audioBlob = event.data
-                    const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/webm' })
-                    setRecordedAudio(audioFile)
+                    const audioFile = new File([audioBlob], `${Date.now()}.webm`, { type: 'audio/webm' })
+
                     if (isLoadingRecording) {
-                        handleSubmit()
+                        // [ondataavailable] isLoadingRecording = true. Sending message...'
+                        const audioUpload = await convertAudioFileToFileUpload(audioFile)
+
+                        sendMessage({
+                            content: inputValue,
+                            files: [...uploadedFiles, audioUpload],
+                            sidekick,
+                            gptModel
+                        })
+
+                        // Reset state
+                        setInputValue('')
+                        setUploadedFiles([])
+                        setRecordedAudio(null)
+                        setRecordingStatus('')
+                        setIsLoadingRecording(false)
+                        setRecordingTime(0)
+                    } else {
+                        // [ondataavailable] Storing recorded audio for later
+                        setRecordedAudio(audioFile)
                     }
                 }
 
                 mediaRecorderRef.current.onstop = () => {
+                    // [onstop] Recording stopped
                     setIsRecording(false)
                     stream.getTracks().forEach((track) => track.stop())
                 }
@@ -279,13 +407,6 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
             })
     }
 
-    const handleAudioRecordStop = () => {
-        if (mediaRecorderRef.current) {
-            mediaRecorderRef.current.stop()
-            setRecordingStatus(`Recording stopped. Duration: ${formatTime(recordingTime)}`)
-        }
-    }
-
     const formatTime = (seconds: number) => {
         const minutes = Math.floor(seconds / 60)
             .toString()
@@ -294,7 +415,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         return `${minutes}:${remainingSeconds}`
     }
 
-    const handleKeyPress = (e: any) => {
+    const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             handleSubmit()
             e.preventDefault()
@@ -312,11 +433,6 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
         }
     }
 
-    const onSourceDialogClick = (data: any, title: string) => {
-        setSourceDialogProps({ data, title })
-        setSourceDialogOpen(true)
-    }
-
     const handlePromptSelected = (prompt: StarterPrompt) => {
         sendMessage({ content: prompt.prompt, sidekick, gptModel })
         setInputValue('')
@@ -324,48 +440,10 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
 
     const handleStopAndSend = () => {
         if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-            setIsLoadingRecording(true)
-            mediaRecorderRef.current.addEventListener(
-                'dataavailable',
-                async (event) => {
-                    const audioBlob = event.data
-                    const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/webm' })
-                    setRecordedAudio(audioFile)
-                    const reader = new FileReader()
-                    reader.readAsDataURL(audioFile)
-                    reader.onload = (evt) => {
-                        if (!evt?.target?.result) return
-                        const files = uploadedFiles.map((file: FileUpload) => ({
-                            data: file.data,
-                            type: file.type,
-                            name: file.name,
-                            mime: file.mime
-                        }))
-                        files.push({
-                            data: evt.target.result as string,
-                            type: 'file',
-                            name: `audio_${Date.now()}.wav`,
-                            mime: audioFile.type
-                        })
-                        sendMessage({
-                            content: inputValue,
-                            chatId: chat?.id,
-                            files,
-                            sidekick,
-                            gptModel
-                        })
-                        setInputValue('')
-                        setUploadedFiles([])
-                        setRecordedAudio(null)
-                        setRecordingStatus('')
-                        setIsLoadingRecording(false)
-                        setRecordingTime(0)
-                    }
-                },
-                { once: true }
-            )
+            setIsLoadingRecording(true) // important: triggers the submit once recording finishes
             mediaRecorderRef.current.stop()
         } else if (recordedAudio) {
+            // fallback: user recorded, then hit Send manually
             handleSubmit()
         }
     }
@@ -390,6 +468,8 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
         >
+            {errorMessage && <Box sx={{ color: 'red', mb: 1, fontWeight: 500 }}>{errorMessage}</Box>}
+
             {/* Add a stop button when message is loading */}
             {isLoading && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', mb: 2 }}>
@@ -401,7 +481,11 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
 
             {!messages?.length ? (
                 <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', alignItems: 'flex-end' }}>
-                    <DefaultPrompts prompts={chatbotConfig?.starterPrompts} onPromptSelected={handlePromptSelected} />
+                    <DefaultPrompts
+                        prompts={chatbotConfig?.starterPrompts}
+                        onPromptSelected={handlePromptSelected}
+                        handleChange={() => {}}
+                    />
                 </Box>
             ) : null}
 
@@ -463,7 +547,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                         >
                             <CloseIcon fontSize='small' style={{ fontSize: '0.75rem' }} />
                         </IconButton>
-                        {file.mime.startsWith('image/') ? (
+                        {file.mime && file.mime.startsWith('image/') && file.preview ? (
                             <img
                                 src={file.preview}
                                 alt={file.name}
@@ -475,21 +559,54 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                                     backgroundColor: '#fff'
                                 }}
                             />
+                        ) : file.mime && file.mime.startsWith('audio/') && file.preview ? (
+                            <Box
+                                sx={{
+                                    width: '60px',
+                                    height: '60px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: '#fff',
+                                    borderRadius: 2,
+                                    overflow: 'hidden'
+                                }}
+                            >
+                                {file.preview.startsWith('data:image') ? (
+                                    <img src={file.preview} alt='Audio icon' style={{ width: '24px', height: '24px' }} />
+                                ) : (
+                                    <audio controls preload='metadata' src={file.preview} style={{ width: '100%' }}>
+                                        <track kind='captions' />
+                                    </audio>
+                                )}
+                            </Box>
                         ) : (
-                            <Box display='flex' alignItems='center'>
-                                <span style={{ fontSize: '0.8em', color: '#fff' }}>{file.name}</span>
+                            <Box
+                                sx={{
+                                    width: '60px',
+                                    height: '60px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: '#666',
+                                    borderRadius: 2,
+                                    padding: 1
+                                }}
+                            >
+                                <span style={{ fontSize: '0.65em', color: '#fff', textAlign: 'center' }}>{file.name}</span>
                             </Box>
                         )}
                     </Box>
                 ))}
-                {recordedAudio && (
+                {recordedAudioUrl && (
                     <Box
                         sx={{
                             position: 'relative'
                         }}
                     >
-                        {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                        <audio controls src={URL.createObjectURL(recordedAudio)} />
+                        <audio controls preload='metadata' src={recordedAudioUrl}>
+                            <track kind='captions' />
+                        </audio>
                         <IconButton
                             onClick={handleRemoveAudio}
                             size='small'
@@ -534,7 +651,7 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                         },
                         startAdornment: (
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, pl: 1 }}>
-                                <IconCircleDot sx={{ color: 'red', animation: 'pulse 1.5s infinite' }} />
+                                <IconCircleDot style={{ color: 'red', animation: 'pulse 1.5s infinite' }} />
                             </Box>
                         ),
                         endAdornment: (
@@ -573,11 +690,11 @@ const ChatInput = ({ scrollRef, isWidget, sidekicks, uploadedFiles, setUploadedF
                                 overflowY: 'auto!important'
                             }
                         },
-                        startAdornment: constraints?.isImageUploadAllowed && (
-                            <Tooltip title='Attach image'>
+                        startAdornment: (constraints?.isImageUploadAllowed || constraints?.isSpeechToTextEnabled) && (
+                            <Tooltip title='Attach file'>
                                 <IconButton component='label' sx={{ minWidth: 0 }}>
                                     <AttachFileIcon />
-                                    <input type='file' accept='image/*' hidden multiple onChange={handleFileUpload} />
+                                    <input type='file' accept={getAcceptedFileTypes()} hidden multiple onChange={handleFileUpload} />
                                 </IconButton>
                             </Tooltip>
                         ),

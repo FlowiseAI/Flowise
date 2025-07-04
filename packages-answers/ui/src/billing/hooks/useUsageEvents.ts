@@ -51,7 +51,7 @@ export function useUsageEvents(initialParams: UsageEventsParams = { page: 1, lim
     }, [params])
 
     const fetcher = useCallback(async () => {
-        console.log('Fetching with params:', params)
+        // console.log('Fetching with params:', params)
         const response = await billingApi.getUsageEvents(params)
         return response.data
     }, [params])
@@ -62,22 +62,22 @@ export function useUsageEvents(initialParams: UsageEventsParams = { page: 1, lim
     })
 
     const setPage = useCallback((page: number) => {
-        console.log('Setting page to:', page)
+        // console.log('Setting page to:', page)
         setParams((prev) => ({ ...prev, page }))
     }, [])
 
     const setLimit = useCallback((limit: number) => {
-        console.log('Setting limit to:', limit)
+        // console.log('Setting limit to:', limit)
         setParams((prev) => ({ ...prev, limit }))
     }, [])
 
     const setSorting = useCallback((sortBy: string, sortOrder: 'asc' | 'desc') => {
-        console.log('Setting sorting to:', sortBy, sortOrder)
+        // console.log('Setting sorting to:', sortBy, sortOrder)
         setParams((prev) => ({ ...prev, sortBy, sortOrder }))
     }, [])
 
     const setFilter = useCallback((filter: Record<string, any>) => {
-        console.log('Setting filter to:', filter)
+        // console.log('Setting filter to:', filter)
         setParams((prev) => ({ ...prev, filter }))
     }, [])
 

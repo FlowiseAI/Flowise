@@ -94,7 +94,7 @@ const ImageCreator = () => {
     }
 
     if (!user) {
-        console.log('ImageCreator: No user object')
+        // console.log('ImageCreator: No user object')
         return (
             <Stack spacing={3} sx={{ p: 3 }}>
                 <Typography variant='h2' component='h1'>
@@ -105,7 +105,7 @@ const ImageCreator = () => {
         )
     }
 
-    console.log('ImageCreator user loaded:', user)
+    // console.log('ImageCreator user loaded:', user)
 
     // Get available options based on selected model
     const getSizeOptions = (modelType?: string) => {
@@ -212,12 +212,12 @@ const ImageCreator = () => {
     const fetchArchivedImages = async (page = 1) => {
         setArchiveLoading(true)
         try {
-            console.log('Fetching archived images for user:', {
-                userId: user.id || user.sub,
-                organizationId: user.organizationId || user.org_id,
-                email: user.email,
-                orgName: user.org_name
-            })
+            // console.log('Fetching archived images for user:', {
+            //     userId: user.id || user.sub,
+            //     organizationId: user.organizationId || user.org_id,
+            //     email: user.email,
+            //     orgName: user.org_name
+            // })
 
             // Follow the same pattern as chat flow - make authenticated request directly to backend
             const flowiseDomain = user.chatflowDomain || process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'
@@ -236,7 +236,7 @@ const ImageCreator = () => {
 
             if (response.ok) {
                 const data: ArchiveResponse = await response.json()
-                console.log('Archive response:', data)
+                // console.log('Archive response:', data)
                 setArchivedImages(data.images)
                 setArchivePagination(data.pagination)
             } else {
@@ -321,7 +321,7 @@ const ImageCreator = () => {
             // Follow the same pattern as chat flow - make authenticated request directly to backend
             const flowiseDomain = user.chatflowDomain || process.env.NEXT_PUBLIC_FLOWISE_DOMAIN || 'http://localhost:4000'
             const accessToken = sessionStorage.getItem('access_token')
-            console.log('ImageCreator API call:', { flowiseDomain, accessToken: !!accessToken, requestBody })
+            // console.log('ImageCreator API call:', { flowiseDomain, accessToken: !!accessToken, requestBody })
 
             if (!accessToken) {
                 console.error('No access token available for authenticated request')

@@ -105,7 +105,7 @@ export const useNavigate = () => {
     const nextRouter = useNextRouter()
     const [, setNavigationState] = useNavigationState()
     const navigate = (url: string | number, options?: { state?: any; replace?: boolean }) => {
-        console.log('[Navigation] navigate', url, options)
+        // console.log('[Navigation] navigate', url, options)
         logger.info('Navigation initiated', { url, options })
 
         // Log state changes

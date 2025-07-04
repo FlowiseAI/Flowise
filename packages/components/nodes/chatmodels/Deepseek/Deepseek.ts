@@ -1,5 +1,5 @@
-import { BaseCache } from '@langchain/core/caches'
-import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
+import { ChatDeepSeek, ChatDeepSeekInput } from '@langchain/deepseek'
+
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
@@ -27,7 +27,7 @@ class Deepseek_ChatModels implements INode {
         this.icon = 'deepseek.svg'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Deepseek large language models that use the Chat endpoint'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatOpenAI)]
+        this.baseClasses = [this.type, ...getBaseClasses(ChatDeepSeek)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -147,15 +147,15 @@ class Deepseek_ChatModels implements INode {
             nodeData.credential = nodeData.inputs?.credentialId
         }
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('deepseekApiKey', credentialData, nodeData)
+        const deepseekAIApiKey = getCredentialParam('deepseekApiKey', credentialData, nodeData)
 
-        const cache = nodeData.inputs?.cache as BaseCache
+        // const cache = nodeData.inputs?.cache as BaseCache
 
-        const obj: ChatOpenAIFields = {
-            temperature: parseFloat(temperature),
-            modelName,
-            openAIApiKey,
-            streaming: streaming ?? true
+        const obj: ChatDeepSeekInput = {
+            model: modelName,
+            temperature: temperature ? parseFloat(temperature) : undefined,
+            streaming: streaming ?? true,
+            apiKey: deepseekAIApiKey
         }
 
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
@@ -163,33 +163,29 @@ class Deepseek_ChatModels implements INode {
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
         if (timeout) obj.timeout = parseInt(timeout, 10)
-        if (cache) obj.cache = cache
+        // if (cache) obj.cache = cache as boolean | BaseCache<Generation[]> | undefined
+
         if (stopSequence) {
             const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
             obj.stop = stopSequenceArray
         }
 
         let parsedBaseOptions: any | undefined = undefined
-
         if (baseOptions) {
             try {
                 parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+                // Remove baseURL if present in baseOptions
                 if (parsedBaseOptions.baseURL) {
                     console.warn("The 'baseURL' parameter is not allowed when using the ChatDeepseek node.")
-                    parsedBaseOptions.baseURL = undefined
+                    delete parsedBaseOptions.baseURL
                 }
+                Object.assign(obj, parsedBaseOptions)
             } catch (exception) {
                 throw new Error('Invalid JSON in the BaseOptions: ' + exception)
             }
         }
 
-        const model = new ChatOpenAI({
-            ...obj,
-            configuration: {
-                baseURL: this.baseURL,
-                ...parsedBaseOptions
-            }
-        })
+        const model = new ChatDeepSeek(obj)
         return model
     }
 }

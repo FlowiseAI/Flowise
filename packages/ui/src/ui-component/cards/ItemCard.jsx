@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 // material-ui
 import { styled } from '@mui/material/styles'
-import { Box, Grid, Typography, useTheme, Tooltip } from '@mui/material'
+import { Box, Grid, Typography, useTheme } from '@mui/material'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'

@@ -172,7 +172,7 @@ const getAllTemplates = async (user: IUser | undefined) => {
             }
             templates.push(template)
         })
-        console.log('templates', templates)
+
         // const sortedTemplates = templates.sort((a, b) => a.templateName?.localeCompare(b.templateName))
         const sortedTemplates = templates
         const FlowiseDocsQnAIndex = sortedTemplates.findIndex((tmp) => tmp.templateName === 'Flowise Docs QnA')

@@ -86,7 +86,7 @@ export class App {
             // Initialize abort controllers pool
             this.abortControllerPool = new AbortControllerPool()
 
-            // Initialize API keys 
+            // Initialize API keys
             await getAPIKeys()
 
             // Initialize encryption key

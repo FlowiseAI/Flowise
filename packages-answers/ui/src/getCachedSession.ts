@@ -120,7 +120,7 @@ const getCachedSession = cache(
 
         // Check for CHATFLOW_DOMAIN_OVERRIDE to override the chatflowDomain
         if (process.env.CHATFLOW_DOMAIN_OVERRIDE) {
-            console.log('CHATFLOW_DOMAIN_OVERRIDE', process.env.CHATFLOW_DOMAIN_OVERRIDE)
+            // console.log('CHATFLOW_DOMAIN_OVERRIDE', process.env.CHATFLOW_DOMAIN_OVERRIDE)
             // Override chatflowDomain with the environment variable
             if (session?.user) {
                 session.user.chatflowDomain = process.env.CHATFLOW_DOMAIN_OVERRIDE

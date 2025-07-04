@@ -2,12 +2,13 @@
 import { useState, useCallback } from 'react'
 import { Sidekick } from '../SidekickSelect.types'
 import { useAnswers } from '../../AnswersContext'
-import { NavigateFunction } from '@/utils/navigation'
+import { Chat, SidekickListItem } from 'types'
+
+export type NavigateFn = (url: string | number, options?: { state?: any; replace?: boolean }) => void
 
 interface UseSidekickSelectionHandlersProps {
-    chat?: any
-    navigate: NavigateFunction
-    enablePerformanceLogs?: boolean
+    chat?: Chat
+    navigate: NavigateFn
 }
 
 interface UseSidekickSelectionHandlersResult {
@@ -21,11 +22,7 @@ interface UseSidekickSelectionHandlersResult {
     handleCreateNewSidekick: () => void
 }
 
-const useSidekickSelectionHandlers = ({
-    chat,
-    navigate,
-    enablePerformanceLogs = false
-}: UseSidekickSelectionHandlersProps): UseSidekickSelectionHandlersResult => {
+const useSidekickSelectionHandlers = ({ chat, navigate }: UseSidekickSelectionHandlersProps): UseSidekickSelectionHandlersResult => {
     const { setSidekick, setSidekick: setSelectedSidekick } = useAnswers()
     const [isMarketplaceDialogOpen, setIsMarketplaceDialogOpen] = useState(false)
     const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
@@ -33,7 +30,6 @@ const useSidekickSelectionHandlers = ({
 
     const handleSidekickSelect = useCallback(
         (sidekick: Sidekick) => {
-            console.log('[SidekickSelect] Sidekick selected:', sidekick.id)
             if (!chat?.id) {
                 // Update local storage first
                 const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
@@ -45,11 +41,11 @@ const useSidekickSelectionHandlers = ({
                 window.history.pushState({ sidekick, isClientNavigation: true }, '', newUrl)
 
                 // Directly initialize the chat with the sidekick data
-                setSelectedSidekick(sidekick)
-                setSidekick(sidekick)
+                setSelectedSidekick(sidekick as unknown as SidekickListItem)
+                setSidekick(sidekick as unknown as SidekickListItem)
             } else {
-                setSelectedSidekick(sidekick)
-                setSidekick(sidekick)
+                setSelectedSidekick(sidekick as unknown as SidekickListItem)
+                setSidekick(sidekick as unknown as SidekickListItem)
                 const sidekickHistory = JSON.parse(localStorage.getItem('sidekickHistory') || '{}')
                 sidekickHistory.lastUsed = sidekick
                 localStorage.setItem('sidekickHistory', JSON.stringify(sidekickHistory))

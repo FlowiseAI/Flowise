@@ -18,8 +18,8 @@ const submenuItems = [
         description: 'Intelligent conversations'
     },
     {
-        to: '/browser-extension',
-        label: 'Browser Extension',
+        to: '/browser-sidekick',
+        label: 'Browser Sidekick',
         icon: '🌐',
         description: 'AI everywhere you browse'
     },

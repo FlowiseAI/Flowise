@@ -534,11 +534,11 @@ const config: Config = {
                         },
                         {
                             to: '/chat',
-                            label: 'Chat & Sidekicks'
+                            label: 'Chat'
                         },
                         {
-                            to: '/browser-extension',
-                            label: 'Browser Extension'
+                            to: '/browser-sidekick',
+                            label: 'Browser Sidekick'
                         },
                         {
                             to: '/sidekick-studio',
@@ -628,12 +628,12 @@ const config: Config = {
                             label: 'Agents'
                         },
                         {
-                            to: '/browser-extension',
-                            label: 'Browser Extension'
+                            to: '/browser-sidekick',
+                            label: 'Browser Sidekick'
                         },
                         {
                             to: '/chat',
-                            label: 'Chat & Sidekicks'
+                            label: 'Chat'
                         },
                         {
                             to: '/sidekick-studio',

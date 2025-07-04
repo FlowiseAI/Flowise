@@ -88,7 +88,7 @@ class YoutubeLoader extends BaseDocumentLoader {
         const transcript = await YoutubeTranscript.fetchTranscript(youtubeUrl)
         const concatenatedText = transcript.map((entry: any) => entry.text).join(' ')
         // console.log(concatenatedText)
-        console.log('Video ID:', this.videoId)
+        // console.log('Video ID:', this.videoId)
         return [
             new Document({
                 pageContent: concatenatedText,

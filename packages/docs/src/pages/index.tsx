@@ -13,8 +13,8 @@ function HomepageHeader() {
             </div>
             <div className={styles.heroContent}>
                 <img src='img/answerai-logo-600-wide-white.png' alt='AnswerAI Logo' className={styles.heroLogo} />
-                <h1 className={styles.heroTitle}>AI for all, not for the few.</h1>
-                <p className={styles.heroSubtitle}>Building an open, creative, and decentralized future you can trust.</p>
+                <h1 className={styles.heroTitle}>AI for ALL, <em>not for the few.</em> </h1>
+                <p className={styles.heroSubtitle}>Building a decentralized, open, and creative future you can trust.</p>
                 <div className={styles.heroCTAs}>
                     <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
                         Join Alpha
@@ -46,12 +46,16 @@ function MissionSection() {
         <section className={styles.missionSection}>
             <div className='container'>
                 <div className='row'>
-                    <div className='col col--6'>
+                    <div className='col col--12'>
                         <h2>The Problem We Face</h2>
                         <p>
                             We live in a world where power over AI is centralized—controlled by corporations, governments, and unelected
                             technocrats. These entities harvest our data, profit from our creativity, and shape our digital reality. The
-                            most powerful technology ever created is being used not to uplift, but to manipulate.
+                            most powerful technology ever created is being used not to uplift, but to manipulate. <br />
+                            <br />
+                            Our mission is to create a decentralized, open, and creative future where individuals can own their digital
+                            identity, run autonomous agents, and share, monetize, or protect their data as they choose. We're just getting
+                            started, will you join us?
                         </p>
                         <div style={{ marginTop: '2rem' }}>
                             <a href='/blog/what-is-the-answer-ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
@@ -59,7 +63,7 @@ function MissionSection() {
                             </a>
                         </div>
                     </div>
-                    <div className='col col--6'>
+                    {/* <div className='col col--6'>
                         <div className={styles.videoContainer}>
                             <iframe
                                 width='100%'
@@ -72,7 +76,7 @@ function MissionSection() {
                                 className={styles.youtubeVideo}
                             ></iframe>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
                 <div className={styles.beliefsSection}>
                     <h2>Our Commitment to AI Independence</h2>
@@ -175,7 +179,7 @@ function FeaturesSection() {
                         <div className={clsx(styles.featureCard, styles.commandment)}>
                             <div className={styles.comingSoonIcon}>💬</div>
                             <div>
-                                <h3>Chat & Sidekicks</h3>
+                                <h3>Chat</h3>
                                 <p>
                                     Engage with your AI agents naturally through a powerful chat interface. Get instant answers, automate
                                     tasks, and streamline communication.
@@ -190,13 +194,13 @@ function FeaturesSection() {
                         <div className={clsx(styles.featureCard, styles.commandment)}>
                             <div className={styles.comingSoonIcon}>🌐</div>
                             <div>
-                                <h3>Browser Extension</h3>
+                                <h3>Browser Sidekick</h3>
                                 <p>
                                     Bring AnswerAgent directly into your browser. Access AI capabilities, automate web tasks, and enhance
                                     your online experience with ease.
                                 </p>
-                                <a href='/browser-extension' className={styles.featureCardCTA}>
-                                    Get Extension →
+                                <a href='/browser-sidekick' className={styles.featureCardCTA}>
+                                   Learn About Sidekick →
                                 </a>
                             </div>
                         </div>
@@ -334,17 +338,17 @@ function PricingSection() {
                                 <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>AI Services</h3>
                                 <div className={styles.pricingHighlight}>Professional Partners</div>
                                 <p style={{ marginBottom: '1.5rem' }}>
-                                    Connect with our network of certified Professional Service Partners for custom AI implementations,
+                                    Connect with Last Rev for custom AI implementations,
                                     training, and ongoing support for your specific business needs.
                                 </p>
                                 <div style={{ marginBottom: '1.5rem' }}>
-                                    <div style={{ marginBottom: '0.5rem' }}>✓ Certified implementation partners</div>
+                                    <div style={{ marginBottom: '0.5rem' }}>✓ Certified implementation partner</div>
                                     <div style={{ marginBottom: '0.5rem' }}>✓ Custom AI workflow development</div>
                                     <div style={{ marginBottom: '0.5rem' }}>✓ Training & ongoing support</div>
                                 </div>
                                 <div style={{ marginTop: '1.5rem' }}>
-                                    <a href='/developers' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
-                                        Find Partners
+                                    <a href='https://lastrev.com' target='_blank' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                        Contact Last Rev
                                     </a>
                                 </div>
                             </div>

@@ -40,7 +40,7 @@ function AlphaExtensionPromo() {
     return (
         <section className={clsx(styles.featuresSection, styles.comingSoonSection)} id='alpha-extension'>
             <div className='container'>
-                <h2 className='text--center'>🚀 Alpha Browser Extension - Your AI Sidekick Everywhere</h2>
+                <h2 className='text--center'>🚀 Alpha Browser Sidekick - Your AI Sidekick Everywhere</h2>
                 <p className='text--center' style={{ marginBottom: '3rem', fontSize: '1.2rem', opacity: 0.9 }}>
                     Experience the future of AI assistance right in your browser. Ask questions, get help, and boost productivity on any
                     website.
@@ -84,8 +84,8 @@ function AlphaExtensionPromo() {
                                 </div>
                             </div>
                             <div className={styles.subscriptionBannerButton}>
-                                <a href='/browser-extension' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
-                                    Get Alpha Extension
+                                <a href='/browser-sidekick' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
+                                    Get Alpha Sidekick
                                 </a>
                             </div>
                         </div>

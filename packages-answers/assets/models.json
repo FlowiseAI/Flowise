@@ -423,6 +423,13 @@
             "name": "chatAnthropic",
             "models": [
                 {
+                    "label": "claude-sonnet-4-0",
+                    "name": "claude-sonnet-4-0",
+                    "description": "Claude 4 Sonnet",
+                    "input_cost": 0.000003,
+                    "output_cost": 0.000015
+                },
+                {
                     "label": "claude-opus-4-0",
                     "name": "claude-opus-4-0",
                     "description": "Claude 4 Opus",
@@ -1210,6 +1217,18 @@
                     "name": "mistral-large-2402",
                     "input_cost": 0.002,
                     "output_cost": 0.006
+                },
+                {
+                    "label": "codestral-latsest",
+                    "name": "codestral-latest",
+                    "input_cost": 0.0002,
+                    "output_cost": 0.0006
+                },
+                {
+                    "label": "devstral-small-2505",
+                    "name": "devstral-small-2505",
+                    "input_cost": 0.0001,
+                    "output_cost": 0.0003
                 }
             ]
         },

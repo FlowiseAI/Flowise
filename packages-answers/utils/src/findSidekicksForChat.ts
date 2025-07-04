@@ -2,6 +2,7 @@ import { parseChatbotConfig, parseFlowData } from './normalizeSidekick'
 import { User } from 'types'
 import { prisma } from '@db/client'
 import auth0 from '@utils/auth/auth0'
+import { INodeParams } from '@flowise/components'
 
 interface Sidekick {
     id: string
@@ -27,7 +28,13 @@ interface Sidekick {
     }
 }
 
-export async function findSidekicksForChat(user: User) {
+interface FindSidekicksOptions {
+    lightweight?: boolean
+}
+
+export async function findSidekicksForChat(user: User, options: FindSidekicksOptions = {}) {
+    const { lightweight = false } = options
+
     let token
     try {
         const { accessToken } = await auth0.getAccessToken({
@@ -83,6 +90,43 @@ export async function findSidekicksForChat(user: User) {
             const uploadProcessingNodes = ['chatOpenAI', 'chatAnthropic', 'awsChatBedrock', 'azureChatOpenAI', 'chatGoogleGenerativeAI']
 
             const sidekicks: Sidekick[] = result.map((chatflow: any) => {
+                // In lightweight mode, skip heavy processing
+                if (lightweight) {
+                    const categories = (chatflow.categories || chatflow.category ? [chatflow.category] : [])
+                        .filter(Boolean)
+                        .map((c) => c.trim().split(';'))
+                        .flat()
+
+                    return {
+                        id: chatflow.id || '',
+                        label: chatflow.name || '',
+                        visibility: chatflow.visibility || [],
+                        chatflow: {
+                            id: chatflow.id,
+                            name: chatflow.name,
+                            description: chatflow.description,
+                            category: chatflow.category,
+                            categories: categories,
+                            isOwner: chatflow.isOwner,
+                            canEdit: chatflow.canEdit
+                        },
+                        answersConfig: chatflow.answersConfig,
+                        chatflowId: chatflow.id || '',
+                        chatflowDomain: chatflowDomain,
+                        category: chatflow.category,
+                        categories,
+                        isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
+                        isFavorite: false,
+                        // In lightweight mode, return minimal constraints
+                        constraints: {
+                            isSpeechToTextEnabled: false,
+                            isImageUploadAllowed: false,
+                            uploadSizeAndTypes: []
+                        }
+                    }
+                }
+
+                // Full processing for non-lightweight mode
                 let isSpeechToTextEnabled = false
                 if (chatflow.speechToText) {
                     const speechToTextProviders = JSON.parse(chatflow.speechToText)
@@ -142,7 +186,19 @@ export async function findSidekicksForChat(user: User) {
                         isImageUploadAllowed,
                         uploadSizeAndTypes: [
                             ...imgUploadSizeAndTypes,
-                            { fileTypes: ['audio/mpeg', 'audio/wav', 'audio/webm'], maxUploadSize: 10 }
+                            {
+                                fileTypes: [
+                                    'audio/mpeg', // .mp3, .mpeg
+                                    'audio/x-m4a',
+                                    'audio/mp3', // .mp3 (some browsers)
+                                    'audio/mp4', // .mp4, .m4a
+                                    'audio/mpga', // .mpga
+                                    'audio/m4a', // .m4a (some browsers)
+                                    'audio/wav', // .wav
+                                    'audio/webm' // .webm
+                                ],
+                                maxUploadSize: 10
+                            }
                         ]
                     }
                 }
@@ -160,6 +216,7 @@ export async function findSidekicksForChat(user: User) {
         }
     } catch (err) {
         console.error('Error fetching chatflows:', err)
+        throw err
     }
 }
 

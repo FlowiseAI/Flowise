@@ -26,8 +26,8 @@ function parseEnvironmentOutput(output) {
       const equalIndex = line.indexOf('=');
       currentKey = line.substring(0, equalIndex).trim();
       currentValue = line.substring(equalIndex + 1);
-    } else if (currentKey !== null && line.trim() !== '') {
-      // This is a continuation line for the current variable
+    } else if (currentKey !== null) {
+      // This is a continuation line for the current variable (preserve empty lines too)
       currentValue += '\n' + line;
     }
   }

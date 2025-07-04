@@ -13,7 +13,7 @@ function ChatHero() {
                 <ThreeJsScene className={styles.threeJsCanvas} />
             </div>
             <div className={styles.heroContent}>
-                <h1 className={styles.heroTitle}>Chat & Sidekicks</h1>
+                <h1 className={styles.heroTitle}>Chat</h1>
                 <p className={styles.heroSubtitle}>
                     Your AI conversation hub with specialized assistants. Store chat histories, switch between different agents, and access
                     powerful sidekicks for every task.
@@ -245,7 +245,7 @@ export default function Chat(): JSX.Element {
     return (
         <div data-theme='dark'>
             <Layout
-                title='Chat & Sidekicks - AI Conversation Hub'
+                title='Chat - AI Conversation Hub'
                 description='Your central hub for AI conversations with specialized sidekicks. Manage chat histories, access different AI agents, and boost productivity.'
             >
                 <ChatHero />

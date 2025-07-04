@@ -150,16 +150,6 @@ const Agentflows = () => {
         }
     }, [getAllAgentflows.data])
 
-    // Helper function to generate hrefs for agentflows
-    const getAgentflowHref = (agentflow) => {
-        return getHref(`/agentcanvas/${agentflow.id}`)
-    }
-
-    // Marketplace items don't have direct URLs since they open dialogs
-    const getMarketplaceHref = () => {
-        return null
-    }
-
     return (
         <MainCard>
             {error ? (

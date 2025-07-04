@@ -4,7 +4,7 @@ services:
       name: theanswer
       runtime: docker
       repo: https://github.com/the-answerai/theanswer
-      plan: starter
+      plan: standard
       envVars:
           # =========================================
           # Core Application Configuration
