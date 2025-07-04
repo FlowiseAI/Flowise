@@ -14,6 +14,7 @@ class API_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs?: INodeParams[]
     outputs: INodeOutputsValue[]
@@ -26,6 +27,7 @@ class API_DocumentLoaders implements INode {
         this.icon = 'api.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from an API`
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.inputs = [
             {

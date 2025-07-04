@@ -130,6 +130,7 @@ class CreateCalendarEvent_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -142,6 +143,7 @@ class CreateCalendarEvent_Tools implements INode {
         this.icon = 'google-calendar.svg'
         this.category = 'Tools'
         this.description = 'Create new events in Google Calendar'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, ...getBaseClasses(CreateCalendarEventTool)]
         this.credential = {
             label: 'Connect Credential',

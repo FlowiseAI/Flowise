@@ -22,7 +22,7 @@ class Jira_MCP implements INode {
         this.version = 1.0
         this.type = 'Salesforce MCP Tool'
         this.icon = 'sfdc.png'
-        this.category = 'Tools (MCP)'
+        this.category = 'MCP Servers'
         this.description = 'MCP server that integrates the Salesforce API'
         this.documentation = 'https://github.com/tsmztech/mcp-server-salesforce'
         this.credential = {

@@ -18,7 +18,7 @@ class AAIDeepseek_ChatModels implements INode {
     tags: string[]
 
     constructor() {
-        this.label = 'AAI ChatDeepseek'
+        this.label = 'Answer Deepseek'
         this.name = 'aaiChatDeepseek'
         this.tags = ['AAI']
         this.version = 1.0

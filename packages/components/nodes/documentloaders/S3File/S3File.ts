@@ -29,6 +29,7 @@ class S3_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs?: INodeParams[]
@@ -42,6 +43,7 @@ class S3_DocumentLoaders implements INode {
         this.icon = 's3.svg'
         this.category = 'Document Loaders'
         this.description = 'Load Data from S3 Buckets'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'AWS Credential',

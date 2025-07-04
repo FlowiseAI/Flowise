@@ -22,7 +22,7 @@ class Github_MCP implements INode {
         this.version = 1.0
         this.type = 'Github MCP Tool'
         this.icon = 'github.svg'
-        this.category = 'Tools (MCP)'
+        this.category = 'MCP Servers'
         this.description = 'MCP Server for the GitHub API'
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/github'
         this.credential = {

@@ -63,6 +63,7 @@ class Searxng_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
 
@@ -74,6 +75,7 @@ class Searxng_Tools implements INode {
         this.icon = 'SearXNG.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around SearXNG - a free internet metasearch engine'
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Base URL',

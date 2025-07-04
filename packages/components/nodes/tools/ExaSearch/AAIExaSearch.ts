@@ -1,11 +1,11 @@
 import { ExaSearchResults } from '@langchain/exa'
 import Exa from 'exa-js'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 
-const DESC = `A wrapper around Exa Search. Input should be an Exa-optimized query. Output is a JSON array of the query results`
+const DESC = `AI-powered search engine • Zero configuration required`
 
-class ExaSearch_Tools implements INode {
+class AAIExaSearch_Tools implements INode {
     label: string
     name: string
     version: number
@@ -13,19 +13,18 @@ class ExaSearch_Tools implements INode {
     type: string
     icon: string
     category: string
-    tags: string[]
     baseClasses: string[]
-    credential: INodeParams
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
-        this.label = 'Exa Search'
-        this.name = 'exaSearch'
-        this.version = 1.1
-        this.type = 'ExaSearch'
+        this.label = 'Answer Exa Search'
+        this.name = 'aaiExaSearch'
+        this.version = 1.0
+        this.type = 'AAIExaSearch'
         this.icon = 'exa.svg'
         this.category = 'Tools'
-        this.description = 'Wrapper around Exa Search API - search engine fully designed for use by LLMs'
+        this.description = 'AI-powered search engine • Zero configuration required'
         this.tags = ['AAI']
         this.inputs = [
             {
@@ -190,12 +189,6 @@ class ExaSearch_Tools implements INode {
                 description: 'Only links with a published date before this will be returned. Must be specified in ISO 8601 format.'
             }
         ]
-        this.credential = {
-            label: 'Connect Credential',
-            name: 'credential',
-            type: 'credential',
-            credentialNames: ['exaSearchApi']
-        }
         this.baseClasses = [this.type, ...getBaseClasses(ExaSearchResults)]
     }
 
@@ -212,8 +205,11 @@ class ExaSearch_Tools implements INode {
         const startPublishedDate = nodeData.inputs?.startPublishedDate as string
         const endPublishedDate = nodeData.inputs?.endPublishedDate as string
 
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const exaSearchApiKey = getCredentialParam('exaSearchApiKey', credentialData, nodeData)
+        // Use AAI default credentials instead of user-provided credentials
+        const exaSearchApiKey = process.env.AAI_DEFAULT_EXA_SEARCH_API_KEY
+        if (!exaSearchApiKey) {
+            throw new Error('AAI_DEFAULT_EXA_SEARCH_API_KEY environment variable is not set')
+        }
 
         const tool = new ExaSearchResults({
             client: new Exa(exaSearchApiKey),
@@ -237,4 +233,4 @@ class ExaSearch_Tools implements INode {
     }
 }
 
-module.exports = { nodeClass: ExaSearch_Tools }
+module.exports = { nodeClass: AAIExaSearch_Tools } 

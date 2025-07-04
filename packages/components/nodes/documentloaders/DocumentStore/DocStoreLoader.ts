@@ -11,6 +11,7 @@ class DocStore_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
@@ -23,6 +24,7 @@ class DocStore_DocumentLoaders implements INode {
         this.icon = 'dstore.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from pre-configured document stores`
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.inputs = [
             {

@@ -3,9 +3,10 @@ const { nodeClass: OriginalConversationChain } = require('./ConversationChain')
 class AAIConversationChain_Chains extends (OriginalConversationChain as any) {
     constructor(fields?: { sessionId?: string }) {
         super(fields)
-        this.label = 'AAI Conversation Chain'
+        this.label = 'Conversation Chain'
         this.name = 'aaiConversationChain'
-        this.description = 'Conversation Chain • Zero configuration required'
+        this.category = 'Chains'
+        this.description = 'Great for conversation characters and general Q&A.'
         this.tags = ['AAI']
     }
 }

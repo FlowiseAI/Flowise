@@ -1,9 +1,9 @@
-import type { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
+import { getBaseClasses } from '../../../src/utils'
+import { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 import { Tool } from '@langchain/core/tools'
-import type { CallbackManagerForToolRun } from '@langchain/core/callbacks/manager'
 
-export const desc = `Use this when you want to create an image with OpenAI. The prompt should be a string. Choose between 'dall-e-3' for a direct URL response or 'gpt-image-1' to upload the generated image to storage.`
+const desc = 'Creates images using DALL-E • Zero configuration required'
 
 export interface Headers {
     [key: string]: string
@@ -21,7 +21,6 @@ export interface RequestParameters {
     quality?: string
     response_format?: string
     style?: string
-    apiKey?: string
     format?: string
     output_compression?: number
     background?: string
@@ -31,12 +30,11 @@ export interface RequestParameters {
     userEmail?: string
 }
 
-export class DallePostTool extends Tool {
-    name = 'create_dalle_image'
+export class AAIDallePostTool extends Tool {
+    name = 'aai_create_dalle_image'
     description = desc
     prompt = ''
     model = 'dall-e-3'
-    apiKey = ''
     n = 1
     size = '1024x1024'
     quality = 'standard'
@@ -56,7 +54,6 @@ export class DallePostTool extends Tool {
         super()
         this.prompt = args?.prompt ?? this.prompt
         this.model = args?.model ?? this.model
-        this.apiKey = args?.apiKey ?? ''
         this.n = args?.n ?? this.n
         this.size = args?.size ?? this.size
         this.quality = args?.quality ?? this.quality
@@ -130,12 +127,10 @@ export class DallePostTool extends Tool {
     /** @ignore */
     async _call(input: string, _runManager?: CallbackManagerForToolRun | undefined) {
         try {
-            // Get OpenAI API key from environment variable (same as other AAI tools)
-            const openaiApiKey = process.env.AAI_DEFAULT_OPENAI_API_KEY || this.apiKey
+            // Use AAI default credentials instead of user-provided credentials
+            const openaiApiKey = process.env.AAI_DEFAULT_OPENAI_API_KEY
             if (!openaiApiKey) {
-                throw new Error(
-                    'OpenAI API key not configured. Please set AAI_DEFAULT_OPENAI_API_KEY environment variable or provide credential.'
-                )
+                throw new Error('AAI_DEFAULT_OPENAI_API_KEY environment variable is not set')
             }
 
             // Prepare request body based on model
@@ -298,7 +293,7 @@ export class DallePostTool extends Tool {
     }
 }
 
-class DallePost_Tool implements INode {
+class AAIDallePost_Tool implements INode {
     label: string
     name: string
     version: number
@@ -307,26 +302,19 @@ class DallePost_Tool implements INode {
     icon: string
     category: string
     baseClasses: string[]
-    credential: INodeParams
     inputs: INodeParams[]
     tags: string[]
 
     constructor() {
-        this.label = 'Dall-E Post'
-        this.name = 'dallePost'
+        this.label = 'Answer DALL-E Post'
+        this.name = 'aaiDallePost'
         this.version = 1.0
-        this.type = 'DallePost'
+        this.type = 'AAIDallePost'
         this.icon = 'openai.svg'
         this.category = 'Tools'
-        this.description = 'Creates an image using Dall-E'
-        this.baseClasses = [this.type, ...getBaseClasses(DallePostTool)]
+        this.description = 'Creates images using DALL-E • Zero configuration required'
+        this.baseClasses = [this.type, ...getBaseClasses(AAIDallePostTool)]
         this.tags = ['AAI']
-        this.credential = {
-            label: 'Connect Credential',
-            name: 'credential',
-            type: 'credential',
-            credentialNames: ['openAIApi']
-        }
         this.inputs = [
             {
                 label: 'Prompt',
@@ -434,7 +422,9 @@ class DallePost_Tool implements INode {
                 label: 'Output Compression',
                 name: 'output_compression',
                 type: 'string',
-                description: 'Compression level for JPEG or WebP formats (0-100)'
+                description: 'Compression level for JPEG or WebP formats (0-100)',
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Background',
@@ -445,12 +435,14 @@ class DallePost_Tool implements INode {
                     { label: 'transparent', name: 'transparent' },
                     { label: 'white', name: 'white' }
                 ],
-                default: 'auto'
+                default: 'auto',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
 
-    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<DallePostTool> {
+    async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<AAIDallePostTool> {
         const prompt = nodeData.inputs?.prompt as string
         const model = nodeData.inputs?.model as string
         const n = nodeData.inputs?.n as string
@@ -461,9 +453,6 @@ class DallePost_Tool implements INode {
         const format = nodeData.inputs?.format as string
         const output_compression = nodeData.inputs?.output_compression as string
         const background = nodeData.inputs?.background as string
-
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
 
         // Determine the correct API base URL for the Flowise server
         let baseURL: string
@@ -485,7 +474,6 @@ class DallePost_Tool implements INode {
         if (format) obj.format = format
         if (output_compression) obj.output_compression = Number.parseInt(output_compression, 10)
         if (background) obj.background = background
-        if (openAIApiKey) obj.apiKey = openAIApiKey
         obj.baseURL = baseURL
 
         // Add user context from options
@@ -500,8 +488,8 @@ class DallePost_Tool implements INode {
             obj.userEmail = options.userEmail || 'unknown@system.local'
         }
 
-        return new DallePostTool(obj)
+        return new AAIDallePostTool(obj)
     }
 }
 
-module.exports = { nodeClass: DallePost_Tool }
+module.exports = { nodeClass: AAIDallePost_Tool } 

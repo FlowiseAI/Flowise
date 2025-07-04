@@ -10,6 +10,7 @@ class GoogleCustomSearchAPI_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -22,6 +23,7 @@ class GoogleCustomSearchAPI_Tools implements INode {
         this.icon = 'google.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around Google Custom Search API - a real-time API to access Google search results'
+        this.tags = ['AAI']
         this.inputs = []
         this.credential = {
             label: 'Connect Credential',

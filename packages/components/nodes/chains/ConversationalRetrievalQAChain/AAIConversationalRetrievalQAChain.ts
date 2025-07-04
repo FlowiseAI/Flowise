@@ -3,9 +3,10 @@ const { nodeClass: OriginalConversationalRetrievalQAChain } = require('./Convers
 class AAIConversationalRetrievalQAChain_Chains extends (OriginalConversationalRetrievalQAChain as any) {
     constructor(fields?: { sessionId?: string }) {
         super(fields)
-        this.label = 'AAI Conversational Retrieval QA Chain'
+        this.label = 'Document'
         this.name = 'aaiConversationalRetrievalQAChain'
-        this.description = 'Retrieval QA Chain • Zero configuration required'
+        this.category = 'Chains'
+        this.description = 'Use for workflows that involve uploading files, chatting with large datasets, and querying/uploading information.'
         this.tags = ['AAI']
     }
 }

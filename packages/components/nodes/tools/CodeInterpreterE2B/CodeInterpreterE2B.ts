@@ -26,6 +26,7 @@ class Code_Interpreter_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     badge: string
@@ -39,6 +40,7 @@ class Code_Interpreter_Tools implements INode {
         this.icon = 'e2b.png'
         this.category = 'Tools'
         this.description = 'Execute code in a sandbox environment'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, 'Tool', ...getBaseClasses(E2BTool)]
         this.credential = {
             label: 'Connect Credential',

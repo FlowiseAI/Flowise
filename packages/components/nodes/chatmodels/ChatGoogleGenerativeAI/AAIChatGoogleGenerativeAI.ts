@@ -20,7 +20,7 @@ class AAIGoogleGenerativeAI_ChatModels implements INode {
     tags: string[]
 
     constructor() {
-        this.label = 'AAI ChatGoogleGenerativeAI'
+        this.label = 'Answer ChatGoogleGenerativeAI'
         this.name = 'aaiChatGoogleGenerativeAI'
         this.tags = ['AAI']
         this.version = 1.0

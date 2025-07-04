@@ -12,6 +12,7 @@ class SerpAPI_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -25,6 +26,7 @@ class SerpAPI_DocumentLoaders implements INode {
         this.icon = 'serp.svg'
         this.category = 'Document Loaders'
         this.description = 'Load and process data from web search results'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',

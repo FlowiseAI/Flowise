@@ -4,8 +4,9 @@ const { nodeClass: OriginalToolAgent } = require('./ToolAgent')
 class AAIToolAgent_Agents extends (OriginalToolAgent as any) {
     constructor(fields?: { sessionId?: string }) {
         super(fields)
-        this.label = 'AAI Tool Agent'
+        this.label = 'Tool Agent'
         this.name = 'aaiToolAgent'
+        this.category = 'Agents'
         this.description = 'Tool Agent • Zero configuration required'
         this.tags = ['AAI']
     }

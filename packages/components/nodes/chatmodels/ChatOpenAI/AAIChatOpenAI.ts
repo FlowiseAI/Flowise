@@ -19,7 +19,7 @@ class AAIChatOpenAI_ChatModels implements INode {
     tags: string[]
     
     constructor() {
-        this.label = 'AAI ChatOpenAI'
+        this.label = 'Answer ChatOpenAI'
         this.name = 'aaiChatOpenAI'
         this.version = 1.0
         this.type = 'AAIChatOpenAI'

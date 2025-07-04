@@ -22,7 +22,7 @@ class Contentful_MCP implements INode {
         this.version = 1.0
         this.type = 'Contentful MCP Tool'
         this.icon = 'contentful.svg'
-        this.category = 'Tools (MCP)'
+        this.category = 'MCP Servers'
         this.description = 'MCP Server for the Contentful API'
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/contentful'
         this.credential = {

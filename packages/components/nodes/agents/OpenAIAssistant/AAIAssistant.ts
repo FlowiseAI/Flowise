@@ -4,8 +4,9 @@ const { nodeClass: OriginalOpenAIAssistant } = require('./OpenAIAssistant')
 class AAIAssistant_Agents extends (OriginalOpenAIAssistant as any) {
     constructor() {
         super()
-        this.label = 'AAI Assistant'
+        this.label = 'Assistant'
         this.name = 'aaiAssistant'
+        this.category = 'Agents'
         this.description = 'OpenAI Assistant • Zero configuration required'
         this.tags = ['AAI'] // Ensure Answer tab detection
     }

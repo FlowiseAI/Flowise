@@ -17,7 +17,7 @@ class AAIGroq_ChatModels implements INode {
     tags: string[]
     
     constructor() {
-        this.label = 'AAI GroqChat'
+        this.label = 'Answer Groq'
         this.name = 'aaiGroqChat'
         this.tags = ['AAI']
         this.version = 1.0
@@ -107,5 +107,6 @@ class AAIGroq_ChatModels implements INode {
         return model
     }
 }
+
 
 module.exports = { nodeClass: AAIGroq_ChatModels } 

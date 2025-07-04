@@ -14,6 +14,7 @@ class Csv_DocumentLoaders implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    tags: string[]
 
     constructor() {
         this.label = 'Csv File'
@@ -24,6 +25,7 @@ class Csv_DocumentLoaders implements INode {
         this.category = 'Document Loaders'
         this.description = `Load data from CSV files`
         this.baseClasses = [this.type]
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Csv File',

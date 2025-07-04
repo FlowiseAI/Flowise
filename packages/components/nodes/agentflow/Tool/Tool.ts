@@ -106,7 +106,7 @@ class Tool_Agentflow implements INode {
             const returnOptions: INodeOptionsValue[] = []
             for (const nodeName in componentNodes) {
                 const componentNode = componentNodes[nodeName]
-                if (componentNode.category === 'Tools' || componentNode.category === 'Tools (MCP)') {
+                if (componentNode.category === 'Tools' || componentNode.category === 'MCP Servers') {
                     if (componentNode.tags?.includes('LlamaIndex')) {
                         continue
                     }

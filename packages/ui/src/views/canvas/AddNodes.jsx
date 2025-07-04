@@ -165,7 +165,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
         const langchainNodes = nodes.filter((nd) => !nd.tags || (!nd.tags.includes('AAI') && !nd.tags.includes('LlamaIndex') && !nd.tags.includes('Utilities')))
         const llmaindexNodes = nodes.filter((nd) => nd.tags?.includes('LlamaIndex'))
         const utilitiesNodes = nodes.filter((nd) => nd.tags?.includes('Utilities'))
-        
+
         if (newTabValue === 0) {
             return answerNodes
         }
@@ -326,7 +326,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
         setOpenDialog(false)
         onFlowGenerated()
     }
-
+    
     return (
         <>
             <StyledFab
@@ -434,8 +434,9 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                 'aria-label': 'weight'
                                             }}
                                         />
-                                        {!isAgentCanvas && (
-                                            <Tabs
+                                                                {!isAgentCanvas && (
+                            <>
+                                <Tabs
                                                 sx={{ position: 'relative', minHeight: '60px', height: '60px' }}
                                                 variant='fullWidth'
                                                 value={tabValue}
@@ -477,6 +478,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                     />
                                                 ))}
                                             </Tabs>
+                                            </>
                                         )}
 
                                         <Divider />

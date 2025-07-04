@@ -44,6 +44,7 @@ class CurrentDateTime_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
 
     constructor() {
@@ -54,6 +55,7 @@ class CurrentDateTime_Tools implements INode {
         this.icon = 'currentDateTime.svg'
         this.category = 'Tools'
         this.description = 'Get todays day, date and time.'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, 'Tool']
     }
 

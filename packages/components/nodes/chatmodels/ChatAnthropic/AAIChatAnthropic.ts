@@ -19,7 +19,7 @@ class AAIChatAnthropic_ChatModels implements INode {
     tags: string[]
     
     constructor() {
-        this.label = 'AAI ChatAnthropic'
+        this.label = 'Answer ChatAnthropic'
         this.name = 'aaiChatAnthropic'
         this.version = 1.0
         this.type = 'AAIChatAnthropic'
