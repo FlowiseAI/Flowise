@@ -415,7 +415,7 @@ const APIKey = () => {
                                 Create Key
                             </StyledPermissionButton>
                         </ViewHeader>
-                        {!isLoading && apiKeys.length <= 0 ? (
+                        {!isLoading && apiKeys?.length <= 0 ? (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
                                     <img
@@ -500,7 +500,7 @@ const APIKey = () => {
                                                 </>
                                             ) : (
                                                 <>
-                                                    {apiKeys.filter(filterKeys).map((key, index) => (
+                                                    {apiKeys?.filter(filterKeys).map((key, index) => (
                                                         <APIKeyRow
                                                             key={index}
                                                             apiKey={key}

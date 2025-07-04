@@ -30,11 +30,12 @@ const getAllApiKeysFromDB = async (workspaceId?: string, page: number = -1, limi
 const getAllApiKeys = async (workspaceId?: string, autoCreateNewKey?: boolean, page: number = -1, limit: number = -1) => {
     try {
         let keys = await getAllApiKeysFromDB(workspaceId, page, limit)
-        if (keys.data.length === 0 && autoCreateNewKey) {
+        const isEmpty = keys?.total === 0 || (Array.isArray(keys) && keys?.length === 0)
+        if (isEmpty && autoCreateNewKey) {
             await createApiKey('DefaultKey', workspaceId)
-            keys = await getAllApiKeysFromDB(workspaceId)
+            keys = await getAllApiKeysFromDB(workspaceId, page, limit)
         }
-        return { total: keys.total, data: keys.data }
+        return keys
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getAllApiKeys - ${getErrorMessage(error)}`)
     }
