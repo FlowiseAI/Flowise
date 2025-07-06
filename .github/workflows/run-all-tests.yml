@@ -28,3 +28,15 @@ jobs:
 
             - name: Run tests
               run: pnpm test
+
+            - name: Upload all test result artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: all-test-results
+                  path: '**/test-results/*.xml'
+            
+            - name: Publish Unit Test Results
+              uses: EnricoMi/publish-unit-test-result-action@v2
+              if: always()
+              with:
+                  junit_files: '**/test-results/*.xml'
