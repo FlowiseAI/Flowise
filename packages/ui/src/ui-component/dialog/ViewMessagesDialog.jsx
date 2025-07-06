@@ -250,13 +250,27 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     const onChatTypeSelected = (chatTypes) => {
-        setChatTypeFilter(chatTypes)
-        refresh(1, pageLimit, startDate, endDate, chatTypes, feedbackTypeFilter)
+        // Parse the JSON string from MultiDropdown back to an array
+        let parsedChatTypes = []
+        if (chatTypes && typeof chatTypes === 'string' && chatTypes.startsWith('[') && chatTypes.endsWith(']')) {
+            parsedChatTypes = JSON.parse(chatTypes)
+        } else if (Array.isArray(chatTypes)) {
+            parsedChatTypes = chatTypes
+        }
+        setChatTypeFilter(parsedChatTypes)
+        refresh(1, pageLimit, startDate, endDate, parsedChatTypes, feedbackTypeFilter)
     }
 
     const onFeedbackTypeSelected = (feedbackTypes) => {
-        setFeedbackTypeFilter(feedbackTypes)
-        refresh(1, pageLimit, startDate, endDate, chatTypeFilter, feedbackTypes)
+        // Parse the JSON string from MultiDropdown back to an array
+        let parsedFeedbackTypes = []
+        if (feedbackTypes && typeof feedbackTypes === 'string' && feedbackTypes.startsWith('[') && feedbackTypes.endsWith(']')) {
+            parsedFeedbackTypes = JSON.parse(feedbackTypes)
+        } else if (Array.isArray(feedbackTypes)) {
+            parsedFeedbackTypes = feedbackTypes
+        }
+        setFeedbackTypeFilter(parsedFeedbackTypes)
+        refresh(1, pageLimit, startDate, endDate, chatTypeFilter, parsedFeedbackTypes)
     }
 
     const onDeleteMessages = () => {
@@ -573,20 +587,41 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                     item: allChatMessages[i]
                 }
             } else if (Object.prototype.hasOwnProperty.call(seen, PK) && seen[PK].counter === 1) {
+                // Properly identify user and API messages regardless of order
+                const firstMessage = seen[PK].item
+                const secondMessage = item
+
+                let userContent = ''
+                let apiContent = ''
+
+                // Check both messages and assign based on role, not order
+                if (firstMessage.role === 'userMessage') {
+                    userContent = `User: ${firstMessage.content}`
+                } else if (firstMessage.role === 'apiMessage') {
+                    apiContent = `Bot: ${firstMessage.content}`
+                }
+
+                if (secondMessage.role === 'userMessage') {
+                    userContent = `User: ${secondMessage.content}`
+                } else if (secondMessage.role === 'apiMessage') {
+                    apiContent = `Bot: ${secondMessage.content}`
+                }
+
                 seen[PK] = {
                     counter: 2,
                     item: {
                         ...seen[PK].item,
-                        apiContent:
-                            seen[PK].item.role === 'apiMessage' ? `Bot: ${seen[PK].item.content}` : `User: ${seen[PK].item.content}`,
-                        userContent: item.role === 'apiMessage' ? `Bot: ${item.content}` : `User: ${item.content}`
+                        apiContent,
+                        userContent
                     }
                 }
                 filteredChatLogs.push(seen[PK].item)
             }
         }
-        setChatLogs(filteredChatLogs)
-        if (filteredChatLogs.length) return getChatPK(filteredChatLogs[0])
+        // Sort by date to maintain chronological order
+        const sortedChatLogs = filteredChatLogs.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))
+        setChatLogs(sortedChatLogs)
+        if (sortedChatLogs.length) return getChatPK(sortedChatLogs[0])
         return undefined
     }
 
@@ -930,7 +965,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                             <b style={{ marginRight: 10 }}>Feedback</b>
                             <MultiDropdown
                                 key={JSON.stringify(feedbackTypeFilter)}
-                                name='chatType'
+                                name='feedbackType'
                                 options={[
                                     {
                                         label: 'Positive',
