@@ -27,8 +27,8 @@ module.exports = {
             'jest-junit',
             {
                 outputDirectory: 'test-results',
-                outputName: 'results.xml',
-            },
-        ],
-    ],
+                outputName: 'results.xml'
+            }
+        ]
+    ]
 }
