@@ -20,11 +20,15 @@ module.exports = {
 
     // Display individual test results with the test suite hierarchy.
     verbose: true,
+
     reporters: [
         'default',
-        ['jest-junit', {
-            outputDirectory: 'test-results',
-            outputName: 'results.xml'
-        }]
-    ]
+        [
+            'jest-junit',
+            {
+                outputDirectory: 'test-results',
+                outputName: 'results.xml',
+            },
+        ],
+    ],
 }
