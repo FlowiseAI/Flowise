@@ -8,7 +8,8 @@
         "build": "tsc && gulp",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "clean": "rimraf dist",
-        "nuke": "rimraf dist node_modules .turbo"
+        "nuke": "rimraf dist node_modules .turbo",
+        "test": "jest --runInBand --detectOpenHandles --forceExit"
     },
     "keywords": [],
     "homepage": "https://flowiseai.com",
@@ -98,6 +99,7 @@
         "graphql": "^16.6.0",
         "html-to-text": "^9.0.5",
         "ioredis": "^5.3.2",
+        "jest": "^29.7.0",
         "jsdom": "^22.1.0",
         "jsonpointer": "^5.0.1",
         "jsonrepair": "^3.11.1",

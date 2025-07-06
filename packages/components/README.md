@@ -8,11 +8,17 @@ Apps integration for Flowise. Contain Nodes and Credentials.
 
 ![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true)
 
-Install:
+## Install:
 
 ```bash
 npm i flowise-components
 ```
+
+## Testing
+- Using jest
+- Create each test file alongside its relevant source file in the test file
+  - E.g. `HTTP.ts` should create `HTTP.test.ts` in `test`
+- Run all UI tests: `pnpm test`
 
 ## License
 
