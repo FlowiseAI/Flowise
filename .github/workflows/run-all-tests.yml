@@ -1,4 +1,4 @@
-name: Manual Flowise Test Run
+name: Run all Flowise tests
 
 on:
     workflow_dispatch:
