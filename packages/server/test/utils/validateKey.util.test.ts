@@ -16,7 +16,7 @@ const createMockRequest = (headers: Record<string, string> = {}): Request => {
         query: {},
         params: {},
         body: {},
-        get: jest.fn(),
+        get: jest.fn()
     } as unknown as Request
 }
 
