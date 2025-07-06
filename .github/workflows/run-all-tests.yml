@@ -1,0 +1,30 @@
+name: Manual Flowise Test Run
+
+on:
+    workflow_dispatch:
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: Install pnpm
+              run: npm install -g pnpm
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Build modules
+              run: pnpm build
+              env:
+                  NODE_OPTIONS: '--max_old_space_size=4096'
+
+            - name: Run tests
+              run: pnpm test
