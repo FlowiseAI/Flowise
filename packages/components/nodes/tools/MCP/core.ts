@@ -132,7 +132,7 @@ export async function MCPTool({
             const client = await toolkit.createClient()
 
             try {
-                const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input } }
+                const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
                 const res = await client.request(req, CallToolResultSchema)
                 const content = res.content
                 const contentString = JSON.stringify(content)
