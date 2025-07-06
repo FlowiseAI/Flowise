@@ -43,5 +43,4 @@ jobs:
               uses: EnricoMi/publish-unit-test-result-action@v2
               if: always()
               with:
-                  github_token: ${{ secrets.UNIT_TEST_PAT }}
                   files: '**/test-results/*.xml'
