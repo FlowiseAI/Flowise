@@ -54,7 +54,7 @@ const Agentflows = () => {
     const onChange = (page, pageLimit) => {
         setCurrentPage(page)
         setPageLimit(pageLimit)
-        refresh(page, pageLimit, localStorage.getItem('agentFlowVersion'))
+        refresh(page, pageLimit, agentflowVersion)
     }
 
     const refresh = (page, limit, nextView) => {
@@ -107,7 +107,7 @@ const Agentflows = () => {
     }
 
     useEffect(() => {
-        refresh(currentPage, pageLimit, agentflowVersion === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT')
+        refresh(currentPage, pageLimit, agentflowVersion)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
