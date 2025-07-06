@@ -2,6 +2,10 @@ name: Manual Flowise Test Run
 
 on:
     workflow_dispatch:
+permissions:
+    checks: write
+    pull-requests: write
+    contents: read
 
 jobs:
     test:
@@ -39,4 +43,5 @@ jobs:
               uses: EnricoMi/publish-unit-test-result-action@v2
               if: always()
               with:
-                  junit_files: '**/test-results/*.xml'
+                  github_token: ${{ secrets.UNIT_TEST_PAT }}
+                  files: '**/test-results/*.xml'
