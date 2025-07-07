@@ -31,15 +31,7 @@ const getBrowserExtensionChatflows = async (user: IUser): Promise<ChatFlow[]> =>
         // 1. Belong to the user or their organization
         // 2. Have 'Browser Extension' in their visibility settings
         // 3. Are public (isPublic must be true)
-        const queryBuilder = chatFlowRepository.createQueryBuilder('chatflow').where('chatflow.isPublic = true')
-
-        // If user is an org admin, show all org chatflows with Browser Extension visibility
-        if (user.permissions?.includes('org:manage')) {
-            queryBuilder.andWhere('chatflow.organizationId = :organizationId', { organizationId: user.organizationId })
-        } else {
-            // Otherwise only show user's own chatflows
-            queryBuilder.andWhere('chatflow.userId = :userId', { userId: user.id })
-        }
+        const queryBuilder = chatFlowRepository.createQueryBuilder('chatflow').where('chatflow.userId = :userId', { userId: user.id })
 
         // Return the complete chatflow objects with all fields
         const dbResponse = await queryBuilder.getMany()
