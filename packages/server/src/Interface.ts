@@ -61,6 +61,7 @@ export interface IUser {
     email: string
     organizationId: string
     stripeCustomerId?: string
+    defaultChatflowId?: string
     updatedDate: Date
     createdDate: Date
     permissions?: string[]
