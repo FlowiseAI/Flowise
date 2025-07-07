@@ -208,7 +208,8 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
                 startDate,
                 endDate,
                 feedback: isFeedback,
-                feedbackTypes: feedbackTypeFilters
+                feedbackTypes: feedbackTypeFilters,
+                activeWorkspaceId: workspaceId
             })
             const messageIds = messages.map((message) => message.id)
 
