@@ -227,8 +227,6 @@ class PostgresRecordManager implements RecordManagerInterface {
         const tableName = this.sanitizeTableName(this.tableName)
 
         try {
-            await queryRunner.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;')
-
             await queryRunner.manager.query(`
   CREATE TABLE IF NOT EXISTS "${tableName}" (
     uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
