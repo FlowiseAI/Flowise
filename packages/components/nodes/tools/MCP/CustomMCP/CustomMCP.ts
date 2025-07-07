@@ -181,6 +181,19 @@ class Custom_MCP implements INode {
 
             const tools = toolkit.tools ?? []
 
+            // After initializing a new toolkit, clear any stale actions
+            // from the previous configuration to prevent UI inconsistencies.
+            const availableToolNames = new Set(tools.map((t) => t.name))
+            const selectedActions = nodeData.inputs?.mcpActions
+            if (selectedActions && Array.isArray(selectedActions) && selectedActions.length > 0) {
+                const hasInvalidSelections = selectedActions.some((action) => !availableToolNames.has(action))
+                if (hasInvalidSelections) {
+                    if (nodeData.inputs) {
+                        nodeData.inputs.mcpActions = []
+                    }
+                }
+            }
+
             Custom_MCP.toolkitCache.set(cacheKey, { toolkit, tools })
 
             return tools as Tool[]
