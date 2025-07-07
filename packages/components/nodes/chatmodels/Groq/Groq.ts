@@ -28,7 +28,7 @@ class Groq_ChatModels implements INode {
         this.icon = 'groq.png'
         this.category = 'Chat Models'
         this.description = 'Wrapper around Groq API with LPU Inference Engine'
-        this.baseClasses = [this.type, ...getBaseClasses(ChatGroq)]
+        this.baseClasses = [this.type, ...getBaseClasses(FlowiseChatGroq)]
 
         this.credential = {
             label: 'Connect Credential',

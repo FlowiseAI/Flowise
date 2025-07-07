@@ -137,9 +137,9 @@ class AutoGPT_Agents implements INode {
                     })
 
                     // eslint-disable-next-line no-console
-                    // console.log('\x1b[92m\x1b[1m\n*****AutoGPT*****\n\x1b[0m\x1b[0m')
+                    //console.log('\x1b[92m\x1b[1m\n*****AutoGPT*****\n\x1b[0m\x1b[0m')
                     // eslint-disable-next-line no-console
-                    // console.log(assistantReply)
+                    //console.log(assistantReply)
                     totalAssistantReply += assistantReply + '\n'
                     executor.fullMessageHistory.push(new HumanMessage(user_input))
                     executor.fullMessageHistory.push(new AIMessage(assistantReply))

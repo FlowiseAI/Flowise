@@ -53,7 +53,6 @@ class ConversationChain_Chains implements INode {
         this.category = 'Chains'
         this.description = 'Chat models specific conversational chain with memory'
         this.baseClasses = [this.type, ...getBaseClasses(ConversationChain)]
-        this.tags = []
         this.inputs = [
             {
                 label: 'Chat Model',

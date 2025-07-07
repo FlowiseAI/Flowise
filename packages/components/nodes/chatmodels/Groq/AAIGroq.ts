@@ -95,7 +95,7 @@ class AAIGroq_ChatModels implements INode {
         }
 
         const obj: ChatGroqInput = {
-            modelName,
+            model: modelName,
             temperature: parseFloat(temperature),
             apiKey: groqApiKey,
             streaming: streaming ?? true

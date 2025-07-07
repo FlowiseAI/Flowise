@@ -41,8 +41,8 @@ class ConversationalRetrievalQAChain_Chains implements INode {
     type: string
     icon: string
     category: string
-    baseClasses: string[]
     description: string
+    baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
 
@@ -55,7 +55,6 @@ class ConversationalRetrievalQAChain_Chains implements INode {
         this.category = 'Chains'
         this.description = 'Document QA - built on RetrievalQAChain to provide a chat history component'
         this.baseClasses = [this.type, ...getBaseClasses(ConversationalRetrievalQAChain)]
-        this.tags = []
         this.inputs = [
             {
                 label: 'Chat Model',
