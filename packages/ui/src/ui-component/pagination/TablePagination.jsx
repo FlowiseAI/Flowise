@@ -65,7 +65,7 @@ const TablePagination = ({ currentPage, limit, total, onChange }) => {
                 </FormControl>
             </Box>
             {totalItems > 0 && (
-                <Typography variant='body'>
+                <Typography variant='body2'>
                     Items {activePage * itemsPerPage - itemsPerPage + 1} to{' '}
                     {activePage * itemsPerPage > totalItems ? totalItems : activePage * itemsPerPage} of {totalItems}
                 </Typography>
