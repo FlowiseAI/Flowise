@@ -52,6 +52,9 @@ class Custom_MCP implements INode {
     credential: INodeParams
     inputs: INodeParams[]
 
+    // This cache is shared across all nodes with the SAME logical configuration.
+    static toolkitCache: Map<string, { toolkit: MCPToolkit; tools: Tool[] }> = new Map()
+
     constructor() {
         this.label = 'Custom MCP'
         this.name = 'customMCP'
@@ -140,6 +143,22 @@ class Custom_MCP implements INode {
             sandbox['$vars'] = prepareSandboxVars(variables)
         }
 
+        // Create a canonical cache key by parsing and re-stringifying the JSON config.
+        // This makes the cache immune to formatting changes (spaces, newlines, etc.).
+        let canonicalConfig
+        try {
+            // Try to parse the config to remove formatting.
+            canonicalConfig = JSON.parse(mcpServerConfig)
+        } catch (e) {
+            // If parsing fails (e.g., invalid JSON), use the raw string as a fallback.
+            canonicalConfig = mcpServerConfig
+        }
+        const cacheKey = JSON.stringify({ canonicalConfig, sandbox })
+
+        if (Custom_MCP.toolkitCache.has(cacheKey)) {
+            return Custom_MCP.toolkitCache.get(cacheKey)!.tools
+        }
+
         try {
             let serverParams
             if (typeof mcpServerConfig === 'object') {
@@ -161,6 +180,8 @@ class Custom_MCP implements INode {
             await toolkit.initialize()
 
             const tools = toolkit.tools ?? []
+
+            Custom_MCP.toolkitCache.set(cacheKey, { toolkit, tools })
 
             return tools as Tool[]
         } catch (error) {
