@@ -29,8 +29,6 @@ const getBrowserExtensionChatflows = async (user: IUser): Promise<ChatFlow[]> =>
 
         // Query chatflows that:
         // 1. Belong to the user or their organization
-        // 2. Have 'Browser Extension' in their visibility settings
-        // 3. Are public (isPublic must be true)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatflow').where('chatflow.userId = :userId', { userId: user.id })
 
         // Return the complete chatflow objects with all fields
