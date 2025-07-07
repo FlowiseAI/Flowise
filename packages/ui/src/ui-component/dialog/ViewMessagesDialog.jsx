@@ -222,7 +222,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
             feedbackType: feedbackTypes.length ? feedbackTypes : undefined,
             startDate: startDate,
             endDate: endDate,
-            order: 'ASC',
+            order: 'DESC',
             page: page,
             limit: limit
         })
@@ -618,6 +618,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 filteredChatLogs.push(seen[PK].item)
             }
         }
+
         // Sort by date to maintain chronological order
         const sortedChatLogs = filteredChatLogs.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))
         setChatLogs(sortedChatLogs)
@@ -810,16 +811,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         if (dialogProps.chatflow) {
             // when the filter is cleared fetch all messages
             if (feedbackTypeFilter.length === 0) {
-                getChatmessageApi.request(dialogProps.chatflow.id, {
-                    startDate: startDate,
-                    endDate: endDate,
-                    chatType: chatTypeFilter.length ? chatTypeFilter : undefined
-                })
-                getStatsApi.request(dialogProps.chatflow.id, {
-                    startDate: startDate,
-                    endDate: endDate,
-                    chatType: chatTypeFilter.length ? chatTypeFilter : undefined
-                })
+                refresh(currentPage, pageLimit, startDate, endDate, chatTypeFilter, feedbackTypeFilter)
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

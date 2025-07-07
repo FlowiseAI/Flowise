@@ -192,30 +192,32 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images }) => {
                                                             gap: 1
                                                         }}
                                                     >
-                                                        {images[row.id].slice(0, images.length > 3 ? 3 : images.length).map((img) => (
-                                                            <Box
-                                                                key={img}
-                                                                sx={{
-                                                                    width: 30,
-                                                                    height: 30,
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: customization.isDarkMode
-                                                                        ? theme.palette.common.white
-                                                                        : theme.palette.grey[300] + 75
-                                                                }}
-                                                            >
-                                                                <img
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        height: '100%',
-                                                                        padding: 5,
-                                                                        objectFit: 'contain'
+                                                        {images[row.id]
+                                                            .slice(0, images[row.id].length > 3 ? 3 : images[row.id].length)
+                                                            .map((img) => (
+                                                                <Box
+                                                                    key={img}
+                                                                    sx={{
+                                                                        width: 30,
+                                                                        height: 30,
+                                                                        borderRadius: '50%',
+                                                                        backgroundColor: customization.isDarkMode
+                                                                            ? theme.palette.common.white
+                                                                            : theme.palette.grey[300] + 75
                                                                     }}
-                                                                    alt=''
-                                                                    src={img}
-                                                                />
-                                                            </Box>
-                                                        ))}
+                                                                >
+                                                                    <img
+                                                                        style={{
+                                                                            width: '100%',
+                                                                            height: '100%',
+                                                                            padding: 5,
+                                                                            objectFit: 'contain'
+                                                                        }}
+                                                                        alt=''
+                                                                        src={img}
+                                                                    />
+                                                                </Box>
+                                                            ))}
                                                         {images?.length > 3 && (
                                                             <Typography
                                                                 sx={{
