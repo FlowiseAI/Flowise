@@ -112,11 +112,11 @@ export class MCPToolkit extends BaseToolkit {
             })
         })
         const res = await Promise.allSettled(toolsPromises)
-        const errors = res.filter((r) => r.status === "rejected")
+        const errors = res.filter((r) => r.status === 'rejected')
         if (errors.length !== 0) {
-            console.error("MCP Tools falied to be resolved", errors)
+            console.error('MCP Tools falied to be resolved', errors)
         }
-        const successes = res.filter((r) => r.status === "fulfilled")
+        const successes = res.filter((r) => r.status === 'fulfilled')
             .map((r) => r.value);
         return successes
     }
