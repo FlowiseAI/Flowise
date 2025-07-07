@@ -19,6 +19,10 @@ import accountApi from '@/api/account.api'
 // Hooks
 import useApi from '@/hooks/useApi'
 
+// store
+import { store } from '@/store'
+import { logoutSuccess } from '@/store/reducers/authSlice'
+
 /**
  * Checks if a feature flag is enabled
  * @param {Object} features - Feature flags object
@@ -102,6 +106,17 @@ export const RequireAuth = ({ permission, display, children }) => {
         })
     }
 
+    useEffect(() => {
+        try {
+            if (logoutApi.data && logoutApi.data.message === 'logged_out') {
+                store.dispatch(logoutSuccess())
+                window.location.href = logoutApi.data.redirectTo
+            }
+        } catch (e) {
+            console.error(e)
+        }
+    }, [logoutApi.data])
+
     // Step 1: Authentication Check
     // Redirect to login if user is not authenticated
     if (!currentUser) {
@@ -136,7 +151,7 @@ export const RequireAuth = ({ permission, display, children }) => {
                             <Stack spacing={3}>
                                 <Stack spacing={1} alignItems='center' textAlign='center'>
                                     <IconCreditCard size={48} color='#f44336' />
-                                    <Typography variant='h5' color='error'>
+                                    <Typography variant='h3' color='error'>
                                         Account Under Suspension
                                     </Typography>
                                 </Stack>
@@ -164,8 +179,21 @@ export const RequireAuth = ({ permission, display, children }) => {
                             </Stack>
                         </DialogContent>
 
-                        <DialogActions sx={{ p: 3, pt: 0 }}>
-                            <Stack spacing={2} sx={{ width: '100%' }}>
+                        <DialogActions sx={{ p: 3, pt: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            <Stack sx={{ width: '100%', flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                                <Button
+                                    variant='outlined'
+                                    color='error'
+                                    onClick={handleLogout}
+                                    startIcon={<IconLogout />}
+                                    fullWidth
+                                    sx={{
+                                        borderRadius: 2,
+                                        height: 48
+                                    }}
+                                >
+                                    Logout
+                                </Button>
                                 <Button
                                     variant='contained'
                                     color='primary'
@@ -175,44 +203,18 @@ export const RequireAuth = ({ permission, display, children }) => {
                                     fullWidth
                                     sx={{
                                         borderRadius: 2,
-                                        height: 48,
-                                        fontSize: '1rem'
+                                        height: 48
                                     }}
                                 >
                                     {isBillingLoading ? 'Opening Billing Portal...' : 'Go to Billing Portal'}
                                 </Button>
-
-                                <Box sx={{ display: 'flex', gap: 2 }}>
-                                    <a href='mailto:support@flowiseai.com' rel='noopener noreferrer' target='_blank'>
-                                        <Button
-                                            variant='outlined'
-                                            color='primary'
-                                            startIcon={<IconHelp />}
-                                            fullWidth
-                                            sx={{
-                                                borderRadius: 2,
-                                                height: 40
-                                            }}
-                                        >
-                                            Contact Support
-                                        </Button>
-                                    </a>
-
-                                    <Button
-                                        variant='outlined'
-                                        color='error'
-                                        onClick={handleLogout}
-                                        startIcon={<IconLogout />}
-                                        fullWidth
-                                        sx={{
-                                            borderRadius: 2,
-                                            height: 40
-                                        }}
-                                    >
-                                        Logout
-                                    </Button>
-                                </Box>
                             </Stack>
+                            <Box sx={{ width: '100%' }}>
+                                If you think that this is a bug, please report it to us at{' '}
+                                <a href='mailto:support@flowiseai.com' rel='noopener noreferrer' target='_blank'>
+                                    support@flowiseai.com
+                                </a>
+                            </Box>
                         </DialogActions>
                     </Dialog>
                 </>
