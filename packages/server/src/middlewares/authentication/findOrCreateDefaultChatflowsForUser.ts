@@ -1,9 +1,12 @@
-import { DataSource, In } from 'typeorm'
+import { DataSource } from 'typeorm'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { User } from '../../database/entities/User'
 
 export const findOrCreateDefaultChatflowsForUser = async (AppDataSource: DataSource, user: User) => {
     if (!user) return
+
+    // If user already has a defaultChatflowId, return early
+    if (user.defaultChatflowId) return
 
     const rawIds = process.env.INITIAL_CHATFLOW_IDS ?? ''
     const ids = rawIds
@@ -13,52 +16,64 @@ export const findOrCreateDefaultChatflowsForUser = async (AppDataSource: DataSou
 
     if (!ids.length) return
 
+    // Only use the first ID from the list
+    const firstId = ids[0]
+
     const queryRunner = AppDataSource.createQueryRunner()
     await queryRunner.connect()
     await queryRunner.startTransaction()
     try {
         const chatFlowRepo = queryRunner.manager.getRepository(ChatFlow)
+        const userRepo = queryRunner.manager.getRepository(User)
 
-        // Batch fetch all existing chatflows for this user and these parentChatflowIds
-        const existingChatflows = await chatFlowRepo.find({
+        // Check if the user already has this specific chatflow
+        const existingChatflow = await chatFlowRepo.findOne({
             where: {
                 userId: user.id,
-                parentChatflowId: ids.length === 1 ? ids[0] : In(ids)
+                parentChatflowId: firstId
             }
         })
-        const existingParentIds = new Set(existingChatflows.map((cf) => cf.parentChatflowId))
 
-        // Only import templates the user doesn't already have
-        const idsToImport = ids.filter((id) => !existingParentIds.has(id))
-        if (!idsToImport.length) {
+        // If user already has this chatflow, update their defaultChatflowId if not set
+        if (existingChatflow) {
+            if (!user.defaultChatflowId) {
+                await userRepo.update(user.id, { defaultChatflowId: existingChatflow.id })
+            }
             await queryRunner.commitTransaction()
             await queryRunner.release()
             return
         }
 
-        // Batch fetch all needed templates
-        const templates = await chatFlowRepo.find({
-            where: { id: In(idsToImport) }
+        // Fetch the template for the first ID
+        const template = await chatFlowRepo.findOne({
+            where: { id: firstId }
         })
-        const templateMap = new Map(templates.map((t) => [t.id, t]))
 
-        const chatflowsToImport: Partial<ChatFlow>[] = []
-        for (const templateId of idsToImport) {
-            const template = templateMap.get(templateId)
-            if (template) {
-                const templateCopy = { ...template }
-                delete (templateCopy as any).id
-                chatflowsToImport.push({
-                    ...templateCopy,
-                    parentChatflowId: templateId,
-                    userId: user.id,
-                    organizationId: user.organizationId
-                })
+        if (template) {
+            const templateCopy = { ...template }
+            delete (templateCopy as any).id
+            delete (templateCopy as any).createdDate
+            delete (templateCopy as any).updatedDate
+
+            const chatflowToImport = {
+                ...templateCopy,
+                parentChatflowId: firstId,
+                userId: user.id,
+                organizationId: user.organizationId
+            }
+
+            // Insert the new chatflow
+            const insertResult = await chatFlowRepo.insert(chatflowToImport)
+
+            // Get the newly created chatflow ID
+            const newChatflowId = insertResult.identifiers[0]?.id
+
+            if (newChatflowId) {
+                // Update the user's defaultChatflowId
+                await userRepo.update(user.id, { defaultChatflowId: newChatflowId })
             }
         }
-        if (chatflowsToImport.length) {
-            await chatFlowRepo.insert(chatflowsToImport)
-        }
+
         await queryRunner.commitTransaction()
     } catch (err) {
         await queryRunner.rollbackTransaction()

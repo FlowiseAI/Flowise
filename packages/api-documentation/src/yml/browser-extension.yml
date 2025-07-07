@@ -5,8 +5,8 @@ paths:
             tags:
                 - browser-extension
             operationId: getBrowserExtensionChatflows
-            summary: Get chatflows available for browser extension
-            description: Retrieve all chatflows that have "Browser Extension" in their visibility settings for the authenticated user.
+            summary: Get public chatflows available for browser extension
+            description: Retrieve all public chatflows that have "Browser Extension" in their visibility settings for the authenticated user. Each chatflow includes an isUserDefaultChatflow flag indicating if it's the user's default chatflow and an isOwner flag indicating if the user owns the chatflow.
             security:
                 - bearerAuth: []
             responses:

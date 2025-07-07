@@ -32,4 +32,7 @@ export class User implements IUser {
 
     @Column({ type: 'uuid', nullable: true })
     trialPlanId?: string
+
+    @Column({ type: 'uuid', nullable: true })
+    defaultChatflowId?: string
 }
