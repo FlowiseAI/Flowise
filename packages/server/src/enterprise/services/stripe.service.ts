@@ -6,6 +6,7 @@ import { Organization, OrganizationStatus } from '../database/entities/organizat
 import { OrganizationUser } from '../database/entities/organization-user.entity'
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { WorkspaceUser } from '../database/entities/workspace-user.entity'
+import { OrganizationService } from './organization.service'
 import logger from '../../utils/logger'
 
 // Note: Organization entity will have a 'status' field added later
@@ -77,7 +78,7 @@ export class StripeService {
 
                 // Check for any unpaid invoices across all possible unpaid statuses
                 // This ensures no outstanding debt remains before reactivation
-                const unpaidStatuses = ['open', 'uncollectible']
+                const unpaidStatuses = ['open', 'uncollectible', 'past_due']
                 let hasUnpaidInvoices = false
                 let unpaidInvoiceIds: string[] = []
 
@@ -88,25 +89,37 @@ export class StripeService {
                         limit: 100
                     })
 
-                    if (invoices.data.length > 0) {
+                    // Filter out invoices that are actually paid (for uncollectible status)
+                    const actuallyUnpaidInvoices = invoices.data.filter((inv) => !inv.paid)
+
+                    if (actuallyUnpaidInvoices.length > 0) {
                         hasUnpaidInvoices = true
-                        unpaidInvoiceIds.push(...invoices.data.map((inv) => inv.id))
+                        unpaidInvoiceIds.push(...actuallyUnpaidInvoices.map((inv) => inv.id))
                     }
                 }
 
                 if (hasUnpaidInvoices) {
+                    logger.info(`Organization ${organization.id} still has unpaid invoices: ${unpaidInvoiceIds.join(', ')}`)
                     return
                 }
 
-                await queryRunner.startTransaction()
-                ;(organization as any).status = OrganizationStatus.ACTIVE
-                await queryRunner.manager.save(Organization, organization)
-                await queryRunner.commitTransaction()
+                const organizationService = new OrganizationService()
+                await organizationService.updateOrganization(
+                    {
+                        id: organization.id,
+                        status: OrganizationStatus.ACTIVE,
+                        updatedBy: organization.createdBy // Use the organization's creator as updater
+                    },
+                    queryRunner,
+                    true // fromStripe = true to allow status updates
+                )
             }
 
             // Check if subscription needs to be resumed after all debts are settled
             if (subscription.status === 'unpaid') {
                 // Verify all debts are settled before resuming
+                // Check for any unpaid invoices across all possible unpaid statuses
+                // This ensures no outstanding debt remains before reactivation
                 const allUnpaidStatuses = ['open', 'uncollectible', 'past_due']
                 let hasAnyUnpaidInvoices = false
                 let allUnpaidInvoiceIds: string[] = []
@@ -118,9 +131,12 @@ export class StripeService {
                         limit: 100
                     })
 
-                    if (invoices.data.length > 0) {
+                    // Filter out invoices that are actually paid (for uncollectible status)
+                    const actuallyUnpaidInvoices = invoices.data.filter((inv) => !inv.paid)
+
+                    if (actuallyUnpaidInvoices.length > 0) {
                         hasAnyUnpaidInvoices = true
-                        allUnpaidInvoiceIds.push(...invoices.data.map((inv) => inv.id))
+                        allUnpaidInvoiceIds.push(...actuallyUnpaidInvoices.map((inv) => inv.id))
                     }
                 }
 
@@ -130,10 +146,13 @@ export class StripeService {
                         await this.stripe.subscriptions.update(subscriptionId, {
                             pause_collection: null // This resumes the subscription
                         })
+                        logger.info(`Successfully resumed subscription ${subscriptionId}`)
                     } catch (resumeError) {
                         logger.error(`Failed to resume subscription ${subscriptionId}: ${resumeError}`)
                         // Don't throw here - we still want to provision access even if resume fails
                     }
+                } else {
+                    logger.info(`Cannot resume subscription ${subscriptionId} - unpaid invoices remain: ${allUnpaidInvoiceIds.join(', ')}`)
                 }
             }
 
@@ -152,6 +171,8 @@ export class StripeService {
                 features: await stripeManager.getFeaturesByPlan(subscriptionId, true),
                 quotas: await cacheManager.getQuotas(subscriptionId, true)
             })
+
+            logger.info(`Successfully reactivated organization ${organization.id} and updated cache for subscription ${subscriptionId}`)
         } catch (error) {
             logger.error(`Error handling invoice paid: ${error}`)
             if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
@@ -176,15 +197,20 @@ export class StripeService {
 
             if (!organization) {
                 logger.warn(`No organization found for subscription ID: ${subscriptionId}`)
-                await queryRunner.commitTransaction()
                 return
             }
 
             // Set organization status to suspended
-            await queryRunner.startTransaction()
-            ;(organization as any).status = OrganizationStatus.PAST_DUE
-            await queryRunner.manager.save(Organization, organization)
-            await queryRunner.commitTransaction()
+            const organizationService = new OrganizationService()
+            await organizationService.updateOrganization(
+                {
+                    id: organization.id,
+                    status: OrganizationStatus.PAST_DUE,
+                    updatedBy: organization.createdBy // Use the organization's creator as updater
+                },
+                queryRunner,
+                true // fromStripe = true to allow status updates
+            )
 
             // Update lastLogin for workspace users in Default Workspace
             await this.updateLastLoginForDefaultWorkspaceUsers(organization.id, queryRunner)

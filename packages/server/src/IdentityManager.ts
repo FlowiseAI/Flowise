@@ -20,6 +20,7 @@ import { LoginMethodStatus } from './enterprise/database/entities/login-method.e
 import { ErrorMessage, LoggedInUser } from './enterprise/Interface.Enterprise'
 import { Permissions } from './enterprise/rbac/Permissions'
 import { LoginMethodService } from './enterprise/services/login-method.service'
+import { Organization, OrganizationStatus } from './enterprise/database/entities/organization.entity'
 import { OrganizationService } from './enterprise/services/organization.service'
 import Auth0SSO from './enterprise/sso/Auth0SSO'
 import AzureSSO from './enterprise/sso/AzureSSO'
@@ -326,7 +327,11 @@ export class IdentityManager {
         if (!this.stripeManager) {
             throw new Error('Stripe manager is not initialized')
         }
-        const { success, subscription, invoice } = await this.stripeManager.updateAdditionalSeats(subscriptionId, quantity, prorationDate)
+        const { success, subscription, invoice, paymentFailed, paymentError } = await this.stripeManager.updateAdditionalSeats(
+            subscriptionId,
+            quantity,
+            prorationDate
+        )
 
         // Fetch product details to get quotas
         const items = subscription.items.data
@@ -358,7 +363,13 @@ export class IdentityManager {
             subsriptionDetails: this.stripeManager.getSubscriptionObject(subscription)
         })
 
-        return { success, subscription, invoice }
+        return {
+            success,
+            subscription,
+            invoice,
+            paymentFailed, // Issue #4 fix: Indicates payment failed but seats were updated
+            paymentError: paymentFailed ? paymentError?.message || 'Payment failed' : null
+        }
     }
 
     public async getPlanProration(subscriptionId: string, newPlanId: string) {
@@ -379,85 +390,138 @@ export class IdentityManager {
         if (!req.user) {
             throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, GeneralErrorMessage.UNAUTHORIZED)
         }
-        const { success, subscription } = await this.stripeManager.updateSubscriptionPlan(subscriptionId, newPlanId, prorationDate)
-        if (success) {
-            // Fetch product details to get quotas
-            const product = await this.stripeManager.getStripe().products.retrieve(newPlanId)
-            const productMetadata = product.metadata
+        try {
+            const result = await this.stripeManager.updateSubscriptionPlan(subscriptionId, newPlanId, prorationDate)
+            const { success, subscription, special_case, paymentFailed, paymentError } = result
+            if (success) {
+                // Handle special case: downgrade from past_due to free plan
+                if (special_case === 'downgrade_from_past_due') {
+                    // Update organization status to active using OrganizationService
+                    const queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
+                    await queryRunner.connect()
 
-            // Extract quotas from metadata
-            const quotas: Record<string, number> = {}
-            for (const key in productMetadata) {
-                if (key.startsWith('quota:')) {
-                    quotas[key] = parseInt(productMetadata[key])
+                    try {
+                        const organizationService = new OrganizationService()
+
+                        // Find organization by subscriptionId
+                        const organization = await queryRunner.manager.findOne(Organization, {
+                            where: { subscriptionId }
+                        })
+
+                        if (organization) {
+                            await organizationService.updateOrganization(
+                                {
+                                    id: organization.id,
+                                    status: OrganizationStatus.ACTIVE,
+                                    updatedBy: req.user.id
+                                },
+                                queryRunner,
+                                true // fromStripe = true to allow status updates
+                            )
+                        }
+                    } finally {
+                        await queryRunner.release()
+                    }
+                }
+
+                // Fetch product details to get quotas
+                const product = await this.stripeManager.getStripe().products.retrieve(newPlanId)
+                const productMetadata = product.metadata
+
+                // Extract quotas from metadata
+                const quotas: Record<string, number> = {}
+                for (const key in productMetadata) {
+                    if (key.startsWith('quota:')) {
+                        quotas[key] = parseInt(productMetadata[key])
+                    }
+                }
+
+                const additionalSeatsItem = subscription.items.data.find(
+                    (item: any) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
+                )
+                quotas[LICENSE_QUOTAS.ADDITIONAL_SEATS_LIMIT] = additionalSeatsItem?.quantity || 0
+
+                // Get features from Stripe
+                const features = await this.getFeaturesByPlan(subscription.id, true)
+
+                // Update the cache with new subscription data including quotas
+                const cacheManager = await UsageCacheManager.getInstance()
+
+                const updateCacheData: Record<string, any> = {
+                    features,
+                    quotas,
+                    subsriptionDetails: this.stripeManager.getSubscriptionObject(subscription)
+                }
+
+                if (
+                    newPlanId === process.env.CLOUD_FREE_ID ||
+                    newPlanId === process.env.CLOUD_STARTER_ID ||
+                    newPlanId === process.env.CLOUD_PRO_ID
+                ) {
+                    updateCacheData.productId = newPlanId
+                }
+
+                await cacheManager.updateSubscriptionDataToCache(subscriptionId, updateCacheData)
+
+                const loggedInUser: LoggedInUser = {
+                    ...req.user,
+                    activeOrganizationSubscriptionId: subscription.id,
+                    features
+                }
+
+                if (
+                    newPlanId === process.env.CLOUD_FREE_ID ||
+                    newPlanId === process.env.CLOUD_STARTER_ID ||
+                    newPlanId === process.env.CLOUD_PRO_ID
+                ) {
+                    loggedInUser.activeOrganizationProductId = newPlanId
+                }
+
+                req.user = {
+                    ...req.user,
+                    ...loggedInUser
+                }
+
+                // Update passport session
+                // @ts-ignore
+                req.session.passport.user = {
+                    ...req.user,
+                    ...loggedInUser
+                }
+
+                req.session.save((err) => {
+                    if (err) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
+                })
+
+                return {
+                    status: 'success',
+                    user: loggedInUser,
+                    paymentFailed, // Issue #4 fix: Indicates payment failed but plan was upgraded
+                    paymentError: paymentFailed ? paymentError?.message || 'Payment failed' : null
                 }
             }
-
-            const additionalSeatsItem = subscription.items.data.find(
-                (item: any) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
-            )
-            quotas[LICENSE_QUOTAS.ADDITIONAL_SEATS_LIMIT] = additionalSeatsItem?.quantity || 0
-
-            // Get features from Stripe
-            const features = await this.getFeaturesByPlan(subscription.id, true)
-
-            // Update the cache with new subscription data including quotas
-            const cacheManager = await UsageCacheManager.getInstance()
-
-            const updateCacheData: Record<string, any> = {
-                features,
-                quotas,
-                subsriptionDetails: this.stripeManager.getSubscriptionObject(subscription)
-            }
-
-            if (
-                newPlanId === process.env.CLOUD_FREE_ID ||
-                newPlanId === process.env.CLOUD_STARTER_ID ||
-                newPlanId === process.env.CLOUD_PRO_ID
-            ) {
-                updateCacheData.productId = newPlanId
-            }
-
-            await cacheManager.updateSubscriptionDataToCache(subscriptionId, updateCacheData)
-
-            const loggedInUser: LoggedInUser = {
-                ...req.user,
-                activeOrganizationSubscriptionId: subscription.id,
-                features
-            }
-
-            if (
-                newPlanId === process.env.CLOUD_FREE_ID ||
-                newPlanId === process.env.CLOUD_STARTER_ID ||
-                newPlanId === process.env.CLOUD_PRO_ID
-            ) {
-                loggedInUser.activeOrganizationProductId = newPlanId
-            }
-
-            req.user = {
-                ...req.user,
-                ...loggedInUser
-            }
-
-            // Update passport session
-            // @ts-ignore
-            req.session.passport.user = {
-                ...req.user,
-                ...loggedInUser
-            }
-
-            req.session.save((err) => {
-                if (err) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
-            })
-
             return {
-                status: 'success',
-                user: loggedInUser
+                status: 'error',
+                message: 'Payment or subscription update not completed'
             }
-        }
-        return {
-            status: 'error',
-            message: 'Payment or subscription update not completed'
+        } catch (error: any) {
+            // Enhanced error handling for payment method failures
+            if (error.type === 'StripeCardError' || error.code === 'card_declined') {
+                throw new InternalFlowiseError(
+                    StatusCodes.PAYMENT_REQUIRED,
+                    'Your payment method was declined. Please update your payment method and try again.'
+                )
+            }
+
+            if (error.type === 'StripeInvalidRequestError' && error.message?.includes('payment_method')) {
+                throw new InternalFlowiseError(
+                    StatusCodes.PAYMENT_REQUIRED,
+                    'There was an issue with your payment method. Please update your payment method and try again.'
+                )
+            }
+
+            // Re-throw other errors
+            throw error
         }
     }
 

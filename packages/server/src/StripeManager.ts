@@ -3,7 +3,6 @@ import { Request } from 'express'
 import { UsageCacheManager } from './UsageCacheManager'
 import { UserPlan } from './Interface'
 import { LICENSE_QUOTAS } from './utils/constants'
-import logger from './utils/logger'
 
 export class StripeManager {
     private static instance: StripeManager
@@ -305,8 +304,8 @@ export class StripeManager {
             const seatPrice = prices.data[0]
             const pricePerSeat = seatPrice.unit_amount || 0
 
-            // Use current timestamp for proration calculation
-            const prorationDate = Math.floor(Date.now() / 1000)
+            // TODO: Fix proration date for sandbox testing - use subscription period bounds
+            const prorationDate = this.calculateSafeProrationDate(subscription)
 
             const additionalSeatsItem = subscription.items.data.find(
                 (item) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
@@ -360,7 +359,7 @@ export class StripeManager {
         }
     }
 
-    public async updateAdditionalSeats(subscriptionId: string, quantity: number, prorationDate: number) {
+    public async updateAdditionalSeats(subscriptionId: string, quantity: number, _prorationDate: number) {
         if (!this.stripe) {
             throw new Error('Stripe is not initialized')
         }
@@ -382,14 +381,11 @@ export class StripeManager {
                 throw new Error('No active price found for additional seats')
             }
 
-            // Get appropriate proration behavior based on latest invoice status
-            const prorationBehavior = await this.getProrationBehavior(subscriptionId)
+            // TODO: Fix proration date for sandbox testing - use subscription period bounds
+            const adjustedProrationDate = this.calculateSafeProrationDate(subscription)
 
-            // Get valid proration date for this subscription
-            const validProrationDate = await this.getValidProrationDate(subscriptionId, prorationDate)
-
-            // Create subscription update parameters
-            const updateParams: any = {
+            // Create an invoice immediately for the proration
+            const updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, {
                 items: [
                     additionalSeatsItem
                         ? {
@@ -401,16 +397,9 @@ export class StripeManager {
                               quantity: quantity
                           }
                 ],
-                proration_behavior: prorationBehavior
-            }
-
-            // Only include proration_date if we have a valid one
-            if (validProrationDate !== undefined) {
-                updateParams.proration_date = validProrationDate
-            }
-
-            // Create an invoice immediately for the proration
-            const updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, updateParams)
+                proration_behavior: 'always_invoice',
+                proration_date: adjustedProrationDate
+            })
 
             // Get the latest invoice for this subscription
             const invoice = await this.stripe.invoices.list({
@@ -418,18 +407,33 @@ export class StripeManager {
                 limit: 1
             })
 
+            let paymentFailed = false
+            let paymentError: any = null
+
             if (invoice.data.length > 0) {
                 const latestInvoice = invoice.data[0]
                 // Only try to pay if the invoice is not already paid
                 if (latestInvoice.status !== 'paid') {
-                    await this.stripe.invoices.pay(latestInvoice.id)
+                    try {
+                        await this.stripe.invoices.pay(latestInvoice.id)
+                    } catch (error: any) {
+                        // Payment failed but we still want to provision access (Issue #4 fix)
+                        // This keeps Stripe and our app in sync - both will show the new seats
+                        // Stripe will retry payment for a few days, then send invoice.marked_uncollectible
+                        // Our webhook will handle setting org status to past_due at that point
+                        paymentFailed = true
+                        paymentError = error
+                        console.error('Payment failed during additional seats update, but provisioning access anyway:', error)
+                    }
                 }
             }
 
             return {
                 success: true,
                 subscription: updatedSubscription,
-                invoice: invoice.data[0]
+                invoice: invoice.data[0],
+                paymentFailed, // Indicates if payment failed but seats were still updated
+                paymentError: paymentFailed ? paymentError : null // Error details for frontend display
             }
         } catch (error) {
             console.error('Error updating additional seats:', error)
@@ -470,14 +474,31 @@ export class StripeManager {
             const hasUsedFirstMonthFreeCoupon = customerMetadata.has_used_first_month_free === 'true'
             const eligibleForFirstMonthFree = isStarterPlan && !hasUsedFirstMonthFreeCoupon
 
-            // Get valid proration date for this subscription
-            const requestedProrationDate = Math.floor(Date.now() / 1000)
-            const validProrationDate = await this.getValidProrationDate(subscriptionId, requestedProrationDate)
+            // TODO: Fix proration date for sandbox testing - use subscription period bounds
+            const subscriptionForProration = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const prorationDate = this.calculateSafeProrationDate(subscriptionForProration)
 
-            // Get appropriate proration behavior based on latest invoice status
-            const prorationBehavior = await this.getProrationBehavior(subscriptionId)
+            // Check if this is a downgrade to free plan (Issue 1)
+            const isDowngradeToFree = newPlanId === process.env.CLOUD_FREE_ID
+            let prorationBehavior: 'always_invoice' | 'none' = 'always_invoice'
 
-            // Build subscription details for upcoming invoice
+            if (isDowngradeToFree) {
+                // Get the latest invoice to determine proration behavior
+                const latestInvoicesList = await this.stripe.invoices.list({
+                    subscription: subscriptionId,
+                    limit: 1
+                })
+
+                if (latestInvoicesList.data.length > 0) {
+                    const latestInvoice = latestInvoicesList.data[0]
+                    // Issue 1: Check if latest invoice was paid and non-zero
+                    prorationBehavior = latestInvoice.status === 'paid' && latestInvoice.amount_paid > 0 ? 'always_invoice' : 'none'
+                } else {
+                    // No invoices found, use 'none' for free plan downgrade
+                    prorationBehavior = 'none'
+                }
+            }
+
             const subscriptionDetails: any = {
                 proration_behavior: prorationBehavior,
                 items: [
@@ -488,9 +509,9 @@ export class StripeManager {
                 ]
             }
 
-            // Only include proration_date if we have a valid one
-            if (validProrationDate !== undefined) {
-                subscriptionDetails.proration_date = validProrationDate
+            // Only set proration_date if we're actually doing proration
+            if (prorationBehavior === 'always_invoice') {
+                subscriptionDetails.proration_date = prorationDate
             }
 
             const upcomingInvoice = await this.stripe.invoices.retrieveUpcoming({
@@ -509,10 +530,11 @@ export class StripeManager {
                 prorationAmount: prorationAmount / 100,
                 creditBalance: creditBalance / 100,
                 currency: upcomingInvoice.currency.toUpperCase(),
-                prorationDate: validProrationDate || requestedProrationDate,
+                prorationDate,
                 currentPeriodStart: subscription.current_period_start,
                 currentPeriodEnd: subscription.current_period_end,
-                eligibleForFirstMonthFree
+                eligibleForFirstMonthFree,
+                prorationBehavior
             }
         } catch (error) {
             console.error('Error calculating plan proration:', error)
@@ -520,101 +542,32 @@ export class StripeManager {
         }
     }
 
-    private async getProrationBehavior(subscriptionId: string): Promise<'always_invoice' | 'none'> {
-        if (!this.stripe) {
-            throw new Error('Stripe is not initialized')
-        }
-
-        try {
-            // Get the latest invoice for this subscription
-            const invoices = await this.stripe.invoices.list({
-                subscription: subscriptionId,
-                limit: 1
-            })
-
-            if (invoices.data.length === 0) {
-                // No invoices found, default to always_invoice
-                return 'always_invoice'
-            }
-
-            const latestInvoice = invoices.data[0]
-
-            // Check if the latest invoice is paid
-            if (latestInvoice.status === 'paid') {
-                return 'always_invoice'
-            }
-
-            // If invoice is unpaid, open, or uncollectible, use no proration
-            if (['open', 'uncollectible', 'draft'].includes(latestInvoice.status as string)) {
-                return 'none'
-            }
-
-            // Default to always_invoice for other statuses
-            return 'always_invoice'
-        } catch (error) {
-            console.error('Error checking latest invoice status:', error)
-            // Default to always_invoice on error
-            return 'always_invoice'
-        }
+    /**
+     * Helper function to calculate a safe proration date within subscription period bounds
+     * TODO: Remove this helper when sandbox testing is complete
+     */
+    private calculateSafeProrationDate(subscription: any): number {
+        return Math.max(
+            subscription.current_period_start + 60, // At least 1 minute into current period
+            Math.min(
+                Math.floor(Date.now() / 1000) - 60, // Prefer current time minus 1 minute
+                subscription.current_period_end - 60 // But no later than 1 minute before period end
+            )
+        )
     }
 
-    private async getValidProrationDate(subscriptionId: string, requestedProrationDate: number): Promise<number | undefined> {
+    public async updateSubscriptionPlan(subscriptionId: string, newPlanId: string, _prorationDate: number) {
         if (!this.stripe) {
             throw new Error('Stripe is not initialized')
         }
 
         try {
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
-
-            // If subscription is past_due, don't use proration date to avoid period conflicts
-            if (subscription.status === 'past_due') {
-                return undefined
-            }
-
-            // For active subscriptions, validate the proration date is within current period
-            const currentPeriodStart = subscription.current_period_start
-            const currentPeriodEnd = subscription.current_period_end
-
-            if (requestedProrationDate >= currentPeriodStart && requestedProrationDate <= currentPeriodEnd) {
-                return requestedProrationDate
-            }
-
-            // If requested date is outside period, use current period end
-            return currentPeriodEnd
-        } catch (error) {
-            console.error('Error validating proration date:', error)
-            // Return undefined to skip proration date on error
-            return undefined
-        }
-    }
-
-    public async updateSubscriptionPlan(subscriptionId: string, newPlanId: string, prorationDate: number) {
-        if (!this.stripe) {
-            throw new Error('Stripe is not initialized')
-        }
-
-        let originalProductId: string | undefined
-        let subscription: Stripe.Subscription | undefined
-
-        try {
-            subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
             const customerId = subscription.customer as string
-
-            // Store original product ID for potential reversion
-            originalProductId = subscription.items.data[0]?.price.product as string
 
             // Get customer details and metadata
             const customer = await this.stripe.customers.retrieve(customerId)
             const customerMetadata = (customer as Stripe.Customer).metadata || {}
-
-            // If subscription is past_due, validate payment method exists
-            if (subscription.status === 'past_due') {
-                const defaultPaymentMethod = (customer as Stripe.Customer).invoice_settings?.default_payment_method
-
-                if (!defaultPaymentMethod) {
-                    throw new Error('No payment method available. Cannot process upgrade for subscription with payment issues.')
-                }
-            }
 
             // Get the price ID for the new plan
             const prices = await this.stripe.prices.list({
@@ -634,8 +587,89 @@ export class StripeManager {
             const isStarterPlan = newPlanId === process.env.CLOUD_STARTER_ID
             const hasUsedFirstMonthFreeCoupon = customerMetadata.has_used_first_month_free === 'true'
 
-            if (isStarterPlan && !hasUsedFirstMonthFreeCoupon) {
-                // Handle first month free for starter plan
+            // Check if this is a downgrade to free plan
+            const isDowngradeToFree = newPlanId === process.env.CLOUD_FREE_ID
+
+            // Handle downgrade to free plan during retry period (Issues 1 & 2)
+            if (isDowngradeToFree) {
+                // Get the latest invoice
+                const latestInvoicesList = await this.stripe.invoices.list({
+                    subscription: subscriptionId,
+                    limit: 1
+                })
+
+                if (latestInvoicesList.data.length > 0) {
+                    const latestInvoice = latestInvoicesList.data[0]
+
+                    // Check if the subscription is in past_due and invoice is in retry
+                    if (subscription.status === 'past_due' && latestInvoice.status === 'open') {
+                        // Issue 2: Void the latest invoice and activate subscription
+                        await this.stripe.invoices.voidInvoice(latestInvoice.id)
+
+                        // Update subscription to free plan
+                        updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, {
+                            items: [
+                                {
+                                    id: subscription.items.data[0].id,
+                                    price: newPlan.id
+                                }
+                            ],
+                            proration_behavior: 'none'
+                        })
+
+                        // Create a $0 invoice and mark it as paid
+                        const zeroInvoice = await this.stripe.invoices.create({
+                            customer: customerId,
+                            subscription: subscriptionId,
+                            collection_method: 'charge_automatically',
+                            auto_advance: false
+                        })
+
+                        await this.stripe.invoices.pay(zeroInvoice.id)
+
+                        return {
+                            success: true,
+                            subscription: updatedSubscription,
+                            invoice: zeroInvoice,
+                            special_case: 'downgrade_from_past_due'
+                        }
+                    } else {
+                        // Issue 1: Check if latest invoice was paid and non-zero
+                        const prorationBehavior =
+                            latestInvoice.status === 'paid' && latestInvoice.amount_paid > 0 ? 'always_invoice' : 'none'
+
+                        const subscriptionUpdateData: any = {
+                            items: [
+                                {
+                                    id: subscription.items.data[0].id,
+                                    price: newPlan.id
+                                }
+                            ],
+                            proration_behavior: prorationBehavior
+                        }
+
+                        // Only set proration_date if we're actually doing proration
+                        if (prorationBehavior === 'always_invoice') {
+                            // TODO: Fix proration date for sandbox testing - use subscription period bounds
+                            subscriptionUpdateData.proration_date = this.calculateSafeProrationDate(subscription)
+                        }
+
+                        updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, subscriptionUpdateData)
+                    }
+                } else {
+                    // No invoices found, proceed with normal downgrade
+                    updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, {
+                        items: [
+                            {
+                                id: subscription.items.data[0].id,
+                                price: newPlan.id
+                            }
+                        ],
+                        proration_behavior: 'none'
+                    })
+                }
+            } else if (isStarterPlan && !hasUsedFirstMonthFreeCoupon) {
+                // Create the one-time 100% off coupon
                 const coupon = await this.stripe.coupons.create({
                     duration: 'once',
                     percent_off: 100,
@@ -647,30 +681,29 @@ export class StripeManager {
                     }
                 })
 
+                // Create a promotion code linked to the coupon
                 const promotionCode = await this.stripe.promotionCodes.create({
                     coupon: coupon.id,
                     max_redemptions: 1
                 })
 
-                const validProrationDate = await this.getValidProrationDate(subscriptionId, prorationDate)
+                // TODO: Fix proration date for sandbox testing - use subscription period bounds
+                const adjustedProrationDate = this.calculateSafeProrationDate(subscription)
 
-                const updateParams: any = {
+                // Update the subscription with the new plan and apply the promotion code
+                updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, {
                     items: [
                         {
                             id: subscription.items.data[0].id,
                             price: newPlan.id
                         }
                     ],
-                    proration_behavior: 'create_prorations',
+                    proration_behavior: 'always_invoice',
+                    proration_date: adjustedProrationDate,
                     promotion_code: promotionCode.id
-                }
+                })
 
-                if (validProrationDate !== undefined) {
-                    updateParams.proration_date = validProrationDate
-                }
-
-                updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, updateParams)
-
+                // Update customer metadata to mark the coupon as used
                 await this.stripe.customers.update(customerId, {
                     metadata: {
                         ...customerMetadata,
@@ -679,136 +712,57 @@ export class StripeManager {
                     }
                 })
             } else {
-                // For regular upgrades, first create a preview to calculate proration
-                const validProrationDate = await this.getValidProrationDate(subscriptionId, prorationDate)
+                // TODO: Fix proration date for sandbox testing - use subscription period bounds
+                const adjustedProrationDate = this.calculateSafeProrationDate(subscription)
 
-                // Step 1: Create preview invoice to see proration amount
-                const previewParams: any = {
-                    customer: customerId,
-                    subscription: subscriptionId,
-                    subscription_details: {
-                        items: [
-                            {
-                                id: subscription.items.data[0].id,
-                                price: newPlan.id
-                            }
-                        ],
-                        proration_behavior: 'create_prorations'
-                    }
-                }
-
-                if (validProrationDate !== undefined) {
-                    previewParams.subscription_details.proration_date = validProrationDate
-                }
-
-                const previewInvoice = await this.stripe.invoices.retrieveUpcoming(previewParams)
-                const prorationAmount = previewInvoice.lines.data
-                    .filter((line) => line.proration)
-                    .reduce((total, line) => total + line.amount, 0)
-
-                // Step 2: If there's a proration amount > 0, create and pay invoice immediately
-                if (prorationAmount > 0) {
-                    // Create invoice for proration
-                    const prorationInvoice = await this.stripe.invoices.create({
-                        customer: customerId,
-                        auto_advance: true,
-                        collection_method: 'charge_automatically'
-                    })
-
-                    // Add proration invoice item
-                    await this.stripe.invoiceItems.create({
-                        customer: customerId,
-                        amount: prorationAmount,
-                        currency: previewInvoice.currency,
-                        description: `Proration for plan upgrade to ${newPlan.nickname || newPlan.id}`,
-                        invoice: prorationInvoice.id
-                    })
-
-                    // Finalize and pay the proration invoice
-                    const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(prorationInvoice.id)
-                    await this.stripe.invoices.pay(finalizedInvoice.id)
-                }
-
-                // Step 3: Update subscription with proration disabled (since we already charged for it)
-                const updateParams: any = {
+                // Regular plan update without coupon
+                updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, {
                     items: [
                         {
                             id: subscription.items.data[0].id,
                             price: newPlan.id
                         }
                     ],
-                    proration_behavior: prorationAmount > 0 ? 'none' : 'create_prorations'
-                }
-
-                if (validProrationDate !== undefined && prorationAmount === 0) {
-                    updateParams.proration_date = validProrationDate
-                }
-
-                updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, updateParams)
+                    proration_behavior: 'always_invoice',
+                    proration_date: adjustedProrationDate
+                })
             }
 
-            // Get the latest invoice after subscription update
+            // Get and pay the latest invoice (only if not a special case)
             const invoice = await this.stripe.invoices.list({
                 subscription: subscriptionId,
                 limit: 1
             })
 
-            return {
-                success: true,
-                subscription: updatedSubscription,
-                invoice: invoice.data[0]
-            }
-        } catch (error) {
-            console.error('Error updating subscription plan:', error)
+            let paymentFailed = false
+            let paymentError: any = null
 
-            // If we have an original product ID, attempt to revert the subscription
-            if (originalProductId && subscription) {
-                try {
-                    console.log(`Attempting to revert subscription ${subscriptionId} to original product ${originalProductId}`)
-
-                    // Get the latest invoice to void it
-                    const invoices = await this.stripe.invoices.list({
-                        subscription: subscriptionId,
-                        limit: 1
-                    })
-
-                    if (invoices.data.length > 0) {
-                        const latestInvoice = invoices.data[0]
-
-                        // Void the unpaid invoice if it exists
-                        if (latestInvoice.status === 'open') {
-                            await this.stripe.invoices.voidInvoice(latestInvoice.id)
-                            console.log(`Voided invoice ${latestInvoice.id}`)
-                        }
+            if (invoice.data.length > 0) {
+                const latestInvoice = invoice.data[0]
+                if (latestInvoice.status !== 'paid') {
+                    try {
+                        await this.stripe.invoices.pay(latestInvoice.id)
+                    } catch (error: any) {
+                        // Payment failed but we still want to provision access (Issue #4 fix)
+                        // This keeps Stripe and our app in sync - both will show the new plan
+                        // Stripe will retry payment for a few days, then send invoice.marked_uncollectible
+                        // Our webhook will handle setting org status to past_due at that point
+                        paymentFailed = true
+                        paymentError = error
+                        console.error('Payment failed during upgrade, but provisioning access anyway:', error)
                     }
-
-                    // Get price for original product
-                    const originalPrices = await this.stripe.prices.list({
-                        product: originalProductId,
-                        active: true,
-                        limit: 1
-                    })
-
-                    if (originalPrices.data.length > 0) {
-                        // Revert subscription to original product
-                        const revertedSubscription = await this.stripe.subscriptions.update(subscriptionId, {
-                            items: [
-                                {
-                                    id: subscription.items.data[0].id,
-                                    price: originalPrices.data[0].id
-                                }
-                            ],
-                            proration_behavior: 'none' // No proration to avoid credit balance
-                        })
-
-                        console.log(`Successfully reverted subscription ${subscriptionId} to original product ${originalProductId}`)
-                    }
-                } catch (revertError) {
-                    console.error('Error reverting subscription after payment failure:', revertError)
-                    // Don't throw revert error - still want to throw original payment error
                 }
             }
 
+            return {
+                success: true,
+                subscription: updatedSubscription,
+                invoice: invoice.data[0],
+                paymentFailed, // Indicates if payment failed but plan was still upgraded
+                paymentError: paymentFailed ? paymentError : null // Error details for frontend display
+            }
+        } catch (error) {
+            console.error('Error updating subscription plan:', error)
             throw error
         }
     }
