@@ -222,10 +222,12 @@ class PostgresRecordManager implements RecordManagerInterface {
     }
 
     async createSchema(): Promise<void> {
+        const dataSource = await this.getDataSource()
+        const queryRunner = dataSource.createQueryRunner()
+        const tableName = this.sanitizeTableName(this.tableName)
+
         try {
-            const dataSource = await this.getDataSource()
-            const queryRunner = dataSource.createQueryRunner()
-            const tableName = this.sanitizeTableName(this.tableName)
+            await queryRunner.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;')
 
             await queryRunner.manager.query(`
   CREATE TABLE IF NOT EXISTS "${tableName}" (
@@ -251,6 +253,8 @@ class PostgresRecordManager implements RecordManagerInterface {
                 return
             }
             throw e
+        } finally {
+            await dataSource.destroy()
         }
     }
 
