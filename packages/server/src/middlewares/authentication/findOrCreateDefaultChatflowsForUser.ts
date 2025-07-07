@@ -52,6 +52,8 @@ export const findOrCreateDefaultChatflowsForUser = async (AppDataSource: DataSou
         if (template) {
             const templateCopy = { ...template }
             delete (templateCopy as any).id
+            delete (templateCopy as any).createdDate
+            delete (templateCopy as any).updatedDate
 
             const chatflowToImport = {
                 ...templateCopy,
