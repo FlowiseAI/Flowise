@@ -38,7 +38,8 @@ class AAIGroq_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                placeholder: 'llama3-70b-8192'
+                default: 'llama-3-70b-8192',
+                placeholder: 'llama-3-70b-8192'
             },
             {
                 label: 'Temperature',

@@ -160,7 +160,7 @@ class OpenAIAssistant_Agents implements INode {
         }
 
         const credentialData = await getCredentialData(assistant.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData) || process.env.AAI_DEFAULT_OPENAI_API_KEY
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
         if (!openAIApiKey) {
             options.logger.error(`OpenAI ApiKey not found`)
             return

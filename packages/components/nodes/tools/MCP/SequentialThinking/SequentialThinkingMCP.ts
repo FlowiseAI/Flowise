@@ -1,3 +1,18 @@
+/**
+ * MCP Server Node Pattern Example
+ *
+ * This file implements a Sequential Thinking MCP server node following the standard pattern described in MCP/README.md.
+ *
+ * Key requirements:
+ * - Implements INode interface
+ * - Sets tags = ['AAI'] for UI Answer tab integration
+ * - Sets category = 'MCP Servers'
+ * - Exposes available actions via mcpActions input
+ * - Registers the node as module.exports = { nodeClass: SequentialThinking_MCP }
+ *
+ * For more details and a template, see MCP/README.md.
+ * All comments and documentation must be in English.
+ */
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { getNodeModulesPackagePath } from '../../../../src/utils'
@@ -14,6 +29,7 @@ class SequentialThinking_MCP implements INode {
     baseClasses: string[]
     documentation: string
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'Sequential Thinking MCP'
@@ -22,6 +38,7 @@ class SequentialThinking_MCP implements INode {
         this.type = 'Sequential Thinking MCP Tool'
         this.icon = 'sequentialthinking.svg'
         this.category = 'MCP Servers'
+        this.tags = ['AAI']
         this.description =
             'MCP server that provides a tool for dynamic and reflective problem-solving through a structured thinking process'
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/sequentialthinking'

@@ -1,3 +1,18 @@
+/**
+ * MCP Server Node Pattern Example
+ *
+ * This file implements a Github MCP server node following the standard pattern described in MCP/README.md.
+ *
+ * Key requirements:
+ * - Implements INode interface
+ * - Sets tags = ['AAI'] for UI Answer tab integration
+ * - Sets category = 'MCP Servers'
+ * - Exposes available actions via mcpActions input
+ * - Registers the node as module.exports = { nodeClass: Github_MCP }
+ *
+ * For more details and a template, see MCP/README.md.
+ * All comments and documentation must be in English.
+ */
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { getCredentialData, getCredentialParam, getNodeModulesPackagePath } from '../../../../src/utils'
@@ -15,6 +30,7 @@ class Github_MCP implements INode {
     documentation: string
     credential: INodeParams
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'Github MCP'
@@ -23,6 +39,7 @@ class Github_MCP implements INode {
         this.type = 'Github MCP Tool'
         this.icon = 'github.svg'
         this.category = 'MCP Servers'
+        this.tags = ['AAI']
         this.description = 'MCP Server for the GitHub API'
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/github'
         this.credential = {

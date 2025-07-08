@@ -39,7 +39,7 @@ class AAIChatAnthropic_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'claude-3-5-sonnet@20240620'
+                default: 'claude-3-sonnet-20240229'
             },
             {
                 label: 'Temperature',

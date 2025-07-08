@@ -47,7 +47,7 @@ class AAIGoogleGenerativeAI_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'gemini-1.5-flash-latest'
+                default: 'gemini-1.5-flash'
             },
             {
                 label: 'Custom Model Name',
