@@ -56,6 +56,21 @@ const getApiKey = async (apiKey: string) => {
     }
 }
 
+const getApiKeyById = async (apiKeyId: string) => {
+    try {
+        const appServer = getRunningExpressApp()
+        const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
+            id: apiKeyId
+        })
+        if (!currentKey) {
+            return undefined
+        }
+        return currentKey
+    } catch (error) {
+        throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: apikeyService.getApiKeyById - ${getErrorMessage(error)}`)
+    }
+}
+
 const createApiKey = async (keyName: string, workspaceId?: string) => {
     try {
         const apiKey = generateAPIKey()
@@ -243,5 +258,6 @@ export default {
     updateApiKey,
     verifyApiKey,
     getApiKey,
+    getApiKeyById,
     importKeys
 }

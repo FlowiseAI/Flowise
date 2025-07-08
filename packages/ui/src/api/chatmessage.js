@@ -9,16 +9,11 @@ const deleteChatmessage = (id, params = {}) => client.delete(`/chatmessage/${id}
 const getStoragePath = () => client.get(`/get-upload-path`)
 const abortMessage = (chatflowid, chatid) => client.put(`/chatmessage/abort/${chatflowid}/${chatid}`)
 
-const getAllChatSessionsFromChatflow = (id, params = {}) =>
-    client.get(`/chatmessage/${id}/sessions`, { params: { order: 'DESC', feedback: true, ...params } })
-
 export default {
     getInternalChatmessageFromChatflow,
     getAllChatmessageFromChatflow,
     getChatmessageFromPK,
     deleteChatmessage,
     getStoragePath,
-    abortMessage,
-
-    getAllChatSessionsFromChatflow
+    abortMessage
 }

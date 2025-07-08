@@ -26,7 +26,7 @@ const getChatflowStats = async (
             messageId,
             feedback,
             feedbackTypes,
-            activeWorkspaceId: activeWorkspaceId
+            activeWorkspaceId
         })) as Array<ChatMessage & { feedback?: ChatMessageFeedback }>
         const totalMessages = chatmessages.length
         const totalFeedback = chatmessages.filter((message) => message?.feedback).length
