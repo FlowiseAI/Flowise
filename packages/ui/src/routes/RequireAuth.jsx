@@ -65,11 +65,12 @@ export const RequireAuth = ({ permission, display, children }) => {
     const [isBillingLoading, setIsBillingLoading] = useState(false)
 
     useEffect(() => {
-        console.log('organization', organization)
-        if (organization && organization.status === 'past_due') {
+        // Only show the suspended dialog for organization admins
+        const isOrgAdmin = currentUser?.isOrganizationAdmin || currentUser?.id === organization?.createdBy
+        if (organization && organization.status === 'past_due' && isOrgAdmin) {
             setShowOrgPastDueDialog(true)
         }
-    }, [organization])
+    }, [organization, currentUser])
 
     const handleBillingPortalClick = async () => {
         setIsBillingLoading(true)
