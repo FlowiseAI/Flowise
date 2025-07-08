@@ -28,6 +28,7 @@ import {
     replaceBase64ImagesWithFileReferences,
     updateFlowState
 } from '../utils'
+import { DocumentStoreError } from '../../../src/error'
 
 interface ITool {
     agentSelectedTool: string
@@ -544,64 +545,76 @@ class Agent_Agentflow implements INode {
             const knowledgeBases = nodeData.inputs?.agentKnowledgeDocumentStores as IKnowledgeBase[]
             if (knowledgeBases && knowledgeBases.length > 0) {
                 for (const knowledgeBase of knowledgeBases) {
-                    const nodeInstanceFilePath = options.componentNodes['retrieverTool'].filePath as string
-                    const nodeModule = await import(nodeInstanceFilePath)
-                    const newRetrieverToolNodeInstance = new nodeModule.nodeClass()
-                    const [storeId, storeName] = knowledgeBase.documentStore.split(':')
+                    try {
+                        const nodeInstanceFilePath = options.componentNodes['retrieverTool'].filePath as string
+                        const nodeModule = await import(nodeInstanceFilePath)
+                        const newRetrieverToolNodeInstance = new nodeModule.nodeClass()
+                        const [storeId, storeName] = knowledgeBase.documentStore.split(':')
 
-                    const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
-                    const docStoreVectorModule = await import(docStoreVectorInstanceFilePath)
-                    const newDocStoreVectorInstance = new docStoreVectorModule.nodeClass()
-                    const docStoreVectorInstance = await newDocStoreVectorInstance.init(
-                        {
+                        const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
+                        const docStoreVectorModule = await import(docStoreVectorInstanceFilePath)
+                        const newDocStoreVectorInstance = new docStoreVectorModule.nodeClass()
+                        let docStoreVectorInstance
+                        try {
+                            docStoreVectorInstance = await newDocStoreVectorInstance.init(
+                                {
+                                    ...nodeData,
+                                    inputs: {
+                                        ...nodeData.inputs,
+                                        selectedStore: storeId
+                                    },
+                                    outputs: {
+                                        output: 'retriever'
+                                    }
+                                },
+                                '',
+                                options
+                            )
+                        } catch (error) {
+                            if (error instanceof DocumentStoreError) {
+                                throw error
+                            }
+                            throw new DocumentStoreError(error.message, storeId)
+                        }
+                        const newRetrieverToolNodeData = {
                             ...nodeData,
                             inputs: {
                                 ...nodeData.inputs,
-                                selectedStore: storeId
-                            },
-                            outputs: {
-                                output: 'retriever'
+                                name: storeName
+                                    .toLowerCase()
+                                    .replace(/ /g, '_')
+                                    .replace(/[^a-z0-9_-]/g, ''),
+                                description: knowledgeBase.docStoreDescription,
+                                retriever: docStoreVectorInstance,
+                                returnSourceDocuments: knowledgeBase.returnSourceDocuments
                             }
-                        },
-                        '',
-                        options
-                    )
-
-                    const newRetrieverToolNodeData = {
-                        ...nodeData,
-                        inputs: {
-                            ...nodeData.inputs,
+                        }
+                        const retrieverToolInstance = await newRetrieverToolNodeInstance.init(newRetrieverToolNodeData, '', options)
+                        toolsInstance.push(retrieverToolInstance as Tool)
+                        const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
+                        if (jsonSchema.$schema) {
+                            delete jsonSchema.$schema
+                        }
+                        const componentNode = options.componentNodes['retrieverTool']
+                        availableTools.push({
                             name: storeName
                                 .toLowerCase()
                                 .replace(/ /g, '_')
                                 .replace(/[^a-z0-9_-]/g, ''),
                             description: knowledgeBase.docStoreDescription,
-                            retriever: docStoreVectorInstance,
-                            returnSourceDocuments: knowledgeBase.returnSourceDocuments
+                            schema: jsonSchema,
+                            toolNode: {
+                                label: componentNode?.label || retrieverToolInstance.name,
+                                name: componentNode?.name || retrieverToolInstance.name
+                            }
+                        })
+                    } catch (error) {
+                        if (error instanceof DocumentStoreError) {
+                            console.warn(`Failed to initialize document store ${knowledgeBase.documentStore}, skipping:`, error.message)
+                            continue
                         }
+                        throw error
                     }
-                    const retrieverToolInstance = await newRetrieverToolNodeInstance.init(newRetrieverToolNodeData, '', options)
-
-                    toolsInstance.push(retrieverToolInstance as Tool)
-
-                    const jsonSchema = zodToJsonSchema(retrieverToolInstance.schema)
-                    if (jsonSchema.$schema) {
-                        delete jsonSchema.$schema
-                    }
-                    const componentNode = options.componentNodes['retrieverTool']
-
-                    availableTools.push({
-                        name: storeName
-                            .toLowerCase()
-                            .replace(/ /g, '_')
-                            .replace(/[^a-z0-9_-]/g, ''),
-                        description: knowledgeBase.docStoreDescription,
-                        schema: jsonSchema,
-                        toolNode: {
-                            label: componentNode?.label || retrieverToolInstance.name,
-                            name: componentNode?.name || retrieverToolInstance.name
-                        }
-                    })
                 }
             }
 
