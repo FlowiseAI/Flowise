@@ -446,11 +446,7 @@ const upsertDocStoreMiddleware = async (req: Request, res: Response, next: NextF
         }
         const body = req.body
         const files = (req.files as Express.Multer.File[]) || []
-        const apiResponse = await documentStoreService.upsertDocStoreMiddleware(
-            req.params.id,
-            { ...body, userId: req.user?.id!, organizationId: req.user?.organizationId! },
-            files
-        )
+        const apiResponse = await documentStoreService.upsertDocStoreMiddleware(req.params.id, { ...body, user: req.user! }, files)
         getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
             status: FLOWISE_COUNTER_STATUS.SUCCESS
         })
@@ -474,8 +470,7 @@ const refreshDocStoreMiddleware = async (req: Request, res: Response, next: Next
         const body = req.body
         const apiResponse = await documentStoreService.refreshDocStoreMiddleware(req.params.id, {
             ...body,
-            userId: req.user?.id!,
-            organizationId: req.user?.organizationId!
+            user: req.user!
         })
         getRunningExpressApp().metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.VECTORSTORE_UPSERT, {
             status: FLOWISE_COUNTER_STATUS.SUCCESS

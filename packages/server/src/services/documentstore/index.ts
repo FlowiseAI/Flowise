@@ -1998,7 +1998,8 @@ const refreshDocStoreMiddleware = async (storeId: string, data: IDocumentStoreRe
             const loaders = JSON.parse(entity.loaders)
             totalItems = loaders.map((ldr: IDocumentStoreLoader) => {
                 return {
-                    docId: ldr.id
+                    docId: ldr.id,
+                    user: data.user
                 }
             })
         } else {
