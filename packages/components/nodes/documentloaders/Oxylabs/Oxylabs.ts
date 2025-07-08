@@ -325,6 +325,3 @@ class Oxylabs_DocumentLoaders implements INode {
 }
 
 module.exports = { nodeClass: Oxylabs_DocumentLoaders }
-
-// FOR TESTING PURPOSES
-// export { Oxylabs_DocumentLoaders }
