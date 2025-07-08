@@ -168,3 +168,47 @@ npm run serve
 ```
 
 This workflow ensures that all OpenAPI files have consistent server and authentication configurations while preserving your specific API endpoint changes.
+
+## generate-release-docs.js
+
+Generates documentation snapshots for releases using repomix.
+
+### Usage
+
+```bash
+# Generate docs for default version (0.42)
+pnpm generate-release-docs
+
+# Generate docs for specific version
+pnpm generate-release-docs 1.0.0
+```
+
+### What it does
+
+1. Creates a `releases/{version}/` directory
+2. Runs repomix on three directories:
+   - `packages/docs/blog` → `blog-docs.xml`
+   - `packages/docs/src/pages` → `marketing.xml`
+   - `packages/docs/docs` → `documentation.xml`
+3. Uses XML output format with no file summary
+4. Provides detailed progress and error reporting
+
+### Output Structure
+
+```
+packages/docs/releases/
+├── 0.42/
+│   ├── blog-docs.xml
+│   ├── marketing.xml
+│   └── documentation.xml
+└── 1.0.0/
+    ├── blog-docs.xml
+    ├── marketing.xml
+    └── documentation.xml
+```
+
+### Examples
+
+- Blog documentation: Contains manifesto, tags, and authors
+- Marketing documentation: Contains privacy policy, terms of service, and marketing pages
+- Documentation: Contains all user guides, API docs, and developer documentation

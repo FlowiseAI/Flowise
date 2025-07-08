@@ -52,7 +52,8 @@
         "gen-api-docs": "docusaurus gen-api-docs all",
         "clean-api-docs": "docusaurus clean-api-docs all",
         "api-docs": "node generate-api-docs.js",
-        "gen-full-api-spec": "node devscripts/generate-full-openapi.js"
+        "gen-full-api-spec": "node devscripts/generate-full-openapi.js",
+        "generate-release-docs": "node devscripts/generate-release-docs.js"
     },
     "version": "0.0.0"
 }
