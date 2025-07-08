@@ -417,7 +417,7 @@ export class StripeManager {
                     try {
                         await this.stripe.invoices.pay(latestInvoice.id)
                     } catch (error: any) {
-                        // Payment failed but we still want to provision access (Issue #4 fix)
+                        // Payment failed but we still want to provision access
                         // This keeps Stripe and our app in sync - both will show the new seats
                         // Stripe will retry payment for a few days, then send invoice.marked_uncollectible
                         // Our webhook will handle setting org status to past_due at that point
@@ -743,7 +743,7 @@ export class StripeManager {
                     try {
                         await this.stripe.invoices.pay(latestInvoice.id)
                     } catch (error: any) {
-                        // Payment failed but we still want to provision access (Issue #4 fix)
+                        // Payment failed but we still want to provision access
                         // This keeps Stripe and our app in sync - both will show the new plan
                         // Stripe will retry payment for a few days, then send invoice.marked_uncollectible
                         // Our webhook will handle setting org status to past_due at that point

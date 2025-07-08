@@ -88,23 +88,53 @@ const PricingDialog = ({ open, onClose }) => {
                 prorationInfo.prorationDate
             )
             if (response.data.status === 'success') {
-                // Subscription updated successfully
-                store.dispatch(upgradePlanSuccess(response.data.user))
-                enqueueSnackbar('Subscription updated successfully!', { variant: 'success' })
-                onClose(true)
+                // Check if payment failed but plan was upgraded (Issue #4 fix)
+                if (response.data.paymentFailed) {
+                    // Subscription updated but payment failed
+                    store.dispatch(upgradePlanSuccess(response.data.user))
+                    const paymentErrorMessage = response.data.paymentError || 'Payment failed'
+                    enqueueSnackbar(
+                        `Plan upgraded successfully! However, your payment failed (${paymentErrorMessage}). We'll retry for the next few days. Please update your payment method or your account may be suspended.`,
+                        {
+                            variant: 'error',
+                            autoHideDuration: 8000
+                        }
+                    )
+                    // Delay closing to allow user to see the warning message
+                    setTimeout(() => {
+                        setOpenPlanDialog(false)
+                        onClose(true)
+                    }, 8000)
+                } else {
+                    // Subscription updated successfully with no payment issues
+                    store.dispatch(upgradePlanSuccess(response.data.user))
+                    enqueueSnackbar('Subscription updated successfully!', { variant: 'success' })
+                    // Delay closing to allow user to see the success message
+                    setTimeout(() => {
+                        setOpenPlanDialog(false)
+                        onClose(true)
+                    }, 3000)
+                }
             } else {
                 const errorMessage = response.data.message || 'Subscription failed to update'
                 enqueueSnackbar(errorMessage, { variant: 'error' })
-                onClose()
+                // Delay closing to allow user to see the error message
+                setTimeout(() => {
+                    setOpenPlanDialog(false)
+                    onClose()
+                }, 3000)
             }
         } catch (error) {
             console.error('Error updating plan:', error)
             const errorMessage = error.response?.data?.message || 'Failed to update subscription'
             enqueueSnackbar(errorMessage, { variant: 'error' })
-            onClose()
+            // Delay closing to allow user to see the error message
+            setTimeout(() => {
+                setOpenPlanDialog(false)
+                onClose()
+            }, 3000)
         } finally {
             setIsUpdatingPlan(false)
-            setOpenPlanDialog(false)
         }
     }
 

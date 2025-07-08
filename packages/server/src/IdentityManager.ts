@@ -367,7 +367,7 @@ export class IdentityManager {
             success,
             subscription,
             invoice,
-            paymentFailed, // Issue #4 fix: Indicates payment failed but seats were updated
+            paymentFailed,
             paymentError: paymentFailed ? paymentError?.message || 'Payment failed' : null
         }
     }
@@ -496,7 +496,7 @@ export class IdentityManager {
                 return {
                     status: 'success',
                     user: loggedInUser,
-                    paymentFailed, // Issue #4 fix: Indicates payment failed but plan was upgraded
+                    paymentFailed,
                     paymentError: paymentFailed ? paymentError?.message || 'Payment failed' : null
                 }
             }

@@ -65,6 +65,7 @@ export const RequireAuth = ({ permission, display, children }) => {
     const [isBillingLoading, setIsBillingLoading] = useState(false)
 
     useEffect(() => {
+        console.log('organization', organization)
         if (organization && organization.status === 'past_due') {
             setShowOrgPastDueDialog(true)
         }
