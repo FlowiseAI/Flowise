@@ -116,8 +116,7 @@ export class MCPToolkit extends BaseToolkit {
         if (errors.length !== 0) {
             console.error('MCP Tools falied to be resolved', errors)
         }
-        const successes = res.filter((r) => r.status === 'fulfilled')
-            .map((r) => r.value);
+        const successes = res.filter((r) => r.status === 'fulfilled').map((r) => r.value)
         return successes
     }
 }
@@ -174,3 +173,4 @@ function createSchemaModel(
 
     return z.object(schemaProperties)
 }
+
