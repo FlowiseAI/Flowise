@@ -56,6 +56,10 @@ export class OrganizationService {
         return await queryRunner.manager.findOneBy(Organization, { name })
     }
 
+    public async readOrganizationBySubscriptionId(subscriptionId: typeof Organization.prototype.subscriptionId, queryRunner: QueryRunner) {
+        return await queryRunner.manager.findOneBy(Organization, { subscriptionId })
+    }
+
     public async countOrganizations(queryRunner: QueryRunner) {
         return await queryRunner.manager.count(Organization)
     }
