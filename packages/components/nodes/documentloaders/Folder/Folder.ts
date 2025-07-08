@@ -17,6 +17,7 @@ class Folder_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
@@ -29,6 +30,7 @@ class Folder_DocumentLoaders implements INode {
         this.icon = 'folder.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from folder with multiple files`
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.inputs = [
             {

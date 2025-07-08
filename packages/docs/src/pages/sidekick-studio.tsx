@@ -44,7 +44,7 @@ function FlowiseFoundation() {
                 <p className='text--center' style={{ marginBottom: '3rem', fontSize: '1.2rem', opacity: 0.9 }}>
                     Leverage the proven power of Flowise with AnswerAI enhancements
                 </p>
-
+              
                 {/* Image at the top */}
                 <div className='row' style={{ marginBottom: '3rem' }}>
                     <div className='col col--12'>

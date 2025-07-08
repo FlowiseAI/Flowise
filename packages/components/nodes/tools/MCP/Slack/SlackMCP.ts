@@ -22,7 +22,7 @@ class Slack_MCP implements INode {
         this.version = 1.0
         this.type = 'Slack MCP Tool'
         this.icon = 'slack.svg'
-        this.category = 'Tools (MCP)'
+        this.category = 'MCP Servers'
         this.description = 'MCP Server for the Slack API'
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/slack'
         this.credential = {

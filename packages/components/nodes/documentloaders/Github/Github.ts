@@ -12,6 +12,7 @@ class Github_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -25,6 +26,7 @@ class Github_DocumentLoaders implements INode {
         this.icon = 'github.svg'
         this.category = 'Document Loaders'
         this.description = `Load data from a GitHub repository`
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',

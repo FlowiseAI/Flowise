@@ -19,15 +19,17 @@ class Custom_MCP implements INode {
     documentation: string
     credential: INodeParams
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
-        this.label = 'Custom MCP'
+        this.label = 'MCP Servers'
         this.name = 'customMCP'
         this.version = 1.0
         this.type = 'Custom MCP Tool'
         this.icon = 'customMCP.png'
-        this.category = 'Tools (MCP)'
+        this.category = 'MCP Servers'
         this.description = 'Custom MCP Config'
+        this.tags = ['AAI']
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search'
         this.inputs = [
             {

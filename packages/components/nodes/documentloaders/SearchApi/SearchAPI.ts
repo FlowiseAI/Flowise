@@ -14,6 +14,7 @@ class SearchAPI_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -27,6 +28,7 @@ class SearchAPI_DocumentLoaders implements INode {
         this.icon = 'searchapi.svg'
         this.category = 'Document Loaders'
         this.description = 'Load data from real-time search results'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',

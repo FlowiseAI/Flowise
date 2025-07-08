@@ -260,7 +260,8 @@ class FireCrawl_DocumentLoaders implements INode {
     inputs: INodeParams[]
     credential: INodeParams
     outputs: INodeOutputsValue[]
-
+    tags: string[]
+    
     constructor() {
         this.label = 'FireCrawl'
         this.name = 'fireCrawl'
@@ -269,6 +270,7 @@ class FireCrawl_DocumentLoaders implements INode {
         this.version = 2.1
         this.category = 'Document Loaders'
         this.description = 'Load data from URL using FireCrawl'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'FireCrawl API',

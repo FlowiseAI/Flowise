@@ -108,6 +108,7 @@ class Contentful_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs?: INodeParams[]
@@ -121,6 +122,7 @@ class Contentful_DocumentLoaders implements INode {
         this.icon = 'contentful.png'
         this.category = 'Document Loaders'
         this.description = `Load data from a Contentful Space`
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',

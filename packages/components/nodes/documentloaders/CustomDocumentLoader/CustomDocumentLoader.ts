@@ -11,6 +11,7 @@ class CustomDocumentLoader_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
@@ -23,6 +24,7 @@ class CustomDocumentLoader_DocumentLoaders implements INode {
         this.icon = 'customDocLoader.svg'
         this.category = 'Document Loaders'
         this.description = `Custom function for loading documents`
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.inputs = [
             {

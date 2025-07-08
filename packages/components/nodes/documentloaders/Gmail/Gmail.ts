@@ -13,6 +13,7 @@ class Gmail implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -25,6 +26,7 @@ class Gmail implements INode {
         this.icon = 'gmail.svg'
         this.category = 'Document Loaders'
         this.description = 'Load emails from Gmail'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, 'DocumentLoader']
         this.credential = {
             label: 'Connect Credential',

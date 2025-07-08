@@ -22,7 +22,7 @@ class Youtube_MCP implements INode {
         this.version = 1.0
         this.type = 'Youtube MCP Tool'
         this.icon = 'youtube.png'
-        this.category = 'Tools (MCP)'
+        this.category = 'MCP Servers'
         this.description = 'MCP server that integrates the Youtube API'
         this.documentation = 'https://github.com/zubeid/youtube-mcp-server'
         this.credential = {

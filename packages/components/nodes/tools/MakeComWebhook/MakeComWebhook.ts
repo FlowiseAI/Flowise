@@ -65,6 +65,7 @@ class MakeComWebhook_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -77,6 +78,7 @@ class MakeComWebhook_Tools implements INode {
         this.icon = 'makecom.svg'
         this.category = 'Tools'
         this.description = 'Execute MakeComWebhook webhook triggers'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, ...getBaseClasses(MakeComWebhookTool)]
         this.credential = {
             label: 'Connect Credential',
