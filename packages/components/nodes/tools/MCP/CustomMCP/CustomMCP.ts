@@ -143,6 +143,9 @@ class Custom_MCP implements INode {
             sandbox['$vars'] = prepareSandboxVars(variables)
         }
 
+        // Get the workspaceId from the options object for multi-tenant isolation.
+        const workspaceId = options?.searchOptions?.workspaceId?._value
+
         // Create a canonical cache key by parsing and re-stringifying the JSON config.
         // This makes the cache immune to formatting changes (spaces, newlines, etc.).
         let canonicalConfig
@@ -153,7 +156,7 @@ class Custom_MCP implements INode {
             // If parsing fails (e.g., invalid JSON), use the raw string as a fallback.
             canonicalConfig = mcpServerConfig
         }
-        const cacheKey = JSON.stringify({ canonicalConfig, sandbox })
+        const cacheKey = JSON.stringify({ workspaceId, canonicalConfig, sandbox })
 
         if (Custom_MCP.toolkitCache.has(cacheKey)) {
             return Custom_MCP.toolkitCache.get(cacheKey)!.tools
