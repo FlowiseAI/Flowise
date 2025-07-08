@@ -11,7 +11,7 @@ import { enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
 // material-ui
 import { Button, Dialog, DialogContent, Typography, Stack, DialogActions, CircularProgress, Box } from '@mui/material'
-import { IconExternalLink, IconCreditCard, IconLogout, IconHelp, IconX } from '@tabler/icons-react'
+import { IconExternalLink, IconCreditCard, IconLogout, IconX } from '@tabler/icons-react'
 
 // API
 import accountApi from '@/api/account.api'

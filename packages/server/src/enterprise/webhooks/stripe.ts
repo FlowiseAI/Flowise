@@ -36,7 +36,7 @@ export class StripeWebhooks {
             switch (event.type) {
                 case 'invoice.paid': {
                     const stripeService = new StripeService()
-                    await stripeService.handleInvoicePaid(event.data.object as Stripe.Invoice, queryRunner)
+                    await stripeService.reactivateOrganizationIfEligible(event.data.object as Stripe.Invoice, queryRunner)
                     break
                 }
 

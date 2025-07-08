@@ -6,8 +6,27 @@ import { Organization, OrganizationStatus } from '../database/entities/organizat
 import { OrganizationUser } from '../database/entities/organization-user.entity'
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { WorkspaceUser } from '../database/entities/workspace-user.entity'
-import { OrganizationService } from './organization.service'
+import { OrganizationErrorMessage, OrganizationService } from './organization.service'
 import logger from '../../utils/logger'
+
+enum SubscriptionStatus {
+    INCOMPLETE = 'incomplete',
+    INCOMPLETE_EXPIRED = 'incomplete_expired',
+    TRIALING = 'trialing',
+    ACTIVE = 'active',
+    PAST_DUE = 'past_due',
+    CANCELED = 'canceled',
+    UNPAID = 'unpaid',
+    PAUSED = 'paused'
+}
+
+enum InvoiceStatus {
+    DRAFT = 'draft',
+    OPEN = 'open',
+    PAID = 'paid',
+    UNCOLLECTIBLE = 'uncollectible',
+    VOID = 'void'
+}
 
 // Note: Organization entity will have a 'status' field added later
 // This will support values like 'active', 'suspended', etc.
@@ -27,134 +46,54 @@ export class StripeService {
         return this.stripe
     }
 
-    public async handleInvoicePaid(invoice: Stripe.Invoice, queryRunner: QueryRunner): Promise<void> {
-        await this.getStripe() // Initialize stripe if not already done
-
-        if (!invoice.subscription) {
-            logger.warn(`No subscription ID found in invoice: ${invoice.id}`)
-            return
-        }
-
-        const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id
-
+    public async reactivateOrganizationIfEligible(invoice: Stripe.Invoice, queryRunner: QueryRunner): Promise<void> {
         try {
-            const organization = await queryRunner.manager.findOne(Organization, {
-                where: { subscriptionId }
-            })
+            await this.getStripe() // Initialize stripe if not already done
 
-            if (!organization) {
-                logger.warn(`No organization found for subscription ID: ${subscriptionId}`)
+            if (!invoice.subscription) {
+                logger.warn(`No subscription ID found in invoice: ${invoice.id}`)
                 return
             }
 
-            // Get subscription details from Stripe
-            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id
 
-            // Always ensure organization is active when invoice is paid
-            // This handles both reactivation and plan upgrades
-            const shouldUpdateStatus = (organization as any).status !== OrganizationStatus.ACTIVE
-
-            if (shouldUpdateStatus) {
-                // Check if subscription is past_due - if so, don't reactivate yet
-                if (subscription.status === 'past_due') {
-                    return
-                }
-
-                // Check for all uncollectible invoices and ensure they are all settled
-                // Customer must pay/settle ALL uncollectible invoices before reactivation
-                const uncollectibleInvoices = await this.stripe.invoices.list({
-                    subscription: subscriptionId,
-                    status: 'uncollectible',
-                    limit: 100 // Get all uncollectible invoices
-                })
-
-                if (uncollectibleInvoices.data.length > 0) {
-                    // Check if all uncollectible invoices have been settled (paid)
-                    const unsettledUncollectible = uncollectibleInvoices.data.filter((invoice) => !invoice.paid)
-                    if (unsettledUncollectible.length > 0) {
-                        return
-                    }
-                }
-
-                // Check for any unpaid invoices across all possible unpaid statuses
-                // This ensures no outstanding debt remains before reactivation
-                const unpaidStatuses = ['open', 'uncollectible', 'past_due']
-                let hasUnpaidInvoices = false
-                let unpaidInvoiceIds: string[] = []
-
-                for (const status of unpaidStatuses) {
-                    const invoices = await this.stripe.invoices.list({
-                        subscription: subscriptionId,
-                        status: status as any,
-                        limit: 100
-                    })
-
-                    // Filter out invoices that are actually paid (for uncollectible status)
-                    const actuallyUnpaidInvoices = invoices.data.filter((inv) => !inv.paid)
-
-                    if (actuallyUnpaidInvoices.length > 0) {
-                        hasUnpaidInvoices = true
-                        unpaidInvoiceIds.push(...actuallyUnpaidInvoices.map((inv) => inv.id))
-                    }
-                }
-
-                if (hasUnpaidInvoices) {
-                    logger.info(`Organization ${organization.id} still has unpaid invoices: ${unpaidInvoiceIds.join(', ')}`)
-                    return
-                }
-
-                const organizationService = new OrganizationService()
-                await organizationService.updateOrganization(
-                    {
-                        id: organization.id,
-                        status: OrganizationStatus.ACTIVE,
-                        updatedBy: organization.createdBy // Use the organization's creator as updater
-                    },
-                    queryRunner,
-                    true // fromStripe = true to allow status updates
-                )
+            const organizationService = new OrganizationService()
+            const organization = await organizationService.readOrganizationBySubscriptionId(subscriptionId, queryRunner)
+            if (!organization) {
+                logger.warn(`${OrganizationErrorMessage.ORGANIZATION_NOT_FOUND} for subscription ID: ${subscriptionId}`)
+                return
             }
 
-            // Check if subscription needs to be resumed after all debts are settled
-            if (subscription.status === 'unpaid') {
-                // Verify all debts are settled before resuming
-                // Check for any unpaid invoices across all possible unpaid statuses
-                // This ensures no outstanding debt remains before reactivation
-                const allUnpaidStatuses = ['open', 'uncollectible', 'past_due']
-                let hasAnyUnpaidInvoices = false
-                let allUnpaidInvoiceIds: string[] = []
-
-                for (const status of allUnpaidStatuses) {
-                    const invoices = await this.stripe.invoices.list({
-                        subscription: subscriptionId,
-                        status: status as any,
-                        limit: 100
-                    })
-
-                    // Filter out invoices that are actually paid (for uncollectible status)
-                    const actuallyUnpaidInvoices = invoices.data.filter((inv) => !inv.paid)
-
-                    if (actuallyUnpaidInvoices.length > 0) {
-                        hasAnyUnpaidInvoices = true
-                        allUnpaidInvoiceIds.push(...actuallyUnpaidInvoices.map((inv) => inv.id))
-                    }
-                }
-
-                if (!hasAnyUnpaidInvoices) {
-                    // All debts settled - resume the subscription
-                    try {
-                        await this.stripe.subscriptions.update(subscriptionId, {
-                            pause_collection: null // This resumes the subscription
-                        })
-                        logger.info(`Successfully resumed subscription ${subscriptionId}`)
-                    } catch (resumeError) {
-                        logger.error(`Failed to resume subscription ${subscriptionId}: ${resumeError}`)
-                        // Don't throw here - we still want to provision access even if resume fails
-                    }
-                } else {
-                    logger.info(`Cannot resume subscription ${subscriptionId} - unpaid invoices remain: ${allUnpaidInvoiceIds.join(', ')}`)
-                }
+            if (organization.status === OrganizationStatus.ACTIVE) {
+                logger.info(`Organization ${organization.id} is already active`)
+                return
             }
+
+            if (organization.status === OrganizationStatus.UNDER_REVIEW) {
+                logger.info(`Organization ${organization.id} is under review`)
+                return
+            }
+
+            const uncollectibleInvoices = await this.stripe.invoices.list({
+                subscription: subscriptionId,
+                status: InvoiceStatus.UNCOLLECTIBLE,
+                limit: 100
+            })
+
+            if (uncollectibleInvoices.data.length > 0) {
+                logger.info(`Organization ${organization.id} has uncollectible invoices`)
+                return
+            }
+
+            await organizationService.updateOrganization(
+                {
+                    id: organization.id,
+                    status: OrganizationStatus.ACTIVE,
+                    updatedBy: organization.createdBy // Use the organization's creator as updater
+                },
+                queryRunner,
+                true // fromStripe = true to allow status updates
+            )
 
             // Always update cache with latest subscription data when invoice is paid
             // This ensures access is provisioned for plan upgrades even if org is already active
@@ -174,8 +113,7 @@ export class StripeService {
 
             logger.info(`Successfully reactivated organization ${organization.id} and updated cache for subscription ${subscriptionId}`)
         } catch (error) {
-            logger.error(`Error handling invoice paid: ${error}`)
-            if (queryRunner && queryRunner.isTransactionActive) await queryRunner.rollbackTransaction()
+            logger.error(`stripe.service.reactivateOrganizationIfEligible: ${error}`)
             throw error
         }
     }
