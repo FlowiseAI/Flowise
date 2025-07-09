@@ -46,6 +46,7 @@ import { AddSSOColumns1730519457880 } from '../../../enterprise/database/migrati
 import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/sqlite/1734074497540-AddPersonalWorkspace'
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/sqlite/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/sqlite/1746862866554-ExecutionLinkWorkspaceId'
+import { AddGitConfig1751035139965 } from '../../../enterprise/database/migrations/sqlite/1751035139965-AddGitConfig'
 
 export const sqliteMigrations = [
     Init1693835579790,
@@ -94,5 +95,6 @@ export const sqliteMigrations = [
     AddExecutionEntity1738090872625,
     FixOpenSourceAssistantTable1743758056188,
     AddErrorToEvaluationRun1744964560174,
-    ExecutionLinkWorkspaceId1746862866554
+    ExecutionLinkWorkspaceId1746862866554,
+    AddGitConfig1751035139965
 ]

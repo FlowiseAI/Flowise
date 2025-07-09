@@ -48,6 +48,7 @@ import { AddSSOColumns1730519457880 } from '../../../enterprise/database/migrati
 import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/mariadb/1734074497540-AddPersonalWorkspace'
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/mariadb/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/mariadb/1746862866554-ExecutionLinkWorkspaceId'
+import { AddGitConfig1751035139965 } from '../../../enterprise/database/migrations/mariadb/1751035139965-AddGitConfig'
 
 export const mariadbMigrations = [
     Init1693840429259,
@@ -98,5 +99,6 @@ export const mariadbMigrations = [
     FixOpenSourceAssistantTable1743758056188,
     AddErrorToEvaluationRun1744964560174,
     ExecutionLinkWorkspaceId1746862866554,
-    ModifyExecutionDataColumnType1747902489801
+    ModifyExecutionDataColumnType1747902489801,
+    AddGitConfig1751035139965
 ]

@@ -70,6 +70,9 @@ export interface IChatFlow {
     category?: string
     type?: ChatflowType
     workspaceId?: string
+    lastPublishedAt?: Date
+    lastPublishedCommit?: string
+    isDirty?: boolean
 }
 
 export interface IChatMessage {
