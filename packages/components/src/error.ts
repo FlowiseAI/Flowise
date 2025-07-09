@@ -26,8 +26,8 @@ export const getErrorMessage = (error: unknown) => {
 
 export class DocumentStoreError extends Error {
     public storeId?: string
-    constructor(message: string, storeId?: string) {
-        super(`Document store error: ${message}`)
+    constructor(message: string, storeId?: string, errorOptions?: ErrorOptions) {
+        super(`Document store error: ${message}`, errorOptions)
         this.name = 'DocumentStoreError'
         this.storeId = storeId
     }

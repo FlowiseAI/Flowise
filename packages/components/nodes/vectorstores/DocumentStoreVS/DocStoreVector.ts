@@ -118,7 +118,11 @@ class DocStore_VectorStores implements INode {
             if (error instanceof DocumentStoreError) {
                 throw error
             }
-            throw new DocumentStoreError(getErrorMessage(error), nodeData.inputs?.selectedStore)
+            throw new DocumentStoreError(
+                getErrorMessage(error),
+                nodeData.inputs?.selectedStore,
+                error instanceof Error ? { cause: error.cause } : undefined
+            )
         }
     }
 }

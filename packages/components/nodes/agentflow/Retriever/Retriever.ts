@@ -179,7 +179,7 @@ class Retriever_Agentflow implements INode {
                         if (error instanceof DocumentStoreError) {
                             throw error
                         }
-                        throw new DocumentStoreError(error.message, storeId)
+                        throw new DocumentStoreError(error.message, storeId, error instanceof Error ? { cause: error.cause } : undefined)
                     }
                     const storeDocs = await docStoreVectorInstance.invoke(retrieverQuery || input, { signal: abortController?.signal })
                     docs.push(...storeDocs)

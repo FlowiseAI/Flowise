@@ -573,7 +573,11 @@ class Agent_Agentflow implements INode {
                             if (error instanceof DocumentStoreError) {
                                 throw error
                             }
-                            throw new DocumentStoreError(error.message, storeId)
+                            throw new DocumentStoreError(
+                                error.message,
+                                storeId,
+                                error instanceof Error ? { cause: error.cause } : undefined
+                            )
                         }
                         const newRetrieverToolNodeData = {
                             ...nodeData,
