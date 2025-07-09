@@ -1,6 +1,6 @@
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 import { DataSource } from 'typeorm'
-import { DocumentStoreError } from '../../../src/error'
+import { DocumentStoreError, getErrorMessage } from '../../../src/error'
 
 class DocStore_VectorStores implements INode {
     label: string
@@ -118,7 +118,7 @@ class DocStore_VectorStores implements INode {
             if (error instanceof DocumentStoreError) {
                 throw error
             }
-            throw new DocumentStoreError(error.message, nodeData.inputs?.selectedStore)
+            throw new DocumentStoreError(getErrorMessage(error), nodeData.inputs?.selectedStore)
         }
     }
 }

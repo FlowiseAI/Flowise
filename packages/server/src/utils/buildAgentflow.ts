@@ -1229,7 +1229,7 @@ const executeNode = async ({
             getErrorMessage(error).includes('Knowledge base temporarily unavailable')
 
         if (isDocStoreError && !isAborted) {
-            console.warn(`Document store error in node ${nodeId}, continuing execution:`, getErrorMessage(error))
+            logger.warn(`Document store error in node ${nodeId}, continuing execution:`, getErrorMessage(error))
             agentFlowExecutedData.push({
                 nodeId,
                 nodeLabel: reactFlowNode.data.label,
@@ -1802,7 +1802,7 @@ export const executeAgentFlow = async ({
                 getErrorMessage(error).includes('Knowledge base temporarily unavailable')
             // Handle document store errors more gracefully
             if (isDocStoreError && !isAborted) {
-                console.warn(`Document store error in node ${currentNode.nodeId}, continuing execution:`, getErrorMessage(error))
+                logger.warn(`Document store error in node ${currentNode.nodeId}, continuing execution:`, getErrorMessage(error))
                 // Add warning to execution data instead of error
                 agentFlowExecutedData.push({
                     nodeId: currentNode.nodeId,

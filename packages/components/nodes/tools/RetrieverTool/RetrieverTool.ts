@@ -7,6 +7,7 @@ import { getBaseClasses, resolveFlowObjValue } from '../../../src/utils'
 import { SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
+import { getErrorMessage } from '../../../src/error'
 
 const howToUse = `Add additional filters to vector store. You can also filter with flow config, including the current "state":
 - \`$flow.sessionId\`
@@ -209,13 +210,12 @@ class Retriever_Tools implements INode {
                 const sourceDocuments = JSON.stringify(docs)
                 return returnSourceDocuments ? content + SOURCE_DOCUMENTS_PREFIX + sourceDocuments : content
             } catch (error) {
+                const errorMessage = getErrorMessage(error)
                 const isDocStoreError =
-                    error.message &&
-                    (error.message.includes('document store') ||
-                        error.message.includes('vector store') ||
-                        error.message.includes('retriever'))
+                    errorMessage &&
+                    (errorMessage.includes('document store') || errorMessage.includes('vector store') || errorMessage.includes('retriever'))
                 if (isDocStoreError) {
-                    console.warn('Document store retrieval failed, returning fallback response:', error.message)
+                    console.warn('Document store retrieval failed, returning fallback response:', getErrorMessage(error))
                     return 'Knowledge base temporarily unavailable. Proceeding with general knowledge.'
                 }
                 throw error

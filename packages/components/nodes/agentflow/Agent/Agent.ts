@@ -19,7 +19,7 @@ import { Tool } from '@langchain/core/tools'
 import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import { flatten } from 'lodash'
 import zodToJsonSchema from 'zod-to-json-schema'
-import { getErrorMessage } from '../../../src/error'
+import { DocumentStoreError, getErrorMessage } from '../../../src/error'
 import { DataSource } from 'typeorm'
 import {
     getPastChatHistoryImageMessages,
@@ -28,7 +28,6 @@ import {
     replaceBase64ImagesWithFileReferences,
     updateFlowState
 } from '../utils'
-import { DocumentStoreError } from '../../../src/error'
 
 interface ITool {
     agentSelectedTool: string
@@ -610,7 +609,10 @@ class Agent_Agentflow implements INode {
                         })
                     } catch (error) {
                         if (error instanceof DocumentStoreError) {
-                            console.warn(`Failed to initialize document store ${knowledgeBase.documentStore}, skipping:`, error.message)
+                            console.warn(
+                                `Failed to initialize document store ${knowledgeBase.documentStore}, skipping:`,
+                                getErrorMessage(error)
+                            )
                             continue
                         }
                         throw error
