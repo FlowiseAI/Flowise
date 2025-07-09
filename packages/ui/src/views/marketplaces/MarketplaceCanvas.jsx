@@ -14,6 +14,10 @@ import MarketplaceCanvasNode from './MarketplaceCanvasNode'
 import MarketplaceCanvasHeader from './MarketplaceCanvasHeader'
 import StickyNote from '../canvas/StickyNote'
 
+// credential checking
+import { useCredentialChecker } from '@/hooks/useCredentialChecker'
+import UnifiedCredentialsModal from '@/ui-component/dialog/UnifiedCredentialsModal'
+
 const nodeTypes = { customNode: MarketplaceCanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: '' }
 
@@ -33,6 +37,9 @@ const MarketplaceCanvas = () => {
 
     const reactFlowWrapper = useRef(null)
 
+    // Credential checking hook
+    const { showCredentialModal, missingCredentials, checkCredentials, handleAssign, handleSkip, handleCancel } = useCredentialChecker()
+
     // ==============================|| useEffect ||============================== //
 
     useEffect(() => {
@@ -45,12 +52,49 @@ const MarketplaceCanvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [flowData])
 
-    const onChatflowCopy = (flowData) => {
-        const isAgentCanvas = (flowData?.nodes || []).some(
+    const proceedWithTemplate = (updatedFlowData) => {
+        console.log('🚀 MarketplaceCanvas proceedWithTemplate called with:', {
+            updatedFlowData: typeof updatedFlowData,
+            hasNodes: !!updatedFlowData?.nodes,
+            nodeCount: updatedFlowData?.nodes?.length || 0
+        })
+
+        const isAgentCanvas = (updatedFlowData?.nodes || []).some(
             (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
         )
-        const templateFlowData = JSON.stringify(flowData)
-        navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, { state: { templateFlowData } })
+
+        console.log('🚀 Canvas type determined:', { isAgentCanvas })
+
+        const flowDataParsed = typeof updatedFlowData === 'string' ? JSON.parse(updatedFlowData) : updatedFlowData
+
+        // Store the data in the format Canvas component expects
+        const chatflowData = {
+            name: name || 'Copied Template',
+            description: 'Copied from marketplace',
+            nodes: flowDataParsed.nodes || [],
+            edges: flowDataParsed.edges || [],
+            flowData: JSON.stringify(flowDataParsed)
+        }
+
+        console.log('🚀 Storing duplicated flow data:', {
+            name: chatflowData.name,
+            nodeCount: chatflowData.nodes.length,
+            edgeCount: chatflowData.edges.length,
+            hasFlowDataString: !!chatflowData.flowData
+        })
+
+        localStorage.setItem('duplicatedFlowData', JSON.stringify(chatflowData))
+
+        const targetPath = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
+        console.log('🚀 Navigating to:', targetPath)
+        navigate(targetPath)
+    }
+
+    const onChatflowCopy = (flowData) => {
+        console.log('🎯 MarketplaceCanvas onChatflowCopy called with flowData:', typeof flowData)
+
+        // Check for missing credentials before proceeding
+        checkCredentials(flowData, proceedWithTemplate)
     }
 
     return (
@@ -101,6 +145,16 @@ const MarketplaceCanvas = () => {
                     </div>
                 </Box>
             </Box>
+            
+            {/* Unified Credentials Modal */}
+            <UnifiedCredentialsModal
+                show={showCredentialModal}
+                missingCredentials={missingCredentials}
+                onAssign={handleAssign}
+                onSkip={handleSkip}
+                onCancel={handleCancel}
+                flowData={flowData ? JSON.parse(flowData) : null}
+            />
         </>
     )
 }

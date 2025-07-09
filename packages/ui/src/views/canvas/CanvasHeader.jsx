@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import { useNavigate } from '@/utils/navigation'
 import { useSelector, useDispatch } from 'react-redux'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from 'react'
 
 // material-ui
 import { useTheme } from '@mui/material/styles'
@@ -43,7 +43,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = forwardRef(({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }, ref) => {
     const theme = useTheme()
     const flags = useFlags(['chatflow:share:external'])
     const dispatch = useDispatch()
@@ -75,6 +75,19 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
+
+    // Expose triggerSaveDialog function to parent component
+    useImperativeHandle(
+        ref,
+        () => ({
+            triggerSaveDialog: () => {
+                if (!chatflow.id) {
+                    setFlowDialogOpen(true)
+                }
+            }
+        }),
+        [chatflow]
+    )
 
     const onSettingsItemClick = (setting) => {
         setSettingsOpen(false)
@@ -230,9 +243,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         }
     }
 
-    const onConfirmSaveName = (newName) => {
+    const onConfirmSaveName = (newName, configs = {}) => {
         setFlowDialogOpen(false)
-        handleSaveFlow(newName)
+        handleSaveFlow(newName, configs)
     }
 
     const onConfigurationButtonClick = () => {
@@ -544,7 +557,9 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             />
         </>
     )
-}
+})
+
+CanvasHeader.displayName = 'CanvasHeader'
 
 CanvasHeader.propTypes = {
     chatflow: PropTypes.object,
