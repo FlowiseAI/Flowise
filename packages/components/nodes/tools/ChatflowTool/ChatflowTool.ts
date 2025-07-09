@@ -19,6 +19,7 @@ class ChatflowTool_Tools implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'Chatflow Tool'
@@ -29,6 +30,7 @@ class ChatflowTool_Tools implements INode {
         this.category = 'Tools'
         this.description = 'Use as a tool to execute another chatflow'
         this.baseClasses = [this.type, 'Tool']
+        this.tags = ['AAI']
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

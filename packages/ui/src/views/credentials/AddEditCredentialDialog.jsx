@@ -124,7 +124,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             // When credential dialog is to add a new credential
             setName('')
             setCredential({})
-            const defaultCredentialData = initializeDefaultNodeData(dialogProps.credentialComponent.inputs)
+            const defaultCredentialData = initializeDefaultNodeData(dialogProps.credentialComponent.inputs || [])
             setCredentialData(defaultCredentialData)
             setComponentCredential(dialogProps.credentialComponent)
         }
@@ -133,8 +133,14 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
     }, [dialogProps])
 
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
+        console.log('🔧 AddEditCredentialDialog show effect:', { show, dialogProps })
+        if (show) {
+            console.log('🔧 Dispatching SHOW_CANVAS_DIALOG')
+            dispatch({ type: SHOW_CANVAS_DIALOG })
+        } else {
+            console.log('🔧 Dispatching HIDE_CANVAS_DIALOG')
+            dispatch({ type: HIDE_CANVAS_DIALOG })
+        }
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
 

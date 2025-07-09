@@ -1,3 +1,17 @@
+/**
+ * Document Store Unified Configuration Pattern
+ *
+ * The Document Store service supports unified configuration for Embeddings, Vector Store, and Record Manager.
+ *
+ * - The fields `embeddingConfig`, `vectorStoreConfig`, and `recordManagerConfig` are always expected to be managed and saved as a unit.
+ * - Backend APIs (e.g., saveVectorStoreConfig, updateDocumentStore) expect all three configs in the request body and persist them together.
+ * - When migrating or moving a Document Store, these relationships are preserved.
+ * - Partial updates should be avoided to prevent inconsistent state; always send all relevant configs together.
+ *
+ * See also: VectorStoreConfigure.jsx (frontend) and DocumentStore entity definition.
+ *
+ * All comments and documentation must be in English.
+ */
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { DocumentStore } from '../../database/entities/DocumentStore'
 import * as path from 'path'

@@ -1,9 +1,24 @@
+/**
+ * MCP Server Node Pattern Example
+ *
+ * This file implements a Salesforce MCP server node following the standard pattern described in MCP/README.md.
+ *
+ * Key requirements:
+ * - Implements INode interface
+ * - Sets tags = ['AAI'] for UI Answer tab integration
+ * - Sets category = 'MCP Servers'
+ * - Exposes available actions via mcpActions input
+ * - Registers the node as module.exports = { nodeClass: Sfdc_MCP }
+ *
+ * For more details and a template, see MCP/README.md.
+ * All comments and documentation must be in English.
+ */
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { getCredentialData, getCredentialParam, getNodeModulesPackagePath } from '../../../../src/utils'
 import { MCPToolkit } from '../core'
 
-class Jira_MCP implements INode {
+class Sfdc_MCP implements INode {
     label: string
     name: string
     version: number
@@ -15,6 +30,7 @@ class Jira_MCP implements INode {
     documentation: string
     credential: INodeParams
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'Salesforce MCP'
@@ -22,7 +38,8 @@ class Jira_MCP implements INode {
         this.version = 1.0
         this.type = 'Salesforce MCP Tool'
         this.icon = 'sfdc.png'
-        this.category = 'Tools (MCP)'
+        this.category = 'MCP Servers'
+        this.tags = ['AAI']
         this.description = 'MCP server that integrates the Salesforce API'
         this.documentation = 'https://github.com/tsmztech/mcp-server-salesforce'
         this.credential = {
@@ -110,4 +127,4 @@ class Jira_MCP implements INode {
     }
 }
 
-module.exports = { nodeClass: Jira_MCP }
+module.exports = { nodeClass: Sfdc_MCP }

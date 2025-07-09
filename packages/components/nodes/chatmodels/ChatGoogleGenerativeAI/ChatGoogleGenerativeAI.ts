@@ -23,7 +23,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleGenerativeAI'
         this.name = 'chatGoogleGenerativeAI'
-        this.tags = ['AAI']
+        // Note: AAI tag removed - use AAIChatGoogleGenerativeAI for Answer tab
         this.version = 3.0
         this.type = 'ChatGoogleGenerativeAI'
         this.icon = 'GoogleGemini.svg'
@@ -56,7 +56,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'gemini-1.5-flash-latest'
+                default: 'gemini-1.5-flash'
             },
             {
                 label: 'Custom Model Name',

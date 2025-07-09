@@ -124,6 +124,7 @@ class Retriever_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -136,6 +137,7 @@ class Retriever_Tools implements INode {
         this.icon = 'retrievertool.svg'
         this.category = 'Tools'
         this.description = 'Use a retriever as allowed tool for agent'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, 'DynamicTool', ...getBaseClasses(DynamicTool)]
         this.inputs = [
             {

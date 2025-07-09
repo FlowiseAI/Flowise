@@ -1,3 +1,18 @@
+/**
+ * MCP Server Node Pattern Example
+ *
+ * This file implements a custom MCP server node following the standard pattern described in MCP/README.md.
+ *
+ * Key requirements:
+ * - Implements INode interface
+ * - Sets tags = ['AAI'] for UI Answer tab integration
+ * - Sets category = 'MCP Servers'
+ * - Exposes available actions via mcpActions input
+ * - Registers the node as module.exports = { nodeClass: Custom_MCP }
+ *
+ * For more details and a template, see MCP/README.md.
+ * All comments and documentation must be in English.
+ */
 import { Tool } from '@langchain/core/tools'
 import { INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { MCPToolkit } from '../core'
@@ -19,15 +34,17 @@ class Custom_MCP implements INode {
     documentation: string
     credential: INodeParams
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
-        this.label = 'Custom MCP'
+        this.label = 'MCP Servers'
         this.name = 'customMCP'
         this.version = 1.0
         this.type = 'Custom MCP Tool'
         this.icon = 'customMCP.png'
-        this.category = 'Tools (MCP)'
+        this.category = 'MCP Servers'
         this.description = 'Custom MCP Config'
+        this.tags = ['AAI']
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search'
         this.inputs = [
             {

@@ -11,6 +11,7 @@ class Calculator_Tools implements INode {
     icon: string
     category: string
     baseClasses: string[]
+    tags: string[]
 
     constructor() {
         this.label = 'Calculator'
@@ -21,6 +22,7 @@ class Calculator_Tools implements INode {
         this.category = 'Tools'
         this.description = 'Perform calculations on response'
         this.baseClasses = [this.type, ...getBaseClasses(Calculator)]
+        this.tags = ['AAI']
     }
 
     async init(): Promise<any> {

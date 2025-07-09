@@ -10,6 +10,7 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
@@ -22,6 +23,7 @@ class VectorStoreToDocument_DocumentLoaders implements INode {
         this.icon = 'vectorretriever.svg'
         this.category = 'Document Loaders'
         this.description = 'Search documents with scores from vector store'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.inputs = [
             {

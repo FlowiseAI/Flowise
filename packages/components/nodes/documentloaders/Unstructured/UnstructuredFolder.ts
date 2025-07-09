@@ -17,6 +17,7 @@ class UnstructuredFolder_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -31,6 +32,7 @@ class UnstructuredFolder_DocumentLoaders implements INode {
         this.category = 'Document Loaders'
         this.description =
             "Use Unstructured.io to load data from a folder. Note: Currently doesn't support .png and .heic until unstructured is updated."
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',

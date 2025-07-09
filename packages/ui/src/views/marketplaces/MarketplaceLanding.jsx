@@ -32,6 +32,8 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 import { useNavigationState } from '@/utils/navigation'
 import { Star as StarIcon, StarBorder as StarBorderIcon, Edit as EditIcon } from '@mui/icons-material'
 import { styled, alpha } from '@mui/material/styles'
+import { useCredentialChecker } from '@/hooks/useCredentialChecker'
+import UnifiedCredentialsModal from '@/ui-component/dialog/UnifiedCredentialsModal'
 
 const LoadingSkeleton = () => (
     <Box sx={{ maxWidth: '1080px', width: '100%', mx: 'auto', p: { xs: 2, sm: 3 }, height: '100%' }}>
@@ -124,6 +126,9 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
 
     const [isFavorite, setIsFavorite] = useState(false)
 
+    // Credential checking hook
+    const { showCredentialModal, missingCredentials, checkCredentials, handleAssign, handleSkip, handleCancel } = useCredentialChecker()
+
     useEffect(() => {
         if (templateId) {
             const storedFavorites = localStorage.getItem('favoriteSidekicks')
@@ -183,42 +188,85 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
         }
     }
 
+    const proceedWithTemplate = (updatedFlowData, credentialAssignments) => {
+        console.log('🚀 proceedWithTemplate called with:', {
+            updatedFlowData: typeof updatedFlowData,
+            credentialAssignments,
+            hasTemplate: !!template,
+            hasUser: !!user
+        })
+
+        if (!template) {
+            console.log('🚀 No template found, aborting')
+            return
+        }
+
+        const isAgentCanvas = (template.flowData?.nodes || []).some(
+            (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
+        )
+
+        console.log('🚀 Canvas type determined:', { isAgentCanvas })
+
+        const flowData = typeof updatedFlowData === 'string' ? JSON.parse(updatedFlowData) : updatedFlowData
+        console.log('🚀 Flow data structure:', {
+            hasNodes: !!flowData.nodes,
+            nodeCount: flowData.nodes?.length || 0,
+            hasEdges: !!flowData.edges,
+            edgeCount: flowData.edges?.length || 0
+        })
+
+        // Store the data in the format Canvas component expects
+        const chatflowData = {
+            ...template,
+            name: template.name,
+            description: template.description,
+            category: template.category,
+            nodes: flowData.nodes || [],
+            edges: flowData.edges || [],
+            flowData: JSON.stringify(flowData)
+        }
+
+        console.log('🚀 Storing duplicated flow data:', {
+            name: chatflowData.name,
+            nodeCount: chatflowData.nodes.length,
+            edgeCount: chatflowData.edges.length,
+            hasFlowDataString: !!chatflowData.flowData
+        })
+
+        localStorage.setItem('duplicatedFlowData', JSON.stringify(chatflowData))
+
+        const state = {
+            templateData: JSON.stringify(template),
+            parentChatflowId: template.id
+        }
+
+        console.log('🚀 Navigation state prepared:', state)
+
+        if (!user) {
+            const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
+            const loginUrl = `/api/auth/login?redirect_uri=${redirectUrl}`
+            console.log('🚀 No user, redirecting to login:', loginUrl)
+            setNavigationState(state)
+            window.location.href = loginUrl
+        } else {
+            const targetPath = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
+            console.log('🚀 User authenticated, navigating to:', targetPath)
+            console.log('🚀 About to call navigate...')
+            navigate(targetPath, { state })
+            console.log('🚀 Navigate called successfully')
+        }
+    }
+
     const handleAction = async (type) => {
         if (type === 'new') {
-            if (!template) return
-
-            const isAgentCanvas = (template.flowData?.nodes || []).some(
-                (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
-            )
+            if (!template) {
+                return
+            }
 
             const flowData = typeof template.flowData === 'string' ? JSON.parse(template.flowData) : template.flowData
 
-            const chatflowData = {
-                ...template,
-                name: template.name,
-                description: template.description,
-                category: template.category,
-                nodes: flowData.nodes || [],
-                edges: flowData.edges || [],
-                flowData: JSON.stringify(flowData)
-            }
-
-            localStorage.setItem('duplicatedFlowData', JSON.stringify(chatflowData))
-
-            const state = {
-                templateData: JSON.stringify(template),
-                parentChatflowId: template.id
-            }
-
-            if (!user) {
-                const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-                const loginUrl = `/api/auth/login?redirect_uri=${redirectUrl}`
-                setNavigationState(state)
-                window.location.href = loginUrl
-            } else {
-                const targetPath = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-                navigate(targetPath, { state })
-            }
+            // Check for missing credentials before proceeding
+            checkCredentials(flowData, proceedWithTemplate)
         } else {
             setActionType(type)
             setIsSignInPromptOpen(true)
@@ -387,7 +435,7 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
             </Tooltip>
             {template.isExecutable && (
                 <Tooltip title='Use this sidekick'>
-                    <Button variant='contained' size='small' onClick={() => onUse(template)}>
+                    <Button variant='contained' size='small' onClick={() => handleAction('new')}>
                         Use
                     </Button>
                 </Tooltip>
@@ -493,6 +541,16 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
                 )}
             </Box>
             <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose} message={snackbarMessage} />
+            
+            {/* Unified Credentials Modal */}
+            <UnifiedCredentialsModal
+                show={showCredentialModal}
+                missingCredentials={missingCredentials}
+                onAssign={handleAssign}
+                onSkip={handleSkip}
+                onCancel={handleCancel}
+                flowData={template?.flowData}
+            />
         </Box>
     )
 })

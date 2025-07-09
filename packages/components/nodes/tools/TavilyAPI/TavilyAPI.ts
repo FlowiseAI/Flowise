@@ -10,6 +10,7 @@ class TavilyAPI_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -23,6 +24,7 @@ class TavilyAPI_Tools implements INode {
         this.icon = 'tavily.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around TavilyAPI - A specialized search engine designed for LLMs and AI agents'
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Topic',

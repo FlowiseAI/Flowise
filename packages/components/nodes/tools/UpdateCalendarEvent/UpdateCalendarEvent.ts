@@ -150,6 +150,7 @@ class UpdateCalendarEvent_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -162,6 +163,7 @@ class UpdateCalendarEvent_Tools implements INode {
         this.icon = 'google-calendar.svg'
         this.category = 'Tools'
         this.description = 'Update existing events in Google Calendar'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, ...getBaseClasses(UpdateCalendarEventTool)]
         this.credential = {
             label: 'Connect Credential',

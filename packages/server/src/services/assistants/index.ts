@@ -1,3 +1,4 @@
+
 import OpenAI from 'openai'
 import { StatusCodes } from 'http-status-codes'
 import { uniqWith, isEqual, cloneDeep } from 'lodash'
@@ -446,7 +447,7 @@ const getDocumentStores = async (user: IUser): Promise<any> => {
 const getTools = async (): Promise<any> => {
     try {
         const tools = await nodesService.getAllNodesForCategory('Tools')
-        const mcpTools = await nodesService.getAllNodesForCategory('Tools (MCP)')
+        const mcpTools = await nodesService.getAllNodesForCategory('MCP Servers')
 
         // filter out those tools that input params type are not in the list
         const filteredTools = [...tools, ...mcpTools].filter((tool) => {

@@ -12,6 +12,7 @@ class NotionPage_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -25,6 +26,7 @@ class NotionPage_DocumentLoaders implements INode {
         this.icon = 'notion-page.svg'
         this.category = 'Document Loaders'
         this.description = 'Load data from Notion Page (including child pages all as separate documents)'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',

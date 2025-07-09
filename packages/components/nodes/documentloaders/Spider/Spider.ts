@@ -82,6 +82,7 @@ class Spider_DocumentLoaders implements INode {
     icon: string
     version: number
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -95,6 +96,7 @@ class Spider_DocumentLoaders implements INode {
         this.icon = 'spider.svg'
         this.category = 'Document Loaders'
         this.description = 'Scrape & Crawl the web with Spider'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.inputs = [
             {

@@ -95,6 +95,7 @@ class DeleteCalendarEvent_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -107,6 +108,7 @@ class DeleteCalendarEvent_Tools implements INode {
         this.icon = 'google-calendar.svg'
         this.category = 'Tools'
         this.description = 'Delete events from Google Calendar'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, ...getBaseClasses(DeleteCalendarEventTool)]
         this.credential = {
             label: 'Connect Credential',

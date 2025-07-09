@@ -10,6 +10,7 @@ class SearchAPI_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -22,6 +23,7 @@ class SearchAPI_Tools implements INode {
         this.icon = 'searchapi.svg'
         this.category = 'Tools'
         this.description = 'Real-time API for accessing Google Search data'
+        this.tags = ['AAI']
         this.inputs = []
         this.credential = {
             label: 'Connect Credential',
