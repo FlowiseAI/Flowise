@@ -18,6 +18,7 @@ class WriteFile_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
 
@@ -29,6 +30,7 @@ class WriteFile_Tools implements INode {
         this.icon = 'writefile.svg'
         this.category = 'Tools'
         this.description = 'Write file to disk'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, 'Tool', ...getBaseClasses(WriteFileTool)]
         this.inputs = [
             {

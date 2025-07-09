@@ -41,8 +41,8 @@ class ConversationalRetrievalQAChain_Chains implements INode {
     type: string
     icon: string
     category: string
-    baseClasses: string[]
     description: string
+    baseClasses: string[]
     inputs: INodeParams[]
     sessionId?: string
 

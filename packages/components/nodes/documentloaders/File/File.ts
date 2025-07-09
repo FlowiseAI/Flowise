@@ -22,6 +22,7 @@ class File_DocumentLoaders implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    tags: string[]
 
     constructor() {
         this.label = 'File Loader'
@@ -32,6 +33,7 @@ class File_DocumentLoaders implements INode {
         this.category = 'Document Loaders'
         this.description = `A generic file loader that can load txt, json, csv, docx, pdf, and other files`
         this.baseClasses = [this.type]
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'File',

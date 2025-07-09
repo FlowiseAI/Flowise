@@ -14,6 +14,7 @@ class CustomTool_Tools implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'Custom Tool'
@@ -23,6 +24,7 @@ class CustomTool_Tools implements INode {
         this.icon = 'customtool.svg'
         this.category = 'Tools'
         this.description = `Use custom tool you've created in Flowise within chatflow`
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Select Tool',

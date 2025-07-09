@@ -21,6 +21,15 @@ class Groq_ChatModels implements INode {
     inputs: INodeParams[]
 
     constructor() {
+        this.label = 'GroqChat'
+        this.name = 'groqChat'
+        this.version = 4.0
+        this.type = 'GroqChat'
+        this.icon = 'groq.png'
+        this.category = 'Chat Models'
+        this.description = 'Wrapper around Groq API with LPU Inference Engine'
+        this.baseClasses = [this.type, ...getBaseClasses(FlowiseChatGroq)]
+
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -35,7 +44,8 @@ class Groq_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                placeholder: 'llama3-70b-8192'
+                default: 'llama-3-70b-8192',
+                placeholder: 'llama-3-70b-8192'
             },
             {
                 label: 'Temperature',

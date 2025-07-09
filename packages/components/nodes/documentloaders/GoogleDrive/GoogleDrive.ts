@@ -44,6 +44,7 @@ class GoogleDrive implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -57,6 +58,7 @@ class GoogleDrive implements INode {
         this.icon = 'drive.svg'
         this.category = 'Document Loaders'
         this.description = 'Load documents from Google Drive'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',

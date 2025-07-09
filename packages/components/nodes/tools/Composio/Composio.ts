@@ -34,6 +34,7 @@ class Composio_Tools implements INode {
     icon: string
     category: string
     description: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -46,6 +47,7 @@ class Composio_Tools implements INode {
         this.icon = 'composio.svg'
         this.category = 'Tools'
         this.description = 'Toolset with over 250+ Apps for building AI-powered applications'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, ...getBaseClasses(ComposioTool)]
         this.credential = {
             label: 'Connect Credential',

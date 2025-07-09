@@ -113,8 +113,7 @@ export async function MCPTool({
             const client = await toolkit.createClient()
 
             try {
-                // @ts-ignore: input may be unknown, but is safe for CallToolRequest here
-                const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input } }
+                const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
                 const res = await client.request(req, CallToolResultSchema)
                 const content = res.content
                 const contentString = JSON.stringify(content)
@@ -132,20 +131,16 @@ export async function MCPTool({
     )
 }
 
-function createSchemaModel(
-    inputSchema: {
-        type: 'object'
-        properties?: import('zod').objectOutputType<{}, import('zod').ZodTypeAny, 'passthrough'> | undefined
-    } & { [k: string]: unknown }
-): any {
+function createSchemaModel(inputSchema: any): any {
     if (inputSchema.type !== 'object' || !inputSchema.properties) {
         throw new Error('Invalid schema type or missing properties')
     }
 
-    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key, _]) => {
-        acc[key] = z.any()
-        return acc
-    }, {} as Record<string, import('zod').ZodTypeAny>)
+    const props = inputSchema.properties
+    const schemaProperties: Record<string, import('zod').ZodTypeAny> = {}
+    for (const key of Object.keys(props)) {
+        schemaProperties[key] = z.any()
+    }
 
     return z.object(schemaProperties)
 }

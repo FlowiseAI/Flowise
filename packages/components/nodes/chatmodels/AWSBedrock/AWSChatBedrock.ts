@@ -23,7 +23,7 @@ class AWSChatBedrock_ChatModels implements INode {
     constructor() {
         this.label = 'AWS ChatBedrock'
         this.name = 'awsChatBedrock'
-        this.tags = ['AAI']
+        // Note: AAI tag removed - use AAIAWSChatBedrock for Answer tab
         this.version = 6.0
         this.type = 'AWSChatBedrock'
         this.icon = 'aws.svg'

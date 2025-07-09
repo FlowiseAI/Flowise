@@ -15,6 +15,7 @@ class Text_DocumentLoaders implements INode {
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
+    tags: string[]
 
     constructor() {
         this.label = 'Text File'
@@ -25,6 +26,7 @@ class Text_DocumentLoaders implements INode {
         this.category = 'Document Loaders'
         this.description = `Load data from text files`
         this.baseClasses = [this.type]
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Txt File',
