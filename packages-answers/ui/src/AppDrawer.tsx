@@ -28,11 +28,9 @@ import BuildOutlinedIcon from '@mui/icons-material/BuildOutlined'
 import PasswordIcon from '@mui/icons-material/Password'
 import IntegrationInstructionsOutlinedIcon from '@mui/icons-material/IntegrationInstructionsOutlined'
 import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
-import ContactSupport from '@mui/icons-material/ContactSupport'
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined'
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
-import { useHelpChatContext } from './HelpChatContext' // Import the context
 import { ExportImportMenuItems } from './components/ExportImportComponent'
 import { useSubscriptionDialog } from './SubscriptionDialogContext'
 
@@ -91,15 +89,15 @@ interface AppDrawerProps {
             email?: string
             org_name?: string
             subscription?: unknown
+            defaultChatflowId?: string
         }
     }
     flagsmithState: unknown
 }
 
 export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
-    const { helpChatOpen, setHelpChatOpen } = useHelpChatContext()
     const user = session?.user
-    const [drawerOpen, setDrawerOpen] = useState(false)
+    const [drawerOpen, setDrawerOpen] = useState(true) // Changed to true for open by default
     const [submenuOpen, setSubmenuOpen] = useState('')
     const { openDialog: openSubscriptionDialog, closeDialog: closeSubscriptionDialog } = useSubscriptionDialog()
     const pathname = usePathname()
@@ -129,10 +127,33 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
             return { ...item, subMenu: filteredSubMenu }
         })
     }
+
+    // Restructured menu configuration
     const menuConfig: MenuConfig[] = filterMenuItems([
-        {
-            ...(flags['chatflow:use'].enabled
-                ? {
+        // Standalone items above Studio
+        ...(flags['chatflow:manage'].enabled
+            ? [
+                  {
+                      id: 'assistants',
+                      text: 'Assistants',
+                      link: '/sidekick-studio/assistants',
+                      icon: <GroupsOutlinedIcon color='primary' />
+                  },
+                  {
+                      id: 'documentstores',
+                      text: 'Document Stores',
+                      link: '/sidekick-studio/document-stores',
+                      icon: <MenuBookOutlinedIcon color='primary' />
+                  }
+              ]
+            : []),
+        // Studio section (collapsible)
+        ...(flags['chatflow:use'].enabled
+            ? [
+                  {
+                      id: 'studio',
+                      text: 'Studio',
+                      icon: <BuildOutlinedIcon color='primary' />,
                       subMenu: [
                           {
                               id: 'chatflows',
@@ -153,22 +174,10 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                               icon: <PlayCircleOutlineIcon color='primary' />
                           },
                           {
-                              id: 'assistants',
-                              text: 'Assistants',
-                              link: '/sidekick-studio/assistants',
-                              icon: <GroupsOutlinedIcon color='primary' />
-                          },
-                          {
                               id: 'marketplaces',
                               text: 'Marketplaces',
                               link: '/sidekick-studio/marketplaces',
                               icon: <StorefrontOutlinedIcon color='primary' />
-                          },
-                          {
-                              id: 'documentstores',
-                              text: 'Document Stores',
-                              link: '/sidekick-studio/document-stores',
-                              icon: <MenuBookOutlinedIcon color='primary' />
                           },
                           {
                               id: 'tools',
@@ -193,23 +202,29 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                               text: 'API Keys',
                               link: '/sidekick-studio/apikey',
                               icon: <VpnKeyOutlinedIcon color='primary' />
-                          },
+                          }
+                      ]
+                  }
+              ]
+            : []),
+        // Account section (collapsible)
+        ...(flags['chatflow:use'].enabled
+            ? [
+                  {
+                      id: 'account',
+                      text: 'Account',
+                      icon: <AssessmentOutlinedIcon color='primary' />,
+                      subMenu: [
                           {
                               id: 'billing',
                               text: 'Billing',
                               link: '/billing',
                               icon: <AssessmentOutlinedIcon color='primary' />
-                          },
-                          {
-                              id: 'apps',
-                              text: 'Apps',
-                              link: '/sidekick-studio/apps',
-                              icon: <AppsOutlinedIcon color='primary' />
                           }
                       ]
                   }
-                : {})
-        }
+              ]
+            : [])
     ])
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
@@ -222,10 +237,6 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
 
     const toggleDrawer = () => {
         setDrawerOpen(!drawerOpen)
-    }
-
-    const toggleHelpChat = () => {
-        setHelpChatOpen(!helpChatOpen)
     }
 
     const handleNewChat = () => {
@@ -263,47 +274,55 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                 }}
                             />
                         </IconButton>
-                        <IconButton onClick={toggleHelpChat}>
-                            <ContactSupport
+                        {flags['chatflow:manage'].enabled &&
+                            (drawerOpen ? (
+                                <Button
+                                    href='/sidekick-studio/apps'
+                                    variant='outlined'
+                                    component={NextLink}
+                                    startIcon={<AppsOutlinedIcon />}
+                                    sx={{
+                                        minWidth: 0,
+                                        textTransform: 'capitalize',
+                                        justifyContent: 'flex-start',
+                                        ml: 1
+                                    }}
+                                >
+                                    Apps
+                                </Button>
+                            ) : (
+                                <IconButton component={NextLink} href='/sidekick-studio/apps'>
+                                    <AppsOutlinedIcon sx={{ color: 'primary.main' }} />
+                                </IconButton>
+                            ))}
+                        {drawerOpen ? (
+                            <Button
+                                href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/chat'}
+                                variant='outlined'
+                                component={NextLink}
+                                onClick={handleNewChat}
+                                startIcon={<RateReviewIcon />}
                                 sx={{
-                                    transform: drawerOpen ? 'scaleX(1)' : 'none',
-                                    color: 'primary.main'
+                                    minWidth: 0,
+                                    textTransform: 'capitalize',
+                                    justifyContent: 'flex-start',
+                                    ml: 1
                                 }}
-                            />
-                        </IconButton>
+                            >
+                                Chat
+                            </Button>
+                        ) : (
+                            <IconButton
+                                component={NextLink}
+                                href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/chat'}
+                                onClick={handleNewChat}
+                            >
+                                <RateReviewIcon sx={{ color: 'primary.main' }} />
+                            </IconButton>
+                        )}
                     </Box>
-                    <Button
-                        href='/chat'
-                        variant='outlined'
-                        onClick={handleNewChat}
-                        component={NextLink}
-                        endIcon={<RateReviewIcon />}
-                        fullWidth
-                        sx={{
-                            minWidth: 0,
-                            textTransform: 'capitalize',
-                            justifyContent: 'space-between',
-                            '.MuiDrawer-closed & .MuiButton-endIcon': {
-                                margin: 0
-                            }
-                        }}
-                    >
-                        <Box
-                            component='span'
-                            sx={{
-                                overflow: 'hidden',
-                                transition: '.2s',
-                                maxWidth: '240px',
-                                '.MuiDrawer-closed &': {
-                                    maxWidth: '0',
-                                    opacity: 0
-                                }
-                            }}
-                        >
-                            New chat
-                        </Box>
-                    </Button>
                 </Box>
+                {/* Chat History */}
                 <Box
                     sx={{
                         flex: 1,
@@ -324,9 +343,9 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                     <ChatDrawer />
                 </Box>
 
-                <List sx={{ display: 'flex', flexDirection: 'column' }} disablePadding>
+                <List sx={{ display: 'flex', flexDirection: 'column', px: 1 }} disablePadding>
                     {menuConfig.map((item, index) => (
-                        <Box key={item.text || index}>
+                        <Box key={item.text || index} sx={{ mb: item.id === 'documentstores' ? 2 : 0 }}>
                             <ListItem disablePadding>
                                 {item.text && (
                                     <ListItemButton
@@ -334,7 +353,11 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                         href={item.link}
                                         component={item.link ? NextLink : 'button'}
                                         sx={{ flex: 1, display: 'flex', width: '100%' }}
-                                        onClick={() => setSubmenuOpen(item.text === submenuOpen ? '' : item.text ?? '')}
+                                        onClick={() => {
+                                            if (item.subMenu) {
+                                                setSubmenuOpen(item.text === submenuOpen ? '' : item.text ?? '')
+                                            }
+                                        }}
                                     >
                                         <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
                                         <Typography
@@ -354,34 +377,25 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                 )}
                             </ListItem>
 
-                            <Collapse
-                                key={`${item.text}-collapse`}
-                                in={
-                                    true
-                                    // drawerOpen ||
-                                    // (pathname && item?.link
-                                    //     ? pathname.includes(item?.link)
-                                    //     : item.subMenu
-                                    //     ? item.subMenu?.findIndex((subItem) => pathname.includes(subItem.link)) !== -1
-                                    //     : false)
-                                }
-                                timeout='auto'
-                            >
-                                {item.subMenu?.map((subItem) => (
-                                    <ListItem key={subItem.text} disablePadding>
-                                        <ListItemButton
-                                            component={subItem.link ? NextLink : 'button'}
-                                            href={subItem.link || '#'}
-                                            selected={pathname === subItem.link}
-                                        >
-                                            <Tooltip title={drawerOpen ? null : subItem.text} placement='right'>
-                                                <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
-                                            </Tooltip>
-                                            <Typography>{subItem.text}</Typography>
-                                        </ListItemButton>
-                                    </ListItem>
-                                ))}
-                            </Collapse>
+                            {/* Render submenu items if they exist */}
+                            {item.subMenu && (
+                                <Collapse key={`${item.text}-collapse`} in={submenuOpen === item.text} timeout='auto'>
+                                    {item.subMenu.map((subItem) => (
+                                        <ListItem key={subItem.text} disablePadding sx={{ pl: 2 }}>
+                                            <ListItemButton
+                                                component={subItem.link ? NextLink : 'button'}
+                                                href={subItem.link || '#'}
+                                                selected={pathname === subItem.link}
+                                            >
+                                                <Tooltip title={drawerOpen ? null : subItem.text} placement='right'>
+                                                    <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
+                                                </Tooltip>
+                                                <Typography>{subItem.text}</Typography>
+                                            </ListItemButton>
+                                        </ListItem>
+                                    ))}
+                                </Collapse>
+                            )}
                         </Box>
                     ))}
 
