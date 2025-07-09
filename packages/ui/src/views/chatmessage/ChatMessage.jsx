@@ -1882,6 +1882,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                         removeDuplicateURL={removeDuplicateURL}
                                                         isValidURL={isValidURL}
                                                         onURLClick={onURLClick}
+                                                        getLabel={getLabel}
                                                     />
                                                 ))}
                                             </div>
