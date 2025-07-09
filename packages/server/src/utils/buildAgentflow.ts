@@ -1251,7 +1251,7 @@ const executeNode = async ({
             const errorStatus = isAborted ? 'TERMINATED' : 'ERROR'
             const errorMessage = isAborted ? 'Flow execution was cancelled' : getErrorMessage(error)
             status = errorStatus
-            throw new Error(errorMessage)
+            throw new Error(errorMessage, { cause: error })
         }
     }
 }
@@ -1826,7 +1826,7 @@ export const executeAgentFlow = async ({
                 const errorMessage = isAborted ? 'Flow execution was cancelled' : getErrorMessage(error)
                 status = errorStatus
                 // ... existing error handling code
-                throw new Error(errorMessage)
+                throw new Error(errorMessage, { cause: error })
             }
         }
 
