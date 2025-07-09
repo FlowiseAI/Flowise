@@ -34,6 +34,9 @@ import { groupCredentialsByType } from '@/utils/flowCredentialsHelper'
 // API
 import credentialsApi from '@/api/credentials'
 
+// Hooks
+import useApi from '@/hooks/useApi'
+
 // Assets
 import keySVG from '@/assets/images/key.svg'
 
@@ -52,6 +55,10 @@ const UnifiedCredentialsModal = ({ show, missingCredentials, onAssign, onSkip, o
     const [showCredentialDialog, setShowCredentialDialog] = useState(false)
     const [credentialDialogProps, setCredentialDialogProps] = useState({})
     const [refreshKey, setRefreshKey] = useState(0)
+    const [creatingCredentialFor, setCreatingCredentialFor] = useState(null) // Track which credential type is being created
+
+    // API hooks for loading component credentials
+    const getComponentCredentialApi = useApi(credentialsApi.getSpecificComponentCredential)
 
     // Group credentials by type for better organization
     const groupedCredentials = groupCredentialsByType(missingCredentials)
@@ -120,7 +127,7 @@ const UnifiedCredentialsModal = ({ show, missingCredentials, onAssign, onSkip, o
 
             loadCredentials()
         }
-    }, [show, missingCredentials])
+    }, [show, missingCredentials, refreshKey]) // Added refreshKey to dependency array
 
     const handleCredentialChange = (nodeId, credentialId) => {
         setCredentialAssignments((prev) => ({
@@ -129,28 +136,63 @@ const UnifiedCredentialsModal = ({ show, missingCredentials, onAssign, onSkip, o
         }))
     }
 
-    const handleAddCredential = (credentialName) => {
-        // Find the component credential info
-        fetch(`${baseURL}/api/v1/components-credentials/${credentialName}`)
-            .then((response) => response.json())
-            .then((componentCredential) => {
-                const dialogProps = {
-                    type: 'ADD',
-                    cancelButtonName: 'Cancel',
-                    confirmButtonName: 'Add',
-                    credentialComponent: componentCredential
-                }
-                setCredentialDialogProps(dialogProps)
-                setShowCredentialDialog(true)
-            })
-            .catch((error) => {
-                console.error('Error loading credential component:', error)
-            })
+    const handleAddCredential = async (credentialName) => {
+        try {
+            console.log('🔧 handleAddCredential called with:', credentialName)
+            const response = await credentialsApi.getSpecificComponentCredential(credentialName)
+            const componentCredential = response.data
+
+            console.log('🔧 Component credential loaded:', componentCredential)
+
+            // Check if the response actually contains credential component data
+            if (!componentCredential || !componentCredential.name) {
+                throw new Error(`Invalid credential component data`)
+            }
+
+            const dialogProps = {
+                type: 'ADD',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Add',
+                credentialComponent: componentCredential
+            }
+            setCredentialDialogProps(dialogProps)
+            setShowCredentialDialog(true)
+        } catch (error) {
+            console.error('❌ Error loading credential component:', error)
+            // Show user-friendly error message
+            alert(`Failed to load credential component: ${error.message}`)
+        }
     }
 
-    const handleCredentialDialogConfirm = () => {
+    const handleCredentialDialogConfirm = (newCredentialId) => {
+        console.log('🎯 New credential created with ID:', newCredentialId)
         setShowCredentialDialog(false)
-        setRefreshKey((prev) => prev + 1) // Refresh available credentials
+
+        // Auto-select the newly created credential for the appropriate group
+        if (newCredentialId && creatingCredentialFor) {
+            console.log('🎯 Auto-selecting new credential for group:', creatingCredentialFor)
+            const groupedCreds = groupCredentialsByType(missingCredentials)
+            const group = groupedCreds[creatingCredentialFor]
+
+            if (group) {
+                const newAssignments = {}
+                group.nodes.forEach((node) => {
+                    newAssignments[node.nodeId] = newCredentialId
+                })
+
+                setCredentialAssignments((prev) => ({
+                    ...prev,
+                    ...newAssignments
+                }))
+                console.log('🎯 Auto-selected new credential:', newAssignments)
+            }
+        }
+
+        // Clear the tracking state
+        setCreatingCredentialFor(null)
+
+        // Refresh available credentials
+        setRefreshKey((prev) => prev + 1)
     }
 
     const handleAssignCredentials = () => {
@@ -175,23 +217,45 @@ const UnifiedCredentialsModal = ({ show, missingCredentials, onAssign, onSkip, o
         return `${baseURL}/api/v1/components-credentials-icon/${credentialName}`
     }
 
-    const handleCreateCredential = (credentialName) => {
-        // Find the component credential info
-        fetch(`${baseURL}/api/v1/components-credentials/${credentialName}`)
-            .then((response) => response.json())
-            .then((componentCredential) => {
-                const dialogProps = {
-                    type: 'ADD',
-                    cancelButtonName: 'Cancel',
-                    confirmButtonName: 'Add',
-                    credentialComponent: componentCredential
-                }
-                setCredentialDialogProps(dialogProps)
-                setShowCredentialDialog(true)
+    const handleCreateCredential = async (credentialName) => {
+        try {
+            console.log('🔧 handleCreateCredential called with:', credentialName)
+
+            // Find which group this credential belongs to for auto-selection later
+            const groupedCreds = groupCredentialsByType(missingCredentials)
+            const groupKey = Object.keys(groupedCreds).find((key) => {
+                const group = groupedCreds[key]
+                return group.credentialTypes?.includes(credentialName) || group.credentialName === credentialName
             })
-            .catch((error) => {
-                console.error('Error loading credential component:', error)
-            })
+            setCreatingCredentialFor(groupKey)
+            console.log('🔧 Creating credential for group:', groupKey)
+
+            const response = await credentialsApi.getSpecificComponentCredential(credentialName)
+            const componentCredential = response.data
+
+            console.log('🔧 Component credential loaded:', componentCredential)
+
+            // Check if the response actually contains credential component data
+            if (!componentCredential || !componentCredential.name) {
+                throw new Error(`Invalid credential component data`)
+            }
+
+            const dialogProps = {
+                type: 'ADD',
+                cancelButtonName: 'Cancel',
+                confirmButtonName: 'Add',
+                credentialComponent: componentCredential
+            }
+            console.log('🔧 Setting dialog props:', dialogProps)
+            setCredentialDialogProps(dialogProps)
+            setShowCredentialDialog(true)
+            console.log('🔧 Dialog should be showing now')
+        } catch (error) {
+            console.error('❌ Error loading credential component:', error)
+            // Show user-friendly error message
+            alert(`Failed to load credential component: ${error.message}`)
+            setCreatingCredentialFor(null) // Reset on error
+        }
     }
 
     const renderCredentialRow = (credentialName, credentialInfo) => {
@@ -419,7 +483,10 @@ const UnifiedCredentialsModal = ({ show, missingCredentials, onAssign, onSkip, o
             <AddEditCredentialDialog
                 show={showCredentialDialog}
                 dialogProps={credentialDialogProps}
-                onCancel={() => setShowCredentialDialog(false)}
+                onCancel={() => {
+                    setShowCredentialDialog(false)
+                    setCreatingCredentialFor(null) // Reset tracking state on cancel
+                }}
                 onConfirm={handleCredentialDialogConfirm}
             />
         </Dialog>
@@ -437,4 +504,4 @@ UnifiedCredentialsModal.propTypes = {
     flowData: PropTypes.object
 }
 
-export default UnifiedCredentialsModal 
+export default UnifiedCredentialsModal

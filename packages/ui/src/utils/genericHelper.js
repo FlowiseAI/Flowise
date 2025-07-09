@@ -106,6 +106,9 @@ const initializeOutputAnchors = (nodeData, newNodeId, isAgentflow) => {
 
 export const initializeDefaultNodeData = (nodeParams) => {
     const initialValues = {}
+    if (!nodeParams || !Array.isArray(nodeParams)) {
+        return initialValues
+    }
 
     for (let i = 0; i < nodeParams.length; i += 1) {
         const input = nodeParams[i]
