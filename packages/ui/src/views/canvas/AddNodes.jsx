@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, memo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import Image from 'next/image'
 import PropTypes from 'prop-types'
 
 // material-ui
@@ -39,10 +40,11 @@ import AgentflowGeneratorDialog from '@/ui-component/dialog/AgentflowGeneratorDi
 
 // icons
 import { IconPlus, IconSearch, IconMinus, IconX, IconSparkles } from '@tabler/icons-react'
+import AAIPNG from '@/assets/images/aai.png'
 import LlamaindexPNG from '@/assets/images/llamaindex.png'
 import LangChainPNG from '@/assets/images/langchain.png'
 import utilNodesPNG from '@/assets/images/utilNodes.png'
-
+// import answerPNG from '@/static/images/logos/answerai-logo.png'
 // const
 import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import { SET_COMPONENT_NODES } from '@/store/actions'
@@ -159,13 +161,18 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
     }
 
     const groupByTags = (nodes, newTabValue = 0) => {
-        const langchainNodes = nodes.filter((nd) => !nd.tags || nd.tags?.includes('AAI'))
+        const answerNodes = nodes.filter((nd) => nd.tags?.includes('AAI'))
+        const langchainNodes = nodes.filter((nd) => !nd.tags || (!nd.tags.includes('AAI') && !nd.tags.includes('LlamaIndex') && !nd.tags.includes('Utilities')))
         const llmaindexNodes = nodes.filter((nd) => nd.tags?.includes('LlamaIndex'))
         const utilitiesNodes = nodes.filter((nd) => nd.tags?.includes('Utilities'))
+
         if (newTabValue === 0) {
-            return langchainNodes
+            return answerNodes
         }
         if (newTabValue === 1) {
+            return langchainNodes
+        }
+        if (newTabValue === 2) {
             return llmaindexNodes
         }
         return utilitiesNodes
@@ -263,11 +270,13 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
 
     const getImage = (tabValue) => {
         if (tabValue === 0) {
-            return LangChainPNG
+            return AAIPNG  // Answer tab - will use AAI icon for now
         } else if (tabValue === 1) {
-            return LlamaindexPNG
+            return LangChainPNG  // LangChain tab
+        } else if (tabValue === 2) {
+            return LlamaindexPNG  // LlamaIndex tab
         } else {
-            return utilNodesPNG
+            return utilNodesPNG  // Utilities and Tools tab
         }
     }
 
@@ -317,7 +326,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
         setOpenDialog(false)
         onFlowGenerated()
     }
-
+    
     return (
         <>
             <StyledFab
@@ -425,28 +434,36 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                 'aria-label': 'weight'
                                             }}
                                         />
-                                        {!isAgentCanvas && (
-                                            <Tabs
-                                                sx={{ position: 'relative', minHeight: '50px', height: '50px' }}
+                                                                {!isAgentCanvas && (
+                            <>
+                                <Tabs
+                                                sx={{ position: 'relative', minHeight: '60px', height: '60px' }}
                                                 variant='fullWidth'
                                                 value={tabValue}
                                                 onChange={handleTabChange}
                                                 aria-label='tabs'
                                             >
-                                                {['LangChain', 'LlamaIndex', 'Utilities'].map((item, index) => (
+                                                {['Answer', 'LangChain', 'LlamaIndex', 'Utilities & Tools'].map((item, index) => (
                                                     <Tab
                                                         icon={
                                                             <div
                                                                 style={{
-                                                                    borderRadius: '50%'
+                                                                    borderRadius: '50%',
+                                                                    padding: '4px',
+                                                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
                                                                 }}
                                                             >
-                                                                <img
+                                                                <Image
                                                                     style={{
-                                                                        width: '20px',
-                                                                        height: '20px',
+                                                                        width: '32px',
+                                                                        height: '32px',
                                                                         borderRadius: '50%',
-                                                                        objectFit: 'contain'
+                                                                        objectFit: 'cover',
+                                                                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                                                                        border: '2px solid rgba(255, 255, 255, 0.2)'
                                                                     }}
                                                                     src={getImage(index)}
                                                                     alt={item}
@@ -454,13 +471,14 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                                             </div>
                                                         }
                                                         iconPosition='start'
-                                                        sx={{ minHeight: '50px', height: '50px' }}
+                                                        sx={{ minHeight: '60px', height: '60px' }}
                                                         key={index}
                                                         label={item}
                                                         {...a11yProps(index)}
                                                     />
                                                 ))}
                                             </Tabs>
+                                            </>
                                         )}
 
                                         <Divider />
@@ -471,7 +489,7 @@ const AddNodes = ({ nodesData, node, isAgentCanvas, isAgentflowv2, onFlowGenerat
                                         }}
                                         style={{
                                             height: '100%',
-                                            maxHeight: `calc(100vh - ${isAgentCanvas ? '300' : '380'}px)`,
+                                            maxHeight: `calc(100vh - ${isAgentCanvas ? '300' : '390'}px)`,
                                             overflowX: 'hidden'
                                         }}
                                     >

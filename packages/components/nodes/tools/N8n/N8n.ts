@@ -63,6 +63,7 @@ class N8n_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -75,6 +76,7 @@ class N8n_Tools implements INode {
         this.icon = 'n8n.svg'
         this.category = 'Tools'
         this.description = 'Execute N8N workflows using webhook triggers'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, ...getBaseClasses(N8nTool)]
         this.credential = {
             label: 'Connect Credential',

@@ -13,6 +13,7 @@ class ExaSearch_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -25,6 +26,7 @@ class ExaSearch_Tools implements INode {
         this.icon = 'exa.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around Exa Search API - search engine fully designed for use by LLMs'
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Tool Description',

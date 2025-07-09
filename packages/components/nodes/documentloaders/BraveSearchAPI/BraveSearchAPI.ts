@@ -13,6 +13,7 @@ class BraveSearchAPI_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -26,6 +27,7 @@ class BraveSearchAPI_DocumentLoaders implements INode {
         this.icon = 'brave.svg'
         this.category = 'Document Loaders'
         this.description = 'Load and process data from BraveSearch results'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Credential',

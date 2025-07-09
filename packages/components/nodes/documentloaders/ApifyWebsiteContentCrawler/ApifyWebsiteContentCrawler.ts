@@ -13,6 +13,7 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
     icon: string
     version: number
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     credential: INodeParams
@@ -26,6 +27,7 @@ class ApifyWebsiteContentCrawler_DocumentLoaders implements INode {
         this.version = 3.0
         this.category = 'Document Loaders'
         this.description = 'Load data from Apify Website Content Crawler'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.credential = {
             label: 'Connect Apify API',

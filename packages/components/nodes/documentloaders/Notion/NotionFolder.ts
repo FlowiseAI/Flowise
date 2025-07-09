@@ -12,6 +12,7 @@ class NotionFolder_DocumentLoaders implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
     outputs: INodeOutputsValue[]
@@ -24,6 +25,7 @@ class NotionFolder_DocumentLoaders implements INode {
         this.icon = 'notion-folder.svg'
         this.category = 'Document Loaders'
         this.description = 'Load data from the exported and unzipped Notion folder'
+        this.tags = ['AAI']
         this.baseClasses = [this.type]
         this.inputs = [
             {

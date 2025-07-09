@@ -499,6 +499,7 @@ class SerpAPI_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -511,6 +512,7 @@ class SerpAPI_Tools implements INode {
         this.icon = 'serp.svg'
         this.category = 'Tools'
         this.description = 'Wrapper around SerpAPI - a real-time API to access Google search results'
+        this.tags = ['AAI']
         this.inputs = []
         this.credential = {
             label: 'Connect Credential',

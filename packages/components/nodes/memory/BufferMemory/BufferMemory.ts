@@ -23,6 +23,7 @@ class BufferMemory_Memory implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'Buffer Memory'
@@ -33,6 +34,7 @@ class BufferMemory_Memory implements INode {
         this.category = 'Memory'
         this.description = 'Retrieve chat messages stored in database'
         this.baseClasses = [this.type, ...getBaseClasses(BufferMemory)]
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Session Id',

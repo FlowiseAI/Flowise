@@ -11,6 +11,7 @@ class ChainTool_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
 
@@ -22,6 +23,7 @@ class ChainTool_Tools implements INode {
         this.icon = 'chaintool.svg'
         this.category = 'Tools'
         this.description = 'Use a chain as allowed tool for agent'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, ...getBaseClasses(ChainTool)]
         this.inputs = [
             {

@@ -10,6 +10,7 @@ class StripeTool_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -23,6 +24,7 @@ class StripeTool_Tools implements INode {
         this.icon = 'stripe.png'
         this.category = 'Tools'
         this.description = 'Use Stripe Agent function calling for financial transactions'
+        this.tags = ['AAI']
         this.badge = 'BETA'
         this.inputs = [
             {

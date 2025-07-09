@@ -14,6 +14,7 @@ class OpenAPIToolkit_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -26,6 +27,7 @@ class OpenAPIToolkit_Tools implements INode {
         this.icon = 'openapi.svg'
         this.category = 'Tools'
         this.description = 'Load OpenAPI specification, and converts each API endpoint to a tool'
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'YAML File',

@@ -309,6 +309,7 @@ class DallePost_Tool implements INode {
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'Dall-E Post'
@@ -319,6 +320,7 @@ class DallePost_Tool implements INode {
         this.category = 'Tools'
         this.description = 'Creates an image using Dall-E'
         this.baseClasses = [this.type, ...getBaseClasses(DallePostTool)]
+        this.tags = ['AAI']
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',

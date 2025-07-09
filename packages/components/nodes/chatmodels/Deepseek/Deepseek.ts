@@ -21,7 +21,7 @@ class Deepseek_ChatModels implements INode {
     constructor() {
         this.label = 'ChatDeepseek'
         this.name = 'chatDeepseek'
-        this.tags = ['AAI']
+        // Note: AAI tag removed - use AAIDeepseek for Answer tab
         this.version = 1.0
         this.type = 'chatDeepseek'
         this.icon = 'deepseek.svg'

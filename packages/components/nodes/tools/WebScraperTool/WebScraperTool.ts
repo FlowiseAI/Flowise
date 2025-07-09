@@ -312,6 +312,7 @@ class WebScraperRecursive_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     inputs: INodeParams[]
 
@@ -323,6 +324,7 @@ class WebScraperRecursive_Tools implements INode {
         this.icon = 'webScraperTool.svg'
         this.category = 'Tools'
         this.description = 'Scrapes web pages recursively by following links OR by fetching URLs from the default sitemap.'
+        this.tags = ['AAI']
         this.baseClasses = [this.type, ...getBaseClasses(WebScraperRecursiveTool)]
         this.inputs = [
             {

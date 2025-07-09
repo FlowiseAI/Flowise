@@ -14,6 +14,7 @@ class WebBrowser_Tools implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'Web Browser'
@@ -23,6 +24,7 @@ class WebBrowser_Tools implements INode {
         this.icon = 'webBrowser.svg'
         this.category = 'Tools'
         this.description = 'Gives agent the ability to visit a website and extract information'
+        this.tags = ['AAI']
         this.inputs = [
             {
                 label: 'Language Model',

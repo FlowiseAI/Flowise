@@ -10,6 +10,7 @@ class WolframAlpha_Tools implements INode {
     type: string
     icon: string
     category: string
+    tags: string[]
     baseClasses: string[]
     credential: INodeParams
     inputs: INodeParams[]
@@ -22,6 +23,7 @@ class WolframAlpha_Tools implements INode {
         this.icon = 'wolframalpha.png'
         this.category = 'Tools'
         this.description = 'Wrapper around WolframAlpha - a powerful computational knowledge engine'
+        this.tags = ['AAI']
         this.inputs = []
         this.credential = {
             label: 'Connect Credential',

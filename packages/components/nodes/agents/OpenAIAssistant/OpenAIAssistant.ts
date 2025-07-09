@@ -33,6 +33,7 @@ class OpenAIAssistant_Agents implements INode {
     category: string
     baseClasses: string[]
     inputs: INodeParams[]
+    tags: string[]
 
     constructor() {
         this.label = 'OpenAI Assistant'
@@ -43,6 +44,7 @@ class OpenAIAssistant_Agents implements INode {
         this.icon = 'assistant.svg'
         this.description = `An agent that uses OpenAI Assistant API to pick the tool and args to call`
         this.baseClasses = [this.type]
+        this.tags = []
         this.inputs = [
             {
                 label: 'Select Assistant',
@@ -218,7 +220,7 @@ class OpenAIAssistant_Agents implements INode {
         if (!assistant) throw new Error(`Assistant ${selectedAssistantId} not found`)
 
         const credentialData = await getCredentialData(assistant.credential ?? '', options)
-        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData)
+        const openAIApiKey = getCredentialParam('openAIApiKey', credentialData, nodeData) || process.env.AAI_DEFAULT_OPENAI_API_KEY
         if (!openAIApiKey) throw new Error(`OpenAI ApiKey not found`)
 
         const openai = new OpenAI({ apiKey: openAIApiKey })
