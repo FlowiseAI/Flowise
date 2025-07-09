@@ -65,9 +65,7 @@ export const RequireAuth = ({ permission, display, children }) => {
     const [isBillingLoading, setIsBillingLoading] = useState(false)
 
     useEffect(() => {
-        // Only show the suspended dialog for organization admins
-        const isOrgAdmin = currentUser?.isOrganizationAdmin || currentUser?.id === organization?.createdBy
-        if (organization && organization.status === 'past_due' && isOrgAdmin) {
+        if (organization && organization.status === 'past_due') {
             setShowOrgPastDueDialog(true)
         }
     }, [organization, currentUser])
