@@ -173,4 +173,3 @@ function createSchemaModel(
 
     return z.object(schemaProperties)
 }
-
