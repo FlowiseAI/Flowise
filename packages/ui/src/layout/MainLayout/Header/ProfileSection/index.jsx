@@ -105,7 +105,8 @@ const ExportDialog = ({ show, onCancel, onExport }) => {
                         direction='row'
                         sx={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(2, 1fr)'
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: 1
                         }}
                     >
                         {dataToExport.map((data, index) => (
