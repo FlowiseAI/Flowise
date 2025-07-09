@@ -257,9 +257,9 @@ async function replaceDuplicateIdsForChatMessage(
         if (records.length < 0) return originalData
 
         // replace duplicate ids found in db to new id
-        const dbExistingIds = records.map((record) => record.id)
+        const dbExistingIds = new Set(records.map((record) => record.id))
         originalData.ChatMessage = originalData.ChatMessage.map((item) => {
-            if (dbExistingIds.includes(item.id)) {
+            if (dbExistingIds.has(item.id)) {
                 return { ...item, id: uuidv4() }
             }
             return item
@@ -465,9 +465,9 @@ async function replaceDuplicateIdsForDocumentStoreFileChunk(
         if (records.length < 0) return originalData
 
         // replace duplicate ids found in db to new id
-        const dbExistingIds = records.map((record) => record.id)
+        const dbExistingIds = new Set(records.map((record) => record.id))
         originalData.DocumentStoreFileChunk = originalData.DocumentStoreFileChunk.map((item) => {
-            if (dbExistingIds.includes(item.id)) {
+            if (dbExistingIds.has(item.id)) {
                 return { ...item, id: uuidv4() }
             }
             return item
