@@ -101,7 +101,13 @@ const ExportDialog = ({ show, onCancel, onExport }) => {
             </DialogTitle>
             <DialogContent>
                 {!isExporting && (
-                    <Stack direction='row' sx={{ gap: 1, flexWrap: 'wrap' }}>
+                    <Stack
+                        direction='row'
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)'
+                        }}
+                    >
                         {dataToExport.map((data, index) => (
                             <FormControlLabel
                                 key={index}
