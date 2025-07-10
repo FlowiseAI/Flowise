@@ -160,7 +160,7 @@ function FeaturesSection() {
     return (
         <section className={styles.featuresSection}>
             <div className='container'>
-                <h2 className='text--center'>What We&apos;re Building</h2>
+                <h2 className='text--center'>The complete AI Agent solution</h2>
                 <div
                     style={{
                         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -457,9 +457,9 @@ export default function Home(): JSX.Element {
             >
                 <HomepageHeader />
                 <main>
-                    <MissionSection />
                     <FeaturesSection />
                     <MacAppTeaser />
+                    <MissionSection />
                     <PricingSection />
                 </main>
             </Layout>

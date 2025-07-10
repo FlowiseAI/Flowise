@@ -51,6 +51,7 @@ import { Credential } from '../database/entities/Credential'
 import { Tool } from '../database/entities/Tool'
 import { Assistant } from '../database/entities/Assistant'
 import { Lead } from '../database/entities/Lead'
+import { ApiKey } from '../database/entities/ApiKey'
 import { DataSource } from 'typeorm'
 import { CachePool } from '../CachePool'
 import { Variable } from '../database/entities/Variable'
@@ -98,6 +99,7 @@ export const databaseEntities: IDatabaseEntity = {
     Credential: Credential,
     Lead: Lead,
     Assistant: Assistant,
+    ApiKey: ApiKey,
     Variable: Variable,
     DocumentStore: DocumentStore,
     DocumentStoreFileChunk: DocumentStoreFileChunk
