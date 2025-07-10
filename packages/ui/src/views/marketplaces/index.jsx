@@ -679,11 +679,11 @@ const Marketplace = () => {
                                                 {totalTags > limitTags && (
                                                     <Tooltip
                                                         title={
-                                                            <div style={{ whiteSpace: 'pre-line' }}>
+                                                            <ol style={{ paddingLeft: '20px' }}>
                                                                 {value.slice(limitTags).map((item, i) => (
-                                                                    <div key={i}>{item}</div>
+                                                                    <li key={i}>{item}</li>
                                                                 ))}
-                                                            </div>
+                                                            </ol>
                                                         }
                                                         placement='top'
                                                     >
