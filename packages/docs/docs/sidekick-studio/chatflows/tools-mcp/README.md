@@ -21,6 +21,7 @@ MCP servers follow a standardized protocol for exposing tools and handling reque
 
 Answer Agent includes the following MCP integrations:
 
+-   [AnswerAgent MCP](./answeragent-mcp.md) - Manage chatflows, document stores, assistants, and tools (Zero configuration required)
 -   [Contentful](./contentful-mcp.md) - Manage content in Contentful CMS
 -   [Salesforce](./salesforce-mcp.md) - Interact with Salesforce CRM and database
 -   [Jira](./jira-mcp.md) - Work with Jira issues and projects
