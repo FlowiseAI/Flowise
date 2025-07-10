@@ -56,6 +56,7 @@ const CanvasNode = ({ data }) => {
     const onDialogClicked = () => {
         const dialogProps = {
             data,
+            disabled: isReadonly,
             inputParams: data.inputParams.filter((inputParam) => !inputParam.hidden).filter((param) => param.additionalParams),
             confirmButtonName: 'Save',
             cancelButtonName: 'Cancel'
@@ -69,6 +70,8 @@ const CanvasNode = ({ data }) => {
         else if (theme?.customization?.isDarkMode) return theme.palette.grey[900] + 25
         else return theme.palette.grey[900] + 50
     }
+
+    const isReadonly = canvas?.isReadonly
 
     useEffect(() => {
         const componentNode = canvas.componentNodes.find((nd) => nd.name === data.name)
@@ -102,6 +105,7 @@ const CanvasNode = ({ data }) => {
                     open={getNodeInfoOpenStatus()}
                     onClose={handleClose}
                     onOpen={handleOpen}
+                    disabled={isReadonly}
                     disableFocusListener={true}
                     title={
                         <div
@@ -116,6 +120,7 @@ const CanvasNode = ({ data }) => {
                                 onClick={() => {
                                     duplicateNode(data.id)
                                 }}
+                                disabled={isReadonly}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
                             >
@@ -126,6 +131,7 @@ const CanvasNode = ({ data }) => {
                                 onClick={() => {
                                     deleteNode(data.id)
                                 }}
+                                disabled={isReadonly}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
                             >
@@ -137,6 +143,7 @@ const CanvasNode = ({ data }) => {
                                     setInfoDialogProps({ data })
                                     setShowInfoDialog(true)
                                 }}
+                                disabled={isReadonly}
                                 sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.secondary.main } }}
                                 color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
                             >
@@ -222,7 +229,7 @@ const CanvasNode = ({ data }) => {
                             </>
                         )}
                         {data.inputAnchors.map((inputAnchor, index) => (
-                            <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} />
+                            <NodeInputHandler key={index} inputAnchor={inputAnchor} data={data} disabled={isReadonly}/>
                         ))}
                         {data.inputParams
                             .filter((inputParam) => !inputParam.hidden)
@@ -232,6 +239,7 @@ const CanvasNode = ({ data }) => {
                                     key={index}
                                     inputParam={inputParam}
                                     data={data}
+                                    disabled={isReadonly}
                                     onHideNodeInfoDialog={(status) => {
                                         if (status) {
                                             setIsForceCloseNodeInfo(true)
@@ -252,7 +260,7 @@ const CanvasNode = ({ data }) => {
                                             : 0
                                 }}
                             >
-                                <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked}>
+                                <Button sx={{ borderRadius: 25, width: '90%', mb: 2 }} variant='outlined' onClick={onDialogClicked} disabled={isReadonly}>
                                     Additional Parameters
                                 </Button>
                             </div>

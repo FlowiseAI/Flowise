@@ -8,6 +8,7 @@ import {
     REMOVE_DIRTY,
     SET_DIRTY,
     SET_CHATFLOW,
+    SET_READONLY,
     enqueueSnackbar as enqueueSnackbarAction,
     closeSnackbar as closeSnackbarAction
 } from '@/store/actions'
@@ -74,6 +75,7 @@ const Canvas = () => {
     const isAgentCanvas = URLpath.includes('agentcanvas') ? true : false
     const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
 
+    const commitId = document.location.search.includes('commitId') ? document.location.search.split('=')[1] : null
     const { confirm } = useConfirm()
 
     const dispatch = useDispatch()
@@ -104,6 +106,8 @@ const Canvas = () => {
     const [lastUpdatedDateTime, setLasUpdatedDateTime] = useState('')
     const [chatflowName, setChatflowName] = useState('')
     const [flowData, setFlowData] = useState('')
+
+    const [isReadonly, setIsReadonly] = useState(false)
 
     // ==============================|| Chatflow API ||============================== //
 
@@ -417,6 +421,8 @@ const Canvas = () => {
             setLasUpdatedDateTime(chatflow.updatedDate)
             setNodes(initialFlow.nodes || [])
             setEdges(initialFlow.edges || [])
+            setIsReadonly(chatflow.lastPublishedCommit && !chatflow.isDirty ? true : false)
+            dispatch({ type: SET_READONLY, isReadonly: chatflow.lastPublishedCommit && !chatflow.isDirty ? true : false })
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
             errorFailed(`Failed to retrieve ${canvasTitle}: ${getSpecificChatflowApi.error.response.data.message}`)
@@ -498,7 +504,10 @@ const Canvas = () => {
         setIsSyncNodesButtonEnabled(false)
         setIsUpsertButtonEnabled(false)
         if (chatflowId) {
-            getSpecificChatflowApi.request(chatflowId)
+            // commitId is the query param not a path param 
+            // http://localhost:8080/canvas/84620a63-cb4b-4a82-884b-21d72b3ea72f?commitId=f6f9c7cbf5ed00d6e48e5ed275c85bb8554661d5
+            const commitId = document.location.search.includes('commitId') ? document.location.search.split('=')[1] : null
+            getSpecificChatflowApi.request(chatflowId, commitId)
         } else {
             if (localStorage.getItem('duplicatedFlowData')) {
                 handleLoadFlow(localStorage.getItem('duplicatedFlowData'))
@@ -523,7 +532,7 @@ const Canvas = () => {
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    }, [commitId])
 
     useEffect(() => {
         setCanvasDataStore(canvas)
@@ -576,6 +585,8 @@ const Canvas = () => {
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
                             isAgentCanvas={isAgentCanvas}
+                            isReadonly={isReadonly}
+                            commitId={commitId}
                         />
                     </Toolbar>
                 </AppBar>
@@ -623,8 +634,11 @@ const Canvas = () => {
                                     </button>
                                 </Controls>
                                 <Background color='#aaa' gap={16} />
-                                <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
-                                {isSyncNodesButtonEnabled && (
+                                {!isReadonly && (
+                                    <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
+                                )}
+                                
+                                {isSyncNodesButtonEnabled && !isReadonly && (
                                     <Fab
                                         sx={{
                                             left: 40,

@@ -3,6 +3,7 @@ import * as actionTypes from '../actions'
 
 export const initialState = {
     isDirty: false,
+    isReadonly: false,
     chatflow: null,
     canvasDialogShow: false,
     componentNodes: [],
@@ -14,10 +15,12 @@ export const initialState = {
 const canvasReducer = (state = initialState, action) => {
     switch (action.type) {
         case actionTypes.SET_DIRTY:
-            return {
-                ...state,
-                isDirty: true
-            }
+            if (!action.isReadonly) {
+                return {
+                    ...state,
+                    isDirty: false
+                }
+            } 
         case actionTypes.REMOVE_DIRTY:
             return {
                 ...state,
@@ -47,6 +50,11 @@ const canvasReducer = (state = initialState, action) => {
             return {
                 ...state,
                 componentCredentials: action.componentCredentials
+            }
+        case actionTypes.SET_READONLY:
+            return {
+                ...state,
+                isReadonly: action.isReadonly
             }
         default:
             return state

@@ -8,6 +8,7 @@ import chatflowsService from '../../services/chatflows'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { RateLimiterManager } from '../../utils/rateLimit'
+import { FlowVersionService } from '../../enterprise/services/flow-version.service'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -99,6 +100,18 @@ const getChatflowById = async (req: Request, res: Response, next: NextFunction) 
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsController.getChatflowById - id not provided!`)
         }
+        
+        // Check if commitId query parameter is provided
+        const commitId = req.query.commitId as string
+        if (commitId) {
+            const flowVersionService = new FlowVersionService()
+            const apiResponse = await flowVersionService.getChatflowByCommitId(req.params.id, commitId)
+            apiResponse.isDirty = false
+            apiResponse.lastPublishedCommit = commitId
+            return res.json(apiResponse)
+        }
+        
+        // Fall back to regular chatflow service if no commitId provided
         const apiResponse = await chatflowsService.getChatflowById(req.params.id)
         return res.json(apiResponse)
     } catch (error) {

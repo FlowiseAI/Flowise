@@ -2,8 +2,8 @@ import { useEffect, useState, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import dayjs from 'dayjs'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
-import { Button, Box, SwipeableDrawer, Stack, Typography, Divider, Avatar, Link, Tooltip, IconButton, useTheme, Menu, MenuItem } from '@mui/material'
-import { IconX, IconGitPullRequest, IconGitCommit, IconDotsVertical, IconEye, IconFileText, IconCopy } from '@tabler/icons-react'
+import { Button, Box, SwipeableDrawer, Stack, Typography, Divider, Link, Tooltip, IconButton, useTheme, Menu, MenuItem } from '@mui/material'
+import { IconX, IconDotsVertical, IconEye, IconFileText, IconCopy } from '@tabler/icons-react'
 import useApi from '@/hooks/useApi'
 import versioningApi from '@/api/flowversion'
 import { useDispatch } from 'react-redux'
@@ -23,7 +23,7 @@ import { IconGitBranch, IconBrandGithub } from '@tabler/icons-react'
 //   }[]
 // }
 
-const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersion }) => {
+const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersion, commitId }) => {
     const theme = useTheme()
     const onOpen = () => { }
     const [versionHistory, setVersionHistory] = useState({})
@@ -151,7 +151,7 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
 
     const handleShowCommit = () => {
         handleMenuClose()
-        // TODO: Implement show commit functionality
+        onSelectVersion(selectedCommit?.commitId)
     }
 
     const handleMakeDraft = () => {
@@ -269,6 +269,7 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                     {versionHistory.branch}
                 </Box>
             </Box>
+            {/* if commitId is provided, highlight the commit in the list and have a highlighted left border */}
             {versionHistory?.commits?.length > 0 && (
                 <>
                     <Box sx={{ width: 400, p: 2, height: '100%' }}>
@@ -279,7 +280,8 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                                         Commits on {date}
                                     </Typography>
                                     {commits.map((commit, idx) => (
-                                        <Box key={commit.commitId} sx={{ display: 'flex', alignItems: 'flex-start', mb: 1, ml: 2, position: 'relative', border: '1px solid #d0d7de', p: 2, borderRadius: 2 }}>
+                                        <Box key={commit.commitId} sx={{ display: 'flex', alignItems: 'flex-start', mb: 1, ml: 2, position: 'relative', 
+                                            border: '1px solid #d0d7de', p: 2, borderRadius: 2, backgroundColor: commitId === commit.commitId ? '#e3f2fd' : 'white', borderLeft: commitId === commit.commitId ? '4px solid rgb(22, 190, 140)' : '1px solid #d0d7de' }}>
                                             <Box sx={{ flex: 1 }}>
                                                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                                     {commit.message}
@@ -344,7 +346,7 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                     horizontal: 'right'
                 }}
             >
-                <MenuItem onClick={handleShowCommit} disabled>
+                <MenuItem onClick={handleShowCommit}>
                     <IconEye size={18} style={{ marginRight: 8 }} />
                     Show Commit
                 </MenuItem>
@@ -378,7 +380,8 @@ VersionsSideDrawer.propTypes = {
     show: PropTypes.bool,
     dialogProps: PropTypes.object,
     onClickFunction: PropTypes.func,
-    onSelectVersion: PropTypes.func
+    onSelectVersion: PropTypes.func,
+    commitId: PropTypes.string
 }
 
 export default VersionsSideDrawer

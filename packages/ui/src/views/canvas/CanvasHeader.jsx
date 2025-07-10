@@ -37,7 +37,7 @@ import VersionsSideDrawer from './VersionSideDrawer'
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow, isReadonly, commitId }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -179,6 +179,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         handleLoadFlow(file)
     }
 
+    const onVersionHistoryClick = (commitId) => {
+        console.log('header commitId', commitId)
+        setShowVersionSideDrawer(false)
+        if (isAgentCanvas) {
+            navigate(`/agentcanvas/${chatflow.id}?commitId=${commitId}`)
+        } else {
+            navigate(`/canvas/${chatflow.id}?commitId=${commitId}`)
+        }
+    }
+
     const submitFlowName = () => {
         if (chatflow.id) {
             const updateBody = {
@@ -259,7 +269,6 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
             setGitVersioningEnabled(false)
             if (chatflow.chatbotConfig) {
                 const chatbotConfig = JSON.parse(chatflow.chatbotConfig)
-                console.log(chatbotConfig)
                 setGitVersioningEnabled(chatbotConfig?.gitVersioning?.status)
             }
             
@@ -320,7 +329,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 >
                                     {canvas.isDirty && <strong style={{ color: theme.palette.orange.main }}>*</strong>} {flowName}
                                 </Typography>
-                                {chatflow?.id && (
+                                {chatflow?.id && !isReadonly && (
                                     <Available permission={savePermission}>
                                         <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
                                             <Avatar
@@ -366,7 +375,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                         }
                                     }}
                                 />
-                                <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title='Save Name' sx={{ borderRadius: '50%' }} disabled={isReadonly}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -387,7 +396,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                         <IconCheck stroke={1.5} size='1.3rem' />
                                     </Avatar>
                                 </ButtonBase>
-                                <ButtonBase title='Cancel' sx={{ borderRadius: '50%' }}>
+                                <ButtonBase title='Cancel' sx={{ borderRadius: '50%' }} disabled={isReadonly}>
                                     <Avatar
                                         variant='rounded'
                                         sx={{
@@ -418,7 +427,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         {chatflow?.isDirty ? (
                             <Chip label='You have unpublished changes' size='small' color='error' sx={{ mr: 2 }}/>
                         ) : (
-                            <Chip label='Published' size='small' color='success' sx={{ mr: 2 }}/>
+                            // if it is not dirty and there is a last published commit, show the last published commit id and mark it as readonly
+                            chatflow?.lastPublishedCommit && (
+                                <>
+                                    <Chip label={`Published: ${chatflow?.lastPublishedCommit}`} size='small' sx={{ border: '1px solid #000', backgroundColor: '#000', color: 'white' }}/>
+                                    {isReadonly && <Chip label='Readonly' size='small' color='error' sx={{ mr: 2, ml:2 }}/>}
+                                </>
+                            )
                         )}
                         {chatflow?.id && (
                             <ButtonBase title='Version history' sx={{ borderRadius: '50%', mr: 2 }}>
@@ -446,7 +461,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     )}
 
                     {chatflow?.id && (
-                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }} disabled={isReadonly}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
@@ -463,12 +478,12 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                                 color='inherit'
                                 onClick={onAPIDialogClick}
                             >
-                                <IconCode stroke={1.5} size='1.3rem' />
+                                <IconCode stroke={1.5} size='1.3rem'/>
                             </Avatar>
                         </ButtonBase>
                     )}
                     <Available permission={savePermission}>
-                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }} disabled={isReadonly}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
@@ -489,7 +504,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                             </Avatar>
                         </ButtonBase>
                     </Available>
-                    <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
+                    <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }} disabled={isReadonly}>
                         <Avatar
                             variant='rounded'
                             sx={{
@@ -559,7 +574,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                 show={showVersionSideDrawer}
                 dialogProps={versionDrawerDialogProps}
                 onClickFunction={closeVersionsDrawer}
-                onSelectVersion={(versionId) => {}}
+                onSelectVersion={onVersionHistoryClick}
+                commitId={commitId}
             />
         </>
     )
@@ -571,7 +587,9 @@ CanvasHeader.propTypes = {
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
     isAgentCanvas: PropTypes.bool,
-    isAgentflowV2: PropTypes.bool
+    isAgentflowV2: PropTypes.bool,
+    isReadonly: PropTypes.bool,
+    commitId: PropTypes.string
 }
 
 export default CanvasHeader

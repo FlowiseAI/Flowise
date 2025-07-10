@@ -115,7 +115,7 @@ const CredentialInputHandler = ({ inputParam, data, onSelect, disabled = false }
                                 onCreateNew={() => addAsyncOption(inputParam.name)}
                             />
                             {credentialId && hasPermission('credentials:update') && (
-                                <IconButton title='Edit' color='primary' size='small' onClick={() => editCredential(credentialId)}>
+                                <IconButton title='Edit' color='primary' size='small' onClick={() => editCredential(credentialId)} disabled={disabled}>
                                     <IconEdit />
                                 </IconButton>
                             )}

@@ -4,7 +4,10 @@ const getAllChatflows = () => client.get('/chatflows?type=CHATFLOW')
 
 const getAllAgentflows = (type) => client.get(`/chatflows?type=${type}`)
 
-const getSpecificChatflow = (id) => client.get(`/chatflows/${id}`)
+const getSpecificChatflow = (id, commitId) => {
+    const url = commitId ? `/chatflows/${id}?commitId=${commitId}` : `/chatflows/${id}`
+    return client.get(url)
+}
 
 const getSpecificChatflowFromPublicEndpoint = (id) => client.get(`/public-chatflows/${id}`)
 

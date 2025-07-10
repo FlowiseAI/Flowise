@@ -218,4 +218,68 @@ export class FlowVersionService {
             req.end()
         })
     }
+
+    /**
+     * Fetches a specific version of a chatflow by commitId from the git repository.
+     * @param chatflowId The ID of the chatflow
+     * @param commitId The commit ID to fetch the version from
+     */
+    public async getChatflowByCommitId(chatflowId: string, commitId: string): Promise<ChatFlow> {
+        // 1. Retrieve the active GitConfig
+        const gitConfig = await this.dataSource.getRepository(GitConfig).findOneBy({ isActive: true })
+        if (!gitConfig) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'No active Git config found')
+        }
+
+        // 2. Retrieve the chatflow to get the filename
+        const chatflow = await this.dataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
+        if (!chatflow) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Chatflow not found')
+        }
+
+        // 3. Prepare file name and repo info
+        const fileName = `${chatflow.name}.json`
+        const owner = gitConfig.username
+        const repo = gitConfig.repository
+        const token = gitConfig.secret
+
+        // 4. Fetch the specific version of the file from GitHub API
+        return new Promise((resolve, reject) => {
+            const options = {
+                hostname: 'api.github.com',
+                port: 443,
+                path: `/repos/${owner}/${repo}/contents/${encodeURIComponent(fileName)}?ref=${commitId}`,
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'FlowiseAI',
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            }
+            const req = https.request(options, (res) => {
+                let data = ''
+                res.on('data', (chunk) => { data += chunk })
+                res.on('end', () => {
+                    if (res.statusCode === 200) {
+                        try {
+                            const fileData = JSON.parse(data)
+                            const content = Buffer.from(fileData.content, 'base64').toString('utf-8')
+                            const chatflowData = JSON.parse(content)
+                            resolve(chatflowData)
+                        } catch (error) {
+                            reject(new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Failed to parse chatflow data from repository'))
+                        }
+                    } else {
+                        reject(new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Chatflow version not found for the specified commit'))
+                    }
+                })
+            })
+            req.on('error', (error) => {
+                reject(new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Failed to fetch chatflow version: ${error.message}`))
+            })
+            req.end()
+        })
+    }
+
+    
 } 
