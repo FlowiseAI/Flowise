@@ -59,12 +59,8 @@ class AnswerAgent_MCP implements INode {
     loadMethods = {
         listActions: async (nodeData: INodeData, options: ICommonObject): Promise<INodeOptionsValue[]> => {
             try {
-                console.log('DEBUG: listActions called')
                 const toolset = await this.getTools(nodeData, options)
-                console.log('DEBUG: toolset returned:', toolset)
-                console.log('DEBUG: toolset length:', toolset.length)
-                console.log('DEBUG: first few tools:', toolset.slice(0, 3).map(t => ({ name: t.name, description: t.description })))
-                
+
                 toolset.sort((a, b) => a.name.localeCompare(b.name))
 
                 const result = toolset.map(({ name, ...rest }) => ({
@@ -72,8 +68,7 @@ class AnswerAgent_MCP implements INode {
                     name: name,
                     description: rest.description || name
                 }))
-                
-                console.log('DEBUG: mapped result:', result.slice(0, 3))
+
                 return result
             } catch (error) {
                 console.error('DEBUG: Error in listActions:', error)
@@ -117,12 +112,8 @@ class AnswerAgent_MCP implements INode {
             throw new Error('Unable to retrieve user API key from database')
         }
 
-        console.log('DEBUG: getTools - apiBaseUrl:', apiBaseUrl)
-        console.log('DEBUG: getTools - apiKey (masked):', apiKey.substring(0, 10) + '...')
-
         // Get the package path for the AnswerAgent MCP server
         const packagePath = getNodeModulesPackagePath('@answerai/answeragent-mcp/dist/index.js')
-        console.log('DEBUG: getTools - packagePath:', packagePath)
 
         const serverParams = {
             command: process.execPath,
@@ -132,17 +123,12 @@ class AnswerAgent_MCP implements INode {
                 ANSWERAGENT_AI_API_TOKEN: apiKey
             }
         }
-        console.log('DEBUG: getTools - serverParams:', serverParams)
 
         const toolkit = new MCPToolkit(serverParams, 'stdio')
-        console.log('DEBUG: getTools - toolkit created')
-        
+
         await toolkit.initialize()
-        console.log('DEBUG: getTools - toolkit initialized')
 
         const tools = toolkit.tools ?? []
-        console.log('DEBUG: getTools - raw tools from toolkit:', tools)
-        console.log('DEBUG: getTools - tools count:', tools.length)
 
         return tools
     }
@@ -170,7 +156,7 @@ class AnswerAgent_MCP implements INode {
             }
 
             // Get organization ID - handle both contexts:
-            // 1. Load method context: options.organizationId  
+            // 1. Load method context: options.organizationId
             // 2. Workflow execution context: options.user.organizationId
             const organizationId = options.organizationId || options.user?.organizationId
             if (!organizationId) {
