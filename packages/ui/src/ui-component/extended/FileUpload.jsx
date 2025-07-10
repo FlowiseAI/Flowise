@@ -33,7 +33,8 @@ const availableFileTypes = [
     { name: 'Text File', ext: 'text/plain' },
     { name: 'XML', ext: 'application/xml' },
     { name: 'DOC', ext: 'application/msword' },
-    { name: 'DOCX', ext: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
+    { name: 'DOCX', ext: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' },
+    { name: 'XLSX', ext: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
 ]
 
 const FileUpload = ({ dialogProps }) => {
