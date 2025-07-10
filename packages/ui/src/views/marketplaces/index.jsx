@@ -23,7 +23,8 @@ import {
     Tabs,
     Autocomplete,
     TextField,
-    Chip
+    Chip,
+    Tooltip
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconLayoutGrid, IconList, IconX } from '@tabler/icons-react'
@@ -675,7 +676,20 @@ const Marketplace = () => {
                                                     />
                                                 ))}
 
-                                                {totalTags > limitTags && ` +${totalTags - limitTags}`}
+                                                {totalTags > limitTags && (
+                                                    <Tooltip
+                                                        title={
+                                                            <div style={{ whiteSpace: 'pre-line' }}>
+                                                                {value.slice(limitTags).map((item, i) => (
+                                                                    <div key={i}>{item}</div>
+                                                                ))}
+                                                            </div>
+                                                        }
+                                                        placement='top'
+                                                    >
+                                                        +{totalTags - limitTags}
+                                                    </Tooltip>
+                                                )}
                                             </>
                                         )
                                     }}
