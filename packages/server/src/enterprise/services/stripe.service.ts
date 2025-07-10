@@ -9,17 +9,6 @@ import { WorkspaceUser } from '../database/entities/workspace-user.entity'
 import { OrganizationErrorMessage, OrganizationService } from './organization.service'
 import logger from '../../utils/logger'
 
-enum SubscriptionStatus {
-    INCOMPLETE = 'incomplete',
-    INCOMPLETE_EXPIRED = 'incomplete_expired',
-    TRIALING = 'trialing',
-    ACTIVE = 'active',
-    PAST_DUE = 'past_due',
-    CANCELED = 'canceled',
-    UNPAID = 'unpaid',
-    PAUSED = 'paused'
-}
-
 enum InvoiceStatus {
     DRAFT = 'draft',
     OPEN = 'open',
