@@ -69,6 +69,7 @@ import { OMIT_QUEUE_JOB_DATA } from './constants'
 import { executeAgentFlow } from './buildAgentflow'
 import { Workspace } from '../enterprise/database/entities/workspace.entity'
 import { Organization } from '../enterprise/database/entities/organization.entity'
+import { FlowVersionService } from '../enterprise/services/flow-version.service'
 
 /*
  * Initialize the ending node to be executed
@@ -890,11 +891,30 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const chatflowid = req.params.id
 
     // Check if chatflow exists
-    const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
+    let chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
         id: chatflowid
     })
     if (!chatflow) {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+    }
+
+    // if the user specified a commitId, load the chatflow from the git repository
+    if (req.params.commitId) {
+        const flowVersionService = new FlowVersionService()
+        const chatflowFromGit = await flowVersionService.getChatflowByCommitId(chatflowid, req.params.commitId)
+        if (!chatflowFromGit) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+        }
+        chatflow = chatflowFromGit
+    } else if (chatflow.isDirty && chatflow.lastPublishedCommit) {
+        // Check if chatflow is dirty and has a lastPublishedCommit
+        // if yes, load the chatflow from the git repository (flow-version service)
+        const flowVersionService = new FlowVersionService()
+        const chatflowFromGit = await flowVersionService.getChatflowByCommitId(chatflowid, chatflow.lastPublishedCommit)
+        if (!chatflowFromGit) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
+        }
+        chatflow = chatflowFromGit
     }
 
     const isAgentFlow = chatflow.type === 'MULTIAGENT'
