@@ -15,6 +15,7 @@ import { FlowListTable } from '@/ui-component/table/FlowListTable'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -43,6 +44,25 @@ const Chatflows = () => {
     const getAllChatflowsApi = useApi(chatflowsApi.getAllChatflows)
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
 
+    /* Table Pagination */
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
+    const [total, setTotal] = useState(0)
+
+    const onChange = (page, pageLimit) => {
+        setCurrentPage(page)
+        setPageLimit(pageLimit)
+        applyFilters(page, pageLimit)
+    }
+
+    const applyFilters = (page, limit) => {
+        const params = {
+            page: page || currentPage,
+            limit: limit || pageLimit
+        }
+        getAllChatflowsApi.request(params)
+    }
+
     const handleChange = (event, nextView) => {
         if (nextView === null) return
         localStorage.setItem('flowDisplayStyle', nextView)
@@ -70,7 +90,7 @@ const Chatflows = () => {
     }
 
     useEffect(() => {
-        getAllChatflowsApi.request()
+        applyFilters(currentPage, pageLimit)
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -81,7 +101,9 @@ const Chatflows = () => {
     useEffect(() => {
         if (getAllChatflowsApi.data) {
             try {
-                const chatflows = getAllChatflowsApi.data
+                const chatflows = getAllChatflowsApi.data?.data
+                const total = getAllChatflowsApi.data?.total
+                setTotal(total)
                 const images = {}
                 for (let i = 0; i < chatflows.length; i += 1) {
                     const flowDataStr = chatflows[i].flowData
@@ -123,6 +145,7 @@ const Chatflows = () => {
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={view}
                             color='primary'
+                            disabled={total === 0}
                             exclusive
                             onChange={handleChange}
                         >
@@ -161,41 +184,37 @@ const Chatflows = () => {
                             Add New
                         </StyledPermissionButton>
                     </ViewHeader>
-                    {!view || view === 'card' ? (
+
+                    {isLoading && (
+                        <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                            <Skeleton variant='rounded' height={160} />
+                            <Skeleton variant='rounded' height={160} />
+                            <Skeleton variant='rounded' height={160} />
+                        </Box>
+                    )}
+                    {!isLoading && total > 0 && (
                         <>
-                            {isLoading && !getAllChatflowsApi.data ? (
+                            {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
+                                    {getAllChatflowsApi.data?.data?.filter(filterFlows).map((data, index) => (
+                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
+                                    ))}
                                 </Box>
                             ) : (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllChatflowsApi.data &&
-                                        getAllChatflowsApi.data
-                                            ?.filter(filterFlows)
-                                            .map((data, index) => (
-                                                <ItemCard
-                                                    key={index}
-                                                    onClick={() => goToCanvas(data)}
-                                                    data={data}
-                                                    images={images[data.id]}
-                                                />
-                                            ))}
-                                </Box>
+                                <FlowListTable
+                                    data={getAllChatflowsApi.data?.data}
+                                    images={images}
+                                    isLoading={isLoading}
+                                    filterFunction={filterFlows}
+                                    updateFlowsApi={getAllChatflowsApi}
+                                    setError={setError}
+                                />
                             )}
+                            {/* Pagination and Page Size Controls */}
+                            <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
                         </>
-                    ) : (
-                        <FlowListTable
-                            data={getAllChatflowsApi.data}
-                            images={images}
-                            isLoading={isLoading}
-                            filterFunction={filterFlows}
-                            updateFlowsApi={getAllChatflowsApi}
-                            setError={setError}
-                        />
                     )}
-                    {!isLoading && (!getAllChatflowsApi.data || getAllChatflowsApi.data.length === 0) && (
+                    {!isLoading && (!getAllChatflowsApi.data?.data || getAllChatflowsApi.data?.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img
