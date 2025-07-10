@@ -6,6 +6,7 @@ import { useConfig } from '@/store/context/ConfigContext'
 import { useAuth } from '@/hooks/useAuth'
 import { useSelector, useDispatch } from 'react-redux'
 import useNotifier from '@/utils/useNotifier'
+import { useNavigate } from 'react-router-dom'
 
 import { enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
@@ -15,13 +16,15 @@ import { IconExternalLink, IconCreditCard, IconLogout, IconX } from '@tabler/ico
 
 // API
 import accountApi from '@/api/account.api'
+import workspaceUserApi from '@/api/workspace-user.api'
+import workspaceApi from '@/api/workspace'
 
 // Hooks
 import useApi from '@/hooks/useApi'
 
 // store
 import { store } from '@/store'
-import { logoutSuccess } from '@/store/reducers/authSlice'
+import { logoutSuccess, workspaceSwitchSuccess } from '@/store/reducers/authSlice'
 
 /**
  * Checks if a feature flag is enabled
@@ -46,6 +49,7 @@ const checkFeatureFlag = (features, display, children) => {
 }
 
 export const RequireAuth = ({ permission, display, children }) => {
+    const navigate = useNavigate()
     const location = useLocation()
     const dispatch = useDispatch()
     const { isCloud, isOpenSource, isEnterpriseLicensed } = useConfig()
@@ -60,14 +64,19 @@ export const RequireAuth = ({ permission, display, children }) => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
 
     const logoutApi = useApi(accountApi.logout)
+    const getWorkspaceByUserIdApi = useApi(workspaceUserApi.getWorkspaceByUserId)
+    const switchWorkspaceApi = useApi(workspaceApi.switchWorkspace)
 
     const [showOrgPastDueDialog, setShowOrgPastDueDialog] = useState(false)
     const [isBillingLoading, setIsBillingLoading] = useState(false)
 
     useEffect(() => {
-        if (organization && organization.status === 'past_due') {
+        if (currentUser && currentUser.isOrganizationAdmin === false) {
+            handleSwitchWorkspace(currentUser)
+        } else if (organization && organization.status === 'past_due') {
             setShowOrgPastDueDialog(true)
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [organization, currentUser])
 
     const handleBillingPortalClick = async () => {
@@ -105,6 +114,39 @@ export const RequireAuth = ({ permission, display, children }) => {
             }
         })
     }
+
+    const handleSwitchWorkspace = async (currentUser) => {
+        try {
+            const resp = await getWorkspaceByUserIdApi.request(currentUser.id)
+            const workspaceIds = resp.data.filter((item) => item.isOrgOwner).map((item) => item.workspaceId)
+            switchWorkspaceApi.request(workspaceIds[0])
+            enqueueSnackbar({
+                message: 'Switched to your own workspace',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'success'
+                }
+            })
+        } catch (error) {
+            enqueueSnackbar({
+                message: 'Failed to handleSwitchWorkspace',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error'
+                }
+            })
+        }
+    }
+
+    useEffect(() => {
+        if (switchWorkspaceApi.data) {
+            store.dispatch(workspaceSwitchSuccess(switchWorkspaceApi.data))
+
+            // get the current path and navigate to the same after refresh
+            navigate('/', { replace: true })
+            navigate(0)
+        }
+    }, [switchWorkspaceApi.data, navigate])
 
     useEffect(() => {
         try {
