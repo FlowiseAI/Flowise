@@ -35,8 +35,8 @@ class OllamaEmbedding_Embeddings implements INode {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'llama2',
-                default: getEnvironmentVariable('OLLAMA_DEFAULT_MODEL') ?? ''
+                placeholder: 'nomic-embed-text',
+                default: getEnvironmentVariable('OLLAMA_DEFAULT_EMBEDDING_MODEL') ?? ''
             },
             {
                 label: 'Number of GPU',
