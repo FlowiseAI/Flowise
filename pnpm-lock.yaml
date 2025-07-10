@@ -831,6 +831,9 @@ importers:
 
   packages/components:
     dependencies:
+      '@answerai/answeragent-mcp':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@answerai/confluence-mcp':
         specifier: ^1.0.0
         version: 1.0.0
@@ -1301,6 +1304,9 @@ importers:
   packages/docs:
     dependencies:
       '@docusaurus/core':
+        specifier: 3.7.0
+        version: 3.7.0(@mdx-js/react@3.1.0(@types/react@19.1.5)(react@18.2.0))(acorn@8.14.1)(bufferutil@4.0.9)(eslint@8.37.0)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)(typescript@5.5.4)(utf-8-validate@6.0.5)
+      '@docusaurus/plugin-google-gtag':
         specifier: 3.7.0
         version: 3.7.0(@mdx-js/react@3.1.0(@types/react@19.1.5)(react@18.2.0))(acorn@8.14.1)(bufferutil@4.0.9)(eslint@8.37.0)(react-dom@18.3.1(react@18.2.0))(react@18.2.0)(typescript@5.5.4)(utf-8-validate@6.0.5)
       '@docusaurus/preset-classic':
@@ -2326,6 +2332,11 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
+
+  '@answerai/answeragent-mcp@1.0.1':
+    resolution: {integrity: sha512-XpiUiOIrL0qOndqwvomaTeWf1+02xzimCBMprmydOoFafMJr1MFHaFURNZ+gt5Ny+QHTSsnaiKEv4R07iYIoSw==}
+    engines: {node: '>=18.0.0'}
+    hasBin: true
 
   '@answerai/confluence-mcp@1.0.0':
     resolution: {integrity: sha512-hoSwJfHyj+55tKVG218xjNlwvQu/keVaIUuG3tsOt91hUtZ6s9tcp5HXQ6OB8r33uDh2oirqpHNYNizrqEaArg==}
@@ -5889,6 +5900,9 @@ packages:
   '@modelcontextprotocol/sdk@0.5.0':
     resolution: {integrity: sha512-RXgulUX6ewvxjAG0kOpLMEdXXWkzWgaoCGaA2CwNW7cQCIphjpJhjpHSiaPdVCnisjRF/0Cm9KWHUuIoeiAblQ==}
 
+  '@modelcontextprotocol/sdk@0.6.0':
+    resolution: {integrity: sha512-9rsDudGhDtMbvxohPoMMyAUOmEzQsOK+XFchh6gZGqo8sx9sBuZQs+CUttXqa8RZXKDaJRCN2tUtgGof7jRkkw==}
+
   '@modelcontextprotocol/sdk@1.0.1':
     resolution: {integrity: sha512-slLdFaxQJ9AlRg+hw28iiTtGvShAOgOKXcD0F91nUcRYiOMuS9ZBYjcdNZRXW9G5JQ511GRTdUy1zQVZDpJ+4w==}
 
@@ -5974,6 +5988,7 @@ packages:
   '@mui/base@5.0.0-beta.40':
     resolution: {integrity: sha512-I/lGHztkCzvwlXpjD2+SNmvNQvB4227xBXhISPjEaJUXGImOQ9f3D2Yj/T3KasSI/h0MLWy74X0J6clhPmsRbQ==}
     engines: {node: '>=12.0.0'}
+    deprecated: This package has been replaced by @base-ui-components/react
     peerDependencies:
       '@types/react': ^17.0.0 || ^18.0.0
       react: ^17.0.0 || ^18.0.0
@@ -10314,6 +10329,7 @@ packages:
   atlassian-jwt@2.0.3:
     resolution: {integrity: sha512-G9oO3HHS1UKgsLRXj6nNKv2TY6g3PleBCdzHwbFeVKg+18GBFIMRz+ApxuOuWAgcL7RngNFF5rGNtw1Ss3hvTg==}
     engines: {node: '>= 0.4.0'}
+    deprecated: 'DEPRECATED: atlassian-jwt has moved to @atlassian/atlassian-jwt. The latest version is 2.1.1. Please update your dependency.'
 
   atob@2.1.2:
     resolution: {integrity: sha512-Wm6ukoaOGJi/73p/cl2GvLjTI5JM1k/O14isD73YML8StrH/7/lRFgmg8nICZgD3bZZvjwCGxtMOD3wWNAu8cg==}
@@ -24023,6 +24039,17 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
 
+  '@answerai/answeragent-mcp@1.0.1':
+    dependencies:
+      '@modelcontextprotocol/sdk': 0.6.0
+      axios: 1.7.9(debug@4.4.0)
+      dotenv: 16.5.0
+      express: 4.21.2
+      zod: 3.25.67
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
   '@answerai/confluence-mcp@1.0.0':
     dependencies:
       '@modelcontextprotocol/sdk': 1.11.0
@@ -29917,6 +29944,12 @@ snapshots:
   '@mixmark-io/domino@2.2.0': {}
 
   '@modelcontextprotocol/sdk@0.5.0':
+    dependencies:
+      content-type: 1.0.5
+      raw-body: 3.0.0
+      zod: 3.25.67
+
+  '@modelcontextprotocol/sdk@0.6.0':
     dependencies:
       content-type: 1.0.5
       raw-body: 3.0.0
@@ -39123,7 +39156,7 @@ snapshots:
       '@typescript-eslint/parser': 5.62.0(eslint@7.32.0)(typescript@5.5.4)
       eslint: 7.32.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.8.7(eslint-plugin-import@2.31.0)(eslint@7.32.0)
+      eslint-import-resolver-typescript: 3.8.7(eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-typescript@3.8.7)(eslint@7.32.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@7.32.0)
       eslint-plugin-react: 7.37.4(eslint@7.32.0)
@@ -39187,7 +39220,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.8.7(eslint-plugin-import@2.31.0)(eslint@7.32.0):
+  eslint-import-resolver-typescript@3.8.7(eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.0(supports-color@8.1.1)
@@ -39228,14 +39261,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.7(eslint-plugin-import@2.31.0)(eslint@7.32.0))(eslint@7.32.0):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.7(eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0):
     dependencies:
       debug: 3.2.7(supports-color@5.5.0)
     optionalDependencies:
       '@typescript-eslint/parser': 5.62.0(eslint@8.37.0)(typescript@5.5.4)
       eslint: 7.32.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.8.7(eslint-plugin-import@2.31.0)(eslint@7.32.0)
+      eslint-import-resolver-typescript: 3.8.7(eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -39297,7 +39330,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 7.32.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.7(eslint-plugin-import@2.31.0)(eslint@7.32.0))(eslint@7.32.0)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.7(eslint-plugin-import@2.31.0(@typescript-eslint/parser@5.62.0(eslint@8.37.0)(typescript@5.5.4))(eslint@7.32.0))(eslint@7.32.0))(eslint@7.32.0)
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3

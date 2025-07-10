@@ -63,6 +63,13 @@ const config: Config = {
     ],
     plugins: [
         [
+            '@docusaurus/plugin-google-gtag',
+            {
+                trackingID: 'G-VD1X9LNG3N',
+                anonymizeIP: true
+            }
+        ],
+        [
             'docusaurus-plugin-openapi-docs',
             {
                 id: 'api', // plugin id
