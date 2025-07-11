@@ -2,12 +2,14 @@ import { Request, Response, NextFunction } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import apikeyService from '../../services/apikey'
+import { getPageAndLimitParams } from '../../utils/pagination'
 
 // Get api keys
 const getAllApiKeys = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const autoCreateNewKey = true
-        const apiResponse = await apikeyService.getAllApiKeys(req.user?.activeWorkspaceId, autoCreateNewKey)
+        const { page, limit } = getPageAndLimitParams(req)
+        const apiResponse = await apikeyService.getAllApiKeys(req.user?.activeWorkspaceId, autoCreateNewKey, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

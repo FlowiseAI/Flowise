@@ -2,10 +2,12 @@ import { Request, Response, NextFunction } from 'express'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import datasetService from '../../services/dataset'
 import { StatusCodes } from 'http-status-codes'
+import { getPageAndLimitParams } from '../../utils/pagination'
 
 const getAllDatasets = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await datasetService.getAllDatasets(req.user?.activeWorkspaceId)
+        const { page, limit } = getPageAndLimitParams(req)
+        const apiResponse = await datasetService.getAllDatasets(req.user?.activeWorkspaceId, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -17,7 +19,8 @@ const getDataset = async (req: Request, res: Response, next: NextFunction) => {
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: datasetService.getDataset - id not provided!`)
         }
-        const apiResponse = await datasetService.getDataset(req.params.id)
+        const { page, limit } = getPageAndLimitParams(req)
+        const apiResponse = await datasetService.getDataset(req.params.id, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
