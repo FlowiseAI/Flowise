@@ -58,7 +58,7 @@ class Custom_MCP implements INode {
     constructor() {
         this.label = 'Custom MCP'
         this.name = 'customMCP'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'Custom MCP Tool'
         this.icon = 'customMCP.png'
         this.category = 'Tools (MCP)'
@@ -82,6 +82,15 @@ class Custom_MCP implements INode {
                 type: 'asyncMultiOptions',
                 loadMethod: 'listActions',
                 refresh: true
+            },
+            {
+                label: 'Disable Cache',
+                name: 'disableCache',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                description:
+                    'If enabled, the node will not use the cache (array of actions) and will always force a re-initialization of the toolkit to fetch the actions. Note: This may increase resource usage.'
             }
         ]
         this.baseClasses = ['Tool']
@@ -158,7 +167,10 @@ class Custom_MCP implements INode {
         }
         const cacheKey = JSON.stringify({ workspaceId, canonicalConfig, sandbox })
 
-        if (Custom_MCP.toolkitCache.has(cacheKey)) {
+        // Check for disableCache flag
+        const disableCache = !!nodeData.inputs?.disableCache
+
+        if (!disableCache && Custom_MCP.toolkitCache.has(cacheKey)) {
             return Custom_MCP.toolkitCache.get(cacheKey)!.tools
         }
 
@@ -194,7 +206,10 @@ class Custom_MCP implements INode {
                 }
             }
 
-            Custom_MCP.toolkitCache.set(cacheKey, { toolkit, tools })
+            // Only set cache if not disabled
+            if (!disableCache) {
+                Custom_MCP.toolkitCache.set(cacheKey, { toolkit, tools })
+            }
 
             return tools as Tool[]
         } catch (error) {
