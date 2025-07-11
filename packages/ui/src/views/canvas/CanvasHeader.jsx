@@ -183,9 +183,17 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
         console.log('header commitId', commitId)
         setShowVersionSideDrawer(false)
         if (isAgentCanvas) {
-            navigate(`/agentcanvas/${chatflow.id}?commitId=${commitId}`)
+            if (commitId) {
+                navigate(`/agentcanvas/${chatflow.id}?commitId=${commitId}`)
+            } else {
+                navigate(`/agentcanvas/${chatflow.id}`)
+            }
         } else {
-            navigate(`/canvas/${chatflow.id}?commitId=${commitId}`)
+            if (commitId) {
+                navigate(`/canvas/${chatflow.id}?commitId=${commitId}`)
+            } else {
+                navigate(`/canvas/${chatflow.id}`)
+            }
         }
     }
 
@@ -425,7 +433,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     {gitVersioningEnabled && (
                         <>
                         {chatflow?.isDirty ? (
-                            <Chip label='You have unpublished changes' size='small' color='error' sx={{ mr: 2 }}/>
+                            <Chip label='Draft : Unpublished changes' color='success' sx={{ mr: 2 }}/>
                         ) : (
                             // if it is not dirty and there is a last published commit, show the last published commit id and mark it as readonly
                             chatflow?.lastPublishedCommit && (

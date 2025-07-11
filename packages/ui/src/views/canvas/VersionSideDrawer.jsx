@@ -32,6 +32,7 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
     const [isPublishing, setIsPublishing] = useState(false)
     const [menuAnchorEl, setMenuAnchorEl] = useState(null)
     const [selectedCommit, setSelectedCommit] = useState(null)
+    const [isDraftAvailable, setIsDraftAvailable] = useState(false)
 
     // const publishNewVersionApi = useApi(versioningApi.publishFlow)
     const getAllVersionsApi = useApi(versioningApi.getFlowVersions)
@@ -50,13 +51,10 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
     useEffect(() => {
         if (getAllVersionsApi.data) {
             setVersionHistory(getAllVersionsApi.data)
+            setIsDraftAvailable(getAllVersionsApi.data.draft)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllVersionsApi.data])
-
-    const navigateToEvaluationResult = (id) => {
-        // onSelectVersion(id)
-    }
 
     const closeAndRefreshAsNeeded = () => {
         onClickFunction(undefined)
@@ -100,8 +98,7 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                         )
                     }
                 })
-                // Refresh version list
-                getAllVersionsApi.request(dialogProps.id)
+                onSelectVersion(result.data.commitId)
             } else {
                 enqueueSnackbar({
                     message: result.error || 'Failed to publish flow to Git',
@@ -154,9 +151,40 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
         onSelectVersion(selectedCommit?.commitId)
     }
 
-    const handleMakeDraft = () => {
+    const handleMakeDraft = async () => {
         handleMenuClose()
-        // TODO: Implement make draft functionality
+        try {
+            const result = await versioningApi.makeDraft(dialogProps.id, selectedCommit?.commitId)
+            if (result.data?.isDirty === true) {
+                enqueueSnackbar({
+                    message: 'Draft created',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success', 
+                        autoHideDuration: 2000
+                    }
+                })
+            } else {
+                enqueueSnackbar({
+                    message: result.error || 'Failed to make draft', 
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'error',
+                        autoHideDuration: 2000
+                    }
+                })
+            }
+            onSelectVersion(undefined)
+        } catch (error) {
+            enqueueSnackbar({
+                message: 'Failed to make draft',
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    autoHideDuration: 2000
+                }
+            })
+        }
     }
 
     const handleCopyCommitId = () => {
@@ -350,7 +378,7 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                     <IconEye size={18} style={{ marginRight: 8 }} />
                     Show Commit
                 </MenuItem>
-                <MenuItem onClick={handleMakeDraft} disabled>
+                <MenuItem onClick={handleMakeDraft} disabled={isDraftAvailable}>
                     <IconFileText size={18} style={{ marginRight: 8 }} />
                     Make Draft
                 </MenuItem>

@@ -37,4 +37,20 @@ export class FlowVersionController {
             next(error)
         }
     }
+
+    public async makeDraft(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.params || !req.params.id || req.params.id === "undefined") {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'id not provided!')
+            }
+            if (!req.params || !req.params.commitId || req.params.commitId === "undefined") {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'commitId not provided!')
+            }
+            const service = new FlowVersionService()
+            const result = await service.makeDraft(req.params.id, req.params.commitId)
+            return res.status(StatusCodes.OK).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 } 

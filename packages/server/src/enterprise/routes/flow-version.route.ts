@@ -7,4 +7,7 @@ const flowVersionController = new FlowVersionController()
 router.post('/:id/publish', flowVersionController.publishFlow)
 router.get('/:id/versions', flowVersionController.getVersions)
 
+// MAKE DRAFT
+router.put('/:id/make-draft/:commitId', flowVersionController.makeDraft)
+
 export default router 

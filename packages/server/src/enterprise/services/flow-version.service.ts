@@ -6,6 +6,22 @@ import { StatusCodes } from 'http-status-codes'
 import * as https from 'https'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 
+interface CommitInfo {
+    commitId: string;
+    date: string;
+    message: string;
+    filePath: string;
+}
+
+interface VersionInfo {
+    repository: string;
+    branch: string;
+    draft: boolean;
+    filename: string;
+    commits: CommitInfo[];
+}
+
+
 export class FlowVersionService {
     private dataSource: DataSource
 
@@ -137,7 +153,7 @@ export class FlowVersionService {
      * Returns the commit history for a chatflow file in the active git repository.
      * @param chatflowId The ID of the chatflow
      */
-    public async getVersions(chatflowId: string): Promise<{ repository: string; branch: string; filename: string; commits: { commitId: string; date: string; message: string; filePath: string }[] }> {
+    public async getVersions(chatflowId: string): Promise<VersionInfo> {
         // 1. Retrieve the active GitConfig
         const gitConfig = await this.dataSource.getRepository(GitConfig).findOneBy({ isActive: true })
         if (!gitConfig) {
@@ -189,6 +205,7 @@ export class FlowVersionService {
                                 repository: `${owner}/${repo}`,
                                 branch,
                                 filename: fileName,
+                                draft: chatflow.isDirty || false,
                                 commits: commitsArray
                             })
                         } catch {
@@ -196,6 +213,7 @@ export class FlowVersionService {
                                 repository: `${owner}/${repo}`,
                                 branch,
                                 filename: fileName,
+                                draft: false,
                                 commits: []
                             })
                         }
@@ -203,6 +221,7 @@ export class FlowVersionService {
                         resolve({
                             repository: `${owner}/${repo}`,
                             branch,
+                            draft: false,
                             filename: fileName,
                             commits: []
                         })
@@ -212,6 +231,7 @@ export class FlowVersionService {
             req.on('error', () => resolve({
                 repository: `${owner}/${repo}`,
                 branch,
+                draft: false,
                 filename: fileName,
                 commits: []
             }))
@@ -281,5 +301,77 @@ export class FlowVersionService {
         })
     }
 
-    
+    public async makeDraft(chatflowId: string, commitId: string): Promise<ChatFlow> {
+        // 1. Retrieve the active GitConfig
+        const gitConfig = await this.dataSource.getRepository(GitConfig).findOneBy({ isActive: true })
+        if (!gitConfig) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'No active Git config found')
+        }
+
+        // 2. Retrieve the chatflow from the git repository
+        const chatflow = await this.getChatflowByCommitId(chatflowId, commitId)
+        if (!chatflow) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Chatflow not found')
+        }
+
+        // 3. fetch the currentchatflow from the database
+        const chatflowFromDb = await this.dataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
+        if (!chatflowFromDb) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Chatflow not found')
+        }
+
+        // 4. update the lastPublishedCommit and lastPublishedAt. 
+        // This is needed as the draft can be from any previous commit.
+        // we should never lose the last published commit and date. (most recent commit)
+        chatflow.lastPublishedCommit = chatflowFromDb.lastPublishedCommit
+        chatflow.lastPublishedAt = chatflowFromDb.lastPublishedAt
+        chatflow.isDirty = true
+        await this.dataSource.getRepository(ChatFlow).save(chatflow)
+        return chatflow
+    }
+
+    public async deleteChatflow(chatflowId: string): Promise<void> {
+        // 1. Retrieve the active GitConfig
+        const gitConfig = await this.dataSource.getRepository(GitConfig).findOneBy({ isActive: true })
+        if (!gitConfig) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'No active Git config found')
+        }
+
+        // 2. Retrieve the chatflow from the git repository
+        const chatflow = await this.dataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
+        if (!chatflow) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Chatflow not found')
+        }
+
+        // 3. delete the chatflow from the git repository
+        const fileName = `${chatflow.name}.json`
+        const owner = gitConfig.username
+        const repo = gitConfig.repository
+        const token = gitConfig.secret
+
+        // 4. delete the chatflow from the git repository
+        const options = {
+            hostname: 'api.github.com',
+            port: 443,
+            path: `/repos/${owner}/${repo}/contents/${encodeURIComponent(fileName)}`,
+            method: 'DELETE',
+            headers: {
+                'User-Agent': 'FlowiseAI',
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        }
+        const req = https.request(options, async (res) => {
+            if (res.statusCode === 204) {
+                // 5. delete the chatflow from the database
+                await this.dataSource.getRepository(ChatFlow).delete(chatflowId)
+            } else {
+                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to delete chatflow from git repository')
+            }
+        })
+        req.on('error', (error) => {
+            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Failed to delete chatflow from git repository: ${error.message}`)
+        })
+        req.end()
+    }
 } 
