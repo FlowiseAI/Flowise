@@ -890,7 +890,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         try {
             uploads = await handleFileUploads(uploads)
         } catch (error) {
-            handleError('Unable to upload documents')
+            handleError(error?.response?.data?.message || error?.message || 'An unexpected error occurred')
             return
         }
 
@@ -955,7 +955,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 }
             }
         } catch (error) {
-            handleError(error.response.data.message)
+            handleError(error?.response?.data?.message || error?.message || 'An unexpected error occurred')
             return
         }
     }
@@ -964,83 +964,107 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         const chatId = params.chatId
         const input = params.question
         params.streaming = true
-        await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
-            openWhenHidden: true,
-            method: 'POST',
-            body: JSON.stringify(params),
-            headers: {
-                'Content-Type': 'application/json',
-                'x-request-from': 'internal'
-            },
-            async onopen(response) {
-                if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
-                    //console.log('EventSource Open')
-                }
-            },
-            async onmessage(ev) {
-                const payload = JSON.parse(ev.data)
-                switch (payload.event) {
-                    case 'start':
-                        setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
-                        break
-                    case 'token':
-                        updateLastMessage(payload.data)
-                        break
-                    case 'sourceDocuments':
-                        updateLastMessageSourceDocuments(payload.data)
-                        break
-                    case 'usedTools':
-                        updateLastMessageUsedTools(payload.data)
-                        break
-                    case 'fileAnnotations':
-                        updateLastMessageFileAnnotations(payload.data)
-                        break
-                    case 'agentReasoning':
-                        updateLastMessageAgentReasoning(payload.data)
-                        break
-                    case 'agentFlowEvent':
-                        updateAgentFlowEvent(payload.data)
-                        break
-                    case 'agentFlowExecutedData':
-                        updateAgentFlowExecutedData(payload.data)
-                        break
-                    case 'artifacts':
-                        updateLastMessageArtifacts(payload.data)
-                        break
-                    case 'action':
-                        updateLastMessageAction(payload.data)
-                        break
-                    case 'nextAgent':
-                        updateLastMessageNextAgent(payload.data)
-                        break
-                    case 'nextAgentFlow':
-                        updateLastMessageNextAgentFlow(payload.data)
-                        break
-                    case 'metadata':
-                        updateMetadata(payload.data, input)
-                        break
-                    case 'error':
-                        updateErrorMessage(payload.data)
-                        break
-                    case 'abort':
-                        abortMessage(payload.data)
+        try {
+            await fetchEventSource(`${baseURL}/api/v1/internal-prediction/${chatflowid}`, {
+                openWhenHidden: true,
+                method: 'POST',
+                body: JSON.stringify(params),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-request-from': 'internal'
+                },
+                async onopen(response) {
+                    if (response.ok && response.headers.get('content-type') === EventStreamContentType) {
+                        //console.log('EventSource Open')
+                    } else {
+                        // Handle non-OK responses or wrong content types
+                        console.error('EventSource failed to open:', {
+                            status: response.status,
+                            statusText: response.statusText,
+                            contentType: response.headers.get('content-type')
+                        })
                         closeResponse()
-                        break
-                    case 'end':
-                        setLocalStorageChatflow(chatflowid, chatId)
-                        closeResponse()
-                        break
+                        throw new Error(`EventSource connection failed: ${response.status} ${response.statusText}`)
+                    }
+                },
+                async onmessage(ev) {
+                    try {
+                        const payload = JSON.parse(ev.data)
+                        switch (payload.event) {
+                            case 'start':
+                                setMessages((prevMessages) => [...prevMessages, { message: '', type: 'apiMessage' }])
+                                break
+                            case 'token':
+                                updateLastMessage(payload.data)
+                                break
+                            case 'sourceDocuments':
+                                updateLastMessageSourceDocuments(payload.data)
+                                break
+                            case 'usedTools':
+                                updateLastMessageUsedTools(payload.data)
+                                break
+                            case 'fileAnnotations':
+                                updateLastMessageFileAnnotations(payload.data)
+                                break
+                            case 'agentReasoning':
+                                updateLastMessageAgentReasoning(payload.data)
+                                break
+                            case 'agentFlowEvent':
+                                updateAgentFlowEvent(payload.data)
+                                break
+                            case 'agentFlowExecutedData':
+                                updateAgentFlowExecutedData(payload.data)
+                                break
+                            case 'artifacts':
+                                updateLastMessageArtifacts(payload.data)
+                                break
+                            case 'action':
+                                updateLastMessageAction(payload.data)
+                                break
+                            case 'nextAgent':
+                                updateLastMessageNextAgent(payload.data)
+                                break
+                            case 'nextAgentFlow':
+                                updateLastMessageNextAgentFlow(payload.data)
+                                break
+                            case 'metadata':
+                                updateMetadata(payload.data, input)
+                                break
+                            case 'error':
+                                updateErrorMessage(payload.data)
+                                break
+                            case 'abort':
+                                abortMessage(payload.data)
+                                closeResponse()
+                                break
+                            case 'end':
+                                setLocalStorageChatflow(chatflowid, chatId)
+                                closeResponse()
+                                break
+                            default:
+                                console.warn('Unknown event type received:', payload.event)
+                                break
+                        }
+                    } catch (error) {
+                        console.error('Error processing EventSource message:', error, 'Raw data:', ev.data)
+                        // Don't close the connection for a single malformed message
+                        // but log it for debugging
+                    }
+                },
+                async onclose() {
+                    closeResponse()
+                },
+                async onerror(err) {
+                    console.error('EventSource Error: ', err)
+                    closeResponse()
+                    // Don't throw the error as it can cause the chat to freeze
+                    // throw err
                 }
-            },
-            async onclose() {
-                closeResponse()
-            },
-            async onerror(err) {
-                console.error('EventSource Error: ', err)
-                closeResponse()
-                throw err
-            }
-        })
+            })
+        } catch (error) {
+            console.error('EventSource connection failed:', error)
+            handleError(error?.message || 'Failed to establish connection to the server')
+        }
     }
 
     const closeResponse = () => {
