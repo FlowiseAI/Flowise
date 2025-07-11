@@ -6,6 +6,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { DocumentStoreDTO } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
+import { getPageAndLimitParams } from '../../utils/pagination'
 
 const createDocumentStore = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -37,8 +38,17 @@ const createDocumentStore = async (req: Request, res: Response, next: NextFuncti
 
 const getAllDocumentStores = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await documentStoreService.getAllDocumentStores(req.user?.activeWorkspaceId)
-        return res.json(DocumentStoreDTO.fromEntities(apiResponse))
+        const { page, limit } = getPageAndLimitParams(req)
+
+        const apiResponse: any = await documentStoreService.getAllDocumentStores(req.user?.activeWorkspaceId, page, limit)
+        if (apiResponse?.total >= 0) {
+            return res.json({
+                total: apiResponse.total,
+                data: DocumentStoreDTO.fromEntities(apiResponse.data)
+            })
+        } else {
+            return res.json(DocumentStoreDTO.fromEntities(apiResponse))
+        }
     } catch (error) {
         next(error)
     }

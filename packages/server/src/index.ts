@@ -1,39 +1,39 @@
-import cookieParser from 'cookie-parser'
-import cors from 'cors'
 import express, { Request, Response } from 'express'
-import 'global-agent/bootstrap'
-import http from 'http'
 import path from 'path'
+import cors from 'cors'
+import http from 'http'
+import cookieParser from 'cookie-parser'
 import { DataSource, IsNull } from 'typeorm'
-import { AbortControllerPool } from './AbortControllerPool'
-import { CachePool } from './CachePool'
-import { ChatFlow } from './database/entities/ChatFlow'
+import { MODE, Platform } from './Interface'
+import { getNodeModulesPackagePath, getEncryptionKey } from './utils'
+import logger, { expressRequestLogger } from './utils/logger'
 import { getDataSource } from './DataSource'
-import { Organization, OrganizationStatus } from './enterprise/database/entities/organization.entity'
-import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
-import { Workspace } from './enterprise/database/entities/workspace.entity'
-import { LoggedInUser } from './enterprise/Interface.Enterprise'
+import { NodesPool } from './NodesPool'
+import { ChatFlow } from './database/entities/ChatFlow'
+import { CachePool } from './CachePool'
+import { AbortControllerPool } from './AbortControllerPool'
+import { RateLimiterManager } from './utils/rateLimit'
+import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
+import { Telemetry } from './utils/telemetry'
+import flowiseApiV1Router from './routes'
+import errorHandlerMiddleware from './middlewares/errors'
+import { WHITELIST_URLS } from './utils/constants'
 import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
 import { IdentityManager } from './IdentityManager'
-import { MODE, Platform } from './Interface'
+import { SSEStreamer } from './utils/SSEStreamer'
+import { validateAPIKey } from './utils/validateKey'
+import { LoggedInUser } from './enterprise/Interface.Enterprise'
 import { IMetricsProvider } from './Interface.Metrics'
-import { OpenTelemetry } from './metrics/OpenTelemetry'
 import { Prometheus } from './metrics/Prometheus'
-import errorHandlerMiddleware from './middlewares/errors'
-import { NodesPool } from './NodesPool'
+import { OpenTelemetry } from './metrics/OpenTelemetry'
 import { QueueManager } from './queue/QueueManager'
 import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
-import flowiseApiV1Router from './routes'
+import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
-import { getEncryptionKey, getNodeModulesPackagePath } from './utils'
+import { Workspace } from './enterprise/database/entities/workspace.entity'
+import { Organization, OrganizationStatus } from './enterprise/database/entities/organization.entity'
+import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
-import { WHITELIST_URLS } from './utils/constants'
-import logger, { expressRequestLogger } from './utils/logger'
-import { RateLimiterManager } from './utils/rateLimit'
-import { SSEStreamer } from './utils/SSEStreamer'
-import { Telemetry } from './utils/telemetry'
-import { getAPIKeyWorkspaceID, validateAPIKey } from './utils/validateKey'
-import { getAllowedIframeOrigins, getCorsOptions, sanitizeMiddleware } from './utils/XSS'
 import { StripeWebhooks } from './enterprise/webhooks/stripe'
 
 declare global {
@@ -222,62 +222,59 @@ export class App {
                                 return res.status(401).json({ error: 'Unauthorized Access' })
                             }
                         }
-                        const isKeyValidated = await validateAPIKey(req)
-                        if (!isKeyValidated) {
+
+                        const { isValid, workspaceId: apiKeyWorkSpaceId } = await validateAPIKey(req)
+                        if (!isValid) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
-                        const apiKeyWorkSpaceId = await getAPIKeyWorkspaceID(req)
-                        if (apiKeyWorkSpaceId) {
-                            // Find workspace
-                            const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
-                                where: { id: apiKeyWorkSpaceId }
-                            })
-                            if (!workspace) {
-                                return res.status(401).json({ error: 'Unauthorized Access' })
-                            }
 
-                            // Find owner role
-                            const ownerRole = await this.AppDataSource.getRepository(Role).findOne({
-                                where: { name: GeneralRole.OWNER, organizationId: IsNull() }
-                            })
-                            if (!ownerRole) {
-                                return res.status(401).json({ error: 'Unauthorized Access' })
-                            }
-
-                            // Find organization
-                            const activeOrganizationId = workspace.organizationId as string
-                            const org = await this.AppDataSource.getRepository(Organization).findOne({
-                                where: { id: activeOrganizationId }
-                            })
-                            if (!org) {
-                                return res.status(401).json({ error: 'Unauthorized Access' })
-                            }
-                            if (org.status == OrganizationStatus.PAST_DUE)
-                                return res.status(402).json({ error: 'Access denied. Your organization has past due payments.' })
-                            if (org.status == OrganizationStatus.UNDER_REVIEW)
-                                return res.status(403).json({ error: 'Access denied. Your organization is under review.' })
-                            const subscriptionId = org.subscriptionId as string
-                            const customerId = org.customerId as string
-                            const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
-                            const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
-
-                            // @ts-ignore
-                            req.user = {
-                                permissions: [...JSON.parse(ownerRole.permissions)],
-                                features,
-                                activeOrganizationId: activeOrganizationId,
-                                activeOrganizationSubscriptionId: subscriptionId,
-                                activeOrganizationCustomerId: customerId,
-                                activeOrganizationProductId: productId,
-                                isOrganizationAdmin: true,
-                                activeWorkspaceId: apiKeyWorkSpaceId,
-                                activeWorkspace: workspace.name,
-                                isApiKeyValidated: true
-                            }
-                            next()
-                        } else {
+                        // Find workspace
+                        const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
+                            where: { id: apiKeyWorkSpaceId }
+                        })
+                        if (!workspace) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
+
+                        // Find owner role
+                        const ownerRole = await this.AppDataSource.getRepository(Role).findOne({
+                            where: { name: GeneralRole.OWNER, organizationId: IsNull() }
+                        })
+                        if (!ownerRole) {
+                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        }
+
+                        // Find organization
+                        const activeOrganizationId = workspace.organizationId as string
+                        const org = await this.AppDataSource.getRepository(Organization).findOne({
+                            where: { id: activeOrganizationId }
+                        })
+                        if (!org) {
+                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        }
+                        if (org.status == OrganizationStatus.PAST_DUE)
+                            return res.status(402).json({ error: 'Access denied. Your organization has past due payments.' })
+                        if (org.status == OrganizationStatus.UNDER_REVIEW)
+                            return res.status(403).json({ error: 'Access denied. Your organization is under review.' })
+                        const subscriptionId = org.subscriptionId as string
+                        const customerId = org.customerId as string
+                        const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
+                        const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
+
+                        // @ts-ignore
+                        req.user = {
+                            permissions: [...JSON.parse(ownerRole.permissions)],
+                            features,
+                            activeOrganizationId: activeOrganizationId,
+                            activeOrganizationSubscriptionId: subscriptionId,
+                            activeOrganizationCustomerId: customerId,
+                            activeOrganizationProductId: productId,
+                            isOrganizationAdmin: true,
+                            activeWorkspaceId: apiKeyWorkSpaceId!,
+                            activeWorkspace: workspace.name,
+                            isApiKeyValidated: true
+                        }
+                        next()
                     }
                 } else {
                     return res.status(401).json({ error: 'Unauthorized Access' })
