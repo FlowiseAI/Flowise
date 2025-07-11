@@ -302,6 +302,33 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                 <>
                     <Box sx={{ width: 400, p: 2, height: '100%' }}>
                         <Box sx={{ position: 'relative' }}>
+                            <Box sx={{ mb: 3, borderLeft: '1px solid #d0d7de', }}>
+                                {isDraftAvailable && (
+                                    <>
+                                        <Typography variant="subtitle2" sx={{ color: '#888', mb: 1, ml: 1, mr: 1, fontWeight: 900 }}>
+                                            Unpublished Changes
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1, ml: 2, position: 'relative', 
+                                            border: '1px solid #d0d7de', p: 2, borderRadius: 2, backgroundColor: '#e3f2fd', borderLeft: '1px solid #d0d7de' }}>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                    {'Current Draft'}
+                                                </Typography>
+                                            </Box>
+                                            <Tooltip title="Draft actions">
+                                                <span>
+                                                    <IconButton
+                                                        size="icon"
+                                                        onClick={(e) => handleMenuClick(e, 'draft')}
+                                                    >
+                                                        <IconDotsVertical size={20} />
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                        </Box>
+                                    </>
+                                )}
+                            </Box>
                             {Object.entries(grouped).map(([date, commits]) => (
                                 <Box key={date} sx={{ mb: 3, borderLeft: '1px solid #d0d7de', }}>
                                     <Typography variant="subtitle2" sx={{ color: '#888', mb: 1, ml: 1, mr: 1, fontWeight: 900 }}>
@@ -374,20 +401,20 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                     horizontal: 'right'
                 }}
             >
-                <MenuItem onClick={handleShowCommit}>
+                {<MenuItem onClick={handleShowCommit}>
                     <IconEye size={18} style={{ marginRight: 8 }} />
                     Show Commit
-                </MenuItem>
-                <MenuItem onClick={handleMakeDraft} disabled={isDraftAvailable}>
+                </MenuItem>}
+                <MenuItem onClick={handleMakeDraft} disabled={isDraftAvailable || selectedCommit === 'draft'}>
                     <IconFileText size={18} style={{ marginRight: 8 }} />
                     Make Draft
                 </MenuItem>
                 <Divider sx={{ my: 0.5 }} />
-                <MenuItem onClick={handleCopyCommitId}>
+                <MenuItem onClick={handleCopyCommitId} disabled={selectedCommit === 'draft'}>
                     <IconCopy size={18} style={{ marginRight: 8 }} />
                     Copy Commit ID
                 </MenuItem>
-                <MenuItem onClick={handleViewInGithub}>
+                <MenuItem onClick={handleViewInGithub} disabled={selectedCommit === 'draft'}>
                     <IconBrandGithub size={18} style={{ marginRight: 8 }} />
                     View in Github
                 </MenuItem>
