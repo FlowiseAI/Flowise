@@ -5,8 +5,10 @@ import { User } from '../../database/entities/User'
 export const findOrCreateDefaultChatflowsForUser = async (AppDataSource: DataSource, user: User) => {
     if (!user) return
 
-    // If user already has a defaultChatflowId, return early
-    if (user.defaultChatflowId) return
+    // If user already has a defaultChatflowId, return it
+    if (user.defaultChatflowId) {
+        return user.defaultChatflowId
+    }
 
     const rawIds = process.env.INITIAL_CHATFLOW_IDS ?? ''
     const ids = rawIds
@@ -14,7 +16,9 @@ export const findOrCreateDefaultChatflowsForUser = async (AppDataSource: DataSou
         .map((id) => id.trim())
         .filter(Boolean)
 
-    if (!ids.length) return
+    if (!ids.length) {
+        return
+    }
 
     // Only use the first ID from the list
     const firstId = ids[0]
@@ -41,7 +45,7 @@ export const findOrCreateDefaultChatflowsForUser = async (AppDataSource: DataSou
             }
             await queryRunner.commitTransaction()
             await queryRunner.release()
-            return
+            return existingChatflow.id
         }
 
         // Fetch the template for the first ID
@@ -71,13 +75,15 @@ export const findOrCreateDefaultChatflowsForUser = async (AppDataSource: DataSou
             if (newChatflowId) {
                 // Update the user's defaultChatflowId
                 await userRepo.update(user.id, { defaultChatflowId: newChatflowId })
+                await queryRunner.commitTransaction()
+                return newChatflowId
             }
         }
 
         await queryRunner.commitTransaction()
     } catch (err) {
         await queryRunner.rollbackTransaction()
-        console.error('[findOrCreateDefaultChatflowsForUser] Error in transaction:', err)
+        console.error('Error creating default chatflows for user:', err)
     } finally {
         await queryRunner.release()
     }
