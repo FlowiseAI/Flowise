@@ -52,10 +52,13 @@ class Custom_MCP implements INode {
     credential: INodeParams
     inputs: INodeParams[]
 
+    // This cache is shared across all nodes with the SAME logical configuration.
+    static toolkitCache: Map<string, { toolkit: MCPToolkit; tools: Tool[] }> = new Map()
+
     constructor() {
         this.label = 'Custom MCP'
         this.name = 'customMCP'
-        this.version = 1.1
+        this.version = 1.2
         this.type = 'Custom MCP Tool'
         this.icon = 'customMCP.png'
         this.category = 'Tools (MCP)'
@@ -79,6 +82,15 @@ class Custom_MCP implements INode {
                 type: 'asyncMultiOptions',
                 loadMethod: 'listActions',
                 refresh: true
+            },
+            {
+                label: 'Disable Cache',
+                name: 'disableCache',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                description:
+                    'If enabled, the node will not use the cache (array of actions) and will always force a re-initialization of the toolkit to fetch the actions. Note: This may increase resource usage.'
             }
         ]
         this.baseClasses = ['Tool']
@@ -140,6 +152,28 @@ class Custom_MCP implements INode {
             sandbox['$vars'] = prepareSandboxVars(variables)
         }
 
+        // Get the workspaceId from the options object for multi-tenant isolation.
+        const workspaceId = options?.searchOptions?.workspaceId?._value
+
+        // Create a canonical cache key by parsing and re-stringifying the JSON config.
+        // This makes the cache immune to formatting changes (spaces, newlines, etc.).
+        let canonicalConfig
+        try {
+            // Try to parse the config to remove formatting.
+            canonicalConfig = JSON.parse(mcpServerConfig)
+        } catch (e) {
+            // If parsing fails (e.g., invalid JSON), use the raw string as a fallback.
+            canonicalConfig = mcpServerConfig
+        }
+        const cacheKey = JSON.stringify({ workspaceId, canonicalConfig, sandbox })
+
+        // Check for disableCache flag
+        const disableCache = !!nodeData.inputs?.disableCache
+
+        if (!disableCache && Custom_MCP.toolkitCache.has(cacheKey)) {
+            return Custom_MCP.toolkitCache.get(cacheKey)!.tools
+        }
+
         try {
             let serverParams
             if (typeof mcpServerConfig === 'object') {
@@ -161,6 +195,21 @@ class Custom_MCP implements INode {
             await toolkit.initialize()
 
             const tools = toolkit.tools ?? []
+
+            // After initializing a new toolkit, clear any stale actions
+            // from the previous configuration to prevent UI inconsistencies.
+            const availableToolNames = new Set(tools.map((t) => t.name))
+            const selectedActions = nodeData.inputs?.mcpActions
+            if (Array.isArray(selectedActions) && selectedActions.some((action) => !availableToolNames.has(action))) {
+                if (nodeData.inputs) {
+                    nodeData.inputs.mcpActions = []
+                }
+            }
+
+            // Only set cache if not disabled
+            if (!disableCache) {
+                Custom_MCP.toolkitCache.set(cacheKey, { toolkit, tools })
+            }
 
             return tools as Tool[]
         } catch (error) {
