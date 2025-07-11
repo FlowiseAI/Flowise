@@ -3,6 +3,8 @@ import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { ChatOpenAI as LangchainChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 
+const serverCredentialsExists = !!process.env.CLOUDFLARE_ACCOUNT_ID && !!process.env.CLOUDFLARE_API_KEY
+
 class ChatCloudflareWorkersAI_ChatModels implements INode {
     label: string
     name: string
@@ -29,7 +31,7 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
             name: 'credential',
             type: 'credential',
             credentialNames: ['cloudflareWorkersAI'],
-            optional: false,
+            optional: serverCredentialsExists,
             description: 'Cloudflare Workers AI credential.'
         }
         this.inputs = [
@@ -68,8 +70,8 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const apiKey = getCredentialParam('cloudflareWorkersAIKey', credentialData, nodeData)
-        const accountId = getCredentialParam('cloudflareWorkersAccountID', credentialData, nodeData)
+        const apiKey = process.env.CLOUDFLARE_API_KEY ?? getCredentialParam('cloudflareWorkersAIKey', credentialData, nodeData)
+        const accountId = process.env.CLOUDFLARE_ACCOUNT_ID ?? getCredentialParam('cloudflareWorkersAccountID', credentialData, nodeData)
         const modelName = nodeData.inputs?.modelName as string
         const streaming = nodeData.inputs?.streaming as boolean
         const temperature = nodeData.inputs?.temperature as string
