@@ -20,7 +20,7 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatCloudflareWorkersAI'
         this.name = 'chatCloudflareWorkersAI'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'ChatCloudflareWorkersAI'
         this.icon = 'cloudflare.svg'
         this.category = 'Chat Models'
@@ -40,7 +40,7 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: '@cf/google/gemma-3-12b-it'
+                default: '@cf/meta/llama-4-scout-17b-16e-instruct'
             },
             {
                 label: 'Temperature',
@@ -49,6 +49,14 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
                 step: 0.1,
                 default: 0.7,
                 optional: true
+            },
+            {
+                label: 'Streaming',
+                name: 'streaming',
+                type: 'boolean',
+                default: true,
+                optional: true,
+                additionalParams: true
             },
             {
                 label: 'Max Tokens',
