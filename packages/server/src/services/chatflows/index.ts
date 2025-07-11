@@ -109,7 +109,7 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
                 const chatbotConfig = JSON.parse(chatflow.chatbotConfig)
                 if (chatbotConfig.gitConfig) {
                     // delete the chatflow from the git repository
-                    await flowVersionService.deleteChatflowByName(chatflow.name)
+                    await flowVersionService.deleteChatflowById(chatflowId)
                 }
             }
         }

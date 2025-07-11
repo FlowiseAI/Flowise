@@ -5,6 +5,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import * as https from 'https'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { Workspace } from '../database/entities/workspace.entity'
 
 interface CommitInfo {
     commitId: string;
@@ -21,13 +22,39 @@ interface VersionInfo {
     commits: CommitInfo[];
 }
 
-
 export class FlowVersionService {
     private dataSource: DataSource
 
     constructor() {
         const appServer = getRunningExpressApp()
         this.dataSource = appServer.AppDataSource
+    }
+
+    /**
+     * Constructs the file path for a chatflow based on workspace and chatflow information
+     * @param chatflowId The ID of the chatflow
+     * @returns Promise<string> The constructed file path
+     */
+    private async constructFilePath(chatflowId: string): Promise<string> {
+        // Get the chatflow to find workspaceId
+        const chatflow = await this.dataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
+        if (!chatflow) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Chatflow not found')
+        }
+
+        if (!chatflow.workspaceId) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Chatflow has no workspace assigned')
+        }
+
+        // Get the workspace to find workspace name
+        const workspace = await this.dataSource.getRepository(Workspace).findOneBy({ id: chatflow.workspaceId })
+        if (!workspace) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Workspace not found')
+        }
+
+        // Construct file path: workspaceId_workspaceName/chatflowId/flow.json
+        const workspacePath = `${chatflow.workspaceId}_${workspace.name.replace(/[^a-zA-Z0-9-_]/g, '_')}`
+        return `${workspacePath}/${chatflowId}/flow.json`
     }
 
     /**
@@ -84,8 +111,8 @@ export class FlowVersionService {
             return { success: false, error: 'Chatflow not found' }
         }
 
-        // 3. Prepare file content and name
-        const fileName = `${chatflow.name}.json`
+        // 3. Prepare file content and construct file path
+        const fileName = await this.constructFilePath(chatflowId)
         const fileContent = JSON.stringify(chatflow, null, 2)
         const branch = gitConfig.branchName || 'main'
         const owner = gitConfig.username
@@ -204,7 +231,7 @@ export class FlowVersionService {
         }
 
         // 3. Prepare file name and repo info
-        const fileName = `${chatflow.name}.json`
+        const fileName = await this.constructFilePath(chatflowId)
         const branch = gitConfig.branchName || 'main'
         const owner = gitConfig.username
         const repo = gitConfig.repository
@@ -288,19 +315,13 @@ export class FlowVersionService {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'No active Git config found')
         }
 
-        // 2. Retrieve the chatflow to get the filename
-        const chatflow = await this.dataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
-        if (!chatflow) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Chatflow not found')
-        }
-
-        // 3. Prepare file name and repo info
-        const fileName = `${chatflow.name}.json`
+        // 2. Construct file path
+        const fileName = await this.constructFilePath(chatflowId)
         const owner = gitConfig.username
         const repo = gitConfig.repository
         const token = gitConfig.secret
 
-        // 4. Fetch the specific version of the file from GitHub API
+        // 3. Fetch the specific version of the file from GitHub API
         return new Promise((resolve, reject) => {
             const options = {
                 hostname: 'api.github.com',
@@ -367,15 +388,19 @@ export class FlowVersionService {
         return chatflow
     }
     
-    public async deleteChatflowByName(chatflowName: string): Promise<void> {
+    /**
+     * Deletes a chatflow from the git repository by chatflowId
+     * @param chatflowId The ID of the chatflow to delete
+     */
+    public async deleteChatflowById(chatflowId: string): Promise<void> {
         // 1. Retrieve the active GitConfig
         const gitConfig = await this.dataSource.getRepository(GitConfig).findOneBy({ isActive: true })
         if (!gitConfig) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'No active Git config found')
         }
 
-        // 2. gather git config info
-        const fileName = `${chatflowName}.json`
+        // 2. Construct file path
+        const fileName = await this.constructFilePath(chatflowId)
         const branch = gitConfig.branchName || 'main'
         const owner = gitConfig.username
         const repo = gitConfig.repository

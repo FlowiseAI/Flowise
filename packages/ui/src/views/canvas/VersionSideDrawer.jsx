@@ -9,6 +9,8 @@ import versioningApi from '@/api/flowversion'
 import { useDispatch } from 'react-redux'
 import GitCommitDialog from '@/ui-component/dialog/GitCommitDialog'
 import { IconGitBranch, IconBrandGithub } from '@tabler/icons-react'
+import { IconBrandGit } from '@tabler/icons-react'
+import { IconGitCommit } from '@tabler/icons-react'
 
 // VersionHistory type structure:
 // {
@@ -263,10 +265,10 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                         m: 1,
                         p: 1
                     }}
-                    startIcon={<IconGitBranch />}
+                    startIcon={<IconGitCommit size={24} style={{ marginRight: 4 }} />}
                     onClick={publishNewVersion}
                 >
-                    {dialogProps?.isDirty ? 'Publish' : 'Nothing to publish'}
+                    {dialogProps?.isDirty ? 'Commit' : 'Nothing to Commit'}
                 </Button>
             )}
             <Divider />
@@ -274,11 +276,18 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                 flexWrap: 'wrap', m: 1, p:1, borderBottom: '1px solid #d0d7de', background: '#f6f8fa' }}>
                 <Typography
                     variant="caption"
-                    sx={{ fontWeight: 900, mr: 0.5, fontFamily: 'monospace' }}
+                    sx={{ 
+                        background: '#e3f2fd',
+                        color: '#1976d2',
+                        borderRadius: 2,
+                        fontWeight: 900, mr: 0.5, 
+                        fontFamily: 'monospace', alignItems: 'center', 
+                        display: 'flex', flexDirection: 'row',
+                        px: 1,
+                        py: 0.5,
+                    }}
                 >
-                    {versionHistory.repository}
-                    /
-                    {versionHistory.filename}
+                    <IconBrandGit size={16} style={{ marginRight: 4 }} />{versionHistory.repository}
                 </Typography>
                 <Box
                     component="span"
@@ -286,15 +295,17 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                         background: '#e3f2fd',
                         color: '#1976d2',
                         borderRadius: 2,
-                        px: 1.2,
-                        py: 0.2,
+                        px: 1,
+                        py: 0.5,
                         fontWeight: 700,
                         fontSize: '0.9em',
                         ml: 1,
-                        display: 'inline-block'
+                        alignItems: 'center',
+                        display: 'flex',
+                        flexDirection: 'row'
                     }}
                 >
-                    {versionHistory.branch}
+                    <IconGitBranch size={16} style={{ marginRight: 4 }} />{versionHistory.branch}
                 </Box>
             </Box>
             {/* if commitId is provided, highlight the commit in the list and have a highlighted left border */}
