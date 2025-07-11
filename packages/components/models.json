@@ -1,6 +1,340 @@
 {
     "chat": [
         {
+            "name": "chatCloudflareWorkersAI",
+            "models": [
+                {
+                    "label": "@cf/qwen/qwen1.5-0.5b-chat",
+                    "name": "@cf/qwen/qwen1.5-0.5b-chat",
+                    "description": "Qwen1.5 is the improved version of Qwen, the large language model series developed by Alibaba Cloud.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/google/gemma-2b-it-lora",
+                    "name": "@cf/google/gemma-2b-it-lora",
+                    "description": "This is a Gemma-2B base model that Cloudflare dedicates for inference with LoRA adapters. Gemma is a family of lightweight, state-of-the-art open models from Google, built from the same research and technology used to create the Gemini models.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@hf/nexusflow/starling-lm-7b-beta",
+                    "name": "@hf/nexusflow/starling-lm-7b-beta",
+                    "description": "We introduce Starling-LM-7B-beta, an open large language model (LLM) trained by Reinforcement Learning from AI Feedback (RLAIF). Starling-LM-7B-beta is trained from Openchat-3.5-0106 with our new reward model Nexusflow/Starling-RM-34B and policy optimization method Fine-Tuning Language Models from Human Preferences (PPO).",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/meta/llama-3-8b-instruct",
+                    "name": "@cf/meta/llama-3-8b-instruct",
+                    "description": "Generation over generation, Meta Llama 3 demonstrates state-of-the-art performance on a wide range of industry benchmarks and offers new capabilities, including improved reasoning.",
+                    "input_cost": 0.00028,
+                    "output_cost": 0.00083
+                },
+                {
+                    "label": "@cf/meta/llama-3.2-3b-instruct",
+                    "name": "@cf/meta/llama-3.2-3b-instruct",
+                    "description": "The Llama 3.2 instruction-tuned text only models are optimized for multilingual dialogue use cases, including agentic retrieval and summarization tasks.",
+                    "input_cost": 0.000051,
+                    "output_cost": 0.00034
+                },
+                {
+                    "label": "@hf/thebloke/llamaguard-7b-awq",
+                    "name": "@hf/thebloke/llamaguard-7b-awq",
+                    "description": "Llama Guard is a model for classifying the safety of LLM prompts and responses, using a taxonomy of safety risks.\n",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@hf/thebloke/neural-chat-7b-v3-1-awq",
+                    "name": "@hf/thebloke/neural-chat-7b-v3-1-awq",
+                    "description": "This model is a fine-tuned 7B parameter LLM on the Intel Gaudi 2 processor from the mistralai/Mistral-7B-v0.1 on the open source dataset Open-Orca/SlimOrca.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/meta/llama-guard-3-8b",
+                    "name": "@cf/meta/llama-guard-3-8b",
+                    "description": "Llama Guard 3 is a Llama-3.1-8B pretrained model, fine-tuned for content safety classification. Similar to previous versions, it can be used to classify content in both LLM inputs (prompt classification) and in LLM responses (response classification). It acts as an LLM – it generates text in its output that indicates whether a given prompt or response is safe or unsafe, and if unsafe, it also lists the content categories violated.",
+                    "input_cost": 0.00048,
+                    "output_cost": 0.00003
+                },
+                {
+                    "label": "@cf/meta/llama-2-7b-chat-fp16",
+                    "name": "@cf/meta/llama-2-7b-chat-fp16",
+                    "description": "Full precision (fp16) generative text model with 7 billion parameters from Meta",
+                    "input_cost": 0.00056,
+                    "output_cost": 0.0067
+                },
+                {
+                    "label": "@cf/mistral/mistral-7b-instruct-v0.1",
+                    "name": "@cf/mistral/mistral-7b-instruct-v0.1",
+                    "description": "Instruct fine-tuned version of the Mistral-7b generative text model with 7 billion parameters",
+                    "input_cost": 0.00011,
+                    "output_cost": 0.00019
+                },
+                {
+                    "label": "@cf/mistral/mistral-7b-instruct-v0.2-lora",
+                    "name": "@cf/mistral/mistral-7b-instruct-v0.2-lora",
+                    "description": "The Mistral-7B-Instruct-v0.2 Large Language Model (LLM) is an instruct fine-tuned version of the Mistral-7B-v0.2.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/tinyllama/tinyllama-1.1b-chat-v1.0",
+                    "name": "@cf/tinyllama/tinyllama-1.1b-chat-v1.0",
+                    "description": "The TinyLlama project aims to pretrain a 1.1B Llama model on 3 trillion tokens. This is the chat model finetuned on top of TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@hf/mistral/mistral-7b-instruct-v0.2",
+                    "name": "@hf/mistral/mistral-7b-instruct-v0.2",
+                    "description": "The Mistral-7B-Instruct-v0.2 Large Language Model (LLM) is an instruct fine-tuned version of the Mistral-7B-v0.2. Mistral-7B-v0.2 has the following changes compared to Mistral-7B-v0.1: 32k context window (vs 8k context in v0.1), rope-theta = 1e6, and no Sliding-Window Attention.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/fblgit/una-cybertron-7b-v2-bf16",
+                    "name": "@cf/fblgit/una-cybertron-7b-v2-bf16",
+                    "description": "Cybertron 7B v2 is a 7B MistralAI based model, best on it's series. It was trained with SFT, DPO and UNA (Unified Neural Alignment) on multiple datasets.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+                    "name": "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b",
+                    "description": "DeepSeek-R1-Distill-Qwen-32B is a model distilled from DeepSeek-R1 based on Qwen2.5. It outperforms OpenAI-o1-mini across various benchmarks, achieving new state-of-the-art results for dense models.",
+                    "input_cost": 0.0005,
+                    "output_cost": 0.0049
+                },
+                {
+                    "label": "@cf/thebloke/discolm-german-7b-v1-awq",
+                    "name": "@cf/thebloke/discolm-german-7b-v1-awq",
+                    "description": "DiscoLM German 7b is a Mistral-based large language model with a focus on German-language applications. AWQ is an efficient, accurate and blazing-fast low-bit weight quantization method, currently supporting 4-bit quantization.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/meta/llama-2-7b-chat-int8",
+                    "name": "@cf/meta/llama-2-7b-chat-int8",
+                    "description": "Quantized (int8) generative text model with 7 billion parameters from Meta",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/meta/llama-3.1-8b-instruct-fp8",
+                    "name": "@cf/meta/llama-3.1-8b-instruct-fp8",
+                    "description": "Llama 3.1 8B quantized to FP8 precision",
+                    "input_cost": 0.00015,
+                    "output_cost": 0.00029
+                },
+                {
+                    "label": "@hf/thebloke/mistral-7b-instruct-v0.1-awq",
+                    "name": "@hf/thebloke/mistral-7b-instruct-v0.1-awq",
+                    "description": "Mistral 7B Instruct v0.1 AWQ is an efficient, accurate and blazing-fast low-bit weight quantized Mistral variant.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/qwen/qwen1.5-7b-chat-awq",
+                    "name": "@cf/qwen/qwen1.5-7b-chat-awq",
+                    "description": "Qwen1.5 is the improved version of Qwen, the large language model series developed by Alibaba Cloud. AWQ is an efficient, accurate and blazing-fast low-bit weight quantization method, currently supporting 4-bit quantization.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/meta/llama-3.2-1b-instruct",
+                    "name": "@cf/meta/llama-3.2-1b-instruct",
+                    "description": "The Llama 3.2 instruction-tuned text only models are optimized for multilingual dialogue use cases, including agentic retrieval and summarization tasks.",
+                    "input_cost": 0.000027,
+                    "output_cost": 0.0002
+                },
+                {
+                    "label": "@hf/thebloke/llama-2-13b-chat-awq",
+                    "name": "@hf/thebloke/llama-2-13b-chat-awq",
+                    "description": "Llama 2 13B Chat AWQ is an efficient, accurate and blazing-fast low-bit weight quantized Llama 2 variant.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@hf/thebloke/deepseek-coder-6.7b-base-awq",
+                    "name": "@hf/thebloke/deepseek-coder-6.7b-base-awq",
+                    "description": "Deepseek Coder is composed of a series of code language models, each trained from scratch on 2T tokens, with a composition of 87% code and 13% natural language in both English and Chinese.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/meta-llama/llama-2-7b-chat-hf-lora",
+                    "name": "@cf/meta-llama/llama-2-7b-chat-hf-lora",
+                    "description": "This is a Llama2 base model that Cloudflare dedicated for inference with LoRA adapters. Llama 2 is a collection of pretrained and fine-tuned generative text models ranging in scale from 7 billion to 70 billion parameters. This is the repository for the 7B fine-tuned model, optimized for dialogue use cases and converted for the Hugging Face Transformers format. ",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+                    "name": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+                    "description": "Llama 3.3 70B quantized to fp8 precision, optimized to be faster.",
+                    "input_cost": 0.00029,
+                    "output_cost": 0.0022
+                },
+                {
+                    "label": "@hf/thebloke/openhermes-2.5-mistral-7b-awq",
+                    "name": "@hf/thebloke/openhermes-2.5-mistral-7b-awq",
+                    "description": "OpenHermes 2.5 Mistral 7B is a state of the art Mistral Fine-tune, a continuation of OpenHermes 2 model, which trained on additional code datasets.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@hf/thebloke/deepseek-coder-6.7b-instruct-awq",
+                    "name": "@hf/thebloke/deepseek-coder-6.7b-instruct-awq",
+                    "description": "Deepseek Coder is composed of a series of code language models, each trained from scratch on 2T tokens, with a composition of 87% code and 13% natural language in both English and Chinese.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/qwen/qwen2.5-coder-32b-instruct",
+                    "name": "@cf/qwen/qwen2.5-coder-32b-instruct",
+                    "description": "Qwen2.5-Coder is the latest series of Code-Specific Qwen large language models (formerly known as CodeQwen). As of now, Qwen2.5-Coder has covered six mainstream model sizes, 0.5, 1.5, 3, 7, 14, 32 billion parameters, to meet the needs of different developers. Qwen2.5-Coder brings the following improvements upon CodeQwen1.5:",
+                    "input_cost": 0.00066,
+                    "output_cost": 0.001
+                },
+                {
+                    "label": "@cf/deepseek-ai/deepseek-math-7b-instruct",
+                    "name": "@cf/deepseek-ai/deepseek-math-7b-instruct",
+                    "description": "DeepSeekMath-Instruct 7B is a mathematically instructed tuning model derived from DeepSeekMath-Base 7B. DeepSeekMath is initialized with DeepSeek-Coder-v1.5 7B and continues pre-training on math-related tokens sourced from Common Crawl, together with natural language and code data for 500B tokens.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/tiiuae/falcon-7b-instruct",
+                    "name": "@cf/tiiuae/falcon-7b-instruct",
+                    "description": "Falcon-7B-Instruct is a 7B parameters causal decoder-only model built by TII based on Falcon-7B and finetuned on a mixture of chat/instruct datasets.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+                    "name": "@hf/nousresearch/hermes-2-pro-mistral-7b",
+                    "description": "Hermes 2 Pro on Mistral 7B is the new flagship 7B Hermes! Hermes 2 Pro is an upgraded, retrained version of Nous Hermes 2, consisting of an updated and cleaned version of the OpenHermes 2.5 Dataset, as well as a newly introduced Function Calling and JSON Mode dataset developed in-house.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/meta/llama-3.1-8b-instruct-awq",
+                    "name": "@cf/meta/llama-3.1-8b-instruct-awq",
+                    "description": "Quantized (int4) generative text model with 8 billion parameters from Meta.\n",
+                    "input_cost": 0.00012,
+                    "output_cost": 0.00027
+                },
+                {
+                    "label": "@hf/thebloke/zephyr-7b-beta-awq",
+                    "name": "@hf/thebloke/zephyr-7b-beta-awq",
+                    "description": "Zephyr 7B Beta AWQ is an efficient, accurate and blazing-fast low-bit weight quantized Zephyr model variant.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/google/gemma-7b-it-lora",
+                    "name": "@cf/google/gemma-7b-it-lora",
+                    "description": "  This is a Gemma-7B base model that Cloudflare dedicates for inference with LoRA adapters. Gemma is a family of lightweight, state-of-the-art open models from Google, built from the same research and technology used to create the Gemini models.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/qwen/qwen1.5-1.8b-chat",
+                    "name": "@cf/qwen/qwen1.5-1.8b-chat",
+                    "description": "Qwen1.5 is the improved version of Qwen, the large language model series developed by Alibaba Cloud.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+                    "name": "@cf/mistralai/mistral-small-3.1-24b-instruct",
+                    "description": "Building upon Mistral Small 3 (2501), Mistral Small 3.1 (2503) adds state-of-the-art vision understanding and enhances long context capabilities up to 128k tokens without compromising text performance. With 24 billion parameters, this model achieves top-tier capabilities in both text and vision tasks.",
+                    "input_cost": 0.00035,
+                    "output_cost": 0.00056
+                },
+                {
+                    "label": "@cf/meta/llama-3-8b-instruct-awq",
+                    "name": "@cf/meta/llama-3-8b-instruct-awq",
+                    "description": "Quantized (int4) generative text model with 8 billion parameters from Meta.",
+                    "input_cost": 0.00012,
+                    "output_cost": 0.00027
+                },
+                {
+                    "label": "@cf/meta/llama-3.2-11b-vision-instruct",
+                    "name": "@cf/meta/llama-3.2-11b-vision-instruct",
+                    "description": " The Llama 3.2-Vision instruction-tuned models are optimized for visual recognition, image reasoning, captioning, and answering general questions about an image.",
+                    "input_cost": 0.000049,
+                    "output_cost": 0.00068
+                },
+                {
+                    "label": "@cf/defog/sqlcoder-7b-2",
+                    "name": "@cf/defog/sqlcoder-7b-2",
+                    "description": "This model is intended to be used by non-technical users to understand data inside their SQL databases. ",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/microsoft/phi-2",
+                    "name": "@cf/microsoft/phi-2",
+                    "description": "Phi-2 is a Transformer-based model with a next-word prediction objective, trained on 1.4T tokens from multiple passes on a mixture of Synthetic and Web datasets for NLP and coding.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@hf/meta-llama/meta-llama-3-8b-instruct",
+                    "name": "@hf/meta-llama/meta-llama-3-8b-instruct",
+                    "description": "Generation over generation, Meta Llama 3 demonstrates state-of-the-art performance on a wide range of industry benchmarks and offers new capabilities, including improved reasoning.\t",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@hf/google/gemma-7b-it",
+                    "name": "@hf/google/gemma-7b-it",
+                    "description": "Gemma is a family of lightweight, state-of-the-art open models from Google, built from the same research and technology used to create the Gemini models. They are text-to-text, decoder-only large language models, available in English, with open weights, pre-trained variants, and instruction-tuned variants.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/qwen/qwen1.5-14b-chat-awq",
+                    "name": "@cf/qwen/qwen1.5-14b-chat-awq",
+                    "description": "Qwen1.5 is the improved version of Qwen, the large language model series developed by Alibaba Cloud. AWQ is an efficient, accurate and blazing-fast low-bit weight quantization method, currently supporting 4-bit quantization.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/openchat/openchat-3.5-0106",
+                    "name": "@cf/openchat/openchat-3.5-0106",
+                    "description": "OpenChat is an innovative library of open-source language models, fine-tuned with C-RLFT - a strategy inspired by offline reinforcement learning.",
+                    "input_cost": 0,
+                    "output_cost": 0
+                },
+                {
+                    "label": "@cf/meta/llama-4-scout-17b-16e-instruct",
+                    "name": "@cf/meta/llama-4-scout-17b-16e-instruct",
+                    "description": "Meta's Llama 4 Scout is a 17 billion parameter model with 16 experts that is natively multimodal. These models leverage a mixture-of-experts architecture to offer industry-leading performance in text and image understanding.",
+                    "input_cost": 0.00027,
+                    "output_cost": 0.00085
+                },
+                {
+                    "label": "@cf/google/gemma-3-12b-it",
+                    "name": "@cf/google/gemma-3-12b-it",
+                    "description": "Gemma 3 models are well-suited for a variety of text generation and image understanding tasks, including question answering, summarization, and reasoning. Gemma 3 models are multimodal, handling text and image input and generating text output, with a large, 128K context window, multilingual support in over 140 languages, and is available in more sizes than previous versions.",
+                    "input_cost": 0.00035,
+                    "output_cost": 0.00056
+                },
+                {
+                    "label": "@cf/qwen/qwq-32b",
+                    "name": "@cf/qwen/qwq-32b",
+                    "description": "QwQ is the reasoning model of the Qwen series. Compared with conventional instruction-tuned models, QwQ, which is capable of thinking and reasoning, can achieve significantly enhanced performance in downstream tasks, especially hard problems. QwQ-32B is the medium-sized reasoning model, which is capable of achieving competitive performance against state-of-the-art reasoning models, e.g., DeepSeek-R1, o1-mini.",
+                    "input_cost": 0.00066,
+                    "output_cost": 0.001
+                }
+            ]
+        },
+        {
             "name": "awsChatBedrock",
             "models": [
                 {
