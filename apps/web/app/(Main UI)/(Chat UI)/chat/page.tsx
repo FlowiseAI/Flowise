@@ -1,7 +1,6 @@
 import React from 'react'
-import { redirect } from 'next/navigation'
 import Chat from '@ui/Chat'
-import getCachedSession from '@ui/getCachedSession'
+import ChatRedirectHandler from '@ui/ChatRedirectHandler'
 
 export const metadata = {
     title: 'Chats | Answer Agent',
@@ -9,15 +8,12 @@ export const metadata = {
 }
 
 const ChatDetailPage = async ({ params }: any) => {
-    const session = await getCachedSession()
-    const user = session?.user
-
-    // If user has a defaultChatflowId from cookie, redirect to that chat
-    if (user?.defaultChatflowId) {
-        redirect(`/chat/${user.defaultChatflowId}`)
-    }
-
-    const chatcomponent = <Chat {...params} />
+    const chatcomponent = (
+        <>
+            <ChatRedirectHandler />
+            <Chat {...params} />
+        </>
+    )
     return chatcomponent
 }
 

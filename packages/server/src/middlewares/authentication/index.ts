@@ -3,6 +3,7 @@ import { auth } from 'express-oauth2-jwt-bearer'
 
 import { DataSource } from 'typeorm'
 import { User } from '../../database/entities/User'
+import { Organization } from '../../database/entities/Organization'
 import apikeyService from '../../services/apikey'
 import { findOrCreateOrganization } from './findOrCreateOrganization'
 import { findOrCreateUser } from './findOrCreateUser'
@@ -130,27 +131,62 @@ export const authenticationHandlerMiddleware =
 
                     // Find or create default chatflows for the user
                     const defaultChatflowId = await findOrCreateDefaultChatflowsForUser(AppDataSource, user)
-                    
                     // Update user with the latest defaultChatflowId
                     if (defaultChatflowId) {
                         user.defaultChatflowId = defaultChatflowId
                     }
 
                     req.user = { ...authUser, ...user, roles }
-                    
-                    // Set defaultChatflowId cookie for frontend access
-                    if (user.defaultChatflowId) {
-                        res.cookie('defaultChatflowId', user.defaultChatflowId, {
-                            httpOnly: false, // Required for frontend access
-                            secure: process.env.NODE_ENV === 'production',
-                            sameSite: 'strict', // CSRF protection
-                            maxAge: 4 * 60 * 60 * 1000, // 4 hours
-                            path: '/'
-                        })
-                    }
                 } catch (error) {
                     console.error('Authentication error:', error)
                     return res.status(500).send('Internal Server Error during authentication')
+                }
+            }
+
+            // Handle /auth/me endpoint directly in middleware
+            if (req.url === '/api/v1/auth/me' && req.method === 'GET') {
+                if (!req.user) {
+                    return res.status(401).json({ error: 'Unauthorized' })
+                }
+
+                try {
+                    // Get organization data
+                    const organization = await AppDataSource.getRepository(Organization).findOne({
+                        where: { id: req.user.organizationId }
+                    })
+
+                    // Determine auth method
+                    const authMethod = apiKeyUser ? 'apikey' : 'jwt'
+
+                    return res.json({
+                        user: {
+                            id: req.user.id,
+                            name: req.user.name,
+                            email: req.user.email,
+                            organizationId: req.user.organizationId,
+                            stripeCustomerId: req.user.stripeCustomerId,
+                            defaultChatflowId: req.user.defaultChatflowId,
+                            createdDate: req.user.createdDate,
+                            updatedDate: req.user.updatedDate,
+                            roles: req.user.roles || []
+                        },
+                        organization: organization
+                            ? {
+                                  id: organization.id,
+                                  name: organization.name,
+                                  stripeCustomerId: organization.stripeCustomerId,
+                                  createdDate: organization.createdDate,
+                                  updatedDate: organization.updatedDate
+                              }
+                            : null,
+                        session: {
+                            authenticated: true,
+                            authMethod
+                        }
+                    })
+                } catch (error) {
+                    console.error('Error in /auth/me endpoint:', error)
+                    return res.status(500).json({ error: 'Internal Server Error' })
                 }
             }
 

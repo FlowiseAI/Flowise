@@ -63,6 +63,7 @@ const router = express.Router()
 router.use('/', googleAuthRouter)
 router.use('/ping', pingRouter)
 router.use('/apikey', apikeyRouter)
+router.use('/auth', express.Router()) // Auth routes handled by middleware
 router.use('/assistants', assistantsRouter)
 router.use('/attachments', attachmentsRouter)
 router.use('/chatflows', chatflowsRouter)
