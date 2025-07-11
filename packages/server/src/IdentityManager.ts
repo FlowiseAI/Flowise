@@ -321,7 +321,7 @@ export class IdentityManager {
         return await this.stripeManager.getAdditionalSeatsProration(subscriptionId, newQuantity)
     }
 
-    public async updateAdditionalSeats(subscriptionId: string, quantity: number, prorationDate: number) {
+    public async updateAdditionalSeats(subscriptionId: string, quantity: number, prorationDate: number, increase: boolean) {
         if (!subscriptionId) return {}
 
         if (!this.stripeManager) {
@@ -330,7 +330,8 @@ export class IdentityManager {
         const { success, subscription, invoice, paymentFailed, paymentError } = await this.stripeManager.updateAdditionalSeats(
             subscriptionId,
             quantity,
-            prorationDate
+            prorationDate,
+            increase
         )
 
         // Fetch product details to get quotas
