@@ -35,7 +35,6 @@ const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<U
     try {
         const apiKeyData = await apikeyService.verifyApiKey(apiKey)
         if (!apiKeyData) {
-            console.log('[AuthMiddleware] Invalid API key')
             return null
         }
 
@@ -45,7 +44,6 @@ const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<U
         })
 
         if (!user) {
-            console.log(`[AuthMiddleware] No user found for API key userId: ${apiKeyData.userId}`)
             return null
         }
 
@@ -86,14 +84,13 @@ export const authenticationHandlerMiddleware =
         jwtMiddleware(req, res, async (jwtError?: any) => {
             if (!req.user) {
                 if (jwtError) {
-                    console.log('[AuthMiddleware] JWT error:', jwtError)
                     return next(jwtError)
                 }
 
                 // Proceed with user synchronization if user is authenticated
                 if (!req.auth?.payload) {
                     if (apiKeyError) {
-                        console.error('[AuthMiddleware] Error verifying API key:', apiKeyError)
+                        console.error('Error verifying API key:', apiKeyError)
                     }
                     return next()
                 }
@@ -107,7 +104,6 @@ export const authenticationHandlerMiddleware =
                     const validOrgs = process.env.AUTH0_ORGANIZATION_ID?.split(',') || []
                     const isInvalidOrg = validOrgs?.length > 0 && !validOrgs.includes(userOrgId)
                     if (isInvalidOrg) {
-                        console.log(`[AuthMiddleware] Organization validation failed for org ID: ${userOrgId}`)
                         return res.status(401).send("Unauthorized: Organization doesn't match")
                     }
                 }
@@ -119,7 +115,6 @@ export const authenticationHandlerMiddleware =
                 const name = authUser.name as string
                 const roles = (authUser?.['https://theanswer.ai/roles'] || []) as string[]
                 if (!auth0Id || !email) {
-                    console.log('[AuthMiddleware] Missing required auth fields (auth0Id or email)')
                     return next()
                 }
 
@@ -134,20 +129,31 @@ export const authenticationHandlerMiddleware =
                     user = await ensureStripeCustomerForUser(AppDataSource, user, organization, auth0Id, email, name)
 
                     // Find or create default chatflows for the user
-                    await findOrCreateDefaultChatflowsForUser(AppDataSource, user)
+                    const defaultChatflowId = await findOrCreateDefaultChatflowsForUser(AppDataSource, user)
+                    
+                    // Update user with the latest defaultChatflowId
+                    if (defaultChatflowId) {
+                        user.defaultChatflowId = defaultChatflowId
+                    }
 
                     req.user = { ...authUser, ...user, roles }
+                    
+                    // Set defaultChatflowId cookie for frontend access
+                    if (user.defaultChatflowId) {
+                        res.cookie('defaultChatflowId', user.defaultChatflowId, {
+                            httpOnly: false, // Required for frontend access
+                            secure: process.env.NODE_ENV === 'production',
+                            sameSite: 'strict', // CSRF protection
+                            maxAge: 4 * 60 * 60 * 1000, // 4 hours
+                            path: '/'
+                        })
+                    }
                 } catch (error) {
-                    console.error('[AuthMiddleware] Error during user authentication:', error)
+                    console.error('Authentication error:', error)
                     return res.status(500).send('Internal Server Error during authentication')
                 }
             }
 
-            // console.log(
-            //     `[AuthMiddleware] Auth successful for user: ${req.user?.id} with ${apiKeyUser ? 'APIKEY' : 'JWT'} in ${
-            //         new Date().getTime() - startTime
-            //     }ms`
-            // )
             return next()
         })
     }
