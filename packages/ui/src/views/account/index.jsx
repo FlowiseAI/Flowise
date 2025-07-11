@@ -347,7 +347,7 @@ const AccountSettings = () => {
         }
     }
 
-    const handleSeatsModification = async (newSeatsAmount) => {
+    const handleSeatsModification = async (newSeatsAmount, increase) => {
         try {
             setIsUpdatingSeats(true)
 
@@ -355,23 +355,45 @@ const AccountSettings = () => {
                 throw new Error('No proration date available')
             }
 
-            await updateAdditionalSeatsApi.request(
+            const response = await updateAdditionalSeatsApi.request(
                 currentUser?.activeOrganizationSubscriptionId,
                 newSeatsAmount,
-                prorationInfo.prorationDate
+                prorationInfo.prorationDate,
+                increase
             )
-            enqueueSnackbar({
-                message: 'Seats updated successfully',
-                options: {
-                    key: new Date().getTime() + Math.random(),
-                    variant: 'success',
-                    action: (key) => (
-                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                            <IconX />
-                        </Button>
-                    )
-                }
-            })
+
+            // Check if payment failed but seats were updated (Issue #4 fix)
+            if (response.data?.paymentFailed) {
+                // Seats updated but payment failed
+                const paymentErrorMessage = response.data.paymentError || 'Payment failed'
+                enqueueSnackbar({
+                    message: `Seats updated successfully! However, your payment failed (${paymentErrorMessage}). We'll retry for the next few days. Please update your payment method or your account may be suspended.`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'warning',
+                        persist: true,
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            } else {
+                // Seats updated successfully with no payment issues
+                enqueueSnackbar({
+                    message: 'Seats updated successfully',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+            }
             // Refresh the seats quantity display
             getAdditionalSeatsQuantityApi.request(currentUser?.activeOrganizationSubscriptionId)
         } catch (error) {
@@ -1160,7 +1182,7 @@ const AccountSettings = () => {
                         </Button>
                         <Button
                             variant='outlined'
-                            onClick={() => handleSeatsModification(purchasedSeats - seatsQuantity)}
+                            onClick={() => handleSeatsModification(purchasedSeats - seatsQuantity, false)}
                             disabled={
                                 getCustomerDefaultSourceApi.loading ||
                                 !getCustomerDefaultSourceApi.data ||
@@ -1414,7 +1436,7 @@ const AccountSettings = () => {
                         </Button>
                         <Button
                             variant='contained'
-                            onClick={() => handleSeatsModification(seatsQuantity + purchasedSeats)}
+                            onClick={() => handleSeatsModification(seatsQuantity + purchasedSeats, true)}
                             disabled={
                                 getCustomerDefaultSourceApi.loading ||
                                 !getCustomerDefaultSourceApi.data ||
