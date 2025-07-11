@@ -20,7 +20,6 @@ import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 import { Available } from '@/ui-component/rbac/available'
-import GitCommitDialog from '@/ui-component/dialog/GitCommitDialog'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -71,9 +70,12 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
 
+
+    const checkGitConfigApi = useApi(flowVersionApi.check)
     const [showVersionSideDrawer, setShowVersionSideDrawer] = useState(false)
     const [versionDrawerDialogProps, setVersionDrawerDialogProps] = useState({})
     const [gitVersioningEnabled, setGitVersioningEnabled] = useState(false)
+    const [isActiveGitConfig, setIsActiveGitConfig] = useState(false)
 
     const openVersionsDrawer = () => {
         setVersionDrawerDialogProps({
@@ -272,9 +274,18 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     }, [updateChatflowApi.data])
 
     useEffect(() => {
+        if (checkGitConfigApi.data) {
+            setIsActiveGitConfig(checkGitConfigApi.data.isActive)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [checkGitConfigApi.data])
+
+    useEffect(() => {
         if (chatflow) {
             setFlowName(chatflow.name)
             setGitVersioningEnabled(false)
+            checkGitConfigApi.request()
             if (chatflow.chatbotConfig) {
                 const chatbotConfig = JSON.parse(chatflow.chatbotConfig)
                 setGitVersioningEnabled(chatbotConfig?.gitVersioning?.status)
@@ -430,7 +441,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                     </Box>
                 </Stack>
                 <Box>
-                    {gitVersioningEnabled && (
+                    {gitVersioningEnabled && isActiveGitConfig && (
                         <>
                         {chatflow?.isDirty ? (
                             <Chip label='Draft : Unpublished changes' color='success' sx={{ mr: 2 }}/>

@@ -53,4 +53,16 @@ export class FlowVersionController {
             next(error)
         }
     }
+
+    public async check(req: Request, res: Response, next: NextFunction) {
+        try {
+            const service = new FlowVersionService()
+            const result = await service.check()
+            return res.status(StatusCodes.OK).json({
+                isActive: result
+            })
+        } catch (error) {
+            next(error)
+        }
+    }
 } 

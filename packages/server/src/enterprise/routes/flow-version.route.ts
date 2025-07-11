@@ -9,5 +9,5 @@ router.get('/:id/versions', flowVersionController.getVersions)
 
 // MAKE DRAFT
 router.put('/:id/make-draft/:commitId', flowVersionController.makeDraft)
-
+router.get('/check', flowVersionController.check)
 export default router 

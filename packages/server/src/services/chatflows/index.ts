@@ -19,6 +19,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import { checkUsageLimit, updateStorageUsage } from '../../utils/quotaUsage'
+import { FlowVersionService } from '../../enterprise/services/flow-version.service'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -97,6 +98,22 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
     try {
         const appServer = getRunningExpressApp()
 
+        // check if git is configured and active
+        // this has to be done before deleting the chatflow, as the flowVersionService uses 
+        // the chatflow id to fetch the name of the chatflow
+        const flowVersionService = new FlowVersionService()
+        const isGitConfiguredAndActive = await flowVersionService.check()
+        if (isGitConfiguredAndActive) {
+            const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
+            if (chatflow && chatflow.chatbotConfig) {
+                const chatbotConfig = JSON.parse(chatflow.chatbotConfig)
+                if (chatbotConfig.gitConfig) {
+                    // delete the chatflow from the git repository
+                    await flowVersionService.deleteChatflowByName(chatflow.name)
+                }
+            }
+        }
+        
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).delete({ id: chatflowId })
 
         // Update document store usage
@@ -118,6 +135,7 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
         } catch (e) {
             logger.error(`[server]: Error deleting file storage for chatflow ${chatflowId}`)
         }
+
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(

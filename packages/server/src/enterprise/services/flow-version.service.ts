@@ -31,6 +31,43 @@ export class FlowVersionService {
     }
 
     /**
+     * Gets the SHA of a file from GitHub repository
+     */
+    private async getFileSha(fileName: string, owner: string, repo: string, token: string, branch: string = 'main'): Promise<string | null> {
+        return new Promise((resolve) => {
+            const options = {
+                hostname: 'api.github.com',
+                port: 443,
+                path: `/repos/${owner}/${repo}/contents/${encodeURIComponent(fileName)}?ref=${branch}`,
+                method: 'GET',
+                headers: {
+                    'User-Agent': 'FlowiseAI',
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            }
+            const req = https.request(options, (res) => {
+                let data = ''
+                res.on('data', (chunk) => { data += chunk })
+                res.on('end', () => {
+                    if (res.statusCode === 200) {
+                        try {
+                            const json = JSON.parse(data)
+                            resolve(json.sha)
+                        } catch {
+                            resolve(null)
+                        }
+                    } else {
+                        resolve(null)
+                    }
+                })
+            })
+            req.on('error', () => resolve(null))
+            req.end()
+        })
+    }
+
+    /**
      * Publishes a chatflow as a JSON file to the active git repository.
      * @param chatflowId The ID of the chatflow to publish
      */
@@ -329,49 +366,85 @@ export class FlowVersionService {
         await this.dataSource.getRepository(ChatFlow).save(chatflow)
         return chatflow
     }
-
-    public async deleteChatflow(chatflowId: string): Promise<void> {
+    
+    public async deleteChatflowByName(chatflowName: string): Promise<void> {
         // 1. Retrieve the active GitConfig
         const gitConfig = await this.dataSource.getRepository(GitConfig).findOneBy({ isActive: true })
         if (!gitConfig) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'No active Git config found')
         }
 
-        // 2. Retrieve the chatflow from the git repository
-        const chatflow = await this.dataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
-        if (!chatflow) {
-            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Chatflow not found')
-        }
-
-        // 3. delete the chatflow from the git repository
-        const fileName = `${chatflow.name}.json`
+        // 2. gather git config info
+        const fileName = `${chatflowName}.json`
+        const branch = gitConfig.branchName || 'main'
         const owner = gitConfig.username
         const repo = gitConfig.repository
         const token = gitConfig.secret
 
-        // 4. delete the chatflow from the git repository
-        const options = {
-            hostname: 'api.github.com',
-            port: 443,
-            path: `/repos/${owner}/${repo}/contents/${encodeURIComponent(fileName)}`,
-            method: 'DELETE',
-            headers: {
-                'User-Agent': 'FlowiseAI',
-                'Authorization': `token ${token}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
+        // 3. First, get the current SHA of the file from GitHub
+        const fileSha = await this.getFileSha(fileName, owner, repo, token, branch)
+        if (!fileSha) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'File not found in git repository')
         }
-        const req = https.request(options, async (res) => {
-            if (res.statusCode === 204) {
-                // 5. delete the chatflow from the database
-                await this.dataSource.getRepository(ChatFlow).delete(chatflowId)
-            } else {
-                throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to delete chatflow from git repository')
+
+        // 4. delete the chatflow from the git repository
+        // this is done by deleting the file from the git repository, through the github api
+        return new Promise((resolve, reject) => {
+            const deleteData = JSON.stringify({
+                message: `Delete ${fileName}`,
+                sha: fileSha
+            })
+
+            const options = {
+                hostname: 'api.github.com',
+                port: 443,
+                path: `/repos/${owner}/${repo}/contents/${encodeURIComponent(fileName)}`,
+                method: 'DELETE',
+                headers: {
+                    'User-Agent': 'FlowiseAI',
+                    'Authorization': `token ${token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(deleteData)
+                }
             }
+
+            const req = https.request(options, (res) => {
+                let data = ''
+                res.on('data', (chunk) => { data += chunk })
+                res.on('end', () => {
+                    if (res.statusCode === 200) {
+                        resolve()
+                    } else {
+                        try {
+                            const errorData = JSON.parse(data)
+                            reject(new InternalFlowiseError(
+                                StatusCodes.INTERNAL_SERVER_ERROR, 
+                                `Failed to delete chatflow from git repository: ${errorData.message || 'Unknown error'}`
+                            ))
+                        } catch {
+                            reject(new InternalFlowiseError(
+                                StatusCodes.INTERNAL_SERVER_ERROR, 
+                                'Failed to delete chatflow from git repository'
+                            ))
+                        }
+                    }
+                })
+            })
+            req.on('error', (error) => {
+                reject(new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Failed to delete chatflow from git repository: ${error.message}`))
+            })
+            req.write(deleteData)
+            req.end()
         })
-        req.on('error', (error) => {
-            throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Failed to delete chatflow from git repository: ${error.message}`)
-        })
-        req.end()
+    }
+
+    /**
+     * Checks if there is an active git config
+     */
+    public async check(): Promise<boolean> {
+        // 1. Retrieve the active GitConfig
+        const gitConfig = await this.dataSource.getRepository(GitConfig).findOneBy({ isActive: true })
+        return gitConfig !== null
     }
 } 

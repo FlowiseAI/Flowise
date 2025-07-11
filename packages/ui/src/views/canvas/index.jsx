@@ -32,6 +32,7 @@ import { flowContext } from '@/store/context/ReactFlowContext'
 // API
 import nodesApi from '@/api/nodes'
 import chatflowsApi from '@/api/chatflows'
+import flowVersionApi from '@/api/flowversion'
 
 // Hooks
 import useApi from '@/hooks/useApi'
@@ -107,7 +108,10 @@ const Canvas = () => {
     const [chatflowName, setChatflowName] = useState('')
     const [flowData, setFlowData] = useState('')
 
+    // versioning
+    const [isActiveGitConfig, setIsActiveGitConfig] = useState(false)
     const [isReadonly, setIsReadonly] = useState(false)
+
 
     // ==============================|| Chatflow API ||============================== //
 
@@ -116,7 +120,6 @@ const Canvas = () => {
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const getSpecificChatflowApi = useApi(chatflowsApi.getSpecificChatflow)
     const getHasChatflowChangedApi = useApi(chatflowsApi.getHasChatflowChanged)
-
     // ==============================|| Events & Actions ||============================== //
 
     const onConnect = (params) => {
@@ -421,7 +424,7 @@ const Canvas = () => {
             setLasUpdatedDateTime(chatflow.updatedDate)
             setNodes(initialFlow.nodes || [])
             setEdges(initialFlow.edges || [])
-            setIsReadonly(chatflow.lastPublishedCommit && !chatflow.isDirty ? true : false)
+            setIsReadonly(isActiveGitConfig && chatflow.lastPublishedCommit && !chatflow.isDirty ? true : false)
             dispatch({ type: SET_READONLY, isReadonly: chatflow.lastPublishedCommit && !chatflow.isDirty ? true : false })
             dispatch({ type: SET_CHATFLOW, chatflow })
         } else if (getSpecificChatflowApi.error) {
@@ -495,6 +498,10 @@ const Canvas = () => {
             checkIfUpsertAvailable(flowData.nodes || [], flowData.edges || [])
             checkIfSyncNodesAvailable(flowData.nodes || [])
         }
+
+        flowVersionApi.check().then((res) => {
+            setIsActiveGitConfig(res.data.isActive)
+        })
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [canvasDataStore.chatflow])
@@ -585,7 +592,7 @@ const Canvas = () => {
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
                             isAgentCanvas={isAgentCanvas}
-                            isReadonly={isReadonly}
+                            isReadonly={isActiveGitConfig && isReadonly}
                             commitId={commitId}
                         />
                     </Toolbar>
@@ -634,11 +641,11 @@ const Canvas = () => {
                                     </button>
                                 </Controls>
                                 <Background color='#aaa' gap={16} />
-                                {!isReadonly && (
+                                {!isReadonly && isActiveGitConfig && (
                                     <AddNodes isAgentCanvas={isAgentCanvas} nodesData={getNodesApi.data} node={selectedNode} />
                                 )}
                                 
-                                {isSyncNodesButtonEnabled && !isReadonly && (
+                                {isSyncNodesButtonEnabled && (!isReadonly && isActiveGitConfig) && (
                                     <Fab
                                         sx={{
                                             left: 40,
