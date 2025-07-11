@@ -24,7 +24,7 @@ class KCenter_Retrievers implements INode {
     constructor() {
         this.label = 'KAI Retriever'
         this.name = 'kaiRetriever'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'KAI Vector Store Retriever'
         this.icon = 'logo.svg'
         this.category = 'KCenter'
@@ -69,6 +69,27 @@ class KCenter_Retrievers implements INode {
                 type: 'number',
                 optional: true,
                 acceptVariable: true
+            },
+            {
+                label: 'Result Format',
+                name: 'resultFormat',
+                description: 'How should the result be returned? In segments/chunks or in documents ? Default is Segments.',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Segments',
+                        name: 'seg',
+                        description: 'Use this to get a list of segments/chunks back'
+                    },
+                    {
+                        label: 'Documents',
+                        name: 'doc',
+                        description: 'Use this to get a list of documents back.'
+                    }
+                ],
+                default: 'seg',
+                optional: true,
+                acceptVariable: true
             }
         ]
         this.outputs = [
@@ -80,7 +101,7 @@ class KCenter_Retrievers implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                description: 'Array of document objects containing metadata and content',
+                description: 'Array of segment/document objects containing metadata and content',
                 baseClasses: ['Document', 'json']
             },
             {
@@ -94,6 +115,7 @@ class KCenter_Retrievers implements INode {
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
         const DEFAULT_TOP_K: number = 1
+        const DEFAULT_RESULT_FORMAT: string = 'seg'
 
         if (process.env.DEBUG === 'true') console.info('Input data: ', nodeData.inputs)
 
@@ -107,6 +129,8 @@ class KCenter_Retrievers implements INode {
         const language = nodeData.inputs?.language as string
         const query = nodeData.inputs?.query as string
 
+        const resultFormat = nodeData.inputs?.resultFormat as string
+
         const topK = nodeData.inputs?.topK as string
         const k = topK ? parseInt(topK, 10) : DEFAULT_TOP_K
         const output = nodeData.outputs?.output as string
@@ -116,7 +140,8 @@ class KCenter_Retrievers implements INode {
             url: connectionString,
             apiKey: apiKey,
             languages: language ? [language] : [],
-            topK: k ?? DEFAULT_TOP_K
+            topK: k ?? DEFAULT_TOP_K,
+            resultFormat: resultFormat ?? DEFAULT_RESULT_FORMAT
         } as KCenterRetrieverRetrieverArgs
 
         if (process.env.DEBUG === 'true') console.info('RetrieverConfig: ', retrieverConfig)
@@ -145,6 +170,7 @@ export interface KCenterRetrieverRetrieverArgs {
     apiKey: string
     languages: string[]
     topK: number
+    resultFormat: string
 }
 
 class KCenterRetriever extends BaseRetriever {
@@ -176,7 +202,8 @@ class KCenterRetriever extends BaseRetriever {
         const requestBody = {
             query: query,
             lang: this.config.languages ?? [],
-            limit: this.config.topK ?? 1
+            limit: this.config.topK ?? 1,
+            layout: this.config.resultFormat ?? ''
         }
 
         try {
