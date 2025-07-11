@@ -8,7 +8,19 @@ export interface IApiClientCredentials {
     privateKey: string
 }
 
+export interface IKCCategoryMetadata {
+    catBranch: string
+}
+
 export interface IKCCategory {
+    id: string
+    parentId: string
+    label: string
+    metadata: IKCCategoryMetadata
+    childs: IKCCategory[]
+}
+
+export interface IKCDocCategory {
     branch: string
     branchText: string
     id: string
@@ -26,8 +38,10 @@ export interface IKCDocument {
     title: string
     summary: string
     content: string
-    categories: IKCCategory[]
+    categories: IKCDocCategory[]
 }
+
+const servicePath: string = '/serviceconnector/services/rest'
 
 export class KCenterApiClient {
     credentials: IApiClientCredentials
@@ -42,7 +56,7 @@ export class KCenterApiClient {
             const encodedLang = encodeURIComponent(lang)
             const encodedMandator = encodeURIComponent(this.credentials.mandator)
 
-            const docUrl = `${this.credentials.baseUrl}/serviceconnector/services/rest/documents/${encodedGuid}?lang=${encodedLang}&additionalData=true&mandator=${encodedMandator}`
+            const docUrl = `${this.credentials.baseUrl}${servicePath}/documents/${encodedGuid}?lang=${encodedLang}&additionalData=true&mandator=${encodedMandator}`
             if (process.env.DEBUG === 'true') console.info('Try to fetch document with url: ' + docUrl)
 
             const cookies = cookieJar['cookies'] ? cookieJar['cookies'].join('; ') : ''
@@ -77,6 +91,53 @@ export class KCenterApiClient {
             console.warn('Error: ', error)
             const errorMessage = error instanceof Error ? error.message : 'Unknown error'
             throw new Error(`Failed to fetch document (guid: ${guid}): ${errorMessage}`)
+        }
+    }
+
+    private async fetchDocumentsFromCategory(
+        categoryBranch: string,
+        lang: string,
+        recursive: boolean,
+        cookieJar: any
+    ): Promise<IKCDocument[]> {
+        throw new Error(`Not implemented`)
+    }
+
+    private async fetchCategory(id: string, lang: string, maxLevel: number, cookieJar: any): Promise<IKCCategory> {
+        try {
+            const encodedId = encodeURIComponent(id)
+            const encodedLang = encodeURIComponent(lang)
+            const encodedMandator = encodeURIComponent(this.credentials.mandator)
+
+            const encodedMaxLevelParam = maxLevel ? '&maxLevel=' + encodeURIComponent(maxLevel) : ''
+
+            const catUrl = `${this.credentials.baseUrl}${servicePath}/content/categories/${encodedId}?lang=${encodedLang}&mandator=${encodedMandator}${encodedMaxLevelParam}`
+            if (process.env.DEBUG === 'true') console.info('Try to fetch category with url: ' + catUrl)
+
+            const cookies = cookieJar['cookies'] ? cookieJar['cookies'].join('; ') : ''
+
+            const res = await fetch(catUrl, {
+                headers: { Cookie: cookies }
+            })
+
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}, message: ${res.statusText}`)
+            }
+
+            if (process.env.DEBUG === 'true') console.info('Category fetched')
+            let data = await res.json()
+
+            if (data === null) {
+                throw new Error('No category data received (null)')
+            }
+
+            if (process.env.DEBUG === 'true') console.info('[FetcCategory]: ', data)
+
+            return data as IKCCategory
+        } catch (error) {
+            console.warn('Error: ', error)
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+            throw new Error(`Failed to fetch category (id: ${id}): ${errorMessage}`)
         }
     }
 
@@ -211,6 +272,62 @@ export class KCenterApiClient {
             console.warn('Error: ', error)
             const errorMessage = error instanceof Error ? error.message : 'Unknown error'
             throw new Error(`Failed to load document (guid: ${docGuid}): ${errorMessage}`)
+        } finally {
+            try {
+                await this.logout(cookieJar)
+            } catch (error) {
+                console.warn('Could not logout: ', error instanceof Error ? error.message : error)
+            }
+        }
+    }
+
+    async loadDocumentsFromCategory(categoryBranch: string, lang: string, recursive: boolean): Promise<IKCDocument[]> {
+        const cookieJar = {}
+
+        try {
+            const loginSuccess = await this.login(cookieJar)
+
+            if (!loginSuccess) {
+                throw new Error('Could not login!')
+            }
+
+            const docData = await this.fetchDocumentsFromCategory(categoryBranch, lang, recursive, cookieJar)
+
+            if (process.env.DEBUG === 'true') console.info('Fetched docData: ', docData)
+
+            return docData
+        } catch (error) {
+            console.warn('Error: ', error)
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+            throw new Error(`Failed to load documents from category (guid: ${categoryBranch}): ${errorMessage}`)
+        } finally {
+            try {
+                await this.logout(cookieJar)
+            } catch (error) {
+                console.warn('Could not logout: ', error instanceof Error ? error.message : error)
+            }
+        }
+    }
+
+    async loadCategory(catId: string, lang: string, maxLevel: number): Promise<IKCCategory> {
+        const cookieJar = {}
+
+        try {
+            const loginSuccess = await this.login(cookieJar)
+
+            if (!loginSuccess) {
+                throw new Error('Could not login!')
+            }
+            const maxDeep = maxLevel < 0 ? 0 : maxLevel
+            const catData = await this.fetchCategory(catId, lang, maxDeep, cookieJar)
+
+            if (process.env.DEBUG === 'true') console.info('Fetched catData: ', catData)
+
+            return catData
+        } catch (error) {
+            console.warn('Error: ', error)
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+            throw new Error(`Failed to load category (guid: ${catId}): ${errorMessage}`)
         } finally {
             try {
                 await this.logout(cookieJar)
