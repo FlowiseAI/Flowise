@@ -111,7 +111,13 @@ export class MCPToolkit extends BaseToolkit {
                 argsSchema: createSchemaModel(tool.inputSchema)
             })
         })
-        return Promise.all(toolsPromises)
+        const res = await Promise.allSettled(toolsPromises)
+        const errors = res.filter((r) => r.status === 'rejected')
+        if (errors.length !== 0) {
+            console.error('MCP Tools falied to be resolved', errors)
+        }
+        const successes = res.filter((r) => r.status === 'fulfilled').map((r) => r.value)
+        return successes
     }
 }
 

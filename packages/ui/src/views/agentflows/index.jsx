@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 // material-ui
-import { Chip, Box, Skeleton, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Chip, Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -15,6 +15,7 @@ import { FlowListTable } from '@/ui-component/table/FlowListTable'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
 import ErrorBoundary from '@/ErrorBoundary'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import TablePagination, { DEFAULT_ITEMS_PER_PAGE } from '@/ui-component/pagination/TablePagination'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -45,6 +46,25 @@ const Agentflows = () => {
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
     const [agentflowVersion, setAgentflowVersion] = useState(localStorage.getItem('agentFlowVersion') || 'v2')
 
+    /* Table Pagination */
+    const [currentPage, setCurrentPage] = useState(1)
+    const [pageLimit, setPageLimit] = useState(DEFAULT_ITEMS_PER_PAGE)
+    const [total, setTotal] = useState(0)
+
+    const onChange = (page, pageLimit) => {
+        setCurrentPage(page)
+        setPageLimit(pageLimit)
+        refresh(page, pageLimit, agentflowVersion)
+    }
+
+    const refresh = (page, limit, nextView) => {
+        const params = {
+            page: page || currentPage,
+            limit: limit || pageLimit
+        }
+        getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
+    }
+
     const handleChange = (event, nextView) => {
         if (nextView === null) return
         localStorage.setItem('flowDisplayStyle', nextView)
@@ -55,7 +75,7 @@ const Agentflows = () => {
         if (nextView === null) return
         localStorage.setItem('agentFlowVersion', nextView)
         setAgentflowVersion(nextView)
-        getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT')
+        refresh(1, pageLimit, nextView)
     }
 
     const onSearchChange = (event) => {
@@ -87,7 +107,7 @@ const Agentflows = () => {
     }
 
     useEffect(() => {
-        getAllAgentflows.request(agentflowVersion === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT')
+        refresh(currentPage, pageLimit, agentflowVersion)
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -107,7 +127,8 @@ const Agentflows = () => {
     useEffect(() => {
         if (getAllAgentflows.data) {
             try {
-                const agentflows = getAllAgentflows.data
+                const agentflows = getAllAgentflows.data?.data
+                setTotal(getAllAgentflows.data?.total)
                 const images = {}
                 const icons = {}
                 for (let i = 0; i < agentflows.length; i += 1) {
@@ -189,6 +210,7 @@ const Agentflows = () => {
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={view}
+                            disabled={total === 0}
                             color='primary'
                             exclusive
                             onChange={handleChange}
@@ -228,17 +250,11 @@ const Agentflows = () => {
                             Add New
                         </StyledPermissionButton>
                     </ViewHeader>
-                    {!view || view === 'card' ? (
+                    {!isLoading && total > 0 && (
                         <>
-                            {isLoading && !getAllAgentflows.data ? (
+                            {!view || view === 'card' ? (
                                 <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
-                                    <Skeleton variant='rounded' height={160} />
-                                </Box>
-                            ) : (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.filter(filterFlows).map((data, index) => (
+                                    {getAllAgentflows.data?.data.filter(filterFlows).map((data, index) => (
                                         <ItemCard
                                             key={index}
                                             onClick={() => goToCanvas(data)}
@@ -248,22 +264,25 @@ const Agentflows = () => {
                                         />
                                     ))}
                                 </Box>
+                            ) : (
+                                <FlowListTable
+                                    isAgentCanvas={true}
+                                    isAgentflowV2={agentflowVersion === 'v2'}
+                                    data={getAllAgentflows.data?.data}
+                                    images={images}
+                                    icons={icons}
+                                    isLoading={isLoading}
+                                    filterFunction={filterFlows}
+                                    updateFlowsApi={getAllAgentflows}
+                                    setError={setError}
+                                />
                             )}
+                            {/* Pagination and Page Size Controls */}
+                            <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
                         </>
-                    ) : (
-                        <FlowListTable
-                            isAgentCanvas={true}
-                            isAgentflowV2={agentflowVersion === 'v2'}
-                            data={getAllAgentflows.data}
-                            images={images}
-                            icons={icons}
-                            isLoading={isLoading}
-                            filterFunction={filterFlows}
-                            updateFlowsApi={getAllAgentflows}
-                            setError={setError}
-                        />
                     )}
-                    {!isLoading && (!getAllAgentflows.data || getAllAgentflows.data.length === 0) && (
+
+                    {!isLoading && total === 0 && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img

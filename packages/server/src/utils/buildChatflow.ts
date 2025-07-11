@@ -57,7 +57,7 @@ import {
     constructGraphs,
     getAPIOverrideConfig
 } from '../utils'
-import { validateChatflowAPIKey } from './validateKey'
+import { validateFlowAPIKey } from './validateKey'
 import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
 import { checkPredictions, checkStorage, updatePredictionsUsage, updateStorageUsage } from './quotaUsage'
@@ -923,7 +923,7 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     try {
         // Validate API Key if its external API request
         if (!isInternal) {
-            const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
+            const isKeyValidated = await validateFlowAPIKey(req, chatflow)
             if (!isKeyValidated) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }
