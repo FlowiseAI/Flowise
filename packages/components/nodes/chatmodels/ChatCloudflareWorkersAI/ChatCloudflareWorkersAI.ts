@@ -80,7 +80,7 @@ class ChatCloudflareWorkersAI_ChatModels implements INode {
         const obj: ChatOpenAIFields = {
             temperature: parseFloat(temperature),
             model: modelName,
-            streaming: streaming,
+            streaming: streaming ?? true,
             apiKey,
             configuration: { baseURL: `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1` }
         }
