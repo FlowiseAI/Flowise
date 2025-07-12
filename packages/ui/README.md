@@ -8,11 +8,17 @@ React frontend ui for Flowise.
 
 ![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true)
 
-Install:
+## Install
 
 ```bash
 npm i flowise-ui
 ```
+
+## Testing
+- Create each test file alongside its relevant source file
+  - E.g. `errorHandler.js` + `errorHandler.test.js`
+- Run all UI tests: `pnpm test`
+- Run specific UI test: `pnpm test ./path/to/test/test.ts`
 
 ## License
 
