@@ -90,16 +90,20 @@ const convertExportInput = (body: any): ExportInput => {
 const FileDefaultName = 'ExportData.json'
 const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string): Promise<{ FileDefaultName: string } & ExportData> => {
     try {
-        let AgentFlow: ChatFlow[] =
+        let AgentFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.agentflow === true ? await chatflowService.getAllChatflows('MULTIAGENT', activeWorkspaceId) : []
+        AgentFlow = 'data' in AgentFlow ? AgentFlow.data : AgentFlow
 
-        let AgentFlowV2: ChatFlow[] =
+        let AgentFlowV2: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.agentflowv2 === true ? await chatflowService.getAllChatflows('AGENTFLOW', activeWorkspaceId) : []
+        AgentFlowV2 = 'data' in AgentFlowV2 ? AgentFlowV2.data : AgentFlowV2
 
         let AssistantCustom: Assistant[] =
             exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM', activeWorkspaceId) : []
-        let AssistantFlow: ChatFlow[] =
+
+        let AssistantFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT', activeWorkspaceId) : []
+        AssistantFlow = 'data' in AssistantFlow ? AssistantFlow.data : AssistantFlow
 
         let AssistantOpenAI: Assistant[] =
             exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI', activeWorkspaceId) : []
@@ -107,12 +111,15 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         let AssistantAzure: Assistant[] =
             exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE', activeWorkspaceId) : []
 
-        let ChatFlow: ChatFlow[] = exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW', activeWorkspaceId) : []
+        let ChatFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
+            exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW', activeWorkspaceId) : []
+        ChatFlow = 'data' in ChatFlow ? ChatFlow.data : ChatFlow
 
-        const allChatflow: ChatFlow[] =
+        let allChatflow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.chat_message === true || exportInput.chat_feedback === true
                 ? await chatflowService.getAllChatflows(undefined, activeWorkspaceId)
                 : []
+        allChatflow = 'data' in allChatflow ? allChatflow.data : allChatflow
         const chatflowIds = allChatflow.map((chatflow) => chatflow.id)
 
         let ChatMessage: ChatMessage[] =
@@ -124,8 +131,10 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         let CustomTemplate: CustomTemplate[] =
             exportInput.custom_template === true ? await marketplacesService.getAllCustomTemplates(activeWorkspaceId) : []
 
-        let DocumentStore: DocumentStore[] =
+        let DocumentStore: DocumentStore[] | { data: DocumentStore[]; total: number } =
             exportInput.document_store === true ? await documenStoreService.getAllDocumentStores(activeWorkspaceId) : []
+        DocumentStore = 'data' in DocumentStore ? DocumentStore.data : DocumentStore
+
         const documentStoreIds = DocumentStore.map((documentStore) => documentStore.id)
 
         let DocumentStoreFileChunk: DocumentStoreFileChunk[] =
@@ -137,9 +146,13 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         const { data: totalExecutions } = exportInput.execution === true ? await executionService.getAllExecutions(filters) : { data: [] }
         let Execution: Execution[] = exportInput.execution === true ? totalExecutions : []
 
-        let Tool: Tool[] = exportInput.tool === true ? await toolsService.getAllTools(activeWorkspaceId) : []
+        let Tool: Tool[] | { data: Tool[]; total: number } =
+            exportInput.tool === true ? await toolsService.getAllTools(activeWorkspaceId) : []
+        Tool = 'data' in Tool ? Tool.data : Tool
 
-        let Variable: Variable[] = exportInput.variable === true ? await variableService.getAllVariables(activeWorkspaceId) : []
+        let Variable: Variable[] | { data: Variable[]; total: number } =
+            exportInput.variable === true ? await variableService.getAllVariables(activeWorkspaceId) : []
+        Variable = 'data' in Variable ? Variable.data : Variable
 
         return {
             FileDefaultName,
