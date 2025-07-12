@@ -19,5 +19,16 @@ module.exports = {
     moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
 
     // Display individual test results with the test suite hierarchy.
-    verbose: true
+    verbose: true,
+
+    reporters: [
+        'default',
+        [
+            'jest-junit',
+            {
+                outputDirectory: 'test-results',
+                outputName: 'results.xml'
+            }
+        ]
+    ]
 }
