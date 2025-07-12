@@ -66,7 +66,16 @@ const config: Config = {
             '@docusaurus/plugin-google-gtag',
             {
                 trackingID: 'G-VD1X9LNG3N',
-                anonymizeIP: true
+                anonymizeIP: true,
+                id: 'gtag-analytics'
+            }
+        ],
+        [
+            '@docusaurus/plugin-google-gtag',
+            {
+                trackingID: 'AW-16804071963',
+                anonymizeIP: true,
+                id: 'gtag-ads'
             }
         ],
         [
