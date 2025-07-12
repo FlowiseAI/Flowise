@@ -15,6 +15,8 @@ export class GithubProvider implements IGitProvider {
 
     private githubApiRequest(path: string, method: string = 'GET', body?: any): Promise<any> {
         return new Promise((resolve, reject) => {
+            const bodyString = body ? JSON.stringify(body) : undefined
+            
             const options = {
                 hostname: this.baseUrl,
                 port: 443,
@@ -24,7 +26,10 @@ export class GithubProvider implements IGitProvider {
                     'User-Agent': 'FlowiseAI',
                     'Authorization': `token ${this.config.secret}`,
                     'Accept': 'application/vnd.github.v3+json',
-                    ...(body && { 'Content-Type': 'application/json' })
+                    ...(body && { 
+                        'Content-Type': 'application/json',
+                        'Content-Length': Buffer.byteLength(bodyString!)
+                    })
                 }
             }
 
@@ -52,8 +57,8 @@ export class GithubProvider implements IGitProvider {
 
             req.on('error', (err) => reject(err))
             
-            if (body) {
-                req.write(JSON.stringify(body))
+            if (bodyString) {
+                req.write(bodyString)
             }
             req.end()
         })
@@ -64,8 +69,15 @@ export class GithubProvider implements IGitProvider {
             const branchToUse = branch || this.config.branchName || 'main'
             const path = `/repos/${this.config.username}/${this.config.repository}/contents/${encodeURIComponent(fileName)}?ref=${branchToUse}`
             const response = await this.githubApiRequest(path)
-            return response.sha || null
+            
+            // Validate that we got a valid SHA
+            if (response && response.sha && typeof response.sha === 'string' && response.sha.trim() !== '') {
+                return response.sha
+            }
+            
+            return null
         } catch (error) {
+            // File doesn't exist or other error - this is expected for files that don't exist
             return null
         }
     }
@@ -175,8 +187,8 @@ export class GithubProvider implements IGitProvider {
             let lastCommitId: string | undefined
             let lastUrl: string | undefined
             
-            // Delete flow.json if it exists
-            if (flowSha) {
+            // Delete flow.json if it exists and has a valid SHA
+            if (flowSha && flowSha.trim() !== '') {
                 const flowBody = {
                     message: commitMessage,
                     sha: flowSha
@@ -187,8 +199,8 @@ export class GithubProvider implements IGitProvider {
                 lastUrl = flowResponse.content?.html_url
             }
 
-            // Delete messages.json if it exists
-            if (messagesSha) {
+            // Delete messages.json if it exists and has a valid SHA
+            if (messagesSha && messagesSha.trim() !== '') {
                 const messagesBody = {
                     message: commitMessage,
                     sha: messagesSha
