@@ -13,7 +13,7 @@ export class GithubProvider implements IGitProvider {
         return 'GitHub'
     }
 
-    private makeRequest(path: string, method: string = 'GET', body?: any): Promise<any> {
+    private githubApiRequest(path: string, method: string = 'GET', body?: any): Promise<any> {
         return new Promise((resolve, reject) => {
             const options = {
                 hostname: this.baseUrl,
@@ -63,7 +63,7 @@ export class GithubProvider implements IGitProvider {
         try {
             const branchToUse = branch || this.config.branchName || 'main'
             const path = `/repos/${this.config.username}/${this.config.repository}/contents/${encodeURIComponent(fileName)}?ref=${branchToUse}`
-            const response = await this.makeRequest(path)
+            const response = await this.githubApiRequest(path)
             return response.sha || null
         } catch (error) {
             return null
@@ -86,7 +86,7 @@ export class GithubProvider implements IGitProvider {
             }
 
             const flowPath_ = `/repos/${this.config.username}/${this.config.repository}/contents/${encodeURIComponent(flowFileName)}`
-            const flowResponse = await this.makeRequest(flowPath_, 'PUT', flowBody)
+            const flowResponse = await this.githubApiRequest(flowPath_, 'PUT', flowBody)
 
             // Create messages.json file
             const messagesFileName = `${flowPath}/messages.json`
@@ -100,7 +100,7 @@ export class GithubProvider implements IGitProvider {
             }
 
             const messagesPath_ = `/repos/${this.config.username}/${this.config.repository}/contents/${encodeURIComponent(messagesFileName)}`
-            const messagesResponse = await this.makeRequest(messagesPath_, 'PUT', messagesBody)
+            const messagesResponse = await this.githubApiRequest(messagesPath_, 'PUT', messagesBody)
 
             return {
                 success: true as const,
@@ -120,7 +120,7 @@ export class GithubProvider implements IGitProvider {
             const branchToUse = branch || this.config.branchName || 'main'
             const flowFileName = `${flowPath}/flow.json`
             const path = `/repos/${this.config.username}/${this.config.repository}/commits?path=${encodeURIComponent(flowFileName)}&sha=${branchToUse}`
-            const commits = await this.makeRequest(path)
+            const commits = await this.githubApiRequest(path)
 
             return Array.isArray(commits)
                 ? commits.map((c: any) => ({
@@ -138,38 +138,77 @@ export class GithubProvider implements IGitProvider {
 
     async getFileContent(fileName: string, commitId: string): Promise<string> {
         const path = `/repos/${this.config.username}/${this.config.repository}/contents/${encodeURIComponent(fileName)}?ref=${commitId}`
-        const fileData = await this.makeRequest(path)
+        const fileData = await this.githubApiRequest(path)
         const content = Buffer.from(fileData.content, 'base64').toString('utf-8')
         return content
     }
 
-    async deleteFlow(flowPath: string, commitMessage: string, branch: string = 'main'): Promise<void> {
-        const branchToUse = branch || this.config.branchName || 'main'
+    async deleteFlow(flowPath: string, commitMessage: string, branch: string = 'main'): Promise<CommitResult> {
+        // TODO: OPTIMIZATION - Delete both files in a single commit using GitHub's Git Data API
+        // Current implementation uses separate DELETE requests for each file, which creates multiple commits.
+        // To delete both files in one commit, implement using Git Data API:
+        // 1. GET /repos/{owner}/{repo}/git/trees/{tree_sha} to get current tree
+        // 2. POST /repos/{owner}/{repo}/git/trees to create new tree without the files
+        // 3. POST /repos/{owner}/{repo}/git/commits to create commit with new tree
+        // 4. PATCH /repos/{owner}/{repo}/git/refs/heads/{branch} to update branch reference
+        // This would ensure both files are deleted atomically in a single commit.
         
-        // Delete flow.json
-        const flowFileName = `${flowPath}/flow.json`
-        const flowSha = await this.getFileSha(flowFileName, branchToUse)
-        
-        if (flowSha) {
-            const flowBody = {
-                message: commitMessage,
-                sha: flowSha
+        try {
+            const branchToUse = branch || this.config.branchName || 'main'
+            
+            // Get SHAs for both files first
+            const flowFileName = `${flowPath}/flow.json`
+            const messagesFileName = `${flowPath}/messages.json`
+            
+            const flowSha = await this.getFileSha(flowFileName, branchToUse)
+            const messagesSha = await this.getFileSha(messagesFileName, branchToUse)
+            
+            // If neither file exists, consider it a successful deletion
+            if (!flowSha && !messagesSha) {
+                return {
+                    success: true as const,
+                    url: this.getRepositoryUrl()
+                }
             }
-            const flowPath_ = `/repos/${this.config.username}/${this.config.repository}/contents/${encodeURIComponent(flowFileName)}`
-            await this.makeRequest(flowPath_, 'DELETE', flowBody)
-        }
+            
+            // Delete both files - if one fails, we'll throw an error
+            let lastCommitId: string | undefined
+            let lastUrl: string | undefined
+            
+            // Delete flow.json if it exists
+            if (flowSha) {
+                const flowBody = {
+                    message: commitMessage,
+                    sha: flowSha
+                }
+                const flowPath_ = `/repos/${this.config.username}/${this.config.repository}/contents/${encodeURIComponent(flowFileName)}`
+                const flowResponse = await this.githubApiRequest(flowPath_, 'DELETE', flowBody)
+                lastCommitId = flowResponse.commit?.sha
+                lastUrl = flowResponse.content?.html_url
+            }
 
-        // Delete messages.json
-        const messagesFileName = `${flowPath}/messages.json`
-        const messagesSha = await this.getFileSha(messagesFileName, branchToUse)
-        
-        if (messagesSha) {
-            const messagesBody = {
-                message: commitMessage,
-                sha: messagesSha
+            // Delete messages.json if it exists
+            if (messagesSha) {
+                const messagesBody = {
+                    message: commitMessage,
+                    sha: messagesSha
+                }
+                const messagesPath_ = `/repos/${this.config.username}/${this.config.repository}/contents/${encodeURIComponent(messagesFileName)}`
+                const messagesResponse = await this.githubApiRequest(messagesPath_, 'DELETE', messagesBody)
+                lastCommitId = messagesResponse.commit?.sha
+                lastUrl = messagesResponse.content?.html_url
             }
-            const messagesPath_ = `/repos/${this.config.username}/${this.config.repository}/contents/${encodeURIComponent(messagesFileName)}`
-            await this.makeRequest(messagesPath_, 'DELETE', messagesBody)
+
+            return {
+                success: true as const,
+                url: lastUrl,
+                commitId: lastCommitId
+            }
+        } catch (error) {
+            return {
+                success: false as const,
+                error: error instanceof Error ? error.message : 'Unknown error occurred while deleting flow'
+            }
         }
     }
 
@@ -180,7 +219,7 @@ export class GithubProvider implements IGitProvider {
     async getBranches(): Promise<string[]> {
         try {
             const path = `/repos/${this.config.username}/${this.config.repository}/branches`
-            const branches = await this.makeRequest(path)
+            const branches = await this.githubApiRequest(path)
             
             return Array.isArray(branches) 
                 ? branches.map((branch: any) => branch.name)

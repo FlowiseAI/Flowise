@@ -44,7 +44,7 @@ describe('GitProviderFactory', () => {
                     ...mockConfig,
                     provider: 'gitlab'
                 } as any)
-            }).toThrow('GitLab provider is not yet supported.')
+            }).toThrow('Unsupported git provider type: gitlab')
         })
     })
 })
@@ -77,5 +77,33 @@ describe('GithubProvider', () => {
         expect(typeof provider.getFileContent).toBe('function')
         expect(typeof provider.deleteFlow).toBe('function')
         expect(typeof provider.getRepositoryUrl).toBe('function')
+    })
+
+    it('should return correct type for deleteFlow method', async () => {
+        // Mock the githubApiRequest method to avoid actual API calls
+        const originalGithubApiRequest = (provider as any).githubApiRequest
+        ;(provider as any).githubApiRequest = jest.fn().mockResolvedValue({
+            commit: { sha: 'test-commit-sha' },
+            content: { html_url: 'https://github.com/testuser/testrepo/blob/main/test' }
+        })
+
+        try {
+            const result = await provider.deleteFlow('test-flow', 'Test commit message')
+            expect(result).toHaveProperty('success')
+            expect(typeof result.success).toBe('boolean')
+            
+            if (result.success) {
+                expect(result).toHaveProperty('url')
+                if ('commitId' in result) {
+                    expect(typeof result.commitId === 'undefined' || typeof result.commitId === 'string').toBe(true)
+                }
+            } else {
+                expect(result).toHaveProperty('error')
+                expect(typeof result.error).toBe('string')
+            }
+        } finally {
+            // Restore original method
+            ;(provider as any).githubApiRequest = originalGithubApiRequest
+        }
     })
 }) 

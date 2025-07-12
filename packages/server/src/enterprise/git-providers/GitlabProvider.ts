@@ -38,7 +38,7 @@ export class GitlabProvider implements IGitProvider {
         throw new Error('GitLab provider not yet implemented')
     }
 
-    async deleteFlow(flowPath: string, message: string, branch: string = 'main'): Promise<void> {
+    async deleteFlow(flowPath: string, message: string, branch: string = 'main'): Promise<CommitResult> {
         // TODO: Implement GitLab API call to delete flow files
         // GitLab API: DELETE /projects/:id/repository/files/:file_path
         throw new Error('GitLab provider not yet implemented')

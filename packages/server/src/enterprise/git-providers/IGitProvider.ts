@@ -72,7 +72,7 @@ export interface IGitProvider {
     /**
      * Deletes a flow from the repository (deletes all associated files)
      */
-    deleteFlow(flowPath: string, commitMessage: string, branch?: string): Promise<void>;
+    deleteFlow(flowPath: string, commitMessage: string, branch?: string): Promise<CommitResult>;
 
     /**
      * Gets the repository URL for display purposes

@@ -236,7 +236,11 @@ export class FlowVersionService {
             const flowPath = await this.constructFlowPath(chatflowId)
 
             // 3. Delete the flow using the git provider
-            await gitProvider.deleteFlow(flowPath, `Delete flow: ${chatflowId}`, gitConfig.branchName)
+            const result = await gitProvider.deleteFlow(flowPath, `Delete flow: ${chatflowId}`, gitConfig.branchName)
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to delete flow from git repository')
+            }
         } catch (error) {
             throw new InternalFlowiseError(
                 StatusCodes.INTERNAL_SERVER_ERROR, 
