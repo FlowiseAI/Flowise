@@ -5,7 +5,9 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { ChatFlow } from '../../database/entities/ChatFlow'
 import { Workspace } from '../database/entities/workspace.entity'
-import { IGitProvider, VersionInfo, GitProviderFactory } from '../git-providers'
+import { IGitProvider, VersionInfo, GitProviderFactory, FlowMessagesWithFeedback } from '../git-providers'
+import { ChatMessage } from '../../database/entities/ChatMessage'
+import { ChatMessageFeedback } from '../../database/entities/ChatMessageFeedback'
 
 export class FlowVersionService {
     private dataSource: DataSource
@@ -18,12 +20,13 @@ export class FlowVersionService {
     /**
      * Gets the git provider instance for the active git config
      */
-    private async getGitProvider(): Promise<IGitProvider> {
+    private async getGitProvider(): Promise<{provider: IGitProvider, config: GitConfig}> {
         const gitConfig = await this.dataSource.getRepository(GitConfig).findOneBy({ isActive: true })
         if (!gitConfig) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'No active Git config found')
         }
-        return GitProviderFactory.createProviderFromConfig(gitConfig)
+        const provider = GitProviderFactory.createProviderFromConfig(gitConfig)
+        return {provider, config: gitConfig}
     }
 
     /**
@@ -60,7 +63,7 @@ export class FlowVersionService {
     public async publishFlow(chatflowId: string, message?: string): Promise<{ success: true; url?: string; commitId?: string } | { success: false; error: string }> {
         try {
             // 1. Get the git provider
-            const gitProvider = await this.getGitProvider()
+            const {provider: gitProvider, config: gitConfig} = await this.getGitProvider()
 
             // 2. Retrieve the chatflow
             const chatflow = await this.dataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
@@ -71,11 +74,28 @@ export class FlowVersionService {
             // 3. Prepare file content and construct flow path
             const flowPath = await this.constructFlowPath(chatflowId)
             const flowContent = JSON.stringify(chatflow, null, 2)
-            const messagesContent = JSON.stringify({ messages: [] }, null, 2) // TODO: Get actual messages
+            const flowMessagesWithFeedback:FlowMessagesWithFeedback = {
+                messages: [],
+                feedback: []
+            }
+
+            // 4. Retrieve the chatflow messages and feedback
+            const messages = await this.dataSource.getRepository(ChatMessage).findBy({ chatflowid: chatflowId })
+            if (!messages) {
+                return { success: false, error: 'Chatflow messages not found' }
+            }
+            flowMessagesWithFeedback.messages = messages
+            const feedback = await this.dataSource.getRepository(ChatMessageFeedback).findBy({ chatflowid: chatflowId })
+            if (!feedback) {
+                return { success: false, error: 'Chatflow feedback not found' }
+            }
+            flowMessagesWithFeedback.feedback = feedback
+
+            const messagesContent = JSON.stringify({ flowMessagesWithFeedback }, null, 2) 
             const commitMessage = message || `Publish chatflow: ${chatflow.name}`
 
-            // 4. Commit the flow using the git provider
-            const result = await gitProvider.commitFlow(flowPath, flowContent, messagesContent, commitMessage)
+            // 5. Commit the flow using the git provider
+            const result = await gitProvider.commitFlow(flowPath, flowContent, messagesContent, commitMessage, gitConfig.branchName)
 
             if (result.success) {
                 // Update chatflow with Git information after successful publish
@@ -105,7 +125,7 @@ export class FlowVersionService {
     public async getVersions(chatflowId: string): Promise<VersionInfo> {
         try {
             // 1. Get the git provider
-            const gitProvider = await this.getGitProvider()
+            const {provider: gitProvider, config: gitConfig} = await this.getGitProvider()
 
             // 2. Retrieve the chatflow
             const chatflow = await this.dataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
@@ -117,12 +137,21 @@ export class FlowVersionService {
             const flowPath = await this.constructFlowPath(chatflowId)
 
             // 4. Get commit history using the git provider
-            const commits = await gitProvider.getFlowHistory(flowPath)
+            const commits = await gitProvider.getFlowHistory(flowPath, gitConfig.branchName)
+
+            // 5. iterate over the commits and add the external property
+            //    -- any commit that is after the lastPublishedCommit should be external
+            const lastPublishedAt = chatflow.lastPublishedAt
+            if (lastPublishedAt) {
+                commits.forEach((commit) => {
+                    commit.external = new Date(commit.date) > lastPublishedAt
+                })
+            }
 
             return {
                 provider: gitProvider.getProviderName(),
                 repository: gitProvider.getRepositoryUrl(),
-                branch: 'main', // This could be made configurable
+                branch: gitConfig.branchName,
                 filename: `${flowPath}/flow.json`,
                 draft: chatflow.isDirty || false,
                 commits: commits
@@ -143,14 +172,14 @@ export class FlowVersionService {
     public async getChatflowByCommitId(chatflowId: string, commitId: string): Promise<ChatFlow> {
         try {
             // 1. Get the git provider
-            const gitProvider = await this.getGitProvider()
+            const {provider: gitProvider, config: gitConfig} = await this.getGitProvider()
 
             // 2. Construct flow path
             const flowPath = await this.constructFlowPath(chatflowId)
             const flowFileName = `${flowPath}/flow.json`
 
             // 3. Get flow content using the git provider
-            const content = await gitProvider.getFileContent(flowFileName, commitId)
+            const content = await gitProvider.getFileContent(flowFileName, commitId, gitConfig.branchName)
             const chatflowData = JSON.parse(content)
             return chatflowData
         } catch (error) {
@@ -201,13 +230,13 @@ export class FlowVersionService {
     public async deleteChatflowById(chatflowId: string): Promise<void> {
         try {
             // 1. Get the git provider
-            const gitProvider = await this.getGitProvider()
+            const {provider: gitProvider, config: gitConfig} = await this.getGitProvider()
 
             // 2. Construct flow path
             const flowPath = await this.constructFlowPath(chatflowId)
 
             // 3. Delete the flow using the git provider
-            await gitProvider.deleteFlow(flowPath, `Delete flow: ${chatflowId}`)
+            await gitProvider.deleteFlow(flowPath, `Delete flow: ${chatflowId}`, gitConfig.branchName)
         } catch (error) {
             throw new InternalFlowiseError(
                 StatusCodes.INTERNAL_SERVER_ERROR, 

@@ -1,8 +1,11 @@
+import { IChatMessage, IChatMessageFeedback } from "../../Interface";
+
 export interface CommitInfo {
     commitId: string;
     date: string;
     message: string;
     filePath: string;
+    external?: boolean;
 }
 
 export interface VersionInfo {
@@ -35,6 +38,11 @@ export type CommitResult = {
     error: string;
 }
 
+export interface FlowMessagesWithFeedback {
+    messages: IChatMessage[];
+    feedback: IChatMessageFeedback[];
+}
+
 export interface IGitProvider {
     /**
      * Gets the name of the provider
@@ -59,7 +67,7 @@ export interface IGitProvider {
     /**
      * Gets the content of a file at a specific commit
      */
-    getFileContent(fileName: string, commitId: string): Promise<string>;
+    getFileContent(fileName: string, commitId: string, branch?: string): Promise<string>;
 
     /**
      * Deletes a flow from the repository (deletes all associated files)

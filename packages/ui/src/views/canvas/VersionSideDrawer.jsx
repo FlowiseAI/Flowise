@@ -11,6 +11,7 @@ import GitCommitDialog from '@/ui-component/dialog/GitCommitDialog'
 import { IconGitBranch, IconBrandGithub } from '@tabler/icons-react'
 import { IconBrandGit } from '@tabler/icons-react'
 import { IconGitCommit } from '@tabler/icons-react'
+import { IconAlertTriangle } from '@tabler/icons-react'
 
 // VersionHistory type structure:
 // {
@@ -92,6 +93,7 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
+                        autoHideDuration: 3000,
                         persist: true,
                         action: (key) => (
                             <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
@@ -370,16 +372,26 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                                                     </Typography>
                                                 </Box>
                                             </Box>
-                                            <Tooltip title="Commit actions">
-                                                <span>
-                                                    <IconButton
-                                                        size="icon"
-                                                        onClick={(e) => handleMenuClick(e, commit)}
-                                                    >
-                                                        <IconDotsVertical size={20} />
-                                                    </IconButton>
-                                                </span>
-                                            </Tooltip>
+                                            {commit.external ? (
+                                                <Tooltip title="Commit is external to Flowise">
+                                                    <span>
+                                                        <IconButton size="icon">
+                                                            <IconAlertTriangle size={20} color="red" />
+                                                        </IconButton>    
+                                                    </span>
+                                                </Tooltip>
+                                            ) : (
+                                                <Tooltip title="Commit actions">
+                                                    <span>
+                                                        <IconButton
+                                                            size="icon"
+                                                            onClick={(e) => handleMenuClick(e, commit)}
+                                                        >
+                                                            <IconDotsVertical size={20} />
+                                                        </IconButton>
+                                                    </span>
+                                                </Tooltip>
+                                            )}
                                         </Box>
                                     ))}
                                 </Box>

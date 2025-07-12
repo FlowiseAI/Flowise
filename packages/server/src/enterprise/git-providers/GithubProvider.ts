@@ -127,6 +127,7 @@ export class GithubProvider implements IGitProvider {
                     commitId: c.sha,
                     date: c.commit?.committer?.date,
                     message: c.commit?.message,
+                    external: false,
                     filePath: `https://github.com/${this.config.username}/${this.config.repository}/blob/${c.sha}/${flowFileName}`
                 }))
                 : []
