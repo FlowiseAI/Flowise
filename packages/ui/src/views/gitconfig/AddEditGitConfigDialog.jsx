@@ -15,9 +15,14 @@ import {
     Stack,
     Button,
     Chip,
-    Alert
+    Alert,
+    Select,
+    FormControl,
+    InputLabel,
+    IconButton,
+    Tooltip
 } from '@mui/material'
-import { IconGitBranch, IconExternalLink, IconCheck, IconX, IconLock, IconWorld } from '@tabler/icons-react'
+import { IconGitBranch, IconExternalLink, IconCheck, IconX, IconLock, IconWorld, IconRefresh } from '@tabler/icons-react'
 import { StyledButton } from '@/ui-component/button/StyledButton'
 import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 import gitconfigApi from '../../api/gitconfig'
@@ -71,11 +76,14 @@ const AddEditGitConfigDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
         authMode: 'token',
         username: '',
         secret: '',
-        branchName: 'main'
+        branchName: 'main',
+        isActive: true
     })
     const [errors, setErrors] = useState({})
     const [testResult, setTestResult] = useState(null)
     const [isTesting, setIsTesting] = useState(false)
+    const [branches, setBranches] = useState([])
+    const [isLoadingBranches, setIsLoadingBranches] = useState(false)
 
     const dialogType = useMemo(() => dialogProps?.type || 'ADD', [dialogProps?.type])
     const data = useMemo(() => dialogProps?.data || {}, [dialogProps?.data])
@@ -88,8 +96,13 @@ const AddEditGitConfigDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 authMode: data.authMode || 'token',
                 username: data.username || '',
                 secret: '', // never prefill secret
-                branchName: data.branchName || 'main'
+                branchName: data.branchName || 'main',
+                isActive: data.isActive !== undefined ? data.isActive : true
             })
+            // Load branches for edit mode
+            if (data.id) {
+                loadBranches(data.id)
+            }
         } else if (dialogType === 'ADD') {
             setForm({
                 provider: 'github',
@@ -97,12 +110,33 @@ const AddEditGitConfigDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 authMode: 'token',
                 username: '',
                 secret: '',
-                branchName: 'main'
+                branchName: 'main',
+                isActive: true
             })
         }
         // Clear test result when dialog opens
         setTestResult(null)
     }, [dialogType, data])
+
+    const loadBranches = async (configId) => {
+        setIsLoadingBranches(true)
+        try {
+            const response = await gitconfigApi.getBranches(configId)
+            const branchesData = response?.data || response || []
+            setBranches(branchesData)
+        } catch (error) {
+            console.error('Failed to load branches:', error)
+            setBranches([])
+        } finally {
+            setIsLoadingBranches(false)
+        }
+    }
+
+    const handleRefreshBranches = () => {
+        if (data?.id) {
+            loadBranches(data.id)
+        }
+    }
 
     const handleChange = (e) => {
         const { name, value, type: inputType, checked } = e.target
@@ -178,9 +212,11 @@ const AddEditGitConfigDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
 
     const validate = () => {
         const newErrors = {}
-        if (!form.username) newErrors.username = 'Username is required'
-        if (!form.repository) newErrors.repository = 'Repository name is required'
-        if (!form.secret) newErrors.secret = 'Token is required'
+        if (dialogType === 'ADD') {
+            if (!form.username) newErrors.username = 'Username is required'
+            if (!form.repository) newErrors.repository = 'Repository name is required'
+            if (!form.secret) newErrors.secret = 'Token is required'
+        }
         return newErrors
     }
 
@@ -358,6 +394,7 @@ const AddEditGitConfigDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             onChange={handleChange}
                             error={!!errors.username}
                             fullWidth
+                            disabled={dialogType === 'EDIT'}
                         />
                     </Box>
                     <Box sx={{ p: 1 }}>
@@ -369,45 +406,103 @@ const AddEditGitConfigDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                             onChange={handleChange}
                             error={!!errors.repository}
                             fullWidth
+                            disabled={dialogType === 'EDIT'}
                         />
                     </Box>
+                    {dialogType === 'ADD' && (
+                        <Box sx={{ p: 1 }}>
+                            <Typography>Token<span style={{ color: 'red' }}>&nbsp;*</span></Typography>
+                            <OutlinedInput
+                                size='small'
+                                name='secret'
+                                type='password'
+                                value={form.secret}
+                                onChange={handleChange}
+                                error={!!errors.secret}
+                                fullWidth
+                                multiline
+                                rows={3}
+                            />
+                            <Box sx={{ mt: 0.5, display: 'flex', justifyContent: 'flex-end' }}>
+                                <Button
+                                    size="small"
+                                    onClick={() => window.open('https://github.com/settings/personal-access-tokens/new', '_blank')}
+                                    sx={{ textTransform: 'none', fontSize: '0.75rem' }}
+                                    startIcon={<IconExternalLink size={14} />}
+                                >
+                                    Learn about GitHub tokens
+                                </Button>
+                            </Box>
+                        </Box>
+                    )}
                     <Box sx={{ p: 1 }}>
-                        <Typography>Token<span style={{ color: 'red' }}>&nbsp;*</span></Typography>
-                        <OutlinedInput
-                            size='small'
-                            name='secret'
-                            type='password'
-                            value={form.secret}
-                            onChange={handleChange}
-                            error={!!errors.secret}
-                            fullWidth
-                            multiline
-                            rows={3}
-                        />
-                        <Box sx={{ mt: 0.5, display: 'flex', justifyContent: 'flex-end' }}>
-                            <Button
-                                size="small"
-                                onClick={() => window.open('https://github.com/settings/personal-access-tokens/new', '_blank')}
-                                sx={{ textTransform: 'none', fontSize: '0.75rem' }}
-                                startIcon={<IconExternalLink size={14} />}
-                            >
-                                Learn about GitHub tokens
-                            </Button>
+                        <Typography>Branch Name<span style={{ color: 'red' }}>&nbsp;*</span></Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <FormControl fullWidth size="small">
+                                <Select
+                                    name='branchName'
+                                    value={form.branchName}
+                                    onChange={handleChange}
+                                    disabled={dialogType === 'EDIT' && branches.length === 0}
+                                >
+                                    {branches.map((branch) => (
+                                        <MenuItem key={branch} value={branch}>
+                                            {branch}
+                                        </MenuItem>
+                                    ))}
+                                    {branches.length === 0 && (
+                                        <MenuItem value={form.branchName}>
+                                            {form.branchName}
+                                        </MenuItem>
+                                    )}
+                                </Select>
+                            </FormControl>
+                            {dialogType === 'EDIT' && (
+                                <Tooltip title="Refresh branches">
+                                    <IconButton
+                                        onClick={handleRefreshBranches}
+                                        disabled={isLoadingBranches}
+                                        size="small"
+                                    >
+                                        <IconRefresh size={16} />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
                         </Box>
                     </Box>
+                    {dialogType === 'EDIT' && (
+                        <Box sx={{ p: 1 }}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        name='isActive'
+                                        checked={form.isActive}
+                                        onChange={handleChange}
+                                        color="primary"
+                                    />
+                                }
+                                label="Active"
+                            />
+                            <Typography variant="caption" color="textSecondary" sx={{ ml: 4, display: 'block' }}>
+                                Uncheck to deactivate this git configuration
+                            </Typography>
+                        </Box>
+                    )}
                 </DialogContent>
                 <DialogActions sx={{ justifyContent: 'space-between', p: 3 }}>
-                    <Button 
-                        onClick={handleTestConnection} 
-                        variant="outlined"
-                        disabled={isTesting}
-                    >
-                        {isTesting ? 'Testing...' : 'Test Connection'}
-                    </Button>
+                    {dialogType === 'ADD' && (
+                        <Button 
+                            onClick={handleTestConnection} 
+                            variant="outlined"
+                            disabled={isTesting}
+                        >
+                            {isTesting ? 'Testing...' : 'Test Connection'}
+                        </Button>
+                    )}
                     <Box>
                         <Button onClick={onCancel}>{dialogProps.cancelButtonName || 'Cancel'}</Button>
                         <StyledButton
-                            disabled={!form.username || !form.repository || !form.secret || !testResult?.success}
+                            disabled={dialogType === 'ADD' ? (!form.username || !form.repository || !form.secret || !testResult?.success) : false}
                             variant='contained'
                             type='submit'
                         >

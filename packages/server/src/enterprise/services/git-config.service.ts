@@ -5,6 +5,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import * as https from 'https'
 import { ChatFlow } from '../../database/entities/ChatFlow'
+import { GitProviderFactory } from '../git-providers/GitProviderFactory'
 
 export class GitConfigService {
     private dataSource: DataSource
@@ -41,6 +42,12 @@ export class GitConfigService {
         const repo = this.dataSource.getRepository(GitConfig)
         const config = await repo.findOneBy({ id, organizationId: data.organizationId })
         if (!config) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Git config not found')
+        // only update the branch name and isActive
+        delete data.secret
+        delete data.username
+        delete data.repository
+        delete data.provider
+        delete data.authMode
         const updated = repo.merge(config, data)
         return await repo.save(updated)
     }
@@ -157,5 +164,30 @@ export class GitConfigService {
 
             req.end()
         })
+    }
+
+    public async getBranches(id: string, organizationId: string): Promise<string[]> {
+        try {
+            // Get the git config
+            const config = await this.getGitConfigById(id, organizationId)
+            if (!config) {
+                throw new InternalFlowiseError(StatusCodes.NOT_FOUND, 'Git config not found')
+            }
+
+            // Create git provider instance
+            const provider = GitProviderFactory.createProviderFromConfig(config)
+
+            // Get branches from the provider
+            const branches = await provider.getBranches()
+            return branches
+        } catch (error) {
+            if (error instanceof InternalFlowiseError) {
+                throw error
+            }
+            throw new InternalFlowiseError(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                error instanceof Error ? error.message : 'Failed to fetch branches'
+            )
+        }
     }
 } 

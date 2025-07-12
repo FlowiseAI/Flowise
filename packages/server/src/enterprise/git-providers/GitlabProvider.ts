@@ -47,4 +47,10 @@ export class GitlabProvider implements IGitProvider {
     getRepositoryUrl(): string {
         return `https://gitlab.com/${this.config.username}/${this.config.repository}`
     }
+
+    async getBranches(): Promise<string[]> {
+        // TODO: Implement GitLab API call to get all branches
+        // GitLab API: GET /projects/:id/repository/branches
+        throw new Error('GitLab provider not yet implemented')
+    }
 } 

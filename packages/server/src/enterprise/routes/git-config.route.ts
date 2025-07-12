@@ -5,6 +5,7 @@ const router = express.Router()
 const gitConfigController = new GitConfigController()
 
 router.get('/', gitConfigController.getAll)
+router.get('/:id/branches', gitConfigController.getBranches)
 router.get('/:id', gitConfigController.getById)
 router.post('/', gitConfigController.create)
 router.put('/:id', gitConfigController.update)

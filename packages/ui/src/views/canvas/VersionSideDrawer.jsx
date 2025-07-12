@@ -424,10 +424,10 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                     horizontal: 'right'
                 }}
             >
-                {<MenuItem onClick={handleShowCommit}>
+                <MenuItem onClick={handleShowCommit} disabled={selectedCommit === commitId}>
                     <IconEye size={18} style={{ marginRight: 8 }} />
-                    Show Commit
-                </MenuItem>}
+                    {selectedCommit === commitId ? 'Current Commit' : 'Show Commit'}
+                </MenuItem>
                 <MenuItem onClick={handleMakeDraft} disabled={isDraftAvailable || selectedCommit === 'draft'}>
                     <IconFileText size={18} style={{ marginRight: 8 }} />
                     Make Draft

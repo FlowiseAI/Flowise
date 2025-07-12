@@ -176,4 +176,17 @@ export class GithubProvider implements IGitProvider {
     getRepositoryUrl(): string {
         return `https://github.com/${this.config.username}/${this.config.repository}`
     }
+
+    async getBranches(): Promise<string[]> {
+        try {
+            const path = `/repos/${this.config.username}/${this.config.repository}/branches`
+            const branches = await this.makeRequest(path)
+            
+            return Array.isArray(branches) 
+                ? branches.map((branch: any) => branch.name)
+                : []
+        } catch (error) {
+            return []
+        }
+    }
 } 

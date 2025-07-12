@@ -14,6 +14,8 @@ const activateGitConfig = (id) => client.post(`/git-config/${id}/activate`)
 
 const testGitConfig = (body) => client.post(`/git-config/test`, body)
 
+const getBranches = (id) => client.get(`/git-config/${id}/branches`)
+
 export default {
     getAllGitConfigs,
     getGitConfigById,
@@ -22,4 +24,5 @@ export default {
     deleteGitConfig,
     activateGitConfig,
     testGitConfig,
+    getBranches,
 } 

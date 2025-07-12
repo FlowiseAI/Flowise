@@ -20,7 +20,8 @@ const canvasReducer = (state = initialState, action) => {
                     ...state,
                     isDirty: true
                 }
-            } 
+            }
+            return state
         case actionTypes.REMOVE_DIRTY:
             return {
                 ...state,

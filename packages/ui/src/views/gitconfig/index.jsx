@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
+// Hooks
+import useConfirm from '@/hooks/useConfirm'
+
 // material-ui
 import {
     Button,
@@ -14,7 +17,6 @@ import {
     TableHead,
     TableRow,
     Paper,
-    IconButton,
     Chip,
     Skeleton
 } from '@mui/material'
@@ -23,10 +25,11 @@ import { useTheme } from '@mui/material/styles'
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
+
 import ErrorBoundary from '@/ErrorBoundary'
 import gitConfigApi from '@/api/gitconfig'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
-import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import { StyledPermissionButton, PermissionIconButton } from '@/ui-component/button/RBACButtons'
 import { StyledTableCell, StyledTableRow } from '@/ui-component/table/TableStyles'
 import AddEditGitConfigDialog from './AddEditGitConfigDialog'
 
@@ -40,8 +43,7 @@ const GitConfigList = () => {
 
     const [isLoading, setLoading] = useState(true)
     const [gitConfigs, setGitConfigs] = useState([])
-    const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-    const [confirmDialogProps, setConfirmDialogProps] = useState({})
+
     const [error, setError] = useState(null)
     // Placeholder for add/edit dialog state
     const [showDialog, setShowDialog] = useState(false)
@@ -50,6 +52,7 @@ const GitConfigList = () => {
 
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
+    const { confirm } = useConfirm()
 
     const fetchGitConfigs = async () => {
         setLoading(true)
@@ -79,62 +82,31 @@ const GitConfigList = () => {
         setShowDialog(true)
     }
 
-    const handleDelete = (config) => {
-        setConfirmDialogProps({
-            title: 'Delete',
+    const handleDelete = async (config) => {
+        const confirmPayload = {
+            title: `Delete`,
             description: `Delete Git Config for provider ${config.provider}?`,
             confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel',
-            onConfirm: () => confirmDelete(config.id)
-        })
-        setShowConfirmDialog(true)
-    }
+            cancelButtonName: 'Cancel'
+        }
+        const isConfirmed = await confirm(confirmPayload)
 
-    const confirmDelete = async (id) => {
-        setShowConfirmDialog(false)
-        try {
-            await gitConfigApi.deleteGitConfig(id)
-            enqueueSnackbar({
-                message: 'Git Config deleted',
-                options: { variant: 'success' }
-            })
-            fetchGitConfigs()
-        } catch (err) {
-            enqueueSnackbar({
-                message: 'Failed to delete Git Config',
-                options: { variant: 'error' }
-            })
+        if (isConfirmed) {
+            try {
+                await gitConfigApi.deleteGitConfig(config.id)
+                enqueueSnackbar({
+                    message: 'Git Config deleted',
+                    options: { variant: 'success' }
+                })
+                fetchGitConfigs()
+            } catch (err) {
+                enqueueSnackbar({
+                    message: 'Failed to delete Git Config',
+                    options: { variant: 'error' }
+                })
+            }
         }
     }
-
-    const handleActivate = (config) => {
-        setConfirmDialogProps({
-            title: 'Activate',
-            description: `Set Git Config for provider ${config.provider} as active?`,
-            confirmButtonName: 'Activate',
-            cancelButtonName: 'Cancel',
-            onConfirm: () => confirmActivate(config.id)
-        })
-        setShowConfirmDialog(true)
-    }
-
-    const confirmActivate = async (id) => {
-        setShowConfirmDialog(false)
-        try {
-            await gitConfigApi.activateGitConfig(id)
-            enqueueSnackbar({
-                message: 'Git Config activated',
-                options: { variant: 'success' }
-            })
-            fetchGitConfigs()
-        } catch (err) {
-            enqueueSnackbar({
-                message: 'Failed to activate Git Config',
-                options: { variant: 'error' }
-            })
-        }
-    }
-
     // Placeholder for add/edit dialog submit
     const handleDialogSubmit = async (data) => {
         setShowDialog(false)
@@ -216,12 +188,29 @@ const GitConfigList = () => {
                                                     <TableCell>{config.authMode}</TableCell>
                                                     <TableCell>{config.branchName}</TableCell>
                                                     <TableCell>
-                                                        {config.isActive ? <Chip label="Active" color="success" size="small" icon={<IconCheck size={16} />} /> : ''}
+                                                        {config.isActive ? (
+                                                            <Chip label="Active" color="success" size="small" icon={<IconCheck size={16} />} />
+                                                        ) : (
+                                                            <Chip label="Inactive" color="default" size="small" />
+                                                        )}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <IconButton onClick={() => handleEdit(config)}><IconEdit size={18} /></IconButton>
-                                                        <IconButton onClick={() => handleDelete(config)}><IconTrash size={18} /></IconButton>
-                                                        {!config.isActive && <IconButton onClick={() => handleActivate(config)}><IconCheck size={18} /></IconButton>}
+                                                        <PermissionIconButton
+                                                            permissionId={'gitconfig:update'}
+                                                            title='Edit'
+                                                            color='primary'
+                                                            onClick={() => handleEdit(config)}
+                                                        >
+                                                            <IconEdit />
+                                                        </PermissionIconButton>
+                                                        <PermissionIconButton
+                                                            permissionId={'gitconfig:delete'}
+                                                            title='Delete'
+                                                            color='error'
+                                                            onClick={() => handleDelete(config)}
+                                                        >
+                                                            <IconTrash />
+                                                        </PermissionIconButton>
                                                     </TableCell>
                                                 </TableRow>
                                             ))
@@ -232,7 +221,6 @@ const GitConfigList = () => {
                         </Box>
                     </Stack>
             )}
-            <ConfirmDialog open={showConfirmDialog} onClose={() => setShowConfirmDialog(false)} {...confirmDialogProps} />
             <AddEditGitConfigDialog
                 show={showDialog}
                 dialogProps={{
@@ -244,6 +232,7 @@ const GitConfigList = () => {
                 onCancel={() => setShowDialog(false)}
                 onConfirm={handleDialogSubmit}
             />
+            <ConfirmDialog />
         </MainCard>
     )
 }

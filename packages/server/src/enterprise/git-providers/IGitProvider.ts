@@ -78,4 +78,9 @@ export interface IGitProvider {
      * Gets the repository URL for display purposes
      */
     getRepositoryUrl(): string;
+
+    /**
+     * Gets all branches from the repository
+     */
+    getBranches(): Promise<string[]>;
 } 

@@ -107,7 +107,7 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
             const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({ id: chatflowId })
             if (chatflow && chatflow.chatbotConfig) {
                 const chatbotConfig = JSON.parse(chatflow.chatbotConfig)
-                if (chatbotConfig.gitConfig) {
+                if (chatbotConfig.gitVersioning) {
                     // delete the chatflow from the git repository
                     await flowVersionService.deleteChatflowById(chatflowId)
                 }

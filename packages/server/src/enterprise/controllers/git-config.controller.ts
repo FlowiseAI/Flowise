@@ -80,6 +80,24 @@ export class GitConfigController {
         }
     }
 
+    public async getBranches(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.params || !req.params.id) {
+                throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, 'id not provided!')
+            }
+            const currentUser = req.user
+            if (!currentUser) {
+                throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User not found')
+            }
+            const organizationId = currentUser.activeOrganizationId
+            const service = new GitConfigService()
+            const branches = await service.getBranches(req.params.id, organizationId)
+            return res.status(StatusCodes.OK).json(branches)
+        } catch (error) {
+            next(error)
+        }
+    }
+
     public async update(req: Request, res: Response, next: NextFunction) {
         try {
             if (!req.params || !req.params.id) {
