@@ -311,7 +311,7 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
             {/* if commitId is provided, highlight the commit in the list and have a highlighted left border */}
             {versionHistory?.commits?.length > 0 && (
                 <>
-                    <Box sx={{ width: 400, p: 2, height: '100%' }}>
+                    <Box sx={{ width: '100%', p: 2, height: '100%', overflowY: 'auto' }}>
                         <Box sx={{ position: 'relative' }}>
                             <Box sx={{ mb: 3, borderLeft: '1px solid #d0d7de', }}>
                                 {isDraftAvailable && (
@@ -426,8 +426,8 @@ const VersionsSideDrawer = ({ show, dialogProps, onClickFunction, onSelectVersio
                     Copy Commit ID
                 </MenuItem>
                 <MenuItem onClick={handleViewInGithub} disabled={selectedCommit === 'draft'}>
-                    <IconBrandGithub size={18} style={{ marginRight: 8 }} />
-                    View in Github
+                    {versionHistory.provider === 'GitHub' ? <IconBrandGithub size={18} style={{ marginRight: 8 }} /> : <IconBrandGit size={18} style={{ marginRight: 8 }} />}
+                    View in {versionHistory.provider}
                 </MenuItem>
             </Menu>
             <GitCommitDialog
