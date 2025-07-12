@@ -182,7 +182,6 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     }
 
     const onVersionHistoryClick = (commitId) => {
-        console.log('header commitId', commitId)
         setShowVersionSideDrawer(false)
         if (isAgentCanvas) {
             if (commitId) {

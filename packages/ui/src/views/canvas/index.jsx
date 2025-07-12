@@ -70,13 +70,24 @@ const Canvas = () => {
     const { state } = useLocation()
     const templateFlowData = state ? state.templateFlowData : ''
 
-    const URLpath = document.location.pathname.toString().split('/')
+    // Utility function to safely parse URL parameters
+    const getUrlParameter = (paramName) => {
+        try {
+            const urlParams = new URLSearchParams(document.location.search)
+            return urlParams.get(paramName)
+        } catch (error) {
+            console.warn(`Error parsing URL parameter ${paramName}:`, error)
+            return null
+        }
+    }
+
+    const URLpath = window.location.pathname.split('/')
     const chatflowId =
         URLpath[URLpath.length - 1] === 'canvas' || URLpath[URLpath.length - 1] === 'agentcanvas' ? '' : URLpath[URLpath.length - 1]
     const isAgentCanvas = URLpath.includes('agentcanvas') ? true : false
     const canvasTitle = URLpath.includes('agentcanvas') ? 'Agent' : 'Chatflow'
 
-    const commitId = document.location.search.includes('commitId') ? document.location.search.split('=')[1] : null
+    const commitId = getUrlParameter('commitId')
     const { confirm } = useConfirm()
 
     const dispatch = useDispatch()
@@ -513,7 +524,7 @@ const Canvas = () => {
         if (chatflowId) {
             // commitId is the query param not a path param 
             // http://localhost:8080/canvas/84620a63-cb4b-4a82-884b-21d72b3ea72f?commitId=f6f9c7cbf5ed00d6e48e5ed275c85bb8554661d5
-            const commitId = document.location.search.includes('commitId') ? document.location.search.split('=')[1] : null
+            const commitId = getUrlParameter('commitId')
             getSpecificChatflowApi.request(chatflowId, commitId)
         } else {
             if (localStorage.getItem('duplicatedFlowData')) {

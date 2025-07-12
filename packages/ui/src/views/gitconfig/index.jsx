@@ -165,6 +165,7 @@ const GitConfigList = () => {
                             title='Git Configuration'
                             description=''
                         >
+                            {/* TODO: Change the permissionId to 'gitconfig:create' when support for other providers is added */}
                             <StyledPermissionButton
                                 permissionId={'datasets:create'}
                                 variant='contained'

@@ -18,7 +18,7 @@ const canvasReducer = (state = initialState, action) => {
             if (!action.isReadonly) {
                 return {
                     ...state,
-                    isDirty: false
+                    isDirty: true
                 }
             } 
         case actionTypes.REMOVE_DIRTY:

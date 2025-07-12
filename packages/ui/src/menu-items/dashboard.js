@@ -266,8 +266,8 @@ const dashboard = {
                     url: '/git-configs',
                     icon: icons.IconGitBranch,
                     breadcrumbs: true,
-                    display: 'feat:logs',
-                    permission: 'logs:view'
+                    display: 'feat:logs', /*TODO: Change to 'feat:git-configs' when feature support is added*/
+                    permission: 'logs:view' /*TODO: Change to 'gitconfigs:view' when RBAC is added*/
                 },
                 {
                     id: 'logs',

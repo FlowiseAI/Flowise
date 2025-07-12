@@ -91,7 +91,7 @@ export class FlowVersionService {
             }
             flowMessagesWithFeedback.feedback = feedback
 
-            const messagesContent = JSON.stringify({ flowMessagesWithFeedback }, null, 2) 
+            const messagesContent = JSON.stringify({ flowMessagesWithFeedback }) 
             const commitMessage = message || `Publish chatflow: ${chatflow.name}`
 
             // 5. Commit the flow using the git provider

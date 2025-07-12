@@ -327,6 +327,7 @@ const AddEditGitConfigDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     {renderTestResult()}
                     <Box sx={{ p: 1 }}>
                         <Typography>Provider<span style={{ color: 'red' }}>&nbsp;*</span></Typography>
+                        {/* Provider is disabled as only GitHub is currently supported, support for other providers will be added in the future */}
                         <Dropdown
                             disabled={true}
                             name='provider'
@@ -338,6 +339,7 @@ const AddEditGitConfigDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     </Box>
                     <Box sx={{ p: 1 }}>
                         <Typography>Auth Mode<span style={{ color: 'red' }}>&nbsp;*</span></Typography>
+                        {/* Auth Mode is disabled as only Token-based authentication is currently supported, support for other auth modes will be added in the future */}
                         <Dropdown
                             disabled={true}
                             name='authMode'
