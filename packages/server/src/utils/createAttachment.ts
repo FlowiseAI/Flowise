@@ -136,7 +136,7 @@ export const createFileAttachment = async (req: Request) => {
             if (fileInputFieldFromExt !== 'txtFile') {
                 fileInputField = fileInputFieldFromExt
             } else if (fileInputFieldFromMimeType !== 'txtFile') {
-                fileInputField = fileInputFieldFromExt
+                fileInputField = fileInputFieldFromMimeType
             }
 
             await removeSpecificFileFromUpload(file.path ?? file.key)
@@ -171,7 +171,7 @@ export const createFileAttachment = async (req: Request) => {
                     content
                 })
             } catch (error) {
-                throw new Error(`Failed operation: createFileAttachment - ${getErrorMessage(error)}`)
+                throw new Error(`Failed to process ${file.originalname} (${file.mimetype}): ${getErrorMessage(error)}`)
             }
         }
     }

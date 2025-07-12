@@ -1034,7 +1034,9 @@ export const mapExtToInputField = (ext: string) => {
         case '.csv':
         case '.xls':
         case '.xlsx':
-            return 'csvFile'
+        case '.xlsm':
+        case '.xlsb':
+            return 'file'
         case '.jsonl':
             return 'jsonlinesFile'
         case '.docx':
@@ -1068,6 +1070,9 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
             return 'jsonlinesFile'
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             return 'docxFile'
+        case 'application/vnd.ms-excel':
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+            return 'file'
         case 'application/vnd.yaml':
         case 'application/x-yaml':
         case 'text/vnd.yaml':
