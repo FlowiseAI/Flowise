@@ -7,10 +7,11 @@ import { CachePool } from '../CachePool'
 import { DataSource } from 'typeorm'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { QueueEventsProducer, RedisOptions } from 'bullmq'
-import { createBullBoard } from 'bull-board'
-import { BullMQAdapter } from 'bull-board/bullMQAdapter'
+import { createBullBoard } from '@bull-board/api'
+import { BullMQAdapter } from '@bull-board/api/bullMQAdapter'
 import { Express } from 'express'
 import { UsageCacheManager } from '../UsageCacheManager'
+import { ExpressAdapter } from '@bull-board/express'
 
 const QUEUE_NAME = process.env.QUEUE_NAME || 'flowise-queue'
 
@@ -98,7 +99,8 @@ export class QueueManager {
         cachePool,
         appDataSource,
         abortControllerPool,
-        usageCacheManager
+        usageCacheManager,
+        serverAdapter
     }: {
         componentNodes: IComponentNodes
         telemetry: Telemetry
@@ -106,6 +108,7 @@ export class QueueManager {
         appDataSource: DataSource
         abortControllerPool: AbortControllerPool
         usageCacheManager: UsageCacheManager
+        serverAdapter?: ExpressAdapter
     }) {
         const predictionQueueName = `${QUEUE_NAME}-prediction`
         const predictionQueue = new PredictionQueue(predictionQueueName, this.connection, {
@@ -131,7 +134,12 @@ export class QueueManager {
         })
         this.registerQueue('upsert', upsertionQueue)
 
-        const bullboard = createBullBoard([new BullMQAdapter(predictionQueue.getQueue()), new BullMQAdapter(upsertionQueue.getQueue())])
-        this.bullBoardRouter = bullboard.router
+        if (serverAdapter) {
+            createBullBoard({
+                queues: [new BullMQAdapter(predictionQueue.getQueue()), new BullMQAdapter(upsertionQueue.getQueue())],
+                serverAdapter: serverAdapter
+            })
+            this.bullBoardRouter = serverAdapter.getRouter()
+        }
     }
 }
