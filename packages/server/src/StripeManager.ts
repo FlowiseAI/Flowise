@@ -412,11 +412,7 @@ export class StripeManager {
                 // When there is a paid and unpaid lines in the invoice, we need to remove the unpaid quantity of that invoice
                 if (openAdditionalSeatsInvoices[0].lines.data.length > 1) {
                     openAdditionalSeatsInvoices[0].lines.data.forEach((line) => {
-                        if (line.amount < 0) {
-                            newQuantity += -Math.abs(line.quantity ?? 0)
-                        } else {
-                            newQuantity += line.quantity ?? 0
-                        }
+                        if (line.amount < 0) newQuantity += line.quantity ?? 0
                     })
                     // If there is only one line in the invoice, we need to remove the whole quantity of that invoice
                 } else if (openAdditionalSeatsInvoices[0].lines.data.length === 1) {
