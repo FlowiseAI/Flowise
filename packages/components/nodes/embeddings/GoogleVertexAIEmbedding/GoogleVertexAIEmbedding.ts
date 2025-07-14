@@ -1,7 +1,7 @@
-import { VertexAIEmbeddings, GoogleVertexAIEmbeddingsInput } from '@langchain/google-vertexai'
+import { GoogleVertexAIEmbeddingsInput, VertexAIEmbeddings } from '@langchain/google-vertexai'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { MODEL_TYPE, getModels, getRegions } from '../../../src/modelLoader'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string
@@ -39,7 +39,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'textembedding-gecko@001'
+                default: 'text-embedding-004'
             },
             {
                 label: 'Region',

@@ -1767,28 +1767,20 @@
             "name": "googlevertexaiEmbeddings",
             "models": [
                 {
-                    "label": "multimodalembedding",
-                    "name": "multimodalembedding"
+                    "label": "gemini-embedding-001",
+                    "name": "gemini-embedding-001"
                 },
                 {
                     "label": "text-embedding-004",
                     "name": "text-embedding-004"
                 },
                 {
+                    "label": "text-embedding-005",
+                    "name": "text-embedding-005"
+                },
+                {
                     "label": "text-multilingual-embedding-002",
                     "name": "text-multilingual-embedding-002"
-                },
-                {
-                    "label": "textembedding-gecko@001",
-                    "name": "textembedding-gecko@001"
-                },
-                {
-                    "label": "textembedding-gecko@latest",
-                    "name": "textembedding-gecko@latest"
-                },
-                {
-                    "label": "textembedding-gecko-multilingual@latest",
-                    "name": "textembedding-gecko-multilingual@latest"
                 }
             ],
             "regions": [
