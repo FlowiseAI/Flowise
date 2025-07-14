@@ -162,7 +162,7 @@ async function handleFeedbackQuery(params: {
         // First get session IDs with pagination
         const sessionQuery = appServer.AppDataSource.getRepository(ChatMessage)
             .createQueryBuilder('chat_message')
-            .select('DISTINCT chat_message.sessionId', 'sessionId')
+            .select('chat_message.sessionId', 'sessionId')
             .where('chat_message.chatflowid = :chatflowid', { chatflowid })
 
         // Apply basic filters
