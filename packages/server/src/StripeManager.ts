@@ -3,6 +3,9 @@ import { Request } from 'express'
 import { UsageCacheManager } from './UsageCacheManager'
 import { UserPlan } from './Interface'
 import { LICENSE_QUOTAS } from './utils/constants'
+import { InternalFlowiseError } from './errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
+import logger from './utils/logger'
 
 export class StripeManager {
     private static instance: StripeManager
@@ -359,33 +362,43 @@ export class StripeManager {
         }
     }
 
-    public async updateAdditionalSeats(subscriptionId: string, quantity: number, _prorationDate: number) {
+    public async updateAdditionalSeats(subscriptionId: string, quantity: number, _prorationDate: number, increase: boolean) {
         if (!this.stripe) {
             throw new Error('Stripe is not initialized')
         }
 
         try {
-            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
-            const additionalSeatsItem = subscription.items.data.find(
-                (item) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
-            )
-
             // Get the price ID for additional seats if needed
             const prices = await this.stripe.prices.list({
                 product: process.env.ADDITIONAL_SEAT_ID,
                 active: true,
                 limit: 1
             })
-
             if (prices.data.length === 0) {
                 throw new Error('No active price found for additional seats')
             }
+
+            const openInvoices = await this.stripe.invoices.list({
+                subscription: subscriptionId,
+                status: 'open'
+            })
+            const openAdditionalSeatsInvoices = openInvoices.data.filter((invoice) =>
+                invoice.lines?.data?.some((line) => line.price?.id === prices.data[0].id)
+            )
+            logger.info(`openAdditionalSeatsInvoices: ${openAdditionalSeatsInvoices.length}, increase: ${increase}`)
+            if (openAdditionalSeatsInvoices.length > 0 && increase === true)
+                throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, "Not allow to add seats when there're unsuccessful payment")
+
+            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const additionalSeatsItem = subscription.items.data.find(
+                (item) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
+            )
 
             // TODO: Fix proration date for sandbox testing - use subscription period bounds
             const adjustedProrationDate = this.calculateSafeProrationDate(subscription)
 
             // Create an invoice immediately for the proration
-            const updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, {
+            const subscriptionUpdateData: any = {
                 items: [
                     additionalSeatsItem
                         ? {
@@ -396,10 +409,16 @@ export class StripeManager {
                               price: prices.data[0].id,
                               quantity: quantity
                           }
-                ],
-                proration_behavior: 'always_invoice',
-                proration_date: adjustedProrationDate
-            })
+                ]
+            }
+            if (openAdditionalSeatsInvoices.length > 0) {
+                await this.stripe.invoices.voidInvoice(openAdditionalSeatsInvoices[0].id)
+                subscriptionUpdateData.proration_behavior = 'none'
+            } else {
+                ;(subscriptionUpdateData.proration_behavior = 'always_invoice'),
+                    (subscriptionUpdateData.proration_date = adjustedProrationDate)
+            }
+            const updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, subscriptionUpdateData)
 
             // Get the latest invoice for this subscription
             const invoice = await this.stripe.invoices.list({

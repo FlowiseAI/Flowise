@@ -134,7 +134,7 @@ export class OrganizationController {
 
     public async updateAdditionalSeats(req: Request, res: Response, next: NextFunction) {
         try {
-            const { subscriptionId, quantity, prorationDate } = req.body
+            const { subscriptionId, quantity, prorationDate, increase } = req.body
             if (!subscriptionId) {
                 return res.status(400).json({ error: 'Subscription ID is required' })
             }
@@ -144,8 +144,10 @@ export class OrganizationController {
             if (!prorationDate) {
                 return res.status(400).json({ error: 'Proration date is required' })
             }
+            if (increase === undefined) return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Increase is required' })
+
             const identityManager = getRunningExpressApp().identityManager
-            const result = await identityManager.updateAdditionalSeats(subscriptionId, quantity, prorationDate)
+            const result = await identityManager.updateAdditionalSeats(subscriptionId, quantity, prorationDate, increase)
 
             return res.status(StatusCodes.OK).json(result)
         } catch (error) {

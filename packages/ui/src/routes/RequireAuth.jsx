@@ -71,10 +71,12 @@ export const RequireAuth = ({ permission, display, children }) => {
     const [isBillingLoading, setIsBillingLoading] = useState(false)
 
     useEffect(() => {
-        if (currentUser && currentUser.isOrganizationAdmin === false) {
-            handleSwitchWorkspace(currentUser)
-        } else if (organization && organization.status === 'past_due') {
-            setShowOrgPastDueDialog(true)
+        if (organization && organization.status === 'past_due') {
+            if (currentUser && currentUser.isOrganizationAdmin === false) {
+                handleSwitchWorkspace(currentUser)
+            } else {
+                setShowOrgPastDueDialog(true)
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [organization, currentUser])

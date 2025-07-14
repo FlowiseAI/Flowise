@@ -347,7 +347,7 @@ const AccountSettings = () => {
         }
     }
 
-    const handleSeatsModification = async (newSeatsAmount) => {
+    const handleSeatsModification = async (newSeatsAmount, increase) => {
         try {
             setIsUpdatingSeats(true)
 
@@ -358,7 +358,8 @@ const AccountSettings = () => {
             const response = await updateAdditionalSeatsApi.request(
                 currentUser?.activeOrganizationSubscriptionId,
                 newSeatsAmount,
-                prorationInfo.prorationDate
+                prorationInfo.prorationDate,
+                increase
             )
 
             // Check if payment failed but seats were updated (Issue #4 fix)
@@ -1181,7 +1182,7 @@ const AccountSettings = () => {
                         </Button>
                         <Button
                             variant='outlined'
-                            onClick={() => handleSeatsModification(purchasedSeats - seatsQuantity)}
+                            onClick={() => handleSeatsModification(purchasedSeats - seatsQuantity, false)}
                             disabled={
                                 getCustomerDefaultSourceApi.loading ||
                                 !getCustomerDefaultSourceApi.data ||
@@ -1435,7 +1436,7 @@ const AccountSettings = () => {
                         </Button>
                         <Button
                             variant='contained'
-                            onClick={() => handleSeatsModification(seatsQuantity + purchasedSeats)}
+                            onClick={() => handleSeatsModification(seatsQuantity + purchasedSeats, true)}
                             disabled={
                                 getCustomerDefaultSourceApi.loading ||
                                 !getCustomerDefaultSourceApi.data ||

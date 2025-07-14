@@ -290,6 +290,9 @@ export class DocumentStoreDTO {
     }
 
     static fromEntities(entities: DocumentStore[]): DocumentStoreDTO[] {
+        if (entities.length === 0) {
+            return []
+        }
         return entities.map((entity) => this.fromEntity(entity))
     }
 
