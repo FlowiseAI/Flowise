@@ -273,7 +273,7 @@ class BrightDataStructuredDataTool extends Tool {
         ]
 
         for (const key of orderedPatterns) {
-            if (key.startsWith('amazon_product')) continue
+            // if (key.startsWith('amazon_product')) continue
 
             const dataset = DATASET_PATTERNS[key]
             if (dataset && dataset.pattern.test(url)) {
@@ -324,7 +324,7 @@ class BrightDataStructuredDataTool extends Tool {
             const detection = this.detectDataset(urlToProcess)
             if (!detection) {
                 const supportedPlatforms = Object.keys(DATASET_PATTERNS).join(', ')
-                const errorMsg = `URL not supported. Supported platforms: ${supportedPlatforms}`
+                const errorMsg = `URL not supported we are currently testing. Supported platforms: ${supportedPlatforms}`
                 return `Error: ${errorMsg}`
             }
 
