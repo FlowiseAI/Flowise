@@ -1,0 +1,135 @@
+.widgetContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.widgetButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.widgetButton:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.widgetButton:active {
+    transform: translateY(0);
+}
+
+.widgetButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.widgetButton.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.widgetButton.secondary {
+    background: transparent;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.widgetButton.secondary:hover {
+    background: rgba(102, 126, 234, 0.1);
+}
+
+.widgetButton.danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.widgetButton.danger:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.widgetButton.error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.widgetButton.small {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.widgetButton.medium {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+}
+
+.widgetButton.large {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+}
+
+.widgetButton.loading {
+    animation: pulse 2s infinite;
+}
+
+.widgetButton.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.buttonIcon {
+    font-size: 1.25em;
+    display: inline-block;
+}
+
+.widgetElement {
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.errorMessage {
+    color: #ef4444;
+    font-size: 0.875rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 4px;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Dark theme adjustments */
+[data-theme='dark'] .widgetButton.secondary {
+    color: #00ffff;
+    border-color: #00ffff;
+}
+
+[data-theme='dark'] .widgetButton.secondary:hover {
+    background: rgba(0, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .errorMessage {
+    color: #fca5a5;
+    background: rgba(185, 28, 28, 0.2);
+}

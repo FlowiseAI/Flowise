@@ -2,19 +2,11 @@ import clsx from 'clsx'
 import Layout from '@theme/Layout'
 import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import { useEffect } from 'react'
+import ElevenLabsInlineWidget from '@site/src/components/ElevenLabsInlineWidget'
 
 import styles from './index.module.css'
 
 function WorkshopsHero() {
-    const handleAIAgentClick = (e: React.MouseEvent) => {
-        e.preventDefault()
-        const widget = document.querySelector('elevenlabs-convai') as any
-        if (widget) {
-            widget.style.display = 'block'
-        }
-    }
-
     return (
         <header className={clsx('hero hero--primary', styles.heroSection)}>
             <div className={styles.heroBackground}>
@@ -37,9 +29,13 @@ function WorkshopsHero() {
                         <a href='#how-it-works' className={styles.secondaryLink}>
                             🎯 How It Works
                         </a>
-                        <button onClick={handleAIAgentClick} className={styles.secondaryLink}>
-                            🤖 Talk to an Agent Now
-                        </button>
+                        <ElevenLabsInlineWidget
+                            agentId='agent_01k03gnw7xe11btz2vprkf7ay5'
+                            text='🤖 Talk to an Agent Now'
+                            variant='chip'
+                            inline={true}
+                            showStatus={false}
+                        />
                     </div>
                 </div>
             </div>
@@ -144,14 +140,6 @@ function BenefitsSection() {
 }
 
 function ProminentCTASection() {
-    const handleAIAgentClick = (e: React.MouseEvent) => {
-        e.preventDefault()
-        const widget = document.querySelector('elevenlabs-convai') as any
-        if (widget) {
-            widget.style.display = 'block'
-        }
-    }
-
     return (
         <section className={styles.missionSection}>
             <div className='container'>
@@ -177,9 +165,14 @@ function ProminentCTASection() {
                                     Get instant answers about our workshops, pricing, and availability. Our AI agent is trained to help you
                                     understand how we can transform your team&apos;s AI capabilities.
                                 </p>
-                                <button onClick={handleAIAgentClick} className={clsx(styles.ctaButton, styles.ctaPrimary)}>
-                                    🤖 Chat with AI Agent
-                                </button>
+                                <ElevenLabsInlineWidget
+                                    agentId='agent_01k03gnw7xe11btz2vprkf7ay5'
+                                    text='🤖 Talk to an Agent'
+                                    variant='cta'
+                                    buttonClassName={`${styles.ctaButton} ${styles.ctaPrimary}`}
+                                    inline={true}
+                                    showStatus={false}
+                                />
                             </div>
                         </div>
                     </div>
@@ -458,14 +451,6 @@ function LocationsSection() {
 }
 
 function PricingCTASection() {
-    const handleAIAgentClick = (e: React.MouseEvent) => {
-        e.preventDefault()
-        const widget = document.querySelector('elevenlabs-convai') as any
-        if (widget) {
-            widget.style.display = 'block'
-        }
-    }
-
     return (
         <section className={styles.pricingSection} id='pricing'>
             <div className='container'>
@@ -518,9 +503,12 @@ function PricingCTASection() {
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                        <button onClick={handleAIAgentClick} className={clsx(styles.ctaButton, styles.ctaPrimary)}>
-                                            Talk to an AI Agent Now
-                                        </button>
+                                        <ElevenLabsInlineWidget
+                                            agentId='agent_01k03gnw7xe11btz2vprkf7ay5'
+                                            text='🤖 Talk to an Agent'
+                                            inline={true}
+                                            showStatus={false}
+                                        />
                                         <a
                                             href='https://calendly.com/lastrev-brad/ai-workshop-discovery-call'
                                             className={clsx(styles.ctaButton, styles.ctaSecondary)}
@@ -539,22 +527,6 @@ function PricingCTASection() {
 }
 
 export default function AIWorkshops(): JSX.Element {
-    useEffect(() => {
-        // Load the ElevenLabs widget script
-        const script = document.createElement('script')
-        script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed'
-        script.async = true
-        script.type = 'text/javascript'
-        document.head.appendChild(script)
-
-        return () => {
-            // Clean up
-            if (script.parentNode) {
-                script.parentNode.removeChild(script)
-            }
-        }
-    }, [])
-
     return (
         <div data-theme='dark'>
             <Layout
@@ -571,20 +543,6 @@ export default function AIWorkshops(): JSX.Element {
                     <LocationsSection />
                     <PricingCTASection />
                 </main>
-
-                {/* ElevenLabs Conversational AI Widget */}
-                <div
-                    dangerouslySetInnerHTML={{
-                        __html: `<elevenlabs-convai 
-                        agent-id="DPsEbqvGlYGP9gJQObqN"
-                        action-text="Need AI workshop help?"
-                        start-call-text="Start conversation"
-                        end-call-text="End conversation"
-                        listening-text="Listening..."
-                        speaking-text="AI assistant speaking"
-                    ></elevenlabs-convai>`
-                    }}
-                />
             </Layout>
         </div>
     )

@@ -1,0 +1,82 @@
+.widgetButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cta {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.cta:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: scale(1.02);
+}
+
+.outline {
+    background: transparent;
+    color: #22c55e;
+    border: 2px solid #22c55e;
+}
+
+.outline:hover {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: #16a34a;
+    color: #16a34a;
+}
+
+.chip {
+    background: #f3f4f6;
+    color: #111827;
+    border-radius: 999px;
+    padding: 0.25rem 1rem;
+    font-size: 1rem;
+    font-weight: 500;
+    border: none;
+    box-shadow: none;
+    min-height: 2.25rem;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.chipEmoji {
+    font-size: 1.25em;
+    margin-right: 0.5em;
+    display: inline-block;
+}
+
+.danger {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.danger:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+}
+
+.loading {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
