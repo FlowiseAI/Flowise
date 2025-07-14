@@ -2,10 +2,9 @@ import Stripe from 'stripe'
 import { Request } from 'express'
 import { UsageCacheManager } from './UsageCacheManager'
 import { UserPlan } from './Interface'
-import { LICENSE_QUOTAS } from './utils/constants'
+import { GeneralErrorMessage, LICENSE_QUOTAS } from './utils/constants'
 import { InternalFlowiseError } from './errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
-import logger from './utils/logger'
 
 export class StripeManager {
     private static instance: StripeManager
@@ -385,7 +384,6 @@ export class StripeManager {
             const openAdditionalSeatsInvoices = openInvoices.data.filter((invoice) =>
                 invoice.lines?.data?.some((line) => line.price?.id === prices.data[0].id)
             )
-            logger.info(`openAdditionalSeatsInvoices: ${openAdditionalSeatsInvoices.length}, increase: ${increase}`)
             if (openAdditionalSeatsInvoices.length > 0 && increase === true)
                 throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, "Not allow to add seats when there're unsuccessful payment")
 
@@ -402,22 +400,38 @@ export class StripeManager {
                 items: [
                     additionalSeatsItem
                         ? {
-                              id: additionalSeatsItem.id,
-                              quantity: quantity
+                              id: additionalSeatsItem.id
                           }
                         : {
-                              price: prices.data[0].id,
-                              quantity: quantity
+                              price: prices.data[0].id
                           }
                 ]
             }
             if (openAdditionalSeatsInvoices.length > 0) {
+                let newQuantity = 0
+                // When there is a paid and unpaid lines in the invoice, we need to remove the unpaid quantity of that invoice
+                if (openAdditionalSeatsInvoices[0].lines.data.length > 1) {
+                    openAdditionalSeatsInvoices[0].lines.data.forEach((line) => {
+                        if (line.amount < 0) {
+                            newQuantity += -Math.abs(line.quantity ?? 0)
+                        } else {
+                            newQuantity += line.quantity ?? 0
+                        }
+                    })
+                    // If there is only one line in the invoice, we need to remove the whole quantity of that invoice
+                } else if (openAdditionalSeatsInvoices[0].lines.data.length === 1) {
+                    newQuantity = 0
+                } else {
+                    throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
+                }
+                quantity = newQuantity
                 await this.stripe.invoices.voidInvoice(openAdditionalSeatsInvoices[0].id)
                 subscriptionUpdateData.proration_behavior = 'none'
             } else {
                 ;(subscriptionUpdateData.proration_behavior = 'always_invoice'),
                     (subscriptionUpdateData.proration_date = adjustedProrationDate)
             }
+            subscriptionUpdateData.items[0].quantity = quantity
             const updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, subscriptionUpdateData)
 
             // Get the latest invoice for this subscription
