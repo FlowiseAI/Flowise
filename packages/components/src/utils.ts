@@ -1036,7 +1036,7 @@ export const mapExtToInputField = (ext: string) => {
         case '.xlsx':
         case '.xlsm':
         case '.xlsb':
-            return 'file'
+            return 'csvFile'
         case '.jsonl':
             return 'jsonlinesFile'
         case '.docx':
