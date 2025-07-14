@@ -614,7 +614,8 @@ export class StripeManager {
                 // Get the latest invoice
                 const latestInvoicesList = await this.stripe.invoices.list({
                     subscription: subscriptionId,
-                    limit: 1
+                    limit: 1,
+                    status: 'open'
                 })
 
                 if (latestInvoicesList.data.length > 0) {
