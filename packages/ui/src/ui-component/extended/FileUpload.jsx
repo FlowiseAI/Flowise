@@ -27,6 +27,7 @@ const availableFileTypes = [
     { name: 'CSV', ext: 'text/csv' },
     { name: 'HTML', ext: 'text/html' },
     { name: 'JSON', ext: 'application/json' },
+    { name: 'YAML', ext: 'application/x-yaml' },
     { name: 'Markdown', ext: 'text/markdown' },
     { name: 'PDF', ext: 'application/pdf' },
     { name: 'SQL', ext: 'application/sql' },
