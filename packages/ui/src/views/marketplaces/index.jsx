@@ -20,7 +20,11 @@ import {
     ToggleButtonGroup,
     MenuItem,
     Button,
-    Tabs
+    Tabs,
+    Autocomplete,
+    TextField,
+    Chip,
+    Tooltip
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconLayoutGrid, IconList, IconX } from '@tabler/icons-react'
@@ -621,63 +625,86 @@ const Marketplace = () => {
                             </ToggleButtonGroup>
                         </ViewHeader>
                         {hasPermission('templates:marketplace') && hasPermission('templates:custom') && (
-                            <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs' centered>
-                                <PermissionTab permissionId='templates:marketplace' value={0} label='Community Templates' />
-                                <PermissionTab permissionId='templates:custom' value={1} label='My Templates' />
-                            </Tabs>
+                            <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
+                                <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs'>
+                                    <PermissionTab permissionId='templates:marketplace' value={0} label='Community Templates' />
+                                    <PermissionTab permissionId='templates:custom' value={1} label='My Templates' />
+                                </Tabs>
+                                <Autocomplete
+                                    id='useCases'
+                                    multiple
+                                    size='small'
+                                    options={usecases}
+                                    value={selectedUsecases}
+                                    onChange={(_, newValue) => setSelectedUsecases(newValue)}
+                                    disableCloseOnSelect
+                                    getOptionLabel={(option) => option}
+                                    isOptionEqualToValue={(option, value) => option === value}
+                                    renderOption={(props, option, { selected }) => {
+                                        const isDisabled = eligibleUsecases.length > 0 && !eligibleUsecases.includes(option)
+
+                                        return (
+                                            <li {...props} style={{ pointerEvents: isDisabled ? 'none' : 'auto' }}>
+                                                <Checkbox checked={selected} color='success' disabled={isDisabled} />
+                                                <ListItemText primary={option} />
+                                            </li>
+                                        )
+                                    }}
+                                    renderInput={(params) => <TextField {...params} label='Usecases' />}
+                                    sx={{
+                                        width: 300
+                                    }}
+                                    limitTags={2}
+                                    renderTags={(value, getTagProps) => {
+                                        const totalTags = value.length
+                                        const limitTags = 2
+
+                                        return (
+                                            <>
+                                                {value.slice(0, limitTags).map((option, index) => (
+                                                    <Chip
+                                                        {...getTagProps({ index })}
+                                                        key={index}
+                                                        label={option}
+                                                        sx={{
+                                                            height: 24,
+                                                            '& .MuiSvgIcon-root': {
+                                                                fontSize: 16,
+                                                                background: 'None'
+                                                            }
+                                                        }}
+                                                    />
+                                                ))}
+
+                                                {totalTags > limitTags && (
+                                                    <Tooltip
+                                                        title={
+                                                            <ol style={{ paddingLeft: '20px' }}>
+                                                                {value.slice(limitTags).map((item, i) => (
+                                                                    <li key={i}>{item}</li>
+                                                                ))}
+                                                            </ol>
+                                                        }
+                                                        placement='top'
+                                                    >
+                                                        +{totalTags - limitTags}
+                                                    </Tooltip>
+                                                )}
+                                            </>
+                                        )
+                                    }}
+                                    slotProps={{
+                                        paper: {
+                                            sx: {
+                                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)'
+                                            }
+                                        }
+                                    }}
+                                />
+                            </Stack>
                         )}
                         <Available permission='templates:marketplace'>
                             <TabPanel value={activeTabValue} index={0}>
-                                <Stack direction='row' sx={{ gap: 2, my: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                                    {usecases.map((usecase, index) => (
-                                        <FormControlLabel
-                                            key={index}
-                                            size='small'
-                                            control={
-                                                <Checkbox
-                                                    disabled={eligibleUsecases.length === 0 ? true : !eligibleUsecases.includes(usecase)}
-                                                    color='success'
-                                                    checked={selectedUsecases.includes(usecase)}
-                                                    onChange={(event) => {
-                                                        setSelectedUsecases(
-                                                            event.target.checked
-                                                                ? [...selectedUsecases, usecase]
-                                                                : selectedUsecases.filter((item) => item !== usecase)
-                                                        )
-                                                    }}
-                                                    sx={{
-                                                        '& .MuiSvgIcon-root': {
-                                                            color:
-                                                                eligibleUsecases.length === 0 || !eligibleUsecases.includes(usecase)
-                                                                    ? '#888 !important'
-                                                                    : undefined
-                                                        }
-                                                    }}
-                                                />
-                                            }
-                                            label={usecase}
-                                            sx={{
-                                                '& .MuiFormControlLabel-label': {
-                                                    color:
-                                                        eligibleUsecases.length === 0 || !eligibleUsecases.includes(usecase)
-                                                            ? '#888 !important'
-                                                            : undefined
-                                                }
-                                            }}
-                                        />
-                                    ))}
-                                </Stack>
-                                {selectedUsecases.length > 0 && (
-                                    <Button
-                                        sx={{ width: 'max-content', mb: 2, borderRadius: '20px' }}
-                                        variant='outlined'
-                                        onClick={() => clearAllUsecases()}
-                                        startIcon={<IconX />}
-                                    >
-                                        Clear All
-                                    </Button>
-                                )}
-
                                 {!view || view === 'card' ? (
                                     <>
                                         {isLoading ? (
