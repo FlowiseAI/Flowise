@@ -433,8 +433,8 @@ class Agent_Agentflow implements INode {
             for (const store of stores) {
                 if (store.status === 'UPSERTED') {
                     const obj = {
-                        name: `${store.id}:${store.name}`,
-                        label: store.name,
+                        name: store.id, // Store only the ID, not the name
+                        label: store.name, // Display the current name
                         description: store.description
                     }
                     returnData.push(obj)
@@ -547,7 +547,22 @@ class Agent_Agentflow implements INode {
                     const nodeInstanceFilePath = options.componentNodes['retrieverTool'].filePath as string
                     const nodeModule = await import(nodeInstanceFilePath)
                     const newRetrieverToolNodeInstance = new nodeModule.nodeClass()
-                    const [storeId, storeName] = knowledgeBase.documentStore.split(':')
+
+                    // Handle both old format (id:name) and new format (id only)
+                    let storeId = knowledgeBase.documentStore
+                    let storeName = ''
+
+                    if (knowledgeBase.documentStore.includes(':')) {
+                        // Old format - split to get ID and name
+                        ;[storeId, storeName] = knowledgeBase.documentStore.split(':')
+                    } else {
+                        // New format - only ID is stored, need to look up current name
+                        storeId = knowledgeBase.documentStore
+                        const appDataSource = options.appDataSource as DataSource
+                        const databaseEntities = options.databaseEntities as IDatabaseEntity
+                        const store = await appDataSource.getRepository(databaseEntities['DocumentStore']).findOneBy({ id: storeId })
+                        storeName = store?.name || storeId // Fallback to ID if store not found
+                    }
 
                     const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
                     const docStoreVectorModule = await import(docStoreVectorInstanceFilePath)
