@@ -210,4 +210,62 @@ export class UsageCacheManager {
     public async wrap<T>(key: string, fn: () => Promise<T>, ttl?: number): Promise<T> {
         return this.cache.wrap(key, fn, ttl)
     }
+
+    // Credits-related methods following existing patterns
+    public async getCreditsBalance(customerId: string, withoutCache: boolean = false): Promise<number> {
+        if (!withoutCache) {
+            const cached = await this.get<number>(`customer:${customerId}:credits`)
+            if (cached !== null) return cached
+        }
+
+        // Fetch from Stripe if not cached
+        const stripeManager = await StripeManager.getInstance()
+        const availableBalance = await stripeManager.getCreditsBalance(customerId)
+
+        // Cache for 5 minutes
+        this.set(`customer:${customerId}:credits`, availableBalance, 300000)
+        return availableBalance
+    }
+
+    public async getCustomerIdFromCache(orgId: string): Promise<string | null> {
+        return await this.get<string>(`organization:${orgId}:customer_id`)
+    }
+
+    public async setCustomerIdToCache(orgId: string, customerId: string): Promise<void> {
+        this.set(`organization:${orgId}:customer_id`, customerId, 3600000) // 1 hour
+    }
+
+    public async invalidateCreditsCache(customerId: string): Promise<void> {
+        await this.del(`customer:${customerId}:credits`)
+    }
+
+    public async populateCustomerIdFromSubscription(orgId: string, subscriptionId: string): Promise<string | null> {
+        try {
+            const stripeManager = await StripeManager.getInstance()
+            const subscription = await stripeManager.getStripe().subscriptions.retrieve(subscriptionId)
+            const customerId = subscription.customer as string
+
+            if (customerId) {
+                await this.setCustomerIdToCache(orgId, customerId)
+                return customerId
+            }
+
+            return null
+        } catch (error) {
+            console.error(`Error populating customer ID for org ${orgId}:`, error)
+            return null
+        }
+    }
+
+    public async getOrPopulateCustomerId(orgId: string, subscriptionId?: string): Promise<string | null> {
+        // First try cache
+        let customerId = await this.getCustomerIdFromCache(orgId)
+
+        // If not in cache and we have subscription ID, populate from subscription
+        if (!customerId && subscriptionId) {
+            customerId = await this.populateCustomerIdFromSubscription(orgId, subscriptionId)
+        }
+
+        return customerId
+    }
 }

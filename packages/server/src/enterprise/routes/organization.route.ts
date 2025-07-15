@@ -24,4 +24,10 @@ router.post('/update-subscription-plan', organizationController.updateSubscripti
 
 router.get('/get-current-usage', organizationController.getCurrentUsage)
 
+router.get('/credits-balance', organizationController.getCreditsBalance)
+
+router.post('/purchase-credits', organizationController.purchaseCredits)
+
+router.get('/credits-history', organizationController.getCreditsHistory)
+
 export default router

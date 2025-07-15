@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { UsageCacheManager } from '../UsageCacheManager'
+import { StripeManager } from '../StripeManager'
 import { LICENSE_QUOTAS } from './constants'
 import logger from './logger'
 
@@ -135,6 +136,35 @@ export const checkPredictions = async (orgId: string, subscriptionId: string, us
     if (predictionsLimit === -1) return
 
     if (currentPredictions >= predictionsLimit) {
+        // Report overage usage to Stripe meter (will be charged unless offset by credits)
+        const customerId = await usageCacheManager.getOrPopulateCustomerId(orgId, subscriptionId)
+
+        if (customerId) {
+            try {
+                // Report overage usage to Stripe meter
+                const stripeManager = await StripeManager.getInstance()
+                await stripeManager.reportOverageUsage(customerId, 1)
+
+                // Check credit balance for informational purposes
+                const creditBalance = await usageCacheManager.getCreditsBalance(customerId)
+
+                return {
+                    usage: currentPredictions,
+                    limit: predictionsLimit,
+                    overageUsed: true,
+                    creditsAvailable: creditBalance,
+                    message:
+                        creditBalance > 0
+                            ? 'Overage allowed - will be offset by available credits'
+                            : 'Overage allowed - will be charged on next invoice'
+                }
+            } catch (error) {
+                logger.error(`Error reporting overage usage for org ${orgId}:`, error)
+                // Fall through to throw limit exceeded error
+            }
+        }
+
+        // If we can't report usage, deny the prediction
         throw new InternalFlowiseError(StatusCodes.TOO_MANY_REQUESTS, 'Predictions limit exceeded')
     }
 

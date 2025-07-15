@@ -7,6 +7,32 @@ import { InternalFlowiseError } from './errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import logger from './utils/logger'
 
+// Type definitions for Credit Grants API (until Stripe types are updated)
+interface CreditBalance {
+    balances: {
+        available_balance: number
+    }
+}
+
+interface CreditGrant {
+    id: string
+    customer: string
+    amount: {
+        value: number
+        currency: string
+    }
+    name: string
+    metadata?: Record<string, string>
+}
+
+interface CreditBalanceTransaction {
+    id: string
+    customer: string
+    type: string
+    amount: number
+    created: number
+}
+
 export class StripeManager {
     private static instance: StripeManager
     private stripe?: Stripe
@@ -22,7 +48,9 @@ export class StripeManager {
 
     private async initialize() {
         if (!this.stripe && process.env.STRIPE_SECRET_KEY) {
-            this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+            this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+                apiVersion: '2024-10-28.acacia' as any // Required for Credit Grants
+            })
         }
         this.cacheManager = await UsageCacheManager.getInstance()
     }
@@ -782,6 +810,232 @@ export class StripeManager {
             }
         } catch (error) {
             console.error('Error updating subscription plan:', error)
+            throw error
+        }
+    }
+
+    // Credits-related methods for correct Credit Grants implementation
+    public async getCreditsBalance(customerId: string): Promise<number> {
+        if (!this.stripe) {
+            throw new Error('Stripe is not initialized')
+        }
+
+        try {
+            const balance = (await (this.stripe as any).billing.creditBalanceSummary.retrieve(customerId)) as CreditBalance
+            return balance.balances.available_balance
+        } catch (error) {
+            logger.error(`Error getting credits balance for customer ${customerId}:`, error)
+            return 0
+        }
+    }
+
+    public async purchaseCredits(subscriptionId: string, customerId: string, creditPackage: string) {
+        if (!this.stripe) {
+            throw new Error('Stripe is not initialized')
+        }
+
+        const creditPackages = {
+            '1000': { amount: 1000, price: 10 },
+            '5000': { amount: 5000, price: 40 },
+            '10000': { amount: 10000, price: 75 }
+        }
+
+        const packageInfo = creditPackages[creditPackage as keyof typeof creditPackages]
+        if (!packageInfo) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Invalid credit package')
+        }
+
+        try {
+            // Ensure subscription has overage price item
+            await this.addOveragePriceToSubscription(subscriptionId)
+
+            // Create Payment Intent for credit purchase
+            const paymentIntent = await this.stripe.paymentIntents.create({
+                amount: packageInfo.price * 100, // Convert to cents
+                currency: 'usd',
+                customer: customerId,
+                automatic_payment_methods: { enabled: true },
+                metadata: {
+                    type: 'credit_purchase',
+                    credit_amount: packageInfo.amount.toString(),
+                    credit_value: (packageInfo.price * 100).toString()
+                }
+            })
+
+            // Try to confirm payment immediately if customer has default payment method
+            let paymentFailed = false
+            let paymentError: any = null
+            let creditGrant: CreditGrant | null = null
+
+            try {
+                // Attempt to confirm payment
+                const confirmedPayment = await this.stripe.paymentIntents.confirm(paymentIntent.id)
+
+                if (confirmedPayment.status === 'succeeded') {
+                    // Payment successful - create credit grant
+                    creditGrant = await this.createCreditGrant(customerId, packageInfo.price * 100, paymentIntent.id)
+                } else if (confirmedPayment.status === 'requires_action') {
+                    // 3D Secure or other authentication required - return for frontend handling
+                    return {
+                        success: false,
+                        requiresAction: true,
+                        paymentIntent: confirmedPayment,
+                        clientSecret: confirmedPayment.client_secret,
+                        creditAmount: packageInfo.amount,
+                        priceAmount: packageInfo.price
+                    }
+                } else {
+                    // Payment failed
+                    paymentFailed = true
+                    paymentError = { message: `Payment status: ${confirmedPayment.status}` }
+                }
+            } catch (error: any) {
+                // Payment failed - DO NOT create credits (unlike subscription updates)
+                paymentFailed = true
+                paymentError = error
+                logger.error(`Credit purchase payment failed for customer ${customerId}:`, error)
+            }
+
+            if (paymentFailed) {
+                // For credits, if payment fails, we don't provision access
+                return {
+                    success: false,
+                    paymentFailed: true,
+                    paymentError: paymentError
+                }
+            }
+
+            return {
+                success: true,
+                creditGrant,
+                paymentIntent,
+                creditAmount: packageInfo.amount,
+                priceAmount: packageInfo.price,
+                paymentFailed: false,
+                paymentError: null
+            }
+        } catch (error) {
+            logger.error(`Error purchasing credits for customer ${customerId}:`, error)
+            throw error
+        }
+    }
+
+    private async createCreditGrant(customerId: string, creditValueInCents: number, paymentIntentId: string): Promise<CreditGrant> {
+        if (!this.stripe) {
+            throw new Error('Stripe is not initialized')
+        }
+
+        try {
+            const creditGrant = (await (this.stripe as any).billing.creditGrants.create({
+                customer: customerId,
+                amount: {
+                    value: creditValueInCents, // Stripe expects value in cents
+                    currency: 'usd'
+                },
+                name: `Credit Purchase - $${creditValueInCents / 100}`,
+                metadata: {
+                    payment_intent: paymentIntentId,
+                    source: 'credit_purchase'
+                }
+            })) as CreditGrant
+
+            logger.info(`Successfully created credit grant worth $${creditValueInCents / 100} for customer ${customerId}`)
+            return creditGrant
+        } catch (error) {
+            logger.error(`Error creating credit grant for customer ${customerId}:`, error)
+            throw error
+        }
+    }
+
+    public async addOveragePriceToSubscription(subscriptionId: string): Promise<void> {
+        if (!this.stripe) {
+            throw new Error('Stripe is not initialized')
+        }
+
+        if (!process.env.STRIPE_OVERAGE_PRICE_ID) {
+            logger.warn('STRIPE_OVERAGE_PRICE_ID not configured, skipping overage price addition')
+            return
+        }
+
+        try {
+            // Check if overage price already exists on subscription
+            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const hasOveragePrice = subscription.items.data.some((item) => item.price.id === process.env.STRIPE_OVERAGE_PRICE_ID)
+
+            if (hasOveragePrice) {
+                logger.debug(`Subscription ${subscriptionId} already has overage price`)
+                return
+            }
+
+            // Add overage price to subscription
+            await this.stripe.subscriptions.update(subscriptionId, {
+                items: [
+                    {
+                        price: process.env.STRIPE_OVERAGE_PRICE_ID
+                    }
+                ],
+                proration_behavior: 'none' // Don't charge immediately
+            })
+
+            logger.info(`Added overage price to subscription ${subscriptionId}`)
+        } catch (error) {
+            logger.error(`Error adding overage price to subscription ${subscriptionId}:`, error)
+            throw error
+        }
+    }
+
+    public async reportOverageUsage(customerId: string, amount: number): Promise<void> {
+        if (!this.stripe) {
+            throw new Error('Stripe is not initialized')
+        }
+
+        if (!process.env.STRIPE_OVERAGE_METER_ID) {
+            logger.warn('STRIPE_OVERAGE_METER_ID not configured, skipping overage usage reporting')
+            return
+        }
+
+        try {
+            await (this.stripe as any).billing.meterEvents.create({
+                event_name: 'additional_prediction',
+                payload: {
+                    stripe_customer_id: customerId,
+                    value: amount.toString()
+                }
+            })
+
+            logger.debug(`Reported ${amount} overage prediction(s) for customer ${customerId}`)
+        } catch (error) {
+            logger.error(`Error reporting overage usage for customer ${customerId}:`, error)
+            throw error
+        }
+    }
+
+    public async getCreditHistory(customerId: string): Promise<{
+        grants: CreditGrant[]
+        transactions: CreditBalanceTransaction[]
+    }> {
+        if (!this.stripe) {
+            throw new Error('Stripe is not initialized')
+        }
+
+        try {
+            const [grants, transactions] = await Promise.all([
+                (this.stripe as any).billing.creditGrants.list({
+                    customer: customerId,
+                    limit: 100
+                }),
+                (this.stripe as any).billing.creditBalanceTransactions.list({
+                    customer: customerId,
+                    limit: 100
+                })
+            ])
+
+            return {
+                grants: grants.data,
+                transactions: transactions.data
+            }
+        } catch (error) {
+            logger.error(`Error getting credit history for customer ${customerId}:`, error)
             throw error
         }
     }

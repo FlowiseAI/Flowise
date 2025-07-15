@@ -5,6 +5,8 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { getCurrentUsage } from '../../utils/quotaUsage'
+import { StripeManager } from '../../StripeManager'
+import { UsageCacheManager } from '../../UsageCacheManager'
 import { Organization } from '../database/entities/organization.entity'
 import { OrganizationUserService } from '../services/organization-user.service'
 import { OrganizationErrorMessage, OrganizationService } from '../services/organization.service'
@@ -189,6 +191,104 @@ export class OrganizationController {
             const usageCacheManager = getRunningExpressApp().usageCacheManager
             const result = await getCurrentUsage(orgId, subscriptionId, usageCacheManager)
             return res.status(StatusCodes.OK).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    public async getCreditsBalance(req: Request, res: Response, next: NextFunction) {
+        try {
+            const orgId = req.user?.activeOrganizationId
+            if (!orgId) {
+                return res.status(400).json({ error: 'Organization ID is required' })
+            }
+
+            const subscriptionId = req.user?.activeOrganizationSubscriptionId
+            const usageCacheManager = await UsageCacheManager.getInstance()
+            const customerId = await usageCacheManager.getOrPopulateCustomerId(orgId, subscriptionId)
+
+            if (!customerId) {
+                return res.status(400).json({ error: 'Customer ID not found for organization' })
+            }
+
+            const stripeManager = await StripeManager.getInstance()
+            const [balance, history] = await Promise.all([
+                stripeManager.getCreditsBalance(customerId),
+                stripeManager.getCreditHistory(customerId)
+            ])
+
+            const totalPurchased = history.grants.reduce((sum, grant) => sum + grant.amount.value, 0)
+            const totalConsumed = totalPurchased - balance
+
+            const result = {
+                available_balance: balance,
+                total_purchased: totalPurchased,
+                total_consumed: totalConsumed
+            }
+
+            return res.status(StatusCodes.OK).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    public async purchaseCredits(req: Request, res: Response, next: NextFunction) {
+        try {
+            const orgId = req.user?.activeOrganizationId
+            const { package: creditPackage } = req.body
+
+            if (!orgId) {
+                return res.status(400).json({ error: 'Organization ID is required' })
+            }
+            if (!creditPackage) {
+                return res.status(400).json({ error: 'Credit package is required' })
+            }
+
+            const subscriptionId = req.user?.activeOrganizationSubscriptionId
+            if (!subscriptionId) {
+                return res.status(400).json({ error: 'Subscription ID is required' })
+            }
+
+            const usageCacheManager = await UsageCacheManager.getInstance()
+            const customerId = await usageCacheManager.getOrPopulateCustomerId(orgId, subscriptionId)
+
+            if (!customerId) {
+                return res.status(400).json({ error: 'Customer ID not found for organization' })
+            }
+
+            const stripeManager = await StripeManager.getInstance()
+            const result = await stripeManager.purchaseCredits(subscriptionId, customerId, creditPackage)
+
+            // Invalidate credits cache if purchase was successful
+            if (result.success && result.creditGrant) {
+                await usageCacheManager.invalidateCreditsCache(customerId)
+            }
+
+            return res.status(StatusCodes.OK).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    public async getCreditsHistory(req: Request, res: Response, next: NextFunction) {
+        try {
+            const orgId = req.user?.activeOrganizationId
+            if (!orgId) {
+                return res.status(400).json({ error: 'Organization ID is required' })
+            }
+
+            const subscriptionId = req.user?.activeOrganizationSubscriptionId
+            const usageCacheManager = await UsageCacheManager.getInstance()
+            const customerId = await usageCacheManager.getOrPopulateCustomerId(orgId, subscriptionId)
+
+            if (!customerId) {
+                return res.status(400).json({ error: 'Customer ID not found for organization' })
+            }
+
+            const stripeManager = await StripeManager.getInstance()
+            const history = await stripeManager.getCreditHistory(customerId)
+
+            return res.status(StatusCodes.OK).json(history)
         } catch (error) {
             next(error)
         }

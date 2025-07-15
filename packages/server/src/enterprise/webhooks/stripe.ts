@@ -35,14 +35,27 @@ export class StripeWebhooks {
 
             switch (event.type) {
                 case 'invoice.paid': {
+                    const invoice = event.data.object as Stripe.Invoice
                     const stripeService = new StripeService()
-                    await stripeService.reactivateOrganizationIfEligible(event.data.object as Stripe.Invoice, queryRunner)
+                    await stripeService.reactivateOrganizationIfEligible(invoice, queryRunner)
                     break
                 }
 
                 case 'invoice.marked_uncollectible': {
                     const stripeService = new StripeService()
                     await stripeService.handleInvoiceMarkedUncollectible(event.data.object as Stripe.Invoice, queryRunner)
+                    break
+                }
+
+                default: {
+                    // Handle credit grant events (not yet in Stripe types)
+                    if ((event as any).type === 'billing.credit_grant.created') {
+                        const creditGrant = (event as any).data.object
+                        // Invalidate credits cache when new credits are granted
+                        const { UsageCacheManager } = await import('../../UsageCacheManager')
+                        const usageCacheManager = await UsageCacheManager.getInstance()
+                        await usageCacheManager.invalidateCreditsCache(creditGrant.customer as string)
+                    }
                     break
                 }
             }
