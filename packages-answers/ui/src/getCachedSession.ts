@@ -73,7 +73,6 @@ const getCachedSession = cache(
             session.user.id = user.id
             session.user.organizationId = user.organizationId
         }
-        // console.log('User', session?.user)
         if (session?.user?.['https://theanswer.ai/roles']) {
             session.user.roles = session.user['https://theanswer.ai/roles']
         }
@@ -111,7 +110,6 @@ const getCachedSession = cache(
                 })
 
                 const flagsmithState = flagsmith.getState()
-                // console.log('FlagsmithState', flagsmithState);
                 session.flagsmithState = flagsmithState
             } catch (error: any) {
                 console.error('Error initializing flagsmith:', error.message)
@@ -120,7 +118,6 @@ const getCachedSession = cache(
 
         // Check for CHATFLOW_DOMAIN_OVERRIDE to override the chatflowDomain
         if (process.env.CHATFLOW_DOMAIN_OVERRIDE) {
-            // console.log('CHATFLOW_DOMAIN_OVERRIDE', process.env.CHATFLOW_DOMAIN_OVERRIDE)
             // Override chatflowDomain with the environment variable
             if (session?.user) {
                 session.user.chatflowDomain = process.env.CHATFLOW_DOMAIN_OVERRIDE
@@ -133,7 +130,6 @@ const getCachedSession = cache(
         if (session?.user) {
             let subscription = null
             try {
-                // console.log('session.user.stripeCustomerId', session.user)
                 const stripe = getStripeClient()
                 subscription = await stripe.subscriptions.list({
                     customer: session.user.stripeCustomerId,

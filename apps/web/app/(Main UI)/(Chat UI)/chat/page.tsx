@@ -1,8 +1,6 @@
 import React from 'react'
-
 import Chat from '@ui/Chat'
-import getCachedSession from '@ui/getCachedSession'
-import { findSidekicksForChat } from '@utils/findSidekicksForChat'
+import ChatRedirectHandler from '@ui/ChatRedirectHandler'
 
 export const metadata = {
     title: 'Chats | Answer Agent',
@@ -10,11 +8,12 @@ export const metadata = {
 }
 
 const ChatDetailPage = async ({ params }: any) => {
-    // const session = await getCachedSession()
-    // const user = session?.user
-
-    const chatcomponent = <Chat {...params} />
-    // console.log('chatcomponent', chatcomponent)
+    const chatcomponent = (
+        <>
+            <ChatRedirectHandler />
+            <Chat {...params} />
+        </>
+    )
     return chatcomponent
 }
 

@@ -3,6 +3,7 @@ import { auth } from 'express-oauth2-jwt-bearer'
 
 import { DataSource } from 'typeorm'
 import { User } from '../../database/entities/User'
+import { Organization } from '../../database/entities/Organization'
 import apikeyService from '../../services/apikey'
 import { findOrCreateOrganization } from './findOrCreateOrganization'
 import { findOrCreateUser } from './findOrCreateUser'
@@ -35,7 +36,6 @@ const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<U
     try {
         const apiKeyData = await apikeyService.verifyApiKey(apiKey)
         if (!apiKeyData) {
-            console.log('[AuthMiddleware] Invalid API key')
             return null
         }
 
@@ -45,7 +45,6 @@ const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<U
         })
 
         if (!user) {
-            console.log(`[AuthMiddleware] No user found for API key userId: ${apiKeyData.userId}`)
             return null
         }
 
@@ -86,14 +85,13 @@ export const authenticationHandlerMiddleware =
         jwtMiddleware(req, res, async (jwtError?: any) => {
             if (!req.user) {
                 if (jwtError) {
-                    console.log('[AuthMiddleware] JWT error:', jwtError)
                     return next(jwtError)
                 }
 
                 // Proceed with user synchronization if user is authenticated
                 if (!req.auth?.payload) {
                     if (apiKeyError) {
-                        console.error('[AuthMiddleware] Error verifying API key:', apiKeyError)
+                        console.error('Error verifying API key:', apiKeyError)
                     }
                     return next()
                 }
@@ -107,7 +105,6 @@ export const authenticationHandlerMiddleware =
                     const validOrgs = process.env.AUTH0_ORGANIZATION_ID?.split(',') || []
                     const isInvalidOrg = validOrgs?.length > 0 && !validOrgs.includes(userOrgId)
                     if (isInvalidOrg) {
-                        console.log(`[AuthMiddleware] Organization validation failed for org ID: ${userOrgId}`)
                         return res.status(401).send("Unauthorized: Organization doesn't match")
                     }
                 }
@@ -119,7 +116,6 @@ export const authenticationHandlerMiddleware =
                 const name = authUser.name as string
                 const roles = (authUser?.['https://theanswer.ai/roles'] || []) as string[]
                 if (!auth0Id || !email) {
-                    console.log('[AuthMiddleware] Missing required auth fields (auth0Id or email)')
                     return next()
                 }
 
@@ -134,20 +130,66 @@ export const authenticationHandlerMiddleware =
                     user = await ensureStripeCustomerForUser(AppDataSource, user, organization, auth0Id, email, name)
 
                     // Find or create default chatflows for the user
-                    await findOrCreateDefaultChatflowsForUser(AppDataSource, user)
+                    const defaultChatflowId = await findOrCreateDefaultChatflowsForUser(AppDataSource, user)
+                    // Update user with the latest defaultChatflowId
+                    if (defaultChatflowId) {
+                        user.defaultChatflowId = defaultChatflowId
+                    }
 
                     req.user = { ...authUser, ...user, roles }
                 } catch (error) {
-                    console.error('[AuthMiddleware] Error during user authentication:', error)
+                    console.error('Authentication error:', error)
                     return res.status(500).send('Internal Server Error during authentication')
                 }
             }
 
-            // console.log(
-            //     `[AuthMiddleware] Auth successful for user: ${req.user?.id} with ${apiKeyUser ? 'APIKEY' : 'JWT'} in ${
-            //         new Date().getTime() - startTime
-            //     }ms`
-            // )
+            // Handle /auth/me endpoint directly in middleware
+            if (req.url === '/api/v1/auth/me' && req.method === 'GET') {
+                if (!req.user) {
+                    return res.status(401).json({ error: 'Unauthorized' })
+                }
+
+                try {
+                    // Get organization data
+                    const organization = await AppDataSource.getRepository(Organization).findOne({
+                        where: { id: req.user.organizationId }
+                    })
+
+                    // Determine auth method
+                    const authMethod = apiKeyUser ? 'apikey' : 'jwt'
+
+                    return res.json({
+                        user: {
+                            id: req.user.id,
+                            name: req.user.name,
+                            email: req.user.email,
+                            organizationId: req.user.organizationId,
+                            stripeCustomerId: req.user.stripeCustomerId,
+                            defaultChatflowId: req.user.defaultChatflowId,
+                            createdDate: req.user.createdDate,
+                            updatedDate: req.user.updatedDate,
+                            roles: req.user.roles || []
+                        },
+                        organization: organization
+                            ? {
+                                  id: organization.id,
+                                  name: organization.name,
+                                  stripeCustomerId: organization.stripeCustomerId,
+                                  createdDate: organization.createdDate,
+                                  updatedDate: organization.updatedDate
+                              }
+                            : null,
+                        session: {
+                            authenticated: true,
+                            authMethod
+                        }
+                    })
+                } catch (error) {
+                    console.error('Error in /auth/me endpoint:', error)
+                    return res.status(500).json({ error: 'Internal Server Error' })
+                }
+            }
+
             return next()
         })
     }

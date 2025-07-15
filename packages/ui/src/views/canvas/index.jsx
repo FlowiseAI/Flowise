@@ -186,6 +186,9 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                 } catch (error) {
                     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
                         hasAccess = false
+                    } else if (error.response && error.response.status === 404) {
+                        existingChatflow = null
+                        hasAccess = false
                     } else {
                         console.error('proceedWithFlow - Error checking chatflow:', error)
                         throw error
@@ -647,6 +650,8 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                         ...parsedData,
                         id: undefined,
                         name: `Copy of ${parsedData.name || templateName || 'Untitled Chatflow'}`,
+                        // Don't inherit marketplace-specific descriptions for file imports
+                        description: parsedData.description === 'Copied from marketplace' ? '' : parsedData.description,
                         deployed: false,
                         isPublic: false
                     }
