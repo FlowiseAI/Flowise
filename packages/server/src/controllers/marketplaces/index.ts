@@ -77,7 +77,7 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
                 `Error: marketplacesService.saveCustomTemplate - body not provided!`
             )
         }
-        const apiResponse = await marketplacesService.saveCustomTemplate(req.body)
+        const apiResponse = await marketplacesService.saveCustomTemplate(req.body, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
