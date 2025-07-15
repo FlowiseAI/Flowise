@@ -72,19 +72,6 @@ const getCachedSession = cache(
             })
             session.user.id = user.id
             session.user.organizationId = user.organizationId
-            
-            // Get defaultChatflowId from secure cookie
-            if (typeof window === 'undefined') { // Server-side only
-                try {
-                    const { cookies } = await import('next/headers')
-                    const defaultChatflowId = cookies()?.get('defaultChatflowId')?.value
-                    if (defaultChatflowId) {
-                        session.user.defaultChatflowId = defaultChatflowId
-                    }
-                } catch {
-                    // Ignore cookie read errors
-                }
-            }
         }
         if (session?.user?.['https://theanswer.ai/roles']) {
             session.user.roles = session.user['https://theanswer.ai/roles']
