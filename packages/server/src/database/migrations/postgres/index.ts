@@ -54,6 +54,7 @@ import { AddBrowserExtConfig1746508019300 } from './1746508019300-AddBrowserExtC
 import { AddDefaultChatflowIdToUser1746508019301 } from './1746508019301-AddDefaultChatflowIdToUser'
 import { AddExecutionEntity1738090872625 } from './1738090872625-AddExecutionEntity'
 import { AddUserScopingToExecution1738091000000 } from './1738091000000-AddUserScopingToExecution'
+import { AddPgvectorExtension1752614575000 } from './1752614575000-AddPgvectorExtension'
 
 export const postgresMigrations = [
     Init1693891895163,
@@ -111,5 +112,6 @@ export const postgresMigrations = [
     AddBrowserExtConfig1746508019300,
     AddExecutionEntity1738090872625,
     AddUserScopingToExecution1738091000000,
-    AddDefaultChatflowIdToUser1746508019301
+    AddDefaultChatflowIdToUser1746508019301,
+    AddPgvectorExtension1752614575000
 ]
