@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import clientApi from '@/api/auth'
@@ -8,38 +8,41 @@ import clientApi from '@/api/auth'
 const useRedirectToDefaultChatflow = () => {
     const router = useRouter()
     const { user, isLoading } = useUser()
+    const hasExecutedRef = useRef(false)
 
     useEffect(() => {
+        // Prevent multiple executions
+        if (hasExecutedRef.current) return
+
         const redirectToDefaultChatflow = async () => {
             try {
+                // Wait until the user loading state is finished
                 if (isLoading) {
                     return
                 }
 
+                // Mark as executed to prevent re-runs
+                hasExecutedRef.current = true
+
+                // If there is no authenticated user, redirect to the generic chat page
                 if (!user) {
-                    console.log('No user found, redirecting to /chat')
                     router.push('/chat')
                     return
                 }
 
+                // Fetch the current user's profile to get the default chatflow ID
                 const { data } = await clientApi.getMe()
-                console.log('User data:', data)
-
                 const defaultChatflowId = data?.user?.defaultChatflowId
 
                 if (defaultChatflowId) {
-                    try {
-                        router.push(`/chat/${defaultChatflowId}`)
-                    } catch (navError) {
-                        console.error('Error navigating to default chatflow:', navError)
-                        router.push('/chat')
-                    }
+                    // If a default chatflow ID exists, redirect to that chatflow
+                    router.push(`/chat/${defaultChatflowId}`)
                 } else {
-                    // If no default chatflow, redirect to general chat page
+                    // If no default chatflow is set, redirect to the generic chat page
                     router.push('/chat')
                 }
             } catch (error) {
-                console.error('Error redirecting to default chatflow:', error)
+                // On any error (API/network/etc), redirect to the generic chat page
                 router.push('/chat')
             }
         }
