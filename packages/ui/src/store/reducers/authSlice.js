@@ -59,10 +59,21 @@ const authSlice = createSlice({
             })
             state.user.assignedWorkspaces = assignedWorkspaces
             AuthUtils.updateCurrentUser(state.user)
+        },
+        organizationUpdated: (state, action) => {
+            const organization = action.payload
+            state.organization = organization
         }
     }
 })
 
-export const { loginSuccess, logoutSuccess, workspaceSwitchSuccess, upgradePlanSuccess, userProfileUpdated, workspaceNameUpdated } =
-    authSlice.actions
+export const {
+    loginSuccess,
+    logoutSuccess,
+    workspaceSwitchSuccess,
+    upgradePlanSuccess,
+    userProfileUpdated,
+    workspaceNameUpdated,
+    organizationUpdated
+} = authSlice.actions
 export default authSlice.reducer
