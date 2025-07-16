@@ -88,9 +88,9 @@ services:
         networks:
             - app-network
 
-    # PostgreSQL database
+    # PostgreSQL database with pgvector
     postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16
         restart: unless-stopped
         ports:
             - '5432:5432'
