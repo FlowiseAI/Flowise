@@ -64,7 +64,7 @@ class Custom_MCP implements INode {
         this.category = 'Tools (MCP)'
         this.description = 'Custom MCP Config'
         this.documentation = 'https://github.com/modelcontextprotocol/servers/tree/main/src/brave-search'
-        this.inputs = [
+        const baseInputs: INodeParams[] = [
             {
                 label: 'MCP Server Config',
                 name: 'mcpServerConfig',
@@ -82,8 +82,12 @@ class Custom_MCP implements INode {
                 type: 'asyncMultiOptions',
                 loadMethod: 'listActions',
                 refresh: true
-            },
-            {
+            }
+        ]
+
+        // Only show disable cache option when not in queue mode
+        if (process.env.MODE !== 'queue') {
+            baseInputs.push({
                 label: 'Disable Cache',
                 name: 'disableCache',
                 type: 'boolean',
@@ -91,8 +95,10 @@ class Custom_MCP implements INode {
                 optional: true,
                 description:
                     'If enabled, the node will not use the cache (array of actions) and will always force a re-initialization of the toolkit to fetch the actions. Note: This may increase resource usage.'
-            }
-        ]
+            })
+        }
+
+        this.inputs = baseInputs
         this.baseClasses = ['Tool']
     }
 
@@ -167,8 +173,8 @@ class Custom_MCP implements INode {
         }
         const cacheKey = JSON.stringify({ workspaceId, canonicalConfig, sandbox })
 
-        // Check for disableCache flag
-        const disableCache = !!nodeData.inputs?.disableCache
+        // Check for disableCache flag or if running in queue mode
+        const disableCache = !!nodeData.inputs?.disableCache || process.env.MODE === 'queue'
 
         if (!disableCache && Custom_MCP.toolkitCache.has(cacheKey)) {
             return Custom_MCP.toolkitCache.get(cacheKey)!.tools
