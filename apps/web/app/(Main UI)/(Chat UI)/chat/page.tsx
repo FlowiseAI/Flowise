@@ -1,6 +1,5 @@
 import React from 'react'
 import Chat from '@ui/Chat'
-import ChatRedirectHandler from '@ui/ChatRedirectHandler'
 
 export const metadata = {
     title: 'Chats | Answer Agent',
@@ -10,7 +9,6 @@ export const metadata = {
 const ChatDetailPage = async ({ params }: any) => {
     const chatcomponent = (
         <>
-            <ChatRedirectHandler />
             <Chat {...params} />
         </>
     )
