@@ -12,19 +12,31 @@ const useRedirectToDefaultChatflow = () => {
     useEffect(() => {
         const redirectToDefaultChatflow = async () => {
             try {
-                if (isLoading || !user) {
+                if (isLoading) {
                     return
                 }
 
-                if (window.location.pathname !== '/chat') {
+                if (!user) {
+                    console.log('No user found, redirecting to /chat')
+                    router.push('/chat')
                     return
                 }
 
                 const { data } = await clientApi.getMe()
+                console.log('User data:', data)
 
                 const defaultChatflowId = data?.user?.defaultChatflowId
+
                 if (defaultChatflowId) {
-                    router.push(`/chat/${defaultChatflowId}`)
+                    try {
+                        router.push(`/chat/${defaultChatflowId}`)
+                    } catch (navError) {
+                        console.error('Error navigating to default chatflow:', navError)
+                        router.push('/chat')
+                    }
+                } else {
+                    // If no default chatflow, redirect to general chat page
+                    router.push('/chat')
                 }
             } catch (error) {
                 console.error('Error redirecting to default chatflow:', error)
