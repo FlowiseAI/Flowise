@@ -87,7 +87,9 @@ export class PredictionQueue extends BaseQueue {
             return await executeCustomNodeFunction({
                 appDataSource: this.appDataSource,
                 componentNodes: this.componentNodes,
-                data: executeCustomFunctionData.data
+                data: executeCustomFunctionData.data,
+                workspaceId: executeCustomFunctionData.workspaceId,
+                orgId: executeCustomFunctionData.orgId
             })
         }
 

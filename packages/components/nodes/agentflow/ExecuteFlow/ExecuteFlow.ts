@@ -181,7 +181,8 @@ class ExecuteFlow_Agentflow implements INode {
             if (selectedFlowId === options.chatflowid) throw new Error('Cannot call the same agentflow!')
 
             let headers: Record<string, string> = {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'flowise-tool': 'true'
             }
             if (chatflowApiKey) headers = { ...headers, Authorization: `Bearer ${chatflowApiKey}` }
 
