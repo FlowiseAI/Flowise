@@ -100,6 +100,7 @@ export const createFileAttachment = async (req: Request) => {
     const options = {
         retrieveAttachmentChatId: true,
         orgId,
+        workspaceId,
         chatflowid,
         chatId
     }

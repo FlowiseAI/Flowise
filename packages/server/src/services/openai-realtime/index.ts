@@ -147,6 +147,7 @@ const buildAndInitTool = async (chatflowid: string, _chatId?: string, _apiMessag
         chatflowid,
         chatId,
         orgId,
+        workspaceId,
         appDataSource: appServer.AppDataSource,
         databaseEntities,
         analytic: chatflow.analytic
