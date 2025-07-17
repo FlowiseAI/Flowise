@@ -1,8 +1,9 @@
 import { BaseCache } from '@langchain/core/caches'
 import { VertexAI, VertexAIInput } from '@langchain/google-vertexai'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+import { buildGoogleCredentials } from '../../../src/google-utils'
 
 class GoogleVertexAI_LLMs implements INode {
     label: string
@@ -83,28 +84,6 @@ class GoogleVertexAI_LLMs implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
-        const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
-        const projectID = getCredentialParam('projectID', credentialData, nodeData)
-
-        const authOptions: any = {}
-        if (Object.keys(credentialData).length !== 0) {
-            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
-                throw new Error('Please specify your Google Application Credential')
-            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
-                throw new Error(
-                    'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path or Google Credential JSON Object'
-                )
-
-            if (googleApplicationCredentialFilePath && !googleApplicationCredential)
-                authOptions.keyFile = googleApplicationCredentialFilePath
-            else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
-                authOptions.credentials = JSON.parse(googleApplicationCredential)
-
-            if (projectID) authOptions.projectId = projectID
-        }
-
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
@@ -115,7 +94,9 @@ class GoogleVertexAI_LLMs implements INode {
             temperature: parseFloat(temperature),
             model: modelName
         }
-        if (Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
+
+        const authOptions = await buildGoogleCredentials(nodeData, options)
+        if (authOptions && Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
 
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
