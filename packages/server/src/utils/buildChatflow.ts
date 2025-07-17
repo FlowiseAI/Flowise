@@ -750,6 +750,8 @@ export const executeFlow = async ({
                         rawOutput: resultText,
                         appDataSource,
                         databaseEntities,
+                        workspaceId,
+                        orgId,
                         logger
                     }
                     const customFuncNodeInstance = new nodeModule.nodeClass()

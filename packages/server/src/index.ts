@@ -34,6 +34,7 @@ import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { Organization } from './enterprise/database/entities/organization.entity'
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
+import { ExpressAdapter } from '@bull-board/express'
 
 declare global {
     namespace Express {
@@ -128,13 +129,16 @@ export class App {
             // Init Queues
             if (process.env.MODE === MODE.QUEUE) {
                 this.queueManager = QueueManager.getInstance()
+                const serverAdapter = new ExpressAdapter()
+                serverAdapter.setBasePath('/admin/queues')
                 this.queueManager.setupAllQueues({
                     componentNodes: this.nodesPool.componentNodes,
                     telemetry: this.telemetry,
                     cachePool: this.cachePool,
                     appDataSource: this.AppDataSource,
                     abortControllerPool: this.abortControllerPool,
-                    usageCacheManager: this.usageCacheManager
+                    usageCacheManager: this.usageCacheManager,
+                    serverAdapter
                 })
                 logger.info('✅ [Queue]: All queues setup successfully')
 

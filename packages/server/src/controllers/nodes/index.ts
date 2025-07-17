@@ -86,7 +86,8 @@ const executeCustomFunction = async (req: Request, res: Response, next: NextFunc
             )
         }
         const orgId = req.user?.activeOrganizationId
-        const apiResponse = await nodesService.executeCustomFunction(req.body, orgId)
+        const workspaceId = req.user?.activeWorkspaceId
+        const apiResponse = await nodesService.executeCustomFunction(req.body, workspaceId, orgId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
