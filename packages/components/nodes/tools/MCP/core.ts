@@ -1,10 +1,10 @@
-import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
-import { Client } from '@modelcontextprotocol/sdk/client/index.js'
-import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
-import { z } from 'zod'
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
+import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
+import { convertJsonSchemaToZod } from 'zod-from-json-schema'
 
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
@@ -156,20 +156,9 @@ export async function MCPTool({
     )
 }
 
-function createSchemaModel(
-    inputSchema: {
-        type: 'object'
-        properties?: import('zod').objectOutputType<{}, import('zod').ZodTypeAny, 'passthrough'> | undefined
-    } & { [k: string]: unknown }
-): any {
+function createSchemaModel(inputSchema: any): any {
     if (inputSchema.type !== 'object' || !inputSchema.properties) {
         throw new Error('Invalid schema type or missing properties')
     }
-
-    const schemaProperties = Object.entries(inputSchema.properties).reduce((acc, [key, _]) => {
-        acc[key] = z.any()
-        return acc
-    }, {} as Record<string, import('zod').ZodTypeAny>)
-
-    return z.object(schemaProperties)
+    return convertJsonSchemaToZod(inputSchema)
 }

@@ -147,7 +147,8 @@
         "typeorm": "^0.3.6",
         "uuid": "^9.0.1",
         "winston": "^3.9.0",
-        "winston-daily-rotate-file": "^5.0.0"
+        "winston-daily-rotate-file": "^5.0.0",
+        "zod-from-json-schema": "^0.4.2"
     },
     "devDependencies": {
         "@types/content-disposition": "0.5.8",
