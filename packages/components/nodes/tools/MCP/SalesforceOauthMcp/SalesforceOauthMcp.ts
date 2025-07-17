@@ -22,7 +22,7 @@
  */
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
-import { getCredentialData, getCredentialParam } from '../../../../src/utils'
+import { getCredentialData, getCredentialParam, getNodeModulesPackagePath } from '../../../../src/utils'
 import { MCPToolkit } from '../core'
 
 class SalesforceOauth_MCP implements INode {
@@ -130,12 +130,11 @@ class SalesforceOauth_MCP implements INode {
             )
         }
 
-        // Path to local MCP server for development
-        const localMcpServerPath = '/Users/jaime.morales/dev/mcp-server-salesforce/dist/index.js'
+        const packagePath = getNodeModulesPackagePath('@answerai/salesforce-mcp/dist/index.js')
 
         const serverParams = {
             command: process.execPath,
-            args: [localMcpServerPath],
+            args: [packagePath],
             env: {
                 SALESFORCE_CONNECTION_TYPE: 'OAuth_2.0_Personal',
                 SALESFORCE_CLIENT_ID: salesforceClientId,

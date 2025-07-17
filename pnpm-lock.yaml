@@ -839,6 +839,9 @@ importers:
             '@answerai/jira-mcp':
                 specifier: ^1.0.2
                 version: 1.0.2
+            '@answerai/salesforce-mcp':
+                specifier: ^0.1.0
+                version: 0.1.0
             '@apidevtools/json-schema-ref-parser':
                 specifier: ^12.0.2
                 version: 12.0.2
@@ -2353,6 +2356,10 @@ packages:
     '@answerai/jira-mcp@1.0.2':
         resolution: { integrity: sha512-nLdQY6Kfcj/X0u/l+ehG+0bUIyOrPLDIJT2F7eg3ceusgOZpmdUEG02G5KjVDpC4q6SiNxFLxIGuGqupC4QNMw== }
         engines: { node: '>=18.0.0' }
+        hasBin: true
+
+    '@answerai/salesforce-mcp@0.1.0':
+        resolution: { integrity: sha512-aTxjb7DvQfCk3fXOaLclwA2jBD8qQR9kAY+Gsqhg1uSEUPunElAeFmyAbgpVx3zEJIRTH2XtNDZosVyCU2Eibw== }
         hasBin: true
 
     '@anthropic-ai/sdk@0.21.1':
@@ -24113,6 +24120,12 @@ snapshots:
             typescript: 5.8.3
         transitivePeerDependencies:
             - supports-color
+
+    '@answerai/salesforce-mcp@0.1.0':
+        dependencies:
+            '@modelcontextprotocol/sdk': 0.5.0
+            dotenv: 16.5.0
+            jsforce: 1.11.1
 
     '@anthropic-ai/sdk@0.21.1(encoding@0.1.13)':
         dependencies:
