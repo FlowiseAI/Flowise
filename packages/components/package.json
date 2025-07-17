@@ -22,7 +22,7 @@
         "@arizeai/openinference-instrumentation-langchain": "^2.0.0",
         "@aws-sdk/client-bedrock-runtime": "3.422.0",
         "@aws-sdk/client-dynamodb": "^3.360.0",
-        "@aws-sdk/client-s3": "^3.427.0",
+        "@aws-sdk/client-s3": "^3.844.0",
         "@aws-sdk/client-secrets-manager": "^3.699.0",
         "@datastax/astra-db-ts": "1.5.0",
         "@dqbd/tiktoken": "^1.0.21",
