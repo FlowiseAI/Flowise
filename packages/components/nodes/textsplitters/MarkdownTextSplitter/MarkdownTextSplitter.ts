@@ -16,7 +16,7 @@ class MarkdownTextSplitter_TextSplitters implements INode {
     constructor() {
         this.label = 'Markdown Text Splitter'
         this.name = 'markdownTextSplitter'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'MarkdownTextSplitter'
         this.icon = 'markdownTextSplitter.svg'
         this.category = 'Text Splitters'
