@@ -285,7 +285,7 @@ export class StripeManager {
             const basePlanItem = subscription.items.data.find((item) => (item.price.product as string) !== process.env.ADDITIONAL_SEAT_ID)
             const basePlanAmount = basePlanItem ? basePlanItem.price.unit_amount! * 1 : 0
 
-            const existingInvoice = await this.stripe.invoices.retrieveUpcoming({
+            const existingInvoice = await this.stripe.invoices.createPreview({
                 customer: subscription.customer as string,
                 subscription: subscriptionId
             })
@@ -313,7 +313,7 @@ export class StripeManager {
                 (item) => (item.price.product as string) === process.env.ADDITIONAL_SEAT_ID
             )
 
-            const upcomingInvoice = await this.stripe.invoices.retrieveUpcoming({
+            const upcomingInvoice = await this.stripe.invoices.createPreview({
                 customer: subscription.customer as string,
                 subscription: subscriptionId,
                 subscription_details: {
@@ -336,10 +336,10 @@ export class StripeManager {
             // Calculate proration amount from the relevant line items
             // Only consider prorations that match our proration date
             const prorationLineItems = upcomingInvoice.lines.data.filter(
-                (line) => line.type === 'invoiceitem' && line.period.start === prorationDate
+                (line: any) => line.type === 'invoiceitem' && line.period.start === prorationDate
             )
 
-            const prorationAmount = prorationLineItems.reduce((total, item) => total + item.amount, 0)
+            const prorationAmount = prorationLineItems.reduce((total: number, item: any) => total + item.amount, 0)
 
             return {
                 basePlanAmount: basePlanAmount / 100,
@@ -349,8 +349,8 @@ export class StripeManager {
                 nextInvoiceTotal: (existingInvoiceTotal + prorationAmount) / 100,
                 currency: upcomingInvoice.currency.toUpperCase(),
                 prorationDate,
-                currentPeriodStart: subscription.current_period_start,
-                currentPeriodEnd: subscription.current_period_end
+                currentPeriodStart: subscription.items.data[0]?.current_period_start,
+                currentPeriodEnd: subscription.items.data[0]?.current_period_end
             }
         } catch (error) {
             console.error('Error calculating additional seats proration:', error)
@@ -379,7 +379,7 @@ export class StripeManager {
                 status: 'open'
             })
             const openAdditionalSeatsInvoices = openInvoices.data.filter((invoice) =>
-                invoice.lines?.data?.some((line) => line.price?.id === prices.data[0].id)
+                invoice.lines?.data?.some((line) => (line as any).price?.id === prices.data[0].id)
             )
             if (openAdditionalSeatsInvoices.length > 0 && increase === true)
                 throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, "Not allow to add seats when there're unsuccessful payment")
@@ -418,7 +418,7 @@ export class StripeManager {
                     throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
                 }
                 quantity = newQuantity
-                await this.stripe.invoices.voidInvoice(openAdditionalSeatsInvoices[0].id)
+                await this.stripe.invoices.voidInvoice(openAdditionalSeatsInvoices[0].id!)
                 subscriptionUpdateData.proration_behavior = 'none'
             } else {
                 ;(subscriptionUpdateData.proration_behavior = 'always_invoice'),
@@ -441,7 +441,7 @@ export class StripeManager {
                 // Only try to pay if the invoice is not already paid
                 if (latestInvoice.status !== 'paid') {
                     try {
-                        await this.stripe.invoices.pay(latestInvoice.id)
+                        await this.stripe.invoices.pay(latestInvoice.id!)
                     } catch (error: any) {
                         // Payment failed but we still want to provision access
                         // This keeps Stripe and our app in sync - both will show the new seats
@@ -497,7 +497,7 @@ export class StripeManager {
 
             // Check if this is the STARTER plan and eligible for first month free
             const isStarterPlan = newPlanId === process.env.CLOUD_STARTER_ID
-            const hasUsedFirstMonthFreeCoupon = customerMetadata.has_used_first_month_free === 'true'
+            const hasUsedFirstMonthFreeCoupon = customerMetadata?.has_used_first_month_free === 'true'
             const eligibleForFirstMonthFree = isStarterPlan && !hasUsedFirstMonthFreeCoupon
 
             // TODO: Fix proration date for sandbox testing - use subscription period bounds
@@ -540,13 +540,13 @@ export class StripeManager {
                 subscriptionDetails.proration_date = prorationDate
             }
 
-            const upcomingInvoice = await this.stripe.invoices.retrieveUpcoming({
+            const upcomingInvoice = await this.stripe.invoices.createPreview({
                 customer: customerId,
                 subscription: subscriptionId,
                 subscription_details: subscriptionDetails
             })
 
-            let prorationAmount = upcomingInvoice.lines.data.reduce((total, item) => total + item.amount, 0)
+            let prorationAmount = upcomingInvoice.lines.data.reduce((total: number, item: any) => total + item.amount, 0)
             if (eligibleForFirstMonthFree) {
                 prorationAmount = 0
             }
@@ -557,8 +557,8 @@ export class StripeManager {
                 creditBalance: creditBalance / 100,
                 currency: upcomingInvoice.currency.toUpperCase(),
                 prorationDate,
-                currentPeriodStart: subscription.current_period_start,
-                currentPeriodEnd: subscription.current_period_end,
+                currentPeriodStart: subscription.items.data[0]?.current_period_start,
+                currentPeriodEnd: subscription.items.data[0]?.current_period_end,
                 eligibleForFirstMonthFree,
                 prorationBehavior
             }
@@ -631,7 +631,7 @@ export class StripeManager {
                     // Check if the subscription is in past_due and invoice is in retry
                     if (subscription.status === 'past_due' && latestInvoice.status === 'open') {
                         // Issue 2: Void the latest invoice and activate subscription
-                        await this.stripe.invoices.voidInvoice(latestInvoice.id)
+                        await this.stripe.invoices.voidInvoice(latestInvoice.id!)
 
                         // Update subscription to free plan
                         updatedSubscription = await this.stripe.subscriptions.update(subscriptionId, {
@@ -652,7 +652,7 @@ export class StripeManager {
                             auto_advance: false
                         })
 
-                        await this.stripe.invoices.pay(zeroInvoice.id)
+                        await this.stripe.invoices.pay(zeroInvoice.id!)
 
                         return {
                             success: true,
@@ -697,7 +697,7 @@ export class StripeManager {
                 }
             } else if (isStarterPlan && !hasUsedFirstMonthFreeCoupon) {
                 // Create the one-time 100% off coupon
-                const coupon = await this.stripe.coupons.create({
+                const coupon = await this.stripe!.coupons.create({
                     duration: 'once',
                     percent_off: 100,
                     max_redemptions: 1,
@@ -727,7 +727,7 @@ export class StripeManager {
                     ],
                     proration_behavior: 'always_invoice',
                     proration_date: adjustedProrationDate,
-                    promotion_code: promotionCode.id
+                    discounts: [{ promotion_code: promotionCode.id }]
                 })
 
                 // Update customer metadata to mark the coupon as used
@@ -768,7 +768,7 @@ export class StripeManager {
                 const latestInvoice = invoice.data[0]
                 if (latestInvoice.status !== 'paid') {
                     try {
-                        await this.stripe.invoices.pay(latestInvoice.id)
+                        await this.stripe.invoices.pay(latestInvoice.id!)
                     } catch (error: any) {
                         // Payment failed but we still want to provision access
                         // This keeps Stripe and our app in sync - both will show the new plan
@@ -820,13 +820,13 @@ export class StripeManager {
             }
 
             // Check credit balance for overage
-            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const subscription = await this.stripe!.subscriptions.retrieve(subscriptionId)
             const customerId = subscription.customer as string
 
-            const creditBalance = await this.stripe.billing.creditBalanceSummary.retrieve({
+            const creditBalance = await this.stripe!.billing.creditBalanceSummary.retrieve({
                 customer: customerId,
                 filter: {
-                    type: 'monetary'
+                    type: 'monetary' as any
                 }
             })
 
@@ -860,7 +860,7 @@ export class StripeManager {
                 throw new Error('Subscription ID and package type are required')
             }
 
-            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const subscription = await this.stripe!.subscriptions.retrieve(subscriptionId)
             const customerId = subscription.customer as string
 
             if (!customerId) {
@@ -876,20 +876,21 @@ export class StripeManager {
             }
 
             // Create invoice for credit purchase
-            const invoiceItem = await this.stripe.invoiceItems.create({
+            const invoiceItem = await this.stripe!.invoiceItems.create({
                 customer: customerId,
-                price: selectedPackage.priceId,
+                amount: selectedPackage.price,
+                currency: 'usd',
                 description: `${selectedPackage.credits} Credits Package`
             })
 
-            const invoice = await this.stripe.invoices.create({
+            const invoice = await this.stripe!.invoices.create({
                 customer: customerId,
                 auto_advance: true,
                 collection_method: 'charge_automatically'
             })
 
-            const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(invoice.id!)
-            const paidInvoice = await this.stripe.invoices.pay(finalizedInvoice.id!)
+            const finalizedInvoice = await this.stripe!.invoices.finalizeInvoice(invoice.id!)
+            const paidInvoice = await this.stripe!.invoices.pay(finalizedInvoice.id!)
 
             if (paidInvoice.status !== 'paid') {
                 throw new Error('Payment failed')
@@ -899,10 +900,10 @@ export class StripeManager {
             const meteredItemResult = await this.addMeteredSubscriptionItem(subscriptionId)
 
             // Create credit grant
-            const creditGrant = await this.stripe.billing.creditGrants.create({
+            const creditGrant = await this.stripe!.billing.creditGrants.create({
                 customer: customerId,
                 amount: {
-                    type: 'monetary',
+                    type: 'monetary' as any,
                     monetary: {
                         currency: 'usd',
                         value: selectedPackage.price
@@ -913,7 +914,7 @@ export class StripeManager {
                         price_type: 'metered',
                         prices: [process.env.METERED_PRICE_ID!]
                     }
-                },
+                } as any,
                 category: 'paid',
                 name: `${selectedPackage.credits} Credits Purchase`
             })
@@ -940,17 +941,17 @@ export class StripeManager {
                 throw new Error('Subscription ID is required')
             }
 
-            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const subscription = await this.stripe!.subscriptions.retrieve(subscriptionId)
             const customerId = subscription.customer as string
 
             if (!customerId) {
                 throw new Error('Customer ID not found in subscription')
             }
 
-            const creditBalance = await this.stripe.billing.creditBalanceSummary.retrieve({
+            const creditBalance = await this.stripe!.billing.creditBalanceSummary.retrieve({
                 customer: customerId,
                 filter: {
-                    type: 'monetary'
+                    type: 'monetary' as any
                 }
             })
 
@@ -958,7 +959,7 @@ export class StripeManager {
             const balanceInDollars = balance / 100
 
             // Get credit grants for detailed info
-            const grants = await this.stripe.billing.creditGrants.list({
+            const grants = await this.stripe!.billing.creditGrants.list({
                 customer: customerId,
                 limit: 10
             })
@@ -1032,13 +1033,13 @@ export class StripeManager {
                 return cachedPackages as any[]
             }
 
-            const prices = await this.stripe.prices.list({
+            const pricesData = await this.stripe!.prices.list({
                 product: process.env.CREDIT_PRODUCT_ID,
                 active: true,
                 type: 'one_time'
             })
 
-            const packages = prices.data.map((price) => {
+            const packages = pricesData.data.map((price) => {
                 const credits = this.getCreditsFromPrice(price.unit_amount || 0)
                 return {
                     id: this.getPackageTypeFromCredits(credits),
@@ -1070,7 +1071,7 @@ export class StripeManager {
                 throw new Error('Subscription ID is required')
             }
 
-            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const subscription = await this.stripe!.subscriptions.retrieve(subscriptionId)
 
             // Check if metered item already exists
             const existingMeteredItem = subscription.items.data.find((item) => item.price.id === process.env.METERED_PRICE_ID)
@@ -1083,9 +1084,10 @@ export class StripeManager {
             }
 
             // Add metered subscription item
-            await this.stripe.subscriptionItems.create({
+            await this.stripe!.subscriptionItems.create({
                 subscription: subscriptionId,
-                price: process.env.METERED_PRICE_ID!
+                price: process.env.METERED_PRICE_ID!,
+                quantity: 0
             })
 
             return {
@@ -1107,7 +1109,7 @@ export class StripeManager {
                 throw new Error('Customer ID is required')
             }
 
-            await this.stripe.v2.billing.meterEvents.create({
+            await this.stripe!.billing.meterEvents.create({
                 event_name: process.env.METER_EVENT_NAME!,
                 payload: {
                     stripe_customer_id: customerId,

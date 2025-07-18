@@ -39,12 +39,16 @@ export class StripeService {
         try {
             await this.getStripe() // Initialize stripe if not already done
 
-            if (!invoice.subscription) {
+            const invoiceWithSubscription = invoice as any
+            const subscriptionId =
+                typeof invoiceWithSubscription.subscription === 'string'
+                    ? invoiceWithSubscription.subscription
+                    : invoiceWithSubscription.subscription?.id
+
+            if (!subscriptionId) {
                 logger.warn(`No subscription ID found in invoice: ${invoice.id}`)
                 return
             }
-
-            const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id
 
             const organizationService = new OrganizationService()
             const organization = await organizationService.readOrganizationBySubscriptionId(subscriptionId, queryRunner)
@@ -110,12 +114,16 @@ export class StripeService {
     public async handleInvoiceMarkedUncollectible(invoice: Stripe.Invoice, queryRunner: QueryRunner): Promise<void> {
         await this.getStripe() // Initialize stripe if not already done
 
-        if (!invoice.subscription) {
+        const invoiceWithSubscription = invoice as any
+        const subscriptionId =
+            typeof invoiceWithSubscription.subscription === 'string'
+                ? invoiceWithSubscription.subscription
+                : invoiceWithSubscription.subscription?.id
+
+        if (!subscriptionId) {
             logger.warn(`No subscription ID found in invoice: ${invoice.id}`)
             return
         }
-
-        const subscriptionId = typeof invoice.subscription === 'string' ? invoice.subscription : invoice.subscription.id
 
         try {
             const organization = await queryRunner.manager.findOne(Organization, {
