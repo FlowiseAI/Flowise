@@ -103,7 +103,8 @@ const getSingleNodeAsyncOptions = async (nodeName: string, requestBody: any): Pr
                     componentNodes: appServer.nodesPool.componentNodes,
                     previousNodes: requestBody.previousNodes,
                     currentNode: requestBody.currentNode,
-                    searchOptions: requestBody.searchOptions
+                    searchOptions: requestBody.searchOptions,
+                    cachePool: appServer.cachePool
                 })
 
                 return dbResponse
