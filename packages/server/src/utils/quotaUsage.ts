@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { UsageCacheManager } from '../UsageCacheManager'
+import { StripeManager } from '../StripeManager'
 import { LICENSE_QUOTAS } from './constants'
 import logger from './logger'
 
@@ -141,6 +142,66 @@ export const checkPredictions = async (orgId: string, subscriptionId: string, us
     return {
         usage: currentPredictions,
         limit: predictionsLimit
+    }
+}
+
+export const checkPredictionEligibility = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
+    try {
+        if (!usageCacheManager || !subscriptionId) return { allowed: true, useCredits: false }
+
+        const stripeManager = await StripeManager.getInstance()
+        if (!stripeManager) return { allowed: true, useCredits: false }
+
+        const eligibility = await stripeManager.checkPredictionEligibility(orgId, subscriptionId)
+        return eligibility
+    } catch (error) {
+        logger.error(`[checkPredictionEligibility] Error checking prediction eligibility: ${error}`)
+        throw error
+    }
+}
+
+export const updatePredictionsUsageWithCredits = async (
+    orgId: string,
+    subscriptionId: string,
+    useCredits: boolean = false,
+    usageCacheManager?: UsageCacheManager
+) => {
+    if (!usageCacheManager) return
+
+    if (useCredits) {
+        // Report meter usage for credit billing
+        try {
+            const stripeManager = await StripeManager.getInstance()
+            if (stripeManager) {
+                const subscriptionDetails = await usageCacheManager.getSubscriptionDetails(subscriptionId)
+                if (subscriptionDetails && subscriptionDetails.customer) {
+                    await stripeManager.reportMeterUsage(subscriptionDetails.customer as string)
+                }
+            }
+        } catch (error) {
+            logger.error(`[updatePredictionsUsageWithCredits] Error reporting meter usage: ${error}`)
+        }
+    } else {
+        // Update regular plan usage
+        await updatePredictionsUsage(orgId, subscriptionId, '', usageCacheManager)
+    }
+}
+
+// Enhanced prediction checking that includes credit eligibility
+export const checkPredictionsWithCredits = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
+    if (!usageCacheManager || !subscriptionId) return
+
+    const eligibility = await checkPredictionEligibility(orgId, subscriptionId, usageCacheManager)
+
+    if (!eligibility.allowed) {
+        throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, 'Predictions limit exceeded. Please purchase credits to continue.')
+    }
+
+    return {
+        useCredits: eligibility.useCredits,
+        remainingCredits: eligibility.remainingCredits,
+        usage: eligibility.currentUsage,
+        limit: eligibility.planLimit
     }
 }
 

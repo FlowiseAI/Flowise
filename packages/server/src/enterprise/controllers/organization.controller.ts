@@ -193,4 +193,82 @@ export class OrganizationController {
             next(error)
         }
     }
+
+    public async getPredictionEligibility(req: Request, res: Response, next: NextFunction) {
+        try {
+            const orgId = req.user?.activeOrganizationId
+            const subscriptionId = req.user?.activeOrganizationSubscriptionId
+            if (!orgId) {
+                return res.status(400).json({ error: 'Organization ID is required' })
+            }
+            if (!subscriptionId) {
+                return res.status(400).json({ error: 'Subscription ID is required' })
+            }
+            const identityManager = getRunningExpressApp().identityManager
+            const result = await identityManager.checkPredictionEligibility(orgId, subscriptionId)
+            return res.status(StatusCodes.OK).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    public async purchaseCredits(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { packageType } = req.body
+            const subscriptionId = req.user?.activeOrganizationSubscriptionId
+            if (!subscriptionId) {
+                return res.status(400).json({ error: 'Subscription ID is required' })
+            }
+            if (!packageType) {
+                return res.status(400).json({ error: 'Package type is required' })
+            }
+            const identityManager = getRunningExpressApp().identityManager
+            const result = await identityManager.purchaseCredits(subscriptionId, packageType)
+            return res.status(StatusCodes.OK).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    public async getCreditsBalance(req: Request, res: Response, next: NextFunction) {
+        try {
+            const subscriptionId = req.user?.activeOrganizationSubscriptionId
+            if (!subscriptionId) {
+                return res.status(400).json({ error: 'Subscription ID is required' })
+            }
+            const identityManager = getRunningExpressApp().identityManager
+            const result = await identityManager.getCreditBalance(subscriptionId)
+            return res.status(StatusCodes.OK).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    public async getUsageWithCredits(req: Request, res: Response, next: NextFunction) {
+        try {
+            const orgId = req.user?.activeOrganizationId
+            const subscriptionId = req.user?.activeOrganizationSubscriptionId
+            if (!orgId) {
+                return res.status(400).json({ error: 'Organization ID is required' })
+            }
+            if (!subscriptionId) {
+                return res.status(400).json({ error: 'Subscription ID is required' })
+            }
+            const identityManager = getRunningExpressApp().identityManager
+            const result = await identityManager.getUsageWithCredits(orgId, subscriptionId)
+            return res.status(StatusCodes.OK).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    public async getCreditsPackages(req: Request, res: Response, next: NextFunction) {
+        try {
+            const identityManager = getRunningExpressApp().identityManager
+            const result = await identityManager.getCreditsPackages()
+            return res.status(StatusCodes.OK).json(result)
+        } catch (error) {
+            next(error)
+        }
+    }
 }

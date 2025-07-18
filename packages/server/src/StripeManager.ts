@@ -326,8 +326,6 @@ export class StripeManager {
                                   quantity: quantity
                               }
                             : {
-                                  // If the item doesn't exist yet, create a new one
-                                  // This will be used to calculate the proration amount
                                   price: prices.data[0].id,
                                   quantity: quantity
                               }
@@ -348,7 +346,6 @@ export class StripeManager {
                 additionalSeatsProratedAmount: (existingInvoiceTotal + prorationAmount - basePlanAmount) / 100,
                 seatPerUnitPrice: pricePerSeat / 100,
                 prorationAmount: prorationAmount / 100,
-                creditBalance: creditBalance / 100,
                 nextInvoiceTotal: (existingInvoiceTotal + prorationAmount) / 100,
                 currency: upcomingInvoice.currency.toUpperCase(),
                 prorationDate,
@@ -795,5 +792,343 @@ export class StripeManager {
             console.error('Error updating subscription plan:', error)
             throw error
         }
+    }
+
+    public async checkPredictionEligibility(orgId: string, subscriptionId: string): Promise<Record<string, any>> {
+        try {
+            if (!subscriptionId || !orgId) {
+                throw new Error('Subscription ID and Organization ID are required')
+            }
+
+            // Get current usage and quotas
+            const usageCacheManager = this.cacheManager
+            const currentPredictions: number = (await usageCacheManager.get(`predictions:${orgId}`)) || 0
+            const quotas = await usageCacheManager.getQuotas(subscriptionId)
+            const predictionsLimit = quotas['quota:predictions']
+
+            // Check if within plan limits
+            if (predictionsLimit === -1 || currentPredictions < predictionsLimit) {
+                return {
+                    allowed: true,
+                    useCredits: false,
+                    remainingCredits: null,
+                    creditBalance: null,
+                    currentUsage: currentPredictions,
+                    planLimit: predictionsLimit,
+                    withinPlanLimits: true
+                }
+            }
+
+            // Check credit balance for overage
+            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const customerId = subscription.customer as string
+
+            const creditBalance = await this.stripe.billing.creditBalanceSummary.retrieve({
+                customer: customerId,
+                filter: {
+                    type: 'monetary'
+                }
+            })
+
+            const availableCredits = creditBalance.balances?.[0]?.available_balance?.monetary?.value || 0
+            const requestCost = 1 // 1 cent per prediction
+
+            return {
+                allowed: availableCredits >= requestCost,
+                useCredits: true,
+                remainingCredits: availableCredits,
+                creditBalance: availableCredits,
+                currentUsage: currentPredictions,
+                planLimit: predictionsLimit,
+                withinPlanLimits: false
+            }
+        } catch (error) {
+            console.error('Error checking prediction eligibility:', error)
+            throw error
+        }
+    }
+
+    public async purchaseCredits(subscriptionId: string, packageType: string): Promise<Record<string, any>> {
+        try {
+            if (!process.env.CREDIT_PRODUCT_ID) {
+                throw new Error('CREDIT_PRODUCT_ID environment variable is required')
+            }
+            if (!process.env.METERED_PRICE_ID) {
+                throw new Error('METERED_PRICE_ID environment variable is required')
+            }
+            if (!subscriptionId || !packageType) {
+                throw new Error('Subscription ID and package type are required')
+            }
+
+            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const customerId = subscription.customer as string
+
+            if (!customerId) {
+                throw new Error('Customer ID not found in subscription')
+            }
+
+            // Get credit packages
+            const packages = await this.getCreditsPackages()
+            const selectedPackage = packages.find((pkg: any) => pkg.id === packageType)
+
+            if (!selectedPackage) {
+                throw new Error(`No active price found for ${packageType} package`)
+            }
+
+            // Create invoice for credit purchase
+            const invoiceItem = await this.stripe.invoiceItems.create({
+                customer: customerId,
+                price: selectedPackage.priceId,
+                description: `${selectedPackage.credits} Credits Package`
+            })
+
+            const invoice = await this.stripe.invoices.create({
+                customer: customerId,
+                auto_advance: true,
+                collection_method: 'charge_automatically'
+            })
+
+            const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(invoice.id!)
+            const paidInvoice = await this.stripe.invoices.pay(finalizedInvoice.id!)
+
+            if (paidInvoice.status !== 'paid') {
+                throw new Error('Payment failed')
+            }
+
+            // Add metered subscription item if it doesn't exist
+            const meteredItemResult = await this.addMeteredSubscriptionItem(subscriptionId)
+
+            // Create credit grant
+            const creditGrant = await this.stripe.billing.creditGrants.create({
+                customer: customerId,
+                amount: {
+                    type: 'monetary',
+                    monetary: {
+                        currency: 'usd',
+                        value: selectedPackage.price
+                    }
+                },
+                applicability_config: {
+                    scope: {
+                        price_type: 'metered',
+                        prices: [process.env.METERED_PRICE_ID!]
+                    }
+                },
+                category: 'paid',
+                name: `${selectedPackage.credits} Credits Purchase`
+            })
+
+            // Clear cache
+            await this.cacheManager.del(`credits:balance:${customerId}`)
+
+            return {
+                invoice: paidInvoice,
+                creditGrant,
+                creditsGranted: selectedPackage.credits,
+                meteredItemAdded: meteredItemResult.added,
+                meteredItemMessage: meteredItemResult.message
+            }
+        } catch (error) {
+            console.error('Error purchasing credits:', error)
+            throw error
+        }
+    }
+
+    public async getCreditBalance(subscriptionId: string): Promise<Record<string, any>> {
+        try {
+            if (!subscriptionId) {
+                throw new Error('Subscription ID is required')
+            }
+
+            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+            const customerId = subscription.customer as string
+
+            if (!customerId) {
+                throw new Error('Customer ID not found in subscription')
+            }
+
+            const creditBalance = await this.stripe.billing.creditBalanceSummary.retrieve({
+                customer: customerId,
+                filter: {
+                    type: 'monetary'
+                }
+            })
+
+            const balance = creditBalance.balances?.[0]?.available_balance?.monetary?.value || 0
+            const balanceInDollars = balance / 100
+
+            // Get credit grants for detailed info
+            const grants = await this.stripe.billing.creditGrants.list({
+                customer: customerId,
+                limit: 10
+            })
+
+            return {
+                balance,
+                balanceInDollars,
+                grants: grants.data.map((grant) => ({
+                    id: grant.id,
+                    amount: grant.amount,
+                    name: grant.name,
+                    created: grant.created
+                }))
+            }
+        } catch (error) {
+            console.error('Error getting credit balance:', error)
+            throw error
+        }
+    }
+
+    public async getUsageWithCredits(orgId: string, subscriptionId: string): Promise<Record<string, any>> {
+        try {
+            if (!orgId || !subscriptionId) {
+                throw new Error('Organization ID and Subscription ID are required')
+            }
+
+            const usageCacheManager = this.cacheManager
+
+            // Get current usage
+            const currentStorageUsage = (await usageCacheManager.get(`storage:${orgId}`)) || 0
+            const currentPredictionsUsage = (await usageCacheManager.get(`predictions:${orgId}`)) || 0
+
+            const quotas = await usageCacheManager.getQuotas(subscriptionId)
+            const storageLimit = quotas['quota:storage']
+            const predLimit = quotas['quota:predictions']
+
+            // Get credit balance
+            const creditBalance = await this.getCreditBalance(subscriptionId)
+
+            return {
+                predictions: {
+                    usage: currentPredictionsUsage,
+                    limit: predLimit
+                },
+                storage: {
+                    usage: currentStorageUsage,
+                    limit: storageLimit
+                },
+                credits: {
+                    balance: creditBalance.balance,
+                    balanceInDollars: creditBalance.balanceInDollars,
+                    costPerPrediction: 0.01
+                }
+            }
+        } catch (error) {
+            console.error('Error getting usage with credits:', error)
+            throw error
+        }
+    }
+
+    public async getCreditsPackages(): Promise<any[]> {
+        try {
+            if (!process.env.CREDIT_PRODUCT_ID) {
+                throw new Error('CREDIT_PRODUCT_ID environment variable is required')
+            }
+
+            // Check cache first
+            const cacheKey = 'credits:packages'
+            const cachedPackages = await this.cacheManager.get(cacheKey)
+            if (cachedPackages) {
+                return cachedPackages as any[]
+            }
+
+            const prices = await this.stripe.prices.list({
+                product: process.env.CREDIT_PRODUCT_ID,
+                active: true,
+                type: 'one_time'
+            })
+
+            const packages = prices.data.map((price) => {
+                const credits = this.getCreditsFromPrice(price.unit_amount || 0)
+                return {
+                    id: this.getPackageTypeFromCredits(credits),
+                    priceId: price.id,
+                    credits,
+                    price: price.unit_amount || 0,
+                    priceFormatted: `$${((price.unit_amount || 0) / 100).toFixed(2)}`,
+                    creditsPerDollar: credits / ((price.unit_amount || 0) / 100),
+                    costPerPrediction: '$0.01'
+                }
+            })
+
+            // Cache for 1 hour
+            this.cacheManager.set(cacheKey, packages, 3600000)
+
+            return packages
+        } catch (error) {
+            console.error('Error getting credits packages:', error)
+            throw error
+        }
+    }
+
+    public async addMeteredSubscriptionItem(subscriptionId: string): Promise<{ added: boolean; message: string }> {
+        try {
+            if (!process.env.METERED_PRICE_ID) {
+                throw new Error('METERED_PRICE_ID environment variable is required')
+            }
+            if (!subscriptionId) {
+                throw new Error('Subscription ID is required')
+            }
+
+            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
+
+            // Check if metered item already exists
+            const existingMeteredItem = subscription.items.data.find((item) => item.price.id === process.env.METERED_PRICE_ID)
+
+            if (existingMeteredItem) {
+                return {
+                    added: false,
+                    message: 'Metered subscription item already exists'
+                }
+            }
+
+            // Add metered subscription item
+            await this.stripe.subscriptionItems.create({
+                subscription: subscriptionId,
+                price: process.env.METERED_PRICE_ID!
+            })
+
+            return {
+                added: true,
+                message: 'Metered subscription item added successfully'
+            }
+        } catch (error) {
+            console.error('Error adding metered subscription item:', error)
+            throw error
+        }
+    }
+
+    public async reportMeterUsage(customerId: string, quantity: number = 1): Promise<void> {
+        try {
+            if (!process.env.METER_EVENT_NAME) {
+                throw new Error('METER_EVENT_NAME environment variable is required')
+            }
+            if (!customerId) {
+                throw new Error('Customer ID is required')
+            }
+
+            await this.stripe.v2.billing.meterEvents.create({
+                event_name: process.env.METER_EVENT_NAME!,
+                payload: {
+                    stripe_customer_id: customerId,
+                    value: quantity.toString()
+                }
+            })
+        } catch (error) {
+            console.error('Error reporting meter usage:', error)
+            throw error
+        }
+    }
+
+    private getCreditsFromPrice(unitAmount: number): number {
+        // $10.00 = 1000 credits, so 1 cent = 1 credit
+        return unitAmount
+    }
+
+    private getPackageTypeFromCredits(credits: number): string {
+        if (credits === 1000) return 'SMALL'
+        if (credits === 2500) return 'MEDIUM'
+        if (credits === 5000) return 'LARGE'
+        return 'CUSTOM'
     }
 }

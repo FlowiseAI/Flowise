@@ -142,7 +142,7 @@
         "s3-streamlogger": "^1.11.0",
         "sanitize-html": "^2.11.0",
         "sqlite3": "^5.1.6",
-        "stripe": "^15.6.0",
+        "stripe": "^18.3.0",
         "turndown": "^7.2.0",
         "typeorm": "^0.3.6",
         "uuid": "^9.0.1",

@@ -382,6 +382,45 @@ export class IdentityManager {
         return await this.stripeManager.getPlanProration(subscriptionId, newPlanId)
     }
 
+    public async checkPredictionEligibility(orgId: string, subscriptionId: string) {
+        if (!orgId || !subscriptionId) return {}
+        if (!this.stripeManager) {
+            throw new Error('Stripe manager is not initialized')
+        }
+        return await this.stripeManager.checkPredictionEligibility(orgId, subscriptionId)
+    }
+
+    public async purchaseCredits(subscriptionId: string, packageType: string) {
+        if (!subscriptionId || !packageType) return {}
+        if (!this.stripeManager) {
+            throw new Error('Stripe manager is not initialized')
+        }
+        return await this.stripeManager.purchaseCredits(subscriptionId, packageType)
+    }
+
+    public async getCreditBalance(subscriptionId: string) {
+        if (!subscriptionId) return {}
+        if (!this.stripeManager) {
+            throw new Error('Stripe manager is not initialized')
+        }
+        return await this.stripeManager.getCreditBalance(subscriptionId)
+    }
+
+    public async getUsageWithCredits(orgId: string, subscriptionId: string) {
+        if (!orgId || !subscriptionId) return {}
+        if (!this.stripeManager) {
+            throw new Error('Stripe manager is not initialized')
+        }
+        return await this.stripeManager.getUsageWithCredits(orgId, subscriptionId)
+    }
+
+    public async getCreditsPackages() {
+        if (!this.stripeManager) {
+            throw new Error('Stripe manager is not initialized')
+        }
+        return await this.stripeManager.getCreditsPackages()
+    }
+
     public async updateSubscriptionPlan(req: Request, subscriptionId: string, newPlanId: string, prorationDate: number) {
         if (!subscriptionId || !newPlanId) return {}
 
