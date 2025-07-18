@@ -73,7 +73,8 @@ const MarketplaceCanvas = () => {
             description: 'Copied from marketplace',
             nodes: flowDataParsed.nodes || [],
             edges: flowDataParsed.edges || [],
-            flowData: JSON.stringify(flowDataParsed)
+            flowData: JSON.stringify(flowDataParsed),
+            parentChatflowId: state?.parentChatflowId
         }
 
         console.log('🚀 Storing duplicated flow data:', {
@@ -145,7 +146,7 @@ const MarketplaceCanvas = () => {
                     </div>
                 </Box>
             </Box>
-            
+
             {/* Unified Credentials Modal */}
             <UnifiedCredentialsModal
                 show={showCredentialModal}

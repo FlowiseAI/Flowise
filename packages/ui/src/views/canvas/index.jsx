@@ -250,7 +250,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
     const handleLoadFlow = async (file, fileName) => {
         try {
             const flowData = JSON.parse(file)
-            
+
             // Check for missing credentials before proceeding
             checkCredentials(flowData, (updatedFlowData, credentialAssignments) => {
                 proceedWithFlow(updatedFlowData, credentialAssignments, fileName)
@@ -346,7 +346,8 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                             name: chatflowName,
                             flowData,
                             deployed: false,
-                            isPublic: false
+                            isPublic: false,
+                            parentChatflowId: parsedData.parentChatflowId || parentChatflowId
                         }
                         localStorage.removeItem('duplicatedFlowData')
                     } else {
@@ -617,7 +618,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
     // Initialization
     useEffect(() => {
         console.log('🎨 Canvas initialization effect running:', { chatflowId })
-        
+
         setIsSyncNodesButtonEnabled(false)
         setIsUpsertButtonEnabled(false)
         if (chatflowId) {
@@ -826,7 +827,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                 </Box>
                 <ConfirmDialog />
             </Box>
-            
+
             {/* Unified Credentials Modal */}
             <UnifiedCredentialsModal
                 show={showCredentialModal}
