@@ -943,10 +943,13 @@ export const getVars = async (
     nodeData: INodeData,
     options: ICommonObject
 ) => {
+    if (!options.workspaceId) {
+        return []
+    }
     const variables =
         ((await appDataSource
             .getRepository(databaseEntities['Variable'])
-            .findBy(options.workspaceId ? { workspaceId: Equal(options.workspaceId) } : {})) as IVariable[]) ?? []
+            .findBy({ workspaceId: Equal(options.workspaceId) })) as IVariable[]) ?? []
 
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
