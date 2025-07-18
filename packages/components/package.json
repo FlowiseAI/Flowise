@@ -9,7 +9,6 @@
     ],
     "scripts": {
         "build": "tsc && gulp",
-        "dev": "tsc --watch",
         "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "clean": "rimraf dist",
         "nuke": "rimraf dist node_modules .turbo"
@@ -25,7 +24,6 @@
         "@answerai/answeragent-mcp": "^1.0.1",
         "@answerai/confluence-mcp": "^1.0.0",
         "@answerai/jira-mcp": "^1.0.2",
-        "@answerai/salesforce-mcp": "^0.1.0",
         "@apidevtools/json-schema-ref-parser": "^12.0.2",
         "@arizeai/openinference-instrumentation-langchain": "^2.0.0",
         "@aws-sdk/client-bedrock-runtime": "3.422.0",

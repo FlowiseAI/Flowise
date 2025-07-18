@@ -23,8 +23,7 @@ Answer Agent includes the following MCP integrations:
 
 -   [AnswerAgent MCP](./answeragent-mcp.md) - Manage chatflows, document stores, assistants, and tools (Zero configuration required)
 -   [Contentful](./contentful-mcp.md) - Manage content in Contentful CMS
--   [Salesforce](./salesforce-mcp.md) - Interact with Salesforce CRM and database using client credentials
--   [Salesforce Personal OAuth](./salesforce-personal-oauth-mcp.md) - Interact with Salesforce using individual user OAuth credentials
+-   [Salesforce](./salesforce-mcp.md) - Interact with Salesforce CRM and database
 -   [Jira](./jira-mcp.md) - Work with Jira issues and projects
 -   [Slack](./slack-mcp.md) - Send messages and interact with Slack
 -   [Confluence](./confluence-mcp.md) - Query and update Confluence pages

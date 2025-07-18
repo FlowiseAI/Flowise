@@ -47,7 +47,6 @@ import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { useFlags } from 'flagsmith/react'
 import { GoogleAuthButton } from '@/ui-component/button/GoogleAuthButton'
-import { SalesforceAuthButton } from '@/ui-component/button/SalesforceAuthButton'
 import keySVG from '@/assets/images/key.svg'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
@@ -308,75 +307,6 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         window.addEventListener('message', handleMessage)
     }
 
-    const handleSalesforceOAuth = () => {
-        const width = 500
-        const height = 600
-        const left = window.screenX + (window.outerWidth - width) / 2
-        const top = window.screenY + (window.outerHeight - height) / 2
-        const features = `
-            width=${width},
-            height=${height},
-            left=${left},
-            top=${top},
-            status=yes,
-            toolbar=no,
-            location=no,
-            menubar=no,
-            resizable=yes,
-            scrollbars=yes
-        `.replace(/\s/g, '')
-
-        const authUrl = `${baseURL}/api/v1/salesforce-auth`
-        window.open(authUrl, 'Salesforce Auth', features)
-
-        // Listen for messages from the popup
-        const handleMessage = (event) => {
-            if (event.data?.type === 'AUTH_SUCCESS' && event.data.user) {
-                setCredentialData((prevData) => ({
-                    ...prevData,
-                    refreshToken: event.data.user.refreshToken
-                }))
-                if (!name) {
-                    setName(`Salesforce OAuth (${event.data.user.userInfo?.name || 'User'})`)
-                }
-                // Show success message
-                enqueueSnackbar({
-                    message: 'Successfully authenticated with Salesforce',
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'success',
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
-                window.removeEventListener('message', handleMessage)
-            }
-            if (event.data?.type === 'AUTH_ERROR') {
-                console.error('Salesforce authentication error:', event.data.error)
-
-                enqueueSnackbar({
-                    message: 'Failed to authenticate with Salesforce',
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'error',
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
-                window.removeEventListener('message', handleMessage)
-            }
-        }
-
-        // Add the event listener
-        window.addEventListener('message', handleMessage)
-    }
-
     const component = show ? (
         <Dialog
             fullWidth
@@ -464,14 +394,6 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                         baseURL={baseURL}
                     />
                 )}
-                {componentCredential && (
-                    <SalesforceAuthButton
-                        componentCredential={componentCredential}
-                        credentialData={credentialData}
-                        handleSalesforceOAuth={handleSalesforceOAuth}
-                        baseURL={baseURL}
-                    />
-                )}
                 {componentCredential &&
                     componentCredential.inputs &&
                     componentCredential.inputs.map((inputParam, index) => (
@@ -514,9 +436,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
             </DialogContent>
             <DialogActions>
                 <StyledButton
-                    disabled={
-                        componentCredential?.name === 'salesforceOAuth' ? !(credentialData && credentialData.refreshToken && name) : !name
-                    }
+                    disabled={!name}
                     variant='contained'
                     onClick={() => (dialogProps.type === 'ADD' ? addNewCredential() : saveCredential())}
                 >

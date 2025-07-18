@@ -552,25 +552,13 @@ Authentication for Notion.
 
 ### Salesforce API
 
-Authentication for Salesforce using client credentials (system-wide access).
+Authentication for Salesforce.
 
 -   **How to obtain**: Refer to [official guide](https://developer.salesforce.com/docs/atlas.en-us.api_analytics.meta/api_analytics/sforce_analytics_rest_api_get_started.htm) on how to get your Salesforce API key.
 -   **Inputs**:
     -   Salesforce Client ID (password)
     -   Salesforce Client Secret (password)
     -   Salesforce Instance (e.g., https://na1.salesforce.com)
-
-### Salesforce Personal OAuth
-
-Authentication for Salesforce using individual user OAuth credentials (personal access).
-
--   **How to obtain**: Follow the [Salesforce Personal OAuth Setup Guide](../../developers/authorization/salesforce-oauth.md) to create a Connected App and configure OAuth flow.
--   **Inputs**:
-    -   Refresh Token (password) - Automatically populated after OAuth authorization
--   **Setup Requirements**:
-    -   Salesforce Connected App configured for OAuth 2.0
-    -   Environment variables: `SALESFORCE_CLIENT_ID`, `SALESFORCE_CLIENT_SECRET`, `SALESFORCE_INSTANCE_URL`
-    -   OAuth authorization flow completed by end user
 
 ### Slack API
 
