@@ -189,15 +189,15 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
     }
 
     const proceedWithTemplate = (updatedFlowData, credentialAssignments) => {
-        console.log('🚀 proceedWithTemplate called with:', {
-            updatedFlowData: typeof updatedFlowData,
-            credentialAssignments,
-            hasTemplate: !!template,
-            hasUser: !!user
-        })
+        // console.log('🚀 proceedWithTemplate called with:', {
+        //     updatedFlowData: typeof updatedFlowData,
+        //     credentialAssignments,
+        //     hasTemplate: !!template,
+        //     hasUser: !!user
+        // })
 
         if (!template) {
-            console.log('🚀 No template found, aborting')
+            // console.log('🚀 No template found, aborting')
             return
         }
 
@@ -205,15 +205,15 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
             (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
         )
 
-        console.log('🚀 Canvas type determined:', { isAgentCanvas })
+        // console.log('🚀 Canvas type determined:', { isAgentCanvas })
 
         const flowData = typeof updatedFlowData === 'string' ? JSON.parse(updatedFlowData) : updatedFlowData
-        console.log('🚀 Flow data structure:', {
-            hasNodes: !!flowData.nodes,
-            nodeCount: flowData.nodes?.length || 0,
-            hasEdges: !!flowData.edges,
-            edgeCount: flowData.edges?.length || 0
-        })
+        // console.log('🚀 Flow data structure:', {
+        //     hasNodes: !!flowData.nodes,
+        //     nodeCount: flowData.nodes?.length || 0,
+        //     hasEdges: !!flowData.edges,
+        //     edgeCount: flowData.edges?.length || 0
+        // })
 
         // Store the data in the format Canvas component expects
         const chatflowData = {
@@ -227,12 +227,12 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
             parentChatflowId: template.id
         }
 
-        console.log('🚀 Storing duplicated flow data:', {
-            name: chatflowData.name,
-            nodeCount: chatflowData.nodes.length,
-            edgeCount: chatflowData.edges.length,
-            hasFlowDataString: !!chatflowData.flowData
-        })
+        // console.log('🚀 Storing duplicated flow data:', {
+        //     name: chatflowData.name,
+        //     nodeCount: chatflowData.nodes.length,
+        //     edgeCount: chatflowData.edges.length,
+        //     hasFlowDataString: !!chatflowData.flowData
+        // })
 
         localStorage.setItem('duplicatedFlowData', JSON.stringify(chatflowData))
 
@@ -241,20 +241,20 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
             parentChatflowId: template.id
         }
 
-        console.log('🚀 Navigation state prepared:', state)
+        // console.log('🚀 Navigation state prepared:', state)
 
         if (!user) {
             const redirectUrl = `/sidekick-studio/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
             const loginUrl = `/api/auth/login?redirect_uri=${redirectUrl}`
-            console.log('🚀 No user, redirecting to login:', loginUrl)
+            // console.log('🚀 No user, redirecting to login:', loginUrl)
             setNavigationState(state)
             window.location.href = loginUrl
         } else {
             const targetPath = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-            console.log('🚀 User authenticated, navigating to:', targetPath)
-            console.log('🚀 About to call navigate...')
+            // console.log('🚀 User authenticated, navigating to:', targetPath)
+            // console.log('🚀 About to call navigate...')
             navigate(targetPath, { state })
-            console.log('🚀 Navigate called successfully')
+            // console.log('🚀 Navigate called successfully')
         }
     }
 
