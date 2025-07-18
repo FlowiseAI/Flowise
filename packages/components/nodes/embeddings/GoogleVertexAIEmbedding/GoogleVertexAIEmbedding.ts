@@ -18,7 +18,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'GoogleVertexAI Embeddings'
         this.name = 'googlevertexaiEmbeddings'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'GoogleVertexAIEmbeddings'
         this.icon = 'GoogleVertex.svg'
         this.category = 'Embeddings'
