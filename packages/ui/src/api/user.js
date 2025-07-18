@@ -25,6 +25,11 @@ const getPlanProration = (subscriptionId, newPlanId) =>
 const updateSubscriptionPlan = (subscriptionId, newPlanId, prorationDate) =>
     client.post(`/organization/update-subscription-plan`, { subscriptionId, newPlanId, prorationDate })
 const getCurrentUsage = () => client.get(`/organization/get-current-usage`)
+const getPredictionEligibility = () => client.get(`/organization/prediction-eligibility`)
+const purchaseCredits = (packageType) => client.post(`/organization/purchase-credits`, { packageType })
+const getCreditsBalance = () => client.get(`/organization/credits-balance`)
+const getUsageWithCredits = () => client.get(`/organization/usage-with-credits`)
+const getCreditsPackages = () => client.get(`/organization/credits-packages`)
 
 // workspace users
 const getAllUsersByWorkspaceId = (workspaceId) => client.get(`/workspaceuser?workspaceId=${workspaceId}`)
@@ -55,5 +60,10 @@ export default {
     getPlanProration,
     updateSubscriptionPlan,
     getCurrentUsage,
+    getPredictionEligibility,
+    purchaseCredits,
+    getCreditsBalance,
+    getUsageWithCredits,
+    getCreditsPackages,
     deleteOrganizationUser
 }

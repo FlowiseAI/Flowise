@@ -33,7 +33,7 @@ import SettingsSection from '@/ui-component/form/settings'
 import PricingDialog from '@/ui-component/subscription/PricingDialog'
 
 // Icons
-import { IconAlertCircle, IconCreditCard, IconExternalLink, IconSparkles, IconX } from '@tabler/icons-react'
+import { IconAlertCircle, IconCoins, IconCreditCard, IconExternalLink, IconSparkles, IconX } from '@tabler/icons-react'
 
 // API
 import accountApi from '@/api/account.api'
@@ -88,6 +88,12 @@ const AccountSettings = () => {
     const [purchasedSeats, setPurchasedSeats] = useState(0)
     const [occupiedSeats, setOccupiedSeats] = useState(0)
     const [totalSeats, setTotalSeats] = useState(0)
+    const [creditsBalance, setCreditsBalance] = useState(null)
+    const [creditsPackages, setCreditsPackages] = useState([])
+    const [usageWithCredits, setUsageWithCredits] = useState(null)
+    const [openCreditsDialog, setOpenCreditsDialog] = useState(false)
+    const [selectedPackage, setSelectedPackage] = useState(null)
+    const [isPurchasingCredits, setIsPurchasingCredits] = useState(false)
 
     const predictionsUsageInPercent = useMemo(() => {
         return usage ? calculatePercentage(usage.predictions?.usage, usage.predictions?.limit) : 0
@@ -106,6 +112,11 @@ const AccountSettings = () => {
     const getCustomerDefaultSourceApi = useApi(userApi.getCustomerDefaultSource)
     const updateAdditionalSeatsApi = useApi(userApi.updateAdditionalSeats)
     const getCurrentUsageApi = useApi(userApi.getCurrentUsage)
+    const getCreditsBalanceApi = useApi(userApi.getCreditsBalance)
+    const getCreditsPackagesApi = useApi(userApi.getCreditsPackages)
+    const getUsageWithCreditsApi = useApi(userApi.getUsageWithCredits)
+    const purchaseCreditsApi = useApi(userApi.purchaseCredits)
+    const getPredictionEligibilityApi = useApi(userApi.getPredictionEligibility)
 
     useEffect(() => {
         if (isCloud) {
@@ -113,6 +124,10 @@ const AccountSettings = () => {
             getPricingPlansApi.request()
             getAdditionalSeatsQuantityApi.request(currentUser?.activeOrganizationSubscriptionId)
             getCurrentUsageApi.request()
+            getCreditsBalanceApi.request()
+            getCreditsPackagesApi.request()
+            getUsageWithCreditsApi.request()
+            getPredictionEligibilityApi.request()
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isCloud])
@@ -140,13 +155,31 @@ const AccountSettings = () => {
     }, [getCurrentUsageApi.data])
 
     useEffect(() => {
-        if (openRemoveSeatsDialog || openAddSeatsDialog) {
+        if (getCreditsBalanceApi.data) {
+            setCreditsBalance(getCreditsBalanceApi.data)
+        }
+    }, [getCreditsBalanceApi.data])
+
+    useEffect(() => {
+        if (getCreditsPackagesApi.data) {
+            setCreditsPackages(getCreditsPackagesApi.data)
+        }
+    }, [getCreditsPackagesApi.data])
+
+    useEffect(() => {
+        if (getUsageWithCreditsApi.data) {
+            setUsageWithCredits(getUsageWithCreditsApi.data)
+        }
+    }, [getUsageWithCreditsApi.data])
+
+    useEffect(() => {
+        if (openRemoveSeatsDialog || openAddSeatsDialog || openCreditsDialog) {
             setSeatsQuantity(0)
             getCustomerDefaultSourceApi.request(currentUser?.activeOrganizationCustomerId)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [openRemoveSeatsDialog, openAddSeatsDialog])
+    }, [openRemoveSeatsDialog, openAddSeatsDialog, openCreditsDialog])
 
     useEffect(() => {
         if (getAdditionalSeatsProrationApi.data) {
@@ -447,6 +480,61 @@ const AccountSettings = () => {
         }
     }
 
+    const handlePurchaseCredits = async (packageType) => {
+        try {
+            setIsPurchasingCredits(true)
+
+            const response = await purchaseCreditsApi.request(packageType)
+
+            if (response.data?.success) {
+                enqueueSnackbar({
+                    message: 'Credits purchased successfully!',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (key) => (
+                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                <IconX />
+                            </Button>
+                        )
+                    }
+                })
+
+                // Refresh credits data
+                getCreditsBalanceApi.request()
+                getUsageWithCreditsApi.request()
+                setOpenCreditsDialog(false)
+                setSelectedPackage(null)
+            }
+        } catch (error) {
+            console.error('Error purchasing credits:', error)
+            enqueueSnackbar({
+                message: `Failed to purchase credits: ${
+                    typeof error.response?.data === 'object' ? error.response.data.message : error.response?.data || error.message
+                }`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        } finally {
+            setIsPurchasingCredits(false)
+        }
+    }
+
+    const handleCreditsDialogClose = () => {
+        if (!isPurchasingCredits) {
+            setOpenCreditsDialog(false)
+            setSelectedPackage(null)
+        }
+    }
+
     // Calculate empty seats
     const emptySeats = Math.min(purchasedSeats, totalSeats - occupiedSeats)
 
@@ -723,6 +811,78 @@ const AccountSettings = () => {
                                                 2
                                             )}%`}</Typography>
                                         </Box>
+                                    </Box>
+                                </Box>
+                            </SettingsSection>
+                            <SettingsSection title='Credits'>
+                                <Box
+                                    sx={{
+                                        width: '100%',
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(3, 1fr)'
+                                    }}
+                                >
+                                    <Box
+                                        sx={{
+                                            gridColumn: 'span 2 / span 2',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'start',
+                                            justifyContent: 'center',
+                                            gap: 1,
+                                            px: 2.5,
+                                            py: 2
+                                        }}
+                                    >
+                                        <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
+                                            <Typography variant='body2'>Available Credits:</Typography>
+                                            <Typography sx={{ ml: 1, color: theme.palette.success.dark }} variant='h3'>
+                                                {getCreditsBalanceApi.loading ? (
+                                                    <CircularProgress size={16} />
+                                                ) : (
+                                                    creditsBalance?.balance || 0
+                                                )}
+                                            </Typography>
+                                        </Stack>
+                                        {usageWithCredits && (
+                                            <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
+                                                <Typography variant='body2'>Credits Used This Month:</Typography>
+                                                <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
+                                                    {getUsageWithCreditsApi.loading ? (
+                                                        <CircularProgress size={16} />
+                                                    ) : (
+                                                        usageWithCredits?.creditsUsed || 0
+                                                    )}
+                                                </Typography>
+                                            </Stack>
+                                        )}
+                                        <Typography
+                                            sx={{ opacity: customization.isDarkMode ? 0.7 : 1 }}
+                                            variant='body2'
+                                            color='text.secondary'
+                                        >
+                                            Purchase credits for predictions beyond your plan limits
+                                        </Typography>
+                                    </Box>
+                                    <Box
+                                        sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'end',
+                                            px: 2.5,
+                                            py: 2,
+                                            gap: 2
+                                        }}
+                                    >
+                                        <StyledButton
+                                            variant='contained'
+                                            disabled={!currentUser.isOrganizationAdmin}
+                                            onClick={() => setOpenCreditsDialog(true)}
+                                            startIcon={<IconCoins />}
+                                            sx={{ borderRadius: 2, height: 40 }}
+                                        >
+                                            Buy Credits
+                                        </StyledButton>
                                     </Box>
                                 </Box>
                             </SettingsSection>
@@ -1452,6 +1612,148 @@ const AccountSettings = () => {
                                 </Box>
                             ) : (
                                 'Add Seats'
+                            )}
+                        </Button>
+                    </DialogActions>
+                )}
+            </Dialog>
+
+            {/* Credits Purchase Dialog */}
+            <Dialog fullWidth maxWidth='sm' open={openCreditsDialog} onClose={handleCreditsDialogClose}>
+                <DialogTitle variant='h4'>Purchase Credits</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+                        <Typography variant='body2' color='text.secondary'>
+                            Credits are used for predictions beyond your plan limits. Each prediction costs 1 credit.
+                        </Typography>
+
+                        {/* Current Credits Balance */}
+                        <Box sx={{ p: 2, backgroundColor: theme.palette.background.default, borderRadius: 1 }}>
+                            <Typography variant='subtitle2' gutterBottom>
+                                Current Balance
+                            </Typography>
+                            <Typography variant='h4' color='success.main'>
+                                {creditsBalance?.balance || 0} Credits
+                            </Typography>
+                        </Box>
+
+                        {/* Payment Method Check */}
+                        {getCustomerDefaultSourceApi.loading ? (
+                            <CircularProgress size={20} />
+                        ) : getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method ? (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, p: 2 }}>
+                                <Typography variant='subtitle2'>Payment Method</Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card && (
+                                        <>
+                                            <IconCreditCard size={20} stroke={1.5} color={theme.palette.primary.main} />
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography sx={{ textTransform: 'capitalize' }}>
+                                                    {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card.brand}
+                                                </Typography>
+                                                <Typography>
+                                                    ••••{' '}
+                                                    {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card.last4}
+                                                </Typography>
+                                                <Typography color='text.secondary'>
+                                                    (expires{' '}
+                                                    {
+                                                        getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card
+                                                            .exp_month
+                                                    }
+                                                    /
+                                                    {getCustomerDefaultSourceApi.data.invoice_settings.default_payment_method.card.exp_year}
+                                                    )
+                                                </Typography>
+                                            </Box>
+                                        </>
+                                    )}
+                                </Box>
+                            </Box>
+                        ) : (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
+                                <Typography color='error' sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <IconAlertCircle size={20} />
+                                    No payment method found
+                                </Typography>
+                                <Button
+                                    variant='contained'
+                                    endIcon={<IconExternalLink />}
+                                    onClick={() => {
+                                        setOpenCreditsDialog(false)
+                                        handleBillingPortalClick()
+                                    }}
+                                >
+                                    Add Payment Method in Billing Portal
+                                </Button>
+                            </Box>
+                        )}
+
+                        {/* Credit Packages */}
+                        {getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method && (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <Typography variant='subtitle2'>Select Credit Package</Typography>
+                                {getCreditsPackagesApi.loading ? (
+                                    <CircularProgress size={20} />
+                                ) : (
+                                    creditsPackages.map((pkg) => (
+                                        <Box
+                                            key={pkg.credits}
+                                            sx={{
+                                                p: 2,
+                                                border: 2,
+                                                borderColor: selectedPackage?.credits === pkg.credits ? 'primary.main' : 'divider',
+                                                borderRadius: 2,
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s ease',
+                                                '&:hover': {
+                                                    borderColor: 'primary.light',
+                                                    backgroundColor: 'action.hover'
+                                                }
+                                            }}
+                                            onClick={() => setSelectedPackage(pkg)}
+                                        >
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <Box>
+                                                    <Typography variant='h6'>{pkg.credits} Credits</Typography>
+                                                    <Typography variant='body2' color='text.secondary'>
+                                                        ${(pkg.price / 100).toFixed(2)} USD
+                                                    </Typography>
+                                                </Box>
+                                                <Typography variant='body2' color='success.main'>
+                                                    ${(pkg.price / 100 / pkg.credits).toFixed(3)} per credit
+                                                </Typography>
+                                            </Box>
+                                        </Box>
+                                    ))
+                                )}
+                            </Box>
+                        )}
+                    </Box>
+                </DialogContent>
+                {getCustomerDefaultSourceApi.data?.invoice_settings?.default_payment_method && (
+                    <DialogActions>
+                        <Button onClick={handleCreditsDialogClose} disabled={isPurchasingCredits}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant='contained'
+                            onClick={() => handlePurchaseCredits(selectedPackage?.id)}
+                            disabled={
+                                !selectedPackage ||
+                                isPurchasingCredits ||
+                                getCustomerDefaultSourceApi.loading ||
+                                !getCustomerDefaultSourceApi.data
+                            }
+                            startIcon={<IconCoins />}
+                        >
+                            {isPurchasingCredits ? (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <CircularProgress size={16} color='inherit' />
+                                    Processing...
+                                </Box>
+                            ) : (
+                                `Purchase ${selectedPackage?.credits || 0} Credits for $${((selectedPackage?.price || 0) / 100).toFixed(2)}`
                             )}
                         </Button>
                     </DialogActions>
