@@ -44,7 +44,7 @@ class MarkdownTextSplitter_TextSplitters implements INode {
                 name: 'splitByHeaders',
                 type: 'options',
                 description: 'Split documents at specified header levels. Headers will be included with their content.',
-                default: '# Headers (H1)',
+                default: 'disabled',
                 options: [
                     {
                         label: 'Disabled',
@@ -96,7 +96,7 @@ class MarkdownTextSplitter_TextSplitters implements INode {
             return {
                 splitDocuments: async (documents: any[]) => {
                     const results = []
-                    
+
                     for (const doc of documents) {
                         const chunks = await this.splitByHeaders(doc.pageContent, splitByHeaders, splitter)
                         for (const chunk of chunks) {
@@ -106,7 +106,7 @@ class MarkdownTextSplitter_TextSplitters implements INode {
                             })
                         }
                     }
-                    
+
                     return results
                 },
                 splitText: async (text: string) => {
@@ -125,11 +125,11 @@ class MarkdownTextSplitter_TextSplitters implements INode {
         const lines = text.split('\n')
         const sections: string[] = []
         let currentSection: string[] = []
-        
+
         for (const line of lines) {
             const isHeader = line.startsWith('#') && line.match(/^#{1,6}\s/)
             const headerDepth = isHeader ? line.match(/^(#+)/)?.[1]?.length || 0 : 0
-            
+
             if (isHeader && headerDepth <= maxLevel) {
                 // Save previous section
                 if (currentSection.length > 0) {
@@ -142,24 +142,31 @@ class MarkdownTextSplitter_TextSplitters implements INode {
                 currentSection.push(line)
             }
         }
-        
+
         // Add final section
         if (currentSection.length > 0) {
             sections.push(currentSection.join('\n').trim())
         }
-        
+
         return sections
     }
 
     private getHeaderLevel(headerLevel: string): number {
         switch (headerLevel) {
-            case 'h1': return 1
-            case 'h2': return 2
-            case 'h3': return 3
-            case 'h4': return 4
-            case 'h5': return 5
-            case 'h6': return 6
-            default: return 0
+            case 'h1':
+                return 1
+            case 'h2':
+                return 2
+            case 'h3':
+                return 3
+            case 'h4':
+                return 4
+            case 'h5':
+                return 5
+            case 'h6':
+                return 6
+            default:
+                return 0
         }
     }
 }
