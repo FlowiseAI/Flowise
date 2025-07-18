@@ -256,7 +256,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                 proceedWithFlow(updatedFlowData, credentialAssignments, fileName)
             })
         } catch (e) {
-            console.error('handleLoadFlow - Error:', e)
+            // console.error('handleLoadFlow - Error:', e)
             enqueueSnackbar({
                 message: 'Failed to load chatflow: ' + e.message,
                 options: {
@@ -307,13 +307,13 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
     const handleSaveFlow = (chatflowName, configs = {}) => {
         try {
-            console.log('💾 handleSaveFlow called with:', {
-                chatflowName,
-                hasConfigs: !!configs,
-                hasChatflow: !!chatflow,
-                chatflowId: chatflow?.id,
-                isNewChatflow: !chatflow?.id
-            })
+            // console.log('💾 handleSaveFlow called with:', {
+            //     chatflowName,
+            //     hasConfigs: !!configs,
+            //     hasChatflow: !!chatflow,
+            //     chatflowId: chatflow?.id,
+            //     isNewChatflow: !chatflow?.id
+            // })
 
             if (reactFlowInstance) {
                 const nodes = reactFlowInstance.getNodes().map((node) => {
@@ -336,7 +336,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                     typeof chatflow.chatbotConfig === 'object' ? JSON.stringify(chatflow.chatbotConfig) : chatflow.chatbotConfig
 
                 if (!chatflow.id) {
-                    console.log('💾 Creating new chatflow...')
+                    // console.log('💾 Creating new chatflow...')
                     const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
                     let newChatflowBody
                     if (duplicatedFlowData) {
@@ -367,7 +367,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                     }
                     createNewChatflowApi.request(newChatflowBody)
                 } else {
-                    console.log('💾 Updating existing chatflow...')
+                    // console.log('💾 Updating existing chatflow...')
                     const updateBody = {
                         name: chatflowName,
                         parentChatflowId: parentChatflowId && parentChatflowId.startsWith('cf_') ? null : parentChatflowId,
@@ -574,7 +574,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
     useEffect(() => {
         if (createNewChatflowApi?.data) {
             const chatflow = createNewChatflowApi.data
-            console.log('✅ Create new chatflow successful, navigating to:', `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
+            // console.log('✅ Create new chatflow successful, navigating to:', `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`)
             dispatch({ type: SET_CHATFLOW, chatflow })
             saveChatflowSuccess()
             navigate(`/${isAgentCanvas ? 'agentcanvas' : 'canvas'}/${chatflow.id}`, {
@@ -592,7 +592,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
     // Update chatflow successful
     useEffect(() => {
         if (updateChatflowApi?.data) {
-            console.log('✅ Update chatflow successful, NOT navigating (should we?)')
+            // console.log('✅ Update chatflow successful, NOT navigating (should we?)')
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
             saveChatflowSuccess()
         } else if (updateChatflowApi?.error?.response?.data?.message) {
@@ -617,32 +617,32 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
     // Initialization
     useEffect(() => {
-        console.log('🎨 Canvas initialization effect running:', { chatflowId })
+        // console.log('🎨 Canvas initialization effect running:', { chatflowId })
 
         setIsSyncNodesButtonEnabled(false)
         setIsUpsertButtonEnabled(false)
         if (chatflowId) {
-            console.log('🎨 Loading existing chatflow:', chatflowId)
+            // console.log('🎨 Loading existing chatflow:', chatflowId)
             getSpecificChatflowApi.request(chatflowId)
         } else {
-            console.log('🎨 No chatflowId, checking for duplicated flow data...')
+            // console.log('🎨 No chatflowId, checking for duplicated flow data...')
             const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
-            console.log('🎨 duplicatedFlowData from localStorage:', {
-                exists: !!duplicatedFlowData,
-                length: duplicatedFlowData ? duplicatedFlowData.length : 0
-            })
+            // console.log('🎨 duplicatedFlowData from localStorage:', {
+            //     exists: !!duplicatedFlowData,
+            //     length: duplicatedFlowData ? duplicatedFlowData.length : 0
+            // })
 
             if (duplicatedFlowData) {
                 try {
                     const parsedData = JSON.parse(duplicatedFlowData)
-                    console.log('🎨 Parsed duplicated flow data:', {
-                        name: parsedData.name,
-                        hasNodes: !!parsedData.nodes,
-                        nodeCount: parsedData.nodes?.length || 0,
-                        hasEdges: !!parsedData.edges,
-                        edgeCount: parsedData.edges?.length || 0,
-                        hasFlowData: !!parsedData.flowData
-                    })
+                    // console.log('🎨 Parsed duplicated flow data:', {
+                    //     name: parsedData.name,
+                    //     hasNodes: !!parsedData.nodes,
+                    //     nodeCount: parsedData.nodes?.length || 0,
+                    //     hasEdges: !!parsedData.edges,
+                    //     edgeCount: parsedData.edges?.length || 0,
+                    //     hasFlowData: !!parsedData.flowData
+                    // })
 
                     setNodes(parsedData.nodes || [])
                     setEdges(parsedData.edges || [])
@@ -657,12 +657,12 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                         isPublic: false
                     }
 
-                    console.log('🎨 Setting new chatflow:', {
-                        name: newChatflow.name,
-                        id: newChatflow.id,
-                        nodesSet: parsedData.nodes?.length || 0,
-                        edgesSet: parsedData.edges?.length || 0
-                    })
+                    // console.log('🎨 Setting new chatflow:', {
+                    //     name: newChatflow.name,
+                    //     id: newChatflow.id,
+                    //     nodesSet: parsedData.nodes?.length || 0,
+                    //     edgesSet: parsedData.edges?.length || 0
+                    // })
 
                     setChatflow(newChatflow)
                     dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
@@ -671,14 +671,14 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                     setShouldShowSaveDialog(true)
 
                     setTimeout(() => {
-                        console.log('🎨 Cleaning up localStorage...')
+                        // console.log('🎨 Cleaning up localStorage...')
                         localStorage.removeItem('duplicatedFlowData')
                     }, 0)
                 } catch (error) {
                     console.error('🎨 Error parsing duplicated flow data:', error)
                 }
             } else {
-                console.log('🎨 No duplicated flow data, creating blank canvas')
+                // console.log('🎨 No duplicated flow data, creating blank canvas')
                 setNodes([])
                 setEdges([])
                 setChatflow({
@@ -705,7 +705,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
     // Trigger save dialog when template is loaded
     useEffect(() => {
         if (shouldShowSaveDialog && canvasHeaderRef.current) {
-            console.log('🎨 Auto-triggering save dialog for template...')
+            // console.log('🎨 Auto-triggering save dialog for template...')
             canvasHeaderRef.current.triggerSaveDialog()
             setShouldShowSaveDialog(false)
         }
