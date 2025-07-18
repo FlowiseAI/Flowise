@@ -50,33 +50,44 @@ There are two main ways to get started with TheAnswer: local development setup a
     pnpm install
     ```
 
-5. **Set up database:**
+5. **Install Docker Desktop:**
+
+    - Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+    - Ensure Docker is running before proceeding
+
+6. **Set up database:**
 
     ```bash
     pnpm dev-docker && sleep 10 && docker exec -it theanswer-postgres-1 psql -U example_user -d example_db -c "CREATE DATABASE flowise;"
     ```
 
-6. **Optional: Install database tool**
+7. **Optional: Install database tool**
 
     - Install [DBeaver](https://dbeaver.io/) for database management
     - Connect to PostgreSQL: localhost, example_user, example_password
 
-7. **Run the application:**
+8. **Build and migrate the initial database:**
 
     ```bash
-    pnpm dev
+    pnpm build && pnpm db:migrate
     ```
 
-8. **Access TheAnswer:**
+9. **Run the application:**
 
+    ```bash
+    pnpm start
+    ```
+
+10. **Access TheAnswer:**
+
+    - After the build completes and the app starts, you should see logs stating that the server started on 'http://localhost:3000'
     - Open [http://localhost:3000](http://localhost:3000) in your browser
     - Verify you can login and access the application
 
-9. **For faster startup (optional):**
-    - After initial setup, you can build and start for faster loading:
+11. **For development:**
+    - After initial setup, you can fast reload to test your changes using:
     ```bash
-    pnpm build
-    pnpm start
+    pnpm dev
     ```
 
 ### Deploy on Render (Recommended for Easy Setup)
