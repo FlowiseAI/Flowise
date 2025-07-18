@@ -26,7 +26,6 @@ export class SecureZodSchemaParser {
      * @throws Error if the schema is invalid or contains unsafe patterns
      */
     static parseZodSchema(schemaString: string): z.ZodTypeAny {
-        console.log('parseZodSchema = ', schemaString)
         try {
             // Remove comments and normalize whitespace
             const cleanedSchema = this.cleanSchemaString(schemaString)
