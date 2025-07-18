@@ -5,7 +5,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { IReactFlowEdge, IReactFlowNode, IUser } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
-import { DeleteResult } from 'typeorm'
+import { DeleteResult, IsNull } from 'typeorm'
 import { CustomTemplate } from '../../database/entities/CustomTemplate'
 import { v4 as uuidv4 } from 'uuid'
 import { validate as isUUID } from 'uuid'
@@ -299,10 +299,24 @@ const getMarketplaceTemplate = async (templateIdOrName: string, user?: IUser): P
     }
 }
 
-const deleteCustomTemplate = async (templateId: string): Promise<DeleteResult> => {
+const deleteCustomTemplate = async (templateId: string, user: IUser): Promise<DeleteResult> => {
     try {
         const appServer = getRunningExpressApp()
-        return await appServer.AppDataSource.getRepository(CustomTemplate).delete({ id: templateId })
+
+        const template = await appServer.AppDataSource.getRepository(CustomTemplate).findOne({
+            where: {
+                id: templateId,
+                userId: user.id,
+                organizationId: user.organizationId,
+                deletedDate: IsNull()
+            }
+        })
+
+        if (!template) {
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Template not found or access denied')
+        }
+
+        return await appServer.AppDataSource.getRepository(CustomTemplate).softDelete({ id: templateId })
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -314,27 +328,15 @@ const deleteCustomTemplate = async (templateId: string): Promise<DeleteResult> =
 const getAllCustomTemplates = async (user: IUser): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).find()
-        templates.map((template) => {
-            template.usecases = template.usecases ? JSON.parse(template.usecases) : ''
-            if (template.type === 'Tool') {
-                template.flowData = JSON.parse(template.flowData)
-                template.iconSrc = template.flowData.iconSrc
-                template.schema = template.flowData.schema
-                template.func = template.flowData.func
-                template.categories = []
-                template.flowData = undefined
-            } else {
-                template.categories = getCategories(JSON.parse(template.flowData))
-            }
-            if (!template.badge) {
-                template.badge = ''
-            }
-            if (!template.framework) {
-                template.framework = ''
+        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).find({
+            where: {
+                userId: user.id,
+                organizationId: user.organizationId,
+                deletedDate: IsNull()
             }
         })
-        return templates
+
+        return formatTemplateResponse(templates)
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
@@ -343,13 +345,43 @@ const getAllCustomTemplates = async (user: IUser): Promise<any> => {
     }
 }
 
-const saveCustomTemplate = async (body: any, user?: IUser): Promise<any> => {
+const getOrganizationTemplates = async (user: IUser): Promise<any> => {
     try {
+        const appServer = getRunningExpressApp()
+
+        // Get templates shared with org
+        const templates: any[] = await appServer.AppDataSource.getRepository(CustomTemplate).find({
+            where: {
+                organizationId: user.organizationId,
+                shareWithOrg: true,
+                deletedDate: IsNull()
+            }
+        })
+
+        return formatTemplateResponse(templates)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: marketplacesService.getOrganizationTemplates - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const saveCustomTemplate = async (body: any, user: IUser): Promise<any> => {
+    try {
+        if (!user.organizationId) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'User must belong to an organization to create templates')
+        }
+
         const appServer = getRunningExpressApp()
         let flowDataStr = ''
         let derivedFramework = ''
         const customTemplate = new CustomTemplate()
         Object.assign(customTemplate, body)
+
+        customTemplate.userId = user.id
+        customTemplate.organizationId = user.organizationId
+        customTemplate.shareWithOrg = body.shareWithOrg || false
 
         if (body.chatflowId) {
             const chatflow = await chatflowsService.getChatflowById(body.chatflowId, user)
@@ -357,6 +389,7 @@ const saveCustomTemplate = async (body: any, user?: IUser): Promise<any> => {
             const { framework, exportJson } = _generateExportFlowData(flowData)
             flowDataStr = JSON.stringify(exportJson)
             customTemplate.framework = framework
+            customTemplate.parentId = body.chatflowId
         } else if (body.tool) {
             const flowData = {
                 iconSrc: body.tool.iconSrc,
@@ -367,10 +400,12 @@ const saveCustomTemplate = async (body: any, user?: IUser): Promise<any> => {
             customTemplate.type = 'Tool'
             flowDataStr = JSON.stringify(flowData)
         }
+
         customTemplate.framework = derivedFramework
         if (customTemplate.usecases) {
             customTemplate.usecases = JSON.stringify(customTemplate.usecases)
         }
+
         const entity = appServer.AppDataSource.getRepository(CustomTemplate).create(customTemplate)
         entity.flowData = flowDataStr
         const flowTemplate = await appServer.AppDataSource.getRepository(CustomTemplate).save(entity)
@@ -419,6 +454,17 @@ const _generateExportFlowData = (flowData: any) => {
             }
         }
 
+        // Check for Answer Agent framework
+        if (
+            node.data.category &&
+            (node.data.category.includes('MCP Tools') ||
+                node.data.category.includes('Answer Agent') ||
+                node.data.name?.includes('mcp') ||
+                node.data.name?.includes('answer'))
+        ) {
+            framework = 'Answer Agent'
+        }
+
         // Remove password, file & folder
         if (node.data.inputs && Object.keys(node.data.inputs).length) {
             const nodeDataInputs: any = {}
@@ -432,19 +478,53 @@ const _generateExportFlowData = (flowData: any) => {
             newNodeData.inputs = nodeDataInputs
         }
 
-        nodes[i].data = newNodeData
+        nodes[i] = {
+            ...node,
+            data: newNodeData
+        }
     }
+
     const exportJson = {
         nodes,
         edges
     }
-    return { exportJson, framework }
+
+    return { framework, exportJson }
+}
+
+/**
+ * Helper function to format template response data
+ * Handles JSON parsing of usecases and flowData, and sets default values for missing fields
+ */
+const formatTemplateResponse = (templates: any[]): any[] => {
+    return templates.map((template) => {
+        template.usecases = template.usecases ? JSON.parse(template.usecases) : ''
+        if (template.type === 'Tool') {
+            template.flowData = JSON.parse(template.flowData)
+            template.iconSrc = template.flowData.iconSrc
+            template.schema = template.flowData.schema
+            template.func = template.flowData.func
+            template.categories = []
+            template.flowData = undefined
+        } else {
+            template.categories = getCategories(JSON.parse(template.flowData))
+        }
+        if (!template.badge) {
+            template.badge = ''
+        }
+        if (!template.framework) {
+            template.framework = ''
+        }
+        return template
+    })
 }
 
 export default {
     getAllTemplates,
     getAllCustomTemplates,
+    getOrganizationTemplates,
     saveCustomTemplate,
     deleteCustomTemplate,
-    getMarketplaceTemplate
+    getMarketplaceTemplate,
+    formatTemplateResponse
 }

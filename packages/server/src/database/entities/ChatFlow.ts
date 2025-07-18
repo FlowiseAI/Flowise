@@ -89,4 +89,8 @@ export class ChatFlow implements IChatFlow {
 
     @DeleteDateColumn()
     deletedDate: Date
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    templateId: string
 }

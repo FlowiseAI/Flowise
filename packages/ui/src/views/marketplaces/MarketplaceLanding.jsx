@@ -223,7 +223,8 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
             category: template.category,
             nodes: flowData.nodes || [],
             edges: flowData.edges || [],
-            flowData: JSON.stringify(flowData)
+            flowData: JSON.stringify(flowData),
+            parentChatflowId: template.id
         }
 
         console.log('🚀 Storing duplicated flow data:', {
@@ -541,7 +542,7 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
                 )}
             </Box>
             <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose} message={snackbarMessage} />
-            
+
             {/* Unified Credentials Modal */}
             <UnifiedCredentialsModal
                 show={showCredentialModal}
