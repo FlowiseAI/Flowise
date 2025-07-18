@@ -29,7 +29,7 @@ services:
         volumes:
             - redis_data:/data
     postgres:
-        image: postgres:16
+        image: pgvector/pgvector:pg16
         ports:
             - '5432:5432'
         volumes:
