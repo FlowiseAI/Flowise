@@ -1,6 +1,5 @@
-import { NodeVM } from '@flowiseai/nodevm'
 import { DataSource } from 'typeorm'
-import { availableDependencies, defaultAllowBuiltInDep, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { getVars, handleEscapeCharacters, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class IfElseFunction_Utilities implements INode {
@@ -119,48 +118,30 @@ class IfElseFunction_Utilities implements INode {
             }
         }
 
-        let sandbox: any = {
-            $input: input,
-            util: undefined,
-            Symbol: undefined,
-            child_process: undefined,
-            fs: undefined,
-            process: undefined
-        }
-        sandbox['$vars'] = prepareSandboxVars(variables)
-        sandbox['$flow'] = flow
+        // Create additional sandbox variables
+        const additionalSandbox: ICommonObject = {}
 
+        // Add input variables to sandbox
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {
-                sandbox[`$${item}`] = inputVars[item]
+                additionalSandbox[`$${item}`] = inputVars[item]
             }
         }
 
-        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-            : defaultAllowBuiltInDep
-        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = availableDependencies.concat(externalDeps)
+        const sandbox = createCodeExecutionSandbox(input, variables, flow, additionalSandbox)
 
-        const nodeVMOptions = {
-            console: 'inherit',
-            sandbox,
-            require: {
-                external: { modules: deps },
-                builtin: builtinDeps
-            },
-            eval: false,
-            wasm: false,
-            timeout: 10000
-        } as any
-
-        const vm = new NodeVM(nodeVMOptions)
         try {
-            const responseTrue = await vm.run(`module.exports = async function() {${ifFunction}}()`, __dirname)
+            const responseTrue = await executeJavaScriptCode(ifFunction, sandbox, {
+                timeout: 10000
+            })
+
             if (responseTrue)
                 return { output: typeof responseTrue === 'string' ? handleEscapeCharacters(responseTrue, false) : responseTrue, type: true }
 
-            const responseFalse = await vm.run(`module.exports = async function() {${elseFunction}}()`, __dirname)
+            const responseFalse = await executeJavaScriptCode(elseFunction, sandbox, {
+                timeout: 10000
+            })
+
             return { output: typeof responseFalse === 'string' ? handleEscapeCharacters(responseFalse, false) : responseFalse, type: false }
         } catch (e) {
             throw new Error(e)
