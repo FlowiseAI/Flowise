@@ -118,6 +118,6 @@ export const postgresMigrations = [
     AddDefaultChatflowIdToUser1746508019301,
     AddOrganizationToCustomTemplate1752612517000,
     AddParentIdToCustomTemplate1752780174000,
-    AddTemplateIdToChatFlow1752780175000
+    AddTemplateIdToChatFlow1752780175000,
     AddPgvectorExtension1752614575000
 ]
