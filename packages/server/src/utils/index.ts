@@ -59,12 +59,69 @@ import { DocumentStore } from '../database/entities/DocumentStore'
 import { DocumentStoreFileChunk } from '../database/entities/DocumentStoreFileChunk'
 import { InternalFlowiseError } from '../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { getErrorMessage } from '../errors/utils'
 import {
     CreateSecretCommand,
     GetSecretValueCommand,
     SecretsManagerClient,
     SecretsManagerClientConfig
 } from '@aws-sdk/client-secrets-manager'
+
+/**
+ * Enhanced error message for MCP connection errors with deep links to credentials
+ */
+const enhanceMcpInitializationError = (error: any, reactFlowNode: IReactFlowNode, baseURL: string): string => {
+    const errorMessage = getErrorMessage(error)
+    if (reactFlowNode?.data?.inputParams) {
+        console.log(
+            '📝 Input Params:',
+            reactFlowNode.data.inputParams.map((param) => {
+                if (typeof param === 'object') {
+                    return {
+                        name: param.name,
+                        type: param.type
+                    }
+                }
+                return param
+            })
+        )
+    }
+    console.log('🚨 Error Message:', errorMessage)
+    console.log('🔍 Node Details:', {
+        id: reactFlowNode.id,
+        type: reactFlowNode.type,
+        name: reactFlowNode.data.name,
+        label: reactFlowNode.data.label
+    })
+    console.log('🌐 Base URL:', baseURL)
+    console.log('errorMessage', errorMessage)
+    console.log('reactFlowNode', reactFlowNode)
+    console.log('baseURL', baseURL)
+    // Check if this is an MCP connection error
+    if (errorMessage.includes('MCP') && errorMessage.includes('Connection closed')) {
+        const nodeName = reactFlowNode.data.name
+        const nodeLabel = reactFlowNode.data.label
+
+        // Map tool types to credential types and provide helpful error messages
+        let credentialType = reactFlowNode.data.name
+        let helpText = ''
+
+        if (credentialType) {
+            // Generate deep link URL for credential setup
+            const credentialLink = `${baseURL}/sidekick-studio/credentials?cred=${credentialType}`
+            return `MCP Connection Error: Unable to initialize ${nodeLabel}. This typically indicates missing or invalid credentials for ${helpText}. Please set up your credentials here: ${credentialLink}`
+        } else if (helpText) {
+            return `MCP Connection Error: Unable to initialize ${nodeLabel}. This typically indicates an issue with your ${helpText}`
+        }
+
+        // Generic MCP error message if we can't identify the specific tool
+        const credentialsLink = `${baseURL}/sidekick-studio/credentials`
+        return `MCP Connection Error: Unable to initialize ${nodeLabel}. This typically indicates missing or invalid credentials. Please check your credential configuration here: ${credentialsLink}`
+    }
+
+    // Return original error message if not an MCP connection error
+    return errorMessage
+}
 
 export const QUESTION_VAR_PREFIX = 'question'
 export const FILE_ATTACHMENT_PREFIX = 'file_attachment'
@@ -692,7 +749,11 @@ export const buildFlow = async ({
             }
         } catch (e: any) {
             logger.error(e)
-            throw new Error(e)
+
+            // Enhanced error message for MCP connection issues
+            const enhancedErrorMessage = enhanceMcpInitializationError(e, reactFlowNode, baseURL || 'http://localhost:3000')
+
+            throw new Error(enhancedErrorMessage)
         }
 
         let neighbourNodeIds = graph[nodeId]

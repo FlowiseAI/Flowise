@@ -130,29 +130,23 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
 
     // Restructured menu configuration
     const menuConfig: MenuConfig[] = filterMenuItems([
-        // Standalone items above Studio
-        ...(flags['chatflow:manage'].enabled
+        // Marketplaces moved to top level
+        ...(flags['chatflow:use'].enabled
             ? [
                   {
-                      id: 'assistants',
-                      text: 'Assistants',
-                      link: '/sidekick-studio/assistants',
-                      icon: <GroupsOutlinedIcon color='primary' />
-                  },
-                  {
-                      id: 'documentstores',
-                      text: 'Document Stores',
-                      link: '/sidekick-studio/document-stores',
-                      icon: <MenuBookOutlinedIcon color='primary' />
+                      id: 'marketplaces',
+                      text: 'Sidekick Store',
+                      link: '/sidekick-studio/marketplaces',
+                      icon: <StorefrontOutlinedIcon color='primary' />
                   }
               ]
             : []),
-        // Studio section (collapsible)
+        // Studio section (collapsible) with Assistants and Document Stores moved in
         ...(flags['chatflow:use'].enabled
             ? [
                   {
                       id: 'studio',
-                      text: 'Studio',
+                      text: 'Sidekick Studio',
                       icon: <BuildOutlinedIcon color='primary' />,
                       subMenu: [
                           {
@@ -168,28 +162,28 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                               icon: <GroupsOutlinedIcon color='primary' />
                           },
                           {
+                              id: 'assistants',
+                              text: 'Assistants',
+                              link: '/sidekick-studio/assistants',
+                              icon: <GroupsOutlinedIcon color='primary' />
+                          },
+                          {
+                              id: 'documentstores',
+                              text: 'Document Stores',
+                              link: '/sidekick-studio/document-stores',
+                              icon: <MenuBookOutlinedIcon color='primary' />
+                          },
+                          {
                               id: 'executions',
                               text: 'Executions',
                               link: '/sidekick-studio/executions',
                               icon: <PlayCircleOutlineIcon color='primary' />
                           },
                           {
-                              id: 'marketplaces',
-                              text: 'Marketplaces',
-                              link: '/sidekick-studio/marketplaces',
-                              icon: <StorefrontOutlinedIcon color='primary' />
-                          },
-                          {
                               id: 'tools',
                               text: 'Tools',
                               link: '/sidekick-studio/tools',
                               icon: <BuildOutlinedIcon color='primary' />
-                          },
-                          {
-                              id: 'credentials',
-                              text: 'Credentials',
-                              link: '/sidekick-studio/credentials',
-                              icon: <PasswordIcon color='primary' />
                           },
                           {
                               id: 'variables',
@@ -207,7 +201,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                   }
               ]
             : []),
-        // Account section (collapsible)
+        // Account section (collapsible) with Credentials moved in
         ...(flags['chatflow:use'].enabled
             ? [
                   {
@@ -220,6 +214,12 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                               text: 'Billing',
                               link: '/billing',
                               icon: <AssessmentOutlinedIcon color='primary' />
+                          },
+                          {
+                              id: 'credentials',
+                              text: 'Credentials',
+                              link: '/sidekick-studio/credentials',
+                              icon: <PasswordIcon color='primary' />
                           }
                       ]
                   }
@@ -276,11 +276,37 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                         </IconButton>
                         {flags['chatflow:manage'].enabled &&
                             (drawerOpen ? (
+                                <Tooltip title='Manage and configure your applications' placement='right'>
+                                    <Button
+                                        href='/sidekick-studio/apps'
+                                        variant='outlined'
+                                        component={NextLink}
+                                        startIcon={<AppsOutlinedIcon />}
+                                        sx={{
+                                            minWidth: 0,
+                                            textTransform: 'capitalize',
+                                            justifyContent: 'flex-start',
+                                            ml: 1
+                                        }}
+                                    >
+                                        Apps
+                                    </Button>
+                                </Tooltip>
+                            ) : (
+                                <Tooltip title='Manage and configure your applications' placement='right'>
+                                    <IconButton component={NextLink} href='/sidekick-studio/apps'>
+                                        <AppsOutlinedIcon sx={{ color: 'primary.main' }} />
+                                    </IconButton>
+                                </Tooltip>
+                            ))}
+                        {drawerOpen ? (
+                            <Tooltip title='Start a new conversation with your sidekicks' placement='right'>
                                 <Button
-                                    href='/sidekick-studio/apps'
+                                    href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/chat'}
                                     variant='outlined'
                                     component={NextLink}
-                                    startIcon={<AppsOutlinedIcon />}
+                                    onClick={handleNewChat}
+                                    startIcon={<RateReviewIcon />}
                                     sx={{
                                         minWidth: 0,
                                         textTransform: 'capitalize',
@@ -288,37 +314,19 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                         ml: 1
                                     }}
                                 >
-                                    Apps
+                                    Chat
                                 </Button>
-                            ) : (
-                                <IconButton component={NextLink} href='/sidekick-studio/apps'>
-                                    <AppsOutlinedIcon sx={{ color: 'primary.main' }} />
-                                </IconButton>
-                            ))}
-                        {drawerOpen ? (
-                            <Button
-                                href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/chat'}
-                                variant='outlined'
-                                component={NextLink}
-                                onClick={handleNewChat}
-                                startIcon={<RateReviewIcon />}
-                                sx={{
-                                    minWidth: 0,
-                                    textTransform: 'capitalize',
-                                    justifyContent: 'flex-start',
-                                    ml: 1
-                                }}
-                            >
-                                Chat
-                            </Button>
+                            </Tooltip>
                         ) : (
-                            <IconButton
-                                component={NextLink}
-                                href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/chat'}
-                                onClick={handleNewChat}
-                            >
-                                <RateReviewIcon sx={{ color: 'primary.main' }} />
-                            </IconButton>
+                            <Tooltip title='Start a new conversation with your sidekicks' placement='right'>
+                                <IconButton
+                                    component={NextLink}
+                                    href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/chat'}
+                                    onClick={handleNewChat}
+                                >
+                                    <RateReviewIcon sx={{ color: 'primary.main' }} />
+                                </IconButton>
+                            </Tooltip>
                         )}
                     </Box>
                 </Box>
@@ -344,85 +352,142 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                 </Box>
 
                 <List sx={{ display: 'flex', flexDirection: 'column', px: 1 }} disablePadding>
-                    {menuConfig.map((item, index) => (
-                        <Box key={item.text || index} sx={{ mb: item.id === 'documentstores' ? 2 : 0 }}>
-                            <ListItem disablePadding>
-                                {item.text && (
-                                    <ListItemButton
-                                        selected={!!item.link && pathname.startsWith(item.link)}
-                                        href={item.link}
-                                        component={item.link ? NextLink : 'button'}
-                                        sx={{ flex: 1, display: 'flex', width: '100%' }}
-                                        onClick={() => {
-                                            if (item.subMenu) {
-                                                setSubmenuOpen(item.text === submenuOpen ? '' : item.text ?? '')
-                                            }
-                                        }}
-                                    >
-                                        <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
-                                        <Typography
-                                            sx={{
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                                textTransform: 'capitalize',
-                                                display: '-webkit-box',
-                                                WebkitBoxOrient: 'vertical',
-                                                WebkitLineClamp: '1',
-                                                flex: '1'
-                                            }}
-                                        >
-                                            {item.text}
-                                        </Typography>
-                                    </ListItemButton>
-                                )}
-                            </ListItem>
+                    {menuConfig.map((item, index) => {
+                        // Define tooltips for main menu items
+                        const getMainMenuTooltip = (itemId: string) => {
+                            switch (itemId) {
+                                case 'marketplaces':
+                                    return 'Browse and install sidekicks from the marketplace'
+                                case 'studio':
+                                    return 'Build and customize your own sidekicks'
+                                case 'account':
+                                    return 'Manage your account settings and preferences'
+                                default:
+                                    return ''
+                            }
+                        }
 
-                            {/* Render submenu items if they exist */}
-                            {item.subMenu && (
-                                <Collapse key={`${item.text}-collapse`} in={submenuOpen === item.text} timeout='auto'>
-                                    {item.subMenu.map((subItem) => (
-                                        <ListItem key={subItem.text} disablePadding sx={{ pl: 2 }}>
+                        return (
+                            <Box key={item.text || index} sx={{ mb: item.id === 'documentstores' ? 2 : 0 }}>
+                                <ListItem disablePadding>
+                                    {item.text && (
+                                        <Tooltip title={getMainMenuTooltip(item.id || '')} placement='right'>
                                             <ListItemButton
-                                                component={subItem.link ? NextLink : 'button'}
-                                                href={subItem.link || '#'}
-                                                selected={pathname === subItem.link}
+                                                selected={!!item.link && pathname.startsWith(item.link)}
+                                                href={item.link}
+                                                component={item.link ? NextLink : 'button'}
+                                                sx={{ flex: 1, display: 'flex', width: '100%' }}
+                                                onClick={() => {
+                                                    if (item.subMenu) {
+                                                        setSubmenuOpen(item.text === submenuOpen ? '' : item.text ?? '')
+                                                    }
+                                                }}
                                             >
-                                                <Tooltip title={drawerOpen ? null : subItem.text} placement='right'>
-                                                    <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
-                                                </Tooltip>
-                                                <Typography>{subItem.text}</Typography>
+                                                <ListItemIcon sx={{ minWidth: 40 }}>{item.icon}</ListItemIcon>
+                                                <Typography
+                                                    sx={{
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        textTransform: 'capitalize',
+                                                        display: '-webkit-box',
+                                                        WebkitBoxOrient: 'vertical',
+                                                        WebkitLineClamp: '1',
+                                                        flex: '1'
+                                                    }}
+                                                >
+                                                    {item.text}
+                                                </Typography>
                                             </ListItemButton>
-                                        </ListItem>
-                                    ))}
-                                </Collapse>
-                            )}
-                        </Box>
-                    ))}
+                                        </Tooltip>
+                                    )}
+                                </ListItem>
+
+                                {/* Render submenu items if they exist */}
+                                {item.subMenu && (
+                                    <Collapse key={`${item.text}-collapse`} in={submenuOpen === item.text} timeout='auto'>
+                                        {item.subMenu.map((subItem) => {
+                                            // Define tooltips for submenu items
+                                            const getSubmenuTooltip = (subItemId: string) => {
+                                                switch (subItemId) {
+                                                    case 'chatflows':
+                                                        return 'Create conversation flows and logic'
+                                                    case 'agentflows':
+                                                        return 'Design multi-agent workflows'
+                                                    case 'assistants':
+                                                        return 'Manage your AI assistants'
+                                                    case 'documentstores':
+                                                        return 'Organize and manage your knowledge base'
+                                                    case 'executions':
+                                                        return 'Monitor and review execution history'
+                                                    case 'tools':
+                                                        return 'Configure tools and integrations'
+                                                    case 'variables':
+                                                        return 'Set up variables for reuse across sidekicks'
+                                                    case 'apikey':
+                                                        return 'Manage authentication keys for external services'
+                                                    case 'billing':
+                                                        return 'View and manage your subscription and payments'
+                                                    case 'credentials':
+                                                        return 'Store and manage API credentials securely'
+                                                    default:
+                                                        return subItem.text || ''
+                                                }
+                                            }
+
+                                            return (
+                                                <ListItem key={subItem.text} disablePadding sx={{ pl: 2 }}>
+                                                    <Tooltip title={getSubmenuTooltip(subItem.id || '')} placement='right'>
+                                                        <ListItemButton
+                                                            component={subItem.link ? NextLink : 'button'}
+                                                            href={subItem.link || '#'}
+                                                            selected={pathname === subItem.link}
+                                                            sx={{ width: '100%' }}
+                                                        >
+                                                            <ListItemIcon sx={{ minWidth: 40 }}>{subItem.icon}</ListItemIcon>
+                                                            <Typography>{subItem.text}</Typography>
+                                                        </ListItemButton>
+                                                    </Tooltip>
+                                                </ListItem>
+                                            )
+                                        })}
+                                    </Collapse>
+                                )}
+                            </Box>
+                        )
+                    })}
 
                     {!user?.subscription && (
                         <ListItem disablePadding>
-                            <ListItemButton
-                                onClick={handleSubscriptionOpen}
-                                sx={{ bgcolor: 'primary.main', '&:hover': { bgcolor: 'primary.dark' }, borderRadius: 1, mb: 1 }}
-                            >
-                                <ListItemIcon>
-                                    <StarIcon sx={{ color: '#fff' }} />
-                                </ListItemIcon>
-                                <Typography
+                            <Tooltip title='Unlock premium features with a subscription' placement='right'>
+                                <ListItemButton
+                                    onClick={handleSubscriptionOpen}
                                     sx={{
-                                        overflow: 'hidden',
-                                        textOverflow: 'ellipsis',
-                                        textTransform: 'capitalize',
-                                        display: '-webkit-box',
-                                        WebkitBoxOrient: 'vertical',
-                                        WebkitLineClamp: '1',
-                                        flex: '1',
-                                        color: '#fff'
+                                        bgcolor: 'primary.main',
+                                        '&:hover': { bgcolor: 'primary.dark' },
+                                        borderRadius: 1,
+                                        mb: 1,
+                                        width: '100%'
                                     }}
                                 >
-                                    Upgrade Plan
-                                </Typography>
-                            </ListItemButton>
+                                    <ListItemIcon>
+                                        <StarIcon sx={{ color: '#fff' }} />
+                                    </ListItemIcon>
+                                    <Typography
+                                        sx={{
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            textTransform: 'capitalize',
+                                            display: '-webkit-box',
+                                            WebkitBoxOrient: 'vertical',
+                                            WebkitLineClamp: '1',
+                                            flex: '1',
+                                            color: '#fff'
+                                        }}
+                                    >
+                                        Upgrade Plan
+                                    </Typography>
+                                </ListItemButton>
+                            </Tooltip>
                         </ListItem>
                     )}
 

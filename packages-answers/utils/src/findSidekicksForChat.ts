@@ -60,23 +60,87 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
 
     const { chatflowDomain } = user
     try {
-        const response = await fetch(
-            `${chatflowDomain}/api/v1/chatflows?filter=${encodeURIComponent(
-                JSON.stringify({
-                    visibility: 'AnswerAI,Organization'
-                })
-            )}`,
-            {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
+        // FIRST: Let's fetch ALL chatflows without any filters to debug
+        const allChatflowsResponse = await fetch(`${chatflowDomain}/api/v1/chatflows`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
             }
-        )
+        })
+
+        let allChatflows = []
+        if (allChatflowsResponse.ok) {
+            allChatflows = await allChatflowsResponse.json()
+            console.log('🔍 DEBUG: ALL CHATFLOWS from API:', allChatflows.length)
+
+            // Look for the specific problematic chatflow
+            const problematicId = 'dfc48a1f-62d6-480c-94da-b64f00a673f7'
+            const problematicChatflow = allChatflows.find((cf) => cf.id === problematicId)
+
+            if (problematicChatflow) {
+                console.log('🎯 FOUND PROBLEMATIC CHATFLOW:', {
+                    id: problematicChatflow.id,
+                    name: problematicChatflow.name,
+                    visibility: problematicChatflow.visibility,
+                    isOwner: problematicChatflow.isOwner,
+                    canEdit: problematicChatflow.canEdit,
+                    type: problematicChatflow.type
+                })
+            } else {
+                console.log('❌ PROBLEMATIC CHATFLOW NOT FOUND in all chatflows')
+            }
+
+            // Log visibility breakdown
+            const visibilityBreakdown = {}
+            allChatflows.forEach((cf) => {
+                const vis = cf.visibility || 'undefined'
+                if (!visibilityBreakdown[vis]) visibilityBreakdown[vis] = []
+                visibilityBreakdown[vis].push({ id: cf.id, name: cf.name })
+            })
+            console.log('📊 VISIBILITY BREAKDOWN:', visibilityBreakdown)
+        }
+
+        // NOW: Fetch with the original filter
+        // TEMPORARY: Let's try without any filter to see if that fixes the issue
+        const DISABLE_VISIBILITY_FILTER = true // Set to false to restore original behavior
+
+        const filterParams = DISABLE_VISIBILITY_FILTER
+            ? ''
+            : `?filter=${encodeURIComponent(JSON.stringify({ visibility: 'AnswerAI,Organization' }))}`
+
+        console.log('🔧 USING FILTER:', DISABLE_VISIBILITY_FILTER ? 'NO FILTER (TEMPORARY)' : 'AnswerAI,Organization')
+
+        const response = await fetch(`${chatflowDomain}/api/v1/chatflows${filterParams}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            }
+        })
 
         if (response.ok) {
             const result = await response.json()
+            console.log('🔍 DEBUG: FILTERED CHATFLOWS (visibility: AnswerAI,Organization):', result.length)
+
+            // Check if our problematic chatflow is in the filtered results
+            const problematicId = 'dfc48a1f-62d6-480c-94da-b64f00a673f7'
+            const foundInFiltered = result.find((cf) => cf.id === problematicId)
+            if (foundInFiltered) {
+                console.log('✅ Problematic chatflow FOUND in filtered results')
+            } else {
+                console.log('❌ Problematic chatflow MISSING from filtered results - this is the issue!')
+            }
+
+            // Show what chatflows got filtered out
+            const filteredOutIds = allChatflows
+                .filter((all) => !result.find((filtered) => filtered.id === all.id))
+                .map((cf) => ({
+                    id: cf.id,
+                    name: cf.name,
+                    visibility: cf.visibility
+                }))
+            console.log('🚫 CHATFLOWS FILTERED OUT:', filteredOutIds)
 
             const uploadAllowedNodes = [
                 'llmChain',
@@ -97,7 +161,7 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                         .map((c) => c.trim().split(';'))
                         .flat()
 
-                    return {
+                    const sidekick = {
                         id: chatflow.id || '',
                         label: chatflow.name || '',
                         visibility: chatflow.visibility || [],
@@ -117,6 +181,7 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                         categories,
                         isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
                         isFavorite: false,
+                        isExecutable: true, // TEMPORARY: Mark all as executable for debugging
                         // In lightweight mode, return minimal constraints
                         constraints: {
                             isSpeechToTextEnabled: false,
@@ -124,6 +189,19 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                             uploadSizeAndTypes: []
                         }
                     }
+
+                    // Debug log for problematic chatflow
+                    if (chatflow.id === 'dfc48a1f-62d6-480c-94da-b64f00a673f7') {
+                        console.log('🎯 PROCESSING PROBLEMATIC CHATFLOW (lightweight):', {
+                            id: sidekick.id,
+                            name: sidekick.chatflow.name,
+                            isExecutable: sidekick.isExecutable,
+                            isAvailable: sidekick.isAvailable,
+                            visibility: sidekick.visibility
+                        })
+                    }
+
+                    return sidekick
                 }
 
                 // Full processing for non-lightweight mode
@@ -167,7 +245,7 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                     .map((c) => c.trim().split(';'))
                     .flat()
 
-                return {
+                const sidekick = {
                     id: chatflow.id || '',
                     label: chatflow.name || '',
                     visibility: chatflow.visibility || [],
@@ -181,6 +259,7 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                     categories,
                     isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
                     isFavorite: false,
+                    isExecutable: true, // TEMPORARY: Mark all as executable for debugging
                     constraints: {
                         isSpeechToTextEnabled,
                         isImageUploadAllowed,
@@ -202,6 +281,29 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                         ]
                     }
                 }
+
+                // Debug log for problematic chatflow
+                if (chatflow.id === 'dfc48a1f-62d6-480c-94da-b64f00a673f7') {
+                    console.log('🎯 PROCESSING PROBLEMATIC CHATFLOW (full):', {
+                        id: sidekick.id,
+                        name: sidekick.chatflow.name,
+                        isExecutable: sidekick.isExecutable,
+                        isAvailable: sidekick.isAvailable,
+                        visibility: sidekick.visibility,
+                        flowData: !!sidekick.flowData,
+                        chatbotConfig: !!sidekick.chatbotConfig
+                    })
+                }
+
+                return sidekick
+            })
+
+            console.log('✅ FINAL SIDEKICKS RESULT:', {
+                total: sidekicks.length,
+                personal: sidekicks.filter((s) => s.chatflow.isOwner).length,
+                marketplace: sidekicks.filter((s) => !s.chatflow.isOwner).length,
+                executable: sidekicks.filter((s) => s.isExecutable).length,
+                problematicFound: sidekicks.some((s) => s.id === 'dfc48a1f-62d6-480c-94da-b64f00a673f7')
             })
 
             return {
