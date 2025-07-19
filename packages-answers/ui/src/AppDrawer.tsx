@@ -88,6 +88,8 @@ interface AppDrawerProps {
             picture?: string
             email?: string
             org_name?: string
+            org_id?: string
+            roles?: string[]
             subscription?: unknown
             defaultChatflowId?: string
         }
@@ -103,129 +105,248 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
     const pathname = usePathname()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
     const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
-    const MEMBER_ACTIONS = [
-        'chatflows',
-        'executions',
-        'marketplaces',
-        'agentflows',
-        'documentstores',
-        'apikey',
-        'credentials',
-        'billing',
-        'apps'
-    ]
-    const BUILDER_ACTIONS = ['agentflows', 'assistants', 'tools', 'credentials', 'variables', 'apikey', 'documentstores', 'admin', 'apps']
 
-    const filterMenuItems = (items: MenuConfig[]) => {
-        return items.map((item) => {
-            if (!item.subMenu) return item
-            const filteredSubMenu = item.subMenu.filter((subItem) => {
-                const isMemberAction = MEMBER_ACTIONS.includes(subItem.id ?? '')
-                const isBuilderAction = BUILDER_ACTIONS.includes(subItem.id ?? '')
-                return (isMemberAction && flags['chatflow:use'].enabled) || (isBuilderAction && flags['chatflow:manage'].enabled)
-            })
-            return { ...item, subMenu: filteredSubMenu }
-        })
+    // Helper function to determine if this is a public organization
+    // TODO: This should be refined to compare against actual PUBLIC_ORG_ID from backend
+    const isPublicOrg = () => {
+        // For now, we'll implement the new logic for all orgs and refine this later
+        // You can add specific org_id checks here once PUBLIC_ORG_ID is accessible
+        return false // Assume all orgs are private for now to implement the new logic
     }
 
-    // Restructured menu configuration
-    const menuConfig: MenuConfig[] = filterMenuItems([
-        // Marketplaces moved to top level
-        ...(flags['chatflow:use'].enabled
-            ? [
-                  {
-                      id: 'marketplaces',
-                      text: 'Sidekick Store',
-                      link: '/sidekick-studio/marketplaces',
-                      icon: <StorefrontOutlinedIcon color='primary' />
-                  }
-              ]
-            : []),
-        // Studio section (collapsible) with Assistants and Document Stores moved in
-        ...(flags['chatflow:use'].enabled
-            ? [
-                  {
-                      id: 'studio',
-                      text: 'Sidekick Studio',
-                      icon: <BuildOutlinedIcon color='primary' />,
-                      subMenu: [
-                          {
-                              id: 'chatflows',
-                              text: 'Chatflows',
-                              link: '/sidekick-studio/chatflows',
-                              icon: <AccountTreeIcon color='primary' />
-                          },
-                          {
-                              id: 'agentflows',
-                              text: 'Agentflows',
-                              link: '/sidekick-studio/agentflows',
-                              icon: <GroupsOutlinedIcon color='primary' />
-                          },
-                          {
-                              id: 'assistants',
-                              text: 'Assistants',
-                              link: '/sidekick-studio/assistants',
-                              icon: <GroupsOutlinedIcon color='primary' />
-                          },
-                          {
-                              id: 'documentstores',
-                              text: 'Document Stores',
-                              link: '/sidekick-studio/document-stores',
-                              icon: <MenuBookOutlinedIcon color='primary' />
-                          },
-                          {
-                              id: 'executions',
-                              text: 'Executions',
-                              link: '/sidekick-studio/executions',
-                              icon: <PlayCircleOutlineIcon color='primary' />
-                          },
-                          {
-                              id: 'tools',
-                              text: 'Tools',
-                              link: '/sidekick-studio/tools',
-                              icon: <BuildOutlinedIcon color='primary' />
-                          },
-                          {
-                              id: 'variables',
-                              text: 'Global Variables',
-                              link: '/sidekick-studio/variables',
-                              icon: <IntegrationInstructionsOutlinedIcon color='primary' />
-                          },
-                          {
-                              id: 'apikey',
-                              text: 'API Keys',
-                              link: '/sidekick-studio/apikey',
-                              icon: <VpnKeyOutlinedIcon color='primary' />
-                          }
-                      ]
-                  }
-              ]
-            : []),
-        // Account section (collapsible) with Credentials moved in
-        ...(flags['chatflow:use'].enabled
-            ? [
-                  {
-                      id: 'account',
-                      text: 'Account',
-                      icon: <AssessmentOutlinedIcon color='primary' />,
-                      subMenu: [
-                          {
-                              id: 'billing',
-                              text: 'Billing',
-                              link: '/billing',
-                              icon: <AssessmentOutlinedIcon color='primary' />
-                          },
-                          {
-                              id: 'credentials',
-                              text: 'Credentials',
-                              link: '/sidekick-studio/credentials',
-                              icon: <PasswordIcon color='primary' />
-                          }
-                      ]
-                  }
-              ]
-            : [])
-    ])
+    // Helper function to determine user role in private organizations
+    const getUserRole = () => {
+        if (isPublicOrg()) {
+            return 'public' // Public org users - different logic would apply
+        }
+
+        const userRoles = user?.roles || []
+
+        // Check if user is admin (has org:manage permission or Admin role)
+        if (flags['org:manage']?.enabled || userRoles.includes('Admin')) {
+            return 'admin'
+        }
+
+        // Check if user is builder (has chatflow:manage permission)
+        if (flags['chatflow:manage']?.enabled) {
+            return 'builder'
+        }
+
+        // Default to member (has chatflow:use permission)
+        return 'member'
+    }
+
+    const userRole = getUserRole()
+    const isPrivateOrg = !isPublicOrg()
+
+    // Menu configuration
+    let menuConfig: MenuConfig[] = []
+
+    if (isPrivateOrg) {
+        // New logic for private organizations
+        // Everyone in private orgs sees these basic items
+        menuConfig.push({
+            id: 'marketplaces',
+            text: 'Sidekick Store',
+            link: '/sidekick-studio/marketplaces',
+            icon: <StorefrontOutlinedIcon color='primary' />
+        })
+
+        // Builders and Admins see Sidekick Studio
+        if (userRole === 'builder' || userRole === 'admin') {
+            menuConfig.push({
+                id: 'studio',
+                text: 'Sidekick Studio',
+                icon: <BuildOutlinedIcon color='primary' />,
+                subMenu: [
+                    {
+                        id: 'chatflows',
+                        text: 'Chatflows',
+                        link: '/sidekick-studio/chatflows',
+                        icon: <AccountTreeIcon color='primary' />
+                    },
+                    {
+                        id: 'agentflows',
+                        text: 'Agentflows',
+                        link: '/sidekick-studio/agentflows',
+                        icon: <GroupsOutlinedIcon color='primary' />
+                    },
+                    {
+                        id: 'assistants',
+                        text: 'Assistants',
+                        link: '/sidekick-studio/assistants',
+                        icon: <GroupsOutlinedIcon color='primary' />
+                    },
+                    {
+                        id: 'documentstores',
+                        text: 'Document Stores',
+                        link: '/sidekick-studio/document-stores',
+                        icon: <MenuBookOutlinedIcon color='primary' />
+                    },
+                    {
+                        id: 'executions',
+                        text: 'Executions',
+                        link: '/sidekick-studio/executions',
+                        icon: <PlayCircleOutlineIcon color='primary' />
+                    },
+                    {
+                        id: 'tools',
+                        text: 'Tools',
+                        link: '/sidekick-studio/tools',
+                        icon: <BuildOutlinedIcon color='primary' />
+                    },
+                    {
+                        id: 'variables',
+                        text: 'Global Variables',
+                        link: '/sidekick-studio/variables',
+                        icon: <IntegrationInstructionsOutlinedIcon color='primary' />
+                    },
+                    {
+                        id: 'apikey',
+                        text: 'API Keys',
+                        link: '/sidekick-studio/apikey',
+                        icon: <VpnKeyOutlinedIcon color='primary' />
+                    }
+                ]
+            })
+        }
+
+        // Account section - everyone sees credentials, only admins see billing
+        const accountSubMenu: MenuConfig[] = [
+            {
+                id: 'credentials',
+                text: 'Credentials',
+                link: '/sidekick-studio/credentials',
+                icon: <PasswordIcon color='primary' />
+            }
+        ]
+
+        // Only admins see billing
+        if (userRole === 'admin') {
+            accountSubMenu.push({
+                id: 'billing',
+                text: 'Billing',
+                link: '/billing',
+                icon: <AssessmentOutlinedIcon color='primary' />
+            })
+        }
+
+        menuConfig.push({
+            id: 'account',
+            text: 'Account',
+            icon: <AssessmentOutlinedIcon color='primary' />,
+            subMenu: accountSubMenu
+        })
+    } else {
+        // Original logic for public organizations - everyone sees everything
+        const filterMenuItems = (items: MenuConfig[]) => {
+            return items.map((item) => {
+                if (!item.subMenu) return item
+                const filteredSubMenu = item.subMenu.filter((subItem) => {
+                    return flags['chatflow:use'].enabled || flags['chatflow:manage'].enabled
+                })
+                return { ...item, subMenu: filteredSubMenu }
+            })
+        }
+
+        menuConfig = filterMenuItems([
+            // Marketplaces moved to top level
+            ...(flags['chatflow:use'].enabled
+                ? [
+                      {
+                          id: 'marketplaces',
+                          text: 'Sidekick Store',
+                          link: '/sidekick-studio/marketplaces',
+                          icon: <StorefrontOutlinedIcon color='primary' />
+                      }
+                  ]
+                : []),
+            // Studio section (collapsible) with Assistants and Document Stores moved in
+            ...(flags['chatflow:use'].enabled
+                ? [
+                      {
+                          id: 'studio',
+                          text: 'Sidekick Studio',
+                          icon: <BuildOutlinedIcon color='primary' />,
+                          subMenu: [
+                              {
+                                  id: 'chatflows',
+                                  text: 'Chatflows',
+                                  link: '/sidekick-studio/chatflows',
+                                  icon: <AccountTreeIcon color='primary' />
+                              },
+                              {
+                                  id: 'agentflows',
+                                  text: 'Agentflows',
+                                  link: '/sidekick-studio/agentflows',
+                                  icon: <GroupsOutlinedIcon color='primary' />
+                              },
+                              {
+                                  id: 'assistants',
+                                  text: 'Assistants',
+                                  link: '/sidekick-studio/assistants',
+                                  icon: <GroupsOutlinedIcon color='primary' />
+                              },
+                              {
+                                  id: 'documentstores',
+                                  text: 'Document Stores',
+                                  link: '/sidekick-studio/document-stores',
+                                  icon: <MenuBookOutlinedIcon color='primary' />
+                              },
+                              {
+                                  id: 'executions',
+                                  text: 'Executions',
+                                  link: '/sidekick-studio/executions',
+                                  icon: <PlayCircleOutlineIcon color='primary' />
+                              },
+                              {
+                                  id: 'tools',
+                                  text: 'Tools',
+                                  link: '/sidekick-studio/tools',
+                                  icon: <BuildOutlinedIcon color='primary' />
+                              },
+                              {
+                                  id: 'variables',
+                                  text: 'Global Variables',
+                                  link: '/sidekick-studio/variables',
+                                  icon: <IntegrationInstructionsOutlinedIcon color='primary' />
+                              },
+                              {
+                                  id: 'apikey',
+                                  text: 'API Keys',
+                                  link: '/sidekick-studio/apikey',
+                                  icon: <VpnKeyOutlinedIcon color='primary' />
+                              }
+                          ]
+                      }
+                  ]
+                : []),
+            // Account section (collapsible) with Credentials moved in
+            ...(flags['chatflow:use'].enabled
+                ? [
+                      {
+                          id: 'account',
+                          text: 'Account',
+                          icon: <AssessmentOutlinedIcon color='primary' />,
+                          subMenu: [
+                              {
+                                  id: 'billing',
+                                  text: 'Billing',
+                                  link: '/billing',
+                                  icon: <AssessmentOutlinedIcon color='primary' />
+                              },
+                              {
+                                  id: 'credentials',
+                                  text: 'Credentials',
+                                  link: '/sidekick-studio/credentials',
+                                  icon: <PasswordIcon color='primary' />
+                              }
+                          ]
+                      }
+                  ]
+                : [])
+        ])
+    }
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement | HTMLDivElement>) => {
         setAnchorEl(event.currentTarget)
@@ -274,7 +395,8 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                 }}
                             />
                         </IconButton>
-                        {flags['chatflow:manage'].enabled &&
+                        {/* Apps button visibility */}
+                        {(isPrivateOrg || flags['chatflow:manage'].enabled) &&
                             (drawerOpen ? (
                                 <Tooltip title='Manage and configure your applications' placement='right'>
                                     <Button
@@ -299,6 +421,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                     </IconButton>
                                 </Tooltip>
                             ))}
+                        {/* Everyone sees Chat button */}
                         {drawerOpen ? (
                             <Tooltip title='Start a new conversation with your sidekicks' placement='right'>
                                 <Button
@@ -456,7 +579,8 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                         )
                     })}
 
-                    {!user?.subscription && (
+                    {/* Upgrade plan button visibility */}
+                    {((isPrivateOrg && userRole === 'admin') || !isPrivateOrg) && !user?.subscription && (
                         <ListItem disablePadding>
                             <Tooltip title='Unlock premium features with a subscription' placement='right'>
                                 <ListItemButton
@@ -570,9 +694,16 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                         {user?.org_name}
                                     </Typography>
                                 </MenuItem>
-                                <MenuItem onClick={handleSubscriptionOpen}>Upgrade Plan</MenuItem>
+                                {/* Upgrade plan menu item visibility */}
+                                {((isPrivateOrg && userRole === 'admin') || !isPrivateOrg) && (
+                                    <MenuItem onClick={handleSubscriptionOpen}>Upgrade Plan</MenuItem>
+                                )}
 
-                                <ExportImportMenuItems onClose={handleClose} />
+                                {/* Export/Import menu items visibility */}
+                                {((isPrivateOrg && userRole === 'admin') || !isPrivateOrg) && (
+                                    <ExportImportMenuItems onClose={handleClose} />
+                                )}
+
                                 <MenuItem
                                     onClick={() => {
                                         handleClose()
