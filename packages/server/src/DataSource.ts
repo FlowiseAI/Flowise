@@ -1,13 +1,13 @@
-import 'reflect-metadata'
-import path from 'path'
 import * as fs from 'fs'
+import path from 'path'
+import 'reflect-metadata'
 import { DataSource } from 'typeorm'
-import { getUserHome } from './utils'
 import { entities } from './database/entities'
-import { sqliteMigrations } from './database/migrations/sqlite'
-import { mysqlMigrations } from './database/migrations/mysql'
 import { mariadbMigrations } from './database/migrations/mariadb'
+import { mysqlMigrations } from './database/migrations/mysql'
 import { postgresMigrations } from './database/migrations/postgres'
+import { sqliteMigrations } from './database/migrations/sqlite'
+import { getUserHome } from './utils'
 import logger from './utils/logger'
 
 let appDataSource: DataSource
@@ -65,6 +65,7 @@ export const init = async (): Promise<void> => {
         case 'postgres':
             appDataSource = new DataSource({
                 type: 'postgres',
+                schema: process.env.DATABASE_PGSCHEMA,
                 host: process.env.DATABASE_HOST,
                 port: parseInt(process.env.DATABASE_PORT || '5432'),
                 username: process.env.DATABASE_USER,
