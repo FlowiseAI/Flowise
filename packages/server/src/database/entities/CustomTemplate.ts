@@ -1,5 +1,5 @@
 import { ICustomTemplate } from '../../Interface'
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
 @Entity('custom_template')
 export class CustomTemplate implements ICustomTemplate {
@@ -34,4 +34,22 @@ export class CustomTemplate implements ICustomTemplate {
     @Column({ type: 'timestamp' })
     @UpdateDateColumn()
     updatedDate: Date
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    userId: string
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    organizationId: string
+
+    @Column({ type: 'boolean', nullable: true })
+    shareWithOrg: boolean
+
+    @DeleteDateColumn()
+    deletedDate: Date
+
+    @Index()
+    @Column({ type: 'uuid', nullable: true })
+    parentId: string
 }

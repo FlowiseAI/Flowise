@@ -101,6 +101,7 @@ export interface IChatFlow {
     displayMode?: string
     embeddedUrl?: string
     browserExtConfig?: string
+    templateId?: string
 }
 
 export interface IChatMessage {
@@ -413,14 +414,18 @@ export interface IPaidPlan {
 export interface ICustomTemplate {
     id: string
     name: string
-    flowData: string
-    updatedDate: Date
-    createdDate: Date
     description?: string
+    flowData: string
+    screenshot?: string
     type?: string
     badge?: string
     framework?: string
     usecases?: string
+    userId?: string
+    organizationId?: string
+    shareWithOrg?: boolean
+    deletedDate?: Date
+    parentId?: string
 }
 
 export interface IFlowConfig {
