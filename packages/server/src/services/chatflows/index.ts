@@ -1,6 +1,6 @@
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { IsNull, QueryRunner, Or, Equal } from 'typeorm'
+import { QueryRunner } from 'typeorm'
 import { ChatflowType, IReactFlowObject, IUser } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { ChatFlow, ChatflowVisibility } from '../../database/entities/ChatFlow'
@@ -166,41 +166,36 @@ const getAllChatflows = async (user?: IUser, type?: ChatflowType, filter?: Chatf
         const { id: userId, organizationId, permissions } = user ?? {}
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
-        let org
+
+        // Handle auth0_org_id filter for cross-org access
+        let targetOrgId = organizationId
         if (filter?.auth0_org_id) {
-            org = await appServer.AppDataSource.getRepository(Organization).findOne({
+            const org = await appServer.AppDataSource.getRepository(Organization).findOne({
                 where: {
                     auth0Id: filter.auth0_org_id
                 }
             })
+            targetOrgId = org?.id ?? organizationId
         }
+
+        // SECURITY: Always filter by organization first - users should never see chatflows from other orgs
+        if (targetOrgId) {
+            queryBuilder.where('chatFlow.organizationId = :organizationId', { organizationId: targetOrgId })
+        }
+
+        // PERFORMANCE: Always only return user's own chatflows for better performance
+        // Even admins only see their own chatflows in the sidekick selector
+        queryBuilder.andWhere('chatFlow.userId = :userId', { userId })
+
+        // Apply additional visibility filtering if specified
         if (filter?.visibility) {
             const visibilityConditions = filter.visibility
                 .split(',')
                 .map((v: string) => (v === 'Organization' ? 'Private' : v))
                 .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
-                .join(' AND ')
+                .join(' OR ')
 
-            if (permissions?.includes('org:manage')) {
-                queryBuilder.where(`(${visibilityConditions})`)
-            } else {
-                queryBuilder.where(`(chatFlow.userId = :userId AND (${visibilityConditions}))`, {
-                    userId
-                })
-            }
-
-            const visibility = filter.visibility
-                .split(',')
-                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
-                .join(' AND ')
-            if (filter.visibility.includes('Organization')) {
-                const orgCondition = `chatFlow.organizationId = :organizationId AND (${visibility})`
-                queryBuilder.orWhere(`(${orgCondition})`, { organizationId: org?.id ?? organizationId })
-            }
-        } else {
-            if (!permissions?.includes('org:manage')) {
-                queryBuilder.where(`chatFlow.userId = :userId`, { userId })
-            }
+            queryBuilder.andWhere(`(${visibilityConditions})`)
         }
 
         const response = await queryBuilder.getMany()
@@ -623,7 +618,6 @@ const getSinglePublicChatbotConfig = async (chatflowId: string, user: IUser | un
                         `Error parsing Chatbot Config for Chatflow ${chatflowId}`
                     )
                 }
-                return 'OK'
             }
         }
     } catch (error) {

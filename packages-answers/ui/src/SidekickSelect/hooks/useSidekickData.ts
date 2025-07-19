@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import useSWR from 'swr'
 import { Sidekick } from '../SidekickSelect.types'
-import marketplacesApi from '@/api/marketplaces'
 
 interface UseSidekickDataProps {
     defaultSidekicks?: Sidekick[]
@@ -14,7 +13,6 @@ interface UseSidekickDataResult {
         sidekicks: Sidekick[]
         categories: { top: string[]; more: string[] }
     }
-    marketplaceSidekicks: Sidekick[]
     combinedSidekicks: Sidekick[]
     isLoading: boolean
     sidekicksByCategoryCache: React.MutableRefObject<Record<string, { data: Sidekick[]; timestamp: number }>>
@@ -79,41 +77,13 @@ const useSidekickData = ({ defaultSidekicks = [], enablePerformanceLogs = false 
         dedupingInterval: 10000 // Dedupe requests within 10 seconds
     })
 
-    const { data: marketplaceSidekicks = [] } = useSWR('marketplaceSidekicks', async () => {
-        const startTime = enablePerformanceLogs ? performance.now() : 0
-        try {
-            const { data: marketplaceChatflows } = await marketplacesApi.getAllTemplatesFromMarketplaces()
-            const result = marketplaceChatflows?.map((chatflow: any) => ({
-                id: chatflow.id,
-                ...chatflow,
-                chatflow: {
-                    ...chatflow,
-                    name: chatflow.templateName
-                },
-                categories: chatflow.categories,
-                category: chatflow.categories,
-                requiresClone: chatflow.requiresClone
-            }))
-
-            if (enablePerformanceLogs) {
-                const endTime = performance.now()
-                console.log(`[SidekickSelect] Marketplace fetch took ${(endTime - startTime).toFixed(2)}ms, count: ${result.length || 0}`)
-            }
-
-            return result
-        } catch (error) {
-            console.error('Error fetching marketplace sidekicks:', error)
-            return []
-        }
-    })
-
     const { sidekicks: allSidekicks = [], categories: chatflowCategories = { top: [], more: [] } } = data
 
     // Optimize combinedSidekicks calculation with better dependency tracking
     const combinedSidekicks = useMemo(() => {
         const startTime = enablePerformanceLogs ? performance.now() : 0
 
-        if (!allSidekicks || !marketplaceSidekicks) {
+        if (!allSidekicks) {
             return []
         }
 
@@ -124,23 +94,6 @@ const useSidekickData = ({ defaultSidekicks = [], enablePerformanceLogs = false 
             sidekickMap.set(sidekick.id, sidekick)
         })
 
-        marketplaceSidekicks.forEach((sidekick: any) => {
-            const existingSidekick = sidekickMap.get(sidekick.id)
-            if (!existingSidekick || (!existingSidekick.isExecutable && sidekick.isExecutable)) {
-                sidekickMap.set(sidekick.id, sidekick)
-            }
-        })
-
-        const result = Array.from(sidekickMap.values())
-
-        if (enablePerformanceLogs) {
-            const endTime = performance.now()
-            perfLog(
-                `Recalculating combinedSidekicks, allSidekicks: ${allSidekicks.length}, marketplaceSidekicks: ${marketplaceSidekicks.length}`
-            )
-            perfLog(`combinedSidekicks calculation completed in ${(endTime - startTime).toFixed(2)}ms, result count: ${result.length}`)
-        }
-
         // When recalculating combined sidekicks, clear stale category cache
         // But preserve favorites cache which is based on the favorites Set
         Object.keys(sidekicksByCategoryCache.current)
@@ -149,8 +102,8 @@ const useSidekickData = ({ defaultSidekicks = [], enablePerformanceLogs = false 
                 delete sidekicksByCategoryCache.current[category]
             })
 
-        return result
-    }, [allSidekicks, marketplaceSidekicks, perfLog])
+        return Array.from(sidekickMap.values())
+    }, [allSidekicks, perfLog])
 
     const allCategories = useMemo(() => {
         const startTime = enablePerformanceLogs ? performance.now() : 0
@@ -158,7 +111,7 @@ const useSidekickData = ({ defaultSidekicks = [], enablePerformanceLogs = false 
         const allCats = [
             ...chatflowCategories.top,
             ...chatflowCategories.more,
-            ...new Set(marketplaceSidekicks.flatMap((s: Sidekick) => s.categories))
+            ...new Set(allSidekicks.flatMap((s: Sidekick) => s.categories))
         ].filter(Boolean)
 
         // Count executable sidekicks per category
@@ -210,7 +163,7 @@ const useSidekickData = ({ defaultSidekicks = [], enablePerformanceLogs = false 
         }
 
         return result
-    }, [chatflowCategories, marketplaceSidekicks, combinedSidekicks, perfLog])
+    }, [chatflowCategories, combinedSidekicks, perfLog])
 
     // Selectively invalidate relevant cache entries when sidekicks change
     useEffect(() => {
@@ -225,7 +178,6 @@ const useSidekickData = ({ defaultSidekicks = [], enablePerformanceLogs = false 
 
     return {
         data,
-        marketplaceSidekicks,
         combinedSidekicks,
         isLoading,
         sidekicksByCategoryCache,

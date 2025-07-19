@@ -14,8 +14,7 @@ import {
     Chip,
     Grid,
     Container,
-    Paper,
-    Link
+    Paper
 } from '@mui/material'
 import {
     ExpandMore as ExpandMoreIcon,
@@ -29,7 +28,6 @@ import { useAnswers } from '../AnswersContext'
 import { useNavigate } from '@/utils/navigation'
 import dynamic from 'next/dynamic'
 import { alpha, useTheme } from '@mui/material/styles'
-import NextLink from 'next/link'
 
 import { StyledDialog } from './StyledComponents'
 import { Sidekick } from './SidekickSelect.types'
@@ -319,20 +317,18 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
 
     // Filter and organize sidekicks for display
     const organizeSidekicks = () => {
-        if (!combinedSidekicks?.length) return { personal: [], recent: [], popular: [] }
+        if (!combinedSidekicks?.length) return { personal: [] }
 
         const personal = combinedSidekicks.filter((s) => s.chatflow.isOwner)
-        const recent = combinedSidekicks.filter((s) => s.isRecent && !s.chatflow.isOwner).slice(0, 6)
-        const popular = combinedSidekicks.filter((s) => !s.isRecent && !s.chatflow.isOwner).slice(0, 8)
 
         if (enablePerformanceLogs) {
-            console.log('Organized sidekicks:', { personal: personal.length, recent: recent.length, popular: popular.length })
+            console.log('Organized sidekicks:', { personal: personal.length })
         }
 
-        return { personal, recent, popular }
+        return { personal }
     }
 
-    const { personal, recent, popular } = organizeSidekicks()
+    const { personal } = organizeSidekicks()
 
     if (enablePerformanceLogs) {
         console.log(`[SidekickSelect] Before final render, noDialog: ${noDialog}, render #${renderCountRef.current}`)
@@ -344,28 +340,52 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 {/* Header - Simplified */}
                 <Box sx={{ textAlign: 'center', mb: 4 }}>
                     <Typography variant='body1' sx={{ color: theme.palette.text.secondary, mb: 3 }}>
-                        Select from your personal sidekicks or explore popular ones
+                        Select from your personal sidekicks or explore more in the marketplace
                     </Typography>
 
-                    <Button
-                        variant='contained'
-                        startIcon={<AddIcon />}
-                        onClick={handleCreateNewSidekick}
-                        sx={{
-                            borderRadius: 3,
-                            px: 3,
-                            py: 1,
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                            '&:hover': {
-                                background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
-                                transform: 'translateY(-1px)'
-                            }
-                        }}
-                    >
-                        Create New Sidekick
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <Button
+                            variant='contained'
+                            startIcon={<AddIcon />}
+                            onClick={handleCreateNewSidekick}
+                            sx={{
+                                borderRadius: 3,
+                                px: 3,
+                                py: 1,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                                '&:hover': {
+                                    background: `linear-gradient(45deg, ${theme.palette.primary.dark}, ${theme.palette.primary.main})`,
+                                    transform: 'translateY(-1px)'
+                                }
+                            }}
+                        >
+                            Create New Sidekick
+                        </Button>
+
+                        <Button
+                            variant='outlined'
+                            startIcon={<ArrowForwardIcon />}
+                            onClick={() => navigate('/marketplaces')}
+                            sx={{
+                                borderRadius: 3,
+                                px: 3,
+                                py: 1,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                borderColor: theme.palette.primary.main,
+                                color: theme.palette.primary.main,
+                                '&:hover': {
+                                    borderColor: theme.palette.primary.dark,
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                                    transform: 'translateY(-1px)'
+                                }
+                            }}
+                        >
+                            Get More Sidekicks
+                        </Button>
+                    </Box>
                 </Box>
 
                 {isLoading && (
@@ -397,46 +417,23 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                             </Paper>
                         )}
 
-                        {/* Recent/Popular */}
-                        {(recent.length > 0 || popular.length > 0) && (
-                            <Paper sx={{ p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.background.paper, 0.6) }}>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                                    <Typography variant='h6' sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
-                                        Explore Sidekicks
-                                    </Typography>
-                                    <Link component={NextLink} href='/sidekick-studio/marketplaces' passHref>
-                                        <Button variant='text' startIcon={<ArrowForwardIcon />} sx={{ textTransform: 'none' }}>
-                                            View Marketplace
-                                        </Button>
-                                    </Link>
-                                </Box>
-                                <Grid container spacing={2}>
-                                    {[...recent, ...popular].map((sidekick) => (
-                                        <Grid item xs={12} sm={6} md={6} lg={6} key={`explore-${sidekick.id}`}>
-                                            <SimpleSidekickCard
-                                                sidekick={sidekick}
-                                                onSelect={handleSidekickSelect}
-                                                favorites={favorites}
-                                                toggleFavorite={toggleFavorite}
-                                            />
-                                        </Grid>
-                                    ))}
-                                </Grid>
-                            </Paper>
-                        )}
-
                         {/* Empty state */}
-                        {!isLoading && personal.length === 0 && recent.length === 0 && popular.length === 0 && (
+                        {!isLoading && personal.length === 0 && (
                             <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
                                 <Typography variant='h6' sx={{ mb: 2 }}>
-                                    No sidekicks available
+                                    No sidekicks yet
                                 </Typography>
                                 <Typography variant='body2' sx={{ color: theme.palette.text.secondary, mb: 3 }}>
-                                    Start by creating your first AI sidekick
+                                    Create your first AI sidekick or explore the marketplace for templates
                                 </Typography>
-                                <Button variant='contained' onClick={handleCreateNewSidekick}>
-                                    Create Your First Sidekick
-                                </Button>
+                                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+                                    <Button variant='contained' onClick={handleCreateNewSidekick}>
+                                        Create Your First Sidekick
+                                    </Button>
+                                    <Button variant='outlined' onClick={() => navigate('/sidekick-studio/marketplaces')}>
+                                        Browse Marketplace
+                                    </Button>
+                                </Box>
                             </Paper>
                         )}
                     </>
