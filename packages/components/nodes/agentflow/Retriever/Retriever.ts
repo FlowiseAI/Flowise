@@ -124,8 +124,8 @@ class Retriever_Agentflow implements INode {
             for (const store of stores) {
                 if (store.status === 'UPSERTED') {
                     const obj = {
-                        name: `${store.id}:${store.name}`,
-                        label: store.name,
+                        name: store.id, // please store only the ID, not the name
+                        label: store.name, // display the current name
                         description: store.description
                     }
                     returnData.push(obj)
@@ -152,7 +152,16 @@ class Retriever_Agentflow implements INode {
         const knowledgeBases = nodeData.inputs?.retrieverKnowledgeDocumentStores as IKnowledgeBase[]
         if (knowledgeBases && knowledgeBases.length > 0) {
             for (const knowledgeBase of knowledgeBases) {
-                const [storeId, _] = knowledgeBase.documentStore.split(':')
+                // Handle both old format (id:name) and new format (id only)
+                let storeId = knowledgeBase.documentStore
+
+                if (knowledgeBase.documentStore.includes(':')) {
+                    // Old format - split to get ID
+                    ;[storeId] = knowledgeBase.documentStore.split(':')
+                } else {
+                    // New format - only ID is stored
+                    storeId = knowledgeBase.documentStore
+                }
 
                 const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
                 const docStoreVectorModule = await import(docStoreVectorInstanceFilePath)
