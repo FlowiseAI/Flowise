@@ -943,10 +943,13 @@ export const getVars = async (
     nodeData: INodeData,
     options: ICommonObject
 ) => {
+    if (!options.workspaceId) {
+        return []
+    }
     const variables =
         ((await appDataSource
             .getRepository(databaseEntities['Variable'])
-            .findBy(options.workspaceId ? { workspaceId: Equal(options.workspaceId) } : {})) as IVariable[]) ?? []
+            .findBy({ workspaceId: Equal(options.workspaceId) })) as IVariable[]) ?? []
 
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
@@ -1067,7 +1070,17 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
         case 'text/jsonl':
             return 'jsonlinesFile'
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        case 'application/msword': {
             return 'docxFile'
+        }
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        case 'application/vnd.ms-excel': {
+            return 'excelFile'
+        }
+        case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+        case 'application/vnd.ms-powerpoint': {
+            return 'powerpointFile'
+        }
         case 'application/vnd.yaml':
         case 'application/x-yaml':
         case 'text/vnd.yaml':
@@ -1088,6 +1101,19 @@ export const mapMimeTypeToExt = (mimeType: string) => {
     switch (mimeType) {
         case 'text/plain':
             return 'txt'
+        case 'text/html':
+            return 'html'
+        case 'text/css':
+            return 'css'
+        case 'text/javascript':
+        case 'application/javascript':
+            return 'js'
+        case 'text/xml':
+        case 'application/xml':
+            return 'xml'
+        case 'text/markdown':
+        case 'text/x-markdown':
+            return 'md'
         case 'application/pdf':
             return 'pdf'
         case 'application/json':
@@ -1106,6 +1132,10 @@ export const mapMimeTypeToExt = (mimeType: string) => {
             return 'xls'
         case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
             return 'xlsx'
+        case 'application/vnd.ms-powerpoint':
+            return 'ppt'
+        case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+            return 'pptx'
         default:
             return ''
     }

@@ -1,5 +1,5 @@
 import { StatusCodes } from 'http-status-codes'
-import { In, QueryRunner } from 'typeorm'
+import { EntityManager, In, QueryRunner } from 'typeorm'
 import { v4 as uuidv4 } from 'uuid'
 import { Assistant } from '../../database/entities/Assistant'
 import { ChatFlow } from '../../database/entities/ChatFlow'
@@ -90,16 +90,20 @@ const convertExportInput = (body: any): ExportInput => {
 const FileDefaultName = 'ExportData.json'
 const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string): Promise<{ FileDefaultName: string } & ExportData> => {
     try {
-        let AgentFlow: ChatFlow[] =
+        let AgentFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.agentflow === true ? await chatflowService.getAllChatflows('MULTIAGENT', activeWorkspaceId) : []
+        AgentFlow = 'data' in AgentFlow ? AgentFlow.data : AgentFlow
 
-        let AgentFlowV2: ChatFlow[] =
+        let AgentFlowV2: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.agentflowv2 === true ? await chatflowService.getAllChatflows('AGENTFLOW', activeWorkspaceId) : []
+        AgentFlowV2 = 'data' in AgentFlowV2 ? AgentFlowV2.data : AgentFlowV2
 
         let AssistantCustom: Assistant[] =
             exportInput.assistantCustom === true ? await assistantService.getAllAssistants('CUSTOM', activeWorkspaceId) : []
-        let AssistantFlow: ChatFlow[] =
+
+        let AssistantFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.assistantCustom === true ? await chatflowService.getAllChatflows('ASSISTANT', activeWorkspaceId) : []
+        AssistantFlow = 'data' in AssistantFlow ? AssistantFlow.data : AssistantFlow
 
         let AssistantOpenAI: Assistant[] =
             exportInput.assistantOpenAI === true ? await assistantService.getAllAssistants('OPENAI', activeWorkspaceId) : []
@@ -107,12 +111,15 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         let AssistantAzure: Assistant[] =
             exportInput.assistantAzure === true ? await assistantService.getAllAssistants('AZURE', activeWorkspaceId) : []
 
-        let ChatFlow: ChatFlow[] = exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW', activeWorkspaceId) : []
+        let ChatFlow: ChatFlow[] | { data: ChatFlow[]; total: number } =
+            exportInput.chatflow === true ? await chatflowService.getAllChatflows('CHATFLOW', activeWorkspaceId) : []
+        ChatFlow = 'data' in ChatFlow ? ChatFlow.data : ChatFlow
 
-        const allChatflow: ChatFlow[] =
+        let allChatflow: ChatFlow[] | { data: ChatFlow[]; total: number } =
             exportInput.chat_message === true || exportInput.chat_feedback === true
                 ? await chatflowService.getAllChatflows(undefined, activeWorkspaceId)
                 : []
+        allChatflow = 'data' in allChatflow ? allChatflow.data : allChatflow
         const chatflowIds = allChatflow.map((chatflow) => chatflow.id)
 
         let ChatMessage: ChatMessage[] =
@@ -124,8 +131,10 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         let CustomTemplate: CustomTemplate[] =
             exportInput.custom_template === true ? await marketplacesService.getAllCustomTemplates(activeWorkspaceId) : []
 
-        let DocumentStore: DocumentStore[] =
+        let DocumentStore: DocumentStore[] | { data: DocumentStore[]; total: number } =
             exportInput.document_store === true ? await documenStoreService.getAllDocumentStores(activeWorkspaceId) : []
+        DocumentStore = 'data' in DocumentStore ? DocumentStore.data : DocumentStore
+
         const documentStoreIds = DocumentStore.map((documentStore) => documentStore.id)
 
         let DocumentStoreFileChunk: DocumentStoreFileChunk[] =
@@ -137,9 +146,13 @@ const exportData = async (exportInput: ExportInput, activeWorkspaceId?: string):
         const { data: totalExecutions } = exportInput.execution === true ? await executionService.getAllExecutions(filters) : { data: [] }
         let Execution: Execution[] = exportInput.execution === true ? totalExecutions : []
 
-        let Tool: Tool[] = exportInput.tool === true ? await toolsService.getAllTools(activeWorkspaceId) : []
+        let Tool: Tool[] | { data: Tool[]; total: number } =
+            exportInput.tool === true ? await toolsService.getAllTools(activeWorkspaceId) : []
+        Tool = 'data' in Tool ? Tool.data : Tool
 
-        let Variable: Variable[] = exportInput.variable === true ? await variableService.getAllVariables(activeWorkspaceId) : []
+        let Variable: Variable[] | { data: Variable[]; total: number } =
+            exportInput.variable === true ? await variableService.getAllVariables(activeWorkspaceId) : []
+        Variable = 'data' in Variable ? Variable.data : Variable
 
         return {
             FileDefaultName,
@@ -255,11 +268,15 @@ async function replaceDuplicateIdsForChatMessage(
             where: { id: In(ids) }
         })
         if (records.length < 0) return originalData
-        for (let record of records) {
-            const oldId = record.id
-            const newId = uuidv4()
-            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
-        }
+
+        // replace duplicate ids found in db to new id
+        const dbExistingIds = new Set(records.map((record) => record.id))
+        originalData.ChatMessage = originalData.ChatMessage.map((item) => {
+            if (dbExistingIds.has(item.id)) {
+                return { ...item, id: uuidv4() }
+            }
+            return item
+        })
         return originalData
     } catch (error) {
         throw new InternalFlowiseError(
@@ -459,11 +476,15 @@ async function replaceDuplicateIdsForDocumentStoreFileChunk(
             where: { id: In(ids) }
         })
         if (records.length < 0) return originalData
-        for (let record of records) {
-            const oldId = record.id
-            const newId = uuidv4()
-            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
-        }
+
+        // replace duplicate ids found in db to new id
+        const dbExistingIds = new Set(records.map((record) => record.id))
+        originalData.DocumentStoreFileChunk = originalData.DocumentStoreFileChunk.map((item) => {
+            if (dbExistingIds.has(item.id)) {
+                return { ...item, id: uuidv4() }
+            }
+            return item
+        })
         return originalData
     } catch (error) {
         throw new InternalFlowiseError(
@@ -548,6 +569,13 @@ function insertWorkspaceId(importedData: any, activeWorkspaceId?: string) {
         item.workspaceId = activeWorkspaceId
     })
     return importedData
+}
+
+async function saveBatch(manager: EntityManager, entity: any, items: any[], batchSize = 900) {
+    for (let i = 0; i < items.length; i += batchSize) {
+        const batch = items.slice(i, i + batchSize)
+        await manager.save(entity, batch)
+    }
 }
 
 const importData = async (importData: ExportData, orgId: string, activeWorkspaceId: string, subscriptionId: string) => {
@@ -705,13 +733,13 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
             if (importData.AssistantOpenAI.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantOpenAI)
             if (importData.AssistantAzure.length > 0) await queryRunner.manager.save(Assistant, importData.AssistantAzure)
             if (importData.ChatFlow.length > 0) await queryRunner.manager.save(ChatFlow, importData.ChatFlow)
-            if (importData.ChatMessage.length > 0) await queryRunner.manager.save(ChatMessage, importData.ChatMessage)
+            if (importData.ChatMessage.length > 0) await saveBatch(queryRunner.manager, ChatMessage, importData.ChatMessage)
             if (importData.ChatMessageFeedback.length > 0)
                 await queryRunner.manager.save(ChatMessageFeedback, importData.ChatMessageFeedback)
             if (importData.CustomTemplate.length > 0) await queryRunner.manager.save(CustomTemplate, importData.CustomTemplate)
             if (importData.DocumentStore.length > 0) await queryRunner.manager.save(DocumentStore, importData.DocumentStore)
             if (importData.DocumentStoreFileChunk.length > 0)
-                await queryRunner.manager.save(DocumentStoreFileChunk, importData.DocumentStoreFileChunk)
+                await saveBatch(queryRunner.manager, DocumentStoreFileChunk, importData.DocumentStoreFileChunk)
             if (importData.Tool.length > 0) await queryRunner.manager.save(Tool, importData.Tool)
             if (importData.Execution.length > 0) await queryRunner.manager.save(Execution, importData.Execution)
             if (importData.Variable.length > 0) await queryRunner.manager.save(Variable, importData.Variable)

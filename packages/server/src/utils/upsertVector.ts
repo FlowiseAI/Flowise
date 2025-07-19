@@ -21,7 +21,7 @@ import {
     getStartingNodes,
     getAPIOverrideConfig
 } from '../utils'
-import { validateChatflowAPIKey } from './validateKey'
+import { validateFlowAPIKey } from './validateKey'
 import { IncomingInput, INodeDirectedGraph, IReactFlowObject, ChatType, IExecuteFlowParams, MODE } from '../Interface'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { getRunningExpressApp } from '../utils/getRunningExpressApp'
@@ -251,7 +251,7 @@ export const upsertVector = async (req: Request, isInternal: boolean = false) =>
         const files = (req.files as Express.Multer.File[]) || []
 
         if (!isInternal) {
-            const isKeyValidated = await validateChatflowAPIKey(req, chatflow)
+            const isKeyValidated = await validateFlowAPIKey(req, chatflow)
             if (!isKeyValidated) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
             }

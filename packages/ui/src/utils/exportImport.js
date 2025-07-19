@@ -89,7 +89,7 @@ const sanitizeDocumentStore = (DocumentStore) => {
 const sanitizeExecution = (Execution) => {
     try {
         return Execution.map((execution) => {
-            execution.agentflow.workspaceId = undefined
+            if (execution.agentflow) execution.agentflow.workspaceId = undefined
             return { ...execution, workspaceId: undefined }
         })
     } catch (error) {
