@@ -1,11 +1,11 @@
 import { DataSource } from 'typeorm'
 import { z } from 'zod'
-import { NodeVM } from '@flowiseai/nodevm'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
 import { StructuredTool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { availableDependencies, defaultAllowBuiltInDep, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getCredentialData, getCredentialParam, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
+import { isValidUUID, isValidURL } from '../../../src/validator'
 import { v4 as uuidv4 } from 'uuid'
 
 class ChatflowTool_Tools implements INode {
@@ -167,6 +167,16 @@ class ChatflowTool_Tools implements INode {
         const startNewSession = nodeData.inputs?.startNewSession as boolean
 
         const baseURL = (nodeData.inputs?.baseURL as string) || (options.baseURL as string)
+
+        // Validate selectedChatflowId is a valid UUID
+        if (!selectedChatflowId || !isValidUUID(selectedChatflowId)) {
+            throw new Error('Invalid chatflow ID: must be a valid UUID')
+        }
+
+        // Validate baseURL is a valid URL
+        if (!baseURL || !isValidURL(baseURL)) {
+            throw new Error('Invalid base URL: must be a valid URL')
+        }
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const chatflowApiKey = getCredentialParam('chatflowApiKey', credentialData, nodeData)
@@ -334,16 +344,6 @@ class ChatflowTool extends StructuredTool {
             body: JSON.stringify(body)
         }
 
-        let sandbox = {
-            $callOptions: options,
-            $callBody: body,
-            util: undefined,
-            Symbol: undefined,
-            child_process: undefined,
-            fs: undefined,
-            process: undefined
-        }
-
         const code = `
 const fetch = require('node-fetch');
 const url = "${this.baseURL}/api/v1/prediction/${this.chatflowid}";
@@ -361,26 +361,19 @@ try {
 	return '';
 }
 `
-        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-            : defaultAllowBuiltInDep
-        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = availableDependencies.concat(externalDeps)
 
-        const vmOptions = {
-            console: 'inherit',
-            sandbox,
-            require: {
-                external: { modules: deps },
-                builtin: builtinDeps
-            },
-            eval: false,
-            wasm: false,
+        // Create additional sandbox variables
+        const additionalSandbox: ICommonObject = {
+            $callOptions: options,
+            $callBody: body
+        }
+
+        const sandbox = createCodeExecutionSandbox('', [], {}, additionalSandbox)
+
+        const response = await executeJavaScriptCode(code, sandbox, {
+            useSandbox: false,
             timeout: 10000
-        } as any
-
-        const vm = new NodeVM(vmOptions)
-        const response = await vm.run(`module.exports = async function() {${code}}()`, __dirname)
+        })
 
         return response
     }

@@ -183,7 +183,7 @@ const LoaderConfigPreviewChunks = () => {
                 const previewResp = await documentStoreApi.previewChunks(config)
                 if (previewResp.data) {
                     setTotalChunks(previewResp.data.totalChunks)
-                    setDocumentChunks(previewResp.data.chunks)
+                    setDocumentChunks(Array.isArray(previewResp.data.chunks) ? previewResp.data.chunks : [])
                     setCurrentPreviewCount(previewResp.data.previewChunkCount)
                 }
                 setLoading(false)

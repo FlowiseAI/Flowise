@@ -1,8 +1,7 @@
 import { flatten } from 'lodash'
 import { type StructuredTool } from '@langchain/core/tools'
-import { NodeVM } from '@flowiseai/nodevm'
 import { DataSource } from 'typeorm'
-import { availableDependencies, defaultAllowBuiltInDep, getVars, handleEscapeCharacters, prepareSandboxVars } from '../../../src/utils'
+import { getVars, handleEscapeCharacters, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOutputsValue, INodeParams } from '../../../src/Interface'
 
 class CustomFunction_Utilities implements INode {
@@ -118,45 +117,24 @@ class CustomFunction_Utilities implements INode {
             }
         }
 
-        let sandbox: any = {
-            $input: input,
-            util: undefined,
-            Symbol: undefined,
-            child_process: undefined,
-            fs: undefined,
-            process: undefined
+        // Create additional sandbox variables
+        const additionalSandbox: ICommonObject = {
+            $tools: tools
         }
-        sandbox['$vars'] = prepareSandboxVars(variables)
-        sandbox['$flow'] = flow
-        sandbox['$tools'] = tools
 
+        // Add input variables to sandbox
         if (Object.keys(inputVars).length) {
             for (const item in inputVars) {
-                sandbox[`$${item}`] = inputVars[item]
+                additionalSandbox[`$${item}`] = inputVars[item]
             }
         }
 
-        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-            : defaultAllowBuiltInDep
-        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = availableDependencies.concat(externalDeps)
+        const sandbox = createCodeExecutionSandbox(input, variables, flow, additionalSandbox)
 
-        const nodeVMOptions = {
-            console: 'inherit',
-            sandbox,
-            require: {
-                external: { modules: deps },
-                builtin: builtinDeps
-            },
-            eval: false,
-            wasm: false,
-            timeout: 10000
-        } as any
-
-        const vm = new NodeVM(nodeVMOptions)
         try {
-            const response = await vm.run(`module.exports = async function() {${javascriptFunction}}()`, __dirname)
+            const response = await executeJavaScriptCode(javascriptFunction, sandbox, {
+                timeout: 10000
+            })
 
             if (typeof response === 'string' && !isEndingNode) {
                 return handleEscapeCharacters(response, false)

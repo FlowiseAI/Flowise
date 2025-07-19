@@ -1,7 +1,7 @@
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { StructuredTool, ToolInputParsingException, ToolParams } from '@langchain/core/tools'
-import { CodeInterpreter } from '@e2b/code-interpreter'
+import { Sandbox } from '@e2b/code-interpreter'
 import { z } from 'zod'
 import { addSingleFileToStorage } from '../../../src/storageUtils'
 import { CallbackManager, CallbackManagerForToolRun, Callbacks, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
@@ -107,7 +107,7 @@ export class E2BTool extends StructuredTool {
 
     description = DESC
 
-    instance: CodeInterpreter
+    instance: Sandbox
 
     apiKey: string
 
@@ -204,8 +204,8 @@ export class E2BTool extends StructuredTool {
         flowConfig = { ...this.flowObj, ...flowConfig }
         try {
             if ('input' in arg) {
-                this.instance = await CodeInterpreter.create({ apiKey: this.apiKey })
-                const execution = await this.instance.notebook.execCell(arg?.input)
+                this.instance = await Sandbox.create({ apiKey: this.apiKey })
+                const execution = await this.instance.runCode(arg?.input, { language: 'python' })
 
                 const artifacts = []
                 for (const result of execution.results) {
@@ -251,8 +251,6 @@ export class E2BTool extends StructuredTool {
                     }
                 }
 
-                this.instance.close()
-
                 let output = ''
 
                 if (execution.text) output = execution.text
@@ -267,7 +265,7 @@ export class E2BTool extends StructuredTool {
                 return 'No input provided'
             }
         } catch (e) {
-            if (this.instance) this.instance.close()
+            if (this.instance) this.instance.kill()
             return typeof e === 'string' ? e : JSON.stringify(e, null, 2)
         }
     }

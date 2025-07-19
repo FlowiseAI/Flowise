@@ -16,12 +16,19 @@ import {
     ISeqAgentNode,
     ISeqAgentsState
 } from '../../../src/Interface'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, transformBracesWithColon } from '../../../src/utils'
+import {
+    getInputVariables,
+    getVars,
+    handleEscapeCharacters,
+    prepareSandboxVars,
+    transformBracesWithColon,
+    executeJavaScriptCode,
+    createCodeExecutionSandbox
+} from '../../../src/utils'
 import {
     checkCondition,
     convertStructuredSchemaToZod,
     customGet,
-    getVM,
     transformObjectPropertyToFunction,
     filterConversationHistory,
     restructureMessages
@@ -539,9 +546,13 @@ const runCondition = async (
     }
 
     if (selectedTab === 'conditionFunction' && conditionFunction) {
-        const vm = await getVM(appDataSource, databaseEntities, nodeData, options, flow)
+        const sandbox = createCodeExecutionSandbox(input, variables, flow)
+
         try {
-            const response = await vm.run(`module.exports = async function() {${conditionFunction}}()`, __dirname)
+            const response = await executeJavaScriptCode(conditionFunction, sandbox, {
+                timeout: 10000
+            })
+
             if (typeof response !== 'string') throw new Error('Condition function must return a string')
             return response
         } catch (e) {

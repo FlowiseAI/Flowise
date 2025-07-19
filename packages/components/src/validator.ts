@@ -10,6 +10,20 @@ export const isValidUUID = (uuid: string): boolean => {
 }
 
 /**
+ * Validates if a string is a valid URL
+ * @param {string} url The string to validate
+ * @returns {boolean} True if valid URL, false otherwise
+ */
+export const isValidURL = (url: string): boolean => {
+    try {
+        new URL(url)
+        return true
+    } catch {
+        return false
+    }
+}
+
+/**
  * Validates if a string contains path traversal attempts
  * @param {string} path The string to validate
  * @returns {boolean} True if path traversal detected, false otherwise
