@@ -1,11 +1,8 @@
 {
-    "id": "de1cc8e5-a51b-4d0c-9842-2689d9363b6e",
-    "name": "Default Salesforce MCP Sidekick",
+    "name": "Salesforce Sidekick",
     "description": "This Salesforce MCP Sidekick is a smart, conversational assistant that enables users to interact with Salesforce data and metadata in a natural language format. It leverages the Salesforce MCP (Model Context Protocol) Server to:\n\n• Query Salesforce objects and records using SOQL, making it easy to retrieve data based on user-defined criteria.\n• Modify data through DML operations, allowing users to insert, update, delete, or upsert records after confirming appropriate permissions.\n• Explore detailed schema metadata by describing objects, fields, and relationships, which is especially useful for developers and publishers looking to integrate or document Salesforce systems.\n• Manage Salesforce code by reading and writing Apex classes and triggers, providing a streamlined method to handle code modifications and testing.\n• Guide users step-by-step through the process of setting up Salesforce credentials and connecting to their Salesforce instance via OAuth 2.0, ensuring secure operations.\n\nIn summary, this Salesforce MCP Sidekick not only simplifies Salesforce management tasks but also serves as a comprehensive aid for both technical and non-technical users, ensuring that interactions with Salesforce data are intuitive, safe, and aligned with best practices.",
     "framework": ["Answer Agent"],
-    "usecases": [""],
-    "userId": "682a145c-186f-46cb-b020-51e962288242",
-    "organizationId": "9249f747-f8cf-44aa-acc5-94c654902262",
+    "usecases": ["CRM", "Search"],
     "nodes": [
         {
             "id": "aaiToolAgent_0",

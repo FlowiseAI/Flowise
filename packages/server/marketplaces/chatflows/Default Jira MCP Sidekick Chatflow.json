@@ -1,11 +1,8 @@
 {
-    "id": "7bb101b5-814f-41c5-9f44-f704dbbd8c14",
-    "name": "Default Jira MCP Sidekick",
+    "name": "Jira Sidekick",
     "description": "The JIRA MCP Sidekick is an AI-powered chatflow designed to integrate seamlessly with your JIRA MCP server. It helps users efficiently perform key JIRA operations—such as searching for issues using JQL, managing epic details, retrieving comprehensive data about specific issues, creating new issues (like bug reports or feature requests), updating existing ones, transitioning issue statuses, and even handling attachments and comments.",
     "framework": ["Answer Agent"],
-    "usecases": [""],
-    "userId": "682a145c-186f-46cb-b020-51e962288242",
-    "organizationId": "9249f747-f8cf-44aa-acc5-94c654902262",
+    "usecases": ["Project Management"],
     "nodes": [
         {
             "id": "aaiToolAgent_0",

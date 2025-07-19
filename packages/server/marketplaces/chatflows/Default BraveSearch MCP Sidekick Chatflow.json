@@ -1,11 +1,8 @@
 {
-    "id": "843ac6e2-2a7f-4013-9ee6-9d77a3df56cd",
-    "name": "Default BraveSearch MCP Sidekick",
+    "name": "BraveSearch Sidekick",
     "description": "BraveSearch MCP Sidekick is an AI-powered integration within Answer Agent that leverages the Brave Web Search and Brave Local Search APIs to deliver up-to-date information from the internet. It processes user queries to determine whether a web-based search, a location-based search, or a combination of both is needed. Using default AAI credentials, it performs searches without prompting users for additional authentication. In cases where both web and local information are relevant, it chains the two search methods and compiles their outputs into a comprehensive response. Additionally, it handles errors by providing clear, plain text messages and asking clarifying questions when necessary, ensuring a supportive and user-friendly experience.",
     "framework": ["Answer Agent"],
-    "usecases": [""],
-    "userId": "682a145c-186f-46cb-b020-51e962288242",
-    "organizationId": "9249f747-f8cf-44aa-acc5-94c654902262",
+    "usecases": ["Web Search"],
     "nodes": [
         {
             "id": "aaiToolAgent_0",

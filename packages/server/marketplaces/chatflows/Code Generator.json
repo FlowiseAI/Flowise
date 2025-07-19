@@ -1,4 +1,8 @@
 {
+    "name": "Coding Sidekick",
+    "description": "This coding sidekick, it can help you with code",
+    "framework": ["Answer Agent"],
+    "usecases": ["Code"],
     "nodes": [
         {
             "id": "chatOpenAI_0",

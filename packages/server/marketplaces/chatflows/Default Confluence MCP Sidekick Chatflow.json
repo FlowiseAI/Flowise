@@ -1,11 +1,8 @@
 {
-    "id": "68176da0-bbe5-4bc8-bb97-65b519eee7dc",
-    "name": "Default Confluence MCP Sidekick",
+    "name": "Confluence Sidekick",
     "description": "This chatflow is designed to create a specialized AI agent, “Confluence MCP Assistant,” that interfaces with a Confluence server via the Confluence MCP protocols. It automatically executes validated API calls to manage pages, comments, attachments, and spaces while providing detailed error feedback and following strict security and schema guidelines.",
     "framework": ["Answer Agent"],
-    "usecases": [""],
-    "userId": "682a145c-186f-46cb-b020-51e962288242",
-    "organizationId": "9249f747-f8cf-44aa-acc5-94c654902262",
+    "usecases": ["Confluence"],
     "nodes": [
         {
             "id": "aaiToolAgent_0",

@@ -1,11 +1,8 @@
 {
-    "id": "2cc11ebb-4bf4-4d32-8af6-9006ab99c7b0",
-    "name": "Default Youtube MCP Sidekick",
+    "name": "Youtube Sidekick",
     "description": "This YouTube MCP Sidekick is a specialized AI assistant designed to interact directly with the YouTube MCP server by leveraging the official YouTube Data API. In simple terms, it enables users to perform a range of YouTube operations, such as:\n\n• Searching for videos, channels, and playlists with sophisticated query filters (using the search:list endpoint).\n• Retrieving detailed information about individual videos and channels (using videos:list and channels:list endpoints).\n• Listing channels that match specific criteria (e.g., by username, channel ID, or account ownership).\n• Fetching comments or replies associated with a video or top-level comment (using the comments:list endpoint).\n\nIn summary, this sidekick acts as a digital helper that streamlines how users access, manage, and retrieve comprehensive YouTube data—making it easier to integrate YouTube content into apps or websites while ensuring all operations comply with YouTube’s guidelines and quota limitations.",
     "framework": ["Answer Agent"],
-    "usecases": [""],
-    "userId": "682a145c-186f-46cb-b020-51e962288242",
-    "organizationId": "9249f747-f8cf-44aa-acc5-94c654902262",
+    "usecases": ["Youtube"],
     "nodes": [
         {
             "id": "aaiToolAgent_0",

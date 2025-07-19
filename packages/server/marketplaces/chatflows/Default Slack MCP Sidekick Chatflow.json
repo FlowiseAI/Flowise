@@ -1,11 +1,8 @@
 {
-    "id": "c3a66d76-6dc0-4f58-94e7-62fb1947032c",
-    "name": "Default Slack MCP Sidekick",
+    "name": "Slack Sidekick",
     "description": "This Slack MCP Sidekick is an AI-driven assistant that acts as your natural language interface to Slack’s API. In simple terms, it allows you to manage your Slack workspace through intuitive commands without needing to interact directly with the API itself. Key features include:\n\n• Listing channels and retrieving recent messages  \n• Sending new messages and replying to existing threads  \n• Adding emoji reactions to messages  \n• Accessing users' profiles and details  \n\nThe agent securely prompts for the necessary Slack credentials inline and guides you through every interaction, ensuring that operations are executed correctly and safely. It’s designed to streamline your Slack operations by translating your plain language instructions into the corresponding Slack API actions, enabling efficient and secure workspace management.",
     "framework": ["Answer Agent"],
-    "usecases": [""],
-    "userId": "682a145c-186f-46cb-b020-51e962288242",
-    "organizationId": "9249f747-f8cf-44aa-acc5-94c654902262",
+    "usecases": ["Slack", "Communication"],
     "nodes": [
         {
             "id": "aaiToolAgent_0",
