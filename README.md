@@ -25,63 +25,70 @@ There are two main ways to get started with TheAnswer: local development setup a
 
 ### Local Development Setup
 
-1. Clone the repository:
+1. **Clone the repository:**
 
     ```bash
     git clone https://github.com/the-answerai/theanswer.git
     cd theanswer
     ```
 
-2. Initialize and update git submodules:
+2. **Set up environment variables:**
+
+    - Create a `.env` file in the root directory
+    - If `.env.example` files are not available, contact The AnswerAI team for required environment variables
+    - **Note:** For local development, you'll need Auth0 development team access (Member role or above)
+
+3. **Initialize git submodules:**
 
     ```bash
     git submodule update --init
     ```
 
-3. Set up environment variables:
-
-    - Create `.env` files in the following locations:
-        - `/packages/server/.env`
-        - `/packages/ui/.env`
-        - `/apps/web/.env`
-        - `/.env` (root directory)
-
-    If `.env.example` files are not available, please reach out to The AnswerAI team for the required environment variables. These files contain sensitive configuration details needed for local development.
-
-    **Note:** For local development, you'll need to be added to the Auth0 development team with appropriate permissions (Member role or above). Please contact The AnswerAI team to get access.
-
-4. Database Setup:
-
-    - Install and open [DBeaver](https://dbeaver.io/)
-    - Connect to your PostgreSQL instance
-    - Create a new database named `flowise`
-    - Configure the database connection in your `.env` files
-
-5. Install dependencies:
+4. **Install dependencies:**
 
     ```bash
     pnpm install
     ```
 
-6. Build the project:
+5. **Install Docker Desktop:**
+
+    - Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+    - Ensure Docker is running before proceeding
+
+6. **Set up database:**
 
     ```bash
-    pnpm build
+    pnpm dev-docker && sleep 10 && docker exec -it theanswer-postgres-1 psql -U example_user -d example_db -c "CREATE DATABASE flowise;"
     ```
 
-    If you encounter any database or Prisma-related issues:
+7. **Optional: Install database tool**
 
-    - Try rebuilding with force: `pnpm build --force`
-    - If issues persist, run migrations: `pnpm db:migrate`
-    - Then rebuild again: `pnpm build --force`
+    - Install [DBeaver](https://dbeaver.io/) for database management
+    - Connect to PostgreSQL: localhost, example_user, example_password
 
-7. Start the development server:
+8. **Build and migrate the initial database:**
 
+    ```bash
+    pnpm build && pnpm db:migrate
+    ```
+
+9. **Run the application:**
+
+    ```bash
+    pnpm start
+    ```
+
+10. **Access TheAnswer:**
+
+    - After the build completes and the app starts, you should see logs stating that the server started on 'http://localhost:3000'
+    - Open [http://localhost:3000](http://localhost:3000) in your browser
+    - Verify you can login and access the application
+
+11. **For development:**
+    - After initial setup, you can fast reload to test your changes using:
     ```bash
     pnpm dev
     ```
-
-8. Open [http://localhost:3000](http://localhost:3000) in your browser to access TheAnswer.
 
 ### Deploy on Render (Recommended for Easy Setup)
 

@@ -170,9 +170,9 @@ function shouldIgnorePath(filePath, ignorePatterns) {
 
   const allPatterns = [...new Set([...defaultIgnores, ...ignorePatterns])];
 
-  if (VERBOSE) {
-    logger.debug(`Checking path against ignore patterns: ${normalizedPath}`);
-  }
+  // if (VERBOSE) {
+  //   logger.debug(`Checking path against ignore patterns: ${normalizedPath}`);
+  // }
 
   // Add a timeout to prevent infinite loops
   const startTime = Date.now();
@@ -768,9 +768,9 @@ async function main() {
       logger.info(`Progress: ${processedFiles}/${pathsToScan.length} files (${elapsed}s)`);
     }
 
-    if (VERBOSE) {
-      logger.debug(`Scanning file: ${path.relative(repoRoot, file)}`);
-    }
+    // if (VERBOSE) {
+    //   logger.debug(`Scanning file: ${path.relative(repoRoot, file)}`);
+    // }
     const vars = await findEnvVarsInFile(file);
     if (vars.length) {
       const dir = path.dirname(file);
