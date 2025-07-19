@@ -72,7 +72,7 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
         const queryBuilder = appServer.AppDataSource.getRepository(Execution)
             .createQueryBuilder('execution')
             .leftJoinAndSelect('execution.agentflow', 'agentflow')
-            .orderBy('execution.createdDate', 'DESC')
+            .orderBy('execution.updatedDate', 'DESC')
             .skip((page - 1) * limit)
             .take(limit)
 

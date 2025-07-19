@@ -984,6 +984,9 @@ importers:
             clsx:
                 specifier: ^1.1.1
                 version: 1.2.1
+            dompurify:
+                specifier: ^3.2.6
+                version: 3.2.6
             dotenv:
                 specifier: ^16.0.0
                 version: 16.4.5
@@ -9940,6 +9943,9 @@ packages:
     domhandler@5.0.3:
         resolution: { integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w== }
         engines: { node: '>= 4' }
+
+    dompurify@3.2.6:
+        resolution: { integrity: sha512-/2GogDQlohXPZe6D6NOgQvXLPSYBqIWMnZ8zzOhn09REE4eyAzb+Hed3jhoM9OkuaJ8P6ZGTTVWQKAi8ieIzfQ== }
 
     domutils@1.7.0:
         resolution: { integrity: sha512-Lgd2XcJ/NjEw+7tFvfKxOzCYKZsdct5lczQ2ZaQY8Djz7pfAD3Gbp8ySJWtreII/vDlMVmxwa6pHmdxIYgttDg== }
@@ -30196,6 +30202,10 @@ snapshots:
     domhandler@5.0.3:
         dependencies:
             domelementtype: 2.3.0
+
+    dompurify@3.2.6:
+        optionalDependencies:
+            '@types/trusted-types': 2.0.7
 
     domutils@1.7.0:
         dependencies:

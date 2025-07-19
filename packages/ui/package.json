@@ -36,6 +36,7 @@
         "@uiw/react-codemirror": "^4.21.21",
         "axios": "1.7.9",
         "clsx": "^1.1.1",
+        "dompurify": "^3.2.6",
         "dotenv": "^16.0.0",
         "flowise-embed": "latest",
         "flowise-embed-react": "latest",

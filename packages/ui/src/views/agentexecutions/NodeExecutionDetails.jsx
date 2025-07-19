@@ -29,6 +29,7 @@ import toolSVG from '@/assets/images/tool.svg'
 
 // Project imports
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
+import { SafeHTML } from '@/ui-component/safe/SafeHTML'
 import { AGENTFLOW_ICONS, baseURL } from '@/store/constant'
 import { JSONViewer } from '@/ui-component/json/JsonViewer'
 import ReactJson from 'flowise-react-json-view'
@@ -708,7 +709,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                                 backgroundColor: theme.palette.background.paper
                                                             }}
                                                         >
-                                                            <div dangerouslySetInnerHTML={{ __html: artifact.data }}></div>
+                                                            <SafeHTML html={artifact.data} />
                                                         </Box>
                                                     )
                                                 } else {
