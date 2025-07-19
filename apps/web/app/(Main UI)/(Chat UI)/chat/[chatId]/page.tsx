@@ -140,10 +140,17 @@ const ChatDetailPage = async ({ params }: { params: { chatId: string } }) => {
     }
 
     const user = session.user
+    let sidekicks = []
 
     try {
         // Fetch chat, messages and sidekicks in parallel
-        const [chat, { sidekicks } = {}] = await Promise.all([getChat(params.chatId, user), findSidekicksForChat(user)])
+        const [chat, { sidekicks: fetchedSidekicks } = {}] = await Promise.all([getChat(params.chatId, user), findSidekicksForChat(user)])
+
+        // Always assign sidekicks if they were fetched successfully
+        if (fetchedSidekicks) {
+            sidekicks = fetchedSidekicks
+        }
+
         if (!chat) {
             return <ChatNotFound />
         }
@@ -159,8 +166,9 @@ const ChatDetailPage = async ({ params }: { params: { chatId: string } }) => {
 
         return <Chat {...params} chat={chatWithMessages} journey={chatWithMessages?.journey} sidekicks={sidekicks} />
     } catch (error) {
-        console.error(error)
-        return <Chat {...params} />
+        console.error('Error loading chat:', error)
+        // Even if there's an error, still pass the sidekicks if we have them
+        return <Chat {...params} sidekicks={sidekicks} />
     }
 }
 
