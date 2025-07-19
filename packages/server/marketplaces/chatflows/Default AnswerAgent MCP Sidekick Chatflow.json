@@ -1,11 +1,8 @@
 {
-    "id": "1914d282-d211-4141-b5f6-564b0d9ea556",
-    "name": "Default AnswerAgent MCP Sidekick",
+    "name": "AnswerAgentAI Sidekick",
     "framework": ["Answer Agent"],
-    "usecases": [""],
+    "usecases": ["AnswerAgent Help"],
     "description": "The AnswerAgent MCP Sidekick is your integrated assistant that makes managing and optimizing your AnswerAgent workflows easier than ever. Acting as a bridge between you and the AnswerAgent MCP server, it helps you effortlessly execute multi-step operations such as creating and updating chatflows, managing document stores, configuring assistants, and more. With clear guidance, consolidated feedback, and advanced error handling, the Sidekick ensures that whether you’re setting up a new assistant or analyzing workflow performance, every task is streamlined, secure, and efficient.",
-    "userId": "682a145c-186f-46cb-b020-51e962288242",
-    "organizationId": "9249f747-f8cf-44aa-acc5-94c654902262",
     "nodes": [
         {
             "id": "aaiToolAgent_0",

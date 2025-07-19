@@ -1,11 +1,8 @@
 {
-    "id": "13d46d8e-0a70-4c11-af8f-e5ab1d6036b6",
-    "name": "Default PostgreSQL MCP Sidekick",
+    "name": "PostgreSQL Sidekick",
     "description": "This PostgreSQL sidekick is a specialized AI assistant designed to safely help users interact with PostgreSQL databases. It converts natural language requests into secure, read-only SQL queries for data retrieval and database schema exploration, assists with diagnosing potential data issues, manages credentials securely, and provides educational feedback on SQL best practices to explain why operations are executed in a safe, read-only mode.",
     "framework": ["Answer Agent"],
-    "usecases": [""],
-    "userId": "682a145c-186f-46cb-b020-51e962288242",
-    "organizationId": "9249f747-f8cf-44aa-acc5-94c654902262",
+    "usecases": ["Search"],
     "nodes": [
         {
             "id": "aaiToolAgent_0",

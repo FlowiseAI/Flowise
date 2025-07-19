@@ -1,11 +1,8 @@
 {
-    "id": "17395c03-18f5-4f2c-a28e-0d4c4d1b4c95",
-    "name": "Default Contentful MCP Sidekick",
+    "name": "Contentful Sidekick",
     "description": "This Contentful MCP idelkick is a specialized assistant designed to streamline interactions with Contentful's Content Management API. It leverages the Contentful Model Context Protocol (MCP) to offer users a single, natural language interface for managing all aspects of their content. This includes tasks such as:\n\n• Creating, updating, and deleting content entries\n• Uploading, updating, and publishing assets\n• Managing content types and editing their configurations\n• Navigating spaces and environments for content staging and production\n\nIn essence, it allows developers and publishers to perform complex content operations easily, ensuring that all requests adhere to best practices and safe operations while offering step-by-step guidance throughout the process.",
     "framework": ["Answer Agent"],
-    "usecases": [""],
-    "userId": "682a145c-186f-46cb-b020-51e962288242",
-    "organizationId": "9249f747-f8cf-44aa-acc5-94c654902262",
+    "usecases": ["Contentful", "CMS"],
     "nodes": [
         {
             "id": "aaiToolAgent_0",
