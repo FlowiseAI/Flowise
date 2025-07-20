@@ -44,6 +44,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 
 // Project import
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
+import { SafeHTML } from '@/ui-component/safe/SafeHTML'
 import SourceDocDialog from '@/ui-component/dialog/SourceDocDialog'
 import { MultiDropdown } from '@/ui-component/dropdown/MultiDropdown'
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -860,7 +861,7 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         } else if (item.type === 'html') {
             return (
                 <div style={{ marginTop: '20px' }}>
-                    <div dangerouslySetInnerHTML={{ __html: item.data }}></div>
+                    <SafeHTML html={item.data} />
                 </div>
             )
         } else {
