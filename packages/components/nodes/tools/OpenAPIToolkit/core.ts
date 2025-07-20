@@ -1,10 +1,9 @@
 import { z } from 'zod'
 import { RequestInit } from 'node-fetch'
-import { NodeVM } from '@flowiseai/nodevm'
 import { RunnableConfig } from '@langchain/core/runnables'
 import { StructuredTool, ToolParams } from '@langchain/core/tools'
 import { CallbackManagerForToolRun, Callbacks, CallbackManager, parseCallbackConfigArg } from '@langchain/core/callbacks/manager'
-import { availableDependencies, defaultAllowBuiltInDep, prepareSandboxVars } from '../../../src/utils'
+import { executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
 import { ICommonObject } from '../../../src/Interface'
 
 const removeNulls = (obj: Record<string, any>) => {
@@ -217,32 +216,22 @@ export class DynamicStructuredTool<
         _?: CallbackManagerForToolRun,
         flowConfig?: { sessionId?: string; chatId?: string; input?: string; state?: ICommonObject }
     ): Promise<string> {
-        let sandbox: any = {
-            util: undefined,
-            Symbol: undefined,
-            child_process: undefined,
-            fs: undefined,
-            process: undefined
-        }
         let processedArg = { ...arg }
 
         if (this.removeNulls && typeof processedArg === 'object' && processedArg !== null) {
             processedArg = removeNulls(processedArg)
         }
 
+        // Create additional sandbox variables for tool arguments
+        const additionalSandbox: ICommonObject = {}
+
         if (typeof processedArg === 'object' && Object.keys(processedArg).length) {
             for (const item in processedArg) {
-                sandbox[`$${item}`] = processedArg[item]
+                additionalSandbox[`$${item}`] = processedArg[item]
             }
         }
 
-        sandbox['$vars'] = prepareSandboxVars(this.variables)
-
-        // inject flow properties
-        if (this.flowObj) {
-            sandbox['$flow'] = { ...this.flowObj, ...flowConfig }
-        }
-
+        // Prepare HTTP request options
         const callOptions: RequestInit = {
             method: this.method,
             headers: {
@@ -253,31 +242,20 @@ export class DynamicStructuredTool<
         if (arg.RequestBody && this.method.toUpperCase() !== 'GET') {
             callOptions.body = JSON.stringify(arg.RequestBody)
         }
-        sandbox['$options'] = callOptions
+        additionalSandbox['$options'] = callOptions
 
+        // Generate complete URL
         const completeUrl = getUrl(this.baseUrl, arg)
-        sandbox['$url'] = completeUrl
+        additionalSandbox['$url'] = completeUrl
 
-        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-            : defaultAllowBuiltInDep
-        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = availableDependencies.concat(externalDeps)
+        // Prepare flow object for sandbox
+        const flow = this.flowObj ? { ...this.flowObj, ...flowConfig } : {}
 
-        const options = {
-            console: 'inherit',
-            sandbox,
-            require: {
-                external: { modules: deps },
-                builtin: builtinDeps
-            },
-            eval: false,
-            wasm: false,
+        const sandbox = createCodeExecutionSandbox('', this.variables || [], flow, additionalSandbox)
+
+        const response = await executeJavaScriptCode(this.customCode || defaultCode, sandbox, {
             timeout: 10000
-        } as any
-
-        const vm = new NodeVM(options)
-        const response = await vm.run(`module.exports = async function() {${this.customCode || defaultCode}}()`, __dirname)
+        })
 
         return response
     }

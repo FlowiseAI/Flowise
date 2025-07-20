@@ -146,8 +146,8 @@ importers:
                 specifier: ^1.0.21
                 version: 1.0.21
             '@e2b/code-interpreter':
-                specifier: ^0.0.5
-                version: 0.0.5(bufferutil@4.0.8)(utf-8-validate@6.0.4)
+                specifier: ^1.5.1
+                version: 1.5.1
             '@elastic/elasticsearch':
                 specifier: ^8.9.0
                 version: 8.12.2
@@ -2989,6 +2989,9 @@ packages:
             openai: 4.96.0
             zod: ^3.23.8
 
+    '@bufbuild/protobuf@2.6.1':
+        resolution: { integrity: sha512-DaG6XlyKpz08bmHY5SGX2gfIllaqtDJ/KwVoxsmP22COOLYwDBe7yD3DZGwXem/Xq7QOc9cuR7R3MpAv5CFfDw== }
+
     '@bull-board/api@6.11.0':
         resolution: { integrity: sha512-HLbIuXIthrgeVRmN7Vec9/7ZKWx8i1xTC6Nzi//l7ua+Xu5wn6f/aZllUNVzty5ilLTHqWFkfVOwpuN91o7yxA== }
         peerDependencies:
@@ -3057,6 +3060,17 @@ packages:
     '@colors/colors@1.6.0':
         resolution: { integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA== }
         engines: { node: '>=0.1.90' }
+
+    '@connectrpc/connect-web@2.0.0-rc.3':
+        resolution: { integrity: sha512-w88P8Lsn5CCsA7MFRl2e6oLY4J/5toiNtJns/YJrlyQaWOy3RO8pDgkz+iIkG98RPMhj2thuBvsd3Cn4DKKCkw== }
+        peerDependencies:
+            '@bufbuild/protobuf': ^2.2.0
+            '@connectrpc/connect': 2.0.0-rc.3
+
+    '@connectrpc/connect@2.0.0-rc.3':
+        resolution: { integrity: sha512-ARBt64yEyKbanyRETTjcjJuHr2YXorzQo0etyS5+P6oSeW8xEuzajA9g+zDnMcj1hlX2dQE93foIWQGfpru7gQ== }
+        peerDependencies:
+            '@bufbuild/protobuf': ^2.2.0
 
     '@couchbase/couchbase-darwin-arm64-napi@4.4.1':
         resolution: { integrity: sha512-YHS0TDrXe+S3nKywjZ/11Ia+25l5DypXYdyeOf4/le+zsJomnR5E3w4h1RaZ669/gvR8ltyOJn6TG//VDSp6qg== }
@@ -3218,8 +3232,8 @@ packages:
     '@dqbd/tiktoken@1.0.21':
         resolution: { integrity: sha512-grBxRSY9+/iBM205EWjbMm5ySeXQrhJyXWMP38VJd+pO2DRGraDAbi4n8J8T9M4XY1M/FHgonMcmu3J+KjcX0Q== }
 
-    '@e2b/code-interpreter@0.0.5':
-        resolution: { integrity: sha512-ToFQ6N6EU8t91z3EJzh+mG+zf7uK8I1PRLWeu1f3bPS0pAJfM0puzBWOB3XlF9A9R5zZu/g8iO1gGPQXzXY5vA== }
+    '@e2b/code-interpreter@1.5.1':
+        resolution: { integrity: sha512-mkyKjAW2KN5Yt0R1I+1lbH3lo+W/g/1+C2lnwlitXk5wqi/g94SEO41XKdmDf5WWpKG3mnxWDR5d6S/lyjmMEw== }
         engines: { node: '>=18' }
 
     '@elastic/elasticsearch@8.12.2':
@@ -9115,6 +9129,9 @@ packages:
     commondir@1.0.1:
         resolution: { integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg== }
 
+    compare-versions@6.1.1:
+        resolution: { integrity: sha512-4hm4VPpIecmlg59CHXnRDnqGplJFrbLG4aFEl5vl6cK1u76ws3LLvX7ikFnTDl5vo39sjWD6AaDPYodJp/NNHg== }
+
     component-emitter@1.3.1:
         resolution: { integrity: sha512-T0+barUSQRTUQASh8bx02dl+DhF54GtIDY13Y3m9oWTklKbb3Wv974meRpeZ3lp1JpLVECWWNHC4vaG2XHXouQ== }
 
@@ -9986,8 +10003,8 @@ packages:
     duplexify@4.1.3:
         resolution: { integrity: sha512-M3BmBhwJRZsSx38lZyhE53Csddgzl5R7xGJNk7CVddZD6CcmwMCH8J+7AprIrQKH7TonKxaCjcv27Qmf+sQ+oA== }
 
-    e2b@0.16.1:
-        resolution: { integrity: sha512-2L1R/REEB+EezD4Q4MmcXXNATjvCYov2lv/69+PY6V95+wl1PZblIMTYAe7USxX6P6sqANxNs+kXqZr6RvXkSw== }
+    e2b@1.9.0:
+        resolution: { integrity: sha512-MM3RhWW7YENYocTy20BvKVcn8li/FxkDrHINS7tmz00ffl1ZavQTRxCI9Sl8ofeRg+HVMlqO4W8LJ+ij9VTZPg== }
         engines: { node: '>=18' }
 
     each-props@1.3.2:
@@ -11992,11 +12009,6 @@ packages:
     isomorphic-fetch@3.0.0:
         resolution: { integrity: sha512-qvUtwJ3j6qwsF3jLxkZ72qCgjMysPzDfeV240JHiGZsANBYd+EEuu35v7dfrJ9Up0Ak07D7GGSkGhCHTqg/5wA== }
 
-    isomorphic-ws@5.0.0:
-        resolution: { integrity: sha512-muId7Zzn9ywDsyXgTIafTry2sV3nySZeUDe6YedVd1Hvuuep5AsIlqK+XefWpYTyJG5e503F2xIuT2lcU6rCSw== }
-        peerDependencies:
-            ws: 8.18.3
-
     isstream@0.1.2:
         resolution: { integrity: sha512-Yljz7ffyPbrLpLngrMtZ7NduUgVvi6wG9RJ9IUcyCd59YQ911PBJphODUcbOVbqYfxe1wuYf/LJ8PauMRwsM/g== }
 
@@ -13919,12 +13931,14 @@ packages:
             zod:
                 optional: true
 
+    openapi-fetch@0.9.8:
+        resolution: { integrity: sha512-zM6elH0EZStD/gSiNlcPrzXcVQ/pZo3BDvC6CDwRDUt1dDzxlshpmQnpD6cZaJ39THaSmwVCxxRrPKNM1hHrDg== }
+
     openapi-types@12.1.3:
         resolution: { integrity: sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw== }
 
-    openapi-typescript-fetch@1.1.3:
-        resolution: { integrity: sha512-smLZPck4OkKMNExcw8jMgrMOGgVGx2N/s6DbKL2ftNl77g5HfoGpZGFy79RBzU/EkaO0OZpwBnslfdBfh7ZcWg== }
-        engines: { node: '>= 12.0.0', npm: '>= 7.0.0' }
+    openapi-typescript-helpers@0.0.8:
+        resolution: { integrity: sha512-1eNjQtbfNi5Z/kFhagDIaIRj6qqDzhjNJKz8cmMW0CVdGwT6e1GLbAfgI0d28VTJa1A8jz82jm/4dG8qNoNS8g== }
 
     option@0.2.4:
         resolution: { integrity: sha512-pkEqbDyl8ou5cpq+VsnQbe/WlEy5qS7xPzMS1U55OCG9KPvwFD46zDbxQIj3egJSFc3D+XhYOPUzz49zQAVy7A== }
@@ -14134,9 +14148,6 @@ packages:
     passport@0.7.0:
         resolution: { integrity: sha512-cPLl+qZpSc+ireUvt+IzqbED1cHHkDoVYMo30jbJIdOOjQ1MQYZBPiNvmi8UM6lJuOpTPXJGZQk0DtC4y61MYQ== }
         engines: { node: '>= 0.4.0' }
-
-    path-browserify@1.0.1:
-        resolution: { integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g== }
 
     path-case@3.0.4:
         resolution: { integrity: sha512-qO4qCFjXqVTrcbPt/hQfhTQ+VhFsqNKOPtytgNKkKxSoEp3XPUQ8ObFuePylOIok5gjn69ry8XiULxCwot3Wfg== }
@@ -21782,6 +21793,8 @@ snapshots:
             - encoding
             - utf-8-validate
 
+    '@bufbuild/protobuf@2.6.1': {}
+
     '@bull-board/api@6.11.0(@bull-board/ui@6.11.0)':
         dependencies:
             '@bull-board/ui': 6.11.0
@@ -21910,6 +21923,15 @@ snapshots:
         optional: true
 
     '@colors/colors@1.6.0': {}
+
+    '@connectrpc/connect-web@2.0.0-rc.3(@bufbuild/protobuf@2.6.1)(@connectrpc/connect@2.0.0-rc.3(@bufbuild/protobuf@2.6.1))':
+        dependencies:
+            '@bufbuild/protobuf': 2.6.1
+            '@connectrpc/connect': 2.0.0-rc.3(@bufbuild/protobuf@2.6.1)
+
+    '@connectrpc/connect@2.0.0-rc.3(@bufbuild/protobuf@2.6.1)':
+        dependencies:
+            '@bufbuild/protobuf': 2.6.1
 
     '@couchbase/couchbase-darwin-arm64-napi@4.4.1':
         optional: true
@@ -22063,14 +22085,9 @@ snapshots:
 
     '@dqbd/tiktoken@1.0.21': {}
 
-    '@e2b/code-interpreter@0.0.5(bufferutil@4.0.8)(utf-8-validate@6.0.4)':
+    '@e2b/code-interpreter@1.5.1':
         dependencies:
-            e2b: 0.16.1
-            isomorphic-ws: 5.0.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))
-            ws: 8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-        transitivePeerDependencies:
-            - bufferutil
-            - utf-8-validate
+            e2b: 1.9.0
 
     '@elastic/elasticsearch@8.12.2':
         dependencies:
@@ -29311,6 +29328,8 @@ snapshots:
 
     commondir@1.0.1: {}
 
+    compare-versions@6.1.1: {}
+
     component-emitter@1.3.1: {}
 
     component-register@0.8.3: {}
@@ -30259,17 +30278,14 @@ snapshots:
             readable-stream: 3.6.2
             stream-shift: 1.0.3
 
-    e2b@0.16.1:
+    e2b@1.9.0:
         dependencies:
-            isomorphic-ws: 5.0.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))
-            normalize-path: 3.0.0
-            openapi-typescript-fetch: 1.1.3
-            path-browserify: 1.0.1
+            '@bufbuild/protobuf': 2.6.1
+            '@connectrpc/connect': 2.0.0-rc.3(@bufbuild/protobuf@2.6.1)
+            '@connectrpc/connect-web': 2.0.0-rc.3(@bufbuild/protobuf@2.6.1)(@connectrpc/connect@2.0.0-rc.3(@bufbuild/protobuf@2.6.1))
+            compare-versions: 6.1.1
+            openapi-fetch: 0.9.8
             platform: 1.3.6
-            ws: 8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
-        optionalDependencies:
-            bufferutil: 4.0.8
-            utf-8-validate: 6.0.4
 
     each-props@1.3.2:
         dependencies:
@@ -32980,10 +32996,6 @@ snapshots:
             whatwg-fetch: 3.6.20
         transitivePeerDependencies:
             - encoding
-
-    isomorphic-ws@5.0.0(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)):
-        dependencies:
-            ws: 8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)
 
     isstream@0.1.2: {}
 
@@ -35828,9 +35840,13 @@ snapshots:
         transitivePeerDependencies:
             - encoding
 
+    openapi-fetch@0.9.8:
+        dependencies:
+            openapi-typescript-helpers: 0.0.8
+
     openapi-types@12.1.3: {}
 
-    openapi-typescript-fetch@1.1.3: {}
+    openapi-typescript-helpers@0.0.8: {}
 
     option@0.2.4: {}
 
@@ -36079,8 +36095,6 @@ snapshots:
             passport-strategy: 1.0.0
             pause: 0.0.1
             utils-merge: 1.0.1
-
-    path-browserify@1.0.1: {}
 
     path-case@3.0.4:
         dependencies:

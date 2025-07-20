@@ -26,7 +26,7 @@
         "@aws-sdk/client-secrets-manager": "^3.699.0",
         "@datastax/astra-db-ts": "1.5.0",
         "@dqbd/tiktoken": "^1.0.21",
-        "@e2b/code-interpreter": "^0.0.5",
+        "@e2b/code-interpreter": "^1.5.1",
         "@elastic/elasticsearch": "^8.9.0",
         "@flowiseai/nodevm": "^3.9.25",
         "@getzep/zep-cloud": "~1.0.7",

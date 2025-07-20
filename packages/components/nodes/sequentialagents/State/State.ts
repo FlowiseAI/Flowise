@@ -1,13 +1,16 @@
 import { START } from '@langchain/langgraph'
-import { NodeVM } from '@flowiseai/nodevm'
 import { DataSource } from 'typeorm'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeParams, ISeqAgentNode } from '../../../src/Interface'
-import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../../src/utils'
+import { getVars, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
 
 const defaultFunc = `{
     aggregate: {
         value: (x, y) => x.concat(y), // here we append the new message to the existing messages
         default: () => []
+    },
+    replacedValue: {
+        value: (x, y) => y ?? x,
+        default: () => null
     }
 }`
 
@@ -198,37 +201,13 @@ class State_SeqAgents implements INode {
                 input
             }
 
-            let sandbox: any = {
-                util: undefined,
-                Symbol: undefined,
-                child_process: undefined,
-                fs: undefined,
-                process: undefined
-            }
-            sandbox['$vars'] = prepareSandboxVars(variables)
-            sandbox['$flow'] = flow
+            const sandbox = createCodeExecutionSandbox('', variables, flow)
 
-            const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-                ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-                : defaultAllowBuiltInDep
-            const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-            const deps = availableDependencies.concat(externalDeps)
-
-            const nodeVMOptions = {
-                console: 'inherit',
-                sandbox,
-                require: {
-                    external: { modules: deps },
-                    builtin: builtinDeps
-                },
-                eval: false,
-                wasm: false,
-                timeout: 10000
-            } as any
-
-            const vm = new NodeVM(nodeVMOptions)
             try {
-                const response = await vm.run(`module.exports = async function() {return ${stateMemoryCode}}()`, __dirname)
+                const response = await executeJavaScriptCode(`return ${stateMemoryCode}`, sandbox, {
+                    timeout: 10000
+                })
+
                 if (typeof response !== 'object') throw new Error('State must be an object')
                 const returnOutput: ISeqAgentNode = {
                     id: nodeData.id,
