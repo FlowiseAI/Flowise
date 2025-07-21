@@ -31,6 +31,9 @@ COPY . .
 
 RUN pnpm install
 
+# Install Playwright browsers dependencies
+RUN npx playwright install --with-deps
+
 RUN pnpm build
 
 EXPOSE 3000
