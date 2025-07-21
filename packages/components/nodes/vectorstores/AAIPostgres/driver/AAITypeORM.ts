@@ -79,7 +79,7 @@ export class AAITypeORMDriver extends AAIVectorStoreDriver {
    - Run: CREATE EXTENSION IF NOT EXISTS vector;
 
 3. **Use the provided helper script**
-   - From project root: node install_pgvector_extension.js
+   - From project root: node packages/components/nodes/vectorstores/AAIPostgres/scripts/install_pgvector_extension.js
 
 4. **Verify installation**
    - Run: SELECT * FROM pg_extension WHERE extname = 'vector';
@@ -123,7 +123,7 @@ export class AAITypeORMDriver extends AAIVectorStoreDriver {
    - Run: CREATE EXTENSION IF NOT EXISTS vector;
 
 3. **Use the provided helper script**
-   - From project root: node install_pgvector_extension.js
+   - From project root: node packages/components/nodes/vectorstores/AAIPostgres/scripts/install_pgvector_extension.js
 
 4. **Verify installation**
    - Run: SELECT * FROM pg_extension WHERE extname = 'vector';

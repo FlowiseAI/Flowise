@@ -101,7 +101,7 @@ async function checkPgvectorStatus() {
             if (availableCheck.rows.length > 0) {
                 console.log('💡 Extension is available but needs to be enabled')
                 console.log('   Run: CREATE EXTENSION IF NOT EXISTS vector;')
-                console.log('   Or use: node install_pgvector_extension.js')
+                console.log('   Or use: node packages/components/nodes/vectorstores/AAIPostgres/scripts/install_pgvector_extension.js')
             }
         } else {
             console.log('✅ pgvector extension is installed')
@@ -188,7 +188,7 @@ async function checkPgvectorStatus() {
         } else if (availableCheck.rows.length > 0 && installedCheck.rows.length === 0) {
             console.log('')
             console.log('🔧 pgvector is available but not enabled.')
-            console.log('💡 Run: node install_pgvector_extension.js')
+            console.log('💡 Run: node packages/components/nodes/vectorstores/AAIPostgres/scripts/install_pgvector_extension.js')
         } else {
             console.log('')
             console.log('❌ pgvector needs to be installed on your PostgreSQL server.')

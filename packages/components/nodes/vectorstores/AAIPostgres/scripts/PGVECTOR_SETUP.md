@@ -10,7 +10,7 @@ If you're seeing the error `extension "vector" is not available`, you need to in
 
 ```bash
 # From your project root directory
-node install_pgvector_extension.js
+node packages/components/nodes/vectorstores/AAIPostgres/scripts/install_pgvector_extension.js
 ```
 
 ### Option 2: Manual Installation
@@ -148,7 +148,7 @@ SELECT extname, extversion FROM pg_extension WHERE extname = 'vector';
 
 ```bash
 # From your project root
-node install_pgvector_extension.js
+node packages/components/nodes/vectorstores/AAIPostgres/scripts/install_pgvector_extension.js
 ```
 
 ### Method 3: Using SQL Client
@@ -327,7 +327,7 @@ After successfully installing pgvector:
 If you're still having problems:
 
 1. **Check the AAI Postgres node error messages** - they now provide detailed installation instructions
-2. **Run our diagnostic script**: `node install_pgvector_extension.js`
+2. **Run our diagnostic script**: `node packages/components/nodes/vectorstores/AAIPostgres/scripts/install_pgvector_extension.js`
 3. **Check PostgreSQL logs** for more detailed error messages
 4. **Ensure your database user has CREATE privileges**
 
