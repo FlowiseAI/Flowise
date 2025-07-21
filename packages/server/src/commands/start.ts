@@ -5,7 +5,7 @@ import { BaseCommand } from './base'
 
 export default class Start extends BaseCommand {
     async run(): Promise<void> {
-        logger.info('Starting Flowise...')
+        logger.info('Starting UAE10X...')
         await DataSource.init()
         await Server.start()
     }
@@ -20,11 +20,11 @@ export default class Start extends BaseCommand {
 
     async stopProcess() {
         try {
-            logger.info(`Shutting down Flowise...`)
+            logger.info(`Shutting down UAE10X...`)
             const serverApp = Server.getInstance()
             if (serverApp) await serverApp.stopApp()
         } catch (error) {
-            logger.error('There was an error shutting down Flowise...', error)
+            logger.error('There was an error shutting down UAE10X...', error)
             await this.failExit()
         }
 
