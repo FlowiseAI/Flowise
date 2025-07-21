@@ -1,7 +1,7 @@
-import { VertexAIEmbeddings, GoogleVertexAIEmbeddingsInput } from '@langchain/google-vertexai'
+import { GoogleVertexAIEmbeddingsInput, VertexAIEmbeddings } from '@langchain/google-vertexai'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
+import { MODEL_TYPE, getModels, getRegions } from '../../../src/modelLoader'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string
@@ -18,7 +18,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'GoogleVertexAI Embeddings'
         this.name = 'googlevertexaiEmbeddings'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'GoogleVertexAIEmbeddings'
         this.icon = 'GoogleVertex.svg'
         this.category = 'Embeddings'
@@ -39,7 +39,15 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'textembedding-gecko@001'
+                default: 'text-embedding-004'
+            },
+            {
+                label: 'Region',
+                description: 'Region to use for the model.',
+                name: 'region',
+                type: 'asyncOptions',
+                loadMethod: 'listRegions',
+                optional: true
             }
         ]
     }
@@ -48,12 +56,16 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     loadMethods = {
         async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.EMBEDDING, 'googlevertexaiEmbeddings')
+        },
+        async listRegions(): Promise<INodeOptionsValue[]> {
+            return await getRegions(MODEL_TYPE.EMBEDDING, 'googlevertexaiEmbeddings')
         }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const modelName = nodeData.inputs?.modelName as string
+        const region = nodeData.inputs?.region as string
         const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
         const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
         const projectID = getCredentialParam('projectID', credentialData, nodeData)
@@ -78,6 +90,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
             model: modelName
         }
         if (Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
+        if (region) obj.location = region
 
         const model = new VertexAIEmbeddings(obj)
         return model
