@@ -5,21 +5,21 @@ import { MODE } from './Interface'
 import { LICENSE_QUOTAS } from './utils/constants'
 import { StripeManager } from './StripeManager'
 
-const DISABLED_QUOTAS = {
+const getDisabledQuotas = () => ({
     [LICENSE_QUOTAS.PREDICTIONS_LIMIT]: 0,
     [LICENSE_QUOTAS.STORAGE_LIMIT]: 0, // in MB
     [LICENSE_QUOTAS.FLOWS_LIMIT]: 0,
     [LICENSE_QUOTAS.USERS_LIMIT]: 0,
     [LICENSE_QUOTAS.ADDITIONAL_SEATS_LIMIT]: 0
-}
+})
 
-const UNLIMITED_QUOTAS = {
+const getUnlimitedQuotas = () => ({
     [LICENSE_QUOTAS.PREDICTIONS_LIMIT]: -1,
     [LICENSE_QUOTAS.STORAGE_LIMIT]: -1,
     [LICENSE_QUOTAS.FLOWS_LIMIT]: -1,
     [LICENSE_QUOTAS.USERS_LIMIT]: -1,
     [LICENSE_QUOTAS.ADDITIONAL_SEATS_LIMIT]: -1
-}
+})
 
 export class UsageCacheManager {
     private cache: Cache
@@ -67,7 +67,7 @@ export class UsageCacheManager {
     public async getSubscriptionDetails(subscriptionId: string, withoutCache: boolean = false): Promise<Record<string, any>> {
         const stripeManager = await StripeManager.getInstance()
         if (!stripeManager || !subscriptionId) {
-            return UNLIMITED_QUOTAS
+            return getUnlimitedQuotas()
         }
 
         // Skip cache if withoutCache is true
@@ -90,7 +90,7 @@ export class UsageCacheManager {
     public async getQuotas(subscriptionId: string, withoutCache: boolean = false): Promise<Record<string, number>> {
         const stripeManager = await StripeManager.getInstance()
         if (!stripeManager || !subscriptionId) {
-            return UNLIMITED_QUOTAS
+            return getUnlimitedQuotas()
         }
 
         // Skip cache if withoutCache is true
@@ -105,7 +105,7 @@ export class UsageCacheManager {
         const subscription = await stripeManager.getStripe().subscriptions.retrieve(subscriptionId)
         const items = subscription.items.data
         if (items.length === 0) {
-            return DISABLED_QUOTAS
+            return getDisabledQuotas()
         }
 
         const productId = items[0].price.product as string
@@ -113,7 +113,7 @@ export class UsageCacheManager {
         const productMetadata = product.metadata
 
         if (!productMetadata || Object.keys(productMetadata).length === 0) {
-            return DISABLED_QUOTAS
+            return getDisabledQuotas()
         }
 
         const quotas: Record<string, number> = {}

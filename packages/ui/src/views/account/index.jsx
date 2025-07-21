@@ -57,6 +57,14 @@ const calculatePercentage = (count, total) => {
     return Math.min((count / total) * 100, 100)
 }
 
+const calculateTotalCredits = (grants) => {
+    if (!grants || !Array.isArray(grants)) return 0
+    return grants.reduce((total, grant) => {
+        const grantValue = grant?.amount?.monetary?.value || 0
+        return total + grantValue
+    }, 0)
+}
+
 const AccountSettings = () => {
     const theme = useTheme()
     const dispatch = useDispatch()
@@ -89,6 +97,10 @@ const AccountSettings = () => {
     const [occupiedSeats, setOccupiedSeats] = useState(0)
     const [totalSeats, setTotalSeats] = useState(0)
     const [creditsBalance, setCreditsBalance] = useState(null)
+
+    const totalCredits = useMemo(() => {
+        return creditsBalance ? calculateTotalCredits(creditsBalance.grants) : 0
+    }, [creditsBalance])
     const [creditsPackages, setCreditsPackages] = useState([])
     const [usageWithCredits, setUsageWithCredits] = useState(null)
     const [openCreditsDialog, setOpenCreditsDialog] = useState(false)
@@ -837,11 +849,7 @@ const AccountSettings = () => {
                                         <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
                                             <Typography variant='body2'>Available Credits:</Typography>
                                             <Typography sx={{ ml: 1, color: theme.palette.success.dark }} variant='h3'>
-                                                {getCreditsBalanceApi.loading ? (
-                                                    <CircularProgress size={16} />
-                                                ) : (
-                                                    creditsBalance?.balance || 0
-                                                )}
+                                                {getCreditsBalanceApi.loading ? <CircularProgress size={16} /> : totalCredits || 0}
                                             </Typography>
                                         </Stack>
                                         {usageWithCredits && (
@@ -1633,7 +1641,7 @@ const AccountSettings = () => {
                                 Current Balance
                             </Typography>
                             <Typography variant='h4' color='success.main'>
-                                {creditsBalance?.balance || 0} Credits
+                                {totalCredits || 0} Credits
                             </Typography>
                         </Box>
 

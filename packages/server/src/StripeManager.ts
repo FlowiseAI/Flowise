@@ -5,6 +5,7 @@ import { UserPlan } from './Interface'
 import { GeneralErrorMessage, LICENSE_QUOTAS } from './utils/constants'
 import { InternalFlowiseError } from './errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import logger from './utils/logger'
 
 export class StripeManager {
     private static instance: StripeManager
@@ -826,7 +827,10 @@ export class StripeManager {
             const creditBalance = await this.stripe!.billing.creditBalanceSummary.retrieve({
                 customer: customerId,
                 filter: {
-                    type: 'monetary' as any
+                    type: 'applicability_scope',
+                    applicability_scope: {
+                        price_type: 'metered'
+                    }
                 }
             })
 
@@ -849,6 +853,10 @@ export class StripeManager {
     }
 
     public async purchaseCredits(subscriptionId: string, packageType: string): Promise<Record<string, any>> {
+        if (!this.stripe) {
+            throw new Error('Stripe is not initialized')
+        }
+
         try {
             if (!process.env.CREDIT_PRODUCT_ID) {
                 throw new Error('CREDIT_PRODUCT_ID environment variable is required')
@@ -860,7 +868,7 @@ export class StripeManager {
                 throw new Error('Subscription ID and package type are required')
             }
 
-            const subscription = await this.stripe!.subscriptions.retrieve(subscriptionId)
+            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
             const customerId = subscription.customer as string
 
             if (!customerId) {
@@ -869,28 +877,40 @@ export class StripeManager {
 
             // Get credit packages
             const packages = await this.getCreditsPackages()
+            logger.info(`Retrieved credit packages: ${JSON.stringify(packages)}`)
             const selectedPackage = packages.find((pkg: any) => pkg.id === packageType)
+            logger.info(`Selected credit packages: ${JSON.stringify(selectedPackage)}`)
 
             if (!selectedPackage) {
                 throw new Error(`No active price found for ${packageType} package`)
             }
 
             // Create invoice for credit purchase
-            const invoiceItem = await this.stripe!.invoiceItems.create({
-                customer: customerId,
-                amount: selectedPackage.price,
-                currency: 'usd',
-                description: `${selectedPackage.credits} Credits Package`
-            })
-
-            const invoice = await this.stripe!.invoices.create({
+            const invoice = await this.stripe.invoices.create({
                 customer: customerId,
                 auto_advance: true,
                 collection_method: 'charge_automatically'
             })
 
-            const finalizedInvoice = await this.stripe!.invoices.finalizeInvoice(invoice.id!)
-            const paidInvoice = await this.stripe!.invoices.pay(finalizedInvoice.id!)
+            if (!invoice.id) {
+                throw new Error('Invoice creation failed')
+            }
+
+            await this.stripe.invoiceItems.create({
+                customer: customerId,
+                amount: selectedPackage.price,
+                invoice: invoice.id,
+                currency: 'usd',
+                description: `${selectedPackage.credits} Credits Package`
+            })
+
+            const finalizedInvoice = await this.stripe.invoices.finalizeInvoice(invoice.id)
+
+            if (!finalizedInvoice.id) {
+                throw new Error('Failed to finalize invoice')
+            }
+
+            const paidInvoice = await this.stripe.invoices.pay(finalizedInvoice.id)
 
             if (paidInvoice.status !== 'paid') {
                 throw new Error('Payment failed')
@@ -899,8 +919,11 @@ export class StripeManager {
             // Add metered subscription item if it doesn't exist
             const meteredItemResult = await this.addMeteredSubscriptionItem(subscriptionId)
 
+            // Get price
+            const price = await this.stripe.prices.retrieve(process.env.METERED_PRICE_ID!)
+
             // Create credit grant
-            const creditGrant = await this.stripe!.billing.creditGrants.create({
+            const creditGrant = await this.stripe.billing.creditGrants.create({
                 customer: customerId,
                 amount: {
                     type: 'monetary' as any,
@@ -911,8 +934,7 @@ export class StripeManager {
                 },
                 applicability_config: {
                     scope: {
-                        price_type: 'metered',
-                        prices: [process.env.METERED_PRICE_ID!]
+                        prices: [{ id: price.id }]
                     }
                 } as any,
                 category: 'paid',
@@ -951,7 +973,10 @@ export class StripeManager {
             const creditBalance = await this.stripe!.billing.creditBalanceSummary.retrieve({
                 customer: customerId,
                 filter: {
-                    type: 'monetary' as any
+                    type: 'applicability_scope',
+                    applicability_scope: {
+                        price_type: 'metered'
+                    }
                 }
             })
 
@@ -1063,6 +1088,10 @@ export class StripeManager {
     }
 
     public async addMeteredSubscriptionItem(subscriptionId: string): Promise<{ added: boolean; message: string }> {
+        if (!this.stripe) {
+            throw new Error('Stripe is not initialized')
+        }
+
         try {
             if (!process.env.METERED_PRICE_ID) {
                 throw new Error('METERED_PRICE_ID environment variable is required')
@@ -1071,7 +1100,7 @@ export class StripeManager {
                 throw new Error('Subscription ID is required')
             }
 
-            const subscription = await this.stripe!.subscriptions.retrieve(subscriptionId)
+            const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
 
             // Check if metered item already exists
             const existingMeteredItem = subscription.items.data.find((item) => item.price.id === process.env.METERED_PRICE_ID)
@@ -1084,10 +1113,9 @@ export class StripeManager {
             }
 
             // Add metered subscription item
-            await this.stripe!.subscriptionItems.create({
+            await this.stripe.subscriptionItems.create({
                 subscription: subscriptionId,
-                price: process.env.METERED_PRICE_ID!,
-                quantity: 0
+                price: process.env.METERED_PRICE_ID!
             })
 
             return {
