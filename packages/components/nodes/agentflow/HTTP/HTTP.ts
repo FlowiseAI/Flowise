@@ -233,14 +233,21 @@ class HTTP_Agentflow implements INode {
     }
 
     private isDeniedIP(ip: string, denyList: string[]): void {
+        const parsedIp = ipaddr.parse(ip)
         for (const entry of denyList) {
             if (entry.includes('/')) {
                 try {
-                    if (ipaddr.parse(ip).match(ipaddr.parseCIDR(entry))) throw new Error(`IP given is in deny list: ${ip}`)
+                    const [range, _] = entry.split('/')
+                    const parsedRange = ipaddr.parse(range)
+                    if (parsedIp.kind() === parsedRange.kind()) {
+                        if (parsedIp.match(ipaddr.parseCIDR(entry))) {
+                            throw new Error('Access to this host is denied by policy.')
+                        }
+                    }
                 } catch (error) {
                     throw new Error(`isDeniedIP: ${error}`)
                 }
-            } else if (ip === entry) throw new Error(`IP given is in deny list: ${ip}`)
+            } else if (ip === entry) throw new Error('Access to this host is denied by policy.')
         }
     }
 
@@ -252,8 +259,6 @@ class HTTP_Agentflow implements INode {
         const urlObj = new URL(url)
 
         const hostname = urlObj.hostname
-
-        if (httpDenyList.includes(hostname)) throw new Error(`Hostname given is in deny list: ${hostname}`)
 
         if (ipaddr.isValid(hostname)) {
             this.isDeniedIP(hostname, httpDenyList)
