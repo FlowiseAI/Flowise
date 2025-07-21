@@ -98,6 +98,7 @@
         "graphql": "^16.6.0",
         "html-to-text": "^9.0.5",
         "ioredis": "^5.3.2",
+        "ipaddr.js": "^2.2.0",
         "jsdom": "^22.1.0",
         "jsonpointer": "^5.0.1",
         "jsonrepair": "^3.11.1",
