@@ -62,7 +62,7 @@ import agentflowv2GeneratorRouter from './agentflowv2-generator'
 const router = express.Router()
 
 router.use('/', googleAuthRouter)
-router.use('/', salesforceAuthRouter)
+router.use('/salesforce-auth', salesforceAuthRouter)
 router.use('/ping', pingRouter)
 router.use('/apikey', apikeyRouter)
 router.use('/auth', express.Router()) // Auth routes handled by middleware
