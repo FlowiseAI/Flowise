@@ -170,7 +170,7 @@ export const defaultThemeConfig = {
         footer: {
             textColor: '#303235',
             text: 'Powered by',
-            company: 'Flowise',
+            company: 'UAE10X',
             companyLink: 'https://flowiseai.com'
         }
     }
