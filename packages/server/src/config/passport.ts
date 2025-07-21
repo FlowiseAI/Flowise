@@ -44,7 +44,7 @@ export default function (passport: any) {
                     tokenURL: `${process.env.SALESFORCE_INSTANCE_URL}/services/oauth2/token`,
                     clientID: process.env.SALESFORCE_CLIENT_ID,
                     clientSecret: process.env.SALESFORCE_CLIENT_SECRET,
-                    callbackURL: `${process.env.API_BASE_URL}/salesforce-auth/callback`,
+                    callbackURL: `${process.env.API_HOST}/api/vi/salesforce-auth/callback`,
                     scope: 'api refresh_token',
                     passReqToCallback: true,
                     pkce: true,
