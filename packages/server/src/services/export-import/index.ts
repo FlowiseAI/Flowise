@@ -269,11 +269,21 @@ async function replaceDuplicateIdsForChatMessage(
         })
         if (records.length < 0) return originalData
 
-        // replace duplicate ids found in db to new id
+        // Replace duplicate ChatMessage ids found in db with new ids,
+        // and update corresponding messageId references in ChatMessageFeedback
+        const idMap: { [key: string]: string } = {}
         const dbExistingIds = new Set(records.map((record) => record.id))
         originalData.ChatMessage = originalData.ChatMessage.map((item) => {
             if (dbExistingIds.has(item.id)) {
-                return { ...item, id: uuidv4() }
+                const newId = uuidv4()
+                idMap[item.id] = newId
+                return { ...item, id: newId }
+            }
+            return item
+        })
+        originalData.ChatMessageFeedback = originalData.ChatMessageFeedback.map((item) => {
+            if (idMap[item.messageId]) {
+                return { ...item, messageId: idMap[item.messageId] }
             }
             return item
         })
@@ -408,12 +418,28 @@ async function replaceDuplicateIdsForChatMessageFeedback(
         const records = await queryRunner.manager.find(ChatMessageFeedback, {
             where: { id: In(ids) }
         })
+
+        // remove duplicate messageId
+        const seenMessageIds = new Set()
+        originalData.ChatMessageFeedback = originalData.ChatMessageFeedback.filter((feedback) => {
+            if (seenMessageIds.has(feedback.messageId)) {
+                return false
+            }
+            seenMessageIds.add(feedback.messageId)
+            return true
+        })
+
         if (records.length < 0) return originalData
-        for (let record of records) {
-            const oldId = record.id
-            const newId = uuidv4()
-            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
-        }
+
+        // replace duplicate ids found in db to new id
+        const dbExistingIds = new Set(records.map((record) => record.id))
+        originalData.ChatMessageFeedback = originalData.ChatMessageFeedback.map((item) => {
+            if (dbExistingIds.has(item.id)) {
+                const newId = uuidv4()
+                return { ...item, id: newId }
+            }
+            return item
+        })
         return originalData
     } catch (error) {
         throw new InternalFlowiseError(
