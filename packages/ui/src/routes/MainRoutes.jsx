@@ -304,7 +304,7 @@ const MainRoutes = {
         {
             path: '/branding',
             element: (
-                <RequireAuth>
+                <RequireAuth permission={'variables:view'}>
                     <Branding />
                 </RequireAuth>
             )
