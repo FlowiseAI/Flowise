@@ -291,7 +291,8 @@ const dashboard = {
                     type: 'item',
                     url: '/branding',
                     icon: icons.IconSettings,
-                    breadcrumbs: true
+                    breadcrumbs: true,
+                    permission: 'variables:view'
                 }
             ]
         }
