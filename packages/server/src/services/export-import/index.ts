@@ -408,6 +408,17 @@ async function replaceDuplicateIdsForChatMessageFeedback(
         const records = await queryRunner.manager.find(ChatMessageFeedback, {
             where: { id: In(ids) }
         })
+
+        // remove duplicate messageId
+        const seenMessageIds = new Set()
+        originalData.ChatMessageFeedback = originalData.ChatMessageFeedback.filter((feedback) => {
+            if (seenMessageIds.has(feedback.messageId)) {
+                return false
+            }
+            seenMessageIds.add(feedback.messageId)
+            return true
+        })
+
         if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
