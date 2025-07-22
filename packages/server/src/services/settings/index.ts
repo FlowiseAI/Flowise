@@ -9,11 +9,23 @@ const getSettings = async () => {
         const appServer = getRunningExpressApp()
         const platformType = appServer.identityManager.getPlatformType()
 
-        const brandingLogo = await appServer.AppDataSource.getRepository(Variable).findOne({
+        const variableRepo = appServer.AppDataSource.getRepository(Variable)
+
+        const brandingLogo = await variableRepo.findOne({
             where: { name: 'BRANDING_LOGO' }
         })
+        const brandingFooterText = await variableRepo.findOne({
+            where: { name: 'BRANDING_FOOTER_TEXT' }
+        })
+        const brandingFooterLink = await variableRepo.findOne({
+            where: { name: 'BRANDING_FOOTER_LINK' }
+        })
 
-        const baseSettings = { BRANDING_LOGO: brandingLogo?.value }
+        const baseSettings = {
+            BRANDING_LOGO: brandingLogo?.value,
+            BRANDING_FOOTER_TEXT: brandingFooterText?.value,
+            BRANDING_FOOTER_LINK: brandingFooterLink?.value
+        }
 
         switch (platformType) {
             case Platform.ENTERPRISE: {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 
-import { Button, Box, Typography } from '@mui/material'
+import { Button, Box, Typography, OutlinedInput } from '@mui/material'
 
 import MainCard from '@/ui-component/cards/MainCard'
 import ViewHeader from '@/layout/MainLayout/ViewHeader'
@@ -22,6 +22,10 @@ const Branding = () => {
 
     const [logo, setLogo] = useState('')
     const [brandingVar, setBrandingVar] = useState(null)
+    const [footerText, setFooterText] = useState('')
+    const [footerLink, setFooterLink] = useState('')
+    const [brandingFooterTextVar, setBrandingFooterTextVar] = useState(null)
+    const [brandingFooterLinkVar, setBrandingFooterLinkVar] = useState(null)
 
     const getAllVariablesApi = useApi(variablesApi.getAllVariables)
 
@@ -33,10 +37,20 @@ const Branding = () => {
     useEffect(() => {
         if (getAllVariablesApi.data) {
             const variables = Array.isArray(getAllVariablesApi.data) ? getAllVariablesApi.data : getAllVariablesApi.data.data
-            const found = variables?.find((v) => v.name === 'BRANDING_LOGO')
-            if (found) {
-                setBrandingVar(found)
-                setLogo(found.value)
+            const foundLogo = variables?.find((v) => v.name === 'BRANDING_LOGO')
+            if (foundLogo) {
+                setBrandingVar(foundLogo)
+                setLogo(foundLogo.value)
+            }
+            const foundFooterText = variables?.find((v) => v.name === 'BRANDING_FOOTER_TEXT')
+            if (foundFooterText) {
+                setBrandingFooterTextVar(foundFooterText)
+                setFooterText(foundFooterText.value)
+            }
+            const foundFooterLink = variables?.find((v) => v.name === 'BRANDING_FOOTER_LINK')
+            if (foundFooterLink) {
+                setBrandingFooterLinkVar(foundFooterLink)
+                setFooterLink(foundFooterLink.value)
             }
         }
     }, [getAllVariablesApi.data])
@@ -54,11 +68,25 @@ const Branding = () => {
 
     const saveBranding = async () => {
         try {
-            const obj = { name: 'BRANDING_LOGO', value: logo, type: 'static' }
+            const logoObj = { name: 'BRANDING_LOGO', value: logo, type: 'static' }
             if (brandingVar) {
-                await variablesApi.updateVariable(brandingVar.id, obj)
-            } else {
-                await variablesApi.createVariable(obj)
+                await variablesApi.updateVariable(brandingVar.id, logoObj)
+            } else if (logo) {
+                await variablesApi.createVariable(logoObj)
+            }
+
+            const footerTextObj = { name: 'BRANDING_FOOTER_TEXT', value: footerText, type: 'static' }
+            if (brandingFooterTextVar) {
+                await variablesApi.updateVariable(brandingFooterTextVar.id, footerTextObj)
+            } else if (footerText) {
+                await variablesApi.createVariable(footerTextObj)
+            }
+
+            const footerLinkObj = { name: 'BRANDING_FOOTER_LINK', value: footerLink, type: 'static' }
+            if (brandingFooterLinkVar) {
+                await variablesApi.updateVariable(brandingFooterLinkVar.id, footerLinkObj)
+            } else if (footerLink) {
+                await variablesApi.createVariable(footerLinkObj)
             }
             enqueueSnackbar({
                 message: 'Branding saved',
@@ -100,7 +128,17 @@ const Branding = () => {
                         <img src={logo} alt='branding logo' style={{ height: 60, marginTop: 8 }} />
                     </Box>
                 )}
-                <Button variant='contained' sx={{ width: 'fit-content' }} onClick={saveBranding} disabled={!logo}>
+                <OutlinedInput
+                    placeholder='Footer Text'
+                    value={footerText}
+                    onChange={(e) => setFooterText(e.target.value)}
+                />
+                <OutlinedInput
+                    placeholder='Footer Link'
+                    value={footerLink}
+                    onChange={(e) => setFooterLink(e.target.value)}
+                />
+                <Button variant='contained' sx={{ width: 'fit-content' }} onClick={saveBranding} disabled={!logo && !footerText && !footerLink}>
                     Save
                 </Button>
             </Box>
