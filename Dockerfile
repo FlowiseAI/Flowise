@@ -61,7 +61,7 @@ RUN --mount=type=cache,target=/app/node_modules/.cache pnpm run build --filter f
 
 FROM base AS runner
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 COPY --from=build /app .
 

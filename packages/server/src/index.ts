@@ -150,6 +150,7 @@ export class App {
             saveUninitialized: false,
             cookie: {
                 secure: process.env.NODE_ENV === 'production',
+                domain: '.theanswer.ai',
                 maxAge: 60 * 60 * 1000 // 1 hour to match Google token expiry
             }
         }
