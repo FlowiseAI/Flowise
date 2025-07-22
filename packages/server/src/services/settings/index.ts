@@ -2,25 +2,32 @@
 
 import { Platform } from '../../Interface'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { Variable } from '../../database/entities/Variable'
 
 const getSettings = async () => {
     try {
         const appServer = getRunningExpressApp()
         const platformType = appServer.identityManager.getPlatformType()
 
+        const brandingLogo = await appServer.AppDataSource.getRepository(Variable).findOne({
+            where: { name: 'BRANDING_LOGO' }
+        })
+
+        const baseSettings = { BRANDING_LOGO: brandingLogo?.value }
+
         switch (platformType) {
             case Platform.ENTERPRISE: {
                 if (!appServer.identityManager.isLicenseValid()) {
                     return {}
                 } else {
-                    return { PLATFORM_TYPE: Platform.ENTERPRISE }
+                    return { ...baseSettings, PLATFORM_TYPE: Platform.ENTERPRISE }
                 }
             }
             case Platform.CLOUD: {
-                return { PLATFORM_TYPE: Platform.CLOUD }
+                return { ...baseSettings, PLATFORM_TYPE: Platform.CLOUD }
             }
             default: {
-                return { PLATFORM_TYPE: Platform.OPEN_SOURCE }
+                return { ...baseSettings, PLATFORM_TYPE: Platform.OPEN_SOURCE }
             }
         }
     } catch (error) {

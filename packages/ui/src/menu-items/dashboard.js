@@ -284,6 +284,15 @@ const dashboard = {
                     icon: icons.IconSettings,
                     breadcrumbs: true,
                     display: 'feat:account'
+                },
+                {
+                    id: 'branding',
+                    title: 'Branding',
+                    type: 'item',
+                    url: '/branding',
+                    icon: icons.IconSettings,
+                    breadcrumbs: true,
+                    display: 'feat:account'
                 }
             ]
         }

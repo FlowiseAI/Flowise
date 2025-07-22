@@ -50,6 +50,7 @@ const Evaluators = Loadable(lazy(() => import('@/views/evaluators')))
 
 // account routing
 const Account = Loadable(lazy(() => import('@/views/account')))
+const Branding = Loadable(lazy(() => import('@/views/branding')))
 const UserProfile = Loadable(lazy(() => import('@/views/account/UserProfile')))
 
 // files routing
@@ -297,6 +298,14 @@ const MainRoutes = {
             element: (
                 <RequireAuth display={'feat:account'}>
                     <Account />
+                </RequireAuth>
+            )
+        },
+        {
+            path: '/branding',
+            element: (
+                <RequireAuth display={'feat:account'}>
+                    <Branding />
                 </RequireAuth>
             )
         },
