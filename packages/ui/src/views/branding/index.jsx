@@ -32,7 +32,8 @@ const Branding = () => {
 
     useEffect(() => {
         if (getAllVariablesApi.data) {
-            const found = getAllVariablesApi.data.data.find((v) => v.name === 'BRANDING_LOGO')
+            const variables = Array.isArray(getAllVariablesApi.data) ? getAllVariablesApi.data : getAllVariablesApi.data.data
+            const found = variables?.find((v) => v.name === 'BRANDING_LOGO')
             if (found) {
                 setBrandingVar(found)
                 setLogo(found.value)
