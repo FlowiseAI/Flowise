@@ -304,7 +304,7 @@ const MainRoutes = {
         {
             path: '/branding',
             element: (
-                <RequireAuth display={'feat:account'}>
+                <RequireAuth>
                     <Branding />
                 </RequireAuth>
             )
