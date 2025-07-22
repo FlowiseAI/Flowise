@@ -6,6 +6,7 @@ import chatflowsApi from '@/api/chatflows'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useConfig } from '@/store/context/ConfigContext'
 
 // MUI
 import { Box, Card, Stack, Typography, useTheme } from '@mui/material'
@@ -21,6 +22,7 @@ const ChatbotFull = () => {
     const URLpath = document.location.pathname.toString().split('/')
     const chatflowId = URLpath[URLpath.length - 1] === 'chatbot' ? '' : URLpath[URLpath.length - 1]
     const theme = useTheme()
+    const { config } = useConfig()
 
     const [chatflow, setChatflow] = useState(null)
     const [chatbotTheme, setChatbotTheme] = useState({})
@@ -50,6 +52,12 @@ const ChatbotFull = () => {
 
                 try {
                     parsedConfig = { ...parsedConfig, ...JSON.parse(chatflowData.chatbotConfig) }
+                    if (!parsedConfig.poweredByText && config?.BRANDING_FOOTER_TEXT) {
+                        parsedConfig.poweredByText = config.BRANDING_FOOTER_TEXT
+                    }
+                    if (!parsedConfig.poweredByLink && config?.BRANDING_FOOTER_LINK) {
+                        parsedConfig.poweredByLink = config.BRANDING_FOOTER_LINK
+                    }
                     setChatbotTheme(parsedConfig)
                     if (parsedConfig.overrideConfig) {
                         setChatbotOverrideConfig(parsedConfig.overrideConfig)
@@ -60,14 +68,23 @@ const ChatbotFull = () => {
                     }
                 } catch (e) {
                     console.error(e)
+                    if (!parsedConfig.poweredByText && config?.BRANDING_FOOTER_TEXT) {
+                        parsedConfig.poweredByText = config.BRANDING_FOOTER_TEXT
+                    }
+                    if (!parsedConfig.poweredByLink && config?.BRANDING_FOOTER_LINK) {
+                        parsedConfig.poweredByLink = config.BRANDING_FOOTER_LINK
+                    }
                     setChatbotTheme(parsedConfig)
                     setChatbotOverrideConfig({})
                 }
             } else if (chatflowType === 'MULTIAGENT' || chatflowType === 'AGENTFLOW') {
-                setChatbotTheme({ showAgentMessages: true })
+                const baseTheme = { showAgentMessages: true }
+                if (config?.BRANDING_FOOTER_TEXT) baseTheme.poweredByText = config.BRANDING_FOOTER_TEXT
+                if (config?.BRANDING_FOOTER_LINK) baseTheme.poweredByLink = config.BRANDING_FOOTER_LINK
+                setChatbotTheme(baseTheme)
             }
         }
-    }, [getSpecificChatflowFromPublicApi.data, getSpecificChatflowApi.data])
+    }, [getSpecificChatflowFromPublicApi.data, getSpecificChatflowApi.data, config])
 
     useEffect(() => {
         setLoading(getSpecificChatflowFromPublicApi.loading || getSpecificChatflowApi.loading)
