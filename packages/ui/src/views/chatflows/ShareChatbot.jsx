@@ -28,6 +28,8 @@ const defaultConfig = {
     backgroundColor: '#ffffff',
     fontSize: 16,
     poweredByTextColor: '#303235',
+    poweredByText: 'Powered by Flowise',
+    poweredByLink: 'https://flowiseai.com',
     titleBackgroundColor: '#3B81F6',
     titleTextColor: '#ffffff',
     botMessage: {
@@ -73,6 +75,8 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
     const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
     const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultConfig.fontSize)
     const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultConfig.poweredByTextColor)
+    const [poweredByText, setPoweredByText] = useState(chatbotConfig?.poweredByText ?? defaultConfig.poweredByText)
+    const [poweredByLink, setPoweredByLink] = useState(chatbotConfig?.poweredByLink ?? defaultConfig.poweredByLink)
 
     const getShowAgentMessagesStatus = () => {
         if (chatbotConfig?.showAgentMessages !== undefined) {
@@ -138,6 +142,8 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
         if (backgroundColor) obj.backgroundColor = backgroundColor
         if (fontSize) obj.fontSize = fontSize
         if (poweredByTextColor) obj.poweredByTextColor = poweredByTextColor
+        if (poweredByText) obj.poweredByText = poweredByText
+        if (poweredByLink) obj.poweredByLink = poweredByLink
 
         if (botMessageBackgroundColor) obj.botMessage.backgroundColor = botMessageBackgroundColor
         if (botMessageTextColor) obj.botMessage.textColor = botMessageTextColor
@@ -317,6 +323,12 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
             case 'fontSize':
                 setFontSize(value)
                 break
+            case 'poweredByText':
+                setPoweredByText(value)
+                break
+            case 'poweredByLink':
+                setPoweredByLink(value)
+                break
             case 'botMessageAvatarSrc':
                 setBotMessageAvatarSrc(value)
                 break
@@ -488,6 +500,8 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
                 {colorField(backgroundColor, 'backgroundColor', 'Background Color')}
                 {textField(fontSize, 'fontSize', 'Font Size', 'number')}
                 {colorField(poweredByTextColor, 'poweredByTextColor', 'PoweredBy TextColor')}
+                {textField(poweredByText, 'poweredByText', 'PoweredBy Text', 'string', 'Powered by Flowise')}
+                {textField(poweredByLink, 'poweredByLink', 'PoweredBy Link', 'string', 'https://flowiseai.com')}
                 {isAgentCanvas && booleanField(showAgentMessages, 'showAgentMessages', 'Show agent reasonings when using Agentflow')}
                 {booleanField(renderHTML, 'renderHTML', 'Render HTML on the chat')}
                 {isSessionMemory &&
