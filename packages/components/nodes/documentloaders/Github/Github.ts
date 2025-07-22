@@ -202,14 +202,10 @@ class Github_DocumentLoaders implements INode {
             const loaderId = options.loaderId as string
             const storeId = options.storeId as string
 
-            // If preview mode is enabled, limit the number of chunks processed
-            const previewLimit = options.preview ? 1 : Infinity;
-
             let seq = 0
             let totalChars = 0
 
-            for await (const fileDoc of (loader as any).loadAsStream()) {
-                // fileDoc.pageContent = handleEscapeCharacters(fileDoc.pageContent ?? '', false)
+            for await (const fileDoc of (loader as GithubRepoLoader).loadAsStream()) {
                 const doc = textSplitter ? await (textSplitter as TextSplitter).splitDocuments([fileDoc]) : [fileDoc]
                 if (options.preview) {
                     // As we are in preview mode, just return the data don't save
