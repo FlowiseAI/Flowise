@@ -203,10 +203,7 @@ class Github_DocumentLoaders implements INode {
             const storeId = options.storeId as string
 
             // If preview mode is enabled, limit the number of chunks processed
-            let previewLimit = Infinity
-            if (options.preview) {
-                previewLimit = 1
-            }
+            const previewLimit = options.preview ? 1 : Infinity;
 
             let seq = 0
             let totalChars = 0
