@@ -13,10 +13,6 @@ import { SnackbarProvider } from 'notistack'
 import ConfirmContextProvider from '@/store/context/ConfirmContextProvider'
 import { ReactFlowContext } from '@/store/context/ReactFlowContext'
 
-// import { CssBaseline, StyledEngineProvider } from '@mui/material'
-// import { ThemeProvider } from '@mui/material/styles'
-// import themes from '@/themes'
-
 // Create a new context
 export const Auth0Context = React.createContext({ isAuth0Ready: false })
 

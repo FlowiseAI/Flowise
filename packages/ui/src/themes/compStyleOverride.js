@@ -134,7 +134,7 @@ export default function componentStyleOverrides(theme) {
         MuiInputBase: {
             styleOverrides: {
                 input: {
-                    color: theme.textDark,
+                    // color: theme.textDark,
                     '&::placeholder': {
                         color: theme.darkTextSecondary,
                         fontSize: '0.875rem'

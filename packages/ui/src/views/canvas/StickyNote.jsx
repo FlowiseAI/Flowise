@@ -44,7 +44,9 @@ const StickyNote = ({ data }) => {
                 sx={{
                     padding: 0,
                     borderColor: getBorderColor(),
-                    backgroundColor: data.selected ? '#FFDC00' : '#FFE770'
+                    backgroundFilter: 'blur(10px)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.7)'
+                    // backgroundColor: data.selected ? '#FFDC00' : '#FFE770'
                 }}
                 border={false}
             >

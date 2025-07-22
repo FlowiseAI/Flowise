@@ -16,7 +16,9 @@ import {
     IconCheck,
     IconX,
     IconCode,
-    IconAdjustmentsHorizontal
+    IconAdjustmentsHorizontal,
+    IconCircleCheck,
+    IconAlertCircle
 } from '@tabler/icons-react'
 
 // project imports
@@ -35,6 +37,7 @@ import chatflowsApi from '@/api/chatflows'
 // Hooks
 import useApi from '@/hooks/useApi'
 import { useFlags } from 'flagsmith/react'
+import { useSidekickWithCredentials } from '@/hooks/useSidekickWithCredentials'
 
 // utils
 import { generateExportFlowData } from '@/utils/genericHelper'
@@ -75,6 +78,9 @@ const CanvasHeader = forwardRef(({ chatflow, isAgentCanvas, isAgentflowV2, handl
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
     const canvas = useSelector((state) => state.canvas)
+
+    // Get needsSetup status from chatflow
+    const { needsSetup } = useSidekickWithCredentials(chatflow?.id)
 
     // Expose triggerSaveDialog function to parent component
     useImperativeHandle(
@@ -460,6 +466,33 @@ const CanvasHeader = forwardRef(({ chatflow, isAgentCanvas, isAgentflowV2, handl
                             </Avatar>
                         </ButtonBase>
                     )}
+                    <ButtonBase
+                        title={needsSetup ? 'Configuration required - Missing credentials' : 'Sidekick is fully configured'}
+                        sx={{ borderRadius: '50%', mr: 2 }}
+                    >
+                        <Avatar
+                            variant='rounded'
+                            sx={{
+                                ...theme.typography.commonAvatar,
+                                ...theme.typography.mediumAvatar,
+                                transition: 'all .2s ease-in-out',
+                                background: needsSetup ? theme.palette.warning.light : theme.palette.success.light,
+                                color: needsSetup ? theme.palette.warning.main : theme.palette.success.main,
+                                '&:hover': {
+                                    background: needsSetup ? theme.palette.warning.main : theme.palette.success.main,
+                                    color: theme.palette.common.white
+                                }
+                            }}
+                            onClick={() => {
+                                const currentUrl = new URL(window.location.href)
+                                currentUrl.searchParams.set('QuickSetup', 'true')
+                                window.history.pushState({}, '', currentUrl.toString())
+                                window.dispatchEvent(new Event('popstate'))
+                            }}
+                        >
+                            {needsSetup ? <IconAlertCircle stroke={1.5} size='1.3rem' /> : <IconCircleCheck stroke={1.5} size='1.3rem' />}
+                        </Avatar>
+                    </ButtonBase>
                     <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
                         <Avatar
                             variant='rounded'

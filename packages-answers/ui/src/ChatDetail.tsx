@@ -1,32 +1,38 @@
 'use client'
 import React, { useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
 
+// Material-UI imports
 import Box from '@mui/material/Box'
 import Typography from '@mui/material/Typography'
-
-import { useAnswers } from './AnswersContext'
 import Toolbar from '@mui/material/Toolbar'
+import Button from '@mui/material/Button'
 
+// Components
+import SidekickSetupModal from '@/components/SidekickSetupModal'
+
+// Local imports
+import { useAnswers } from './AnswersContext'
 import type { AppSettings, Document, Sidekick } from 'types'
 
-import dynamic from 'next/dynamic'
-import Image from 'next/image'
-import Button from '@mui/material/Button'
-import RateReviewIcon from '@mui/icons-material/RateReview'
-
+// Dynamic imports
 const AppBar = dynamic(() => import('@mui/material/AppBar'))
 const ChatRoom = dynamic(() => import('./ChatRoom').then((mod) => ({ default: mod.ChatRoom })))
 const SidekickSelect = dynamic(() => import('./SidekickSelect'))
 const Drawer = dynamic(() => import('./Drawer'), { ssr: false })
 const SourceDocumentModal = dynamic(() => import('@ui/SourceDocumentModal'), { ssr: false })
 const CodePreview = dynamic(() => import('./Message/CodePreview').then((mod) => ({ default: mod.CodePreview })), { ssr: false })
-const DrawerFilters = dynamic(() => import('./DrawerFilters/DrawerFilters'), { ssr: false })
+const DrawerFilters = dynamic(() => import('./DrawerFilters/DrawerFilters'))
 const ChatInput = dynamic(() => import('./ChatInput'), { ssr: true })
+const Image = dynamic(() => import('next/image'))
+const RateReviewIcon = dynamic(() => import('@mui/icons-material/RateReview'))
 const ImageCreator = dynamic(() => import('@ui/ImageCreator').then((mod) => ({ default: mod.default })), { ssr: false })
 
+// Constants
 const DISPLAY_MODES = {
     CHATBOT: 'chatbot',
-    EMBEDDED_FORM: 'embeddedForm',
+    EMBEDDED: 'embedded',
     MEDIA_CREATION: 'mediaCreation'
 }
 
@@ -53,6 +59,8 @@ export const ChatDetail = ({
         startNewChat
     } = useAnswers()
 
+    const router = useRouter()
+
     const scrollRef = useRef<HTMLDivElement>(null)
     const [selectedDocuments, setSelectedDocuments] = React.useState<Document[] | undefined>()
     const [uploadedFiles, setUploadedFiles] = React.useState<FileUpload[]>([])
@@ -62,13 +70,15 @@ export const ChatDetail = ({
         getHTMLPreview: (code: string) => string
         getReactPreview: (code: string) => string
     } | null>(null)
-    const messages = clientMessages || chat?.messages
 
+    const messages = clientMessages || chat?.messages
     const displayMode = chatbotConfig?.displayMode || DISPLAY_MODES.CHATBOT
     const embeddedUrl = chatbotConfig?.embeddedUrl || ''
+
     const handleNewChat = () => {
         startNewChat()
     }
+
     return (
         <>
             <Box sx={{ display: 'flex', width: '100%' }}>
@@ -118,7 +128,6 @@ export const ChatDetail = ({
                                         }}
                                     >
                                         {chat ? <Typography variant='body1'>{chat?.title ?? chat.id}</Typography> : null}
-
                                         {journey ? <Typography variant='body2'>{journey?.goal ?? journey?.title}</Typography> : null}
                                     </Box>
 
@@ -135,36 +144,20 @@ export const ChatDetail = ({
                                         >
                                             New chat
                                         </Button>
-                                        {/* {chat ? (
-                                            <IconButton
-                                                size='large'
-                                                edge='start'
-                                                color='inherit'
-                                                aria-label='share'
-                                                component={NextLink}
-                                                href={`?modal=share`}
-                                            >
-                                                <ShareIcon />
-                                            </IconButton>
-                                        ) : null} */}
                                     </Box>
                                 </Toolbar>
                             </AppBar>
                         ) : null}
-                        {selectedSidekick || chat ? <></> : null}
+
                         {!selectedSidekick && !chat ? (
                             <Box
                                 sx={{
-                                    // border: '1px solid red',
                                     display: 'flex',
-                                    // justifyContent: 'flex-start',
                                     alignItems: 'center',
-                                    // height: '100%',
                                     width: '100%',
                                     flexDirection: 'column',
                                     paddingTop: 10,
                                     maxWidth: 1200,
-
                                     px: { xs: 2, sm: 3 },
                                     overflowY: 'auto',
                                     margin: '0 auto'
@@ -218,9 +211,11 @@ export const ChatDetail = ({
                                             regenerateAnswer={regenerateAnswer}
                                             chatbotConfig={chatbotConfig}
                                             setSelectedDocuments={setSelectedDocuments}
+                                            // @ts-ignore - Type mismatch in setPreviewCode
                                             setPreviewCode={setPreviewCode}
                                             sidekicks={sidekicks}
                                             scrollRef={scrollRef}
+                                            // @ts-ignore - Type mismatch in selectedSidekick
                                             selectedSidekick={selectedSidekick}
                                         />
                                     </Box>
@@ -258,8 +253,10 @@ export const ChatDetail = ({
                                 <iframe src={embeddedUrl} style={{ flex: 1, border: 'none' }} title='Embedded Form' allowFullScreen />
                             </Box>
                         )}
+                        {selectedSidekick?.id && <SidekickSetupModal sidekickId={selectedSidekick.id} />}
                     </Box>
                 </Box>
+
                 <Drawer
                     sx={{
                         flexShrink: 0,
