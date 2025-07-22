@@ -11,40 +11,49 @@ export const ConfigProvider = ({ children }) => {
     const [isCloud, setCloudLicensed] = useState(false)
     const [isOpenSource, setOpenSource] = useState(false)
 
-    useEffect(() => {
-        const userSettings = platformsettingsApi.getSettings()
-        Promise.all([userSettings])
-            .then(([currentSettingsData]) => {
-                const finalData = {
-                    ...currentSettingsData.data
+    const fetchSettings = async () => {
+        try {
+            const currentSettingsData = await platformsettingsApi.getSettings()
+            const finalData = {
+                ...currentSettingsData.data
+            }
+            setConfig(finalData)
+            if (finalData.PLATFORM_TYPE) {
+                if (finalData.PLATFORM_TYPE === 'enterprise') {
+                    setEnterpriseLicensed(true)
+                    setCloudLicensed(false)
+                    setOpenSource(false)
+                } else if (finalData.PLATFORM_TYPE === 'cloud') {
+                    setCloudLicensed(true)
+                    setEnterpriseLicensed(false)
+                    setOpenSource(false)
+                } else {
+                    setOpenSource(true)
+                    setEnterpriseLicensed(false)
+                    setCloudLicensed(false)
                 }
-                setConfig(finalData)
-                if (finalData.PLATFORM_TYPE) {
-                    if (finalData.PLATFORM_TYPE === 'enterprise') {
-                        setEnterpriseLicensed(true)
-                        setCloudLicensed(false)
-                        setOpenSource(false)
-                    } else if (finalData.PLATFORM_TYPE === 'cloud') {
-                        setCloudLicensed(true)
-                        setEnterpriseLicensed(false)
-                        setOpenSource(false)
-                    } else {
-                        setOpenSource(true)
-                        setEnterpriseLicensed(false)
-                        setCloudLicensed(false)
-                    }
-                }
+            }
+            setLoading(false)
+        } catch (error) {
+            console.error('Error fetching data:', error)
+            setLoading(false)
+        }
+    }
 
-                setLoading(false)
-            })
-            .catch((error) => {
-                console.error('Error fetching data:', error)
-                setLoading(false)
-            })
+    const refreshConfig = () => {
+        setLoading(true)
+        fetchSettings()
+    }
+
+    useEffect(() => {
+        fetchSettings()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     return (
-        <ConfigContext.Provider value={{ config, loading, isEnterpriseLicensed, isCloud, isOpenSource }}>{children}</ConfigContext.Provider>
+        <ConfigContext.Provider value={{ config, loading, isEnterpriseLicensed, isCloud, isOpenSource, refreshConfig }}>
+            {children}
+        </ConfigContext.Provider>
     )
 }
 

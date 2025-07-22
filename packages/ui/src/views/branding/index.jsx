@@ -12,9 +12,11 @@ import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
 
 import { IconX } from '@tabler/icons-react'
+import { useConfig } from '@/store/context/ConfigContext'
 
 const Branding = () => {
     const dispatch = useDispatch()
+    const { refreshConfig } = useConfig()
     useNotifier()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -88,6 +90,8 @@ const Branding = () => {
             } else if (footerLink) {
                 await variablesApi.createVariable(footerLinkObj)
             }
+
+            refreshConfig()
             enqueueSnackbar({
                 message: 'Branding saved',
                 options: {
