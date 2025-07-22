@@ -5,6 +5,7 @@ import { SketchPicker } from 'react-color'
 import PropTypes from 'prop-types'
 
 import { Card, Box, Typography, Button, Switch, OutlinedInput, Popover, Stack, IconButton } from '@mui/material'
+import { useConfig } from '@/store/context/ConfigContext'
 import { useTheme } from '@mui/material/styles'
 
 // Project import
@@ -47,9 +48,19 @@ const defaultConfig = {
     }
 }
 
+const buildDefaultConfig = (config) => {
+    return {
+        ...defaultConfig,
+        poweredByText: config?.BRANDING_FOOTER_TEXT || defaultConfig.poweredByText,
+        poweredByLink: config?.BRANDING_FOOTER_LINK || defaultConfig.poweredByLink
+    }
+}
+
 const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
     const dispatch = useDispatch()
     const theme = useTheme()
+    const { config } = useConfig()
+    const defaultValues = buildDefaultConfig(config)
     const chatflow = useSelector((state) => state.canvas.chatflow)
     const chatflowid = chatflow.id
     const chatbotConfig = chatflow.chatbotConfig ? JSON.parse(chatflow.chatbotConfig) : {}
@@ -72,11 +83,11 @@ const ShareChatbot = ({ isSessionMemory, isAgentCanvas }) => {
 
     const [welcomeMessage, setWelcomeMessage] = useState(chatbotConfig?.welcomeMessage ?? '')
     const [errorMessage, setErrorMessage] = useState(chatbotConfig?.errorMessage ?? '')
-    const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultConfig.backgroundColor)
-    const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultConfig.fontSize)
-    const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultConfig.poweredByTextColor)
-    const [poweredByText, setPoweredByText] = useState(chatbotConfig?.poweredByText ?? defaultConfig.poweredByText)
-    const [poweredByLink, setPoweredByLink] = useState(chatbotConfig?.poweredByLink ?? defaultConfig.poweredByLink)
+    const [backgroundColor, setBackgroundColor] = useState(chatbotConfig?.backgroundColor ?? defaultValues.backgroundColor)
+    const [fontSize, setFontSize] = useState(chatbotConfig?.fontSize ?? defaultValues.fontSize)
+    const [poweredByTextColor, setPoweredByTextColor] = useState(chatbotConfig?.poweredByTextColor ?? defaultValues.poweredByTextColor)
+    const [poweredByText, setPoweredByText] = useState(chatbotConfig?.poweredByText ?? defaultValues.poweredByText)
+    const [poweredByLink, setPoweredByLink] = useState(chatbotConfig?.poweredByLink ?? defaultValues.poweredByLink)
 
     const getShowAgentMessagesStatus = () => {
         if (chatbotConfig?.showAgentMessages !== undefined) {

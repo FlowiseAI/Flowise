@@ -2,6 +2,7 @@ import { useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { Tabs, Tab, Box } from '@mui/material'
+import { useConfig } from '@/store/context/ConfigContext'
 import { CopyBlock, atomOneDark } from 'react-code-blocks'
 
 // Project import
@@ -176,6 +177,13 @@ export const defaultThemeConfig = {
     }
 }
 
+const buildThemeConfig = (config) => {
+    const theme = JSON.parse(JSON.stringify(defaultThemeConfig))
+    if (config?.BRANDING_FOOTER_TEXT) theme.chatWindow.footer.text = config.BRANDING_FOOTER_TEXT
+    if (config?.BRANDING_FOOTER_LINK) theme.chatWindow.footer.companyLink = config.BRANDING_FOOTER_LINK
+    return theme
+}
+
 const customStringify = (obj) => {
     let stringified = JSON.stringify(obj, null, 4)
         .replace(/"([^"]+)":/g, '$1:')
@@ -191,7 +199,7 @@ const customStringify = (obj) => {
         .join('\n')
 }
 
-const embedPopupHtmlCodeCustomization = (chatflowid) => {
+const embedPopupHtmlCodeCustomization = (chatflowid, themeConfig) => {
     return `<script type="module">
     import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
     Chatbot.init({
@@ -203,12 +211,12 @@ const embedPopupHtmlCodeCustomization = (chatflowid) => {
         observersConfig: {
             /* Observers Config */
         },
-        theme: ${customStringify(defaultThemeConfig)}
+        theme: ${customStringify(themeConfig)}
     })
 </script>`
 }
 
-const embedPopupReactCodeCustomization = (chatflowid) => {
+const embedPopupReactCodeCustomization = (chatflowid, themeConfig) => {
     return `import { BubbleChat } from 'flowise-embed-react'
 
 const App = () => {
@@ -222,7 +230,7 @@ const App = () => {
             observersConfig={{
                 /* Observers Config */
             }}
-            theme={{${customStringify(defaultThemeConfig)
+            theme={{${customStringify(themeConfig)
                 .substring(1)
                 .split('\n')
                 .map((line) => ' '.repeat(4) + line)
@@ -232,18 +240,18 @@ const App = () => {
 }`
 }
 
-const getFullPageThemeConfig = () => {
+const getFullPageThemeConfig = (themeConfig) => {
     return {
-        ...defaultThemeConfig,
+        ...themeConfig,
         chatWindow: {
-            ...defaultThemeConfig.chatWindow,
+            ...themeConfig.chatWindow,
             height: '100%',
             width: '100%'
         }
     }
 }
 
-const embedFullpageHtmlCodeCustomization = (chatflowid) => {
+const embedFullpageHtmlCodeCustomization = (chatflowid, themeConfig) => {
     return `<flowise-fullchatbot></flowise-fullchatbot>
 <script type="module">
     import Chatbot from "https://cdn.jsdelivr.net/npm/flowise-embed/dist/web.js"
@@ -256,12 +264,12 @@ const embedFullpageHtmlCodeCustomization = (chatflowid) => {
         observersConfig: {
             /* Observers Config */
         },
-        theme: ${customStringify(getFullPageThemeConfig())}
+        theme: ${customStringify(getFullPageThemeConfig(themeConfig))}
     })
 </script>`
 }
 
-const embedFullpageReactCodeCustomization = (chatflowid) => {
+const embedFullpageReactCodeCustomization = (chatflowid, themeConfig) => {
     return `import { FullPageChat } from 'flowise-embed-react'
 
 const App = () => {
@@ -275,7 +283,7 @@ const App = () => {
             observersConfig={{
                 /* Observers Config */
             }}
-            theme={{${customStringify(getFullPageThemeConfig())
+            theme={{${customStringify(getFullPageThemeConfig(themeConfig))
                 .substring(1)
                 .split('\n')
                 .map((line) => ' '.repeat(4) + line)
@@ -286,6 +294,8 @@ const App = () => {
 }
 
 const EmbedChat = ({ chatflowid }) => {
+    const { config } = useConfig()
+    const themeConfig = buildThemeConfig(config)
     const codes = ['Popup Html', 'Fullpage Html', 'Popup React', 'Fullpage React']
     const [value, setValue] = useState(0)
     const [embedChatCheckboxVal, setEmbedChatCheckbox] = useState(false)
@@ -316,15 +326,15 @@ const EmbedChat = ({ chatflowid }) => {
     const getCodeCustomization = (codeLang) => {
         switch (codeLang) {
             case 'Popup Html':
-                return embedPopupHtmlCodeCustomization(chatflowid)
+                return embedPopupHtmlCodeCustomization(chatflowid, themeConfig)
             case 'Fullpage Html':
-                return embedFullpageHtmlCodeCustomization(chatflowid)
+                return embedFullpageHtmlCodeCustomization(chatflowid, themeConfig)
             case 'Popup React':
-                return embedPopupReactCodeCustomization(chatflowid)
+                return embedPopupReactCodeCustomization(chatflowid, themeConfig)
             case 'Fullpage React':
-                return embedFullpageReactCodeCustomization(chatflowid)
+                return embedFullpageReactCodeCustomization(chatflowid, themeConfig)
             default:
-                return embedPopupHtmlCodeCustomization(chatflowid)
+                return embedPopupHtmlCodeCustomization(chatflowid, themeConfig)
         }
     }
 
