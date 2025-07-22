@@ -25,7 +25,6 @@ import executionService, { ExecutionFilters } from '../executions'
 import marketplacesService from '../marketplaces'
 import toolsService from '../tools'
 import variableService from '../variables'
-import logger from '../../utils/logger'
 
 type ExportInput = {
     agentflow: boolean
@@ -272,7 +271,6 @@ async function replaceDuplicateIdsForChatMessage(
 
         // Replace duplicate ChatMessage ids found in db with new ids,
         // and update corresponding messageId references in ChatMessageFeedback
-        const startTime = Date.now()
         const idMap: { [key: string]: string } = {}
         const dbExistingIds = new Set(records.map((record) => record.id))
         originalData.ChatMessage = originalData.ChatMessage.map((item) => {
@@ -289,8 +287,6 @@ async function replaceDuplicateIdsForChatMessage(
             }
             return item
         })
-        const endTime = Date.now()
-        logger.info(`Time taken to replace duplicate chat message IDs: ${(endTime - startTime) / 1000} seconds`)
         return originalData
     } catch (error) {
         throw new InternalFlowiseError(
@@ -433,15 +429,17 @@ async function replaceDuplicateIdsForChatMessageFeedback(
             return true
         })
 
-        const startTime = Date.now()
         if (records.length < 0) return originalData
-        for (let record of records) {
-            const oldId = record.id
-            const newId = uuidv4()
-            originalData = JSON.parse(JSON.stringify(originalData).replaceAll(oldId, newId))
-        }
-        const endTime = Date.now()
-        logger.info(`Time taken to replace duplicate chat message feedback IDs: ${(endTime - startTime) / 1000} seconds`)
+
+        // replace duplicate ids found in db to new id
+        const dbExistingIds = new Set(records.map((record) => record.id))
+        originalData.ChatMessageFeedback = originalData.ChatMessageFeedback.map((item) => {
+            if (dbExistingIds.has(item.id)) {
+                const newId = uuidv4()
+                return { ...item, id: newId }
+            }
+            return item
+        })
         return originalData
     } catch (error) {
         throw new InternalFlowiseError(
