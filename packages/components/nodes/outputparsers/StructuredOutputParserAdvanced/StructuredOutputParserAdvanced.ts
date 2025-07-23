@@ -2,8 +2,8 @@ import { getBaseClasses, INode, INodeData, INodeParams } from '../../../src'
 import { BaseOutputParser } from '@langchain/core/output_parsers'
 import { StructuredOutputParser as LangchainStructuredOutputParser } from 'langchain/output_parsers'
 import { CATEGORY } from '../OutputParserHelpers'
-import { z } from 'zod'
 import { jsonrepair } from 'jsonrepair'
+import { SecureZodSchemaParser } from '../../../src/secureZodParser'
 
 class AdvancedStructuredOutputParser implements INode {
     label: string
@@ -57,10 +57,8 @@ class AdvancedStructuredOutputParser implements INode {
         const schemaString = nodeData.inputs?.exampleJson as string
         const autoFix = nodeData.inputs?.autofixParser as boolean
 
-        const zodSchemaFunction = new Function('z', `return ${schemaString}`)
-        const zodSchema = zodSchemaFunction(z)
-
         try {
+            const zodSchema = SecureZodSchemaParser.parseZodSchema(schemaString)
             const structuredOutputParser = LangchainStructuredOutputParser.fromZodSchema(zodSchema)
 
             const baseParse = structuredOutputParser.parse

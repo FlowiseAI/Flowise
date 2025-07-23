@@ -3,6 +3,7 @@ import variablesService from '../../services/variables'
 import { Variable } from '../../database/entities/Variable'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { getPageAndLimitParams } from '../../utils/pagination'
 
 const createVariable = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -45,7 +46,8 @@ const deleteVariable = async (req: Request, res: Response, next: NextFunction) =
 
 const getAllVariables = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await variablesService.getAllVariables(req.user?.activeWorkspaceId)
+        const { page, limit } = getPageAndLimitParams(req)
+        const apiResponse = await variablesService.getAllVariables(req.user?.activeWorkspaceId, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

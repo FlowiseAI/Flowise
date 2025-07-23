@@ -65,14 +65,14 @@ const getPublicExecutionById = async (executionId: string): Promise<Execution | 
 const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data: Execution[]; total: number }> => {
     try {
         const appServer = getRunningExpressApp()
-        const { id, agentflowId, sessionId, state, startDate, endDate, page = 1, limit = 10, workspaceId } = filters
+        const { id, agentflowId, sessionId, state, startDate, endDate, page = 1, limit = 12, workspaceId } = filters
 
         // Handle UUID fields properly using raw parameters to avoid type conversion issues
         // This uses the query builder instead of direct objects for compatibility with UUID fields
         const queryBuilder = appServer.AppDataSource.getRepository(Execution)
             .createQueryBuilder('execution')
             .leftJoinAndSelect('execution.agentflow', 'agentflow')
-            .orderBy('execution.createdDate', 'DESC')
+            .orderBy('execution.updatedDate', 'DESC')
             .skip((page - 1) * limit)
             .take(limit)
 
