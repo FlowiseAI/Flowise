@@ -582,6 +582,30 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
+                    "label": "gemini-2.5-flash",
+                    "name": "gemini-2.5-flash",
+                    "input_cost": 0.15e-6,
+                    "output_cost": 6e-7
+                },
+                {
+                    "label": "gemini-2.5-pro",
+                    "name": "gemini-2.5-pro",
+                    "input_cost": 1.25e-6,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gemini-2.0-flash",
+                    "name": "gemini-2.0-flash-001",
+                    "input_cost": 1e-7,
+                    "output_cost": 4e-7
+                },
+                {
+                    "label": "gemini-2.0-flash-lite",
+                    "name": "gemini-2.0-flash-lite-001",
+                    "input_cost": 7.5e-8,
+                    "output_cost": 3e-7
+                },
+                {
                     "label": "gemini-1.5-flash-002",
                     "name": "gemini-1.5-flash-002",
                     "input_cost": 7.5e-8,
@@ -673,6 +697,50 @@
                     "input_cost": 2.5e-7,
                     "output_cost": 1.25e-6
                 }
+            ],
+            "regions": [
+                { "label": "us-east1", "name": "us-east1" },
+                { "label": "us-east4", "name": "us-east4" },
+                { "label": "us-central1", "name": "us-central1" },
+                { "label": "us-west1", "name": "us-west1" },
+                { "label": "europe-west4", "name": "europe-west4" },
+                { "label": "europe-west1", "name": "europe-west1" },
+                { "label": "europe-west3", "name": "europe-west3" },
+                { "label": "europe-west2", "name": "europe-west2" },
+                { "label": "asia-east1", "name": "asia-east1" },
+                { "label": "asia-southeast1", "name": "asia-southeast1" },
+                { "label": "asia-northeast1", "name": "asia-northeast1" },
+                { "label": "asia-south1", "name": "asia-south1" },
+                { "label": "australia-southeast1", "name": "australia-southeast1" },
+                { "label": "southamerica-east1", "name": "southamerica-east1" },
+                { "label": "africa-south1", "name": "africa-south1" },
+                { "label": "asia-east2", "name": "asia-east2" },
+                { "label": "asia-northeast2", "name": "asia-northeast2" },
+                { "label": "asia-northeast3", "name": "asia-northeast3" },
+                { "label": "asia-south2", "name": "asia-south2" },
+                { "label": "asia-southeast2", "name": "asia-southeast2" },
+                { "label": "australia-southeast2", "name": "australia-southeast2" },
+                { "label": "europe-central2", "name": "europe-central2" },
+                { "label": "europe-north1", "name": "europe-north1" },
+                { "label": "europe-north2", "name": "europe-north2" },
+                { "label": "europe-southwest1", "name": "europe-southwest1" },
+                { "label": "europe-west10", "name": "europe-west10" },
+                { "label": "europe-west12", "name": "europe-west12" },
+                { "label": "europe-west6", "name": "europe-west6" },
+                { "label": "europe-west8", "name": "europe-west8" },
+                { "label": "europe-west9", "name": "europe-west9" },
+                { "label": "me-central1", "name": "me-central1" },
+                { "label": "me-central2", "name": "me-central2" },
+                { "label": "me-west1", "name": "me-west1" },
+                { "label": "northamerica-northeast1", "name": "northamerica-northeast1" },
+                { "label": "northamerica-northeast2", "name": "northamerica-northeast2" },
+                { "label": "northamerica-south1", "name": "northamerica-south1" },
+                { "label": "southamerica-west1", "name": "southamerica-west1" },
+                { "label": "us-east5", "name": "us-east5" },
+                { "label": "us-south1", "name": "us-south1" },
+                { "label": "us-west2", "name": "us-west2" },
+                { "label": "us-west3", "name": "us-west3" },
+                { "label": "us-west4", "name": "us-west4" }
             ]
         },
         {
@@ -1723,29 +1791,65 @@
             "name": "googlevertexaiEmbeddings",
             "models": [
                 {
-                    "label": "multimodalembedding",
-                    "name": "multimodalembedding"
+                    "label": "gemini-embedding-001",
+                    "name": "gemini-embedding-001"
                 },
                 {
                     "label": "text-embedding-004",
                     "name": "text-embedding-004"
                 },
                 {
+                    "label": "text-embedding-005",
+                    "name": "text-embedding-005"
+                },
+                {
                     "label": "text-multilingual-embedding-002",
                     "name": "text-multilingual-embedding-002"
-                },
-                {
-                    "label": "textembedding-gecko@001",
-                    "name": "textembedding-gecko@001"
-                },
-                {
-                    "label": "textembedding-gecko@latest",
-                    "name": "textembedding-gecko@latest"
-                },
-                {
-                    "label": "textembedding-gecko-multilingual@latest",
-                    "name": "textembedding-gecko-multilingual@latest"
                 }
+            ],
+            "regions": [
+                { "label": "us-east1", "name": "us-east1" },
+                { "label": "us-east4", "name": "us-east4" },
+                { "label": "us-central1", "name": "us-central1" },
+                { "label": "us-west1", "name": "us-west1" },
+                { "label": "europe-west4", "name": "europe-west4" },
+                { "label": "europe-west1", "name": "europe-west1" },
+                { "label": "europe-west3", "name": "europe-west3" },
+                { "label": "europe-west2", "name": "europe-west2" },
+                { "label": "asia-east1", "name": "asia-east1" },
+                { "label": "asia-southeast1", "name": "asia-southeast1" },
+                { "label": "asia-northeast1", "name": "asia-northeast1" },
+                { "label": "asia-south1", "name": "asia-south1" },
+                { "label": "australia-southeast1", "name": "australia-southeast1" },
+                { "label": "southamerica-east1", "name": "southamerica-east1" },
+                { "label": "africa-south1", "name": "africa-south1" },
+                { "label": "asia-east2", "name": "asia-east2" },
+                { "label": "asia-northeast2", "name": "asia-northeast2" },
+                { "label": "asia-northeast3", "name": "asia-northeast3" },
+                { "label": "asia-south2", "name": "asia-south2" },
+                { "label": "asia-southeast2", "name": "asia-southeast2" },
+                { "label": "australia-southeast2", "name": "australia-southeast2" },
+                { "label": "europe-central2", "name": "europe-central2" },
+                { "label": "europe-north1", "name": "europe-north1" },
+                { "label": "europe-north2", "name": "europe-north2" },
+                { "label": "europe-southwest1", "name": "europe-southwest1" },
+                { "label": "europe-west10", "name": "europe-west10" },
+                { "label": "europe-west12", "name": "europe-west12" },
+                { "label": "europe-west6", "name": "europe-west6" },
+                { "label": "europe-west8", "name": "europe-west8" },
+                { "label": "europe-west9", "name": "europe-west9" },
+                { "label": "me-central1", "name": "me-central1" },
+                { "label": "me-central2", "name": "me-central2" },
+                { "label": "me-west1", "name": "me-west1" },
+                { "label": "northamerica-northeast1", "name": "northamerica-northeast1" },
+                { "label": "northamerica-northeast2", "name": "northamerica-northeast2" },
+                { "label": "northamerica-south1", "name": "northamerica-south1" },
+                { "label": "southamerica-west1", "name": "southamerica-west1" },
+                { "label": "us-east5", "name": "us-east5" },
+                { "label": "us-south1", "name": "us-south1" },
+                { "label": "us-west2", "name": "us-west2" },
+                { "label": "us-west3", "name": "us-west3" },
+                { "label": "us-west4", "name": "us-west4" }
             ]
         },
         {

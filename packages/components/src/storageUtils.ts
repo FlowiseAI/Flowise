@@ -1,19 +1,19 @@
-import path from 'path'
-import fs from 'fs'
 import {
     DeleteObjectsCommand,
     GetObjectCommand,
+    ListObjectsCommand,
     ListObjectsV2Command,
     PutObjectCommand,
-    ListObjectsCommand,
     S3Client,
     S3ClientConfig
 } from '@aws-sdk/client-s3'
 import { Storage } from '@google-cloud/storage'
+import fs from 'fs'
 import { Readable } from 'node:stream'
-import { getUserHome } from './utils'
-import { isValidUUID, isPathTraversal } from './validator'
+import path from 'path'
 import sanitize from 'sanitize-filename'
+import { getUserHome } from './utils'
+import { isPathTraversal, isValidUUID } from './validator'
 
 const dirSize = async (directoryPath: string) => {
     let totalSize = 0
@@ -531,7 +531,13 @@ function getFilePaths(dir: string): FileInfo[] {
  * Prepare storage path
  */
 export const getStoragePath = (): string => {
-    return process.env.BLOB_STORAGE_PATH ? path.join(process.env.BLOB_STORAGE_PATH) : path.join(getUserHome(), '.flowise', 'storage')
+    const storagePath = process.env.BLOB_STORAGE_PATH
+        ? path.join(process.env.BLOB_STORAGE_PATH)
+        : path.join(getUserHome(), '.flowise', 'storage')
+    if (!fs.existsSync(storagePath)) {
+        fs.mkdirSync(storagePath, { recursive: true })
+    }
+    return storagePath
 }
 
 /**

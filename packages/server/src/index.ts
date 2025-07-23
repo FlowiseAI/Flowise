@@ -21,7 +21,7 @@ import { WHITELIST_URLS } from './utils/constants'
 import { initializeJwtCookieMiddleware, verifyToken } from './enterprise/middleware/passport'
 import { IdentityManager } from './IdentityManager'
 import { SSEStreamer } from './utils/SSEStreamer'
-import { getAPIKeyWorkspaceID, validateAPIKey } from './utils/validateKey'
+import { validateAPIKey } from './utils/validateKey'
 import { LoggedInUser } from './enterprise/Interface.Enterprise'
 import { IMetricsProvider } from './Interface.Metrics'
 import { Prometheus } from './metrics/Prometheus'
@@ -34,6 +34,7 @@ import { Workspace } from './enterprise/database/entities/workspace.entity'
 import { Organization } from './enterprise/database/entities/organization.entity'
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
+import { ExpressAdapter } from '@bull-board/express'
 
 declare global {
     namespace Express {
@@ -128,13 +129,16 @@ export class App {
             // Init Queues
             if (process.env.MODE === MODE.QUEUE) {
                 this.queueManager = QueueManager.getInstance()
+                const serverAdapter = new ExpressAdapter()
+                serverAdapter.setBasePath('/admin/queues')
                 this.queueManager.setupAllQueues({
                     componentNodes: this.nodesPool.componentNodes,
                     telemetry: this.telemetry,
                     cachePool: this.cachePool,
                     appDataSource: this.AppDataSource,
                     abortControllerPool: this.abortControllerPool,
-                    usageCacheManager: this.usageCacheManager
+                    usageCacheManager: this.usageCacheManager,
+                    serverAdapter
                 })
                 logger.info('✅ [Queue]: All queues setup successfully')
 
@@ -217,58 +221,55 @@ export class App {
                                 return res.status(401).json({ error: 'Unauthorized Access' })
                             }
                         }
-                        const isKeyValidated = await validateAPIKey(req)
-                        if (!isKeyValidated) {
+
+                        const { isValid, workspaceId: apiKeyWorkSpaceId } = await validateAPIKey(req)
+                        if (!isValid) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
-                        const apiKeyWorkSpaceId = await getAPIKeyWorkspaceID(req)
-                        if (apiKeyWorkSpaceId) {
-                            // Find workspace
-                            const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
-                                where: { id: apiKeyWorkSpaceId }
-                            })
-                            if (!workspace) {
-                                return res.status(401).json({ error: 'Unauthorized Access' })
-                            }
 
-                            // Find owner role
-                            const ownerRole = await this.AppDataSource.getRepository(Role).findOne({
-                                where: { name: GeneralRole.OWNER, organizationId: IsNull() }
-                            })
-                            if (!ownerRole) {
-                                return res.status(401).json({ error: 'Unauthorized Access' })
-                            }
-
-                            // Find organization
-                            const activeOrganizationId = workspace.organizationId as string
-                            const org = await this.AppDataSource.getRepository(Organization).findOne({
-                                where: { id: activeOrganizationId }
-                            })
-                            if (!org) {
-                                return res.status(401).json({ error: 'Unauthorized Access' })
-                            }
-                            const subscriptionId = org.subscriptionId as string
-                            const customerId = org.customerId as string
-                            const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
-                            const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
-
-                            // @ts-ignore
-                            req.user = {
-                                permissions: [...JSON.parse(ownerRole.permissions)],
-                                features,
-                                activeOrganizationId: activeOrganizationId,
-                                activeOrganizationSubscriptionId: subscriptionId,
-                                activeOrganizationCustomerId: customerId,
-                                activeOrganizationProductId: productId,
-                                isOrganizationAdmin: true,
-                                activeWorkspaceId: apiKeyWorkSpaceId,
-                                activeWorkspace: workspace.name,
-                                isApiKeyValidated: true
-                            }
-                            next()
-                        } else {
+                        // Find workspace
+                        const workspace = await this.AppDataSource.getRepository(Workspace).findOne({
+                            where: { id: apiKeyWorkSpaceId }
+                        })
+                        if (!workspace) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
+
+                        // Find owner role
+                        const ownerRole = await this.AppDataSource.getRepository(Role).findOne({
+                            where: { name: GeneralRole.OWNER, organizationId: IsNull() }
+                        })
+                        if (!ownerRole) {
+                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        }
+
+                        // Find organization
+                        const activeOrganizationId = workspace.organizationId as string
+                        const org = await this.AppDataSource.getRepository(Organization).findOne({
+                            where: { id: activeOrganizationId }
+                        })
+                        if (!org) {
+                            return res.status(401).json({ error: 'Unauthorized Access' })
+                        }
+                        const subscriptionId = org.subscriptionId as string
+                        const customerId = org.customerId as string
+                        const features = await this.identityManager.getFeaturesByPlan(subscriptionId)
+                        const productId = await this.identityManager.getProductIdFromSubscription(subscriptionId)
+
+                        // @ts-ignore
+                        req.user = {
+                            permissions: [...JSON.parse(ownerRole.permissions)],
+                            features,
+                            activeOrganizationId: activeOrganizationId,
+                            activeOrganizationSubscriptionId: subscriptionId,
+                            activeOrganizationCustomerId: customerId,
+                            activeOrganizationProductId: productId,
+                            isOrganizationAdmin: true,
+                            activeWorkspaceId: apiKeyWorkSpaceId!,
+                            activeWorkspace: workspace.name,
+                            isApiKeyValidated: true
+                        }
+                        next()
                     }
                 } else {
                     return res.status(401).json({ error: 'Unauthorized Access' })

@@ -8,6 +8,7 @@ export class CachePool {
     private redisClient: Redis | null = null
     activeLLMCache: IActiveCache = {}
     activeEmbeddingCache: IActiveCache = {}
+    activeMCPCache: { [key: string]: any } = {}
 
     constructor() {
         if (process.env.MODE === MODE.QUEUE) {
@@ -71,6 +72,29 @@ export class CachePool {
         } else {
             this.activeEmbeddingCache[chatflowid] = value
         }
+    }
+
+    /**
+     * Add to the mcp toolkit cache pool
+     * @param {string} cacheKey
+     * @param {any} value
+     */
+    async addMCPCache(cacheKey: string, value: any) {
+        // Only add to cache for non-queue mode, because we are storing the toolkit instances in memory, and we can't store them in redis
+        if (process.env.MODE !== MODE.QUEUE) {
+            this.activeMCPCache[`mcpCache:${cacheKey}`] = value
+        }
+    }
+
+    /**
+     * Get item from mcp toolkit cache pool
+     * @param {string} cacheKey
+     */
+    async getMCPCache(cacheKey: string): Promise<any | undefined> {
+        if (process.env.MODE !== MODE.QUEUE) {
+            return this.activeMCPCache[`mcpCache:${cacheKey}`]
+        }
+        return undefined
     }
 
     /**

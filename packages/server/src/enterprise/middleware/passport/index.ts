@@ -259,11 +259,18 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                 if (identityManager.isEnterprise() && !identityManager.isLicenseValid()) {
                     return res.status(401).json({ redirectUrl: '/license-expired' })
                 }
-                req.login(user, { session: true }, async (error) => {
-                    if (error) {
-                        return next ? next(error) : res.status(401).json(error)
+
+                req.session.regenerate((regenerateErr) => {
+                    if (regenerateErr) {
+                        return next ? next(regenerateErr) : res.status(500).json({ message: 'Session regeneration failed' })
                     }
-                    return setTokenOrCookies(res, user, true, req)
+
+                    req.login(user, { session: true }, async (error) => {
+                        if (error) {
+                            return next ? next(error) : res.status(401).json(error)
+                        }
+                        return setTokenOrCookies(res, user, true, req)
+                    })
                 })
             } catch (error: any) {
                 return next ? next(error) : res.status(401).json(error)

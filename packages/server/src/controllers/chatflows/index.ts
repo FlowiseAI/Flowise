@@ -8,6 +8,7 @@ import chatflowsService from '../../services/chatflows'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { RateLimiterManager } from '../../utils/rateLimit'
+import { getPageAndLimitParams } from '../../utils/pagination'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -67,7 +68,14 @@ const deleteChatflow = async (req: Request, res: Response, next: NextFunction) =
 
 const getAllChatflows = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await chatflowsService.getAllChatflows(req.query?.type as ChatflowType, req.user?.activeWorkspaceId)
+        const { page, limit } = getPageAndLimitParams(req)
+
+        const apiResponse = await chatflowsService.getAllChatflows(
+            req.query?.type as ChatflowType,
+            req.user?.activeWorkspaceId,
+            page,
+            limit
+        )
         return res.json(apiResponse)
     } catch (error) {
         next(error)

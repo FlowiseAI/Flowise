@@ -290,14 +290,17 @@ export class DocumentStoreDTO {
     }
 
     static fromEntities(entities: DocumentStore[]): DocumentStoreDTO[] {
+        if (entities.length === 0) {
+            return []
+        }
         return entities.map((entity) => this.fromEntity(entity))
     }
 
     static toEntity(body: any): DocumentStore {
         const docStore = new DocumentStore()
         Object.assign(docStore, body)
-        docStore.loaders = '[]'
-        docStore.whereUsed = '[]'
+        docStore.loaders = body.loaders ?? '[]'
+        docStore.whereUsed = body.whereUsed ?? '[]'
         // when a new document store is created, it is empty and in sync
         docStore.status = DocumentStoreStatus.EMPTY_SYNC
         return docStore
