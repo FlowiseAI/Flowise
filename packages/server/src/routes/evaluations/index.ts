@@ -8,7 +8,7 @@ router.get('/:id', checkPermission('evaluations:view'), evaluationsController.ge
 router.delete('/:id', checkPermission('evaluations:delete'), evaluationsController.deleteEvaluation)
 router.post('/', checkPermission('evaluations:create'), evaluationsController.createEvaluation)
 router.get('/is-outdated/:id', evaluationsController.isOutdated)
-router.get('/run-again/:id', checkAnyPermission('evaluations:create,evaluations:run'), evaluationsController.runAgain)
+router.post('/run-again/:id', checkAnyPermission('evaluations:create,evaluations:run'), evaluationsController.runAgain)
 router.get('/versions/:id', checkPermission('evaluations:view'), evaluationsController.getVersions)
 router.patch('/', checkPermission('evaluations:delete'), evaluationsController.patchDeleteEvaluations)
 export default router

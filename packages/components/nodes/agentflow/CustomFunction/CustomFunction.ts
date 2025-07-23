@@ -8,8 +8,7 @@ import {
     INodeParams,
     IServerSideEventStreamer
 } from '../../../src/Interface'
-import { availableDependencies, defaultAllowBuiltInDep, getVars, prepareSandboxVars } from '../../../src/utils'
-import { NodeVM } from '@flowiseai/nodevm'
+import { getVars, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
 import { updateFlowState } from '../utils'
 
 interface ICustomFunctionInputVariables {
@@ -19,9 +18,9 @@ interface ICustomFunctionInputVariables {
 
 const exampleFunc = `/*
 * You can use any libraries imported in Flowise
-* You can use properties specified in Input Schema as variables. Ex: Property = userid, Variable = $userid
+* You can use properties specified in Input Variables with the prefix $. For example: $foo
 * You can get default flow config: $flow.sessionId, $flow.chatId, $flow.chatflowId, $flow.input, $flow.state
-* You can get custom variables: $vars.<variable-name>
+* You can get global variables: $vars.<variable-name>
 * Must return a string value at the end of function
 */
 
@@ -161,53 +160,34 @@ class CustomFunction_Agentflow implements INode {
             state: newState
         }
 
-        let sandbox: any = {
-            $input: input,
-            util: undefined,
-            Symbol: undefined,
-            child_process: undefined,
-            fs: undefined,
-            process: undefined
-        }
-        sandbox['$vars'] = prepareSandboxVars(variables)
-        sandbox['$flow'] = flow
-
+        // Create additional sandbox variables for custom function inputs
+        const additionalSandbox: ICommonObject = {}
         for (const item of functionInputVariables) {
             const variableName = item.variableName
             const variableValue = item.variableValue
-            sandbox[`$${variableName}`] = variableValue
+            additionalSandbox[`$${variableName}`] = variableValue
         }
 
-        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-            : defaultAllowBuiltInDep
-        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-        const deps = availableDependencies.concat(externalDeps)
+        const sandbox = createCodeExecutionSandbox(input, variables, flow, additionalSandbox)
 
-        const nodeVMOptions = {
-            console: 'inherit',
-            sandbox,
-            require: {
-                external: { modules: deps },
-                builtin: builtinDeps
-            },
-            eval: false,
-            wasm: false,
-            timeout: 10000
-        } as any
+        // Setup streaming function if needed
+        const streamOutput = isStreamable
+            ? (output: string) => {
+                  const sseStreamer: IServerSideEventStreamer = options.sseStreamer
+                  sseStreamer.streamTokenEvent(chatId, output)
+              }
+            : undefined
 
-        const vm = new NodeVM(nodeVMOptions)
         try {
-            const response = await vm.run(`module.exports = async function() {${javascriptFunction}}()`, __dirname)
+            const response = await executeJavaScriptCode(javascriptFunction, sandbox, {
+                libraries: ['axios'],
+                streamOutput,
+                timeout: 10000
+            })
 
             let finalOutput = response
             if (typeof response === 'object') {
                 finalOutput = JSON.stringify(response, null, 2)
-            }
-
-            if (isStreamable) {
-                const sseStreamer: IServerSideEventStreamer = options.sseStreamer
-                sseStreamer.streamTokenEvent(chatId, finalOutput)
             }
 
             // Process template variables in state

@@ -1,7 +1,7 @@
 import { GoogleVertexAIEmbeddingsInput, VertexAIEmbeddings } from '@langchain/google-vertexai'
 import { buildGoogleCredentials } from '../../../src/google-utils'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { MODEL_TYPE, getModels } from '../../../src/modelLoader'
+import { MODEL_TYPE, getModels, getRegions } from '../../../src/modelLoader'
 import { getBaseClasses } from '../../../src/utils'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
@@ -19,7 +19,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     constructor() {
         this.label = 'GoogleVertexAI Embeddings'
         this.name = 'googlevertexaiEmbeddings'
-        this.version = 2.0
+        this.version = 2.1
         this.type = 'GoogleVertexAIEmbeddings'
         this.icon = 'GoogleVertex.svg'
         this.category = 'Embeddings'
@@ -40,7 +40,15 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
                 name: 'modelName',
                 type: 'asyncOptions',
                 loadMethod: 'listModels',
-                default: 'textembedding-gecko@001'
+                default: 'text-embedding-004'
+            },
+            {
+                label: 'Region',
+                description: 'Region to use for the model.',
+                name: 'region',
+                type: 'asyncOptions',
+                loadMethod: 'listRegions',
+                optional: true
             }
         ]
     }
@@ -49,6 +57,9 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     loadMethods = {
         async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.EMBEDDING, 'googlevertexaiEmbeddings')
+        },
+        async listRegions(): Promise<INodeOptionsValue[]> {
+            return await getRegions(MODEL_TYPE.EMBEDDING, 'googlevertexaiEmbeddings')
         }
     }
 

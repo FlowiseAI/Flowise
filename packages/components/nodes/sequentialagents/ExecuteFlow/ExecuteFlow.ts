@@ -1,13 +1,6 @@
-import { NodeVM } from '@flowiseai/nodevm'
 import { DataSource } from 'typeorm'
-import {
-    availableDependencies,
-    defaultAllowBuiltInDep,
-    getCredentialData,
-    getCredentialParam,
-    getVars,
-    prepareSandboxVars
-} from '../../../src/utils'
+import { getCredentialData, getCredentialParam, getVars, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
+import { isValidUUID, isValidURL } from '../../../src/validator'
 import {
     ICommonObject,
     IDatabaseEntity,
@@ -177,6 +170,16 @@ class ExecuteFlow_SeqAgents implements INode {
         const baseURL = (nodeData.inputs?.baseURL as string) || (options.baseURL as string)
         const returnValueAs = nodeData.inputs?.returnValueAs as string
 
+        // Validate selectedFlowId is a valid UUID
+        if (!selectedFlowId || !isValidUUID(selectedFlowId)) {
+            throw new Error('Invalid flow ID: must be a valid UUID')
+        }
+
+        // Validate baseURL is a valid URL
+        if (!baseURL || !isValidURL(baseURL)) {
+            throw new Error('Invalid base URL: must be a valid URL')
+        }
+
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const chatflowApiKey = getCredentialParam('chatflowApiKey', credentialData, nodeData)
 
@@ -233,18 +236,13 @@ class ExecuteFlow_SeqAgents implements INode {
                 body: JSON.stringify(body)
             }
 
-            let sandbox: ICommonObject = {
-                $input: flowInput,
+            // Create additional sandbox variables
+            const additionalSandbox: ICommonObject = {
                 $callOptions: callOptions,
-                $callBody: body,
-                util: undefined,
-                Symbol: undefined,
-                child_process: undefined,
-                fs: undefined,
-                process: undefined
+                $callBody: body
             }
-            sandbox['$vars'] = prepareSandboxVars(variables)
-            sandbox['$flow'] = flow
+
+            const sandbox = createCodeExecutionSandbox(flowInput, variables, flow, additionalSandbox)
 
             const code = `
     const fetch = require('node-fetch');
@@ -264,27 +262,11 @@ class ExecuteFlow_SeqAgents implements INode {
     }
 `
 
-            const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
-                ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
-                : defaultAllowBuiltInDep
-            const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
-            const deps = availableDependencies.concat(externalDeps)
-
-            const nodeVMOptions = {
-                console: 'inherit',
-                sandbox,
-                require: {
-                    external: { modules: deps },
-                    builtin: builtinDeps
-                },
-                eval: false,
-                wasm: false,
-                timeout: 10000
-            } as any
-
-            const vm = new NodeVM(nodeVMOptions)
             try {
-                let response = await vm.run(`module.exports = async function() {${code}}()`, __dirname)
+                let response = await executeJavaScriptCode(code, sandbox, {
+                    useSandbox: false,
+                    timeout: 10000
+                })
 
                 if (typeof response === 'object') {
                     response = JSON.stringify(response)

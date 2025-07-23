@@ -32,7 +32,7 @@ class File_DocumentLoaders implements INode {
         this.type = 'Document'
         this.icon = 'file.svg'
         this.category = 'Document Loaders'
-        this.description = `A generic file loader that can load txt, json, csv, docx, pdf, and other files`
+        this.description = `A generic file loader that can load different file types`
         this.baseClasses = [this.type]
         this.inputs = [
             {
@@ -214,6 +214,11 @@ class File_DocumentLoaders implements INode {
             json: (blob) => new JSONLoader(blob),
             jsonl: (blob) => new JSONLinesLoader(blob, '/' + pointerName.trim()),
             txt: (blob) => new TextLoader(blob),
+            html: (blob) => new TextLoader(blob),
+            css: (blob) => new TextLoader(blob),
+            js: (blob) => new TextLoader(blob),
+            xml: (blob) => new TextLoader(blob),
+            md: (blob) => new TextLoader(blob),
             csv: (blob) => new CSVLoader(blob),
             xls: (blob) => new LoadOfSheet(blob),
             xlsx: (blob) => new LoadOfSheet(blob),
@@ -301,6 +306,8 @@ const getOverrideFileInputs = (nodeData: INodeData) => {
     const jsonlinesFileBase64 = nodeData.inputs?.jsonlinesFile as string
     const docxFileBase64 = nodeData.inputs?.docxFile as string
     const yamlFileBase64 = nodeData.inputs?.yamlFile as string
+    const excelFileBase64 = nodeData.inputs?.excelFile as string
+    const powerpointFileBase64 = nodeData.inputs?.powerpointFile as string
 
     const removePrefix = (storageFile: string): string[] => {
         const fileName = storageFile.replace('FILE-STORAGE::', '')
@@ -332,6 +339,12 @@ const getOverrideFileInputs = (nodeData: INodeData) => {
     }
     if (yamlFileBase64) {
         files.push(...removePrefix(yamlFileBase64))
+    }
+    if (excelFileBase64) {
+        files.push(...removePrefix(excelFileBase64))
+    }
+    if (powerpointFileBase64) {
+        files.push(...removePrefix(powerpointFileBase64))
     }
 
     return files.length ? `FILE-STORAGE::${JSON.stringify(files)}` : ''
