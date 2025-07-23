@@ -3,6 +3,7 @@ import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, IN
 import { MCPToolkit } from '../core'
 import { getVars, prepareSandboxVars } from '../../../../src/utils'
 import { DataSource } from 'typeorm'
+import hash from 'object-hash'
 
 const mcpServerConfig = `{
     "command": "npx",
@@ -140,6 +141,24 @@ class Custom_MCP implements INode {
             sandbox['$vars'] = prepareSandboxVars(variables)
         }
 
+        const workspaceId = options?.searchOptions?.workspaceId?._value || options?.workspaceId
+
+        let canonicalConfig
+        try {
+            canonicalConfig = JSON.parse(mcpServerConfig)
+        } catch (e) {
+            canonicalConfig = mcpServerConfig
+        }
+
+        const cacheKey = hash({ workspaceId, canonicalConfig, sandbox })
+
+        if (options.cachePool) {
+            const cachedResult = await options.cachePool.getMCPCache(cacheKey)
+            if (cachedResult) {
+                return cachedResult.tools
+            }
+        }
+
         try {
             let serverParams
             if (typeof mcpServerConfig === 'object') {
@@ -161,6 +180,10 @@ class Custom_MCP implements INode {
             await toolkit.initialize()
 
             const tools = toolkit.tools ?? []
+
+            if (options.cachePool) {
+                await options.cachePool.addMCPCache(cacheKey, { toolkit, tools })
+            }
 
             return tools as Tool[]
         } catch (error) {

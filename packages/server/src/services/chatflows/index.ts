@@ -127,21 +127,36 @@ const deleteChatflow = async (chatflowId: string, orgId: string, workspaceId: st
     }
 }
 
-const getAllChatflows = async (type?: ChatflowType, workspaceId?: string): Promise<ChatFlow[]> => {
+const getAllChatflows = async (type?: ChatflowType, workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findBy(getWorkspaceSearchOptions(workspaceId))
+
+        const queryBuilder = appServer.AppDataSource.getRepository(ChatFlow)
+            .createQueryBuilder('chat_flow')
+            .orderBy('chat_flow.updatedDate', 'DESC')
+
+        if (page > 0 && limit > 0) {
+            queryBuilder.skip((page - 1) * limit)
+            queryBuilder.take(limit)
+        }
         if (type === 'MULTIAGENT') {
-            return dbResponse.filter((chatflow) => chatflow.type === 'MULTIAGENT')
+            queryBuilder.andWhere('chat_flow.type = :type', { type: 'MULTIAGENT' })
         } else if (type === 'AGENTFLOW') {
-            return dbResponse.filter((chatflow) => chatflow.type === 'AGENTFLOW')
+            queryBuilder.andWhere('chat_flow.type = :type', { type: 'AGENTFLOW' })
         } else if (type === 'ASSISTANT') {
-            return dbResponse.filter((chatflow) => chatflow.type === 'ASSISTANT')
+            queryBuilder.andWhere('chat_flow.type = :type', { type: 'ASSISTANT' })
         } else if (type === 'CHATFLOW') {
             // fetch all chatflows that are not agentflow
-            return dbResponse.filter((chatflow) => chatflow.type === 'CHATFLOW' || !chatflow.type)
+            queryBuilder.andWhere('chat_flow.type = :type', { type: 'CHATFLOW' })
         }
-        return dbResponse
+        if (workspaceId) queryBuilder.andWhere('chat_flow.workspaceId = :workspaceId', { workspaceId })
+        const [data, total] = await queryBuilder.getManyAndCount()
+
+        if (page > 0 && limit > 0) {
+            return { data, total }
+        } else {
+            return data
+        }
     } catch (error) {
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,

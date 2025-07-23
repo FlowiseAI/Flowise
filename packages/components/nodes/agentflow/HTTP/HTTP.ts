@@ -3,6 +3,8 @@ import axios, { AxiosRequestConfig, Method, ResponseType } from 'axios'
 import FormData from 'form-data'
 import * as querystring from 'querystring'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import * as ipaddr from 'ipaddr.js'
+import dns from 'dns/promises'
 
 class HTTP_Agentflow implements INode {
     label: string
@@ -230,6 +232,44 @@ class HTTP_Agentflow implements INode {
         ]
     }
 
+    private isDeniedIP(ip: string, denyList: string[]): void {
+        const parsedIp = ipaddr.parse(ip)
+        for (const entry of denyList) {
+            if (entry.includes('/')) {
+                try {
+                    const [range, _] = entry.split('/')
+                    const parsedRange = ipaddr.parse(range)
+                    if (parsedIp.kind() === parsedRange.kind()) {
+                        if (parsedIp.match(ipaddr.parseCIDR(entry))) {
+                            throw new Error('Access to this host is denied by policy.')
+                        }
+                    }
+                } catch (error) {
+                    throw new Error(`isDeniedIP: ${error}`)
+                }
+            } else if (ip === entry) throw new Error('Access to this host is denied by policy.')
+        }
+    }
+
+    private async checkDenyList(url: string) {
+        const httpDenyListString: string | undefined = process.env.HTTP_DENY_LIST
+        if (!httpDenyListString) return url
+        const httpDenyList = httpDenyListString.split(',').map((ip) => ip.trim())
+
+        const urlObj = new URL(url)
+
+        const hostname = urlObj.hostname
+
+        if (ipaddr.isValid(hostname)) {
+            this.isDeniedIP(hostname, httpDenyList)
+        } else {
+            const addresses = await dns.lookup(hostname, { all: true })
+            for (const address of addresses) {
+                this.isDeniedIP(address.address, httpDenyList)
+            }
+        }
+    }
+
     async run(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const method = nodeData.inputs?.method as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'
         const url = nodeData.inputs?.url as string
@@ -291,6 +331,8 @@ class HTTP_Agentflow implements INode {
 
             // Build final URL with query parameters
             const finalUrl = queryString ? `${url}${url.includes('?') ? '&' : '?'}${queryString}` : url
+
+            await this.checkDenyList(finalUrl)
 
             // Prepare request config
             const requestConfig: AxiosRequestConfig = {

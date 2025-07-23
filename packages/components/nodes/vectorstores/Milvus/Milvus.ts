@@ -395,7 +395,18 @@ const similaritySearchVectorWithScore = async (query: number[], k: number, vecto
                 }
             }
         })
-        results.push([new Document(fields), result.score])
+        let normalizedScore = result.score
+        switch (vectorStore.indexCreateParams.metric_type) {
+            case MetricType.L2:
+                normalizedScore = 1 / (1 + result.score)
+                break
+            case MetricType.IP:
+            case MetricType.COSINE:
+                normalizedScore = (result.score + 1) / 2
+                break
+        }
+
+        results.push([new Document(fields), normalizedScore])
     })
     return results
 }

@@ -16,6 +16,8 @@ import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig
 import { customGet } from '../nodes/sequentialagents/commonUtils'
 import { TextSplitter } from 'langchain/text_splitter'
 import { DocumentLoader } from 'langchain/document_loaders/base'
+import { NodeVM } from '@flowiseai/nodevm'
+import { Sandbox } from '@e2b/code-interpreter'
 
 export const numberOrExpressionRegex = '^(\\d+\\.?\\d*|{{.*}})$' //return true if string consists only numbers OR expression {{}}
 export const notEmptyRegex = '(.|\\s)*\\S(.|\\s)*' //return true if string is not empty or blank
@@ -943,10 +945,13 @@ export const getVars = async (
     nodeData: INodeData,
     options: ICommonObject
 ) => {
+    if (!options.workspaceId) {
+        return []
+    }
     const variables =
         ((await appDataSource
             .getRepository(databaseEntities['Variable'])
-            .findBy(options.workspaceId ? { workspaceId: Equal(options.workspaceId) } : {})) as IVariable[]) ?? []
+            .findBy({ workspaceId: Equal(options.workspaceId) })) as IVariable[]) ?? []
 
     // override variables defined in overrideConfig
     // nodeData.inputs.vars is an Object, check each property and override the variable
@@ -1067,7 +1072,17 @@ export const mapMimeTypeToInputField = (mimeType: string) => {
         case 'text/jsonl':
             return 'jsonlinesFile'
         case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        case 'application/msword': {
             return 'docxFile'
+        }
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+        case 'application/vnd.ms-excel': {
+            return 'excelFile'
+        }
+        case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+        case 'application/vnd.ms-powerpoint': {
+            return 'powerpointFile'
+        }
         case 'application/vnd.yaml':
         case 'application/x-yaml':
         case 'text/vnd.yaml':
@@ -1088,6 +1103,19 @@ export const mapMimeTypeToExt = (mimeType: string) => {
     switch (mimeType) {
         case 'text/plain':
             return 'txt'
+        case 'text/html':
+            return 'html'
+        case 'text/css':
+            return 'css'
+        case 'text/javascript':
+        case 'application/javascript':
+            return 'js'
+        case 'text/xml':
+        case 'application/xml':
+            return 'xml'
+        case 'text/markdown':
+        case 'text/x-markdown':
+            return 'md'
         case 'application/pdf':
             return 'pdf'
         case 'application/json':
@@ -1106,6 +1134,10 @@ export const mapMimeTypeToExt = (mimeType: string) => {
             return 'xls'
         case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
             return 'xlsx'
+        case 'application/vnd.ms-powerpoint':
+            return 'ppt'
+        case 'application/vnd.openxmlformats-officedocument.presentationml.presentation':
+            return 'pptx'
         default:
             return ''
     }
@@ -1317,4 +1349,228 @@ export const stripHTMLFromToolInput = (input: string) => {
     // After conversion, replace any escaped underscores with regular underscores
     cleanedInput = cleanedInput.replace(/\\_/g, '_')
     return cleanedInput
+}
+
+// Helper function to convert require statements to ESM imports
+const convertRequireToImport = (requireLine: string): string | null => {
+    // Remove leading/trailing whitespace and get the indentation
+    const indent = requireLine.match(/^(\s*)/)?.[1] || ''
+    const trimmed = requireLine.trim()
+
+    // Match patterns like: const/let/var name = require('module')
+    const defaultRequireMatch = trimmed.match(/^(const|let|var)\s+(\w+)\s*=\s*require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/)
+    if (defaultRequireMatch) {
+        const [, , varName, moduleName] = defaultRequireMatch
+        return `${indent}import ${varName} from '${moduleName}';`
+    }
+
+    // Match patterns like: const { name1, name2 } = require('module')
+    const destructureMatch = trimmed.match(/^(const|let|var)\s+\{\s*([^}]+)\s*\}\s*=\s*require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/)
+    if (destructureMatch) {
+        const [, , destructuredVars, moduleName] = destructureMatch
+        return `${indent}import { ${destructuredVars.trim()} } from '${moduleName}';`
+    }
+
+    // Match patterns like: const name = require('module').property
+    const propertyMatch = trimmed.match(/^(const|let|var)\s+(\w+)\s*=\s*require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)\.(\w+)/)
+    if (propertyMatch) {
+        const [, , varName, moduleName, property] = propertyMatch
+        return `${indent}import { ${property} as ${varName} } from '${moduleName}';`
+    }
+
+    // If no pattern matches, return null to skip conversion
+    return null
+}
+
+/**
+ * Execute JavaScript code using either Sandbox or NodeVM
+ * @param {string} code - The JavaScript code to execute
+ * @param {ICommonObject} sandbox - The sandbox object with variables
+ * @param {ICommonObject} options - Execution options
+ * @returns {Promise<any>} - The execution result
+ */
+export const executeJavaScriptCode = async (
+    code: string,
+    sandbox: ICommonObject,
+    options: {
+        timeout?: number
+        useSandbox?: boolean
+        libraries?: string[]
+        streamOutput?: (output: string) => void
+        nodeVMOptions?: ICommonObject
+    } = {}
+): Promise<any> => {
+    const { timeout = 10000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
+    const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
+
+    if (shouldUseSandbox) {
+        try {
+            const variableDeclarations = []
+
+            if (sandbox['$vars']) {
+                variableDeclarations.push(`const $vars = ${JSON.stringify(sandbox['$vars'])};`)
+            }
+
+            if (sandbox['$flow']) {
+                variableDeclarations.push(`const $flow = ${JSON.stringify(sandbox['$flow'])};`)
+            }
+
+            // Add other sandbox variables
+            for (const [key, value] of Object.entries(sandbox)) {
+                if (
+                    key !== '$vars' &&
+                    key !== '$flow' &&
+                    key !== 'util' &&
+                    key !== 'Symbol' &&
+                    key !== 'child_process' &&
+                    key !== 'fs' &&
+                    key !== 'process'
+                ) {
+                    variableDeclarations.push(`const ${key} = ${JSON.stringify(value)};`)
+                }
+            }
+
+            // Handle import statements properly - they must be at the top
+            const lines = code.split('\n')
+            const importLines = []
+            const otherLines = []
+
+            for (const line of lines) {
+                const trimmedLine = line.trim()
+
+                // Skip node-fetch imports since Node.js has built-in fetch
+                if (trimmedLine.includes('node-fetch') || trimmedLine.includes("'fetch'") || trimmedLine.includes('"fetch"')) {
+                    continue // Skip this line entirely
+                }
+
+                // Check for existing ES6 imports and exports
+                if (trimmedLine.startsWith('import ') || trimmedLine.startsWith('export ')) {
+                    importLines.push(line)
+                }
+                // Check for CommonJS require statements and convert them to ESM imports
+                else if (/^(const|let|var)\s+.*=\s*require\s*\(/.test(trimmedLine)) {
+                    const convertedImport = convertRequireToImport(trimmedLine)
+                    if (convertedImport) {
+                        importLines.push(convertedImport)
+                    }
+                } else {
+                    otherLines.push(line)
+                }
+            }
+
+            const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY })
+
+            // Install libraries
+            for (const library of libraries) {
+                await sbx.commands.run(`npm install ${library}`)
+            }
+
+            // Separate imports from the rest of the code for proper ES6 module structure
+            const codeWithImports = [
+                ...importLines,
+                `module.exports = async function() {`,
+                ...variableDeclarations,
+                ...otherLines,
+                `}()`
+            ].join('\n')
+
+            const execution = await sbx.runCode(codeWithImports, { language: 'js' })
+
+            let output = ''
+
+            if (execution.text) output = execution.text
+            if (!execution.text && execution.logs.stdout.length) output = execution.logs.stdout.join('\n')
+
+            if (execution.error) {
+                throw new Error(`${execution.error.name}: ${execution.error.value}`)
+            }
+
+            if (execution.logs.stderr.length) {
+                throw new Error(execution.logs.stderr.join('\n'))
+            }
+
+            // Stream output if streaming function provided
+            if (streamOutput && output) {
+                streamOutput(output)
+            }
+
+            // Clean up sandbox
+            sbx.kill()
+
+            return output
+        } catch (e) {
+            throw new Error(`Sandbox Execution Error: ${e}`)
+        }
+    } else {
+        const builtinDeps = process.env.TOOL_FUNCTION_BUILTIN_DEP
+            ? defaultAllowBuiltInDep.concat(process.env.TOOL_FUNCTION_BUILTIN_DEP.split(','))
+            : defaultAllowBuiltInDep
+        const externalDeps = process.env.TOOL_FUNCTION_EXTERNAL_DEP ? process.env.TOOL_FUNCTION_EXTERNAL_DEP.split(',') : []
+        const deps = availableDependencies.concat(externalDeps)
+
+        const defaultNodeVMOptions: any = {
+            console: 'inherit',
+            sandbox,
+            require: {
+                external: { modules: deps },
+                builtin: builtinDeps
+            },
+            eval: false,
+            wasm: false,
+            timeout
+        }
+
+        // Merge with custom nodeVMOptions if provided
+        const finalNodeVMOptions = { ...defaultNodeVMOptions, ...nodeVMOptions }
+
+        const vm = new NodeVM(finalNodeVMOptions)
+
+        try {
+            const response = await vm.run(`module.exports = async function() {${code}}()`, __dirname)
+
+            let finalOutput = response
+            if (typeof response === 'object') {
+                finalOutput = JSON.stringify(response, null, 2)
+            }
+
+            // Stream output if streaming function provided
+            if (streamOutput && finalOutput) {
+                streamOutput(finalOutput)
+            }
+
+            return finalOutput
+        } catch (e) {
+            throw new Error(`NodeVM Execution Error: ${e}`)
+        }
+    }
+}
+
+/**
+ * Create a standard sandbox object for code execution
+ * @param {string} input - The input string
+ * @param {ICommonObject} variables - Variables from getVars
+ * @param {ICommonObject} flow - Flow object with chatflowId, sessionId, etc.
+ * @param {ICommonObject} additionalSandbox - Additional sandbox variables
+ * @returns {ICommonObject} - The sandbox object
+ */
+export const createCodeExecutionSandbox = (
+    input: string,
+    variables: IVariable[],
+    flow: ICommonObject,
+    additionalSandbox: ICommonObject = {}
+): ICommonObject => {
+    const sandbox: ICommonObject = {
+        $input: input,
+        util: undefined,
+        Symbol: undefined,
+        child_process: undefined,
+        fs: undefined,
+        process: undefined,
+        ...additionalSandbox
+    }
+
+    sandbox['$vars'] = prepareSandboxVars(variables)
+    sandbox['$flow'] = flow
+
+    return sandbox
 }

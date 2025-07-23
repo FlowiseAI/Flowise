@@ -3,7 +3,6 @@ import { Tool } from '../../database/entities/Tool'
 import { getAppVersion } from '../../utils'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
-import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS } from '../../Interface.Metrics'
 import { QueryRunner } from 'typeorm'
@@ -44,11 +43,23 @@ const deleteTool = async (toolId: string): Promise<any> => {
     }
 }
 
-const getAllTools = async (workspaceId?: string): Promise<Tool[]> => {
+const getAllTools = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
     try {
         const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(Tool).findBy(getWorkspaceSearchOptions(workspaceId))
-        return dbResponse
+        const queryBuilder = appServer.AppDataSource.getRepository(Tool).createQueryBuilder('tool').orderBy('tool.updatedDate', 'DESC')
+
+        if (page > 0 && limit > 0) {
+            queryBuilder.skip((page - 1) * limit)
+            queryBuilder.take(limit)
+        }
+        if (workspaceId) queryBuilder.andWhere('tool.workspaceId = :workspaceId', { workspaceId })
+        const [data, total] = await queryBuilder.getManyAndCount()
+
+        if (page > 0 && limit > 0) {
+            return { data, total }
+        } else {
+            return data
+        }
     } catch (error) {
         throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: toolsService.getAllTools - ${getErrorMessage(error)}`)
     }
