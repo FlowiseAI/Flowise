@@ -295,10 +295,8 @@ export const setTokenOrCookies = (
         // 1. Generate a random token
         const ssoToken = uuidv4()
 
-        // Send user data as part of the redirect URL (using query parameters)
-        //const dashboardUrl = `/sso-success?user=${encodeURIComponent(JSON.stringify(returnUser))}&ssoToken=${ssoToken}`
         // 2. Store returnUser in your session store, keyed by ssoToken, with a short expiry
-        storeSSOUserPayload(ssoToken, returnUser) // implement this function
+        storeSSOUserPayload(ssoToken, returnUser)
         // 3. Redirect with token only
         const dashboardUrl = `/sso-success?token=${ssoToken}`
 
