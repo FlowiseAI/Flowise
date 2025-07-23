@@ -210,7 +210,7 @@ export class App {
                 // Step 2: Check if the req path is casesensitive
                 if (URL_CASE_SENSITIVE_REGEX.test(req.path)) {
                     // Step 3: Check if the req path is in the whitelist
-                    const isWhitelisted = whitelistURLs.includes(req.path)
+                    const isWhitelisted = whitelistURLs.some((url) => req.path.startsWith(url))
                     if (isWhitelisted) {
                         next()
                     } else if (req.headers['x-request-from'] === 'internal') {
