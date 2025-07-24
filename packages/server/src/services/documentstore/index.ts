@@ -824,7 +824,7 @@ export const processLoader = async ({
             throw new Error('Unauthorized access')
         }
     }
-    
+
     // Check for existing loader and if stream is enabled
     if (entity.loaders && entity.loaders.length > 0) {
         const existingLoaders = JSON.parse(entity.loaders)
@@ -833,13 +833,7 @@ export const processLoader = async ({
         // Check if the loader is configured for streaming
         if (existingLoader && existingLoader.loaderConfig?.stream) {
             // Handle streaming
-            await _streamChunksToStorage(
-                appDataSource,
-                componentNodes,
-                data,
-                entity,
-                docLoaderId
-            )
+            await _streamChunksToStorage(appDataSource, componentNodes, data, entity, docLoaderId)
         }
     } else {
         await _saveChunksToStorage(
