@@ -433,8 +433,8 @@ class Agent_Agentflow implements INode {
             for (const store of stores) {
                 if (store.status === 'UPSERTED') {
                     const obj = {
-                        name: store.id, // Store only the ID, not the name
-                        label: store.name, // Display the current name
+                        name: `${store.id}:${store.name}`,
+                        label: store.name,
                         description: store.description
                     }
                     returnData.push(obj)
@@ -564,6 +564,12 @@ class Agent_Agentflow implements INode {
                         storeName = store?.name || storeId // Fallback to ID if store not found
                     }
 
+                    // Always fetch the current store name from database for referential integrity
+                    const appDataSource = options.appDataSource as DataSource
+                    const databaseEntities = options.databaseEntities as IDatabaseEntity
+                    const store = await appDataSource.getRepository(databaseEntities['DocumentStore']).findOneBy({ id: storeId })
+                    const currentStoreName = store?.name || storeId // Use current name from database
+
                     const docStoreVectorInstanceFilePath = options.componentNodes['documentStoreVS'].filePath as string
                     const docStoreVectorModule = await import(docStoreVectorInstanceFilePath)
                     const newDocStoreVectorInstance = new docStoreVectorModule.nodeClass()
@@ -586,7 +592,7 @@ class Agent_Agentflow implements INode {
                         ...nodeData,
                         inputs: {
                             ...nodeData.inputs,
-                            name: storeName
+                            name: currentStoreName
                                 .toLowerCase()
                                 .replace(/ /g, '_')
                                 .replace(/[^a-z0-9_-]/g, ''),
@@ -606,7 +612,7 @@ class Agent_Agentflow implements INode {
                     const componentNode = options.componentNodes['retrieverTool']
 
                     availableTools.push({
-                        name: storeName
+                        name: currentStoreName
                             .toLowerCase()
                             .replace(/ /g, '_')
                             .replace(/[^a-z0-9_-]/g, ''),
