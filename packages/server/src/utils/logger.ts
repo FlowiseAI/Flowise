@@ -202,7 +202,7 @@ export function expressRequestLogger(req: Request, res: Response, next: NextFunc
         if (sanitizedBody.password) {
             sanitizedBody.password = '********'
         }
-        
+
         // Use the shared requestLogger with request-specific metadata
         const requestMetadata = {
             request: {
