@@ -129,13 +129,7 @@ const ChatDetailPage = async ({ params }: { params: { chatId: string } }) => {
     let sidekicks: any[] = []
 
     try {
-        // Fetch chat, messages and sidekicks in parallel
-        const [chat, { sidekicks: fetchedSidekicks } = {}] = await Promise.all([getChat(params.chatId, user), findSidekicksForChat(user)])
-
-        // Always assign sidekicks if they were fetched successfully
-        if (fetchedSidekicks) {
-            sidekicks = fetchedSidekicks
-        }
+        const [chat] = await Promise.all([getChat(params.chatId, user)])
 
         if (!chat) {
             return <ChatNotFound />

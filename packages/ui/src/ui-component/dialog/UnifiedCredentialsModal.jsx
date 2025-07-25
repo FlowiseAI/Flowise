@@ -636,7 +636,7 @@ const UnifiedCredentialsModal = ({ show, missingCredentials, onAssign, onSkip, o
                     disabled={loading || assigningCredentials}
                     startIcon={assigningCredentials ? <CircularProgress size={16} /> : null}
                 >
-                    {assigningCredentials ? 'Saving...' : isQuickSetupMode ? 'Save Changes' : 'Assign & Continue'}
+                    {assigningCredentials ? 'Saving...' : 'Assign & Continue'}
                 </StyledButton>
             </DialogActions>
 

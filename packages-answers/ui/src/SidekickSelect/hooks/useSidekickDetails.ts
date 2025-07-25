@@ -5,8 +5,6 @@ import axios from 'axios'
 
 const fetcher = async (url: string): Promise<Sidekick> => axios.get(url).then((res) => res.data)
 const swrConfig = {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
     retry: 2,
     retryDelay: 1000,
     dedupingInterval: 2000

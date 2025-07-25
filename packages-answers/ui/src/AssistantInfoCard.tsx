@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Box, Typography, IconButton, Chip, Tooltip, alpha, Button } from '@mui/material'
 import { Sidekick } from 'types'
 import {
@@ -17,6 +17,7 @@ import { baseURL } from '@/store/constant'
 import { useNavigate, useNavigationState } from '@/utils/navigation'
 import { useUser } from '@auth0/nextjs-auth0/client'
 import { useRouter } from 'next/navigation'
+import { useSidekickDetails } from './SidekickSelect/hooks/useSidekickDetails'
 
 interface AssistantInfoCardProps {
     sidekick?: Sidekick
@@ -53,12 +54,14 @@ const DescriptionContainer = styled(Box, {
 }))
 
 const AssistantInfoCard = ({
-    sidekick,
+    sidekick: defaultSidekick,
     onShare,
     onEdit: _onEdit,
     isFavorite: _propIsFavorite,
     onToggleFavorite
 }: AssistantInfoCardProps) => {
+    const { data: sidekickDetails } = useSidekickDetails(defaultSidekick?.id ?? null)
+    const sidekick = useMemo(() => ({ ...defaultSidekick, ...sidekickDetails }), [defaultSidekick, sidekickDetails])
     const [expanded, setExpanded] = useState(false)
     const description = sidekick?.chatflow?.description || 'No description available'
     const theme = useTheme()
@@ -226,7 +229,7 @@ const AssistantInfoCard = ({
                                 <Chip label='Owner' size='small' color='primary' variant='outlined' sx={{ mr: 1 }} />
                             )}
 
-                            {sidekick?.categories?.map && (
+                            {sidekick?.categories?.length ? (
                                 <Tooltip title={sidekick.categories.map((category) => category.trim().split(';').join(', ')).join(', ')}>
                                     <Chip
                                         label={sidekick.categories.map((category) => category.trim().split(';').join(' | ')).join(' | ')}
@@ -234,7 +237,7 @@ const AssistantInfoCard = ({
                                         variant='outlined'
                                     />
                                 </Tooltip>
-                            )}
+                            ) : null}
                         </Box>
 
                         <Box sx={{ position: 'relative' }}>

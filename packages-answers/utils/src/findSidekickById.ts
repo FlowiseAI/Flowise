@@ -86,8 +86,7 @@ export async function findSidekickById(user: User, id: string) {
     // Add permission properties to the chatflow object
     const enhancedChatflow = {
         ...chatflow,
-        isOwner: chatflow.userId === user.id,
-        canEdit: (chatflow.userId === user.id && user.permissions?.includes('chatflow:manage')) || user.permissions?.includes('org:manage')
+        canEdit: (chatflow.isOwner && user.permissions?.includes('chatflow:manage')) || user.permissions?.includes('org:manage')
     }
     const allCredentials = extractAllCredentials(chatflow.flowData)
     const needsSetup = allCredentials.some((cred) => !cred.isAssigned)
