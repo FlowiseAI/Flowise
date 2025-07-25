@@ -14,9 +14,11 @@ export default (apiFunc) => {
             setData(result.data)
             setError(null)
             setApiError(null)
+            return result // Return the full response for payment failure handling
         } catch (err) {
             handleError(err || 'Unexpected Error!')
             setApiError(err || 'Unexpected Error!')
+            throw err // Re-throw error to maintain existing error handling
         } finally {
             setLoading(false)
         }

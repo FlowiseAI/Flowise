@@ -49,6 +49,7 @@ import { AddSSOColumns1730519457880 } from '../../../enterprise/database/migrati
 import { AddPersonalWorkspace1734074497540 } from '../../../enterprise/database/migrations/mysql/1734074497540-AddPersonalWorkspace'
 import { RefactorEnterpriseDatabase1737076223692 } from '../../../enterprise/database/migrations/mysql/1737076223692-RefactorEnterpriseDatabase'
 import { ExecutionLinkWorkspaceId1746862866554 } from '../../../enterprise/database/migrations/mysql/1746862866554-ExecutionLinkWorkspaceId'
+import { AddStatusInOrganization1749714174104 } from '../../../enterprise/database/migrations/mysql/1749714174104-AddStatusInOrganization'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -100,5 +101,6 @@ export const mysqlMigrations = [
     AddErrorToEvaluationRun1744964560174,
     FixErrorsColumnInEvaluationRun1746437114935,
     ExecutionLinkWorkspaceId1746862866554,
-    ModifyExecutionDataColumnType1747902489801
+    ModifyExecutionDataColumnType1747902489801,
+    AddStatusInOrganization1749714174104
 ]

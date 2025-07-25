@@ -18,8 +18,8 @@ const getAdditionalSeatsQuantity = (subscriptionId) =>
 const getCustomerDefaultSource = (customerId) => client.get(`/organization/customer-default-source?customerId=${customerId}`)
 const getAdditionalSeatsProration = (subscriptionId, quantity) =>
     client.get(`/organization/additional-seats-proration?subscriptionId=${subscriptionId}&quantity=${quantity}`)
-const updateAdditionalSeats = (subscriptionId, quantity, prorationDate) =>
-    client.post(`/organization/update-additional-seats`, { subscriptionId, quantity, prorationDate })
+const updateAdditionalSeats = (subscriptionId, quantity, prorationDate, increase) =>
+    client.post(`/organization/update-additional-seats`, { subscriptionId, quantity, prorationDate, increase })
 const getPlanProration = (subscriptionId, newPlanId) =>
     client.get(`/organization/plan-proration?subscriptionId=${subscriptionId}&newPlanId=${newPlanId}`)
 const updateSubscriptionPlan = (subscriptionId, newPlanId, prorationDate) =>
