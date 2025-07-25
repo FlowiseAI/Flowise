@@ -1,7 +1,7 @@
 import { OllamaEmbeddings } from '@langchain/community/embeddings/ollama'
 import { OllamaInput } from '@langchain/community/llms/ollama'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getEnvironmentVariable } from '../../../src/utils'
 
 class OllamaEmbedding_Embeddings implements INode {
     label: string
@@ -29,13 +29,14 @@ class OllamaEmbedding_Embeddings implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default: 'http://localhost:11434'
+                default: getEnvironmentVariable('OLLAMA_DEFAULT_BASE_URL') ?? 'http://localhost:11434'
             },
             {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'llama2'
+                placeholder: 'nomic-embed-text',
+                default: getEnvironmentVariable('OLLAMA_DEFAULT_EMBEDDING_MODEL') ?? ''
             },
             {
                 label: 'Number of GPU',
