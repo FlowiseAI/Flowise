@@ -58,6 +58,10 @@ const getAllVariables = async (workspaceId?: string, page: number = -1, limit: n
         }
         if (workspaceId) queryBuilder.andWhere('variable.workspaceId = :workspaceId', { workspaceId })
 
+        if (appServer.identityManager.getPlatformType() === Platform.CLOUD) {
+            queryBuilder.andWhere('variable.type != :type', { type: 'runtime' })
+        }
+
         const [data, total] = await queryBuilder.getManyAndCount()
 
         if (page > 0 && limit > 0) {
@@ -79,6 +83,11 @@ const getVariableById = async (variableId: string) => {
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).findOneBy({
             id: variableId
         })
+
+        if (appServer.identityManager.getPlatformType() === Platform.CLOUD && dbResponse?.type === 'runtime') {
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Cloud platform does not support runtime variables!')
+        }
+
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
