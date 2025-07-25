@@ -3,11 +3,12 @@ import { v4 as uuidv4 } from 'uuid'
 import { createClient } from '@supabase/supabase-js'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
-import { SupabaseVectorStore, SupabaseLibArgs, SupabaseFilterRPCCall } from '@langchain/community/vectorstores/supabase'
+import { SupabaseVectorStore, SupabaseLibArgs } from '@langchain/community/vectorstores/supabase'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
+import { FilterParser } from './filterParser'
 
 class Supabase_VectorStores implements INode {
     label: string
@@ -233,11 +234,7 @@ class Supabase_VectorStores implements INode {
         }
 
         if (supabaseRPCFilter) {
-            const funcString = `return rpc.${supabaseRPCFilter};`
-            const funcFilter = new Function('rpc', funcString)
-            obj.filter = (rpc: SupabaseFilterRPCCall) => {
-                return funcFilter(rpc)
-            }
+            obj.filter = FilterParser.parseFilterString(supabaseRPCFilter)
         }
 
         const vectorStore = await SupabaseVectorStore.fromExistingIndex(embeddings, obj)

@@ -23,17 +23,20 @@ const message = `Uploaded files will be parsed as strings and sent to the LLM. I
 Refer <a href='https://docs.flowiseai.com/using-flowise/uploads#files' target='_blank'>docs</a> for more details.`
 
 const availableFileTypes = [
-    { name: 'CSS', ext: 'text/css' },
-    { name: 'CSV', ext: 'text/csv' },
-    { name: 'HTML', ext: 'text/html' },
-    { name: 'JSON', ext: 'application/json' },
-    { name: 'Markdown', ext: 'text/markdown' },
-    { name: 'PDF', ext: 'application/pdf' },
-    { name: 'SQL', ext: 'application/sql' },
-    { name: 'Text File', ext: 'text/plain' },
-    { name: 'XML', ext: 'application/xml' },
-    { name: 'DOC', ext: 'application/msword' },
-    { name: 'DOCX', ext: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }
+    { name: 'CSS', ext: 'text/css', extension: '.css' },
+    { name: 'CSV', ext: 'text/csv', extension: '.csv' },
+    { name: 'HTML', ext: 'text/html', extension: '.html' },
+    { name: 'JSON', ext: 'application/json', extension: '.json' },
+    { name: 'Markdown', ext: 'text/markdown', extension: '.md' },
+    { name: 'YAML', ext: 'application/x-yaml', extension: '.yaml' },
+    { name: 'PDF', ext: 'application/pdf', extension: '.pdf' },
+    { name: 'SQL', ext: 'application/sql', extension: '.sql' },
+    { name: 'Text File', ext: 'text/plain', extension: '.txt' },
+    { name: 'XML', ext: 'application/xml', extension: '.xml' },
+    { name: 'DOC', ext: 'application/msword', extension: '.doc' },
+    { name: 'DOCX', ext: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', extension: '.docx' },
+    { name: 'XLSX', ext: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', extension: '.xlsx' },
+    { name: 'PPTX', ext: 'application/vnd.openxmlformats-officedocument.presentationml.presentation', extension: '.pptx' }
 ]
 
 const FileUpload = ({ dialogProps }) => {
@@ -221,30 +224,45 @@ const FileUpload = ({ dialogProps }) => {
                             onChange={handleAllowedFileTypesChange}
                         />
                         <label htmlFor={fileType.ext} style={{ marginLeft: 10 }}>
-                            {fileType.name} ({fileType.ext})
+                            {fileType.name} ({fileType.extension})
                         </label>
                     </div>
                 ))}
             </div>
 
-            <Box sx={{ marginBottom: 3 }}>
-                <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>PDF Usage</Typography>
-                <FormControl disabled={!fullFileUpload}>
-                    <RadioGroup name='pdf-usage' value={pdfUsage} onChange={handlePdfUsageChange}>
-                        <FormControlLabel value='perPage' control={<Radio />} label='One document per page' />
-                        <FormControlLabel value='perFile' control={<Radio />} label='One document per file' />
-                    </RadioGroup>
-                </FormControl>
-            </Box>
+            {allowedFileTypes.includes('application/pdf') && fullFileUpload && (
+                <Box
+                    sx={{
+                        borderRadius: 2,
+                        border: '1px solid #e0e0e0',
+                        backgroundColor: '#fafafa',
+                        padding: 3,
+                        marginBottom: 3,
+                        marginTop: 2
+                    }}
+                >
+                    <Typography sx={{ fontSize: 16, fontWeight: 600, marginBottom: 2, color: '#424242' }}>PDF Configuration</Typography>
 
-            <Box sx={{ marginBottom: 3 }}>
-                <SwitchInput
-                    label='Use Legacy Build (for PDF compatibility issues)'
-                    onChange={handleLegacyBuildChange}
-                    value={pdfLegacyBuild}
-                    disabled={!fullFileUpload}
-                />
-            </Box>
+                    <Box>
+                        <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>PDF Usage</Typography>
+                        <FormControl disabled={!fullFileUpload}>
+                            <RadioGroup name='pdf-usage' value={pdfUsage} onChange={handlePdfUsageChange}>
+                                <FormControlLabel value='perPage' control={<Radio />} label='One document per page' />
+                                <FormControlLabel value='perFile' control={<Radio />} label='One document per file' />
+                            </RadioGroup>
+                        </FormControl>
+                    </Box>
+
+                    <Box>
+                        <SwitchInput
+                            label='Use Legacy Build (for PDF compatibility issues)'
+                            onChange={handleLegacyBuildChange}
+                            value={pdfLegacyBuild}
+                            disabled={!fullFileUpload}
+                        />
+                    </Box>
+                </Box>
+            )}
 
             <StyledButton style={{ marginBottom: 10, marginTop: 20 }} variant='contained' onClick={onSave}>
                 Save

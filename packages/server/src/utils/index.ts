@@ -1378,11 +1378,10 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                 }
                 continue
             } else if (inputParam.type === 'array') {
-                // get array item schema
                 const arrayItem = inputParam.array
                 if (Array.isArray(arrayItem)) {
-                    const arraySchema = []
-                    // Each array item is a field definition
+                    const arrayItemSchema: Record<string, string> = {}
+                    // Build object schema representing the structure of each array item
                     for (const item of arrayItem) {
                         let itemType = item.type
                         if (itemType === 'options') {
@@ -1391,10 +1390,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                         } else if (itemType === 'file') {
                             itemType = item.fileType ?? item.type
                         }
-                        arraySchema.push({
-                            name: item.name,
-                            type: itemType
-                        })
+                        arrayItemSchema[item.name] = itemType
                     }
                     obj = {
                         node: flowNode.data.label,
@@ -1402,7 +1398,7 @@ export const findAvailableConfigs = (reactFlowNodes: IReactFlowNode[], component
                         label: inputParam.label,
                         name: inputParam.name,
                         type: inputParam.type,
-                        schema: arraySchema
+                        schema: arrayItemSchema
                     }
                 }
             } else if (inputParam.loadConfig) {

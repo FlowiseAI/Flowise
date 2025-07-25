@@ -14,6 +14,11 @@ const createCredential = async (requestBody: any) => {
     try {
         const appServer = getRunningExpressApp()
         const newCredential = await transformToCredentialEntity(requestBody)
+
+        if (requestBody.id) {
+            newCredential.id = requestBody.id
+        }
+
         const credential = await appServer.AppDataSource.getRepository(Credential).create(newCredential)
         const dbResponse = await appServer.AppDataSource.getRepository(Credential).save(credential)
         return dbResponse
