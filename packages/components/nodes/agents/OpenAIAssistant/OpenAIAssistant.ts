@@ -285,7 +285,7 @@ class OpenAIAssistant_Agents implements INode {
             if (!isNewThread) {
                 const promise = (threadId: string) => {
                     return new Promise<void>((resolve, reject) => {
-                        const maxWaitTime = 30000 // Maximum wait time of 30 seconds
+                        const maxWaitTime = 3000000 // Maximum wait time of 30 seconds
                         const startTime = Date.now()
                         let delay = 500 // Initial delay between retries
                         const maxRetries = 10
@@ -643,7 +643,7 @@ class OpenAIAssistant_Agents implements INode {
 
             const promise = (threadId: string, runId: string) => {
                 return new Promise((resolve, reject) => {
-                    const maxWaitTime = 30000 // Maximum wait time of 30 seconds
+                    const maxWaitTime = 3000000 // Maximum wait time of 30 seconds
                     const startTime = Date.now()
                     let delay = 500 // Initial delay between retries
                     const maxRetries = 10
