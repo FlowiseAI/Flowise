@@ -6,11 +6,13 @@ import { getErrorMessage } from '../../errors/utils'
 import { getAppVersion } from '../../utils'
 import { QueryRunner } from 'typeorm'
 import { validate } from 'uuid'
+import { Platform } from '../../Interface'
 
 const createVariable = async (newVariable: Variable, orgId: string) => {
+    const appServer = getRunningExpressApp()
+    if (appServer.identityManager.getPlatformType() === Platform.CLOUD && newVariable.type === 'runtime')
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Cloud platform does not support runtime variables!')
     try {
-        const appServer = getRunningExpressApp()
-
         const variable = await appServer.AppDataSource.getRepository(Variable).create(newVariable)
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(variable)
         await appServer.telemetry.sendTelemetry(
@@ -87,8 +89,10 @@ const getVariableById = async (variableId: string) => {
 }
 
 const updateVariable = async (variable: Variable, updatedVariable: Variable) => {
+    const appServer = getRunningExpressApp()
+    if (appServer.identityManager.getPlatformType() === Platform.CLOUD && updatedVariable.type === 'runtime')
+        throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Cloud platform does not support runtime variables!')
     try {
-        const appServer = getRunningExpressApp()
         const tmpUpdatedVariable = await appServer.AppDataSource.getRepository(Variable).merge(variable, updatedVariable)
         const dbResponse = await appServer.AppDataSource.getRepository(Variable).save(tmpUpdatedVariable)
         return dbResponse
@@ -131,7 +135,7 @@ const importVariables = async (newVariables: Partial<Variable>[], queryRunner?: 
         })
 
         // step 3 - remove ids that are only duplicate
-        const prepVariables: Partial<Variable>[] = newVariables.map((newVariable) => {
+        let prepVariables: Partial<Variable>[] = newVariables.map((newVariable) => {
             let id: string = ''
             if (newVariable.id) id = newVariable.id
             if (foundIds.includes(id)) {
@@ -140,6 +144,10 @@ const importVariables = async (newVariables: Partial<Variable>[], queryRunner?: 
             }
             return newVariable
         })
+
+        // Filter out variables with type "runtime"
+        if (appServer.identityManager.getPlatformType() === Platform.CLOUD)
+            prepVariables = prepVariables.filter((variable) => variable.type !== 'runtime')
 
         // step 4 - transactional insert array of entities
         const insertResponse = await repository.insert(prepVariables)
