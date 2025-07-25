@@ -82,11 +82,18 @@ export async function findSidekickById(user: User, id: string) {
         .map((c: string) => c.trim().split(';'))
         .flat()
 
+    // Add permission properties to the chatflow object
+    const enhancedChatflow = {
+        ...chatflow,
+        isOwner: chatflow.userId === user.id,
+        canEdit: (chatflow.userId === user.id && user.permissions?.includes('chatflow:manage')) || user.permissions?.includes('org:manage')
+    }
+
     return {
         id: chatflow.id || '',
         label: chatflow.name || '',
         visibility: chatflow.visibility || [],
-        chatflow,
+        chatflow: enhancedChatflow,
         answersConfig: chatflow.answersConfig,
         chatflowId: chatflow.id || '',
         chatflowDomain: user.chatflowDomain,

@@ -197,7 +197,6 @@ const getAllChatflows = async (user?: IUser, type?: ChatflowType, filter?: Chatf
 
             queryBuilder.andWhere(`(${visibilityConditions})`)
         }
-
         const response = await queryBuilder.getMany()
         const dbResponse = response.map((chatflow) => ({
             ...chatflow,
@@ -207,7 +206,7 @@ const getAllChatflows = async (user?: IUser, type?: ChatflowType, filter?: Chatf
                 ? 'ORGANIZATION'
                 : '',
             isOwner: chatflow.userId === userId,
-            canEdit: chatflow.userId === userId || permissions?.includes('org:manage')
+            canEdit: (chatflow.userId === userId && permissions?.includes('chatflow:manage')) || permissions?.includes('org:manage')
         }))
 
         if (!(await checkOwnership(dbResponse, user))) {
@@ -285,6 +284,16 @@ const getChatflowById = async (chatflowId: string, user?: IUser): Promise<any> =
             if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg))) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
             }
+            // Add permission properties to response
+            const enhancedResponse = {
+                ...dbResponse,
+                isOwner: dbResponse.userId === user.id,
+                canEdit:
+                    (dbResponse.userId === user.id && user.permissions?.includes('chatflow:manage')) ||
+                    user.permissions?.includes('org:manage')
+            }
+
+            return enhancedResponse
         }
 
         return dbResponse
