@@ -22,6 +22,8 @@ export const WHITELIST_URLS = [
     '/api/v1/nvidia-nim',
     '/api/v1/google-auth',
     process.env.GOOGLE_CALLBACK_URL ?? '/api/v1/google-auth/callback',
+    '/api/v1/salesforce-auth',
+    '/api/v1/salesforce-auth/callback',
     '/api/v1/gmail/labels',
     '/api/v1/gmail/messages',
     '/api/v1/gmail/message',

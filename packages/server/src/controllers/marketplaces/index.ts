@@ -53,7 +53,10 @@ const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunct
                 `Error: marketplacesService.deleteCustomTemplate - id not provided!`
             )
         }
-        const apiResponse = await marketplacesService.deleteCustomTemplate(req.params.id)
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User authentication required')
+        }
+        const apiResponse = await marketplacesService.deleteCustomTemplate(req.params.id, req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -62,6 +65,9 @@ const deleteCustomTemplate = async (req: Request, res: Response, next: NextFunct
 
 const getAllCustomTemplates = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Authentication required')
+        }
         const apiResponse = await marketplacesService.getAllCustomTemplates(req.user!)
         return res.json(apiResponse)
     } catch (error) {
@@ -77,7 +83,23 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
                 `Error: marketplacesService.saveCustomTemplate - body not provided!`
             )
         }
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'User authentication required')
+        }
         const apiResponse = await marketplacesService.saveCustomTemplate(req.body, req.user)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getOrganizationTemplates = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Authentication required')
+        }
+
+        const apiResponse = await marketplacesService.getOrganizationTemplates(req.user)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -87,6 +109,7 @@ const saveCustomTemplate = async (req: Request, res: Response, next: NextFunctio
 export default {
     getAllTemplates,
     getAllCustomTemplates,
+    getOrganizationTemplates,
     saveCustomTemplate,
     deleteCustomTemplate,
     getMarketplaceTemplate

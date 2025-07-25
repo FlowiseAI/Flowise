@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import React from 'react'
-
+import ChatRedirectHandler from '@ui/ChatRedirectHandler'
 // import Homepage from '@ui/Homepage';
 
 export const metadata = {
@@ -9,7 +9,7 @@ export const metadata = {
 }
 
 const HomepagePage = async () => {
-    return redirect('/chat')
+    return <ChatRedirectHandler />
 }
 
 export default HomepagePage

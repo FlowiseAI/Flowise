@@ -256,4 +256,4 @@ const SidekickCategoryList: React.FC<SidekickCategoryListProps> = ({
     )
 }
 
-export default SidekickCategoryList 
+export default SidekickCategoryList

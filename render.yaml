@@ -86,11 +86,11 @@ services:
           - key: FLOWISE_SECRETKEY_OVERWRITE
             sync: false
           - key: SECRETKEY_PATH
-            value: '/var/data'
+            sync: false
           - key: APIKEY_STORAGE_TYPE
             value: 'db'
           - key: APIKEY_PATH
-            value: '/var/data'
+            sync: false
 
           # =========================================
           # CORS & Iframe Settings
@@ -113,9 +113,19 @@ services:
           # Storage Configuration
           # =========================================
           - key: STORAGE_TYPE
-            value: db
-          - key: BLOB_STORAGE_PATH
-            value: '/var/data'
+            value: s3
+          - key: S3_STORAGE_BUCKET_NAME
+            sync: false
+          - key: S3_STORAGE_ACCESS_KEY_ID
+            sync: false
+          - key: S3_STORAGE_SECRET_ACCESS_KEY
+            sync: false
+          - key: S3_STORAGE_REGION
+            sync: false
+          - key: S3_ENDPOINT_URL
+            sync: false
+          - key: S3_FORCE_PATH_STYLE
+            sync: false
 
           # =========================================
           # Langfuse Tracing
@@ -157,10 +167,6 @@ services:
       dockerfilePath: ./Dockerfile
       # domains:
       #     - prod.studio.theanswer.ai
-      disk:
-          name: disk
-          mountPath: /var/data
-          sizeGB: 5
     - type: web
       name: theanswer-web
       runtime: docker

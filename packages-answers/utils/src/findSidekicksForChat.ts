@@ -46,34 +46,18 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
         throw new Error('Unauthorized')
     }
 
-    // Fetch user chats from the database
-    // const
-    //  = await prisma.chat.findMany({
-    //     where: {
-    //         users: { some: { email: user.email } },
-    //         organization: { id: user.org_id }
-    //     },
-    //     select: {
-    //         id: true
-    //     }
-    // })
-
     const { chatflowDomain } = user
     try {
-        const response = await fetch(
-            `${chatflowDomain}/api/v1/chatflows?filter=${encodeURIComponent(
-                JSON.stringify({
-                    visibility: 'AnswerAI,Organization'
-                })
-            )}`,
-            {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
+        // Apply proper visibility filter to only get user's own chatflows and approved public ones
+        const filterParams = `?filter=${encodeURIComponent(JSON.stringify({ visibility: 'AnswerAI,Organization' }))}`
+
+        const response = await fetch(`${chatflowDomain}/api/v1/chatflows${filterParams}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
             }
-        )
+        })
 
         if (response.ok) {
             const result = await response.json()
@@ -97,7 +81,7 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                         .map((c) => c.trim().split(';'))
                         .flat()
 
-                    return {
+                    const sidekick = {
                         id: chatflow.id || '',
                         label: chatflow.name || '',
                         visibility: chatflow.visibility || [],
@@ -117,6 +101,7 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                         categories,
                         isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
                         isFavorite: false,
+                        isExecutable: chatflow.isOwner || chatflow.visibility.includes('AnswerAI'),
                         // In lightweight mode, return minimal constraints
                         constraints: {
                             isSpeechToTextEnabled: false,
@@ -124,6 +109,8 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                             uploadSizeAndTypes: []
                         }
                     }
+
+                    return sidekick
                 }
 
                 // Full processing for non-lightweight mode
@@ -167,7 +154,7 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                     .map((c) => c.trim().split(';'))
                     .flat()
 
-                return {
+                const sidekick = {
                     id: chatflow.id || '',
                     label: chatflow.name || '',
                     visibility: chatflow.visibility || [],
@@ -181,6 +168,7 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                     categories,
                     isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
                     isFavorite: false,
+                    isExecutable: chatflow.isOwner || chatflow.visibility.includes('AnswerAI'),
                     constraints: {
                         isSpeechToTextEnabled,
                         isImageUploadAllowed,
@@ -202,6 +190,8 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                         ]
                     }
                 }
+
+                return sidekick
             })
 
             return {

@@ -4,7 +4,18 @@ import { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 
 // material-ui
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, OutlinedInput, Typography } from '@mui/material'
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    OutlinedInput,
+    Typography,
+    FormControlLabel,
+    Checkbox
+} from '@mui/material'
 
 // store
 import {
@@ -33,7 +44,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
     const [badge, setBadge] = useState('')
     const [usecases, setUsecases] = useState([])
     const [usecaseInput, setUsecaseInput] = useState('')
-
+    const [shareWithOrg, setShareWithOrg] = useState(false)
     const saveCustomTemplateApi = useApi(marketplacesApi.saveAsCustomTemplate)
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -66,6 +77,7 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             setUsecases([])
             setFlowType('')
             setUsecaseInput('')
+            setShareWithOrg(false)
         }
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -118,7 +130,8 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
             description,
             badge: badge ? badge.toUpperCase() : undefined,
             usecases,
-            type: flowType
+            type: flowType,
+            shareWithOrg
         }
         if (dialogProps.chatflow) {
             template.chatflowId = dialogProps.chatflow.id
@@ -264,6 +277,15 @@ const ExportAsTemplateDialog = ({ show, dialogProps, onCancel }) => {
                             Type a usecase and press enter to add it to the list. You can add as many items as you want.
                         </Typography>
                     </div>
+                </Box>
+                <Box sx={{ pt: 2, pb: 2 }}>
+                    <FormControlLabel
+                        control={<Checkbox checked={shareWithOrg} onChange={(e) => setShareWithOrg(e.target.checked)} color='primary' />}
+                        label='Share with Organization'
+                    />
+                    <Typography variant='body2' sx={{ fontStyle: 'italic', mt: 1 }} color='text.secondary'>
+                        When enabled, this template will be visible to all members of your organization.
+                    </Typography>
                 </Box>
             </DialogContent>
             <DialogActions>

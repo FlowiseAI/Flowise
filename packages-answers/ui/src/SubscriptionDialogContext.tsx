@@ -30,13 +30,7 @@ export const SubscriptionDialogProvider = ({ children }: { children: React.React
     return (
         <SubscriptionDialogContext.Provider value={{ open, openDialog, closeDialog }}>
             {children}
-            <Dialog
-                open={open}
-                onClose={closeDialog}
-                fullWidth
-                maxWidth='md'
-                aria-labelledby='subscription-dialog-title'
-            >
+            <Dialog open={open} onClose={closeDialog} fullWidth maxWidth='md' aria-labelledby='subscription-dialog-title'>
                 <DialogTitle sx={{ fontSize: '1rem' }} id='subscription-dialog-title'>
                     Upgrade your plan
                 </DialogTitle>
@@ -47,4 +41,3 @@ export const SubscriptionDialogProvider = ({ children }: { children: React.React
         </SubscriptionDialogContext.Provider>
     )
 }
-

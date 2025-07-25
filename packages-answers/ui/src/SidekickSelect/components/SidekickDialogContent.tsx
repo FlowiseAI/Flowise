@@ -87,19 +87,11 @@ const SidekickDialogContent: React.FC<SidekickDialogContentProps> = ({
                 <>
                     <SidekickSearchPanel
                         sidekicks={combinedSidekicks}
-                        allCategories={allCategories}
                         isLoading={isLoading}
                         user={user}
-                        activeFilterCategory={activeFilterCategory}
-                        setActiveFilterCategory={setActiveFilterCategory}
                         favorites={favorites}
                         toggleFavorite={toggleFavorite}
-                        navigate={navigate}
                         handleSidekickSelect={handleSidekickSelect}
-                        setSelectedTemplateId={setSelectedTemplateId}
-                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
-                        sidekicksByCategoryCache={sidekicksByCategoryCache}
-                        renderSkeletonCards={(count) => renderSkeletonCards({ count })}
                         enablePerformanceLogs={enablePerformanceLogs}
                     />
 

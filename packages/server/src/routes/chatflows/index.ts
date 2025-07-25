@@ -16,6 +16,6 @@ router.get(['/apikey/', '/apikey/:apikey'], enforceAbility('ChatFlow'), chatflow
 router.put(['/', '/:id'], enforceAbility('ChatFlow'), chatflowsController.updateChatflow)
 
 // DELETE
-router.delete(['/', '/:id'], enforceAbility('ChatFlow'), chatflowsController.deleteChatflow)
+router.delete('/:id', enforceAbility('ChatFlow'), chatflowsController.deleteChatflow)
 
 export default router

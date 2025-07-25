@@ -53,17 +53,17 @@ const MarketplaceCanvas = () => {
     }, [flowData])
 
     const proceedWithTemplate = (updatedFlowData) => {
-        console.log('🚀 MarketplaceCanvas proceedWithTemplate called with:', {
-            updatedFlowData: typeof updatedFlowData,
-            hasNodes: !!updatedFlowData?.nodes,
-            nodeCount: updatedFlowData?.nodes?.length || 0
-        })
+        // console.log('🚀 MarketplaceCanvas proceedWithTemplate called with:', {
+        //     updatedFlowData: typeof updatedFlowData,
+        //     hasNodes: !!updatedFlowData?.nodes,
+        //     nodeCount: updatedFlowData?.nodes?.length || 0
+        // })
 
         const isAgentCanvas = (updatedFlowData?.nodes || []).some(
             (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
         )
 
-        console.log('🚀 Canvas type determined:', { isAgentCanvas })
+        // console.log('🚀 Canvas type determined:', { isAgentCanvas })
 
         const flowDataParsed = typeof updatedFlowData === 'string' ? JSON.parse(updatedFlowData) : updatedFlowData
 
@@ -73,25 +73,26 @@ const MarketplaceCanvas = () => {
             description: 'Copied from marketplace',
             nodes: flowDataParsed.nodes || [],
             edges: flowDataParsed.edges || [],
-            flowData: JSON.stringify(flowDataParsed)
+            flowData: JSON.stringify(flowDataParsed),
+            parentChatflowId: state?.parentChatflowId
         }
 
-        console.log('🚀 Storing duplicated flow data:', {
-            name: chatflowData.name,
-            nodeCount: chatflowData.nodes.length,
-            edgeCount: chatflowData.edges.length,
-            hasFlowDataString: !!chatflowData.flowData
-        })
+        // console.log('🚀 Storing duplicated flow data:', {
+        //     name: chatflowData.name,
+        //     nodeCount: chatflowData.nodes.length,
+        //     edgeCount: chatflowData.edges.length,
+        //     hasFlowDataString: !!chatflowData.flowData
+        // })
 
         localStorage.setItem('duplicatedFlowData', JSON.stringify(chatflowData))
 
         const targetPath = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-        console.log('🚀 Navigating to:', targetPath)
+        // console.log('🚀 Navigating to:', targetPath)
         navigate(targetPath)
     }
 
     const onChatflowCopy = (flowData) => {
-        console.log('🎯 MarketplaceCanvas onChatflowCopy called with flowData:', typeof flowData)
+        // console.log('🎯 MarketplaceCanvas onChatflowCopy called with flowData:', typeof flowData)
 
         // Check for missing credentials before proceeding
         checkCredentials(flowData, proceedWithTemplate)
@@ -145,7 +146,7 @@ const MarketplaceCanvas = () => {
                     </div>
                 </Box>
             </Box>
-            
+
             {/* Unified Credentials Modal */}
             <UnifiedCredentialsModal
                 show={showCredentialModal}

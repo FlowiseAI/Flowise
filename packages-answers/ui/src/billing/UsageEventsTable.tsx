@@ -140,9 +140,9 @@ const UsageEventsTable: React.FC = () => {
                             </TableRow>
                         ) : (
                             events.map((event) => (
-                                <TableRow 
-                                    key={event.id} 
-                                    hover 
+                                <TableRow
+                                    key={event.id}
+                                    hover
                                     sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}
                                     onMouseEnter={() => setHoveredRow(event.id)}
                                     onMouseLeave={() => setHoveredRow(null)}
@@ -150,21 +150,21 @@ const UsageEventsTable: React.FC = () => {
                                     <TableCell sx={{ color: 'rgba(255, 255, 255, 0.9)', position: 'relative' }}>
                                         {format(new Date(event.timestamp), 'MMM d, yyyy HH:mm:ss')}
                                         {hoveredRow === event.id && (
-                                            <Tooltip title="View in Langfuse" placement="top">
+                                            <Tooltip title='View in Langfuse' placement='top'>
                                                 <IconButton
-                                                    size="small"
-                                                    sx={{ 
+                                                    size='small'
+                                                    sx={{
                                                         position: 'absolute',
                                                         right: 8,
                                                         color: 'rgba(255, 255, 255, 0.7)',
                                                         '&:hover': { color: 'rgba(255, 255, 255, 0.9)' }
                                                     }}
                                                     onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        window.open(getLangfuseTraceUrl(event.id), '_blank');
+                                                        e.stopPropagation()
+                                                        window.open(getLangfuseTraceUrl(event.id), '_blank')
                                                     }}
                                                 >
-                                                    <OpenInNewIcon fontSize="small" />
+                                                    <OpenInNewIcon fontSize='small' />
                                                 </IconButton>
                                             </Tooltip>
                                         )}

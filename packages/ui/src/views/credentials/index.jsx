@@ -137,7 +137,7 @@ const Credentials = () => {
         setShowSpecificCredentialDialog(true)
     }, [])
 
-    const edit = (credential) => {
+    const edit = useCallback((credential) => {
         const dialogProp = {
             type: 'EDIT',
             cancelButtonName: 'Cancel',
@@ -146,7 +146,7 @@ const Credentials = () => {
         }
         setSpecificCredentialDialogProps(dialogProp)
         setShowSpecificCredentialDialog(true)
-    }
+    }, [])
 
     const deleteCredential = async (credential) => {
         const confirmPayload = {
@@ -273,22 +273,38 @@ const Credentials = () => {
         }
     }, [getAllCredentialsApi.error])
 
+    // Helper function to check if a string is a UUID
+    const isUUID = (str) => {
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        return uuidRegex.test(str)
+    }
+
     useEffect(() => {
-        if (getAllComponentsCredentialsApi.data) {
+        if (getAllComponentsCredentialsApi.data && getAllCredentialsApi.data) {
             setComponentsCredentials(getAllComponentsCredentialsApi.data)
             dispatch({ type: SET_COMPONENT_CREDENTIALS, componentsCredentials: getAllComponentsCredentialsApi.data })
+
             // Handle deep linking from URL parameter
             const credParam = searchParams.get('cred')
             if (credParam) {
-                const credComponent = getAllComponentsCredentialsApi.data.find(
-                    (comp) => comp.name.toLowerCase() === credParam.toLowerCase()
-                )
-                if (credComponent) {
-                    addNew(credComponent)
+                // Check if it's a UUID (existing credential)
+                if (isUUID(credParam)) {
+                    const credential = getAllCredentialsApi.data.find((cred) => cred.id === credParam)
+                    if (credential) {
+                        edit(credential)
+                    }
+                } else {
+                    // It's a credential name (new credential)
+                    const credComponent = getAllComponentsCredentialsApi.data.find(
+                        (comp) => comp.name.toLowerCase() === credParam.toLowerCase()
+                    )
+                    if (credComponent) {
+                        addNew(credComponent)
+                    }
                 }
             }
         }
-    }, [getAllComponentsCredentialsApi.data, dispatch, searchParams, addNew])
+    }, [getAllComponentsCredentialsApi.data, getAllCredentialsApi.data, dispatch, searchParams, addNew, edit])
 
     const isAdmin = flags?.['org:manage']?.enabled
 

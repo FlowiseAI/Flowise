@@ -1,0 +1,712 @@
+{
+    "name": "AnswerAgentAI Sidekick",
+    "framework": ["Answer Agent"],
+    "usecases": ["AnswerAgent Help"],
+    "description": "The AnswerAgent MCP Sidekick is your integrated assistant that makes managing and optimizing your AnswerAgent workflows easier than ever. Acting as a bridge between you and the AnswerAgent MCP server, it helps you effortlessly execute multi-step operations such as creating and updating chatflows, managing document stores, configuring assistants, and more. With clear guidance, consolidated feedback, and advanced error handling, the Sidekick ensures that whether you’re setting up a new assistant or analyzing workflow performance, every task is streamlined, secure, and efficient.",
+    "nodes": [
+        {
+            "id": "aaiToolAgent_0",
+            "position": {
+                "x": 797.3975527814143,
+                "y": 277.3911080764195
+            },
+            "type": "customNode",
+            "data": {
+                "id": "aaiToolAgent_0",
+                "label": "Tool Agent",
+                "version": 2,
+                "name": "aaiToolAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "tags": ["AAI"],
+                "category": "Agents",
+                "description": "Tool Agent • Zero configuration required",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessage",
+                        "type": "string",
+                        "default": "You are a helpful AI assistant.",
+                        "description": "If Chat Prompt Template is provided, this will be ignored",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiToolAgent_0-input-systemMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiToolAgent_0-input-maxIterations-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Detailed Streaming",
+                        "name": "enableDetailedStreaming",
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Stream detailed intermediate steps during agent execution",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiToolAgent_0-input-enableDetailedStreaming-boolean",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "aaiToolAgent_0-input-tools-Tool",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "aaiToolAgent_0-input-memory-BaseChatMemory",
+                        "display": true
+                    },
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat",
+                        "id": "aaiToolAgent_0-input-model-BaseChatModel",
+                        "display": true
+                    },
+                    {
+                        "label": "Chat Prompt Template",
+                        "name": "chatPromptTemplate",
+                        "type": "ChatPromptTemplate",
+                        "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
+                        "optional": true,
+                        "id": "aaiToolAgent_0-input-chatPromptTemplate-ChatPromptTemplate",
+                        "display": true
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "aaiToolAgent_0-input-inputModeration-Moderation",
+                        "display": true
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{currentDateTime_0.data.instance}}", "{{answerAgentMCP_0.data.instance}}"],
+                    "memory": "{{AAIChatMemory_0.data.instance}}",
+                    "model": "{{aaiChatOpenAI_0.data.instance}}",
+                    "chatPromptTemplate": "{{chatPromptTemplate_0.data.instance}}",
+                    "systemMessage": "You are a helpful AI assistant.",
+                    "inputModeration": "",
+                    "maxIterations": "",
+                    "enableDetailedStreaming": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "aaiToolAgent_0-output-aaiToolAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "aaiToolAgent",
+                        "label": "AgentExecutor",
+                        "description": "Tool Agent • Zero configuration required",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 492,
+            "positionAbsolute": {
+                "x": 797.3975527814143,
+                "y": 277.3911080764195
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "aaiChatOpenAI_0",
+            "position": {
+                "x": 321.48081667566703,
+                "y": -247.03465143583247
+            },
+            "type": "customNode",
+            "data": {
+                "id": "aaiChatOpenAI_0",
+                "label": "Answer ChatOpenAI",
+                "version": 1,
+                "name": "aaiChatOpenAI",
+                "type": "AAIChatOpenAI",
+                "baseClasses": ["AAIChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "tags": ["AAI"],
+                "category": "Chat Models",
+                "description": "OpenAI GPT models • Zero configuration required",
+                "inputParams": [
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-4o-mini",
+                        "id": "aaiChatOpenAI_0-input-modelName-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "aaiChatOpenAI_0-input-temperature-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Streaming",
+                        "name": "streaming",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-streaming-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-maxTokens-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-topP-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-frequencyPenalty-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-presencePenalty-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-timeout-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Strict Tool Calling",
+                        "name": "strictToolCalling",
+                        "type": "boolean",
+                        "description": "Whether the model supports the `strict` argument when passing in tools. If not specified, the `strict` argument will not be passed to OpenAI.",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-strictToolCalling-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Stop Sequence",
+                        "name": "stopSequence",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "description": "List of stop words to use when generating. Use comma to separate multiple stop words.",
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-stopSequence-string",
+                        "display": true
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-basepath-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Proxy Url",
+                        "name": "proxyUrl",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-proxyUrl-string",
+                        "display": true
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-baseOptions-json",
+                        "display": true
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Allow image input. Refer to the <a href=\"https://docs.flowiseai.com/using-flowise/uploads#image\" target=\"_blank\">docs</a> for more details.",
+                        "default": false,
+                        "optional": true,
+                        "id": "aaiChatOpenAI_0-input-allowImageUploads-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "show": {
+                            "allowImageUploads": true
+                        },
+                        "id": "aaiChatOpenAI_0-input-imageResolution-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Reasoning Effort",
+                        "description": "Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.",
+                        "name": "reasoningEffort",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "Medium",
+                                "name": "medium"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            }
+                        ],
+                        "default": "medium",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-reasoningEffort-options",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "aaiChatOpenAI_0-input-cache-BaseCache",
+                        "display": true
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-4o-mini",
+                    "temperature": 0.9,
+                    "streaming": true,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "strictToolCalling": "",
+                    "stopSequence": "",
+                    "basepath": "",
+                    "proxyUrl": "",
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low",
+                    "reasoningEffort": "medium"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "aaiChatOpenAI",
+                        "label": "AAIChatOpenAI",
+                        "description": "OpenAI GPT models • Zero configuration required",
+                        "type": "AAIChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 676,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 321.48081667566703,
+                "y": -247.03465143583247
+            },
+            "dragging": false
+        },
+        {
+            "id": "AAIChatMemory_0",
+            "position": {
+                "x": -7.778718489868993,
+                "y": 129.4870179639911
+            },
+            "type": "customNode",
+            "data": {
+                "id": "AAIChatMemory_0",
+                "label": "Answer Chat Memory",
+                "version": 1,
+                "name": "AAIChatMemory",
+                "type": "AAIChatMemory",
+                "baseClasses": ["AAIChatMemory", "BaseChatMemory", "BaseMemory"],
+                "tags": ["AAI"],
+                "category": "Memory",
+                "description": "Summarizes the conversation and stores the memory in Answer Agents servers",
+                "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "AAIChatMemory_0-input-sessionId-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Session Timeouts",
+                        "name": "sessionTTL",
+                        "type": "number",
+                        "description": "Seconds till a session expires. If not specified, the session will never expire.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "AAIChatMemory_0-input-sessionTTL-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "AAIChatMemory_0-input-memoryKey-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "windowSize",
+                        "type": "number",
+                        "description": "Window of size k to surface the last k back-and-forth to use as memory.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "AAIChatMemory_0-input-windowSize-number",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "sessionTTL": "",
+                    "memoryKey": "chat_history",
+                    "windowSize": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "AAIChatMemory_0-output-AAIChatMemory-AAIChatMemory|BaseChatMemory|BaseMemory",
+                        "name": "AAIChatMemory",
+                        "label": "AAIChatMemory",
+                        "description": "Summarizes the conversation and stores the memory in Answer Agents servers",
+                        "type": "AAIChatMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 259,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -7.778718489868993,
+                "y": 129.4870179639911
+            },
+            "dragging": false
+        },
+        {
+            "id": "chatPromptTemplate_0",
+            "position": {
+                "x": 306.8243876084731,
+                "y": 666.8072859851417
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatPromptTemplate_0",
+                "label": "Chat Prompt Template",
+                "version": 2,
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_0-input-systemMessagePrompt-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "description": "This prompt will be added at the end of the messages as human message",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_0-input-humanMessagePrompt-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "chatPromptTemplate_0-input-promptValues-json",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages History",
+                        "name": "messageHistory",
+                        "description": "Add messages after System Message. This is useful when you want to provide few shot examples",
+                        "type": "tabs",
+                        "tabIdentifier": "selectedMessagesTab",
+                        "additionalParams": true,
+                        "default": "messageHistoryCode",
+                        "tabs": [
+                            {
+                                "label": "Add Messages (Code)",
+                                "name": "messageHistoryCode",
+                                "type": "code",
+                                "hideCodeExecute": true,
+                                "codeExample": "const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');\n\nreturn [\n    new HumanMessage(\"What is 333382 🦜 1932?\"),\n    new AIMessage({\n        content: \"\",\n        tool_calls: [\n        {\n            id: \"12345\",\n            name: \"calulator\",\n            args: {\n                number1: 333382,\n                number2: 1932,\n                operation: \"divide\",\n            },\n        },\n        ],\n    }),\n    new ToolMessage({\n        tool_call_id: \"12345\",\n        content: \"The answer is 172.558.\",\n    }),\n    new AIMessage(\"The answer is 172.558.\"),\n]",
+                                "optional": true,
+                                "additionalParams": true
+                            }
+                        ],
+                        "id": "chatPromptTemplate_0-input-messageHistory-tabs",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "systemMessagePrompt": "SYSTEM PROMPT — “AnswerAgent MCP Controller” \nIDENTITY & PURPOSE\n• You are the “AnswerAgent MCP Controller,” an AI agent designed to integrate with and manage the AnswerAgent MCP server.\n• Your mission is to empower users to execute and orchestrate all MCP functions—including chatflow management, document store operations, assistant and tool management, document loader operations, and intelligent analysis—while supporting multi-step workflows that combine several MCP operations in a single conversation.\n• You help users configure, analyze, update, and optimize their Answer Agent workflows in a secure and efficient manner by guiding them through sequential operations and ensuring proper validation at each step.\nAVAILABLE TOOLS\n| Tool Name | When to Use | Invocation Notes | |-----------------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------| | create_chatflow | To create a new AI chatflow with custom configurations | Requires \"name\" (string) and optional \"flowData\" (JSON); returns chatflow details including ID. | | get_chatflow | To retrieve details of a specific chatflow | Requires \"id\" (string); optionally include \"includeFullFlowData\" (boolean) for comprehensive info. | | update_chatflow | To update a chatflow’s configuration or settings | Requires \"id\" (string) and \"updates\" (object) specifying changes. | | delete_chatflow | To remove a chatflow | Requires \"id\" (string); returns deletion confirmation. | | list_chatflows | To list all chatflows in the workspace | No required inputs; returns an array of chatflow summaries. | | create_document_store | To create a document store for managing knowledge bases | Requires \"name\" (string) and optional \"description\" (string). | | get_document_store | To retrieve details about a specific document store | Requires \"id\" (string); returns configuration and metadata. | | delete_document_store | To remove a document store | Requires \"id\" (string); returns deletion confirmation. | | query_vector_store | To execute a semantic search in a document store | Requires \"storeId\" (string) and \"query\" (string). | | create_assistant | To create a new AI assistant with tailored configurations| Requires \"details\" (object) including name, instructions, and capabilities. | | get_assistant | To retrieve details about a specific assistant | Requires \"id\" (string); returns assistant configuration and metadata. | | update_assistant | To update properties of an existing assistant | Requires \"id\" (string) and \"updates\" (object). | | delete_assistant | To remove an assistant | Requires \"id\" (string); returns deletion confirmation. | | create_tool | To create a custom tool for use within chatflows | Requires \"name\" (string) and optional \"description\" (string) explaining its purpose. | | get_tool | To retrieve details about a custom tool | Requires \"id\" (string); returns tool configuration and metadata. | | analyze_chatflow | To get AI-powered analysis and optimization recommendations for a chatflow | Requires \"chatflowId\" (string) and optional \"focusAreas\" (array). | | analyze_document_store| To analyze a document store’s performance and configuration| Requires \"documentStoreId\" (string) and optional \"focusAreas\" (array). | | manage_document_store | To obtain guidance for complex document store operations | Requires \"action\" (string) with values such as \"setup\", \"optimize\", \"troubleshoot\", or \"migrate\". | | …additional MCP functions as documented. | | |\nMODES & BEHAVIOR\n• Default Mode: The agent executes clear, sequential MCP commands for individual user prompts.\n• Multi-Step Workflow Mode: Activated for operations that span multiple MCP actions. In this mode, the agent chains commands together—validating inputs, sequencing primary and dependent tool calls, and providing consolidated feedback after each operation.\n• Configuration Mode: For setting up integrations or guiding users through parameter adjustments step-by-step.\n• Analysis Mode: Engaged when users request performance insights or optimization recommendations.\nSTYLE & TONE\n• Maintain a professional, clear, and instructive tone throughout interactions.\n• Use plain language with concise explanations, bullet points for steps, and minimal technical jargon.\n• Provide necessary technical details and ensure follow-up questions clarify any uncertainties.\nCITATIONS & SOURCING\n• Always reference the AnswerAgent MCP documentation for authoritative details on each function.\n• Cite sources with inline document names or URLs when reporting data-driven insights.\n• If unsure about a detail, indicate “I’m not sure” and request clarification.\nSAFETY & PERMISSIONS\n• Do not access or expose any sensitive personal data in any operation.\n• Always utilize the authenticated user's Answer Agent account and default API key for executing operations.\n• Follow the organizational permissions and access protocols as specified in the MCP documentation.\nERROR HANDLING\n• If a tool call fails or receives ambiguous input, apologize and request additional clarity.\n• For multi-step workflows, clearly indicate which step encountered an error and provide precise suggestions for correction or reattempt.\n• Log error details internally (if applicable) and inform the user regarding necessary follow-up actions.\nEXAMPLES (DO NOT OUTPUT VERBATIM)\n• Example: \"Create a new chatflow named 'Customer Support Bot' using create_chatflow, then retrieve its details using get_chatflow.\"\n• Example: \"For a comprehensive setup, create a document store, add documents, and then refresh the store using refresh_document_store.\"\n• Example: \"Chain operations by listing chatflows, selecting one for update via update_chatflow, and then analyzing its performance using analyze_chatflow.\"\n• These examples illustrate both single-step and multi-step chained operations.\nNON-NEGOTIABLE RULES\n• Always validate required parameters before executing any tool call.\n• Never fabricate or guess configurations—if required input is missing or ambiguous, ask for clarification.\n• Ensure that all operations adhere strictly to defined security and privacy standards.\n• Every response must conclude with a clear, actionable next step or follow-up question for further interaction.\n",
+                    "humanMessagePrompt": "The current URL is: {url}\nWeb Context (if any):\n{webContentText}\nOnly use the content or the URL if they are provided. otherwise ignore this section and only use the user input.\n\n###\nFile Uploaded (if any)\n{fileUpload}\nOnly use the content of the file if it is provided. otherwise ignore this section and follow the user input.\n\n###\n\nUser Input:\n{input}\n",
+                    "promptValues": "{\"url\":\"No URL provided by the user\",\"webContentText\":\"{{file_attachment}}\",\"fileUpload\":\"No Web Content was provided by the user\",\"input\":\"{{question}}\"}",
+                    "messageHistory": "messageHistoryCode"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "description": "Schema to represent a chat prompt",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 748,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 306.8243876084731,
+                "y": 666.8072859851417
+            },
+            "dragging": false
+        },
+        {
+            "id": "currentDateTime_0",
+            "position": {
+                "x": 786.6589970817336,
+                "y": -7.1927104677048135
+            },
+            "type": "customNode",
+            "data": {
+                "id": "currentDateTime_0",
+                "label": "CurrentDateTime",
+                "version": 1,
+                "name": "currentDateTime",
+                "type": "CurrentDateTime",
+                "baseClasses": ["CurrentDateTime", "Tool"],
+                "tags": ["AAI"],
+                "category": "Tools",
+                "description": "Get todays day, date and time.",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "currentDateTime_0-output-currentDateTime-CurrentDateTime|Tool",
+                        "name": "currentDateTime",
+                        "label": "CurrentDateTime",
+                        "description": "Get todays day, date and time.",
+                        "type": "CurrentDateTime | Tool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 149,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 786.6589970817336,
+                "y": -7.1927104677048135
+            },
+            "dragging": false
+        },
+        {
+            "id": "answerAgentMCP_0",
+            "position": {
+                "x": -234.5852323957851,
+                "y": 609.5236480370256
+            },
+            "type": "customNode",
+            "data": {
+                "id": "answerAgentMCP_0",
+                "label": "AnswerAgent MCP",
+                "version": 1,
+                "name": "answerAgentMCP",
+                "type": "AnswerAgent MCP Tool",
+                "baseClasses": ["Tool"],
+                "tags": ["AAI"],
+                "category": "MCP Servers",
+                "description": "MCP server that integrates with AnswerAgent API • Zero configuration required",
+                "inputParams": [
+                    {
+                        "label": "Available Actions",
+                        "name": "mcpActions",
+                        "type": "asyncMultiOptions",
+                        "loadMethod": "listActions",
+                        "refresh": true,
+                        "id": "answerAgentMCP_0-input-mcpActions-asyncMultiOptions",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "mcpActions": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "answerAgentMCP_0-output-answerAgentMCP-Tool",
+                        "name": "answerAgentMCP",
+                        "label": "AnswerAgent MCP Tool",
+                        "description": "MCP server that integrates with AnswerAgent API • Zero configuration required",
+                        "type": "Tool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 292,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -234.5852323957851,
+                "y": 609.5236480370256
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "AAIChatMemory_0",
+            "sourceHandle": "AAIChatMemory_0-output-AAIChatMemory-AAIChatMemory|BaseChatMemory|BaseMemory",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-memory-BaseChatMemory",
+            "type": "buttonedge",
+            "id": "AAIChatMemory_0-AAIChatMemory_0-output-AAIChatMemory-AAIChatMemory|BaseChatMemory|BaseMemory-aaiToolAgent_0-aaiToolAgent_0-input-memory-BaseChatMemory"
+        },
+        {
+            "source": "aaiChatOpenAI_0",
+            "sourceHandle": "aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "aaiChatOpenAI_0-aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-aaiToolAgent_0-aaiToolAgent_0-input-model-BaseChatModel"
+        },
+        {
+            "source": "chatPromptTemplate_0",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-chatPromptTemplate-ChatPromptTemplate",
+            "type": "buttonedge",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-aaiToolAgent_0-aaiToolAgent_0-input-chatPromptTemplate-ChatPromptTemplate"
+        },
+        {
+            "source": "currentDateTime_0",
+            "sourceHandle": "currentDateTime_0-output-currentDateTime-CurrentDateTime|Tool",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "currentDateTime_0-currentDateTime_0-output-currentDateTime-CurrentDateTime|Tool-aaiToolAgent_0-aaiToolAgent_0-input-tools-Tool"
+        },
+        {
+            "source": "answerAgentMCP_0",
+            "sourceHandle": "answerAgentMCP_0-output-answerAgentMCP-Tool",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "answerAgentMCP_0-answerAgentMCP_0-output-answerAgentMCP-Tool-aaiToolAgent_0-aaiToolAgent_0-input-tools-Tool"
+        }
+    ]
+}

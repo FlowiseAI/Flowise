@@ -14,13 +14,12 @@ http:
     # You can specify a custom health check path. The default is "/".
     healthcheck: '/api/v1/ping'
     alias: ${COPILOT_ENVIRONMENT_NAME}.flowise.theanswer.ai
+    stickiness: true
 
 # Configuration for your containers and service.
 image:
     # Docker build arguments. For additional overrides: https://aws.github.io/copilot-cli/docs/manifest/lb-web-service/#image-build
     build: Dockerfile
-    cache_from:
-        - theanswerai/flowise:latest
 
     # Port exposed through your container to route traffic to it.
     port: 4000
@@ -46,6 +45,7 @@ storage:
 # Optional fields for more advanced use-cases.
 #
 variables: # Pass environment variables as key value pairs.
+    NUMBER_OF_PROXIES: '1'
     S3_STORAGE_BUCKET_NAME:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorageBucketName
     AAI_DEFAULT_REDIS_URL:

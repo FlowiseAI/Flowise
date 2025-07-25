@@ -826,7 +826,8 @@ class Agent_Agentflow implements INode {
                     llmWithoutToolsBind,
                     isStreamable,
                     isLastNode,
-                    iterationContext
+                    iterationContext,
+                    nodeData
                 })
 
                 response = result.response
@@ -874,7 +875,8 @@ class Agent_Agentflow implements INode {
                     llmNodeInstance,
                     isStreamable,
                     isLastNode,
-                    iterationContext
+                    iterationContext,
+                    nodeData
                 })
 
                 response = result.response
@@ -1301,6 +1303,59 @@ class Agent_Agentflow implements INode {
     }
 
     /**
+     * Enhanced error message for MCP connection errors with deep links to credentials
+     */
+    private enhanceMcpErrorMessage(error: any, toolName: string, nodeData: INodeData, options: ICommonObject): string {
+        const errorMessage = getErrorMessage(error)
+
+        // Check if this is an MCP connection error
+        if (errorMessage.includes('McpError') && errorMessage.includes('Connection closed')) {
+            // Try to identify the tool type and required credential
+            const tools = nodeData.inputs?.agentTools as ITool[]
+            const failedTool = tools?.find((tool) => {
+                // Check if any of the tool's actions match the failed tool name
+                const toolConfig = tool.agentSelectedToolConfig
+                return toolConfig && Object.values(toolConfig).some((value) => typeof value === 'string' && value.includes(toolName))
+            })
+
+            if (failedTool) {
+                const toolType = failedTool.agentSelectedTool
+
+                // Map tool types to credential types and provide helpful error messages
+                let credentialType = ''
+                let helpText = ''
+
+                if (toolType === 'salesforceOauthMcp') {
+                    credentialType = 'salesforceOAuth'
+                    helpText = 'Salesforce OAuth credential'
+                } else if (toolType === 'customMCP') {
+                    helpText = 'MCP server configuration. Please check your MCP server is running and accessible.'
+                } else if (toolType === 'answerAgentMcp') {
+                    helpText = 'AnswerAgent API access. Please ensure your API key is valid and the service is accessible.'
+                }
+
+                if (credentialType) {
+                    // Generate deep link URL for credential setup
+                    const baseUrl = options.baseURL || 'http://localhost:3000'
+                    const credentialLink = `${baseUrl}/sidekick-studio/credentials?cred=${credentialType}`
+
+                    return `MCP Connection Error: Unable to connect to ${toolName}. This typically indicates missing or invalid credentials for ${helpText}. Please set up your credentials here: ${credentialLink}`
+                } else if (helpText) {
+                    return `MCP Connection Error: Unable to connect to ${toolName}. This typically indicates an issue with your ${helpText}`
+                }
+            }
+
+            // Generic MCP error message if we can't identify the specific tool
+            const baseUrl = options.baseURL || 'http://localhost:3000'
+            const credentialsLink = `${baseUrl}/sidekick-studio/credentials`
+            return `MCP Connection Error: Unable to connect to ${toolName}. This typically indicates missing or invalid credentials. Please check your credential configuration here: ${credentialsLink}`
+        }
+
+        // Return original error message if not an MCP connection error
+        return errorMessage
+    }
+
+    /**
      * Handles tool calls and their responses, with support for recursive tool calling
      */
     private async handleToolCalls({
@@ -1315,7 +1370,8 @@ class Agent_Agentflow implements INode {
         llmNodeInstance,
         isStreamable,
         isLastNode,
-        iterationContext
+        iterationContext,
+        nodeData
     }: {
         response: AIMessageChunk
         messages: BaseMessageLike[]
@@ -1329,6 +1385,7 @@ class Agent_Agentflow implements INode {
         isStreamable: boolean
         isLastNode: boolean
         iterationContext: ICommonObject
+        nodeData: INodeData
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -1436,14 +1493,18 @@ class Agent_Agentflow implements INode {
                     })
                 } catch (e) {
                     console.error('Error invoking tool:', e)
+
+                    // Enhanced error message for MCP connection issues
+                    const enhancedErrorMessage = this.enhanceMcpErrorMessage(e, toolCall.name, nodeData, options)
+
                     usedTools.push({
                         tool: selectedTool.name,
                         toolInput: toolCall.args,
                         toolOutput: '',
-                        error: getErrorMessage(e)
+                        error: enhancedErrorMessage
                     })
                     sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
-                    throw new Error(getErrorMessage(e))
+                    throw new Error(enhancedErrorMessage)
                 }
             }
         }
@@ -1512,7 +1573,8 @@ class Agent_Agentflow implements INode {
                 llmNodeInstance,
                 isStreamable,
                 isLastNode,
-                iterationContext
+                iterationContext,
+                nodeData
             })
 
             // Merge results from recursive tool calls
@@ -1542,7 +1604,8 @@ class Agent_Agentflow implements INode {
         llmWithoutToolsBind,
         isStreamable,
         isLastNode,
-        iterationContext
+        iterationContext,
+        nodeData
     }: {
         humanInput: IHumanInput
         humanInputAction: Record<string, any> | undefined
@@ -1557,6 +1620,7 @@ class Agent_Agentflow implements INode {
         isStreamable: boolean
         isLastNode: boolean
         iterationContext: ICommonObject
+        nodeData: INodeData
     }): Promise<{
         response: AIMessageChunk
         usedTools: IUsedTool[]
@@ -1674,14 +1738,18 @@ class Agent_Agentflow implements INode {
                         })
                     } catch (e) {
                         console.error('Error invoking tool:', e)
+
+                        // Enhanced error message for MCP connection issues
+                        const enhancedErrorMessage = this.enhanceMcpErrorMessage(e, toolCall.name, nodeData, options)
+
                         usedTools.push({
                             tool: selectedTool.name,
                             toolInput: toolCall.args,
                             toolOutput: '',
-                            error: getErrorMessage(e)
+                            error: enhancedErrorMessage
                         })
                         sseStreamer?.streamUsedToolsEvent(chatId, flatten(usedTools))
-                        throw new Error(getErrorMessage(e))
+                        throw new Error(enhancedErrorMessage)
                     }
                 }
             }
@@ -1761,7 +1829,8 @@ class Agent_Agentflow implements INode {
                 llmNodeInstance,
                 isStreamable,
                 isLastNode,
-                iterationContext
+                iterationContext,
+                nodeData
             })
 
             // Merge results from recursive tool calls

@@ -47,6 +47,7 @@ import versionRouter from './versions'
 import planRouter from './plan'
 import chatsRouter from './chats'
 import googleAuthRouter from './google-auth'
+import salesforceAuthRouter from './salesforce-auth'
 import billingRouter from './billing'
 import nvidiaNimRouter from './nvidia-nim'
 import gmailRouter from './gmail'
@@ -61,6 +62,7 @@ import agentflowv2GeneratorRouter from './agentflowv2-generator'
 const router = express.Router()
 
 router.use('/', googleAuthRouter)
+router.use('/salesforce-auth', salesforceAuthRouter)
 router.use('/ping', pingRouter)
 router.use('/apikey', apikeyRouter)
 router.use('/auth', express.Router()) // Auth routes handled by middleware

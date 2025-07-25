@@ -163,7 +163,6 @@ export const ChatDetail = ({
                                     width: '100%',
                                     flexDirection: 'column',
                                     paddingTop: 10,
-                                    gap: 10,
                                     maxWidth: 1200,
 
                                     px: { xs: 2, sm: 3 },

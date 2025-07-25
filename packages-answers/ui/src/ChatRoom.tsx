@@ -73,7 +73,12 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
                 {error ? (
                     <>
-                        <MessageCard id='error' role='status' content={`${typeof error === 'string' ? error : error.message} `} error={error} />
+                        <MessageCard
+                            id='error'
+                            role='status'
+                            content={`${typeof error === 'string' ? error : error.message} `}
+                            error={error}
+                        />
                         <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', gap: 1 }}>
                             <Button onClick={regenerateAnswer} variant='contained' color='primary' sx={{ margin: 'auto' }}>
                                 Retry

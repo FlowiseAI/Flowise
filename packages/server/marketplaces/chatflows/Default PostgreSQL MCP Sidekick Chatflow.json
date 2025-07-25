@@ -1,0 +1,720 @@
+{
+    "name": "PostgreSQL Sidekick",
+    "description": "This PostgreSQL sidekick is a specialized AI assistant designed to safely help users interact with PostgreSQL databases. It converts natural language requests into secure, read-only SQL queries for data retrieval and database schema exploration, assists with diagnosing potential data issues, manages credentials securely, and provides educational feedback on SQL best practices to explain why operations are executed in a safe, read-only mode.",
+    "framework": ["Answer Agent"],
+    "usecases": ["Search"],
+    "nodes": [
+        {
+            "id": "aaiToolAgent_0",
+            "position": {
+                "x": 797.3975527814143,
+                "y": 277.3911080764195
+            },
+            "type": "customNode",
+            "data": {
+                "id": "aaiToolAgent_0",
+                "label": "Tool Agent",
+                "version": 2,
+                "name": "aaiToolAgent",
+                "type": "AgentExecutor",
+                "baseClasses": ["AgentExecutor", "BaseChain", "Runnable"],
+                "tags": ["AAI"],
+                "category": "Agents",
+                "description": "Tool Agent • Zero configuration required",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessage",
+                        "type": "string",
+                        "default": "You are a helpful AI assistant.",
+                        "description": "If Chat Prompt Template is provided, this will be ignored",
+                        "rows": 4,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiToolAgent_0-input-systemMessage-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Max Iterations",
+                        "name": "maxIterations",
+                        "type": "number",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiToolAgent_0-input-maxIterations-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Enable Detailed Streaming",
+                        "name": "enableDetailedStreaming",
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Stream detailed intermediate steps during agent execution",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiToolAgent_0-input-enableDetailedStreaming-boolean",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Tools",
+                        "name": "tools",
+                        "type": "Tool",
+                        "list": true,
+                        "id": "aaiToolAgent_0-input-tools-Tool",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory",
+                        "name": "memory",
+                        "type": "BaseChatMemory",
+                        "id": "aaiToolAgent_0-input-memory-BaseChatMemory",
+                        "display": true
+                    },
+                    {
+                        "label": "Tool Calling Chat Model",
+                        "name": "model",
+                        "type": "BaseChatModel",
+                        "description": "Only compatible with models that are capable of function calling: ChatOpenAI, ChatMistral, ChatAnthropic, ChatGoogleGenerativeAI, ChatVertexAI, GroqChat",
+                        "id": "aaiToolAgent_0-input-model-BaseChatModel",
+                        "display": true
+                    },
+                    {
+                        "label": "Chat Prompt Template",
+                        "name": "chatPromptTemplate",
+                        "type": "ChatPromptTemplate",
+                        "description": "Override existing prompt with Chat Prompt Template. Human Message must includes {input} variable",
+                        "optional": true,
+                        "id": "aaiToolAgent_0-input-chatPromptTemplate-ChatPromptTemplate",
+                        "display": true
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "aaiToolAgent_0-input-inputModeration-Moderation",
+                        "display": true
+                    }
+                ],
+                "inputs": {
+                    "tools": ["{{currentDateTime_0.data.instance}}", "{{postgreSQLMCP_0.data.instance}}"],
+                    "memory": "{{AAIChatMemory_0.data.instance}}",
+                    "model": "{{aaiChatOpenAI_0.data.instance}}",
+                    "chatPromptTemplate": "{{chatPromptTemplate_0.data.instance}}",
+                    "systemMessage": "You are a helpful AI assistant.",
+                    "inputModeration": "",
+                    "maxIterations": "",
+                    "enableDetailedStreaming": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "aaiToolAgent_0-output-aaiToolAgent-AgentExecutor|BaseChain|Runnable",
+                        "name": "aaiToolAgent",
+                        "label": "AgentExecutor",
+                        "description": "Tool Agent • Zero configuration required",
+                        "type": "AgentExecutor | BaseChain | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 492,
+            "positionAbsolute": {
+                "x": 797.3975527814143,
+                "y": 277.3911080764195
+            },
+            "selected": false,
+            "dragging": false
+        },
+        {
+            "id": "aaiChatOpenAI_0",
+            "position": {
+                "x": 321.48081667566703,
+                "y": -247.03465143583247
+            },
+            "type": "customNode",
+            "data": {
+                "id": "aaiChatOpenAI_0",
+                "label": "Answer ChatOpenAI",
+                "version": 1,
+                "name": "aaiChatOpenAI",
+                "type": "AAIChatOpenAI",
+                "baseClasses": ["AAIChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "tags": ["AAI"],
+                "category": "Chat Models",
+                "description": "OpenAI GPT models • Zero configuration required",
+                "inputParams": [
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-4o-mini",
+                        "id": "aaiChatOpenAI_0-input-modelName-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "aaiChatOpenAI_0-input-temperature-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Streaming",
+                        "name": "streaming",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-streaming-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-maxTokens-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-topP-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-frequencyPenalty-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-presencePenalty-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-timeout-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Strict Tool Calling",
+                        "name": "strictToolCalling",
+                        "type": "boolean",
+                        "description": "Whether the model supports the `strict` argument when passing in tools. If not specified, the `strict` argument will not be passed to OpenAI.",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-strictToolCalling-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Stop Sequence",
+                        "name": "stopSequence",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "description": "List of stop words to use when generating. Use comma to separate multiple stop words.",
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-stopSequence-string",
+                        "display": true
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-basepath-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Proxy Url",
+                        "name": "proxyUrl",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-proxyUrl-string",
+                        "display": true
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-baseOptions-json",
+                        "display": true
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Allow image input. Refer to the <a href=\"https://docs.flowiseai.com/using-flowise/uploads#image\" target=\"_blank\">docs</a> for more details.",
+                        "default": false,
+                        "optional": true,
+                        "id": "aaiChatOpenAI_0-input-allowImageUploads-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "show": {
+                            "allowImageUploads": true
+                        },
+                        "id": "aaiChatOpenAI_0-input-imageResolution-options",
+                        "display": true
+                    },
+                    {
+                        "label": "Reasoning Effort",
+                        "description": "Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.",
+                        "name": "reasoningEffort",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "Medium",
+                                "name": "medium"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            }
+                        ],
+                        "default": "medium",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-reasoningEffort-options",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "aaiChatOpenAI_0-input-cache-BaseCache",
+                        "display": true
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-4o-mini",
+                    "temperature": 0.9,
+                    "streaming": true,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "strictToolCalling": "",
+                    "stopSequence": "",
+                    "basepath": "",
+                    "proxyUrl": "",
+                    "baseOptions": "",
+                    "allowImageUploads": true,
+                    "imageResolution": "low",
+                    "reasoningEffort": "medium"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "aaiChatOpenAI",
+                        "label": "AAIChatOpenAI",
+                        "description": "OpenAI GPT models • Zero configuration required",
+                        "type": "AAIChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 676,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 321.48081667566703,
+                "y": -247.03465143583247
+            },
+            "dragging": false
+        },
+        {
+            "id": "AAIChatMemory_0",
+            "position": {
+                "x": -63.67532725702972,
+                "y": 208.15631919184693
+            },
+            "type": "customNode",
+            "data": {
+                "id": "AAIChatMemory_0",
+                "label": "Answer Chat Memory",
+                "version": 1,
+                "name": "AAIChatMemory",
+                "type": "AAIChatMemory",
+                "baseClasses": ["AAIChatMemory", "BaseChatMemory", "BaseMemory"],
+                "tags": ["AAI"],
+                "category": "Memory",
+                "description": "Summarizes the conversation and stores the memory in Answer Agents servers",
+                "inputParams": [
+                    {
+                        "label": "Session Id",
+                        "name": "sessionId",
+                        "type": "string",
+                        "description": "If not specified, a random id will be used. Learn <a target=\"_blank\" href=\"https://docs.flowiseai.com/memory/long-term-memory#ui-and-embedded-chat\">more</a>",
+                        "default": "",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "AAIChatMemory_0-input-sessionId-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Session Timeouts",
+                        "name": "sessionTTL",
+                        "type": "number",
+                        "description": "Seconds till a session expires. If not specified, the session will never expire.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "AAIChatMemory_0-input-sessionTTL-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Memory Key",
+                        "name": "memoryKey",
+                        "type": "string",
+                        "default": "chat_history",
+                        "additionalParams": true,
+                        "id": "AAIChatMemory_0-input-memoryKey-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Window Size",
+                        "name": "windowSize",
+                        "type": "number",
+                        "description": "Window of size k to surface the last k back-and-forth to use as memory.",
+                        "additionalParams": true,
+                        "optional": true,
+                        "id": "AAIChatMemory_0-input-windowSize-number",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "sessionId": "",
+                    "sessionTTL": "",
+                    "memoryKey": "chat_history",
+                    "windowSize": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "AAIChatMemory_0-output-AAIChatMemory-AAIChatMemory|BaseChatMemory|BaseMemory",
+                        "name": "AAIChatMemory",
+                        "label": "AAIChatMemory",
+                        "description": "Summarizes the conversation and stores the memory in Answer Agents servers",
+                        "type": "AAIChatMemory | BaseChatMemory | BaseMemory"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 259,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -63.67532725702972,
+                "y": 208.15631919184693
+            },
+            "dragging": false
+        },
+        {
+            "id": "chatPromptTemplate_0",
+            "position": {
+                "x": 308.95311224250247,
+                "y": 666.8072859851417
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatPromptTemplate_0",
+                "label": "Chat Prompt Template",
+                "version": 2,
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_0-input-systemMessagePrompt-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "description": "This prompt will be added at the end of the messages as human message",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_0-input-humanMessagePrompt-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "chatPromptTemplate_0-input-promptValues-json",
+                        "display": true
+                    },
+                    {
+                        "label": "Messages History",
+                        "name": "messageHistory",
+                        "description": "Add messages after System Message. This is useful when you want to provide few shot examples",
+                        "type": "tabs",
+                        "tabIdentifier": "selectedMessagesTab",
+                        "additionalParams": true,
+                        "default": "messageHistoryCode",
+                        "tabs": [
+                            {
+                                "label": "Add Messages (Code)",
+                                "name": "messageHistoryCode",
+                                "type": "code",
+                                "hideCodeExecute": true,
+                                "codeExample": "const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');\n\nreturn [\n    new HumanMessage(\"What is 333382 🦜 1932?\"),\n    new AIMessage({\n        content: \"\",\n        tool_calls: [\n        {\n            id: \"12345\",\n            name: \"calulator\",\n            args: {\n                number1: 333382,\n                number2: 1932,\n                operation: \"divide\",\n            },\n        },\n        ],\n    }),\n    new ToolMessage({\n        tool_call_id: \"12345\",\n        content: \"The answer is 172.558.\",\n    }),\n    new AIMessage(\"The answer is 172.558.\"),\n]",
+                                "optional": true,
+                                "additionalParams": true
+                            }
+                        ],
+                        "id": "chatPromptTemplate_0-input-messageHistory-tabs",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "systemMessagePrompt": "SYSTEM PROMPT — “PostgreSQL MCP Answer Agent”\nIDENTITY & PURPOSE\nYou are the PostgreSQL MCP Answer Agent, an AI agent designed to communicate with PostgreSQL databases via the PostgreSQL Model Context Protocol (MCP). Your primary responsibilities are to:\n• Execute safe, read-only SQL queries for data retrieval and schema exploration based on natural language instructions.\n• Assist users in exploring the database structure, running complex queries, and troubleshooting potential data inconsistencies.\n• Securely manage and prompt for database credentials while enforcing robust security practices.\n• Provide educational feedback on SQL best practices by explaining why queries are read-only and outlining safe database interaction guidelines.\nAVAILABLE TOOLS\n| Tool Name | When to Use | Invocation Notes | |---------------------|--------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------| | query | Execute read-only SQL queries and fetch schema information when requested by the user. | Input: SQL string. Ensure the query is strictly read-only (no data modifications). | | current_date_time() | Reference or log the current date/time where applicable. | Use as needed for time-sensitive operations or logging purposes. |\nMODES & BEHAVIOR\n• Default Mode: Process natural language requests by converting them into safe, read-only SQL queries.\n• Schema Exploration Mode: Triggered when users ask for available tables or database structure details. Fetch and summarize JSON schema information as provided by PostgreSQL MCP.\n• Troubleshooting Mode: Used when the user suspects data inconsistencies or integrity issues. Execute diagnostic queries and provide recommendations.\n• Educational Mode: When applicable, include explanations of SQL best practices (e.g., clarifying why a query is read-only) alongside query results.\nThe agent may switch modes based on keywords such as “schema”, “explain”, “diagnose”, and “query”.\nSTYLE & TONE\n• Maintain a professional, clear, and concise tone.\n• Use plain language while ensuring technical precision when explaining database operations and educational SQL practices.\n• Always provide actionable next steps and clear explanations.\n• Avoid overly casual language, and refrain from using emojis.\nCITATIONS & SOURCING\n• When referencing PostgreSQL documentation or external resources, include inline URLs or document names for verification.\n• If uncertain about any detail, state “I’m not sure” and ask for clarification rather than guessing.\n• Support technical explanations with credible sources whenever possible.\nSAFETY & PERMISSIONS\n• Exclusively enforce read-only transactions; under no circumstances should data modification queries be executed.\n• Protect user credentials rigorously – prompt for credentials if not configured, but never expose or hardcode them.\n• Educate users on the importance of using dedicated database accounts with limited permissions rather than superuser accounts. • Follow best security practices for database access at all times.\nERROR HANDLING\n• If a query execution fails, apologize briefly, clearly describe the error, and suggest a next step or modification.\n• If user input is ambiguous or unclear, ask clarifying questions before executing any query.\n• Log tool invocation failures with error details to aid in troubleshooting.\nEXAMPLES (DO NOT OUTPUT VERBATIM)\n• Example 1: “Show me all active users from the users table.” → The agent converts the request into a read-only SQL query (e.g., SELECT * FROM users WHERE active = true;), invokes the query tool, returns the results, and explains that the read-only mode ensures data integrity by not altering any records.\n• Example 2: “What is the schema for the orders table?” → The agent fetches and summarizes the JSON schema details using the query tool and explains why reviewing table schemas is essential for query construction and data understanding.\n• Example 3: “I suspect data inconsistencies in the sales records.” → The agent enters Troubleshooting Mode, executes diagnostic queries, and provides educational insights on how read-only queries help verify data consistency without impacting live data.\nNON-NEGOTIABLE RULES\n• Always use the query tool for any database operations; do not create or fabricate responses.\n• Never execute non-read-only queries. Strictly enforce read-only operations.\n• Protect user credentials at all times; prompt for them securely if needed, and do not store or expose them.\n• Confirm user intent before executing any query that may affect data retrieval.\n• Always integrate educational explanations on SQL best practices when appropriate.",
+                    "humanMessagePrompt": "The current URL is: {url}\nWeb Context (if any):\n{webContentText}\nOnly use the content or the URL if they are provided. otherwise ignore this section and only use the user input.\n\n###\nFile Uploaded (if any)\n{fileUpload}\nOnly use the content of the file if it is provided. otherwise ignore this section and follow the user input.\n\n###\n\nUser Input:\n{input}\n",
+                    "promptValues": "{\"url\":\"No URL provided by the user\",\"webContentText\":\"{{file_attachment}}\",\"fileUpload\":\"No Web Content was provided by the user\",\"input\":\"{{question}}\"}",
+                    "messageHistory": "messageHistoryCode"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "description": "Schema to represent a chat prompt",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 748,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 308.95311224250247,
+                "y": 666.8072859851417
+            },
+            "dragging": false
+        },
+        {
+            "id": "currentDateTime_0",
+            "position": {
+                "x": 786.6589970817336,
+                "y": -7.1927104677048135
+            },
+            "type": "customNode",
+            "data": {
+                "id": "currentDateTime_0",
+                "label": "CurrentDateTime",
+                "version": 1,
+                "name": "currentDateTime",
+                "type": "CurrentDateTime",
+                "baseClasses": ["CurrentDateTime", "Tool"],
+                "tags": ["AAI"],
+                "category": "Tools",
+                "description": "Get todays day, date and time.",
+                "inputParams": [],
+                "inputAnchors": [],
+                "inputs": {},
+                "outputAnchors": [
+                    {
+                        "id": "currentDateTime_0-output-currentDateTime-CurrentDateTime|Tool",
+                        "name": "currentDateTime",
+                        "label": "CurrentDateTime",
+                        "description": "Get todays day, date and time.",
+                        "type": "CurrentDateTime | Tool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 149,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 786.6589970817336,
+                "y": -7.1927104677048135
+            },
+            "dragging": false
+        },
+        {
+            "id": "postgreSQLMCP_0",
+            "position": {
+                "x": -209.65405556597455,
+                "y": 502.1116488930676
+            },
+            "type": "customNode",
+            "data": {
+                "id": "postgreSQLMCP_0",
+                "label": "PostgreSQL MCP",
+                "version": 1,
+                "name": "postgreSQLMCP",
+                "type": "PostgreSQL MCP Tool",
+                "baseClasses": ["Tool"],
+                "tags": ["AAI"],
+                "category": "MCP Servers",
+                "description": "MCP server that provides read-only access to PostgreSQL databases",
+                "inputParams": [
+                    {
+                        "label": "Connect Credential",
+                        "name": "credential",
+                        "type": "credential",
+                        "credentialNames": ["PostgresUrl"],
+                        "id": "postgreSQLMCP_0-input-credential-credential",
+                        "display": true
+                    },
+                    {
+                        "label": "Available Actions",
+                        "name": "mcpActions",
+                        "type": "asyncMultiOptions",
+                        "loadMethod": "listActions",
+                        "refresh": true,
+                        "id": "postgreSQLMCP_0-input-mcpActions-asyncMultiOptions",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "mcpActions": ""
+                },
+                "outputAnchors": [
+                    {
+                        "id": "postgreSQLMCP_0-output-postgreSQLMCP-Tool",
+                        "name": "postgreSQLMCP",
+                        "label": "PostgreSQL MCP Tool",
+                        "description": "MCP server that provides read-only access to PostgreSQL databases",
+                        "type": "Tool"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 378,
+            "selected": false,
+            "positionAbsolute": {
+                "x": -209.65405556597455,
+                "y": 502.1116488930676
+            },
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "AAIChatMemory_0",
+            "sourceHandle": "AAIChatMemory_0-output-AAIChatMemory-AAIChatMemory|BaseChatMemory|BaseMemory",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-memory-BaseChatMemory",
+            "type": "buttonedge",
+            "id": "AAIChatMemory_0-AAIChatMemory_0-output-AAIChatMemory-AAIChatMemory|BaseChatMemory|BaseMemory-aaiToolAgent_0-aaiToolAgent_0-input-memory-BaseChatMemory"
+        },
+        {
+            "source": "aaiChatOpenAI_0",
+            "sourceHandle": "aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-model-BaseChatModel",
+            "type": "buttonedge",
+            "id": "aaiChatOpenAI_0-aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-aaiToolAgent_0-aaiToolAgent_0-input-model-BaseChatModel"
+        },
+        {
+            "source": "chatPromptTemplate_0",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-chatPromptTemplate-ChatPromptTemplate",
+            "type": "buttonedge",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-aaiToolAgent_0-aaiToolAgent_0-input-chatPromptTemplate-ChatPromptTemplate"
+        },
+        {
+            "source": "currentDateTime_0",
+            "sourceHandle": "currentDateTime_0-output-currentDateTime-CurrentDateTime|Tool",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "currentDateTime_0-currentDateTime_0-output-currentDateTime-CurrentDateTime|Tool-aaiToolAgent_0-aaiToolAgent_0-input-tools-Tool"
+        },
+        {
+            "source": "postgreSQLMCP_0",
+            "sourceHandle": "postgreSQLMCP_0-output-postgreSQLMCP-Tool",
+            "target": "aaiToolAgent_0",
+            "targetHandle": "aaiToolAgent_0-input-tools-Tool",
+            "type": "buttonedge",
+            "id": "postgreSQLMCP_0-postgreSQLMCP_0-output-postgreSQLMCP-Tool-aaiToolAgent_0-aaiToolAgent_0-input-tools-Tool"
+        }
+    ]
+}

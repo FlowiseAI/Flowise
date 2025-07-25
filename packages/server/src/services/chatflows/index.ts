@@ -1,6 +1,6 @@
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { IsNull, QueryRunner } from 'typeorm'
+import { QueryRunner } from 'typeorm'
 import { ChatflowType, IReactFlowObject, IUser } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { ChatFlow, ChatflowVisibility } from '../../database/entities/ChatFlow'
@@ -97,35 +97,57 @@ const checkIfChatflowIsValidForUploads = async (chatflowId: string): Promise<any
 const deleteChatflow = async (chatflowId: string, user: IUser | undefined): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()
-        const { id: userId, organizationId, permissions } = user ?? {}
 
-        // First, try to find the chatflow
-        const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
-            where: {
-                id: chatflowId,
-                ...(permissions?.includes('org:manage') ? [{ organizationId }, { organizationId: IsNull() }] : { userId, organizationId })
-            }
+        if (!user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, 'Authentication required')
+        }
+
+        const { id: userId, organizationId, permissions } = user
+        const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
+
+        // First, find the chatflow to verify ownership
+        const chatflow = await chatFlowRepository.findOne({
+            where: { id: chatflowId }
         })
 
         if (!chatflow) {
             return { affected: 0, message: 'Chatflow not found' }
         }
 
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).softDelete({ id: chatflowId, organizationId })
+        // Authorization check - user can delete if:
+        // 1. They own the chatflow (userId matches)
+        // 2. They have org:manage permission and chatflow belongs to their organization
+        // 3. They have org:manage permission and chatflow is system-wide (organizationId is null)
+        const canDelete =
+            chatflow.userId === userId ||
+            (permissions?.includes('org:manage') && chatflow.organizationId === organizationId) ||
+            (permissions?.includes('org:manage') && chatflow.organizationId === null)
 
+        if (!canDelete) {
+            throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Insufficient permissions to delete this chatflow')
+        }
+
+        // Use transaction to ensure all database operations succeed or fail together
+        const dbResponse = await appServer.AppDataSource.transaction(async (transactionalEntityManager) => {
+            // Delete the chatflow
+            const chatflowResult = await transactionalEntityManager.getRepository(ChatFlow).softDelete({ id: chatflowId })
+
+            // Delete all related data
+            await transactionalEntityManager.getRepository(ChatMessage).softDelete({ chatflowid: chatflowId })
+            await transactionalEntityManager.getRepository(ChatMessageFeedback).softDelete({ chatflowid: chatflowId })
+            await transactionalEntityManager.getRepository(UpsertHistory).softDelete({ chatflowid: chatflowId })
+
+            return chatflowResult
+        })
+
+        // File operations outside transaction (they don't support rollback anyway)
         try {
-            // Delete all uploads corresponding to this chatflow
             await removeFolderFromStorage(chatflowId)
             await documentStoreService.updateDocumentStoreUsage(chatflowId, undefined)
-            // Delete all chat messages
-            await appServer.AppDataSource.getRepository(ChatMessage).softDelete({ chatflowid: chatflowId })
-            // Delete all chat feedback
-            await appServer.AppDataSource.getRepository(ChatMessageFeedback).softDelete({ chatflowid: chatflowId })
-            // Delete all upsert history
-            await appServer.AppDataSource.getRepository(UpsertHistory).softDelete({ chatflowid: chatflowId })
         } catch (e) {
             logger.error(`[server]: Error deleting file storage for chatflow ${chatflowId}: ${e}`)
         }
+
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -144,43 +166,37 @@ const getAllChatflows = async (user?: IUser, type?: ChatflowType, filter?: Chatf
         const { id: userId, organizationId, permissions } = user ?? {}
         const chatFlowRepository = appServer.AppDataSource.getRepository(ChatFlow)
         const queryBuilder = chatFlowRepository.createQueryBuilder('chatFlow')
-        let org
+
+        // Handle auth0_org_id filter for cross-org access
+        let targetOrgId = organizationId
         if (filter?.auth0_org_id) {
-            org = await appServer.AppDataSource.getRepository(Organization).findOne({
+            const org = await appServer.AppDataSource.getRepository(Organization).findOne({
                 where: {
                     auth0Id: filter.auth0_org_id
                 }
             })
+            targetOrgId = org?.id ?? organizationId
         }
+
+        // SECURITY: Always filter by organization first - users should never see chatflows from other orgs
+        if (targetOrgId) {
+            queryBuilder.where('chatFlow.organizationId = :organizationId', { organizationId: targetOrgId })
+        }
+
+        // PERFORMANCE: Always only return user's own chatflows for better performance
+        // Even admins only see their own chatflows in the sidekick selector
+        queryBuilder.andWhere('chatFlow.userId = :userId', { userId })
+
+        // Apply additional visibility filtering if specified
         if (filter?.visibility) {
             const visibilityConditions = filter.visibility
                 .split(',')
                 .map((v: string) => (v === 'Organization' ? 'Private' : v))
                 .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
-                .join(' AND ')
+                .join(' OR ')
 
-            if (permissions?.includes('org:manage')) {
-                queryBuilder.where(`(${visibilityConditions})`)
-            } else {
-                queryBuilder.where(`(chatFlow.userId = :userId AND (${visibilityConditions}))`, {
-                    userId
-                })
-            }
-
-            const visibility = filter.visibility
-                .split(',')
-                .map((v: string) => `chatFlow.visibility LIKE '%${v.trim()}%'`)
-                .join(' AND ')
-            if (filter.visibility.includes('Organization')) {
-                const orgCondition = `chatFlow.organizationId = :organizationId AND (${visibility})`
-                queryBuilder.orWhere(`(${orgCondition})`, { organizationId: org?.id ?? organizationId })
-            }
-        } else {
-            if (!permissions?.includes('org:manage')) {
-                queryBuilder.where(`chatFlow.userId = :userId`, { userId })
-            }
+            queryBuilder.andWhere(`(${visibilityConditions})`)
         }
-
         const response = await queryBuilder.getMany()
         const dbResponse = response.map((chatflow) => ({
             ...chatflow,
@@ -190,7 +206,7 @@ const getAllChatflows = async (user?: IUser, type?: ChatflowType, filter?: Chatf
                 ? 'ORGANIZATION'
                 : '',
             isOwner: chatflow.userId === userId,
-            canEdit: chatflow.userId === userId || permissions?.includes('org:manage')
+            canEdit: (chatflow.userId === userId && permissions?.includes('chatflow:manage')) || permissions?.includes('org:manage')
         }))
 
         if (!(await checkOwnership(dbResponse, user))) {
@@ -268,6 +284,16 @@ const getChatflowById = async (chatflowId: string, user?: IUser): Promise<any> =
             if (!(isUsersChatflow || isChatflowPublic || isUserOrgAdmin || (hasChatflowOrgVisibility && isUserInSameOrg))) {
                 throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized to access this chatflow`)
             }
+            // Add permission properties to response
+            const enhancedResponse = {
+                ...dbResponse,
+                isOwner: dbResponse.userId === user.id,
+                canEdit:
+                    (dbResponse.userId === user.id && user.permissions?.includes('chatflow:manage')) ||
+                    user.permissions?.includes('org:manage')
+            }
+
+            return enhancedResponse
         }
 
         return dbResponse
@@ -333,12 +359,14 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
             // we need a 2-step process, as we need to save the chatflow first and then update the file paths
             // this is because we need the chatflow id to create the file paths
 
-            // Ensure parentChatflowId is not a marketplace template ID
+            // Handle marketplace template IDs - capture as templateId before clearing parentChatflowId
             if (
                 newChatFlow.parentChatflowId &&
                 typeof newChatFlow.parentChatflowId === 'string' &&
                 newChatFlow.parentChatflowId.startsWith('cf_')
             ) {
+                // Store the template ID before clearing the parentChatflowId
+                newChatFlow.templateId = newChatFlow.parentChatflowId
                 newChatFlow.parentChatflowId = undefined
             }
 
@@ -353,12 +381,14 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
             await _checkAndUpdateDocumentStoreUsage(step1Results)
             dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
         } else {
-            // Ensure parentChatflowId is not a marketplace template ID
+            // Handle marketplace template IDs - capture as templateId before clearing parentChatflowId
             if (
                 newChatFlow.parentChatflowId &&
                 typeof newChatFlow.parentChatflowId === 'string' &&
                 newChatFlow.parentChatflowId.startsWith('cf_')
             ) {
+                // Store the template ID before clearing the parentChatflowId
+                newChatFlow.templateId = newChatFlow.parentChatflowId
                 newChatFlow.parentChatflowId = undefined
             }
 
@@ -532,7 +562,6 @@ const updateChatflow = async (chatflow: ChatFlow, updateChatFlow: ChatFlow, user
             updateChatFlow.visibility = Array.from(new Set([...updateChatFlow.visibility, ChatflowVisibility.PRIVATE]))
         }
 
-
         const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, mergedChatflow)
 
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow)
@@ -598,7 +627,6 @@ const getSinglePublicChatbotConfig = async (chatflowId: string, user: IUser | un
                         `Error parsing Chatbot Config for Chatflow ${chatflowId}`
                     )
                 }
-                return 'OK'
             }
         }
     } catch (error) {

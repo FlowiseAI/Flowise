@@ -46,6 +46,7 @@ export const MarketplaceTable = ({
     filterByType,
     filterByFramework,
     filterByUsecases,
+    filterExcludeAnswerAgent,
     goToCanvas,
     goToTool,
     isLoading,
@@ -165,6 +166,7 @@ export const MarketplaceTable = ({
                                     .filter(filterFunction)
                                     .filter(filterByFramework)
                                     .filter(filterByUsecases)
+                                    .filter(filterExcludeAnswerAgent || (() => true))
                                     .map((row, index) => (
                                         <StyledTableRow key={index}>
                                             <StyledTableCell key='0'>
@@ -277,6 +279,7 @@ MarketplaceTable.propTypes = {
     filterByType: PropTypes.func,
     filterByFramework: PropTypes.func,
     filterByUsecases: PropTypes.func,
+    filterExcludeAnswerAgent: PropTypes.func,
     goToTool: PropTypes.func,
     goToCanvas: PropTypes.func,
     isLoading: PropTypes.bool,
