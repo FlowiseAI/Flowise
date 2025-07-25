@@ -30,7 +30,7 @@ class ExecuteFlow_Agentflow implements INode {
     constructor() {
         this.label = 'Execute Flow'
         this.name = 'executeFlowAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'ExecuteFlow'
         this.category = 'Agent Flows'
         this.description = 'Execute another flow'
@@ -62,7 +62,8 @@ class ExecuteFlow_Agentflow implements INode {
                 name: 'executeFlowOverrideConfig',
                 description: 'Override the config passed to the flow',
                 type: 'json',
-                optional: true
+                optional: true,
+                acceptVariable: true
             },
             {
                 label: 'Base URL',
@@ -162,12 +163,17 @@ class ExecuteFlow_Agentflow implements INode {
         const flowInput = nodeData.inputs?.executeFlowInput as string
         const returnResponseAs = nodeData.inputs?.executeFlowReturnResponseAs as string
         const _executeFlowUpdateState = nodeData.inputs?.executeFlowUpdateState
-        const overrideConfig =
-            typeof nodeData.inputs?.executeFlowOverrideConfig === 'string' &&
-            nodeData.inputs.executeFlowOverrideConfig.startsWith('{') &&
-            nodeData.inputs.executeFlowOverrideConfig.endsWith('}')
-                ? JSON.parse(nodeData.inputs.executeFlowOverrideConfig)
-                : nodeData.inputs?.executeFlowOverrideConfig
+
+        let overrideConfig = nodeData.inputs?.executeFlowOverrideConfig
+        if (typeof overrideConfig === 'string' && overrideConfig.startsWith('{') && overrideConfig.endsWith('}')) {
+            try {
+                // Handle escaped square brackets and other common escape sequences
+                const unescapedConfig = overrideConfig.replace(/\\(\[|\])/g, '$1')
+                overrideConfig = JSON.parse(unescapedConfig)
+            } catch (parseError) {
+                throw new Error(`Invalid JSON in executeFlowOverrideConfig: ${parseError.message}`)
+            }
+        }
 
         const state = options.agentflowRuntime?.state as ICommonObject
         const runtimeChatHistory = (options.agentflowRuntime?.chatHistory as BaseMessageLike[]) ?? []
