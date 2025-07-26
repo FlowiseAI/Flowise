@@ -163,6 +163,7 @@ async function handleFeedbackQuery(params: {
         const sessionQuery = appServer.AppDataSource.getRepository(ChatMessage)
             .createQueryBuilder('chat_message')
             .select('chat_message.sessionId', 'sessionId')
+            .addSelect('MAX(chat_message.createdDate)', 'maxCreatedDate')
             .where('chat_message.chatflowid = :chatflowid', { chatflowid })
 
         // Apply basic filters
@@ -195,7 +196,7 @@ async function handleFeedbackQuery(params: {
 
         const startIndex = pageSize * (page - 1)
         const sessionIds = await sessionQuery
-            .orderBy('MAX(chat_message.createdDate)', sortOrder === 'DESC' ? 'DESC' : 'ASC')
+            .orderBy('maxCreatedDate', sortOrder === 'DESC' ? 'DESC' : 'ASC')
             .groupBy('chat_message.sessionId')
             .offset(startIndex)
             .limit(pageSize)
