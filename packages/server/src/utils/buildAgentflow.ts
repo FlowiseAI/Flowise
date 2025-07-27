@@ -43,7 +43,8 @@ import {
     QUESTION_VAR_PREFIX,
     CURRENT_DATE_TIME_VAR_PREFIX,
     _removeCredentialId,
-    validateHistorySchema
+    validateHistorySchema,
+    LOOP_COUNT_VAR_PREFIX
 } from '.'
 import { ChatFlow } from '../database/entities/ChatFlow'
 import { Variable } from '../database/entities/Variable'
@@ -132,6 +133,7 @@ interface IExecuteNodeParams {
     parentExecutionId?: string
     isRecursive?: boolean
     iterationContext?: ICommonObject
+    loopCounts?: Map<string, number>
     orgId: string
     workspaceId: string
     subscriptionId: string
@@ -218,7 +220,8 @@ export const resolveVariables = async (
     uploadedFilesContent: string,
     chatHistory: IMessage[],
     agentFlowExecutedData?: IAgentflowExecutedData[],
-    iterationContext?: ICommonObject
+    iterationContext?: ICommonObject,
+    loopCounts?: Map<string, number>
 ): Promise<INodeData> => {
     let flowNodeData = cloneDeep(reactFlowNodeData)
     const types = 'inputs'
@@ -283,6 +286,20 @@ export const resolveVariables = async (
 
             if (variableFullPath === RUNTIME_MESSAGES_LENGTH_VAR_PREFIX) {
                 resolvedValue = resolvedValue.replace(match, flowConfig?.runtimeChatHistoryLength ?? 0)
+            }
+
+            if (variableFullPath === LOOP_COUNT_VAR_PREFIX) {
+                // Get the current loop count from the most recent loopAgentflow node execution
+                let currentLoopCount = 0
+                if (loopCounts && agentFlowExecutedData) {
+                    // Find the most recent loopAgentflow node execution to get its loop count
+                    const loopNodes = [...agentFlowExecutedData].reverse().filter((data) => data.data?.name === 'loopAgentflow')
+                    if (loopNodes.length > 0) {
+                        const latestLoopNode = loopNodes[0]
+                        currentLoopCount = loopCounts.get(latestLoopNode.nodeId) || 0
+                    }
+                }
+                resolvedValue = resolvedValue.replace(match, currentLoopCount.toString())
             }
 
             if (variableFullPath === CURRENT_DATE_TIME_VAR_PREFIX) {
@@ -839,6 +856,7 @@ const executeNode = async ({
     isInternal,
     isRecursive,
     iterationContext,
+    loopCounts,
     orgId,
     workspaceId,
     subscriptionId
@@ -914,7 +932,8 @@ const executeNode = async ({
             uploadedFilesContent,
             chatHistory,
             agentFlowExecutedData,
-            iterationContext
+            iterationContext,
+            loopCounts
         )
 
         // Handle human input if present
@@ -1700,6 +1719,7 @@ export const executeAgentFlow = async ({
                 analyticHandlers,
                 isRecursive,
                 iterationContext,
+                loopCounts,
                 orgId,
                 workspaceId,
                 subscriptionId
