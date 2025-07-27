@@ -3,6 +3,7 @@ import { convertSchemaToZod, getBaseClasses, getVars } from '../../../src/utils'
 import { DynamicStructuredTool } from './core'
 import { z } from 'zod'
 import { DataSource } from 'typeorm'
+import { SecureZodSchemaParser } from '../../../src/secureZodParser'
 
 class CustomTool_Tools implements INode {
     label: string
@@ -119,8 +120,7 @@ class CustomTool_Tools implements INode {
             if (customToolName) obj.name = customToolName
             if (customToolDesc) obj.description = customToolDesc
             if (customToolSchema) {
-                const zodSchemaFunction = new Function('z', `return ${customToolSchema}`)
-                obj.schema = zodSchemaFunction(z)
+                obj.schema = SecureZodSchemaParser.parseZodSchema(customToolSchema) as z.ZodObject<ICommonObject, 'strip', z.ZodTypeAny>
             }
 
             const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
