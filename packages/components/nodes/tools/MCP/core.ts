@@ -1,4 +1,10 @@
-import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
+import {
+    CallToolRequest,
+    CallToolResultSchema,
+    ListToolsResult,
+    ListToolsResultSchema,
+    LoggingMessageNotificationSchema
+} from '@modelcontextprotocol/sdk/types.js'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
@@ -133,19 +139,48 @@ export async function MCPTool({
     argsSchema: any
 }): Promise<Tool> {
     return tool(
-        async (input): Promise<string> => {
-            // Create a new client for this request
+        async (input, config): Promise<string> => {
+            // Extract Flowise context and clean input for MCP
+            const chatId = config?.configurable?.flowise_chatId
+            const sseStreamer = config?.configurable?.sseStreamer
+            console.log('🔍 [MCP Tool] Context - chatId:', chatId)
+
+            // Register MCP connection to prevent SSE client removal
+            if (sseStreamer && chatId) {
+                sseStreamer.addMcpConnection(chatId)
+            }
+
             const client = await toolkit.createClient()
+
+            client.setNotificationHandler(LoggingMessageNotificationSchema, (notification) => {
+                console.log('🔔 [MCP Notification In Tool] Message:', notification.params)
+
+                if (sseStreamer && chatId) {
+                    // Stream as token event so UI displays it
+                    sseStreamer.streamTokenEvent(chatId, `\n🔔 MCP: ${notification.params.data}\n`)
+                    console.log('🔔 [MCP Notification In Tool] Streamed notification to SSE for chatId:', chatId)
+                }
+            })
 
             try {
                 const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
                 const res = await client.request(req, CallToolResultSchema)
                 const content = res.content
                 const contentString = JSON.stringify(content)
+                
+                // Set up cleanup timeout for MCP connection
+                // Allow notifications to continue for 30 seconds after tool completes
+                if (sseStreamer && chatId) {
+                    setTimeout(() => {
+                        console.log(`🔧 [MCP Tool] Cleaning up MCP connection for chatId: ${chatId}`)
+                        sseStreamer.removeMcpConnection(chatId)
+                    }, 3000000) // 30 seconds
+                }
+                
                 return contentString
             } finally {
-                // Always close the client after the request completes
-                await client.close()
+                // Keep client alive for ongoing notifications
+                // Don't close the client - cleanup will happen via timeout
             }
         },
         {
@@ -170,6 +205,9 @@ function createSchemaModel(
         acc[key] = z.any()
         return acc
     }, {} as Record<string, import('zod').ZodTypeAny>)
+
+    // Add Flowise context fields to allow them through schema validation
+    schemaProperties['flowise_chatId'] = z.string().optional()
 
     return z.object(schemaProperties)
 }
