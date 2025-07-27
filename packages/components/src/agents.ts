@@ -268,6 +268,8 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
 
     input?: string
 
+    sseStreamer?: any
+
     isXML?: boolean
 
     /**
@@ -292,7 +294,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         return this.agent.returnValues
     }
 
-    constructor(input: AgentExecutorInput & { sessionId?: string; chatId?: string; input?: string; isXML?: boolean }) {
+    constructor(input: AgentExecutorInput & { sessionId?: string; chatId?: string; input?: string; sseStreamer?: any; isXML?: boolean }) {
         let agent: BaseSingleActionAgent | BaseMultiActionAgent
         if (Runnable.isRunnable(input.agent)) {
             agent = new RunnableAgent({ runnable: input.agent })
@@ -320,16 +322,18 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         this.sessionId = input.sessionId
         this.chatId = input.chatId
         this.input = input.input
+        this.sseStreamer = input.sseStreamer
         this.isXML = input.isXML
     }
 
     static fromAgentAndTools(
-        fields: AgentExecutorInput & { sessionId?: string; chatId?: string; input?: string; isXML?: boolean }
+        fields: AgentExecutorInput & { sessionId?: string; chatId?: string; input?: string; sseStreamer?: any; isXML?: boolean }
     ): AgentExecutor {
         const newInstance = new AgentExecutor(fields)
         if (fields.sessionId) newInstance.sessionId = fields.sessionId
         if (fields.chatId) newInstance.chatId = fields.chatId
         if (fields.input) newInstance.input = fields.input
+        if (fields.sseStreamer) newInstance.sseStreamer = fields.sseStreamer
         if (fields.isXML) newInstance.isXML = fields.isXML
         return newInstance
     }
@@ -427,17 +431,24 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                          * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
                          */
                         if (tool) {
-                            observation = await (tool as any).call(
-                                this.isXML && typeof action.toolInput === 'string' ? { input: action.toolInput } : action.toolInput,
-                                runManager?.getChild(),
-                                undefined,
+                            console.log('🔍 [MCP Tool] Chat ID:', this.chatId)
+                            observation = await tool.invoke(
+                                this.isXML && typeof action.toolInput === 'string'
+                                    ? { input: action.toolInput }
+                                    : (action.toolInput as any),
                                 {
-                                    sessionId: this.sessionId,
-                                    chatId: this.chatId,
-                                    input: this.input,
-                                    state: inputs
+                                    callbacks: runManager?.getChild(),
+                                    configurable: {
+                                        sessionId: this.sessionId,
+                                        chatId: this.chatId,
+                                        input: this.input,
+                                        state: inputs,
+                                        sseStreamer: this.sseStreamer,
+                                        flowise_chatId: this.chatId
+                                    }
                                 }
                             )
+                            console.log('🔍 [MCP Tool] Tool output:', observation)
                             let toolOutput = observation
                             if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
                                 toolOutput = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)[0]
@@ -606,17 +617,25 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                      * - tags?: string[]
                      * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
                      */
+                    console.log('🔍 [MCP Tool MAP] Chat ID:', this.chatId)
                     observation = await (tool as any).call(
-                        this.isXML && typeof agentAction.toolInput === 'string' ? { input: agentAction.toolInput } : agentAction.toolInput,
+                        {
+                            ...(this.isXML && typeof agentAction.toolInput === 'string'
+                                ? { input: agentAction.toolInput }
+                                : (agentAction.toolInput as any)),
+                            flowise_chatId: this.chatId
+                        },
                         runManager?.getChild(),
                         undefined,
                         {
                             sessionId: this.sessionId,
                             chatId: this.chatId,
                             input: this.input,
-                            state: inputs
+                            state: inputs,
+                            sseStreamer: this.sseStreamer
                         }
                     )
+                    console.log('🔍 [MCP Tool MAP] Tool output:', observation)
                     if (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)) {
                         const observationArray = observation.split(SOURCE_DOCUMENTS_PREFIX)
                         observation = observationArray[0]
