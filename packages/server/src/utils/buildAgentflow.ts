@@ -84,6 +84,8 @@ interface IProcessNodeOutputsParams {
     waitingNodes: Map<string, IWaitingNode>
     loopCounts: Map<string, number>
     abortController?: AbortController
+    sseStreamer?: IServerSideEventStreamer
+    chatId: string
 }
 
 interface IAgentFlowRuntime {
@@ -605,7 +607,9 @@ async function processNodeOutputs({
     edges,
     nodeExecutionQueue,
     waitingNodes,
-    loopCounts
+    loopCounts,
+    sseStreamer,
+    chatId
 }: IProcessNodeOutputsParams): Promise<{ humanInput?: IHumanInput }> {
     logger.debug(`\n🔄 Processing outputs from node: ${nodeId}`)
 
@@ -686,6 +690,11 @@ async function processNodeOutputs({
             }
         } else {
             logger.debug(`    ⚠️ Maximum loop count (${maxLoop}) reached, stopping loop`)
+            const fallbackMessage = result.output.fallbackMessage || `Loop completed after reaching maximum iteration count of ${maxLoop}.`
+            if (sseStreamer) {
+                sseStreamer.streamTokenEvent(chatId, fallbackMessage)
+            }
+            result.output = { ...result.output, content: fallbackMessage }
         }
     }
 
@@ -1758,7 +1767,8 @@ export const executeAgentFlow = async ({
                 nodeExecutionQueue,
                 waitingNodes,
                 loopCounts,
-                abortController
+                sseStreamer,
+                chatId
             })
 
             // Update humanInput if it was changed

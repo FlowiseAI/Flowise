@@ -19,7 +19,7 @@ class Loop_Agentflow implements INode {
     constructor() {
         this.label = 'Loop'
         this.name = 'loopAgentflow'
-        this.version = 1.0
+        this.version = 1.1
         this.type = 'Loop'
         this.category = 'Agent Flows'
         this.description = 'Loop back to a previous node'
@@ -40,6 +40,15 @@ class Loop_Agentflow implements INode {
                 name: 'maxLoopCount',
                 type: 'number',
                 default: 5
+            },
+            {
+                label: 'Fallback Message',
+                name: 'fallbackMessage',
+                type: 'string',
+                description: 'Message to display if the loop count is exceeded',
+                placeholder: 'Enter your fallback message here',
+                rows: 4,
+                acceptVariable: true
             }
         ]
     }
@@ -64,6 +73,7 @@ class Loop_Agentflow implements INode {
     async run(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const loopBackToNode = nodeData.inputs?.loopBackToNode as string
         const _maxLoopCount = nodeData.inputs?.maxLoopCount as string
+        const fallbackMessage = nodeData.inputs?.fallbackMessage as string
 
         const state = options.agentflowRuntime?.state as ICommonObject
 
@@ -82,7 +92,8 @@ class Loop_Agentflow implements INode {
             output: {
                 content: 'Loop back to ' + `${loopBackToNodeLabel} (${loopBackToNodeId})`,
                 nodeID: loopBackToNodeId,
-                maxLoopCount: _maxLoopCount ? parseInt(_maxLoopCount) : 5
+                maxLoopCount: _maxLoopCount ? parseInt(_maxLoopCount) : 5,
+                fallbackMessage
             },
             state
         }
