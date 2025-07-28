@@ -68,7 +68,9 @@ let nextConfig = withBundleAnalyzer({
         ]
     },
     env: {
-        AUTH0_BASE_URL: process.env.AUTH0_BASE_URL ?? `https://${process.env.VERCEL_BRANCH_URL}`,
+        // Use explicit AUTH0_BASE_URL from environment, fallback to VERCEL_BRANCH_URL if on Vercel
+        AUTH0_BASE_URL:
+            process.env.AUTH0_BASE_URL ?? (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : undefined),
         REACT_APP_AUTH0_ORGANIZATION_ID: process.env.AUTH0_ORGANIZATION_ID,
         REACT_APP_AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
         REACT_APP_AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
