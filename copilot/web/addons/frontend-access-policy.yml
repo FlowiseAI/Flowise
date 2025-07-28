@@ -1,0 +1,40 @@
+Parameters:
+    App:
+        Type: String
+
+    Env:
+        Type: String
+
+Resources:
+    # Allow frontend service to access S3 storage bucket
+    FrontendS3AccessPolicy:
+        Type: AWS::IAM::ManagedPolicy
+        Properties:
+            Description: Grants frontend service access to the shared S3 storage bucket
+            PolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    - Sid: S3BucketAccess
+                      Effect: Allow
+                      Action:
+                          - s3:GetObject
+                          - s3:PutObject
+                          - s3:DeleteObject
+                          - s3:ListBucket
+                      Resource:
+                          - !Sub 'arn:aws:s3:::${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorage/*'
+                          - !Sub 'arn:aws:s3:::${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorage'
+
+    # Output the backend service endpoint for frontend to use
+    BackendServiceEndpoint:
+        Type: AWS::SSM::Parameter
+        Properties:
+            Name: !Sub /${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/flowise-endpoint
+            Type: String
+            Value: !Sub 'http://flowise.${COPILOT_ENVIRONMENT_NAME}.${COPILOT_APPLICATION_NAME}.local:4000'
+            Description: Internal endpoint for the flowise backend service
+
+Outputs:
+    FrontendS3AccessPolicyArn:
+        Description: IAM Managed Policy ARN for S3 access
+        Value: !Ref FrontendS3AccessPolicy
