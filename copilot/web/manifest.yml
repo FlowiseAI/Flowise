@@ -20,16 +20,16 @@ http:
 # Configuration for your containers and service.
 image:
     # Docker build arguments
-    build: 
+    build:
         dockerfile: ./apps/web/Dockerfile
         context: .
     # Port exposed through your container to route traffic to it.
     port: 3000
 
-cpu: 1024     # Number of CPU units for the task
-memory: 2048  # Amount of memory in MiB used by the task
-count: 2      # Number of tasks that should be running in your service
-exec: true    # Enable running commands in your container
+cpu: 1024 # Number of CPU units for the task
+memory: 2048 # Amount of memory in MiB used by the task
+count: 2 # Number of tasks that should be running in your service
+exec: true # Enable running commands in your container
 
 # Enable Service Connect for intra-environment traffic between services
 network:
@@ -42,17 +42,13 @@ variables: # Pass environment variables as key value pairs.
     PORT: '3000'
     HOSTNAME: '0.0.0.0'
     NEXT_TELEMETRY_DISABLED: '1'
-    
-    # Backend service discovery
-    CHATFLOW_DOMAIN_OVERRIDE: 
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowise-endpoint
-    
+
     # Database connection from backend service
     DATABASE_TYPE: postgres
     DATABASE_HOST:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterEndpoint
     DATABASE_PORT: '5432'
-    
+
     # Redis connection
     REDIS_URL:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
@@ -65,34 +61,20 @@ secrets:
     # Database credentials from Aurora cluster
     DATABASE_SECRET:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterAuroraSecret
-    
+
     # Auth0 secrets - should be stored in Parameter Store
     AUTH0_SECRET:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-auth0-secret
     AUTH0_CLIENT_SECRET:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-auth0-client-secret
-    
+
     # Stripe secret for billing
     BILLING_STRIPE_SECRET_KEY:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-stripe-secret
 
-# Configure autoscaling
-count:
-    min: 2
-    max: 10
-    advanced:
-        cooldown: 60s
-        scale_in_cooldown: 180s
-    cpu_percentage: 70
-    memory_percentage: 80
-
 # Configure deployment strategy
 deployment:
     rolling: 'default'
-
-# CloudFront distribution for static assets
-cdn:
-    enable_container_insights: true
 
 # Environment-specific overrides
 environments:
@@ -101,8 +83,6 @@ environments:
         cpu: 512
         memory: 1024
     production:
-        count:
-            min: 3
-            max: 20
+        count: 2
         cpu: 2048
         memory: 4096
