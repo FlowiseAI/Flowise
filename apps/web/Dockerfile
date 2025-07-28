@@ -61,6 +61,9 @@ ENV WEB_AUTH0_SECRET=$WEB_AUTH0_SECRET
 # Copy package.json files first
 COPY --from=pruner /app/out/json/ .
 
+# Copy scripts directory before pnpm install since postinstall script needs it
+COPY scripts/ ./scripts/
+
 # First install the dependencies with cache mount (as they change less often)
 RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm install
 
