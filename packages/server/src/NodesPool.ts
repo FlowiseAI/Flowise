@@ -22,7 +22,7 @@ export class NodesPool {
 
     private initializeNodes() {
         const mainPath = path.join(getNodeModulesPackagePath('flowise-components'), 'dist', 'nodes')
-        const additionalPaths = process.env.COMPONENTS_PATH?.split(':') ?? []
+        const additionalPaths = process.env.COMPONENTS_PATH?.split(path.delimiter) ?? []
         return Promise.all(
             [mainPath, ...additionalPaths]
                 .filter((nodesPath) => nodesPath !== '') // specify '.' if you really want
