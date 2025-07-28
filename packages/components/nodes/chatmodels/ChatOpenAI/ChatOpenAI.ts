@@ -1,10 +1,11 @@
-import { ChatOpenAI as LangchainChatOpenAI, ChatOpenAIFields, OpenAIClient } from '@langchain/openai'
+import { ChatOpenAI as LangchainChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { ChatOpenAI } from './FlowiseChatOpenAI'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { HttpsProxyAgent } from 'https-proxy-agent'
+import { OpenAI as OpenAIClient } from 'openai'
 
 class ChatOpenAI_ChatModels implements INode {
     label: string
@@ -21,7 +22,7 @@ class ChatOpenAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatOpenAI'
         this.name = 'chatOpenAI'
-        this.version = 8.2
+        this.version = 8.3
         this.type = 'ChatOpenAI'
         this.icon = 'openai.svg'
         this.category = 'Chat Models'
@@ -177,8 +178,17 @@ class ChatOpenAI_ChatModels implements INode {
                 }
             },
             {
+                label: 'Reasoning',
+                description: 'Whether the model supports reasoning. Only applicable for reasoning models.',
+                name: 'reasoning',
+                type: 'boolean',
+                default: false,
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Reasoning Effort',
-                description: 'Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.',
+                description: 'Constrains effort on reasoning for reasoning models',
                 name: 'reasoningEffort',
                 type: 'options',
                 options: [
@@ -195,9 +205,34 @@ class ChatOpenAI_ChatModels implements INode {
                         name: 'high'
                     }
                 ],
-                default: 'medium',
-                optional: false,
-                additionalParams: true
+                additionalParams: true,
+                show: {
+                    reasoning: true
+                }
+            },
+            {
+                label: 'Reasoning Summary',
+                description: `A summary of the reasoning performed by the model. This can be useful for debugging and understanding the model's reasoning process`,
+                name: 'reasoningSummary',
+                type: 'options',
+                options: [
+                    {
+                        label: 'Auto',
+                        name: 'auto'
+                    },
+                    {
+                        label: 'Concise',
+                        name: 'concise'
+                    },
+                    {
+                        label: 'Detailed',
+                        name: 'detailed'
+                    }
+                ],
+                additionalParams: true,
+                show: {
+                    reasoning: true
+                }
             }
         ]
     }
@@ -223,7 +258,8 @@ class ChatOpenAI_ChatModels implements INode {
         const basePath = nodeData.inputs?.basepath as string
         const proxyUrl = nodeData.inputs?.proxyUrl as string
         const baseOptions = nodeData.inputs?.baseOptions
-        const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.Chat.ChatCompletionReasoningEffort
+        const reasoningEffort = nodeData.inputs?.reasoningEffort as OpenAIClient.ReasoningEffort | null
+        const reasoningSummary = nodeData.inputs?.reasoningSummary as 'auto' | 'concise' | 'detailed' | null
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
         const imageResolution = nodeData.inputs?.imageResolution as string
@@ -240,14 +276,22 @@ class ChatOpenAI_ChatModels implements INode {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
+            apiKey: openAIApiKey,
             streaming: streaming ?? true
         }
 
         if (modelName.includes('o3') || modelName.includes('o1')) {
             delete obj.temperature
         }
-        if ((modelName.includes('o1') || modelName.includes('o3')) && reasoningEffort) {
-            obj.reasoningEffort = reasoningEffort
+        if (modelName.includes('o1') || modelName.includes('o3')) {
+            const reasoning: OpenAIClient.Reasoning = {}
+            if (reasoningEffort) {
+                reasoning.effort = reasoningEffort
+            }
+            if (reasoningSummary) {
+                reasoning.summary = reasoningSummary
+            }
+            obj.reasoning = reasoning
         }
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)

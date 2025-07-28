@@ -137,6 +137,7 @@ class ChatNvdiaNIM_ChatModels implements INode {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: nvidiaNIMApiKey ?? 'sk-',
+            apiKey: nvidiaNIMApiKey ?? 'sk-',
             streaming: streaming ?? true
         }
 
