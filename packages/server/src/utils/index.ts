@@ -72,51 +72,31 @@ import {
  */
 const enhanceMcpInitializationError = (error: any, reactFlowNode: IReactFlowNode, baseURL: string): string => {
     const errorMessage = getErrorMessage(error)
-    if (reactFlowNode?.data?.inputParams) {
-        console.log(
-            '📝 Input Params:',
-            reactFlowNode.data.inputParams.map((param) => {
-                if (typeof param === 'object') {
-                    return {
-                        name: param.name,
-                        type: param.type
-                    }
-                }
-                return param
-            })
-        )
-    }
-    console.log('🚨 Error Message:', errorMessage)
-    console.log('🔍 Node Details:', {
-        id: reactFlowNode.id,
-        type: reactFlowNode.type,
-        name: reactFlowNode.data.name,
-        label: reactFlowNode.data.label
-    })
-    console.log('🌐 Base URL:', baseURL)
-    console.log('errorMessage', errorMessage)
-    console.log('reactFlowNode', reactFlowNode)
-    console.log('baseURL', baseURL)
+
     // Check if this is an MCP connection error
     if (errorMessage.includes('MCP') && errorMessage.includes('Connection closed')) {
-        const nodeName = reactFlowNode.data.name
-        const nodeLabel = reactFlowNode.data.label
-
-        // Map tool types to credential types and provide helpful error messages
-        let credentialType = reactFlowNode.data.name
-        let helpText = ''
+        // Extract credential name from input parameters
+        let credentialType = ''
+        if (reactFlowNode.data.inputParams) {
+            const credentialParam = reactFlowNode.data.inputParams.find((param: any) => param.type === 'credential')
+            if (credentialParam && credentialParam.credentialNames && credentialParam.credentialNames.length > 0) {
+                credentialType = credentialParam.credentialNames[0]
+            }
+        }
 
         if (credentialType) {
             // Generate deep link URL for credential setup
-            const credentialLink = `${baseURL}/sidekick-studio/credentials?cred=${credentialType}`
-            return `MCP Connection Error: Unable to initialize ${nodeLabel}. This typically indicates missing or invalid credentials for ${helpText}. Please set up your credentials here: ${credentialLink}`
-        } else if (helpText) {
-            return `MCP Connection Error: Unable to initialize ${nodeLabel}. This typically indicates an issue with your ${helpText}`
+            const credentialLink = `/sidekick-studio/credentials?cred=${credentialType}`
+            const mcpDocsLink = `https://answeragent.ai/docs/sidekick-studio/chatflows/tools-mcp`
+
+            return `**This Sidekick needs an integration setup.** [Click here to set it up](${credentialLink}). [Read more about how to troubleshoot MCP servers and integrations](${mcpDocsLink}).`
         }
 
-        // Generic MCP error message if we can't identify the specific tool
-        const credentialsLink = `${baseURL}/sidekick-studio/credentials`
-        return `MCP Connection Error: Unable to initialize ${nodeLabel}. This typically indicates missing or invalid credentials. Please check your credential configuration here: ${credentialsLink}`
+        // Generic MCP error message if we can't identify the specific credential
+        const credentialsLink = `/sidekick-studio/credentials`
+        const mcpDocsLink = `https://answeragent.ai/docs/sidekick-studio/chatflows/tools-mcp`
+
+        return `**This Sidekick needs an integration setup.** [Click here to check your credentials](${credentialsLink}) | [Read more about how to troubleshoot MCP servers and integrations](${mcpDocsLink}).`
     }
 
     // Return original error message if not an MCP connection error

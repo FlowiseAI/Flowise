@@ -26,24 +26,13 @@ import chatmessagefeedbackApi from '@/api/chatmessagefeedback'
 // } from 'types'
 import { EventStreamContentType, fetchEventSource } from '@microsoft/fetch-event-source'
 
-import {
-    AnswersFilters,
-    AppSettings,
-    Chat,
-    Journey,
-    Message,
-    Prompt,
-    Sidekick,
-    User,
-    MessageFeedback,
-    SidekickListItem,
-    FeedbackPayload
-} from 'types'
+import { AnswersFilters, AppSettings, Chat, Journey, Message, Prompt, Sidekick, User, SidekickListItem, FeedbackPayload } from 'types'
 import { ChatbotConfig } from './types'
 import { FlowData } from './types'
 
 // import { useUserPlans } from './hooks/useUserPlan';
 import { v4 as uuidv4 } from 'uuid'
+import { useSidekickData } from './SidekickSelect'
 
 interface PredictionParams {
     question: string
@@ -183,7 +172,7 @@ interface AnswersProviderProps {
 export function AnswersProvider({
     chat,
     journey: initialJourney,
-    sidekicks,
+    // sidekicks,
     user,
     appSettings,
     children,
@@ -192,6 +181,7 @@ export function AnswersProvider({
     apiUrl = '/api'
 }: AnswersProviderProps) {
     const router = useRouter()
+    const { combinedSidekicks: sidekicks } = useSidekickData()
     const [error, setError] = useState(null)
     const [inputValue, setInputValue] = useState('')
     // const [chat, setChat] = useState<Chat | undefined>(chat);
@@ -210,13 +200,19 @@ export function AnswersProvider({
 
     const [chatId, setChatId] = useState<string | undefined>(chat?.id ?? uuidv4())
 
-    const [sidekick, setSidekick] = useState<SidekickListItem | undefined>(
-        sidekicks?.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid || s.id === chat?.chatflowId)
-    )
+    const [sidekick, setSidekick] = useState<SidekickListItem | undefined>()
     const chatbotConfig = React.useMemo(() => sidekick?.chatbotConfig, [sidekick])
     const flowData = React.useMemo(() => sidekick?.flowData, [sidekick])
     const [messages, setMessages] = useState<Array<Message>>(chat?.messages ?? [])
     const [filters, setFilters] = useState<AnswersFilters>(deepmerge({}, appSettings?.filters, journey?.filters, chat?.filters))
+
+    useEffect(() => {
+        if (sidekicks) {
+            setSidekick(
+                sidekicks.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid || s.id === chat?.chatflowId)
+            )
+        }
+    }, [sidekicks, chat])
 
     const addMessage = useCallback(
         (message: Message) => {

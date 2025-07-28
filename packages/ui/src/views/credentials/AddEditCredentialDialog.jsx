@@ -134,12 +134,9 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
     }, [dialogProps])
 
     useEffect(() => {
-        console.log('🔧 AddEditCredentialDialog show effect:', { show, dialogProps })
         if (show) {
-            console.log('🔧 Dispatching SHOW_CANVAS_DIALOG')
             dispatch({ type: SHOW_CANVAS_DIALOG })
         } else {
-            console.log('🔧 Dispatching HIDE_CANVAS_DIALOG')
             dispatch({ type: HIDE_CANVAS_DIALOG })
         }
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })

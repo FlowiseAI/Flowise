@@ -1,60 +1,63 @@
 import { useState, useCallback } from 'react'
-import { extractMissingCredentials, updateFlowDataWithCredentials } from '@/utils/flowCredentialsHelper'
+import { useSidekickFetcher } from '@ui/SidekickSelect/hooks/useSidekickDetails'
 
 /**
- * Custom hook for checking and managing missing credentials in flows
- * @returns {object} Hook interface with methods and state
+ * Custom hook for checking and managing missing credentials in sidekicks
  */
 export const useCredentialChecker = () => {
     const [showCredentialModal, setShowCredentialModal] = useState(false)
     const [missingCredentials, setMissingCredentials] = useState([])
-    const [pendingFlowData, setPendingFlowData] = useState(null)
     const [onCredentialsAssigned, setOnCredentialsAssigned] = useState(null)
 
+    const { fetchDetails } = useSidekickFetcher()
+
     /**
-     * Check if a flow has missing credentials and show modal if needed
-     * @param {string|object} flowData - Flow data to check
+     * Check if a sidekick has missing credentials and show modal if needed
+     * @param {string} sidekickId - Sidekick ID to check
      * @param {function} onAssign - Callback when credentials are assigned
-     * @returns {boolean} Whether modal was shown
+     * @param {boolean} forceShow - Force show modal regardless of missing credentials
+     * @returns {Promise<boolean>} Whether modal was shown
      */
-    const checkCredentials = useCallback((flowData, onAssign) => {
-        console.log('🔍 checkCredentials called with:', {
-            flowDataType: typeof flowData,
-            hasOnAssign: !!onAssign,
-            currentModalState: showCredentialModal
-        })
+    const checkCredentials = useCallback(
+        async (sidekickId, onAssign, forceShow = false) => {
+            try {
+                console.log('[useCredentialChecker] checking credentials for sidekick', sidekickId)
+                const sidekick = await fetchDetails(sidekickId)
 
-        try {
-            const result = extractMissingCredentials(flowData)
-            console.log('🔍 Credential extraction result:', {
-                hasCredentials: result.hasCredentials,
-                missingCount: result.missingCredentials.length,
-                missingTypes: result.missingCredentials.map((c) => c.credentialType)
-            })
+                if (!sidekick) {
+                    console.error('Failed to fetch sidekick details')
+                    if (onAssign) {
+                        onAssign(null, {})
+                    }
+                    return false
+                }
 
-            if (result.hasCredentials && result.missingCredentials.length > 0) {
-                console.log('🚨 Missing credentials detected, showing modal')
-                setMissingCredentials(result.missingCredentials)
-                setPendingFlowData(flowData)
-                setOnCredentialsAssigned(() => onAssign)
-                setShowCredentialModal(true)
-                return true
-            } else {
-                console.log('✅ No missing credentials, proceeding directly')
+                const credentialsToShow = sidekick.credentialsToShow || []
+                const needsSetup = sidekick.needsSetup || false
+
+                // Show modal if forceShow is true OR if there are missing credentials
+                if (forceShow || (needsSetup && credentialsToShow.length > 0)) {
+                    setMissingCredentials(credentialsToShow)
+                    setOnCredentialsAssigned(() => onAssign)
+                    setShowCredentialModal(true)
+                    return true
+                } else {
+                    if (onAssign) {
+                        onAssign(sidekick, {})
+                    }
+                    return false
+                }
+            } catch (error) {
+                console.error('Error checking credentials:', error)
+                // Proceed without credentials modal on error
                 if (onAssign) {
-                    onAssign(flowData, {})
+                    onAssign(null, {})
                 }
                 return false
             }
-        } catch (error) {
-            console.error('❌ Error checking credentials:', error)
-            // Proceed without credentials modal on error
-            if (onAssign) {
-                onAssign(flowData, {})
-            }
-            return false
-        }
-    }, [showCredentialModal])
+        },
+        [fetchDetails]
+    )
 
     /**
      * Handle credential assignments from the modal
@@ -62,44 +65,31 @@ export const useCredentialChecker = () => {
      */
     const handleAssign = useCallback(
         (credentialAssignments) => {
-            console.log('💾 handleAssign called with:', credentialAssignments)
-
-            if (pendingFlowData && onCredentialsAssigned) {
-                try {
-                    const updatedFlowData = updateFlowDataWithCredentials(pendingFlowData, credentialAssignments)
-                    console.log('💾 Calling onCredentialsAssigned callback...')
-                    onCredentialsAssigned(updatedFlowData, credentialAssignments)
-                } catch (error) {
-                    console.error('❌ Error updating flow data with credentials:', error)
-                    // Proceed with original flow data
-                    onCredentialsAssigned(pendingFlowData, credentialAssignments)
-                }
+            if (onCredentialsAssigned) {
+                onCredentialsAssigned(null, credentialAssignments)
             }
 
             // Reset state
-            console.log('💾 Resetting credential checker state...')
             setShowCredentialModal(false)
             setMissingCredentials([])
-            setPendingFlowData(null)
             setOnCredentialsAssigned(null)
         },
-        [pendingFlowData, onCredentialsAssigned]
+        [onCredentialsAssigned]
     )
 
     /**
      * Handle skipping credential assignment
      */
     const handleSkip = useCallback(() => {
-        if (pendingFlowData && onCredentialsAssigned) {
-            onCredentialsAssigned(pendingFlowData, {})
+        if (onCredentialsAssigned) {
+            onCredentialsAssigned(null, {})
         }
 
         // Reset state
         setShowCredentialModal(false)
         setMissingCredentials([])
-        setPendingFlowData(null)
         setOnCredentialsAssigned(null)
-    }, [pendingFlowData, onCredentialsAssigned])
+    }, [onCredentialsAssigned])
 
     /**
      * Handle canceling credential assignment
@@ -108,7 +98,6 @@ export const useCredentialChecker = () => {
         // Reset state without calling onCredentialsAssigned
         setShowCredentialModal(false)
         setMissingCredentials([])
-        setPendingFlowData(null)
         setOnCredentialsAssigned(null)
     }, [])
 

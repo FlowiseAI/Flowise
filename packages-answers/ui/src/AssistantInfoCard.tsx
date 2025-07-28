@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { Box, Typography, IconButton, Chip, Tooltip, alpha, Button } from '@mui/material'
 import { Sidekick } from 'types'
 import {
@@ -6,7 +6,9 @@ import {
     StarBorder as StarBorderIcon,
     Edit as EditIcon,
     ExpandMore as ExpandMoreIcon,
-    ContentCopy as ContentCopyIcon
+    ContentCopy as ContentCopyIcon,
+    WarningAmber as WarningAmberIcon,
+    CheckCircle as CheckCircleIcon
 } from '@mui/icons-material'
 import { styled } from '@mui/system'
 import { useSelector } from 'react-redux'
@@ -14,6 +16,8 @@ import { useTheme } from '@mui/material/styles'
 import { baseURL } from '@/store/constant'
 import { useNavigate, useNavigationState } from '@/utils/navigation'
 import { useUser } from '@auth0/nextjs-auth0/client'
+import { useRouter } from 'next/navigation'
+import { useSidekickDetails } from './SidekickSelect/hooks/useSidekickDetails'
 
 interface AssistantInfoCardProps {
     sidekick?: Sidekick
@@ -30,7 +34,9 @@ const WhiteIconButton = styled(IconButton)(({ theme }) => ({
         color: theme.palette.primary.main
     }
 }))
-const DescriptionText = styled(Typography)<{ expanded?: boolean }>(({ expanded }) => ({
+const DescriptionText = styled(Typography, {
+    shouldForwardProp: (prop) => prop !== 'expanded'
+})<{ expanded?: boolean }>(({ expanded }) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     display: '-webkit-box',
@@ -38,14 +44,24 @@ const DescriptionText = styled(Typography)<{ expanded?: boolean }>(({ expanded }
     WebkitBoxOrient: 'vertical'
 }))
 
-const DescriptionContainer = styled(Box)<{ expanded?: boolean }>(({ expanded }) => ({
+const DescriptionContainer = styled(Box, {
+    shouldForwardProp: (prop) => prop !== 'expanded'
+})<{ expanded?: boolean }>(({ expanded }) => ({
     overflow: 'hidden',
     transition: 'max-height 0.3s ease',
     position: 'relative',
     maxHeight: expanded ? '500px' : '40px' // Adjust the maxHeight values as needed
 }))
 
-const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavorite, onToggleFavorite }: AssistantInfoCardProps) => {
+const AssistantInfoCard = ({
+    sidekick: defaultSidekick,
+    onShare,
+    onEdit: _onEdit,
+    isFavorite: _propIsFavorite,
+    onToggleFavorite
+}: AssistantInfoCardProps) => {
+    const { data: sidekickDetails } = useSidekickDetails(defaultSidekick?.id ?? null)
+    const sidekick = useMemo(() => ({ ...defaultSidekick, ...sidekickDetails }), [defaultSidekick, sidekickDetails])
     const [expanded, setExpanded] = useState(false)
     const description = sidekick?.chatflow?.description || 'No description available'
     const theme = useTheme()
@@ -53,13 +69,18 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
     const navigate = useNavigate()
     const [, setNavigationState] = useNavigationState()
     const { user } = useUser()
+    const router = useRouter()
 
     const [images, setImages] = useState<string[]>([])
     const [nodeTypes, setNodeTypes] = useState<string[]>([])
 
     const [localIsFavorite, setLocalIsFavorite] = useState(false)
 
-    const [showCopyMessage, setShowCopyMessage] = useState(false)
+    const [_showCopyMessage, setShowCopyMessage] = useState(false)
+
+    // Get validation status from the sidekick data
+    const needsSetup = sidekick?.needsSetup || false
+    const hasValidation = sidekick?.needsSetup !== undefined
 
     // Initialize favorite status from localStorage
     useEffect(() => {
@@ -166,7 +187,7 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
         [sidekick, onToggleFavorite]
     )
 
-    const handleShare = useCallback(
+    const _handleShare = useCallback(
         (e: React.MouseEvent) => {
             e.stopPropagation()
             if (!sidekick) return
@@ -208,7 +229,7 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
                                 <Chip label='Owner' size='small' color='primary' variant='outlined' sx={{ mr: 1 }} />
                             )}
 
-                            {sidekick?.categories?.map && (
+                            {sidekick?.categories?.length ? (
                                 <Tooltip title={sidekick.categories.map((category) => category.trim().split(';').join(', ')).join(', ')}>
                                     <Chip
                                         label={sidekick.categories.map((category) => category.trim().split(';').join(' | ')).join(' | ')}
@@ -216,7 +237,7 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
                                         variant='outlined'
                                     />
                                 </Tooltip>
-                            )}
+                            ) : null}
                         </Box>
 
                         <Box sx={{ position: 'relative' }}>
@@ -295,6 +316,33 @@ const AssistantInfoCard = ({ sidekick, onShare, onEdit, isFavorite: propIsFavori
                             <Tooltip title='Edit this sidekick'>
                                 <WhiteIconButton size='small' onClick={handleEdit}>
                                     <EditIcon />
+                                </WhiteIconButton>
+                            </Tooltip>
+                        )}
+
+                        {/* Validation Status Button */}
+                        {sidekick?.isExecutable && hasValidation && (
+                            <Tooltip title={needsSetup ? 'Configuration required - Missing credentials' : 'Sidekick is fully configured'}>
+                                <WhiteIconButton
+                                    size='small'
+                                    onClick={() => {
+                                        const searchParams = new URLSearchParams(window.location.search)
+                                        searchParams.set('QuickSetup', 'true')
+                                        const newUrl = `${window.location.pathname}?${searchParams.toString()}`
+                                        router.replace(newUrl)
+                                    }}
+                                    sx={{
+                                        color: needsSetup ? theme.palette.warning.main : theme.palette.success.main,
+                                        '&:hover': {
+                                            backgroundColor: alpha(
+                                                needsSetup ? theme.palette.warning.main : theme.palette.success.main,
+                                                0.08
+                                            ),
+                                            color: needsSetup ? theme.palette.warning.dark : theme.palette.success.dark
+                                        }
+                                    }}
+                                >
+                                    {needsSetup ? <WarningAmberIcon /> : <CheckCircleIcon />}
                                 </WhiteIconButton>
                             </Tooltip>
                         )}

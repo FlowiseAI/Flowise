@@ -714,3 +714,14 @@ export interface TextInputConfig {
     placeholder: string
     sendButtonColor: string
 }
+
+export interface CredentialInfo {
+    nodeId: string
+    nodeName: string
+    credentialType: string
+    parameterName: string
+    label: string
+    isOptional: boolean
+    isAssigned: boolean
+    assignedCredentialId: string | null
+}

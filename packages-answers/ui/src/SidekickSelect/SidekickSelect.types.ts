@@ -19,4 +19,6 @@ export interface Sidekick {
     flowData?: {
         nodes: Array<{ data: { category: string } }>
     }
+    needsSetup?: boolean
+    credentialsToShow?: any[]
 }

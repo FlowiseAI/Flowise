@@ -5,7 +5,9 @@ import {
     StarBorder as StarBorderIcon,
     Visibility as VisibilityIcon,
     Edit as EditIcon,
-    ContentCopy as IconCopy
+    ContentCopy as IconCopy,
+    WarningAmber as WarningAmberIcon,
+    CheckCircle as CheckCircleIcon
 } from '@mui/icons-material'
 import { useCallback, useState } from 'react'
 import { Sidekick } from './SidekickSelect.types'
@@ -19,7 +21,7 @@ import {
     WhiteButton
 } from './StyledComponents'
 import Link from 'next/link'
-import useSidekickDetails from './hooks/useSidekickDetails'
+import { useSidekickFetcher } from './hooks/useSidekickDetails'
 import type { NavigateFn } from './hooks/useSidekickSelectionHandlers'
 
 const SidekickCard = ({
@@ -42,11 +44,15 @@ const SidekickCard = ({
     toggleFavorite: any
 }) => {
     const [, setNavigationState] = useNavigationState()
-    const { fetchSidekickDetails } = useSidekickDetails()
+    const { fetchDetails } = useSidekickFetcher()
     const [loadingAction, setLoadingAction] = useState<'clone' | 'preview' | null>(null)
     const [isProcessing, setIsProcessing] = useState(false)
 
     const theme = useTheme()
+
+    // Get validation status from the sidekick data
+    const needsSetup = sidekick?.needsSetup || false
+    const hasValidation = sidekick?.needsSetup !== undefined
 
     const handleClone = useCallback(
         async (sidekick: Sidekick, e: React.MouseEvent) => {
@@ -61,7 +67,7 @@ const SidekickCard = ({
             // Fetch full sidekick details if we don't have flowData
             let fullSidekick = sidekick
             if (!sidekick.flowData) {
-                const details = await fetchSidekickDetails(sidekick.id)
+                const details = await fetchDetails(sidekick.id)
                 if (details) {
                     fullSidekick = details
                 } else {
@@ -96,7 +102,7 @@ const SidekickCard = ({
             }
             setIsProcessing(false)
         },
-        [navigate, user, setNavigationState, fetchSidekickDetails, isProcessing]
+        [navigate, user, setNavigationState, fetchDetails, isProcessing]
     )
 
     const handleEdit = useCallback((sidekick: Sidekick, e: React.MouseEvent) => {
@@ -118,7 +124,7 @@ const SidekickCard = ({
         setIsProcessing(true)
         // For executable sidekicks, fetch full details before selection
         if (sidekick.isExecutable && !sidekick.flowData) {
-            const fullSidekick = await fetchSidekickDetails(sidekick.id)
+            const fullSidekick = await fetchDetails(sidekick.id)
             if (fullSidekick) {
                 handleSidekickSelect(fullSidekick)
             }
@@ -137,7 +143,7 @@ const SidekickCard = ({
 
         // Fetch full details if needed
         if (!sidekick.flowData) {
-            const fullSidekick = await fetchSidekickDetails(sidekick.id)
+            const fullSidekick = await fetchDetails(sidekick.id)
             if (fullSidekick) {
                 sidekick = fullSidekick
             }
@@ -263,6 +269,26 @@ const SidekickCard = ({
                                 </Tooltip>
                             </>
                         ) : null}
+                        {/* Validation Status Button */}
+                        {sidekick.isExecutable && hasValidation && (
+                            <Tooltip title={needsSetup ? 'Configuration required - Missing credentials' : 'Sidekick is fully configured'}>
+                                <WhiteIconButton
+                                    size='small'
+                                    sx={{
+                                        color: needsSetup ? theme.palette.warning.main : theme.palette.success.main,
+                                        '&:hover': {
+                                            backgroundColor: alpha(
+                                                needsSetup ? theme.palette.warning.main : theme.palette.success.main,
+                                                0.08
+                                            ),
+                                            color: needsSetup ? theme.palette.warning.dark : theme.palette.success.dark
+                                        }
+                                    }}
+                                >
+                                    {needsSetup ? <WarningAmberIcon /> : <CheckCircleIcon />}
+                                </WhiteIconButton>
+                            </Tooltip>
+                        )}
                         {sidekick.isExecutable ? (
                             <Tooltip title='Clone this sidekick'>
                                 <WhiteIconButton

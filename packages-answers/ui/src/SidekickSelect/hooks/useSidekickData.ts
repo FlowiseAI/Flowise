@@ -20,7 +20,7 @@ interface UseSidekickDataResult {
     allCategories: { top: string[]; more: string[] }
 }
 
-const useSidekickData = ({ defaultSidekicks = [], enablePerformanceLogs = false }: UseSidekickDataProps): UseSidekickDataResult => {
+const useSidekickData = ({ defaultSidekicks = [], enablePerformanceLogs = false }: UseSidekickDataProps = {}): UseSidekickDataResult => {
     // Improved cache structure with better typing and timestamp tracking
     const sidekicksByCategoryCache = useRef<Record<string, { data: Sidekick[]; timestamp: number }>>({})
 
@@ -73,7 +73,7 @@ const useSidekickData = ({ defaultSidekicks = [], enablePerformanceLogs = false 
     // Use the optimized fetcher
     const { data, isLoading } = useSWR('/api/sidekicks', fetcher, {
         fallbackData: { sidekicks: defaultSidekicks, categories: { top: [], more: [] } },
-        revalidateOnFocus: false, // Reduce unnecessary refetches
+        revalidateOnFocus: true, // Reduce unnecessary refetches
         dedupingInterval: 10000 // Dedupe requests within 10 seconds
     })
 

@@ -109,7 +109,7 @@ export const CategorySectionn = ({
 }) => {
     // Render a category section with horizontal scroll
     // If data is loading or there are no categories yet, show skeleton cards
-    if (isLoading || (!isLoading && allCategories.top.length === 0 && allCategories.more.length === 0)) {
+    if (isLoading) {
         return (
             <CategorySectionContainer key={category}>
                 <CategoryTitle variant='h6'>{title}</CategoryTitle>

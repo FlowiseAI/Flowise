@@ -3,6 +3,7 @@ import { User } from 'types'
 import { prisma } from '@db/client'
 import auth0 from '@utils/auth/auth0'
 import { INodeParams } from '@flowise/components'
+import { extractMissingCredentials } from './extractMissingCredentials'
 
 interface Sidekick {
     id: string
@@ -154,6 +155,9 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                     .map((c) => c.trim().split(';'))
                     .flat()
 
+                const missingCredentials = extractMissingCredentials(chatflow.flowData)
+                const needsSetup = missingCredentials.length > 0
+
                 const sidekick = {
                     id: chatflow.id || '',
                     label: chatflow.name || '',
@@ -169,6 +173,8 @@ export async function findSidekicksForChat(user: User, options: FindSidekicksOpt
                     isAvailable: chatflow.isPublic || chatflow.visibility.includes('Organization'),
                     isFavorite: false,
                     isExecutable: chatflow.isOwner || chatflow.visibility.includes('AnswerAI'),
+                    needsSetup,
+                    credentialsToShow: missingCredentials,
                     constraints: {
                         isSpeechToTextEnabled,
                         isImageUploadAllowed,

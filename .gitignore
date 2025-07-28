@@ -156,6 +156,9 @@ yarn-error.log*
 .turbo
 .vercel
 
+# TypeScript build info
+**/tsconfig.tsbuildinfo
+
 #cypress
 **/cypress/screenshots
 **/cypress/videos
