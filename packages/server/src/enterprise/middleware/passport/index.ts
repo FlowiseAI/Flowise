@@ -22,6 +22,7 @@ import { WorkspaceUserService } from '../../services/workspace-user.service'
 import { decryptToken, encryptToken, generateSafeCopy } from '../../utils/tempTokenUtils'
 import { getAuthStrategy } from './AuthStrategy'
 import { initializeDBClientAndStore, initializeRedisClientAndStore } from './SessionPersistance'
+import { v4 as uuidv4 } from 'uuid'
 
 const localStrategy = require('passport-local').Strategy
 
@@ -298,8 +299,14 @@ export const setTokenOrCookies = (
     returnUser.isSSO = !isSSO ? false : isSSO
 
     if (redirect) {
-        // Send user data as part of the redirect URL (using query parameters)
-        const dashboardUrl = `/sso-success?user=${encodeURIComponent(JSON.stringify(returnUser))}`
+        // 1. Generate a random token
+        const ssoToken = uuidv4()
+
+        // 2. Store returnUser in your session store, keyed by ssoToken, with a short expiry
+        storeSSOUserPayload(ssoToken, returnUser)
+        // 3. Redirect with token only
+        const dashboardUrl = `/sso-success?token=${ssoToken}`
+
         // Return the token as a cookie in our response.
         let resWithCookies = res
             .cookie('token', token, {
@@ -407,4 +414,9 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
         req.user = user
         next()
     })(req, res, next)
+}
+
+const storeSSOUserPayload = (ssoToken: string, returnUser: any) => {
+    const app = getRunningExpressApp()
+    app.cachePool.addSSOTokenCache(ssoToken, returnUser)
 }
