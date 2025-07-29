@@ -157,32 +157,6 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
-const importChatflows = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const chatflows: Partial<ChatFlow>[] = req.body.Chatflows
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.saveChatflow - organization ${orgId} not found!`
-            )
-        }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.saveChatflow - workspace ${workspaceId} not found!`
-            )
-        }
-        const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
-        req.body.workspaceId = req.user?.activeWorkspaceId
-        const apiResponse = await chatflowsService.importChatflows(chatflows, orgId, workspaceId, subscriptionId)
-        return res.json(apiResponse)
-    } catch (error) {
-        next(error)
-    }
-}
-
 const updateChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
@@ -281,7 +255,6 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
-    importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig,

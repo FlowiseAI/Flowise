@@ -1,6 +1,6 @@
 import { ICommonObject, removeFolderFromStorage } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
-import { In, QueryRunner } from 'typeorm'
+import { In } from 'typeorm'
 import { ChatflowType, IReactFlowObject } from '../../Interface'
 import { FLOWISE_COUNTER_STATUS, FLOWISE_METRIC_COUNTERS } from '../../Interface.Metrics'
 import { UsageCacheManager } from '../../UsageCacheManager'
@@ -18,7 +18,7 @@ import { containsBase64File, updateFlowDataWithFilePaths } from '../../utils/fil
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
-import { checkUsageLimit, updateStorageUsage } from '../../utils/quotaUsage'
+import { updateStorageUsage } from '../../utils/quotaUsage'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -307,64 +307,6 @@ const saveChatflow = async (
     }
 }
 
-const importChatflows = async (
-    newChatflows: Partial<ChatFlow>[],
-    orgId: string,
-    _: string,
-    subscriptionId: string,
-    queryRunner?: QueryRunner
-): Promise<any> => {
-    try {
-        const appServer = getRunningExpressApp()
-        const repository = queryRunner ? queryRunner.manager.getRepository(ChatFlow) : appServer.AppDataSource.getRepository(ChatFlow)
-
-        // step 1 - check whether file chatflows array is zero
-        if (newChatflows.length == 0) return
-
-        await checkUsageLimit('flows', subscriptionId, appServer.usageCacheManager, newChatflows.length)
-
-        // step 2 - check whether ids are duplicate in database
-        let ids = '('
-        let count: number = 0
-        const lastCount = newChatflows.length - 1
-        newChatflows.forEach((newChatflow) => {
-            ids += `'${newChatflow.id}'`
-            if (lastCount != count) ids += ','
-            if (lastCount == count) ids += ')'
-            count += 1
-        })
-
-        const selectResponse = await repository.createQueryBuilder('cf').select('cf.id').where(`cf.id IN ${ids}`).getMany()
-        const foundIds = selectResponse.map((response) => {
-            return response.id
-        })
-
-        // step 3 - remove ids that are only duplicate
-        const prepChatflows: Partial<ChatFlow>[] = newChatflows.map((newChatflow) => {
-            let id: string = ''
-            if (newChatflow.id) id = newChatflow.id
-            let flowData: string = ''
-            if (newChatflow.flowData) flowData = newChatflow.flowData
-            if (foundIds.includes(id)) {
-                newChatflow.id = undefined
-                newChatflow.name += ' (1)'
-            }
-            newChatflow.flowData = JSON.stringify(JSON.parse(flowData))
-            return newChatflow
-        })
-
-        // step 4 - transactional insert array of entities
-        const insertResponse = await repository.insert(prepChatflows)
-
-        return insertResponse
-    } catch (error) {
-        throw new InternalFlowiseError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            `Error: chatflowsService.saveChatflows - ${getErrorMessage(error)}`
-        )
-    }
-}
-
 const updateChatflow = async (
     chatflow: ChatFlow,
     updateChatFlow: ChatFlow,
@@ -495,7 +437,6 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
-    importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig,
