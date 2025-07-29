@@ -431,7 +431,6 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                          * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
                          */
                         if (tool) {
-                            console.log('🔍 [MCP Tool] Chat ID:', this.chatId)
                             observation = await tool.invoke(
                                 this.isXML && typeof action.toolInput === 'string'
                                     ? { input: action.toolInput }
@@ -448,7 +447,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                     }
                                 }
                             )
-                            console.log('🔍 [MCP Tool] Tool output:', observation)
+
                             let toolOutput = observation
                             if (typeof toolOutput === 'string' && toolOutput.includes(SOURCE_DOCUMENTS_PREFIX)) {
                                 toolOutput = toolOutput.split(SOURCE_DOCUMENTS_PREFIX)[0]
@@ -617,7 +616,6 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                      * - tags?: string[]
                      * - flowConfig?: { sessionId?: string, chatId?: string, input?: string }
                      */
-                    console.log('🔍 [MCP Tool MAP] Chat ID:', this.chatId)
                     observation = await (tool as any).call(
                         {
                             ...(this.isXML && typeof agentAction.toolInput === 'string'
@@ -635,7 +633,6 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                             sseStreamer: this.sseStreamer
                         }
                     )
-                    console.log('🔍 [MCP Tool MAP] Tool output:', observation)
                     if (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)) {
                         const observationArray = observation.split(SOURCE_DOCUMENTS_PREFIX)
                         observation = observationArray[0]
