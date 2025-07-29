@@ -216,7 +216,8 @@ export class AAITypeORMDriver extends AAIVectorStoreDriver {
                     const tableName = this.getTableName()
 
                     // First, query to find documents that match both the IDs and namespace
-                    const pool = new Pool(await this.getPostgresConnectionOptions())
+                    const postgresOptions = await this.getPostgresConnectionOptions()
+                    const pool = new Pool(postgresOptions as any)
                     const conn = await pool.connect()
 
                     // Build query to find documents with matching IDs and namespace
