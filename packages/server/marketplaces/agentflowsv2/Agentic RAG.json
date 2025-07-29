@@ -303,7 +303,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "conditionAgentModel": "chatOpenAI"
                     }
                 },
@@ -642,7 +642,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "llmModel": "chatOpenAI"
                     }
                 },
@@ -964,7 +964,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "llmModel": "chatOpenAI"
                     }
                 },
@@ -1210,7 +1210,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "conditionAgentModel": "chatOpenAI"
                     }
                 },
@@ -1539,7 +1539,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "llmModel": "chatOpenAI"
                     }
                 },
@@ -1871,7 +1871,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "llmModel": "chatOpenAI"
                     }
                 },

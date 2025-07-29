@@ -1,7 +1,8 @@
 import { GoogleVertexAIEmbeddingsInput, VertexAIEmbeddings } from '@langchain/google-vertexai'
+import { buildGoogleCredentials } from '../../../src/google-utils'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
 import { MODEL_TYPE, getModels, getRegions } from '../../../src/modelLoader'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses } from '../../../src/utils'
 
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string
@@ -63,33 +64,16 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const modelName = nodeData.inputs?.modelName as string
         const region = nodeData.inputs?.region as string
-        const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
-        const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
-        const projectID = getCredentialParam('projectID', credentialData, nodeData)
 
-        const authOptions: any = {}
-        if (Object.keys(credentialData).length !== 0) {
-            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
-                throw new Error('Please specify your Google Application Credential')
-            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
-                throw new Error(
-                    'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path or Google Credential JSON Object'
-                )
-
-            if (googleApplicationCredentialFilePath && !googleApplicationCredential)
-                authOptions.keyFile = googleApplicationCredentialFilePath
-            else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
-                authOptions.credentials = JSON.parse(googleApplicationCredential)
-
-            if (projectID) authOptions.projectId = projectID
-        }
         const obj: GoogleVertexAIEmbeddingsInput = {
             model: modelName
         }
-        if (Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
+
+        const authOptions = await buildGoogleCredentials(nodeData, options)
+        if (authOptions && Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
+
         if (region) obj.location = region
 
         const model = new VertexAIEmbeddings(obj)

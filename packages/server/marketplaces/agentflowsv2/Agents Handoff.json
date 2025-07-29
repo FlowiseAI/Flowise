@@ -300,7 +300,7 @@
                         "proxyUrl": "",
                         "baseOptions": "",
                         "allowImageUploads": true,
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "conditionAgentModel": "chatOpenAI"
                     }
                 },

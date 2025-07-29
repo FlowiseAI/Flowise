@@ -138,6 +138,7 @@ class ChatOpenRouter_ChatModels implements INode {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey: openRouterApiKey,
+            apiKey: openRouterApiKey,
             streaming: streaming ?? true
         }
 

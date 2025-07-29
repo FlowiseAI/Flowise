@@ -81,9 +81,16 @@ class GithubSSO extends SSOBase {
                         }
                         return next ? next(err) : res.status(401).json(err)
                     }
-                    req.login(user, { session: true }, async (error) => {
-                        if (error) return next ? next(error) : res.status(401).json(error)
-                        return setTokenOrCookies(res, user, true, req, true, true)
+
+                    req.session.regenerate((regenerateErr) => {
+                        if (regenerateErr) {
+                            return next ? next(regenerateErr) : res.status(500).json({ message: 'Session regeneration failed' })
+                        }
+
+                        req.login(user, { session: true }, async (error) => {
+                            if (error) return next ? next(error) : res.status(401).json(error)
+                            return setTokenOrCookies(res, user, true, req, true, true)
+                        })
                     })
                 } catch (error) {
                     return next ? next(error) : res.status(401).json(error)
