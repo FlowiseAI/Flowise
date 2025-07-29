@@ -11,6 +11,7 @@ import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
 import { z } from 'zod'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { MCP_STREAMING_CONFIG } from './config.js'
 
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
@@ -26,8 +27,8 @@ export class MCPToolkit extends BaseToolkit {
         this.transportType = transportType
     }
 
-    // Method to create a new client with transport
-    async createClient(): Promise<Client> {
+    // Method to create a new client with transport and detect streaming capabilities
+    async createClient(): Promise<{ client: Client; hasStreaming: boolean }> {
         const client = new Client(
             {
                 name: 'flowise-client',
@@ -86,12 +87,26 @@ export class MCPToolkit extends BaseToolkit {
             }
         }
 
-        return client
+        // Check server capabilities for streaming support
+        let hasStreaming = false
+        try {
+            const capabilities = client.getServerCapabilities()
+            // Check for streaming capability in experimental or notifications section
+            hasStreaming =
+                (capabilities as any)?.notifications?.streaming === true ||
+                (capabilities as any)?.experimental?.notifications?.streaming === true
+            console.log(`🔍 [MCP Core] Server streaming capability:`, hasStreaming)
+        } catch (error) {
+            console.log(`⚠️ [MCP Core] Could not detect streaming capabilities, falling back to non-streaming:`, error.message)
+        }
+
+        return { client, hasStreaming }
     }
 
     async initialize() {
         if (this._tools === null) {
-            this.client = await this.createClient()
+            const { client } = await this.createClient()
+            this.client = client
 
             this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema)
 
@@ -110,11 +125,28 @@ export class MCPToolkit extends BaseToolkit {
             if (this.client === null) {
                 throw new Error('Client is not initialized')
             }
+
+            // Log the incoming tool definition for debugging
+            console.log(
+                `📋 [MCP Tool Definition] ${tool.name}:`,
+                JSON.stringify(
+                    {
+                        name: tool.name,
+                        description: tool.description,
+                        annotations: tool.annotations,
+                        inputSchema: tool.inputSchema ? 'present' : 'missing'
+                    },
+                    null,
+                    2
+                )
+            )
+
             return await MCPTool({
                 toolkit: this,
                 name: tool.name,
                 description: tool.description || '',
-                argsSchema: createSchemaModel(tool.inputSchema)
+                argsSchema: createSchemaModel(tool.inputSchema),
+                annotations: tool.annotations || {}
             })
         })
         const res = await Promise.allSettled(toolsPromises)
@@ -131,64 +163,193 @@ export async function MCPTool({
     toolkit,
     name,
     description,
-    argsSchema
+    argsSchema,
+    annotations = {}
 }: {
     toolkit: MCPToolkit
     name: string
     description: string
     argsSchema: any
+    annotations?: any
 }): Promise<Tool> {
+    const { client, hasStreaming } = await toolkit.createClient()
+    await client.close()
+
+    // Check if tool has streaming annotations
+    const toolHasStreaming = annotations.streaming_enabled === true
+    const shouldUseStreaming = hasStreaming && toolHasStreaming
+
+    console.log(
+        `🔍 [MCP Tool] ${name} - Server streaming: ${hasStreaming}, Tool streaming: ${toolHasStreaming}, Using streaming: ${shouldUseStreaming}`
+    )
+
     return tool(
         async (input, config): Promise<string> => {
-            // Extract Flowise context and clean input for MCP
-            const chatId = config?.configurable?.flowise_chatId
-            const sseStreamer = config?.configurable?.sseStreamer
-            console.log('🔍 [MCP Tool] Context - chatId:', chatId)
-
-            // Register MCP connection to prevent SSE client removal
-            if (sseStreamer && chatId) {
-                sseStreamer.addMcpConnection(chatId)
-            }
-
-            const client = await toolkit.createClient()
-
-            client.setNotificationHandler(LoggingMessageNotificationSchema, (notification) => {
-                console.log('🔔 [MCP Notification In Tool] Message:', notification.params)
-
-                if (sseStreamer && chatId) {
-                    // Stream as token event so UI displays it
-                    sseStreamer.streamTokenEvent(chatId, `\n🔔 MCP: ${notification.params.data}\n`)
-                    console.log('🔔 [MCP Notification In Tool] Streamed notification to SSE for chatId:', chatId)
-                }
-            })
-
-            try {
-                const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
-                const res = await client.request(req, CallToolResultSchema)
-                const content = res.content
-                const contentString = JSON.stringify(content)
-                
-                // Set up cleanup timeout for MCP connection
-                // Allow notifications to continue for 30 seconds after tool completes
-                if (sseStreamer && chatId) {
-                    setTimeout(() => {
-                        console.log(`🔧 [MCP Tool] Cleaning up MCP connection for chatId: ${chatId}`)
-                        sseStreamer.removeMcpConnection(chatId)
-                    }, 3000000) // 30 seconds
-                }
-                
-                return contentString
-            } finally {
-                // Keep client alive for ongoing notifications
-                // Don't close the client - cleanup will happen via timeout
-            }
+            return await executeMCPTool(toolkit, name, input, config, annotations)
         },
         {
             name: name,
-            description: description,
+            description: shouldUseStreaming ? `${description} ${MCP_STREAMING_CONFIG.STREAMING_MARKER}` : description,
             schema: argsSchema
         }
     )
+}
+
+async function executeMCPTool(toolkit: MCPToolkit, name: string, input: any, config: any, annotations: any = {}): Promise<string> {
+    const { chatId, sseStreamer } = extractConfig(config)
+    const { client, hasStreaming } = await toolkit.createClient()
+    const notifications: string[] = []
+
+    // Only use streaming if both server and tool support it
+    const toolHasStreaming = annotations.streaming_enabled === true
+    const shouldUseStreaming = hasStreaming && toolHasStreaming
+
+    try {
+        setupStreamingIfSupported(shouldUseStreaming, sseStreamer, chatId, name)
+        setupNotificationHandlers(client, sseStreamer, chatId, name, shouldUseStreaming, notifications, annotations)
+
+        const toolResponse = await callMCPTool(client, name, input)
+
+        return await handleToolResponse(toolResponse, shouldUseStreaming, sseStreamer, chatId, name, notifications)
+    } finally {
+        if (!shouldUseStreaming) {
+            await client.close()
+        }
+    }
+}
+
+function extractConfig(config: any): { chatId: string; sseStreamer: any } {
+    return {
+        chatId: config?.configurable?.flowise_chatId,
+        sseStreamer: config?.configurable?.sseStreamer
+    }
+}
+
+function setupStreamingIfSupported(hasStreaming: boolean, sseStreamer: any, chatId: string, name: string): void {
+    if (hasStreaming && sseStreamer && chatId) {
+        sseStreamer.addMcpConnection(chatId, name)
+    }
+}
+
+async function callMCPTool(client: Client, name: string, input: any): Promise<string> {
+    const progressToken = `${name}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const req: CallToolRequest = {
+        method: 'tools/call',
+        params: {
+            name: name,
+            arguments: input as any,
+            _meta: { progressToken }
+        }
+    }
+
+    const res = await client.request(req, CallToolResultSchema)
+    return JSON.stringify(res.content)
+}
+
+async function handleToolResponse(
+    contentString: string,
+    hasStreaming: boolean,
+    sseStreamer: any,
+    chatId: string,
+    name: string,
+    notifications: string[]
+): Promise<string> {
+    // Non-streaming tools return immediately
+    if (!hasStreaming || !sseStreamer || !chatId) {
+        if (sseStreamer && chatId) {
+            sseStreamer.removeMcpConnection(chatId, name)
+        }
+        return contentString
+    }
+
+    // Streaming tools wait for completion
+    console.log(`🔄 [MCP Tool] Waiting for streaming completion for ${name}`)
+    return waitForStreamingCompletion(contentString, sseStreamer, chatId, name, notifications)
+}
+
+function waitForStreamingCompletion(
+    contentString: string,
+    sseStreamer: any,
+    chatId: string,
+    name: string,
+    notifications: string[]
+): Promise<string> {
+    return new Promise<string>((resolve) => {
+        let completed = false
+
+        const completeExecution = (reason: string) => {
+            if (completed) return
+            completed = true
+
+            const fullResponse = buildFullResponse(contentString, notifications)
+            console.log(`${reason} [MCP Tool] ${name} completed, returning full result`)
+            resolve(fullResponse)
+        }
+
+        // Poll for completion
+        const pollInterval = setInterval(() => {
+            if (!sseStreamer.hasMcpConnections(chatId)) {
+                clearInterval(pollInterval)
+                completeExecution('✅')
+            }
+        }, 500)
+
+        // Fallback timeout
+        setTimeout(() => {
+            clearInterval(pollInterval)
+            sseStreamer.removeMcpConnection(chatId, name)
+            completeExecution('⏰')
+        }, MCP_STREAMING_CONFIG.DEFAULT_COMPLETION_TIMEOUT)
+    })
+}
+
+function buildFullResponse(contentString: string, notifications: string[]): string {
+    return notifications.length > 0 ? `${contentString}\n\n--- Execution Log ---\n${notifications.join('\n')}` : contentString
+}
+
+function setupNotificationHandlers(
+    client: Client,
+    sseStreamer: any,
+    chatId: string,
+    toolName: string,
+    shouldUseStreaming: boolean,
+    notifications?: string[],
+    annotations: any = {}
+) {
+    if (!shouldUseStreaming || !sseStreamer || !chatId) {
+        return
+    }
+
+    // Get completion signals from annotations, fallback to default
+    const completionSignals = annotations.notification_types || ['task_completion']
+
+    client.setNotificationHandler(LoggingMessageNotificationSchema, (notification) => {
+        const message = String(notification.params.data)
+
+        // Stream to UI
+        sseStreamer.streamTokenEvent(chatId, `\n🔔 ${toolName}: ${message}\n`)
+
+        // Collect for final response
+        if (notifications) {
+            notifications.push(message)
+        }
+
+        const { logger } = notification.params
+
+        // Detect completion based on tool's annotation signals
+        if (completionSignals.includes(logger)) {
+            console.log(`🎯 [MCP Tool] Completion signal detected: ${logger} for ${toolName}`)
+
+            // Add visual separation before LLM response
+            sseStreamer.streamTokenEvent(chatId, '\n\n')
+
+            // Trigger cleanup after brief delay
+            setTimeout(() => {
+                sseStreamer.removeMcpConnection(chatId, toolName)
+                console.log(`🔧 [MCP Tool] Auto-cleanup completed for ${toolName}`)
+            }, MCP_STREAMING_CONFIG.NOTIFICATION_DELAY)
+        }
+    })
 }
 
 function createSchemaModel(
