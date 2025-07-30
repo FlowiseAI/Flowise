@@ -42,7 +42,7 @@ const updateApiKey = async (req: Request, res: Response, next: NextFunction) => 
         }
         if (typeof req.body === 'undefined' || !req.body.keyName) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: apikeyController.updateApiKey - keyName not provided!`)
-        }   
+        }
         if (!req.user?.activeWorkspaceId) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Workspace ID is required`)
         }
