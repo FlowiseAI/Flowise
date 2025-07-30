@@ -95,8 +95,10 @@ export const generateFollowUpPrompts = async (
                 const model = new ChatOpenAI({
                     apiKey: credentialData.openAIApiKey,
                     model: providerConfig.modelName,
-                    temperature: parseFloat(`${providerConfig.temperature}`)
+                    temperature: parseFloat(`${providerConfig.temperature}`),
+                    useResponsesApi: true
                 })
+                // @ts-ignore
                 const structuredLLM = model.withStructuredOutput(FollowUpPromptType)
                 const structuredResponse = await structuredLLM.invoke(followUpPromptsPrompt)
                 return structuredResponse
