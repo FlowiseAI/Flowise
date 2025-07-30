@@ -1,3 +1,5 @@
+import { ChatbotConfig } from 'types'
+
 export interface Sidekick {
     id: string
     chatflow: {
@@ -19,6 +21,7 @@ export interface Sidekick {
     flowData?: {
         nodes: Array<{ data: { category: string } }>
     }
+    chatbotConfig?: ChatbotConfig
     needsSetup?: boolean
     credentialsToShow?: any[]
 }

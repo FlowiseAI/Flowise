@@ -33,6 +33,7 @@ import { FlowData } from './types'
 // import { useUserPlans } from './hooks/useUserPlan';
 import { v4 as uuidv4 } from 'uuid'
 import { useSidekickData } from './SidekickSelect'
+import { useSidekickDetails } from './SidekickSelect/hooks/useSidekickDetails'
 
 interface PredictionParams {
     question: string
@@ -201,11 +202,11 @@ export function AnswersProvider({
     const [chatId, setChatId] = useState<string | undefined>(chat?.id ?? uuidv4())
 
     const [sidekick, setSidekick] = useState<SidekickListItem | undefined>()
-    const chatbotConfig = React.useMemo(() => sidekick?.chatbotConfig, [sidekick])
     const flowData = React.useMemo(() => sidekick?.flowData, [sidekick])
     const [messages, setMessages] = useState<Array<Message>>(chat?.messages ?? [])
     const [filters, setFilters] = useState<AnswersFilters>(deepmerge({}, appSettings?.filters, journey?.filters, chat?.filters))
-
+    const { data: selectedSidekickData } = useSidekickDetails(sidekick?.id ?? null)
+    const chatbotConfig = React.useMemo(() => selectedSidekickData?.chatbotConfig, [selectedSidekickData])
     useEffect(() => {
         if (sidekicks) {
             setSidekick(
@@ -817,7 +818,7 @@ export function AnswersProvider({
         journeyId,
         setJourneyId,
         messageIdx,
-        sidekick,
+        sidekick: { ...sidekick, ...selectedSidekickData },
         setSidekick,
         chatbotConfig,
         flowData,
