@@ -246,7 +246,8 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                             metricsArray,
                             actualOutputArray,
                             errorArray,
-                            body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : []
+                            body.selectedSimpleEvaluators.length > 0 ? JSON.parse(body.selectedSimpleEvaluators) : [],
+                            workspaceId
                         )
 
                         newRun.evaluators = JSON.stringify(results)
@@ -260,7 +261,7 @@ const createEvaluation = async (body: ICommonObject, baseURL: string, orgId: str
                             const llmEvaluatorMap: { evaluatorId: string; evaluator: any }[] = []
                             for (let i = 0; i < resultRow.LLMEvaluators.length; i++) {
                                 const evaluatorId = resultRow.LLMEvaluators[i]
-                                const evaluator = await evaluatorsService.getEvaluator(evaluatorId)
+                                const evaluator = await evaluatorsService.getEvaluator(evaluatorId, workspaceId)
                                 llmEvaluatorMap.push({
                                     evaluatorId: evaluatorId,
                                     evaluator: evaluator
