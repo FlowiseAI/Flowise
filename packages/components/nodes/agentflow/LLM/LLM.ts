@@ -897,7 +897,7 @@ class LLM_Agentflow implements INode {
         if (isStructuredOutput && typeof response === 'object') {
             const structuredOutput = response as Record<string, any>
             for (const key in structuredOutput) {
-                if (structuredOutput[key]) {
+                if (structuredOutput[key] !== undefined && structuredOutput[key] !== null) {
                     output[key] = structuredOutput[key]
                 }
             }
