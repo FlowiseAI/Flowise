@@ -152,7 +152,10 @@ export class QueueManager {
         // Add connection event logging for prediction queue
         if (predictionQueue.getQueue().opts.connection) {
             const connInfo = predictionQueue.getQueue().opts.connection || {}
-            logger.info(`[QueueManager] Prediction queue connected to Redis: ${JSON.stringify(connInfo)}`)
+            const connInfoString = JSON.stringify(connInfo)
+                .replace(/"username":"[^"]*"/g, '"username":"[REDACTED]"')
+                .replace(/"password":"[^"]*"/g, '"password":"[REDACTED]"')
+            logger.info(`[QueueManager] Prediction queue connected to Redis: ${connInfoString}`)
         }
 
         this.predictionQueueEventsProducer = new QueueEventsProducer(predictionQueue.getQueueName(), {
@@ -172,7 +175,10 @@ export class QueueManager {
         // Add connection event logging for upsert queue
         if (upsertionQueue.getQueue().opts.connection) {
             const connInfo = upsertionQueue.getQueue().opts.connection || {}
-            logger.info(`[QueueManager] Upsert queue connected to Redis: ${JSON.stringify(connInfo)}`)
+            const connInfoString = JSON.stringify(connInfo)
+                .replace(/"username":"[^"]*"/g, '"username":"[REDACTED]"')
+                .replace(/"password":"[^"]*"/g, '"password":"[REDACTED]"')
+            logger.info(`[QueueManager] Upsert queue connected to Redis: ${connInfoString}`)
         }
 
         if (serverAdapter) {
