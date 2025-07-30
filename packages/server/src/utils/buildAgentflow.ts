@@ -351,8 +351,14 @@ export const resolveVariables = async (
                         const formattedValue =
                             Array.isArray(variableValue) || (typeof variableValue === 'object' && variableValue !== null)
                                 ? JSON.stringify(variableValue)
-                                : String(variableValue)
-                        resolvedValue = resolvedValue.replace(match, formattedValue)
+                                : variableValue
+                        // If the resolved value is exactly the match, replace it directly
+                        if (resolvedValue === match) {
+                            resolvedValue = formattedValue
+                        } else {
+                            // Otherwise do a standard string‐replace
+                            resolvedValue = String(resolvedValue).replace(match, String(formattedValue))
+                        }
                         // Skip fallback logic
                         continue
                     }
