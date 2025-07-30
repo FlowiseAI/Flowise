@@ -833,7 +833,8 @@ export const getGlobalVariable = async (
                     value: overrideConfig.vars[propertyName],
                     id: '',
                     updatedDate: new Date(),
-                    createdDate: new Date()
+                    createdDate: new Date(),
+                    workspaceId: 'dummy'
                 })
             }
         }
