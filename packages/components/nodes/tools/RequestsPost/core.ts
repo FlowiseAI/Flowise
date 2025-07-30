@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 export const desc = `Use this when you want to execute a POST request to create or update a resource.`
 
@@ -125,6 +126,9 @@ export class RequestsPostTool extends DynamicStructuredTool {
                 ...(params.headers || {}),
                 ...this.headers
             }
+
+            // Check if URL is allowed by security policy
+            await checkDenyList(inputUrl)
 
             const res = await fetch(inputUrl, {
                 method: 'POST',
