@@ -137,6 +137,7 @@ class ChatOpenAICustom_ChatModels implements INode {
             temperature: parseFloat(temperature),
             modelName,
             openAIApiKey,
+            apiKey: openAIApiKey,
             streaming: streaming ?? true
         }
 

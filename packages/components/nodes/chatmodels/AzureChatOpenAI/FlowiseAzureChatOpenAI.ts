@@ -6,6 +6,7 @@ export class AzureChatOpenAI extends LangchainAzureChatOpenAI implements IVision
     configuredModel: string
     configuredMaxToken?: number
     multiModalOption: IMultiModalOption
+    builtInTools: Record<string, any>[] = []
     id: string
 
     constructor(
@@ -27,7 +28,7 @@ export class AzureChatOpenAI extends LangchainAzureChatOpenAI implements IVision
     }
 
     revertToOriginalModel(): void {
-        this.modelName = this.configuredModel
+        this.model = this.configuredModel
         this.maxTokens = this.configuredMaxToken
     }
 
@@ -37,5 +38,9 @@ export class AzureChatOpenAI extends LangchainAzureChatOpenAI implements IVision
 
     setVisionModel(): void {
         // pass
+    }
+
+    addBuiltInTools(builtInTool: Record<string, any>): void {
+        this.builtInTools.push(builtInTool)
     }
 }

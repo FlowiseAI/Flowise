@@ -9,6 +9,7 @@ export class CachePool {
     activeLLMCache: IActiveCache = {}
     activeEmbeddingCache: IActiveCache = {}
     activeMCPCache: { [key: string]: any } = {}
+    ssoTokenCache: { [key: string]: any } = {}
 
     constructor() {
         if (process.env.MODE === MODE.QUEUE) {
@@ -39,6 +40,46 @@ export class CachePool {
                             : undefined
                 })
             }
+        }
+    }
+
+    /**
+     * Add to the sso token cache pool
+     * @param {string} ssoToken
+     * @param {any} value
+     */
+    async addSSOTokenCache(ssoToken: string, value: any) {
+        if (process.env.MODE === MODE.QUEUE) {
+            if (this.redisClient) {
+                const serializedValue = JSON.stringify(value)
+                await this.redisClient.set(`ssoTokenCache:${ssoToken}`, serializedValue, 'EX', 120)
+            }
+        } else {
+            this.ssoTokenCache[ssoToken] = value
+        }
+    }
+
+    async getSSOTokenCache(ssoToken: string): Promise<any | undefined> {
+        if (process.env.MODE === MODE.QUEUE) {
+            if (this.redisClient) {
+                const serializedValue = await this.redisClient.get(`ssoTokenCache:${ssoToken}`)
+                if (serializedValue) {
+                    return JSON.parse(serializedValue)
+                }
+            }
+        } else {
+            return this.ssoTokenCache[ssoToken]
+        }
+        return undefined
+    }
+
+    async deleteSSOTokenCache(ssoToken: string) {
+        if (process.env.MODE === MODE.QUEUE) {
+            if (this.redisClient) {
+                await this.redisClient.del(`ssoTokenCache:${ssoToken}`)
+            }
+        } else {
+            delete this.ssoTokenCache[ssoToken]
         }
     }
 

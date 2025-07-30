@@ -15,8 +15,8 @@ import { RunnableConfig } from '@langchain/core/runnables'
 import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import { Document } from '@langchain/core/documents'
 import { DataSource } from 'typeorm'
-import { MessagesState, RunnableCallable, customGet, getVM } from '../commonUtils'
-import { getVars, prepareSandboxVars } from '../../../src/utils'
+import { MessagesState, RunnableCallable, customGet } from '../commonUtils'
+import { getVars, prepareSandboxVars, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 
 const defaultApprovalPrompt = `You are about to execute tool: {tools}. Ask if user want to proceed`
@@ -572,9 +572,13 @@ const getReturnOutput = async (
             throw new Error(e)
         }
     } else if (selectedTab === 'updateStateMemoryCode' && updateStateMemoryCode) {
-        const vm = await getVM(appDataSource, databaseEntities, nodeData, options, flow)
+        const sandbox = createCodeExecutionSandbox(input, variables, flow)
+
         try {
-            const response = await vm.run(`module.exports = async function() {${updateStateMemoryCode}}()`, __dirname)
+            const response = await executeJavaScriptCode(updateStateMemoryCode, sandbox, {
+                timeout: 10000
+            })
+
             if (typeof response !== 'object') throw new Error('Return output must be an object')
             return response
         } catch (e) {

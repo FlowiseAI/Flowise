@@ -124,7 +124,10 @@ class ChatLitellm_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
-        if (apiKey) obj.openAIApiKey = apiKey
+        if (apiKey) {
+            obj.openAIApiKey = apiKey
+            obj.apiKey = apiKey
+        }
 
         const model = new ChatOpenAI(obj)
 
