@@ -2,7 +2,10 @@ import { omit } from 'lodash'
 import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { TextSplitter } from 'langchain/text_splitter'
 import { GithubRepoLoader, GithubRepoLoaderParams } from '@langchain/community/document_loaders/web/github'
-import { getCredentialData, getCredentialParam, handleEscapeCharacters, INodeOutputsValue } from '../../../src'
+import { getCredentialData, getCredentialParam, handleEscapeCharacters, IDatabaseEntity, INodeOutputsValue } from '../../../src'
+import { v4 as uuidv4 } from 'uuid'
+
+import { DataSource } from 'typeorm'
 
 class Github_DocumentLoaders implements INode {
     label: string
@@ -60,6 +63,14 @@ class Github_DocumentLoaders implements INode {
                 step: 1,
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Stream',
+                name: 'stream',
+                type: 'boolean',
+                optional: true,
+                default: false,
+                description: 'Process documents as they are loaded'
             },
             {
                 label: 'Github Base URL',
@@ -154,6 +165,7 @@ class Github_DocumentLoaders implements INode {
         const output = nodeData.outputs?.output as string
         const githubInstanceApi = nodeData.inputs?.githubInstanceApi as string
         const githubBaseUrl = nodeData.inputs?.githubBaseUrl as string
+        const streamMode = nodeData.inputs?.stream as boolean
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -181,8 +193,58 @@ class Github_DocumentLoaders implements INode {
         }
 
         const loader = new GithubRepoLoader(repoLink, githubOptions)
-
         let docs: IDocument[] = []
+
+        if (streamMode) {
+            // Load the external entities as stream
+            const dataSource: DataSource = options.appDataSource
+            const databaseEntities = options.databaseEntities as IDatabaseEntity
+            const loaderId = options.loaderId as string
+            const storeId = options.storeId as string
+
+            let seq = 0
+            let totalChars = 0
+
+            for await (const fileDoc of (loader as GithubRepoLoader).loadAsStream()) {
+                const doc = textSplitter ? await (textSplitter as TextSplitter).splitDocuments([fileDoc]) : [fileDoc]
+                if (options.preview) {
+                    // As we are in preview mode, just return the data don't save
+                    docs.push(...doc)
+                    return docs
+                }
+
+                for (const chunk of doc) {
+                    seq += 1
+                    const entity = dataSource.getRepository(databaseEntities['DocumentStoreFileChunk']).create({
+                        docId: loaderId as string,
+                        storeId: storeId as string,
+                        id: uuidv4(),
+                        chunkNo: seq,
+                        pageContent: this.sanitizeChunkContent(chunk.pageContent ?? ''),
+                        metadata: JSON.stringify(chunk.metadata)
+                    })
+                    try {
+                        await dataSource.getRepository(databaseEntities['DocumentStoreFileChunk']).save(entity)
+                    } catch (err) {
+                        options.logger.error(`Error streaming chunk to DB: ${err instanceof Error ? err.message : String(err)}`)
+                        throw new Error(`Error streaming chunk to DB: ${err instanceof Error ? err.message : String(err)}`)
+                    }
+
+                    totalChars += entity.pageContent.length
+                }
+            }
+
+            options.logger.info(`Streaming loader ${loaderId} total chunks: ${seq} total characters: ${totalChars}`)
+
+            return [
+                {
+                    metadata: {
+                        totalChunks: seq,
+                        totalChars
+                    }
+                }
+            ]
+        }
 
         if (textSplitter) {
             docs = await loader.load()
@@ -232,6 +294,12 @@ class Github_DocumentLoaders implements INode {
             }
             return handleEscapeCharacters(finaltext, false)
         }
+    }
+
+    // remove null bytes from chunk content
+    sanitizeChunkContent = (content: string) => {
+        // eslint-disable-next-line no-control-regex
+        return content.replaceAll(/\u0000/g, '')
     }
 }
 
