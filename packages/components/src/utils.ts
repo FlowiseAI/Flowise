@@ -1347,7 +1347,8 @@ export const stripHTMLFromToolInput = (input: string) => {
     const turndownService = new TurndownService()
     let cleanedInput = turndownService.turndown(input)
     // After conversion, replace any escaped underscores with regular underscores
-    cleanedInput = cleanedInput.replace(/\\_/g, '_')
+    // and remove any escaped square brackets
+    cleanedInput = cleanedInput.replace(/\\([_[\]])/g, '$1')
     return cleanedInput
 }
 
