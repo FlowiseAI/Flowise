@@ -1,7 +1,7 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { getNodeModulesPackagePath } from '../../../../src/utils'
-import { MCPToolkit, validateMCPServerSecurity } from '../core'
+import { MCPToolkit, validateArgsForLocalFileAccess } from '../core'
 
 class Supergateway_MCP implements INode {
     label: string
@@ -108,7 +108,7 @@ class Supergateway_MCP implements INode {
 
         if (process.env.CUSTOM_MCP_SECURITY_CHECK === 'true') {
             try {
-                validateMCPServerSecurity(serverParams)
+                validateArgsForLocalFileAccess(processedArgs)
             } catch (error) {
                 throw new Error(`Security validation failed: ${error.message}`)
             }
