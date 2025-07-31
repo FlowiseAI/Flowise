@@ -1,5 +1,6 @@
 import { BaseCache } from '@langchain/core/caches'
-import { ChatVertexAI as LcChatVertexAI, ChatVertexAIInput } from '@langchain/google-vertexai'
+import { ChatVertexAIInput, ChatVertexAI as LcChatVertexAI } from '@langchain/google-vertexai'
+import { buildGoogleCredentials } from '../../../src/google-utils'
 import {
     ICommonObject,
     IMultiModalOption,
@@ -9,8 +10,8 @@ import {
     INodeParams,
     IVisionChatModal
 } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
-import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
+import { getModels, getRegions, MODEL_TYPE } from '../../../src/modelLoader'
+import { getBaseClasses } from '../../../src/utils'
 
 const DEFAULT_IMAGE_MAX_TOKEN = 8192
 const DEFAULT_IMAGE_MODEL = 'gemini-1.5-flash-latest'
@@ -65,7 +66,7 @@ class GoogleVertexAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleVertexAI'
         this.name = 'chatGoogleVertexAI'
-        this.version = 5.2
+        this.version = 5.3
         this.type = 'ChatGoogleVertexAI'
         this.icon = 'GoogleVertex.svg'
         this.category = 'Chat Models'
@@ -85,6 +86,14 @@ class GoogleVertexAI_ChatModels implements INode {
                 label: 'Cache',
                 name: 'cache',
                 type: 'BaseCache',
+                optional: true
+            },
+            {
+                label: 'Region',
+                description: 'Region to use for the model.',
+                name: 'region',
+                type: 'asyncOptions',
+                loadMethod: 'listRegions',
                 optional: true
             },
             {
@@ -169,31 +178,13 @@ class GoogleVertexAI_ChatModels implements INode {
     loadMethods = {
         async listModels(): Promise<INodeOptionsValue[]> {
             return await getModels(MODEL_TYPE.CHAT, 'chatGoogleVertexAI')
+        },
+        async listRegions(): Promise<INodeOptionsValue[]> {
+            return await getRegions(MODEL_TYPE.CHAT, 'chatGoogleVertexAI')
         }
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const credentialData = await getCredentialData(nodeData.credential ?? '', options)
-        const googleApplicationCredentialFilePath = getCredentialParam('googleApplicationCredentialFilePath', credentialData, nodeData)
-        const googleApplicationCredential = getCredentialParam('googleApplicationCredential', credentialData, nodeData)
-        const projectID = getCredentialParam('projectID', credentialData, nodeData)
-
-        const authOptions: ICommonObject = {}
-        if (Object.keys(credentialData).length !== 0) {
-            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
-                throw new Error('Please specify your Google Application Credential')
-            if (!googleApplicationCredentialFilePath && !googleApplicationCredential)
-                throw new Error(
-                    'Error: More than one component has been inputted. Please use only one of the following: Google Application Credential File Path or Google Credential JSON Object'
-                )
-            if (googleApplicationCredentialFilePath && !googleApplicationCredential)
-                authOptions.keyFile = googleApplicationCredentialFilePath
-            else if (!googleApplicationCredentialFilePath && googleApplicationCredential)
-                authOptions.credentials = JSON.parse(googleApplicationCredential)
-
-            if (projectID) authOptions.projectId = projectID
-        }
-
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const customModelName = nodeData.inputs?.customModelName as string
@@ -203,6 +194,7 @@ class GoogleVertexAI_ChatModels implements INode {
         const topK = nodeData.inputs?.topK as string
         const streaming = nodeData.inputs?.streaming as boolean
         const thinkingBudget = nodeData.inputs?.thinkingBudget as string
+        const region = nodeData.inputs?.region as string
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
@@ -217,12 +209,16 @@ class GoogleVertexAI_ChatModels implements INode {
             modelName: customModelName || modelName,
             streaming: streaming ?? true
         }
-        if (Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
+
+        const authOptions = await buildGoogleCredentials(nodeData, options)
+        if (authOptions && Object.keys(authOptions).length !== 0) obj.authOptions = authOptions
+
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (cache) obj.cache = cache
         if (topK) obj.topK = parseFloat(topK)
         if (thinkingBudget) obj.thinkingBudget = parseInt(thinkingBudget, 10)
+        if (region) obj.location = region
 
         const model = new ChatVertexAI(nodeData.id, obj)
         model.setMultiModalOption(multiModalOption)

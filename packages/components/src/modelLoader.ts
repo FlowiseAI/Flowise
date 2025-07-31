@@ -1,9 +1,7 @@
-import { INodeOptionsValue } from './Interface'
 import axios from 'axios'
 import * as fs from 'fs'
 import * as path from 'path'
-
-const MASTER_MODEL_LIST = 'https://raw.githubusercontent.com/FlowiseAI/Flowise/main/packages/components/models.json'
+import { INodeOptionsValue } from './Interface'
 
 export enum MODEL_TYPE {
     CHAT = 'chat',
@@ -31,96 +29,49 @@ const isValidUrl = (urlString: string) => {
     return url.protocol === 'http:' || url.protocol === 'https:'
 }
 
-const getModelConfig = async (category: MODEL_TYPE, name: string) => {
-    const modelFile = process.env.MODEL_LIST_CONFIG_JSON || MASTER_MODEL_LIST
-
-    if (!modelFile) {
-        throw new Error('MODEL_LIST_CONFIG_JSON not set')
-    }
-    if (isValidUrl(modelFile)) {
-        try {
+/**
+ * Load the raw model file from either a URL or a local file
+ * If any of the loading fails, fallback to the default models.json file on disk
+ */
+const getRawModelFile = async () => {
+    const modelFile =
+        process.env.MODEL_LIST_CONFIG_JSON ?? 'https://raw.githubusercontent.com/FlowiseAI/Flowise/main/packages/components/models.json'
+    try {
+        if (isValidUrl(modelFile)) {
             const resp = await axios.get(modelFile)
             if (resp.status === 200 && resp.data) {
-                const models = resp.data
-                const categoryModels = models[category]
-                return categoryModels.find((model: INodeOptionsValue) => model.name === name)
+                return resp.data
             } else {
                 throw new Error('Error fetching model list')
             }
-        } catch (e) {
-            const models = await fs.promises.readFile(getModelsJSONPath(), 'utf8')
+        } else if (fs.existsSync(modelFile)) {
+            const models = await fs.promises.readFile(modelFile, 'utf8')
             if (models) {
-                const categoryModels = JSON.parse(models)[category]
-                return categoryModels.find((model: INodeOptionsValue) => model.name === name)
+                return JSON.parse(models)
             }
-            return {}
         }
-    } else {
-        try {
-            if (fs.existsSync(modelFile)) {
-                const models = await fs.promises.readFile(modelFile, 'utf8')
-                if (models) {
-                    const categoryModels = JSON.parse(models)[category]
-                    return categoryModels.find((model: INodeOptionsValue) => model.name === name)
-                }
-            }
-            return {}
-        } catch (e) {
-            const models = await fs.promises.readFile(getModelsJSONPath(), 'utf8')
-            if (models) {
-                const categoryModels = JSON.parse(models)[category]
-                return categoryModels.find((model: INodeOptionsValue) => model.name === name)
-            }
-            return {}
+        throw new Error('Model file does not exist or is empty')
+    } catch (e) {
+        const models = await fs.promises.readFile(getModelsJSONPath(), 'utf8')
+        if (models) {
+            return JSON.parse(models)
         }
+        return {}
     }
 }
 
-export const getModelConfigByModelName = async (category: MODEL_TYPE, provider: string | undefined, name: string | undefined) => {
-    const modelFile = process.env.MODEL_LIST_CONFIG_JSON || MASTER_MODEL_LIST
+const getModelConfig = async (category: MODEL_TYPE, name: string) => {
+    const models = await getRawModelFile()
 
-    if (!modelFile) {
-        throw new Error('MODEL_LIST_CONFIG_JSON not set')
-    }
-    if (isValidUrl(modelFile)) {
-        try {
-            const resp = await axios.get(modelFile)
-            if (resp.status === 200 && resp.data) {
-                const models = resp.data
-                const categoryModels = models[category]
-                // each element of categoryModels is an object, with an array of models (models) and regions (regions)
-                // check if the name is in models
-                return getSpecificModelFromCategory(categoryModels, provider, name)
-            } else {
-                throw new Error('Error fetching model list')
-            }
-        } catch (e) {
-            const models = await fs.promises.readFile(getModelsJSONPath(), 'utf8')
-            if (models) {
-                const categoryModels = JSON.parse(models)[category]
-                return getSpecificModelFromCategory(categoryModels, provider, name)
-            }
-            return {}
-        }
-    } else {
-        try {
-            if (fs.existsSync(modelFile)) {
-                const models = await fs.promises.readFile(modelFile, 'utf8')
-                if (models) {
-                    const categoryModels = JSON.parse(models)[category]
-                    return getSpecificModelFromCategory(categoryModels, provider, name)
-                }
-            }
-            return {}
-        } catch (e) {
-            const models = await fs.promises.readFile(getModelsJSONPath(), 'utf8')
-            if (models) {
-                const categoryModels = JSON.parse(models)[category]
-                return getSpecificModelFromCategory(categoryModels, provider, name)
-            }
-            return {}
-        }
-    }
+    const categoryModels = models[category]
+    return categoryModels.find((model: INodeOptionsValue) => model.name === name)
+}
+
+export const getModelConfigByModelName = async (category: MODEL_TYPE, provider: string | undefined, name: string | undefined) => {
+    const models = await getRawModelFile()
+
+    const categoryModels = models[category]
+    return getSpecificModelFromCategory(categoryModels, provider, name)
 }
 
 const getSpecificModelFromCategory = (categoryModels: any, provider: string | undefined, name: string | undefined) => {

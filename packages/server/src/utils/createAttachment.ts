@@ -172,7 +172,7 @@ export const createFileAttachment = async (req: Request) => {
                     content
                 })
             } catch (error) {
-                throw new Error(`Failed operation: createFileAttachment - ${getErrorMessage(error)}`)
+                throw new Error(`Failed createFileAttachment: ${file.originalname} (${file.mimetype} - ${getErrorMessage(error)}`)
             }
         }
     }

@@ -10,6 +10,9 @@ import {
 import { getCredentialData, getCredentialParam, handleEscapeCharacters } from '../../../src/utils'
 import { getFileFromStorage, INodeOutputsValue } from '../../../src'
 import { UnstructuredLoader } from './Unstructured'
+import { isPathTraversal } from '../../../src/validator'
+import sanitize from 'sanitize-filename'
+import path from 'path'
 
 class UnstructuredFile_DocumentLoaders implements INode {
     label: string
@@ -558,7 +561,32 @@ class UnstructuredFile_DocumentLoaders implements INode {
                 }
             }
         } else if (filePath) {
-            const loader = new LCUnstructuredLoader(filePath, obj)
+            if (!filePath || typeof filePath !== 'string') {
+                throw new Error('Invalid file path format')
+            }
+
+            if (isPathTraversal(filePath)) {
+                throw new Error('Invalid path characters detected in filePath - path traversal not allowed')
+            }
+
+            const parsedPath = path.parse(filePath)
+            const sanitizedFilename = sanitize(parsedPath.base)
+
+            if (!sanitizedFilename || sanitizedFilename.trim() === '') {
+                throw new Error('Invalid filename after sanitization')
+            }
+
+            const sanitizedFilePath = path.join(parsedPath.dir, sanitizedFilename)
+
+            if (!path.isAbsolute(sanitizedFilePath)) {
+                throw new Error('File path must be absolute')
+            }
+
+            if (sanitizedFilePath.includes('..')) {
+                throw new Error('Invalid file path - directory traversal not allowed')
+            }
+
+            const loader = new LCUnstructuredLoader(sanitizedFilePath, obj)
             const loaderDocs = await loader.load()
             docs.push(...loaderDocs)
         } else {

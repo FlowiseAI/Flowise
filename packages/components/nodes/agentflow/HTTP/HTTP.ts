@@ -3,6 +3,7 @@ import axios, { AxiosRequestConfig, Method, ResponseType } from 'axios'
 import FormData from 'form-data'
 import * as querystring from 'querystring'
 import { getCredentialData, getCredentialParam } from '../../../src/utils'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 class HTTP_Agentflow implements INode {
     label: string
@@ -291,6 +292,8 @@ class HTTP_Agentflow implements INode {
 
             // Build final URL with query parameters
             const finalUrl = queryString ? `${url}${url.includes('?') ? '&' : '?'}${queryString}` : url
+
+            await checkDenyList(finalUrl)
 
             // Prepare request config
             const requestConfig: AxiosRequestConfig = {

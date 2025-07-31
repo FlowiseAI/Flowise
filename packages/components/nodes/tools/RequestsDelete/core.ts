@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
+import { checkDenyList } from '../../../src/httpSecurity'
 
 export const desc = `Use this when you need to execute a DELETE request to remove data from a website.`
 
@@ -164,6 +165,9 @@ export class RequestsDeleteTool extends DynamicStructuredTool {
             })
             finalUrl = url.toString()
         }
+
+        // Check if URL is allowed by security policy
+        await checkDenyList(finalUrl)
 
         try {
             const res = await fetch(finalUrl, {

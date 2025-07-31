@@ -493,7 +493,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "llmModel": "chatOpenAI"
                     }
                 },
