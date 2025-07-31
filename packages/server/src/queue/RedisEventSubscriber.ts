@@ -1,5 +1,6 @@
 import { createClient } from 'redis'
 import { SSEStreamer } from '../utils/SSEStreamer'
+import logger from '../utils/logger'
 
 export class RedisEventSubscriber {
     private redisSubscriber: ReturnType<typeof createClient>
@@ -44,10 +45,52 @@ export class RedisEventSubscriber {
             })
         }
         this.sseStreamer = sseStreamer
+
+        this.setupEventListeners()
+    }
+
+    private setupEventListeners() {
+        this.redisSubscriber.on('connect', () => {
+            logger.info(`[RedisEventSubscriber] Redis client connecting...`)
+        })
+
+        this.redisSubscriber.on('ready', () => {
+            logger.info(`[RedisEventSubscriber] Redis client ready and connected`)
+        })
+
+        this.redisSubscriber.on('error', (err) => {
+            logger.error(`[RedisEventSubscriber] Redis client error:`, {
+                error: err,
+                isReady: this.redisSubscriber.isReady,
+                isOpen: this.redisSubscriber.isOpen,
+                subscribedChannelsCount: this.subscribedChannels.size
+            })
+        })
+
+        this.redisSubscriber.on('end', () => {
+            logger.warn(`[RedisEventSubscriber] Redis client connection ended`)
+        })
+
+        this.redisSubscriber.on('reconnecting', () => {
+            logger.info(`[RedisEventSubscriber] Redis client reconnecting...`)
+        })
     }
 
     async connect() {
+        logger.info(`[RedisEventSubscriber] Connecting to Redis...`)
         await this.redisSubscriber.connect()
+
+        // Log connection details after successful connection
+        const connInfo = this.redisSubscriber.options?.socket
+        const connInfoString = JSON.stringify(connInfo)
+            .replace(/"username":"[^"]*"/g, '"username":"[REDACTED]"')
+            .replace(/"password":"[^"]*"/g, '"password":"[REDACTED]"')
+        logger.info(`[RedisEventSubscriber] Connected to Redis: ${connInfoString}`)
+
+        // Add error event listener
+        this.redisSubscriber.on('error', (err) => {
+            logger.error(`[RedisEventSubscriber] Redis connection error`, { error: err })
+        })
     }
 
     subscribe(channel: string) {

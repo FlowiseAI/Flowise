@@ -100,6 +100,13 @@ export class PredictionQueue extends BaseQueue {
             data.signal = signal
         }
 
+        if (this.redisPublisher) {
+            logger.info(
+                `[PredictionQueue] RedisPublisher is connected [orgId:${data.orgId}/flowId:${data.chatflow.id}/chatId:${data.chatId}]`,
+                this.redisPublisher.isConnected()
+            )
+        }
+
         return await executeFlow(data)
     }
 }
