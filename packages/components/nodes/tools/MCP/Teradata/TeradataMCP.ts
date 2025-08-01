@@ -42,23 +42,11 @@ class Teradata_MCP implements INode {
                 optional: false
             },
             {
-                label: 'Username',
-                name: 'username',
-                type: 'string',
-                optional: true
-            },
-            {
-                label: 'Password',
-                name: 'password',
-                type: 'password',
-                optional: true
-            },
-            {
                 label: 'Bearer Token',
                 name: 'bearerToken',
                 type: 'string',
                 optional: true,
-                description: 'Optional Bearer token for authentication'
+                description: 'Optional to override Default set credentials'
             },
             {
                 label: 'Available Actions',
@@ -121,22 +109,17 @@ class Teradata_MCP implements INode {
             url: mcpUrl,
             headers: {}
         }
-        // Prefer Bearer if present, else Basic
-        const bearerToken =
-            nodeData.inputs?.bearerToken ||
-            getCredentialParam('token', credentialData, nodeData)
-        const username =
-            nodeData.inputs?.username ||
-            getCredentialParam('tdUsername', credentialData, nodeData)
-        const password =
-            nodeData.inputs?.password ||
-            getCredentialParam('tdPassword', credentialData, nodeData)
+        // Get Bearer token from node input (from agent flow) or credential store
+        const bearerToken = nodeData.inputs?.bearerToken || getCredentialParam('token', credentialData, nodeData)
+        const username = getCredentialParam('tdUsername', credentialData, nodeData)
+        const password = getCredentialParam('tdPassword', credentialData, nodeData)
+        
         if (bearerToken) {
             serverParams.headers['Authorization'] = `Bearer ${bearerToken}`
         } else if (username && password) {
             serverParams.headers['Authorization'] = 'Basic ' + Buffer.from(`${username}:${password}`).toString('base64')
         } else {
-            throw new Error('Missing credentials: provide either Bearer token or Basic Auth (username/password)')
+            throw new Error('Missing credentials: provide Bearer token from flow/credentials OR username/password from credentials')
         }
 
         // Use SSE for remote HTTP MCP servers
