@@ -174,32 +174,6 @@ function createSchemaModel(
     return z.object(schemaProperties)
 }
 
-/**
- * TODO: To be removed and only allow Remote MCP for Cloud
- * Validates MCP server configuration to only allow whitelisted commands
- */
-export function validateMCPServerSecurity(serverParams: Record<string, any>): void {
-    // Whitelist of allowed commands - only these are permitted
-    const allowedCommands = ['npx', 'node']
-
-    if (serverParams.command) {
-        const cmd = serverParams.command.toLowerCase()
-        const baseCmd = cmd
-
-        if (!allowedCommands.includes(baseCmd)) {
-            throw new Error(`Only allowed: ${allowedCommands.join(', ')}`)
-        }
-    }
-
-    if (serverParams.env) {
-        for (const [key, value] of Object.entries(serverParams.env)) {
-            if (typeof value === 'string' && (value.includes('$(') || value.includes('`'))) {
-                throw new Error(`Environment variable "${key}" contains command substitution: "${value}"`)
-            }
-        }
-    }
-}
-
 export const validateArgsForLocalFileAccess = (args: string[]): void => {
     const dangerousPatterns = [
         // Absolute paths
