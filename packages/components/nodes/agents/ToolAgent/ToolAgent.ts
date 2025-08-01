@@ -116,7 +116,7 @@ class ToolAgent_Agents implements INode {
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
+        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input, sseStreamer: options.sseStreamer })
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
@@ -141,7 +141,7 @@ class ToolAgent_Agents implements INode {
             }
         }
 
-        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input })
+        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input, sseStreamer: options.sseStreamer })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger, options?.orgId)
         const callbacks = await additionalCallbacks(nodeData, options)
@@ -161,6 +161,8 @@ class ToolAgent_Agents implements INode {
         if (shouldStreamResponse) {
             const handler = new CustomChainHandler(sseStreamer, chatId)
             const allCallbacks = [loggerHandler, handler, ...callbacks]
+
+            console.log("[Tool Agent] This is from the 'shouldStreamResponse", chatId, sseStreamer)
 
             // Add detailed streaming handler if enabled
             if (enableDetailedStreaming && customStreamingHandler) {
@@ -199,6 +201,8 @@ class ToolAgent_Agents implements INode {
             }
         } else {
             const allCallbacks = [loggerHandler, ...callbacks]
+
+            console.log("[Tool Agent] This is from the Else 'shouldStreamResponse", chatId, sseStreamer)
 
             // Add detailed streaming handler if enabled
             if (enableDetailedStreaming && customStreamingHandler) {
@@ -268,7 +272,7 @@ class ToolAgent_Agents implements INode {
 const prepareAgent = async (
     nodeData: INodeData,
     options: ICommonObject,
-    flowObj: { sessionId?: string; chatId?: string; input?: string }
+    flowObj: { sessionId?: string; chatId?: string; input?: string; sseStreamer?: any }
 ) => {
     const model = nodeData.inputs?.model as BaseChatModel
     const maxIterations = nodeData.inputs?.maxIterations as string
@@ -370,6 +374,7 @@ const prepareAgent = async (
         sessionId: flowObj?.sessionId,
         chatId: flowObj?.chatId,
         input: flowObj?.input,
+        sseStreamer: flowObj?.sseStreamer,
         verbose: process.env.DEBUG === 'true' ? true : false,
         maxIterations: maxIterations ? parseFloat(maxIterations) : undefined
     })
