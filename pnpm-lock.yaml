@@ -15,6 +15,7 @@ overrides:
     body-parser: 2.0.2
     braces: 3.0.3
     cross-spawn: 7.0.6
+    form-data: 4.0.4
     glob-parent: 6.0.2
     http-proxy-middleware: 3.0.3
     json5: 2.2.3
@@ -24,6 +25,7 @@ overrides:
     rollup: 4.45.0
     semver: 7.7.1
     set-value: 4.1.0
+    solid-js: 1.9.7
     tar-fs: 3.1.0
     unset-value: 2.0.1
     webpack-dev-middleware: 7.4.2
@@ -347,8 +349,8 @@ importers:
                 specifier: ^3.1.1
                 version: 3.1.1
             form-data:
-                specifier: ^4.0.0
-                version: 4.0.0
+                specifier: 4.0.4
+                version: 4.0.4
             google-auth-library:
                 specifier: ^9.4.0
                 version: 9.6.3(encoding@0.1.13)
@@ -389,8 +391,8 @@ importers:
                 specifier: ^0.1.1
                 version: 0.1.1(encoding@0.1.13)(react@18.2.0)(solid-js@1.9.7)(svelte@4.2.18)(vue@3.4.31(typescript@5.5.2))(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))
             linkifyjs:
-                specifier: ^4.1.1
-                version: 4.1.3
+                specifier: ^4.3.2
+                version: 4.3.2
             llamaindex:
                 specifier: ^0.3.13
                 version: 0.3.13(@notionhq/client@2.2.14(encoding@0.1.13))(bufferutil@4.0.8)(encoding@0.1.13)(gcp-metadata@7.0.1)(node-fetch@2.7.0(encoding@0.1.13))(socks@2.8.1)(typescript@5.5.2)(utf-8-validate@6.0.4)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)
@@ -1192,7 +1194,7 @@ packages:
         resolution: { integrity: sha512-9esGkm7/jocNELfGstrd3TYgWycXLP0OG6LXGGaEXd7v75eEp067avoLgQuPdWmzjnJD2U7N8u4wXa0lLd0WQQ== }
         engines: { node: '>=18' }
         peerDependencies:
-            solid-js: ^1.7.7
+            solid-js: 1.9.7
         peerDependenciesMeta:
             solid-js:
                 optional: true
@@ -8722,6 +8724,10 @@ packages:
         resolution: { integrity: sha512-9EtFOZR8g22CL7BWjJ9BUx1+A/djkofnyW3aOXZORNW2kxoUpx2h+uN2cOqwPmFhnpVmxg+KW2OjOSgChTEvsQ== }
         engines: { node: '>=6' }
 
+    call-bind-apply-helpers@1.0.2:
+        resolution: { integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ== }
+        engines: { node: '>= 0.4' }
+
     call-bind@1.0.7:
         resolution: { integrity: sha512-GHTSNSYICQ7scH7sZ+M2rFopRoLh8t2bLSW6BbgrtLsahOIB5iyAVJf9GjWK3cYTDaMj4XdBpM1cA6pIS0Kv2w== }
         engines: { node: '>= 0.4' }
@@ -10006,6 +10012,10 @@ packages:
     duck@0.1.12:
         resolution: { integrity: sha512-wkctla1O6VfP89gQ+J/yDesM0S7B7XLXjKGzXxMDVFg7uEn706niAtyYovKbyq1oT9YwDcly721/iUWoc8MVRg== }
 
+    dunder-proto@1.0.1:
+        resolution: { integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A== }
+        engines: { node: '>= 0.4' }
+
     duplexer@0.1.2:
         resolution: { integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg== }
 
@@ -10119,8 +10129,8 @@ packages:
     es-array-method-boxes-properly@1.0.0:
         resolution: { integrity: sha512-wd6JXUmyHmt8T5a2xreUwKcGPq6f1f+WwIJkijUqiGcJz1qqnZgP6XIK+QyIWU5lT7imeNxUll48bziG+TSYcA== }
 
-    es-define-property@1.0.0:
-        resolution: { integrity: sha512-jxayLKShrEqqzJ0eumQbVhTYQM27CfT1T35+gCgDFoL82JLsXqTJ76zv6A0YLOgEnLUMvLzsDsGIrl8NFpT2gQ== }
+    es-define-property@1.0.1:
+        resolution: { integrity: sha512-e3nRfgfUZ4rNGL232gUgX06QNyyez04KdjFrF+LTRoOXmrOgFKDg4BCdsjW8EnT69eqdYGmRpJwiPVYNrCaW3g== }
         engines: { node: '>= 0.4' }
 
     es-errors@1.3.0:
@@ -10137,8 +10147,12 @@ packages:
     es-module-lexer@1.4.1:
         resolution: { integrity: sha512-cXLGjP0c4T3flZJKQSuziYoq7MlT+rnvfZjfp7h+I7K9BNX54kP9nyWvdbwjQ4u1iWbOL4u96fgeZLToQlZC7w== }
 
-    es-set-tostringtag@2.0.3:
-        resolution: { integrity: sha512-3T8uNMC3OQTHkFUsFq8r/BwAXLHvU/9O9mE0fBc/MY5iq/8H7ncvO947LmYA6ldWw9Uh8Yhf25zu6n7nML5QWQ== }
+    es-object-atoms@1.1.1:
+        resolution: { integrity: sha512-FGgH2h8zKNim9ljj7dankFPcICIK9Cp5bm+c2gQSYePhpaG5+esrLODihIorn+Pe6FGJzWhXQotPv73jTaldXA== }
+        engines: { node: '>= 0.4' }
+
+    es-set-tostringtag@2.1.0:
+        resolution: { integrity: sha512-j6vWzfrGVfyXxge+O0x5sh6cvxAog0a/4Rdd2K36zCMV5eJ+/+tOAngRO8cODMNWbVRdVlmGZQL2YS3yR8bIUA== }
         engines: { node: '>= 0.4' }
 
     es-shim-unscopables@1.0.2:
@@ -10875,24 +10889,8 @@ packages:
         resolution: { integrity: sha512-KQVhvhK8ZkWzxKxOr56CPulAhH3dobtuQ4+hNQ+HekH/Wp5gSOafqRAeTphQUJAIk0GBvHZgJ2ZGRWd5kphMuw== }
         engines: { node: '>= 18' }
 
-    form-data@2.3.3:
-        resolution: { integrity: sha512-1lLKB2Mu3aGP1Q/2eCOx0fNbRMe7XdwktwOruhfqqd0rIJWwN4Dh+E3hrPSlDCXnSR7UtZ1N38rVXm+6+MEhJQ== }
-        engines: { node: '>= 0.12' }
-
-    form-data@2.5.1:
-        resolution: { integrity: sha512-m21N3WOmEEURgk6B9GLOE4RuWOFf28Lhh9qGYeNlGq4VDXUlJy2th2slBNU8Gp8EzloYZOibZJ7t5ecIrFSjVA== }
-        engines: { node: '>= 0.12' }
-
-    form-data@3.0.1:
-        resolution: { integrity: sha512-RHkBKtLWUVwd7SqRIvCZMEvAMoGUp0XU+seQiZejj0COz3RI3hWP4sCv3gZWWLjJTd7rGwcsF5eKZGii0r/hbg== }
-        engines: { node: '>= 6' }
-
-    form-data@4.0.0:
-        resolution: { integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww== }
-        engines: { node: '>= 6' }
-
-    form-data@4.0.1:
-        resolution: { integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw== }
+    form-data@4.0.4:
+        resolution: { integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow== }
         engines: { node: '>= 6' }
 
     format@0.2.2:
@@ -11061,8 +11059,8 @@ packages:
         resolution: { integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg== }
         engines: { node: 6.* || 8.* || >= 10.* }
 
-    get-intrinsic@1.2.4:
-        resolution: { integrity: sha512-5uYhsJH8VJBTv7oslg4BznJYhDoRI6waYCxMmCdnTrcCrHA/fCFKoTFz2JKKE0HdDFUF7/oQuhzumXJK7paBRQ== }
+    get-intrinsic@1.3.0:
+        resolution: { integrity: sha512-9fSjSaos/fRIVIp+xSJlE6lfwhES7LNtKaCBIamHsjr2na1BiABJPo0mOjjz8GJDURarmCPGqaiVg5mfjb98CQ== }
         engines: { node: '>= 0.4' }
 
     get-own-enumerable-property-symbols@3.0.2:
@@ -11075,6 +11073,10 @@ packages:
     get-port@6.1.2:
         resolution: { integrity: sha512-BrGGraKm2uPqurfGVj/z97/zv8dPleC6x9JBNRTrDNtCkkRF4rPwrQXFgL7+I+q8QSdU4ntLQX2D7KIxSy8nGw== }
         engines: { node: ^12.20.0 || ^14.13.1 || >=16.0.0 }
+
+    get-proto@1.0.1:
+        resolution: { integrity: sha512-sTSfBjoXBp89JvIKIefqw7U2CCebsc74kiY6awiGogKtoSGbgjYE/G/+l9sF3MWFPNc9IcoOC4ODfKHfxFmp0g== }
+        engines: { node: '>= 0.4' }
 
     get-stdin@9.0.0:
         resolution: { integrity: sha512-dVKBjfWisLAicarI2Sf+JuBE/DghV4UzNAVe9yhEJuzeREd3JhOTE9cUaJTeSa77fsbQUK3pcOpJfM59+VKZaA== }
@@ -11224,8 +11226,9 @@ packages:
     google-protobuf@3.21.2:
         resolution: { integrity: sha512-3MSOYFO5U9mPGikIYCzK0SaThypfGgS6bHqrUGXG3DPHCrb+txNqeEcns1W0lkGfk0rCyNXm7xB9rMxnCiZOoA== }
 
-    gopd@1.0.1:
-        resolution: { integrity: sha512-d65bNlIadxvpb/A2abVdlqKqV563juRnZ1Wtk6s1sIR8uNsXR70xqIzVqxVf1eTqDunwT2MkczEeaezCKTZhwA== }
+    gopd@1.2.0:
+        resolution: { integrity: sha512-ZUKRh6/kUFoAiTAtTYPZJ3hw9wNxx+BIBOijnlG9PnrJsCcSjs1wyyD6vJpaYtgnzDrKYRSqf3OO6Rfa93xsRg== }
+        engines: { node: '>= 0.4' }
 
     got@13.0.0:
         resolution: { integrity: sha512-XfBk1CxOOScDcMr9O1yKkNaQyy865NbYs+F7dr4H0LZMVgCj2Le59k6PqbNHoL5ToeaEQUYh6c6yMfVcc6SJxA== }
@@ -11323,8 +11326,8 @@ packages:
         resolution: { integrity: sha512-SJ1amZAJUiZS+PhsVLf5tGydlaVB8EdFpaSO4gmiUKUOxk8qzn5AIy4ZeJUmh22znIdk/uMAUT2pl3FxzVUH+Q== }
         engines: { node: '>= 0.4' }
 
-    has-symbols@1.0.3:
-        resolution: { integrity: sha512-l3LCuF6MgDNwTDKkdYGEihYjt5pRPbEg46rtlmnSPlUbgmB8LOIrKJbYYFBSbnPaJexMKtiPO8hmeRjRz2Td+A== }
+    has-symbols@1.1.0:
+        resolution: { integrity: sha512-1cDNdwJ2Jaohmb3sg4OmKaMBwuC48sYni5HUw2DvsC8LjGTLK9h+eb1X6RyuOHe4hT0ULCW68iomhjUoKUqlPQ== }
         engines: { node: '>= 0.4' }
 
     has-tostringtag@1.0.2:
@@ -12721,8 +12724,8 @@ packages:
     linkify-it@5.0.0:
         resolution: { integrity: sha512-5aHCbzQRADcdP+ATqnDuhhJ/MRIqDkZX5pyjFHRRysS8vZ5AbqGEoFIb6pYHPZ+L/OC2Lc+xT8uHVVR5CAK/wQ== }
 
-    linkifyjs@4.1.3:
-        resolution: { integrity: sha512-auMesunaJ8yfkHvK4gfg1K0SaKX/6Wn9g2Aac/NwX+l5VdmFZzo/hdPGxEOETj+ryRa4/fiOPjeeKURSAJx1sg== }
+    linkifyjs@4.3.2:
+        resolution: { integrity: sha512-NT1CJtq3hHIreOianA8aSXn6Cw0JzYOuDQbOrSPe7gqFnCpKP++MQe3ODgO3oh2GJFORkAAdqredOa60z63GbA== }
 
     lint-staged@13.3.0:
         resolution: { integrity: sha512-mPRtrYnipYYv1FEE134ufbWpeggNTo+O/UPzngoaKzbzHAthvR55am+8GfHTnqNRQVRRrYQLGW9ZyUoD7DsBHQ== }
@@ -13026,6 +13029,10 @@ packages:
 
     material-colors@1.2.6:
         resolution: { integrity: sha512-6qE4B9deFBIa9YSpOc9O0Sgc43zTeVYbgDT5veRKSlB2+ZuHNoVVxA1L/ckMUayV9Ay9y7Z/SZCLcGteW9i7bg== }
+
+    math-intrinsics@1.1.0:
+        resolution: { integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g== }
+        engines: { node: '>= 0.4' }
 
     mathjax-full@3.2.2:
         resolution: { integrity: sha512-+LfG9Fik+OuI8SLwsiR02IVdjcnRCy5MufYLi0C3TdMT56L/pjB0alMVGgoWJF8pN9Rc7FESycZB9BMNWIid5w== }
@@ -16006,10 +16013,6 @@ packages:
         peerDependencies:
             seroval: ^1.0
 
-    seroval@0.5.1:
-        resolution: { integrity: sha512-ZfhQVB59hmIauJG5Ydynupy8KHyr5imGNtdDhbZG68Ufh1Ynkv9KOYOAABf71oVbQxJ8VkWnMHAjEHE7fWkH5g== }
-        engines: { node: '>=10' }
-
     seroval@1.3.2:
         resolution: { integrity: sha512-RbcPH1n5cfwKrru7v7+zrZvjLurgHhGyso3HTyGtRivGWgYjbOmGuivCQaORNELjNONoK35nj28EoWul9sb1zQ== }
         engines: { node: '>=10' }
@@ -16182,10 +16185,7 @@ packages:
     solid-element@1.7.0:
         resolution: { integrity: sha512-VUMNqunL3acgtpqbiI9bbUwOyXyz9cAHvGy1Zki1znx+gZJYFgjzckpjpTb2u/Gxud8LSYL+LRTgMGIHdUY4bg== }
         peerDependencies:
-            solid-js: ^1.7.0
-
-    solid-js@1.7.1:
-        resolution: { integrity: sha512-G7wPaRsxY+Mr6GTVSHIqrpHoJNM5YHX6V/X03mPo9RmsuVZU6ZA2O+jVJty6mOyGME24WR30E55L0IQsxxO/vg== }
+            solid-js: 1.9.7
 
     solid-js@1.9.7:
         resolution: { integrity: sha512-/saTKi8iWEM233n5OSi1YHCCuh66ZIQ7aK2hsToPe4tqGm7qAejU1SwNuTPivbWAYq7SjuHVVYxxuZQNRbICiw== }
@@ -22090,7 +22090,7 @@ snapshots:
             combined-stream: 1.0.8
             extend: 3.0.2
             forever-agent: 0.6.1
-            form-data: 2.3.3
+            form-data: 4.0.4
             http-signature: 1.3.6
             is-typedarray: 1.0.0
             isstream: 0.1.2
@@ -22458,7 +22458,7 @@ snapshots:
 
     '@getzep/zep-cloud@1.0.7(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(encoding@0.1.13)(langchain@0.3.6(@langchain/anthropic@0.3.14(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(encoding@0.1.13))(@langchain/aws@0.1.11(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))))(@langchain/cohere@0.0.7(encoding@0.1.13)(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(@langchain/google-genai@0.2.3(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(zod@3.22.4))(@langchain/google-vertexai@0.2.14(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))))(@langchain/groq@0.1.2(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4)))(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)))(@langchain/mistralai@0.2.0(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))))(@langchain/ollama@0.2.0(@langchain/core@0.3.61(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))))(axios@1.10.0)(cheerio@1.0.0-rc.12)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.96.0(encoding@0.1.13)(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4))(zod@3.22.4))(typeorm@0.3.20(ioredis@5.3.2)(mongodb@6.3.0(gcp-metadata@7.0.1)(socks@2.8.1))(mysql2@3.11.4)(pg@8.11.3)(redis@4.6.13)(sqlite3@5.1.7)(ts-node@10.9.2(@swc/core@1.4.6)(@types/node@22.16.3)(typescript@5.5.2)))(ws@8.18.3(bufferutil@4.0.8)(utf-8-validate@6.0.4)))':
         dependencies:
-            form-data: 4.0.0
+            form-data: 4.0.4
             node-fetch: 2.7.0(encoding@0.1.13)
             qs: 6.11.2
             url-join: 4.0.1
@@ -23735,7 +23735,7 @@ snapshots:
     '@llamaindex/cloud@0.0.5(node-fetch@2.7.0(encoding@0.1.13))':
         dependencies:
             '@types/qs': 6.9.12
-            form-data: 4.0.1
+            form-data: 4.0.4
             js-base64: 3.7.7
             qs: 6.13.0
         optionalDependencies:
@@ -27293,17 +27293,17 @@ snapshots:
     '@types/node-fetch@2.6.11':
         dependencies:
             '@types/node': 22.5.4
-            form-data: 4.0.1
+            form-data: 4.0.4
 
     '@types/node-fetch@2.6.12':
         dependencies:
             '@types/node': 22.5.4
-            form-data: 4.0.1
+            form-data: 4.0.4
 
     '@types/node-fetch@2.6.2':
         dependencies:
             '@types/node': 20.12.12
-            form-data: 3.0.1
+            form-data: 4.0.4
 
     '@types/node-forge@1.3.11':
         dependencies:
@@ -27450,7 +27450,7 @@ snapshots:
             '@types/caseless': 0.12.5
             '@types/node': 22.5.4
             '@types/tough-cookie': 4.0.5
-            form-data: 2.5.1
+            form-data: 4.0.4
 
     '@types/resolve@1.17.1':
         dependencies:
@@ -27508,7 +27508,7 @@ snapshots:
             '@types/cookiejar': 2.1.5
             '@types/methods': 1.1.4
             '@types/node': 22.5.4
-            form-data: 4.0.1
+            form-data: 4.0.4
 
     '@types/supertest@6.0.3':
         dependencies:
@@ -28244,7 +28244,7 @@ snapshots:
             call-bind: 1.0.7
             define-properties: 1.2.1
             es-abstract: 1.22.5
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
             is-string: 1.0.7
 
     array-initial@1.1.0:
@@ -28336,7 +28336,7 @@ snapshots:
             define-properties: 1.2.1
             es-abstract: 1.22.5
             es-errors: 1.3.0
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
             is-array-buffer: 3.0.4
             is-shared-array-buffer: 1.0.3
 
@@ -28403,7 +28403,7 @@ snapshots:
 
     asynciterator.prototype@1.0.0:
         dependencies:
-            has-symbols: 1.0.3
+            has-symbols: 1.1.0
 
     asynckit@0.4.0: {}
 
@@ -28438,7 +28438,7 @@ snapshots:
     axios@1.10.0(debug@4.3.4):
         dependencies:
             follow-redirects: 1.15.6(debug@4.3.4)
-            form-data: 4.0.1
+            form-data: 4.0.4
             proxy-from-env: 1.1.0
         transitivePeerDependencies:
             - debug
@@ -28446,7 +28446,7 @@ snapshots:
     axios@1.10.0(debug@4.4.0):
         dependencies:
             follow-redirects: 1.15.6(debug@4.4.0)
-            form-data: 4.0.1
+            form-data: 4.0.4
             proxy-from-env: 1.1.0
         transitivePeerDependencies:
             - debug
@@ -28454,7 +28454,7 @@ snapshots:
     axios@1.10.0(debug@4.4.1):
         dependencies:
             follow-redirects: 1.15.6(debug@4.4.1)
-            form-data: 4.0.1
+            form-data: 4.0.4
             proxy-from-env: 1.1.0
         transitivePeerDependencies:
             - debug
@@ -28935,12 +28935,17 @@ snapshots:
 
     cachedir@2.4.0: {}
 
-    call-bind@1.0.7:
+    call-bind-apply-helpers@1.0.2:
         dependencies:
-            es-define-property: 1.0.0
             es-errors: 1.3.0
             function-bind: 1.1.2
-            get-intrinsic: 1.2.4
+
+    call-bind@1.0.7:
+        dependencies:
+            es-define-property: 1.0.1
+            es-errors: 1.3.0
+            function-bind: 1.1.2
+            get-intrinsic: 1.3.0
             set-function-length: 1.2.2
 
     call-me-maybe@1.0.2: {}
@@ -29286,7 +29291,7 @@ snapshots:
 
     cohere-ai@7.10.0(encoding@0.1.13):
         dependencies:
-            form-data: 4.0.0
+            form-data: 4.0.4
             form-data-encoder: 4.0.2
             formdata-node: 6.0.3
             js-base64: 3.7.2
@@ -30044,7 +30049,7 @@ snapshots:
             array-buffer-byte-length: 1.0.1
             call-bind: 1.0.7
             es-get-iterator: 1.1.3
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
             is-arguments: 1.1.1
             is-array-buffer: 3.0.4
             is-date-object: 1.0.5
@@ -30094,9 +30099,9 @@ snapshots:
 
     define-data-property@1.1.4:
         dependencies:
-            es-define-property: 1.0.0
+            es-define-property: 1.0.1
             es-errors: 1.3.0
-            gopd: 1.0.1
+            gopd: 1.2.0
 
     define-lazy-prop@2.0.0: {}
 
@@ -30315,6 +30320,12 @@ snapshots:
         dependencies:
             underscore: 1.13.6
 
+    dunder-proto@1.0.1:
+        dependencies:
+            call-bind-apply-helpers: 1.0.2
+            es-errors: 1.3.0
+            gopd: 1.2.0
+
     duplexer@0.1.2: {}
 
     duplexify@3.7.1:
@@ -30435,18 +30446,18 @@ snapshots:
             arraybuffer.prototype.slice: 1.0.3
             available-typed-arrays: 1.0.7
             call-bind: 1.0.7
-            es-define-property: 1.0.0
+            es-define-property: 1.0.1
             es-errors: 1.3.0
-            es-set-tostringtag: 2.0.3
+            es-set-tostringtag: 2.1.0
             es-to-primitive: 1.2.1
             function.prototype.name: 1.1.6
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
             get-symbol-description: 1.0.2
             globalthis: 1.0.3
-            gopd: 1.0.1
+            gopd: 1.2.0
             has-property-descriptors: 1.0.2
             has-proto: 1.0.3
-            has-symbols: 1.0.3
+            has-symbols: 1.1.0
             hasown: 2.0.2
             internal-slot: 1.0.7
             is-array-buffer: 3.0.4
@@ -30475,17 +30486,15 @@ snapshots:
 
     es-array-method-boxes-properly@1.0.0: {}
 
-    es-define-property@1.0.0:
-        dependencies:
-            get-intrinsic: 1.2.4
+    es-define-property@1.0.1: {}
 
     es-errors@1.3.0: {}
 
     es-get-iterator@1.1.3:
         dependencies:
             call-bind: 1.0.7
-            get-intrinsic: 1.2.4
-            has-symbols: 1.0.3
+            get-intrinsic: 1.3.0
+            has-symbols: 1.1.0
             is-arguments: 1.1.1
             is-map: 2.0.3
             is-set: 2.0.3
@@ -30500,22 +30509,27 @@ snapshots:
             define-properties: 1.2.1
             es-abstract: 1.22.5
             es-errors: 1.3.0
-            es-set-tostringtag: 2.0.3
+            es-set-tostringtag: 2.1.0
             function-bind: 1.1.2
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
             globalthis: 1.0.3
             has-property-descriptors: 1.0.2
             has-proto: 1.0.3
-            has-symbols: 1.0.3
+            has-symbols: 1.1.0
             internal-slot: 1.0.7
             iterator.prototype: 1.1.2
             safe-array-concat: 1.1.2
 
     es-module-lexer@1.4.1: {}
 
-    es-set-tostringtag@2.0.3:
+    es-object-atoms@1.1.1:
         dependencies:
-            get-intrinsic: 1.2.4
+            es-errors: 1.3.0
+
+    es-set-tostringtag@2.1.0:
+        dependencies:
+            es-errors: 1.3.0
+            get-intrinsic: 1.3.0
             has-tostringtag: 1.0.2
             hasown: 2.0.2
 
@@ -31566,13 +31580,13 @@ snapshots:
             device-detector-js: 3.0.3
             dotenv: 16.4.5
             express: 4.21.1
-            form-data: 4.0.1
+            form-data: 4.0.4
             lodash: 4.17.21
             multer: 1.4.5-lts.1
             node-fetch: 3.3.2
             prettier: 3.2.5
-            solid-element: 1.7.0(solid-js@1.7.1)
-            solid-js: 1.7.1
+            solid-element: 1.7.0(solid-js@1.9.7)
+            solid-js: 1.9.7
             zod: 3.22.4
         transitivePeerDependencies:
             - debug
@@ -31668,34 +31682,12 @@ snapshots:
 
     form-data-encoder@4.0.2: {}
 
-    form-data@2.3.3:
+    form-data@4.0.4:
         dependencies:
             asynckit: 0.4.0
             combined-stream: 1.0.8
-            mime-types: 2.1.35
-
-    form-data@2.5.1:
-        dependencies:
-            asynckit: 0.4.0
-            combined-stream: 1.0.8
-            mime-types: 2.1.35
-
-    form-data@3.0.1:
-        dependencies:
-            asynckit: 0.4.0
-            combined-stream: 1.0.8
-            mime-types: 2.1.35
-
-    form-data@4.0.0:
-        dependencies:
-            asynckit: 0.4.0
-            combined-stream: 1.0.8
-            mime-types: 2.1.35
-
-    form-data@4.0.1:
-        dependencies:
-            asynckit: 0.4.0
-            combined-stream: 1.0.8
+            es-set-tostringtag: 2.1.0
+            hasown: 2.0.2
             mime-types: 2.1.35
 
     format@0.2.2: {}
@@ -31903,19 +31895,29 @@ snapshots:
 
     get-caller-file@2.0.5: {}
 
-    get-intrinsic@1.2.4:
+    get-intrinsic@1.3.0:
         dependencies:
+            call-bind-apply-helpers: 1.0.2
+            es-define-property: 1.0.1
             es-errors: 1.3.0
+            es-object-atoms: 1.1.1
             function-bind: 1.1.2
-            has-proto: 1.0.3
-            has-symbols: 1.0.3
+            get-proto: 1.0.1
+            gopd: 1.2.0
+            has-symbols: 1.1.0
             hasown: 2.0.2
+            math-intrinsics: 1.1.0
 
     get-own-enumerable-property-symbols@3.0.2: {}
 
     get-package-type@0.1.0: {}
 
     get-port@6.1.2: {}
+
+    get-proto@1.0.1:
+        dependencies:
+            dunder-proto: 1.0.1
+            es-object-atoms: 1.1.1
 
     get-stdin@9.0.0: {}
 
@@ -31929,7 +31931,7 @@ snapshots:
         dependencies:
             call-bind: 1.0.7
             es-errors: 1.3.0
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
 
     get-them-args@1.3.2: {}
 
@@ -32147,9 +32149,7 @@ snapshots:
 
     google-protobuf@3.21.2: {}
 
-    gopd@1.0.1:
-        dependencies:
-            get-intrinsic: 1.2.4
+    gopd@1.2.0: {}
 
     got@13.0.0:
         dependencies:
@@ -32176,7 +32176,7 @@ snapshots:
             '@graphql-typed-document-node/core': 3.2.0(graphql@16.8.1)
             cross-fetch: 3.1.8(encoding@0.1.13)
             extract-files: 9.0.0
-            form-data: 3.0.1
+            form-data: 4.0.4
             graphql: 16.8.1
         transitivePeerDependencies:
             - encoding
@@ -32291,15 +32291,15 @@ snapshots:
 
     has-property-descriptors@1.0.2:
         dependencies:
-            es-define-property: 1.0.0
+            es-define-property: 1.0.1
 
     has-proto@1.0.3: {}
 
-    has-symbols@1.0.3: {}
+    has-symbols@1.1.0: {}
 
     has-tostringtag@1.0.2:
         dependencies:
-            has-symbols: 1.0.3
+            has-symbols: 1.1.0
 
     has-unicode@2.0.1: {}
 
@@ -32656,7 +32656,7 @@ snapshots:
             dotenv: 16.4.5
             extend: 3.0.2
             file-type: 16.5.4
-            form-data: 4.0.0
+            form-data: 4.0.4
             isstream: 0.1.2
             jsonwebtoken: 9.0.2
             mime-types: 2.1.35
@@ -32824,7 +32824,7 @@ snapshots:
     is-array-buffer@3.0.4:
         dependencies:
             call-bind: 1.0.7
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
 
     is-arrayish@0.2.1: {}
 
@@ -33008,7 +33008,7 @@ snapshots:
 
     is-symbol@1.0.4:
         dependencies:
-            has-symbols: 1.0.3
+            has-symbols: 1.1.0
 
     is-typed-array@1.1.13:
         dependencies:
@@ -33035,7 +33035,7 @@ snapshots:
     is-weakset@2.0.3:
         dependencies:
             call-bind: 1.0.7
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
 
     is-windows@1.0.2: {}
 
@@ -33106,8 +33106,8 @@ snapshots:
     iterator.prototype@1.1.2:
         dependencies:
             define-properties: 1.2.1
-            get-intrinsic: 1.2.4
-            has-symbols: 1.0.3
+            get-intrinsic: 1.3.0
+            has-symbols: 1.1.0
             reflect.getprototypeof: 1.0.5
             set-function-name: 2.0.2
 
@@ -33895,7 +33895,7 @@ snapshots:
             decimal.js: 10.4.3
             domexception: 2.0.1
             escodegen: 2.1.0
-            form-data: 3.0.1
+            form-data: 4.0.4
             html-encoding-sniffer: 2.0.1
             http-proxy-agent: 4.0.1
             https-proxy-agent: 5.0.1
@@ -33931,7 +33931,7 @@ snapshots:
             decimal.js: 10.4.3
             domexception: 4.0.0
             escodegen: 2.1.0
-            form-data: 4.0.1
+            form-data: 4.0.4
             html-encoding-sniffer: 3.0.0
             http-proxy-agent: 5.0.0
             https-proxy-agent: 5.0.1
@@ -33962,7 +33962,7 @@ snapshots:
             data-urls: 4.0.0
             decimal.js: 10.4.3
             domexception: 4.0.0
-            form-data: 4.0.0
+            form-data: 4.0.4
             html-encoding-sniffer: 3.0.0
             http-proxy-agent: 5.0.0
             https-proxy-agent: 5.0.1
@@ -34311,7 +34311,7 @@ snapshots:
         dependencies:
             uc.micro: 2.1.0
 
-    linkifyjs@4.1.3: {}
+    linkifyjs@4.3.2: {}
 
     lint-staged@13.3.0(enquirer@2.4.1):
         dependencies:
@@ -34709,6 +34709,8 @@ snapshots:
             escape-string-regexp: 4.0.0
 
     material-colors@1.2.6: {}
+
+    math-intrinsics@1.1.0: {}
 
     mathjax-full@3.2.2:
         dependencies:
@@ -35728,7 +35730,7 @@ snapshots:
         dependencies:
             call-bind: 1.0.7
             define-properties: 1.2.1
-            has-symbols: 1.0.3
+            has-symbols: 1.1.0
             object-keys: 1.1.1
 
     object.defaults@1.1.0:
@@ -37803,7 +37805,7 @@ snapshots:
             define-properties: 1.2.1
             es-abstract: 1.22.5
             es-errors: 1.3.0
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
             globalthis: 1.0.3
             which-builtin-type: 1.1.3
 
@@ -38150,8 +38152,8 @@ snapshots:
     safe-array-concat@1.1.2:
         dependencies:
             call-bind: 1.0.7
-            get-intrinsic: 1.2.4
-            has-symbols: 1.0.3
+            get-intrinsic: 1.3.0
+            has-symbols: 1.1.0
             isarray: 2.0.5
 
     safe-buffer@5.1.2: {}
@@ -38337,12 +38339,8 @@ snapshots:
     seroval-plugins@1.3.2(seroval@1.3.2):
         dependencies:
             seroval: 1.3.2
-        optional: true
 
-    seroval@0.5.1: {}
-
-    seroval@1.3.2:
-        optional: true
+    seroval@1.3.2: {}
 
     serve-index@1.9.1:
         dependencies:
@@ -38390,8 +38388,8 @@ snapshots:
             define-data-property: 1.1.4
             es-errors: 1.3.0
             function-bind: 1.1.2
-            get-intrinsic: 1.2.4
-            gopd: 1.0.1
+            get-intrinsic: 1.3.0
+            gopd: 1.2.0
             has-property-descriptors: 1.0.2
 
     set-function-name@2.0.2:
@@ -38489,7 +38487,7 @@ snapshots:
         dependencies:
             call-bind: 1.0.7
             es-errors: 1.3.0
-            get-intrinsic: 1.2.4
+            get-intrinsic: 1.3.0
             object-inspect: 1.13.1
 
     signal-exit@3.0.7: {}
@@ -38592,22 +38590,16 @@ snapshots:
             ip-address: 9.0.5
             smart-buffer: 4.2.0
 
-    solid-element@1.7.0(solid-js@1.7.1):
+    solid-element@1.7.0(solid-js@1.9.7):
         dependencies:
             component-register: 0.8.3
-            solid-js: 1.7.1
-
-    solid-js@1.7.1:
-        dependencies:
-            csstype: 3.1.3
-            seroval: 0.5.1
+            solid-js: 1.9.7
 
     solid-js@1.9.7:
         dependencies:
             csstype: 3.1.3
             seroval: 1.3.2
             seroval-plugins: 1.3.2(seroval@1.3.2)
-        optional: true
 
     sort-object-keys@1.1.3: {}
 
@@ -38917,8 +38909,8 @@ snapshots:
             call-bind: 1.0.7
             define-properties: 1.2.1
             es-abstract: 1.22.5
-            get-intrinsic: 1.2.4
-            has-symbols: 1.0.3
+            get-intrinsic: 1.3.0
+            has-symbols: 1.1.0
             internal-slot: 1.0.7
             regexp.prototype.flags: 1.5.2
             set-function-name: 2.0.2
@@ -39076,7 +39068,7 @@ snapshots:
             cookiejar: 2.1.4
             debug: 4.4.0(supports-color@8.1.1)
             fast-safe-stringify: 2.1.1
-            form-data: 4.0.1
+            form-data: 4.0.4
             formidable: 3.5.4
             methods: 1.1.2
             mime: 2.6.0
@@ -39669,7 +39661,7 @@ snapshots:
         dependencies:
             call-bind: 1.0.7
             for-each: 0.3.3
-            gopd: 1.0.1
+            gopd: 1.2.0
             has-proto: 1.0.3
             is-typed-array: 1.1.13
 
@@ -39678,7 +39670,7 @@ snapshots:
             available-typed-arrays: 1.0.7
             call-bind: 1.0.7
             for-each: 0.3.3
-            gopd: 1.0.1
+            gopd: 1.2.0
             has-proto: 1.0.3
             is-typed-array: 1.1.13
 
@@ -39686,7 +39678,7 @@ snapshots:
         dependencies:
             call-bind: 1.0.7
             for-each: 0.3.3
-            gopd: 1.0.1
+            gopd: 1.2.0
             has-proto: 1.0.3
             is-typed-array: 1.1.13
             possible-typed-array-names: 1.0.0
@@ -39782,7 +39774,7 @@ snapshots:
         dependencies:
             call-bind: 1.0.7
             has-bigints: 1.0.2
-            has-symbols: 1.0.3
+            has-symbols: 1.1.0
             which-boxed-primitive: 1.0.2
 
     unbzip2-stream@1.4.3:
@@ -40031,7 +40023,7 @@ snapshots:
         dependencies:
             define-properties: 1.2.1
             es-abstract: 1.22.5
-            has-symbols: 1.0.3
+            has-symbols: 1.1.0
             object.getownpropertydescriptors: 2.1.7
 
     utila@0.4.0: {}
@@ -40520,7 +40512,7 @@ snapshots:
             available-typed-arrays: 1.0.7
             call-bind: 1.0.7
             for-each: 0.3.3
-            gopd: 1.0.1
+            gopd: 1.2.0
             has-tostringtag: 1.0.2
 
     which@1.3.1:
