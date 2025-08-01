@@ -1571,7 +1571,7 @@ export const executeAgentFlow = async ({
         .find({
             where: {
                 chatflowid,
-                chatId
+                sessionId
             },
             order: {
                 createdDate: 'ASC'
