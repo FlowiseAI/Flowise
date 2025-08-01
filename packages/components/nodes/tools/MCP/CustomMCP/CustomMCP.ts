@@ -1,6 +1,6 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, IDatabaseEntity, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
-import { MCPToolkit, validateMCPServerSecurity } from '../core'
+import { MCPToolkit } from '../core'
 import { getVars, prepareSandboxVars } from '../../../../src/utils'
 import { DataSource } from 'typeorm'
 import hash from 'object-hash'
@@ -173,13 +173,11 @@ class Custom_MCP implements INode {
                 serverParams = JSON.parse(serverParamsString)
             }
 
-            if (process.env.CUSTOM_MCP_SECURITY_CHECK === 'true') {
-                validateMCPServerSecurity(serverParams)
-            }
-
             // Compatible with stdio and SSE
             let toolkit: MCPToolkit
-            if (serverParams?.command === undefined) {
+            if (process.env.CUSTOM_MCP_PROTOCOL === 'sse') {
+                toolkit = new MCPToolkit(serverParams, 'sse')
+            } else if (serverParams?.command === undefined) {
                 toolkit = new MCPToolkit(serverParams, 'sse')
             } else {
                 toolkit = new MCPToolkit(serverParams, 'stdio')
