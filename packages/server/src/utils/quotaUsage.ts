@@ -75,6 +75,59 @@ export const checkUsageLimit = async (
     }
 }
 
+export const checkPredictions = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
+    if (!usageCacheManager || !subscriptionId) return
+
+    const currentPredictions: number = (await usageCacheManager.get(`predictions:${orgId}`)) || 0
+
+    const quotas = await usageCacheManager.getQuotas(subscriptionId)
+    const predictionsLimit = quotas[LICENSE_QUOTAS.PREDICTIONS_LIMIT]
+    if (predictionsLimit === -1) return
+
+    if (currentPredictions >= predictionsLimit) {
+        throw new InternalFlowiseError(StatusCodes.TOO_MANY_REQUESTS, 'Predictions limit exceeded')
+    }
+
+    return {
+        usage: currentPredictions,
+        limit: predictionsLimit
+    }
+}
+
+// Enhanced prediction checking that includes credit eligibility
+export const checkPredictionsWithCredits = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
+    if (!usageCacheManager || !subscriptionId) return
+
+    const eligibility = await checkPredictionEligibility(orgId, subscriptionId, usageCacheManager)
+
+    if (!eligibility.allowed) {
+        throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, 'Predictions limit exceeded. Please purchase credits to continue.')
+    }
+
+    return {
+        useCredits: eligibility.useCredits,
+        remainingCredits: eligibility.remainingCredits,
+        usage: eligibility.currentUsage,
+        limit: eligibility.planLimit
+    }
+}
+
+export const checkPredictionEligibility = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
+    try {
+        if (!usageCacheManager || !subscriptionId) return { allowed: true, useCredits: false }
+
+        const stripeManager = await StripeManager.getInstance()
+        if (!stripeManager) return { allowed: true, useCredits: false }
+
+        const eligibility = await stripeManager.checkPredictionEligibility(orgId, subscriptionId)
+        logger.info(`eligibility: ${JSON.stringify(eligibility)}`)
+        return eligibility
+    } catch (error) {
+        logger.error(`[checkPredictionEligibility] Error checking prediction eligibility: ${error}`)
+        throw error
+    }
+}
+
 // As predictions limit renew per month, we set to cache with 1 month TTL
 export const updatePredictionsUsage = async (
     orgId: string,
@@ -126,40 +179,6 @@ export const updatePredictionsUsage = async (
     }
 }
 
-export const checkPredictions = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
-    if (!usageCacheManager || !subscriptionId) return
-
-    const currentPredictions: number = (await usageCacheManager.get(`predictions:${orgId}`)) || 0
-
-    const quotas = await usageCacheManager.getQuotas(subscriptionId)
-    const predictionsLimit = quotas[LICENSE_QUOTAS.PREDICTIONS_LIMIT]
-    if (predictionsLimit === -1) return
-
-    if (currentPredictions >= predictionsLimit) {
-        throw new InternalFlowiseError(StatusCodes.TOO_MANY_REQUESTS, 'Predictions limit exceeded')
-    }
-
-    return {
-        usage: currentPredictions,
-        limit: predictionsLimit
-    }
-}
-
-export const checkPredictionEligibility = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
-    try {
-        if (!usageCacheManager || !subscriptionId) return { allowed: true, useCredits: false }
-
-        const stripeManager = await StripeManager.getInstance()
-        if (!stripeManager) return { allowed: true, useCredits: false }
-
-        const eligibility = await stripeManager.checkPredictionEligibility(orgId, subscriptionId)
-        return eligibility
-    } catch (error) {
-        logger.error(`[checkPredictionEligibility] Error checking prediction eligibility: ${error}`)
-        throw error
-    }
-}
-
 export const updatePredictionsUsageWithCredits = async (
     orgId: string,
     subscriptionId: string,
@@ -174,6 +193,7 @@ export const updatePredictionsUsageWithCredits = async (
             const stripeManager = await StripeManager.getInstance()
             if (stripeManager) {
                 const subscriptionDetails = await usageCacheManager.getSubscriptionDetails(subscriptionId)
+                logger.info(`subscription details: ${JSON.stringify(subscriptionDetails)}`)
                 if (subscriptionDetails && subscriptionDetails.customer) {
                     await stripeManager.reportMeterUsage(subscriptionDetails.customer as string)
                 }
@@ -184,24 +204,6 @@ export const updatePredictionsUsageWithCredits = async (
     } else {
         // Update regular plan usage
         await updatePredictionsUsage(orgId, subscriptionId, '', usageCacheManager)
-    }
-}
-
-// Enhanced prediction checking that includes credit eligibility
-export const checkPredictionsWithCredits = async (orgId: string, subscriptionId: string, usageCacheManager: UsageCacheManager) => {
-    if (!usageCacheManager || !subscriptionId) return
-
-    const eligibility = await checkPredictionEligibility(orgId, subscriptionId, usageCacheManager)
-
-    if (!eligibility.allowed) {
-        throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, 'Predictions limit exceeded. Please purchase credits to continue.')
-    }
-
-    return {
-        useCredits: eligibility.useCredits,
-        remainingCredits: eligibility.remainingCredits,
-        usage: eligibility.currentUsage,
-        limit: eligibility.planLimit
     }
 }
 

@@ -60,7 +60,14 @@ import {
 import { validateFlowAPIKey } from './validateKey'
 import logger from './logger'
 import { utilAddChatMessage } from './addChatMesage'
-import { checkPredictions, checkStorage, updatePredictionsUsage, updateStorageUsage } from './quotaUsage'
+import {
+    checkPredictions,
+    checkPredictionsWithCredits,
+    checkStorage,
+    updatePredictionsUsage,
+    updatePredictionsUsageWithCredits,
+    updateStorageUsage
+} from './quotaUsage'
 import { buildAgentGraph } from './buildAgentGraph'
 import { getErrorMessage } from '../errors/utils'
 import { FLOWISE_METRIC_COUNTERS, FLOWISE_COUNTER_STATUS, IMetricsProvider } from '../Interface.Metrics'
@@ -955,7 +962,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             throw new InternalFlowiseError(StatusCodes.PAYMENT_REQUIRED, 'Organization suspended due to non-payment')
         }
 
-        await checkPredictions(orgId, subscriptionId, appServer.usageCacheManager)
+        // await checkPredictions(orgId, subscriptionId, appServer.usageCacheManager)
+        const predictionCheck = await checkPredictionsWithCredits(orgId, subscriptionId, appServer.usageCacheManager)
 
         const executeData: IExecuteFlowParams = {
             incomingInput, // Use the defensively created incomingInput variable
@@ -989,7 +997,13 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             if (!result) {
                 throw new Error('Job execution failed')
             }
-            await updatePredictionsUsage(orgId, subscriptionId, workspaceId, appServer.usageCacheManager)
+            // await updatePredictionsUsage(orgId, subscriptionId, workspaceId, appServer.usageCacheManager)
+            await updatePredictionsUsageWithCredits(
+                orgId,
+                subscriptionId,
+                predictionCheck?.useCredits || false,
+                appServer.usageCacheManager
+            )
             incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
             return result
         } else {
@@ -1001,7 +1015,13 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
             const result = await executeFlow(executeData)
 
             appServer.abortControllerPool.remove(abortControllerId)
-            await updatePredictionsUsage(orgId, subscriptionId, workspaceId, appServer.usageCacheManager)
+            // await updatePredictionsUsage(orgId, subscriptionId, workspaceId, appServer.usageCacheManager)
+            await updatePredictionsUsageWithCredits(
+                orgId,
+                subscriptionId,
+                predictionCheck?.useCredits || false,
+                appServer.usageCacheManager
+            )
             incrementSuccessMetricCounter(appServer.metricsProvider, isInternal, isAgentFlow)
             return result
         }

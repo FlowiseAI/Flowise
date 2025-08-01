@@ -60,9 +60,24 @@ const calculatePercentage = (count, total) => {
 const calculateTotalCredits = (grants) => {
     if (!grants || !Array.isArray(grants)) return 0
     return grants.reduce((total, grant) => {
-        const grantValue = grant?.amount?.monetary?.value || 0
-        return total + grantValue
+        const grantCredits = grant?.credits || 0
+        return total + grantCredits
     }, 0)
+}
+
+const calculateTotalUsage = (grants) => {
+    if (!grants || !Array.isArray(grants)) return 0
+    return grants.reduce((total, grant) => {
+        const usage = grant?.usage || 0
+        return total + usage
+    }, 0)
+}
+
+const calculateAvailableCredits = (grants) => {
+    if (!grants || !Array.isArray(grants)) return 0
+    const totalCredits = calculateTotalCredits(grants)
+    const totalUsage = calculateTotalUsage(grants)
+    return Math.max(0, totalCredits - totalUsage)
 }
 
 const AccountSettings = () => {
@@ -101,8 +116,15 @@ const AccountSettings = () => {
     const totalCredits = useMemo(() => {
         return creditsBalance ? calculateTotalCredits(creditsBalance.grants) : 0
     }, [creditsBalance])
+
+    const totalUsage = useMemo(() => {
+        return creditsBalance ? calculateTotalUsage(creditsBalance.grants) : 0
+    }, [creditsBalance])
+
+    const availableCredits = useMemo(() => {
+        return creditsBalance ? calculateAvailableCredits(creditsBalance.grants) : 0
+    }, [creditsBalance])
     const [creditsPackages, setCreditsPackages] = useState([])
-    const [usageWithCredits, setUsageWithCredits] = useState(null)
     const [openCreditsDialog, setOpenCreditsDialog] = useState(false)
     const [selectedPackage, setSelectedPackage] = useState(null)
     const [isPurchasingCredits, setIsPurchasingCredits] = useState(false)
@@ -177,12 +199,6 @@ const AccountSettings = () => {
             setCreditsPackages(getCreditsPackagesApi.data)
         }
     }, [getCreditsPackagesApi.data])
-
-    useEffect(() => {
-        if (getUsageWithCreditsApi.data) {
-            setUsageWithCredits(getUsageWithCreditsApi.data)
-        }
-    }, [getUsageWithCreditsApi.data])
 
     useEffect(() => {
         if (openRemoveSeatsDialog || openAddSeatsDialog || openCreditsDialog) {
@@ -849,21 +865,21 @@ const AccountSettings = () => {
                                         <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
                                             <Typography variant='body2'>Available Credits:</Typography>
                                             <Typography sx={{ ml: 1, color: theme.palette.success.dark }} variant='h3'>
+                                                {getCreditsBalanceApi.loading ? <CircularProgress size={16} /> : availableCredits || 0}
+                                            </Typography>
+                                        </Stack>
+                                        <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
+                                            <Typography variant='body2'>Credits Used:</Typography>
+                                            <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
+                                                {getCreditsBalanceApi.loading ? <CircularProgress size={16} /> : totalUsage || 0}
+                                            </Typography>
+                                        </Stack>
+                                        <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
+                                            <Typography variant='body2'>Total Credits Purchased:</Typography>
+                                            <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
                                                 {getCreditsBalanceApi.loading ? <CircularProgress size={16} /> : totalCredits || 0}
                                             </Typography>
                                         </Stack>
-                                        {usageWithCredits && (
-                                            <Stack sx={{ alignItems: 'center' }} flexDirection='row'>
-                                                <Typography variant='body2'>Credits Used This Month:</Typography>
-                                                <Typography sx={{ ml: 1, color: 'inherit' }} variant='h3'>
-                                                    {getUsageWithCreditsApi.loading ? (
-                                                        <CircularProgress size={16} />
-                                                    ) : (
-                                                        usageWithCredits?.creditsUsed || 0
-                                                    )}
-                                                </Typography>
-                                            </Stack>
-                                        )}
                                         <Typography
                                             sx={{ opacity: customization.isDarkMode ? 0.7 : 1 }}
                                             variant='body2'
@@ -1641,7 +1657,10 @@ const AccountSettings = () => {
                                 Current Balance
                             </Typography>
                             <Typography variant='h4' color='success.main'>
-                                {totalCredits || 0} Credits
+                                {availableCredits || 0} Available Credits
+                            </Typography>
+                            <Typography variant='body2' color='text.secondary' sx={{ mt: 1 }}>
+                                Total: {totalCredits || 0} | Used: {totalUsage || 0}
                             </Typography>
                         </Box>
 
