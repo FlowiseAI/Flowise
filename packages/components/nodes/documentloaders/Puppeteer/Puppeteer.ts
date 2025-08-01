@@ -135,6 +135,14 @@ class Puppeteer_DocumentLoaders implements INode {
                 placeholder: 'key1, key2, key3.nestedKey1',
                 optional: true,
                 additionalParams: true
+            },
+            {
+                label: 'Browser Executable File Path (Optional)',
+                name: 'executablePath',
+                type: 'string',
+                placeholder: 'For example C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+                optional: true,
+                description: 'Sometimes puppeteer cannot find/launch the browser executable without a specific path.'
             }
         ]
         this.outputs = [
@@ -159,9 +167,10 @@ class Puppeteer_DocumentLoaders implements INode {
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
         const selectedLinks = nodeData.inputs?.selectedLinks as string[]
         let limit = parseInt(nodeData.inputs?.limit as string)
-        let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as PuppeteerLifeCycleEvent
-        let waitForSelector = nodeData.inputs?.waitForSelector as string
-        let cssSelector = nodeData.inputs?.cssSelector as string
+        const waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as PuppeteerLifeCycleEvent
+        const waitForSelector = nodeData.inputs?.waitForSelector as string
+        const cssSelector = nodeData.inputs?.cssSelector as string
+        const executablePath = nodeData.inputs?.executablePath as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
         const orgId = options.orgId
@@ -184,7 +193,7 @@ class Puppeteer_DocumentLoaders implements INode {
                     launchOptions: {
                         args: ['--no-sandbox'],
                         headless: 'new',
-                        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+                        executablePath
                     }
                 }
                 if (waitUntilGoToOption) {
