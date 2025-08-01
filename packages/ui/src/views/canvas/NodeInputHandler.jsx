@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useContext } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { cloneDeep } from 'lodash'
 import showdown from 'showdown'
+import parser from 'html-react-parser'
 
 // material-ui
 import { useTheme, styled } from '@mui/material/styles'
@@ -966,7 +967,7 @@ const NodeInputHandler = ({
                                 }}
                             >
                                 <IconAlertTriangle size={30} color='orange' />
-                                <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>{inputParam.warning}</span>
+                                <span style={{ color: 'rgb(116,66,16)', marginLeft: 10 }}>{parser(inputParam.warning)}</span>
                             </div>
                         )}
                         {inputParam.type === 'credential' && (
