@@ -27,7 +27,7 @@ export class CustomTemplate implements ICustomTemplate {
     @Column({ nullable: true, type: 'text' })
     type?: string
 
-    @Column({ nullable: true, type: 'text' })
+    @Column({ nullable: false, type: 'text' })
     workspaceId: string
 
     @Column({ type: 'timestamp' })
