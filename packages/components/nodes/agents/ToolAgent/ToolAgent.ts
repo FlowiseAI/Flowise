@@ -116,7 +116,12 @@ class ToolAgent_Agents implements INode {
     }
 
     async init(nodeData: INodeData, input: string, options: ICommonObject): Promise<any> {
-        return prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input, sseStreamer: options.sseStreamer })
+        return prepareAgent(nodeData, options, {
+            sessionId: this.sessionId,
+            chatId: options.chatId,
+            input,
+            sseStreamer: options.sseStreamer
+        })
     }
 
     async run(nodeData: INodeData, input: string, options: ICommonObject): Promise<string | ICommonObject> {
@@ -141,7 +146,12 @@ class ToolAgent_Agents implements INode {
             }
         }
 
-        const executor = await prepareAgent(nodeData, options, { sessionId: this.sessionId, chatId: options.chatId, input, sseStreamer: options.sseStreamer })
+        const executor = await prepareAgent(nodeData, options, {
+            sessionId: this.sessionId,
+            chatId: options.chatId,
+            input,
+            sseStreamer: options.sseStreamer
+        })
 
         const loggerHandler = new ConsoleCallbackHandler(options.logger, options?.orgId)
         const callbacks = await additionalCallbacks(nodeData, options)
