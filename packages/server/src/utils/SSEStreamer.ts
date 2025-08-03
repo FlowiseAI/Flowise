@@ -38,7 +38,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
             startTime: Date.now(),
             status: 'active'
         })
-        console.log(`[SSEStreamer] Added MCP connection: ${connectionId}`)
     }
 
     markMcpConnectionCompleting(chatId: string, toolName?: string) {
@@ -46,16 +45,13 @@ export class SSEStreamer implements IServerSideEventStreamer {
         const connection = this.activeMcpConnections.get(connectionId)
         if (connection) {
             connection.status = 'completing'
-            console.log(`[SSEStreamer] Marking MCP connection as completing: ${connectionId}`)
         }
     }
 
     removeMcpConnection(chatId: string, toolName?: string) {
         const connectionId = `${chatId}:${toolName || 'unknown'}`
         this.activeMcpConnections.delete(connectionId)
-        console.log(`[SSEStreamer] Removed MCP connection: ${connectionId}`)
 
-        // Check if any active connections remain for this chatId
         const hasActiveConnections = Array.from(this.activeMcpConnections.keys()).some((key) => key.startsWith(`${chatId}:`))
 
         if (!hasActiveConnections && this.clients[chatId]?.pendingRemoval) {
@@ -72,8 +68,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
         if (client) {
             // Check if there are active MCP connections for this chatId
             if (this.hasMcpConnections(chatId)) {
-                console.log(`[SSEStreamer] Delaying client removal for chatId: ${chatId} due to active MCP connections`)
-                // Mark client for pending removal but don't close it yet
                 client.pendingRemoval = true
                 return
             }
@@ -85,7 +79,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
     forceRemoveClient(chatId: string) {
         const client = this.clients[chatId]
         if (client) {
-            console.log(`[SSEStreamer] Force removing client for chatId: ${chatId}`)
             const clientResponse = {
                 event: 'end',
                 data: '[DONE]'
