@@ -172,8 +172,6 @@ class ToolAgent_Agents implements INode {
             const handler = new CustomChainHandler(sseStreamer, chatId)
             const allCallbacks = [loggerHandler, handler, ...callbacks]
 
-            console.log("[Tool Agent] This is from the 'shouldStreamResponse", chatId, sseStreamer)
-
             // Add detailed streaming handler if enabled
             if (enableDetailedStreaming && customStreamingHandler) {
                 allCallbacks.push(customStreamingHandler)
@@ -211,8 +209,6 @@ class ToolAgent_Agents implements INode {
             }
         } else {
             const allCallbacks = [loggerHandler, ...callbacks]
-
-            console.log("[Tool Agent] This is from the Else 'shouldStreamResponse", chatId, sseStreamer)
 
             // Add detailed streaming handler if enabled
             if (enableDetailedStreaming && customStreamingHandler) {

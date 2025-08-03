@@ -95,9 +95,8 @@ export class MCPToolkit extends BaseToolkit {
             hasStreaming =
                 (capabilities as any)?.notifications?.streaming === true ||
                 (capabilities as any)?.experimental?.notifications?.streaming === true
-            console.log(`🔍 [MCP Core] Server streaming capability:`, hasStreaming)
         } catch (error) {
-            console.log(`⚠️ [MCP Core] Could not detect streaming capabilities, falling back to non-streaming:`, error.message)
+            console.error(`⚠️ [MCP Core] Could not detect streaming capabilities, falling back to non-streaming:`, error.message)
         }
 
         return { client, hasStreaming }
@@ -125,21 +124,6 @@ export class MCPToolkit extends BaseToolkit {
             if (this.client === null) {
                 throw new Error('Client is not initialized')
             }
-
-            // Log the incoming tool definition for debugging
-            console.log(
-                `📋 [MCP Tool Definition] ${tool.name}:`,
-                JSON.stringify(
-                    {
-                        name: tool.name,
-                        description: tool.description,
-                        annotations: tool.annotations,
-                        inputSchema: tool.inputSchema ? 'present' : 'missing'
-                    },
-                    null,
-                    2
-                )
-            )
 
             return await MCPTool({
                 toolkit: this,
@@ -175,13 +159,8 @@ export async function MCPTool({
     const { client, hasStreaming } = await toolkit.createClient()
     await client.close()
 
-    // Check if tool has streaming annotations
     const toolHasStreaming = annotations.streaming_enabled === true
     const shouldUseStreaming = hasStreaming && toolHasStreaming
-
-    console.log(
-        `🔍 [MCP Tool] ${name} - Server streaming: ${hasStreaming}, Tool streaming: ${toolHasStreaming}, Using streaming: ${shouldUseStreaming}`
-    )
 
     return tool(
         async (input, config): Promise<string> => {
@@ -267,7 +246,6 @@ async function handleToolResponse(
     }
 
     // Streaming tools wait for completion
-    console.log(`🔄 [MCP Tool] Waiting for streaming completion for ${name}`)
     return waitForStreamingCompletion(contentString, sseStreamer, chatId, name, notifications)
 }
 
@@ -286,7 +264,6 @@ function waitForStreamingCompletion(
             completed = true
 
             const fullResponse = buildFullResponse(contentString, notifications)
-            console.log(`${reason} [MCP Tool] ${name} completed, returning full result`)
             resolve(fullResponse)
         }
 
@@ -342,15 +319,12 @@ function setupNotificationHandlers(
 
         // Detect completion based on tool's annotation signals
         if (completionSignals.includes(logger)) {
-            console.log(`🎯 [MCP Tool] Completion signal detected: ${logger} for ${toolName}`)
-
             // Add visual separation before LLM response
             sseStreamer.streamTokenEvent(chatId, '\n\n')
 
             // Trigger cleanup after brief delay
             setTimeout(() => {
                 sseStreamer.removeMcpConnection(chatId, toolName)
-                console.log(`🔧 [MCP Tool] Auto-cleanup completed for ${toolName}`)
             }, MCP_STREAMING_CONFIG.NOTIFICATION_DELAY)
         }
     })
