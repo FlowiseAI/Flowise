@@ -196,7 +196,7 @@ export async function MCPTool({
 }
 
 async function executeMCPTool(toolkit: MCPToolkit, name: string, input: any, config: any, annotations: any = {}): Promise<string> {
-    const { chatId, sseStreamer } = extractConfig(config)
+    const { chatId, sseStreamer } = extractConfig(config, input)
     const { client, hasStreaming } = await toolkit.createClient()
     const notifications: string[] = []
 
@@ -218,10 +218,14 @@ async function executeMCPTool(toolkit: MCPToolkit, name: string, input: any, con
     }
 }
 
-function extractConfig(config: any): { chatId: string; sseStreamer: any } {
+function extractConfig(config: any, input?: any): { chatId: string; sseStreamer: any } {
+    const configChatId = config?.configurable?.flowise_chatId
+    const configSseStreamer = config?.configurable?.sseStreamer
+    const inputChatId = input?.flowise_chatId
+
     return {
-        chatId: config?.configurable?.flowise_chatId,
-        sseStreamer: config?.configurable?.sseStreamer
+        chatId: configChatId || inputChatId,
+        sseStreamer: configSseStreamer
     }
 }
 

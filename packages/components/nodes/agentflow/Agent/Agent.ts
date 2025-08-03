@@ -1411,14 +1411,6 @@ class Agent_Agentflow implements INode {
                 let isToolRequireHumanInput =
                     (selectedTool as any).requiresHumanInput && (!iterationContext || Object.keys(iterationContext).length === 0)
 
-                const flowConfig = {
-                    chatflowId: options.chatflowid,
-                    sessionId: options.sessionId,
-                    chatId: options.chatId,
-                    input: input,
-                    state: options.agentflowRuntime?.state
-                }
-
                 if (isToolRequireHumanInput) {
                     const toolCallDetails = '```json\n' + JSON.stringify(toolCall, null, 2) + '\n```'
                     const responseContent = response.content + `\nAttempting to use tool:\n${toolCallDetails}`
@@ -1434,7 +1426,17 @@ class Agent_Agentflow implements INode {
 
                 try {
                     //@ts-ignore
-                    let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+                    let toolOutput = await selectedTool.invoke(toolCall.args, {
+                        signal: abortController?.signal,
+                        configurable: {
+                            sessionId: options.sessionId,
+                            chatId: chatId,
+                            input: input,
+                            state: options.agentflowRuntime?.state,
+                            sseStreamer: sseStreamer,
+                            flowise_chatId: chatId
+                        }
+                    })
 
                     if (options.analyticHandlers && toolIds) {
                         await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
@@ -1679,14 +1681,6 @@ class Agent_Agentflow implements INode {
                 let parsedDocs
                 let parsedArtifacts
 
-                const flowConfig = {
-                    chatflowId: options.chatflowid,
-                    sessionId: options.sessionId,
-                    chatId: options.chatId,
-                    input: input,
-                    state: options.agentflowRuntime?.state
-                }
-
                 if (humanInput.type === 'reject') {
                     messages.pop()
                     const toBeRemovedTool = toolsInstance.find((tool) => tool.name === toolCall.name)
@@ -1706,7 +1700,17 @@ class Agent_Agentflow implements INode {
 
                     try {
                         //@ts-ignore
-                        let toolOutput = await selectedTool.call(toolCall.args, { signal: abortController?.signal }, undefined, flowConfig)
+                        let toolOutput = await selectedTool.invoke(toolCall.args, {
+                            signal: abortController?.signal,
+                            configurable: {
+                                sessionId: options.sessionId,
+                                chatId: chatId,
+                                input: input,
+                                state: options.agentflowRuntime?.state,
+                                sseStreamer: sseStreamer,
+                                flowise_chatId: chatId
+                            }
+                        })
 
                         if (options.analyticHandlers && toolIds) {
                             await options.analyticHandlers.onToolEnd(toolIds, toolOutput)
