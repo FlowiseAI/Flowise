@@ -313,6 +313,9 @@ export const getPastChatHistoryImageMessages = async (
         if (message.additional_kwargs && message.additional_kwargs.fileUploads) {
             // example: [{"type":"stored-file","name":"0_DiXc4ZklSTo3M8J4.jpg","mime":"image/jpeg"}]
             const fileUploads = message.additional_kwargs.fileUploads
+            const artifacts = message.additional_kwargs.artifacts
+            const fileAnnotations = message.additional_kwargs.fileAnnotations
+            const usedTools = message.additional_kwargs.usedTools
             try {
                 let messageWithFileUploads = ''
                 const uploads: IFileUpload[] = typeof fileUploads === 'string' ? JSON.parse(fileUploads) : fileUploads
@@ -358,22 +361,83 @@ export const getPastChatHistoryImageMessages = async (
                     }
                 }
                 const messageContent = messageWithFileUploads ? `${messageWithFileUploads}\n\n${message.content}` : message.content
+                const hasArtifacts = artifacts && Array.isArray(artifacts) && artifacts.length > 0
+                const hasFileAnnotations = fileAnnotations && Array.isArray(fileAnnotations) && fileAnnotations.length > 0
+                const hasUsedTools = usedTools && Array.isArray(usedTools) && usedTools.length > 0
+
                 if (imageContents.length > 0) {
-                    chatHistory.push({
+                    const imageMessage: any = {
                         role: messageRole,
                         content: imageContents
-                    })
+                    }
+                    if (hasArtifacts || hasFileAnnotations || hasUsedTools) {
+                        imageMessage.additional_kwargs = {}
+                        if (hasArtifacts) imageMessage.additional_kwargs.artifacts = artifacts
+                        if (hasFileAnnotations) imageMessage.additional_kwargs.fileAnnotations = fileAnnotations
+                        if (hasUsedTools) imageMessage.additional_kwargs.usedTools = usedTools
+                    }
+                    chatHistory.push(imageMessage)
                     transformedPastMessages.push({
                         role: messageRole,
                         content: [...JSON.parse((pastChatHistory[i] as any).additional_kwargs.fileUploads)]
                     })
                 }
-                chatHistory.push({
+
+                const contentMessage: any = {
                     role: messageRole,
                     content: messageContent
-                })
+                }
+                if (hasArtifacts || hasFileAnnotations || hasUsedTools) {
+                    contentMessage.additional_kwargs = {}
+                    if (hasArtifacts) contentMessage.additional_kwargs.artifacts = artifacts
+                    if (hasFileAnnotations) contentMessage.additional_kwargs.fileAnnotations = fileAnnotations
+                    if (hasUsedTools) contentMessage.additional_kwargs.usedTools = usedTools
+                }
+                chatHistory.push(contentMessage)
             } catch (e) {
                 // failed to parse fileUploads, continue with text only
+                const hasArtifacts = artifacts && Array.isArray(artifacts) && artifacts.length > 0
+                const hasFileAnnotations = fileAnnotations && Array.isArray(fileAnnotations) && fileAnnotations.length > 0
+                const hasUsedTools = usedTools && Array.isArray(usedTools) && usedTools.length > 0
+
+                const errorMessage: any = {
+                    role: messageRole,
+                    content: message.content
+                }
+                if (hasArtifacts || hasFileAnnotations || hasUsedTools) {
+                    errorMessage.additional_kwargs = {}
+                    if (hasArtifacts) errorMessage.additional_kwargs.artifacts = artifacts
+                    if (hasFileAnnotations) errorMessage.additional_kwargs.fileAnnotations = fileAnnotations
+                    if (hasUsedTools) errorMessage.additional_kwargs.usedTools = usedTools
+                }
+                chatHistory.push(errorMessage)
+            }
+        } else if (message.additional_kwargs) {
+            const hasArtifacts =
+                message.additional_kwargs.artifacts &&
+                Array.isArray(message.additional_kwargs.artifacts) &&
+                message.additional_kwargs.artifacts.length > 0
+            const hasFileAnnotations =
+                message.additional_kwargs.fileAnnotations &&
+                Array.isArray(message.additional_kwargs.fileAnnotations) &&
+                message.additional_kwargs.fileAnnotations.length > 0
+            const hasUsedTools =
+                message.additional_kwargs.usedTools &&
+                Array.isArray(message.additional_kwargs.usedTools) &&
+                message.additional_kwargs.usedTools.length > 0
+
+            if (hasArtifacts || hasFileAnnotations || hasUsedTools) {
+                const messageAdditionalKwargs: any = {}
+                if (hasArtifacts) messageAdditionalKwargs.artifacts = message.additional_kwargs.artifacts
+                if (hasFileAnnotations) messageAdditionalKwargs.fileAnnotations = message.additional_kwargs.fileAnnotations
+                if (hasUsedTools) messageAdditionalKwargs.usedTools = message.additional_kwargs.usedTools
+
+                chatHistory.push({
+                    role: messageRole,
+                    content: message.content,
+                    additional_kwargs: messageAdditionalKwargs
+                })
+            } else {
                 chatHistory.push({
                     role: messageRole,
                     content: message.content

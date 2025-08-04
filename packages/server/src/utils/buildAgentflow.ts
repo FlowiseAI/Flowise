@@ -1584,12 +1584,44 @@ export const executeAgentFlow = async ({
                     role: message.role === 'userMessage' ? 'user' : 'assistant'
                 }
 
-                // Only add additional_kwargs when fileUploads or artifacts exists and is not empty
-                if ((message.fileUploads && message.fileUploads !== '') || (message.artifacts && message.artifacts !== '')) {
+                const hasFileUploads = message.fileUploads && message.fileUploads !== ''
+                const hasArtifacts = message.artifacts && message.artifacts !== ''
+                const hasFileAnnotations = message.fileAnnotations && message.fileAnnotations !== ''
+                const hasUsedTools = message.usedTools && message.usedTools !== ''
+
+                if (hasFileUploads || hasArtifacts || hasFileAnnotations || hasUsedTools) {
                     mappedMessage.additional_kwargs = {}
 
-                    if (message.fileUploads && message.fileUploads !== '') {
-                        mappedMessage.additional_kwargs.fileUploads = message.fileUploads
+                    if (hasFileUploads) {
+                        try {
+                            mappedMessage.additional_kwargs.fileUploads = JSON.parse(message.fileUploads!)
+                        } catch {
+                            mappedMessage.additional_kwargs.fileUploads = message.fileUploads
+                        }
+                    }
+
+                    if (hasArtifacts) {
+                        try {
+                            mappedMessage.additional_kwargs.artifacts = JSON.parse(message.artifacts!)
+                        } catch {
+                            mappedMessage.additional_kwargs.artifacts = message.artifacts
+                        }
+                    }
+
+                    if (hasFileAnnotations) {
+                        try {
+                            mappedMessage.additional_kwargs.fileAnnotations = JSON.parse(message.fileAnnotations!)
+                        } catch {
+                            mappedMessage.additional_kwargs.fileAnnotations = message.fileAnnotations
+                        }
+                    }
+
+                    if (hasUsedTools) {
+                        try {
+                            mappedMessage.additional_kwargs.usedTools = JSON.parse(message.usedTools!)
+                        } catch {
+                            mappedMessage.additional_kwargs.usedTools = message.usedTools
+                        }
                     }
                 }
 
