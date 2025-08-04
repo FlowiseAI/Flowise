@@ -29,7 +29,7 @@
         "aai-embed": "workspace:*",
         "add": "^2.0.6",
         "aws-crt": "^1.15.22",
-        "axios": "1.7.9",
+        "axios": "1.8.2",
         "chromadb": "^1.10.0",
         "cohere-ai": "^7.7.5",
         "cors": "^2.8.5",
