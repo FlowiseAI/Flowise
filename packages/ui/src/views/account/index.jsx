@@ -114,15 +114,15 @@ const AccountSettings = () => {
     const [creditsBalance, setCreditsBalance] = useState(null)
 
     const totalCredits = useMemo(() => {
-        return creditsBalance ? calculateTotalCredits(creditsBalance.grants) : 0
+        return creditsBalance ? creditsBalance.totalCredits || 0 : 0
     }, [creditsBalance])
 
     const totalUsage = useMemo(() => {
-        return creditsBalance ? calculateTotalUsage(creditsBalance.grants) : 0
+        return creditsBalance ? creditsBalance.totalUsage || 0 : 0
     }, [creditsBalance])
 
     const availableCredits = useMemo(() => {
-        return creditsBalance ? calculateAvailableCredits(creditsBalance.grants) : 0
+        return creditsBalance ? creditsBalance.availableCredits || 0 : 0
     }, [creditsBalance])
     const [creditsPackages, setCreditsPackages] = useState([])
     const [openCreditsDialog, setOpenCreditsDialog] = useState(false)
@@ -514,12 +514,14 @@ const AccountSettings = () => {
 
             const response = await purchaseCreditsApi.request(packageType)
 
-            if (response.data?.success) {
+            // Check for success - either explicit success flag or 200 status code
+            if (response.data?.success || response.status === 200) {
                 enqueueSnackbar({
                     message: 'Credits purchased successfully!',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
+                        autoHideDuration: 10000,
                         action: (key) => (
                             <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
                                 <IconX />

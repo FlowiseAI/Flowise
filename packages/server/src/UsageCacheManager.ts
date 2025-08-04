@@ -162,6 +162,51 @@ export class UsageCacheManager {
         this.set(cacheKey, updatedData, 3600000) // Cache for 1 hour
     }
 
+    public async getCreditDataFromCache(customerId: string) {
+        const cacheKey = `credits:${customerId}`
+        return await this.get<{
+            totalCredits: number
+            totalUsage: number
+            availableCredits: number
+            lastUpdated: number
+        }>(cacheKey)
+    }
+
+    public async updateCreditDataToCache(
+        customerId: string,
+        creditData: {
+            totalCredits: number
+            totalUsage: number
+            availableCredits: number
+            lastUpdated: number
+        }
+    ) {
+        const cacheKey = `credits:${customerId}`
+        // No TTL for credit data to ensure persistence
+        this.set(cacheKey, creditData)
+    }
+
+    public async incrementCreditUsage(customerId: string, quantity: number) {
+        if (!customerId || quantity <= 0) {
+            throw new Error('Invalid customer ID or quantity')
+        }
+
+        const existingData = await this.getCreditDataFromCache(customerId)
+        if (!existingData) {
+            throw new Error(`No credit data found for customer ${customerId}. Please purchase credits first.`)
+        }
+
+        const newUsage = existingData.totalUsage + quantity
+        const newAvailable = Math.max(0, existingData.totalCredits - newUsage)
+
+        await this.updateCreditDataToCache(customerId, {
+            totalCredits: existingData.totalCredits,
+            totalUsage: newUsage,
+            availableCredits: newAvailable,
+            lastUpdated: Date.now()
+        })
+    }
+
     public async get<T>(key: string): Promise<T | null> {
         if (!this.cache) await this.initialize()
         const value = await this.cache.get<T>(key)

@@ -939,13 +939,21 @@ export class StripeManager {
                 } as any,
                 category: 'paid',
                 name: `${selectedPackage.credits} Credits Purchase`,
-                metadata: {
-                    usage_count: '0'
-                }
+                metadata: {}
             })
 
-            // Clear cache
-            await this.cacheManager.del(`credits:balance:${customerId}`)
+            // Update Redis with new credit purchase
+            const existingCredits = await this.cacheManager.getCreditDataFromCache(customerId)
+            const newTotalCredits = (existingCredits?.totalCredits || 0) + selectedPackage.credits
+            const currentUsage = existingCredits?.totalUsage || 0
+            const newAvailableCredits = newTotalCredits - currentUsage
+
+            await this.cacheManager.updateCreditDataToCache(customerId, {
+                totalCredits: newTotalCredits,
+                totalUsage: currentUsage,
+                availableCredits: newAvailableCredits,
+                lastUpdated: Date.now()
+            })
 
             return {
                 invoice: paidInvoice,
@@ -978,12 +986,28 @@ export class StripeManager {
                 throw new Error('Subscription ID is required')
             }
 
+            // Get customer ID from subscription
             const subscription = await this.stripe.subscriptions.retrieve(subscriptionId)
             const customerId = subscription.customer as string
 
             if (!customerId) {
                 throw new Error('Customer ID not found in subscription')
             }
+
+            // Try to get credit data from Redis first
+            const cachedCredits = await this.cacheManager.getCreditDataFromCache(customerId)
+            if (cachedCredits) {
+                return {
+                    balance: cachedCredits.availableCredits * 100, // Convert to cents for backward compatibility
+                    balanceInDollars: cachedCredits.availableCredits,
+                    totalCredits: cachedCredits.totalCredits,
+                    totalUsage: cachedCredits.totalUsage,
+                    availableCredits: cachedCredits.availableCredits,
+                    grants: [] // Simplified for Redis-based approach
+                }
+            }
+
+            // Fallback to Stripe if no Redis data
 
             const creditBalance = await this.stripe.billing.creditBalanceSummary.retrieve({
                 customer: customerId,
@@ -1027,6 +1051,14 @@ export class StripeManager {
             })
 
             const availableCredits = Math.max(0, totalCredits - totalUsage)
+
+            // Store in Redis for future requests
+            await this.cacheManager.updateCreditDataToCache(customerId, {
+                totalCredits,
+                totalUsage,
+                availableCredits,
+                lastUpdated: Date.now()
+            })
 
             return {
                 balance,
@@ -1221,80 +1253,20 @@ export class StripeManager {
         }
 
         try {
-            logger.info(`[updateCreditGrantUsage] Starting update for customer ${customerId}, quantity: ${quantity}`)
+            logger.info(`[updateCreditGrantUsage] Starting Redis update for customer ${customerId}, quantity: ${quantity}`)
 
-            // Get all credit grants for this customer (not just active ones)
-            const grants = await this.stripe.billing.creditGrants.list({
-                customer: customerId,
-                limit: 100
-            })
+            // Update credit usage in Redis using customer ID
+            await this.cacheManager.incrementCreditUsage(customerId, quantity)
 
-            logger.info(`[updateCreditGrantUsage] Found ${grants.data.length} credit grants for customer ${customerId}`)
-
-            if (grants.data.length === 0) {
-                logger.info('[updateCreditGrantUsage] No credit grants found for customer')
-                return
-            }
-
-            // Sort by creation date (oldest first) to use FIFO approach
-            grants.data.sort((a, b) => a.created - b.created)
-
-            // Find the grant that should be used for tracking usage
-            // We'll use the first grant that still has available credits or the oldest one
-            let grantToUpdate = grants.data.find((grant) => {
-                const effectiveBalance = (grant as any).effective_balance?.monetary?.value || 0
-                logger.debug(`[updateCreditGrantUsage] Grant ${grant.id} has effective balance: ${effectiveBalance}`)
-                return effectiveBalance > 0
-            })
-
-            // If no grant has remaining balance, use the most recent one for tracking
-            if (!grantToUpdate && grants.data.length > 0) {
-                grantToUpdate = grants.data[grants.data.length - 1]
-                logger.info(`[updateCreditGrantUsage] No grants with balance found, using most recent: ${grantToUpdate.id}`)
-            }
-
-            if (!grantToUpdate) {
-                logger.warn('[updateCreditGrantUsage] No suitable grant found for usage tracking')
-                return
-            }
-
-            // Validate metadata access
-            const metadata = grantToUpdate.metadata || {}
-            const currentUsageStr = metadata.usage_count || '0'
-            const currentUsage = parseInt(currentUsageStr)
-
-            if (isNaN(currentUsage)) {
-                logger.error(`[updateCreditGrantUsage] Invalid usage_count in metadata: ${currentUsageStr}`)
-                return
-            }
-
-            const newUsage = currentUsage + quantity
-
-            logger.info(`[updateCreditGrantUsage] Updating grant ${grantToUpdate.id}: current usage ${currentUsage} -> ${newUsage}`)
-
-            const updateResult = await this.stripe.billing.creditGrants.update(grantToUpdate.id, {
-                metadata: {
-                    ...metadata,
-                    usage_count: newUsage.toString()
-                }
-            })
-
-            logger.info(`[updateCreditGrantUsage] Successfully updated credit grant usage for grant ${grantToUpdate.id}`)
-            logger.debug(`[updateCreditGrantUsage] Updated metadata:`, updateResult.metadata)
-
-            // Clear cache to ensure fresh data on next request
-            if (this.cacheManager) {
-                await this.cacheManager.del(`credits:balance:${customerId}`)
-                logger.debug(`[updateCreditGrantUsage] Cleared cache for customer ${customerId}`)
-            }
+            logger.info(`[updateCreditGrantUsage] Successfully updated credit usage in Redis for customer ${customerId}`)
         } catch (error) {
-            logger.error('[updateCreditGrantUsage] Error updating credit grant usage:', error)
+            logger.error('[updateCreditGrantUsage] Error updating credit usage in Redis:', error)
             // Log additional details for debugging
             if (error instanceof Error) {
                 logger.error('[updateCreditGrantUsage] Error message:', error.message)
                 logger.debug('[updateCreditGrantUsage] Error stack:', error.stack)
             }
-            // Don't throw here as meter usage was already reported successfully
+            throw error
         }
     }
 
