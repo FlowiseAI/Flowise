@@ -77,7 +77,6 @@ class Agent_Agentflow implements INode {
     documentation?: string
     credential: INodeParams
     inputs: INodeParams[]
-    private currentContainerId: string | null = null
 
     constructor() {
         this.label = 'Agent'
