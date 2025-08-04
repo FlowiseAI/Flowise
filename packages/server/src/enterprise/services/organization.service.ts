@@ -4,12 +4,13 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { generateId } from '../../utils'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Telemetry } from '../../utils/telemetry'
-import { Organization, OrganizationName } from '../database/entities/organization.entity'
+import { Organization, OrganizationName, OrganizationStatus } from '../database/entities/organization.entity'
 import { isInvalidName, isInvalidUUID } from '../utils/validation.util'
 import { UserErrorMessage, UserService } from './user.service'
 
 export const enum OrganizationErrorMessage {
     INVALID_ORGANIZATION_ID = 'Invalid Organization Id',
+    INVALID_ORGANIZATION_STATUS = 'Invalid Organization Status',
     INVALID_ORGANIZATION_NAME = 'Invalid Organization Name',
     ORGANIZATION_NOT_FOUND = 'Organization Not Found',
     ORGANIZATION_FOUND_MULTIPLE = 'Organization Found Multiple',
@@ -32,6 +33,12 @@ export class OrganizationService {
         if (isInvalidUUID(id)) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, OrganizationErrorMessage.INVALID_ORGANIZATION_ID)
     }
 
+    public validateOrganizationStatus(status: string | undefined) {
+        if (status && !Object.values(OrganizationStatus).includes(status as OrganizationStatus)) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, OrganizationErrorMessage.INVALID_ORGANIZATION_STATUS)
+        }
+    }
+
     public async readOrganizationById(id: string | undefined, queryRunner: QueryRunner) {
         this.validateOrganizationId(id)
         return await queryRunner.manager.findOneBy(Organization, { id })
@@ -49,6 +56,10 @@ export class OrganizationService {
         return await queryRunner.manager.findOneBy(Organization, { name })
     }
 
+    public async readOrganizationBySubscriptionId(subscriptionId: typeof Organization.prototype.subscriptionId, queryRunner: QueryRunner) {
+        return await queryRunner.manager.findOneBy(Organization, { subscriptionId })
+    }
+
     public async countOrganizations(queryRunner: QueryRunner) {
         return await queryRunner.manager.count(Organization)
     }
@@ -59,6 +70,8 @@ export class OrganizationService {
 
     public createNewOrganization(data: Partial<Organization>, queryRunner: QueryRunner, isRegister: boolean = false) {
         this.validateOrganizationName(data.name, isRegister)
+        // REMARK: status is not allowed to be set when creating a new organization
+        if (data.status) delete data.status
         data.updatedBy = data.createdBy
         data.id = generateId()
 
@@ -91,30 +104,20 @@ export class OrganizationService {
         return newOrganization
     }
 
-    public async updateOrganization(newOrganizationData: Partial<Organization>) {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
+    public async updateOrganization(newOrganizationData: Partial<Organization>, queryRunner: QueryRunner, fromStripe: boolean = false) {
         const oldOrganizationData = await this.readOrganizationById(newOrganizationData.id, queryRunner)
         if (!oldOrganizationData) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, OrganizationErrorMessage.ORGANIZATION_NOT_FOUND)
         const user = await this.userService.readUserById(newOrganizationData.updatedBy, queryRunner)
         if (!user) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, UserErrorMessage.USER_NOT_FOUND)
-        if (newOrganizationData.name) {
-            this.validateOrganizationName(newOrganizationData.name)
-        }
+        if (newOrganizationData.name) this.validateOrganizationName(newOrganizationData.name)
+        // TODO: allow flowise's employees to modify organization status
+        // REMARK: status is only allowed to be set when updating an organization from stripe
+        if (fromStripe === true && newOrganizationData.status) this.validateOrganizationStatus(newOrganizationData.status)
+        else if (newOrganizationData.status) delete newOrganizationData.status
         newOrganizationData.createdBy = oldOrganizationData.createdBy
 
         let updateOrganization = queryRunner.manager.merge(Organization, oldOrganizationData, newOrganizationData)
-        try {
-            await queryRunner.startTransaction()
-            await this.saveOrganization(updateOrganization, queryRunner)
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await this.saveOrganization(updateOrganization, queryRunner)
 
         return updateOrganization
     }

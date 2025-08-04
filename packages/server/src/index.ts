@@ -31,10 +31,11 @@ import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import 'global-agent/bootstrap'
 import { UsageCacheManager } from './UsageCacheManager'
 import { Workspace } from './enterprise/database/entities/workspace.entity'
-import { Organization } from './enterprise/database/entities/organization.entity'
+import { Organization, OrganizationStatus } from './enterprise/database/entities/organization.entity'
 import { GeneralRole, Role } from './enterprise/database/entities/role.entity'
 import { migrateApiKeysFromJsonToDb } from './utils/apiKey'
 import { ExpressAdapter } from '@bull-board/express'
+import { StripeWebhooks } from './enterprise/webhooks/stripe'
 
 declare global {
     namespace Express {
@@ -157,6 +158,10 @@ export class App {
     }
 
     async config() {
+        // Add Stripe webhook route BEFORE global JSON middleware to preserve raw body
+        const stripeWebhooks = new StripeWebhooks()
+        this.app.post('/api/v1/webhooks/stripe', express.raw({ type: 'application/json' }), stripeWebhooks.handler)
+
         // Limit is needed to allow sending/receiving base64 encoded string
         const flowise_file_size_limit = process.env.FLOWISE_FILE_SIZE_LIMIT || '50mb'
         this.app.use(express.json({ limit: flowise_file_size_limit }))
@@ -252,6 +257,10 @@ export class App {
                         if (!org) {
                             return res.status(401).json({ error: 'Unauthorized Access' })
                         }
+                        if (org.status == OrganizationStatus.PAST_DUE)
+                            return res.status(402).json({ error: 'Access denied. Your organization has past due payments.' })
+                        if (org.status == OrganizationStatus.UNDER_REVIEW)
+                            return res.status(403).json({ error: 'Access denied. Your organization is under review.' })
                         const subscriptionId = org.subscriptionId as string
                         const customerId = org.customerId as string
                         const features = await this.identityManager.getFeaturesByPlan(subscriptionId)

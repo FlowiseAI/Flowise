@@ -5,6 +5,12 @@ export enum OrganizationName {
     DEFAULT_ORGANIZATION = 'Default Organization'
 }
 
+export enum OrganizationStatus {
+    ACTIVE = 'active',
+    UNDER_REVIEW = 'under_review',
+    PAST_DUE = 'past_due'
+}
+
 @Entity()
 export class Organization {
     @PrimaryGeneratedColumn('uuid')
@@ -18,6 +24,9 @@ export class Organization {
 
     @Column({ type: 'varchar', length: 100, nullable: true })
     subscriptionId?: string
+
+    @Column({ type: 'varchar', length: 20, default: OrganizationStatus.ACTIVE })
+    status: string
 
     @CreateDateColumn()
     createdDate?: Date
