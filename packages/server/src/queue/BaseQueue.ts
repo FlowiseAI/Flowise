@@ -57,22 +57,63 @@ export abstract class BaseQueue {
     }
 
     public createWorker(concurrency: number = WORKER_CONCURRENCY): Worker {
-        this.worker = new Worker(
-            this.queue.name,
-            async (job: Job) => {
-                const start = new Date().getTime()
-                logger.info(`Processing job ${job.id} in ${this.queue.name} at ${new Date().toISOString()}`)
-                const result = await this.processJob(job.data)
-                const end = new Date().getTime()
-                logger.info(`Completed job ${job.id} in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms)`)
-                return result
-            },
-            {
-                connection: this.connection,
-                concurrency
-            }
-        )
-        return this.worker
+        logger.info(`[BaseQueue] Creating worker for queue "${this.queue.name}" with concurrency: ${concurrency}`)
+
+        try {
+            this.worker = new Worker(
+                this.queue.name,
+                async (job: Job) => {
+                    const start = new Date().getTime()
+                    logger.info(`[BaseQueue] Processing job ${job.id} in ${this.queue.name} at ${new Date().toISOString()}`)
+                    try {
+                        const result = await this.processJob(job.data)
+                        const end = new Date().getTime()
+                        logger.info(
+                            `[BaseQueue] Completed job ${job.id} in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms)`
+                        )
+                        return result
+                    } catch (error) {
+                        const end = new Date().getTime()
+                        logger.error(
+                            `[BaseQueue] Job ${job.id} failed in ${this.queue.name} at ${new Date().toISOString()} (${end - start}ms):`,
+                            { error }
+                        )
+                        throw error
+                    }
+                },
+                {
+                    connection: this.connection,
+                    concurrency
+                }
+            )
+
+            // Add error listeners to the worker
+            this.worker.on('error', (err) => {
+                logger.error(`[BaseQueue] Worker error for queue "${this.queue.name}":`, { error: err })
+            })
+
+            this.worker.on('ready', () => {
+                logger.info(`[BaseQueue] Worker ready for queue "${this.queue.name}"`)
+            })
+
+            this.worker.on('closing', () => {
+                logger.info(`[BaseQueue] Worker closing for queue "${this.queue.name}"`)
+            })
+
+            this.worker.on('closed', () => {
+                logger.info(`[BaseQueue] Worker closed for queue "${this.queue.name}"`)
+            })
+
+            this.worker.on('failed', (job, err) => {
+                logger.error(`[BaseQueue] Worker job ${job?.id} failed in queue "${this.queue.name}":`, { error: err })
+            })
+
+            logger.info(`[BaseQueue] Worker created successfully for queue "${this.queue.name}"`)
+            return this.worker
+        } catch (error) {
+            logger.error(`[BaseQueue] Failed to create worker for queue "${this.queue.name}":`, { error })
+            throw error
+        }
     }
 
     public async getJobs(): Promise<Job[]> {

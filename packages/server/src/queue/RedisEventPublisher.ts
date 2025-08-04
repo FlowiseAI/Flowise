@@ -1,5 +1,6 @@
 import { IServerSideEventStreamer } from 'flowise-components'
 import { createClient } from 'redis'
+import logger from '../utils/logger'
 
 export class RedisEventPublisher implements IServerSideEventStreamer {
     private redisPublisher: ReturnType<typeof createClient>
@@ -41,10 +42,55 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
                         : undefined
             })
         }
+
+        this.setupEventListeners()
+    }
+
+    private setupEventListeners() {
+        this.redisPublisher.on('connect', () => {
+            logger.info(`[RedisEventPublisher] Redis client connecting...`)
+        })
+
+        this.redisPublisher.on('ready', () => {
+            logger.info(`[RedisEventPublisher] Redis client ready and connected`)
+        })
+
+        this.redisPublisher.on('error', (err) => {
+            logger.error(`[RedisEventPublisher] Redis client error:`, {
+                error: err,
+                isReady: this.redisPublisher.isReady,
+                isOpen: this.redisPublisher.isOpen
+            })
+        })
+
+        this.redisPublisher.on('end', () => {
+            logger.warn(`[RedisEventPublisher] Redis client connection ended`)
+        })
+
+        this.redisPublisher.on('reconnecting', () => {
+            logger.info(`[RedisEventPublisher] Redis client reconnecting...`)
+        })
+    }
+
+    isConnected() {
+        return this.redisPublisher.isReady
     }
 
     async connect() {
+        logger.info(`[RedisEventPublisher] Connecting to Redis...`)
         await this.redisPublisher.connect()
+
+        // Log connection details after successful connection
+        const connInfo = this.redisPublisher.options?.socket
+        const connInfoString = JSON.stringify(connInfo)
+            .replace(/"username":"[^"]*"/g, '"username":"[REDACTED]"')
+            .replace(/"password":"[^"]*"/g, '"password":"[REDACTED]"')
+        logger.info(`[RedisEventPublisher] Connected to Redis: ${connInfoString}`)
+
+        // Add error event listener
+        this.redisPublisher.on('error', (err) => {
+            logger.error(`[RedisEventPublisher] Redis connection error`, { error: err })
+        })
     }
 
     streamCustomEvent(chatId: string, eventType: string, data: any) {

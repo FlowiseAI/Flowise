@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
+import { secureFetch } from '../../../src/httpSecurity'
 
 export const desc = `Use this when you want to execute a POST request to create or update a resource.`
 
@@ -126,7 +126,7 @@ export class RequestsPostTool extends DynamicStructuredTool {
                 ...this.headers
             }
 
-            const res = await fetch(inputUrl, {
+            const res = await secureFetch(inputUrl, {
                 method: 'POST',
                 headers: requestHeaders,
                 body: JSON.stringify(inputBody)
