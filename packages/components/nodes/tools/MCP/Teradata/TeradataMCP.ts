@@ -113,7 +113,7 @@ class Teradata_MCP implements INode {
         const bearerToken = nodeData.inputs?.bearerToken || getCredentialParam('token', credentialData, nodeData)
         const username = getCredentialParam('tdUsername', credentialData, nodeData)
         const password = getCredentialParam('tdPassword', credentialData, nodeData)
-        
+
         if (bearerToken) {
             serverParams.headers['Authorization'] = `Bearer ${bearerToken}`
         } else if (username && password) {
