@@ -834,7 +834,7 @@ export const getGlobalVariable = async (
                     id: '',
                     updatedDate: new Date(),
                     createdDate: new Date(),
-                    workspaceId: 'dummy'
+                    workspaceId: ''
                 })
             }
         }
