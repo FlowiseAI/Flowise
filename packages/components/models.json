@@ -747,6 +747,14 @@
             "name": "groqChat",
             "models": [
                 {
+                    "label": "openai/gpt-oss-20b",
+                    "name": "openai/gpt-oss-20b"
+                },
+                {
+                    "label": "openai/gpt-oss-120b",
+                    "name": "openai/gpt-oss-120b"
+                },
+                {
                     "label": "meta-llama/llama-4-maverick-17b-128e-instruct",
                     "name": "meta-llama/llama-4-maverick-17b-128e-instruct"
                 },
