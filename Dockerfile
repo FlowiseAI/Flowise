@@ -31,9 +31,8 @@ COPY . .
 
 RUN find . -name "pnpm-lock.yaml" -exec rm -f {} \;
 
-RUN pnpm install -g pnpm@10.13.1 
-
-RUN pnpm --filter packages/flowise build
+RUN pnpm install
+RUN pnpm --filter flowise build
 
 EXPOSE 3000
 
