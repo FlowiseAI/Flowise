@@ -259,7 +259,7 @@ function waitForStreamingCompletion(
     return new Promise<string>((resolve) => {
         let completed = false
 
-        const completeExecution = (reason: string) => {
+        const completeExecution = (_reason: string) => {
             if (completed) return
             completed = true
 

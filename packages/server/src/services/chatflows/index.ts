@@ -19,6 +19,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import { checkUsageLimit, updateStorageUsage } from '../../utils/quotaUsage'
+import historyService from '../history'
 
 // Check if chatflow valid for streaming
 const checkIfChatflowIsValidForStreaming = async (chatflowId: string): Promise<any> => {
@@ -298,6 +299,22 @@ const saveChatflow = async (
             { status: FLOWISE_COUNTER_STATUS.SUCCESS }
         )
 
+        // Create initial history snapshot
+        const snapshot = await historyService.createSnapshot({
+            entityType: 'CHATFLOW',
+            entityId: dbResponse.id,
+            entityData: dbResponse,
+            changeDescription: 'Initial creation',
+            workspaceId: dbResponse.workspaceId
+        })
+        if (snapshot) {
+            // Re-fetch the chatflow to get the updated currentHistoryVersion
+            const updatedChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+                where: { id: dbResponse.id }
+            })
+            return updatedChatflow || dbResponse
+        }
+
         return dbResponse
     } catch (error) {
         throw new InternalFlowiseError(
@@ -387,6 +404,22 @@ const updateChatflow = async (
         const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
         await _checkAndUpdateDocumentStoreUsage(newDbChatflow, chatflow.workspaceId)
         const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+
+        // Create history snapshot for update
+        const snapshot = await historyService.createSnapshot({
+            entityType: 'CHATFLOW',
+            entityId: dbResponse.id,
+            entityData: dbResponse,
+            changeDescription: 'Updated',
+            workspaceId: dbResponse.workspaceId
+        })
+        if (snapshot) {
+            // Re-fetch the chatflow to get the updated currentHistoryVersion
+            const updatedChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+                where: { id: dbResponse.id }
+            })
+            return updatedChatflow || dbResponse
+        }
 
         return dbResponse
     } catch (error) {

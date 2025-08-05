@@ -8,7 +8,7 @@ import { useTheme } from '@mui/material/styles'
 import { Avatar, Box, ButtonBase, Typography, Stack, TextField, Button } from '@mui/material'
 
 // icons
-import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode } from '@tabler/icons-react'
+import { IconSettings, IconChevronLeft, IconDeviceFloppy, IconPencil, IconCheck, IconX, IconCode, IconHistory } from '@tabler/icons-react'
 
 // project imports
 import Settings from '@/views/settings'
@@ -19,6 +19,7 @@ import ChatflowConfigurationDialog from '@/ui-component/dialog/ChatflowConfigura
 import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
+import HistoryDialog from '@/ui-component/dialog/HistoryDialog'
 import { Available } from '@/ui-component/rbac/available'
 
 // API
@@ -34,7 +35,15 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({
+    chatflow,
+    isAgentCanvas,
+    isAgentflowV2,
+    handleSaveFlow,
+    handleDeleteFlow,
+    handleLoadFlow,
+    onFlowReload: _onFlowReload
+}) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -58,6 +67,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
 
     const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
     const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
+    const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
+    const [historyDialogProps, setHistoryDialogProps] = useState({})
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
@@ -216,6 +227,62 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
     const onSaveChatflowClick = () => {
         if (chatflow.id) handleSaveFlow(flowName)
         else setFlowDialogOpen(true)
+    }
+
+    const onHistoryClick = () => {
+        if (chatflow?.id) {
+            setHistoryDialogProps({
+                entityType: 'CHATFLOW', // All canvas types use CHATFLOW entity type
+                entityId: chatflow.id,
+                entityName: chatflow.name || 'Untitled',
+                currentVersion: chatflow.currentHistoryVersion
+            })
+            setHistoryDialogOpen(true)
+        }
+    }
+
+    const onHistoryRestore = async (restoredData) => {
+        try {
+            // Update the chatflow data immediately after restore
+            if (restoredData && restoredData.entity) {
+                // Always do a page reload for now to ensure proper canvas update
+                enqueueSnackbar({
+                    message: `Successfully restored to version ${restoredData.version || 'previous'}. Refreshing...`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success'
+                    }
+                })
+
+                // Give the user a moment to see the success message, then reload
+                setTimeout(() => {
+                    window.location.reload()
+                }, 500)
+            } else {
+                // Fallback to refresh if no data returned
+                enqueueSnackbar({
+                    message: 'Successfully restored. Please refresh the page to see changes.',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (_key) => (
+                            <Button color='inherit' onClick={() => window.location.reload()}>
+                                Refresh
+                            </Button>
+                        )
+                    }
+                })
+            }
+        } catch (error) {
+            console.error('Error in onHistoryRestore:', error)
+            enqueueSnackbar({
+                message: `Error during restore: ${error.message}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error'
+                }
+            })
+        }
     }
 
     const onConfirmSaveName = (flowName) => {
@@ -432,6 +499,28 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                             </Avatar>
                         </ButtonBase>
                     </Available>
+                    {chatflow?.id && (
+                        <ButtonBase title='Version History' sx={{ borderRadius: '50%', mr: 2 }}>
+                            <Avatar
+                                variant='rounded'
+                                sx={{
+                                    ...theme.typography.commonAvatar,
+                                    ...theme.typography.mediumAvatar,
+                                    transition: 'all .2s ease-in-out',
+                                    background: theme.palette.secondary.light,
+                                    color: theme.palette.secondary.dark,
+                                    '&:hover': {
+                                        background: theme.palette.secondary.dark,
+                                        color: theme.palette.secondary.light
+                                    }
+                                }}
+                                color='inherit'
+                                onClick={onHistoryClick}
+                            >
+                                <IconHistory stroke={1.5} size='1.3rem' />
+                            </Avatar>
+                        </ButtonBase>
+                    )}
                     <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
                         <Avatar
                             variant='rounded'
@@ -498,6 +587,12 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                 onCancel={() => setChatflowConfigurationDialogOpen(false)}
                 isAgentCanvas={isAgentCanvas}
             />
+            <HistoryDialog
+                show={historyDialogOpen}
+                dialogProps={historyDialogProps}
+                onCancel={() => setHistoryDialogOpen(false)}
+                onRestore={onHistoryRestore}
+            />
         </>
     )
 }
@@ -507,6 +602,7 @@ CanvasHeader.propTypes = {
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
+    onFlowReload: PropTypes.func,
     isAgentCanvas: PropTypes.bool,
     isAgentflowV2: PropTypes.bool
 }
