@@ -1128,27 +1128,62 @@ export class StripeManager {
             const cacheKey = 'credits:packages'
             const cachedPackages = await this.cacheManager.get(cacheKey)
             if (cachedPackages) {
+                console.log('Returning cached credit packages:', JSON.stringify(cachedPackages, null, 2))
                 return cachedPackages as any[]
             }
 
+            console.log('Fetching credit packages from Stripe for product:', process.env.CREDIT_PRODUCT_ID)
             const pricesData = await this.stripe!.prices.list({
                 product: process.env.CREDIT_PRODUCT_ID,
                 active: true,
                 type: 'one_time'
             })
 
+            console.log(
+                'Raw Stripe prices data:',
+                JSON.stringify(
+                    pricesData.data.map((p) => ({
+                        id: p.id,
+                        unit_amount: p.unit_amount,
+                        active: p.active,
+                        type: p.type
+                    })),
+                    null,
+                    2
+                )
+            )
+
             const packages = pricesData.data.map((price) => {
                 const credits = this.getCreditsFromPrice(price.unit_amount || 0)
+                const priceInDollars = (price.unit_amount || 0) / 100
+                const standardCostPerCredit = 0.01 // $0.01 per credit
+                const expectedPrice = credits * standardCostPerCredit
+                const discountPercent =
+                    expectedPrice > priceInDollars ? Math.round(((expectedPrice - priceInDollars) / expectedPrice) * 100) : 0
+
+                console.log(`Processing price: ${price.unit_amount} cents -> ${credits} credits -> ${discountPercent}% discount`)
+
                 return {
                     id: this.getPackageTypeFromCredits(credits),
                     priceId: price.id,
                     credits,
                     price: price.unit_amount || 0,
-                    priceFormatted: `$${((price.unit_amount || 0) / 100).toFixed(2)}`,
-                    creditsPerDollar: credits / ((price.unit_amount || 0) / 100),
-                    costPerPrediction: '$0.01'
+                    priceFormatted: `$${priceInDollars.toFixed(2)}`,
+                    creditsPerDollar: credits / priceInDollars,
+                    costPerPrediction: '$0.01',
+                    discountPercent,
+                    hasDiscount: discountPercent > 0,
+                    displayName:
+                        discountPercent > 0
+                            ? `${credits.toLocaleString()} credits (${discountPercent}% off)`
+                            : `${credits.toLocaleString()} credits`
                 }
             })
+
+            // Sort by credits ascending
+            packages.sort((a, b) => a.credits - b.credits)
+
+            console.log('Final credit packages:', JSON.stringify(packages, null, 2))
 
             // Cache for 1 hour
             this.cacheManager.set(cacheKey, packages, 3600000)
@@ -1271,14 +1306,19 @@ export class StripeManager {
     }
 
     private getCreditsFromPrice(unitAmount: number): number {
-        // $10.00 = 1000 credits, so 1 cent = 1 credit
+        // Handle specific discount packages
+        if (unitAmount === 1000) return 1000 // $10.00 = 1000 credits
+        if (unitAmount === 2250) return 2500 // $22.50 = 2500 credits (5% off)
+        if (unitAmount === 4500) return 5000 // $45.00 = 5000 credits (10% off)
+
+        // Default: 1 cent = 1 credit for any other amounts
         return unitAmount
     }
 
     private getPackageTypeFromCredits(credits: number): string {
-        if (credits === 1000) return 'SMALL'
-        if (credits === 2500) return 'MEDIUM'
-        if (credits === 5000) return 'LARGE'
-        return 'CUSTOM'
+        if (credits === 1000) return 'CREDITS_1000'
+        if (credits === 2500) return 'CREDITS_2500'
+        if (credits === 5000) return 'CREDITS_5000'
+        return `CREDITS_${credits}`
     }
 }

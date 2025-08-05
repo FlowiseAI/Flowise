@@ -1744,14 +1744,28 @@ const AccountSettings = () => {
                                         >
                                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <Box>
-                                                    <Typography variant='h6'>{pkg.credits} Credits</Typography>
+                                                    <Typography variant='h6'>
+                                                        {pkg.displayName || `${pkg.credits.toLocaleString()} Credits`}
+                                                    </Typography>
                                                     <Typography variant='body2' color='text.secondary'>
                                                         ${(pkg.price / 100).toFixed(2)} USD
                                                     </Typography>
+                                                    {pkg.hasDiscount && (
+                                                        <Typography variant='caption' color='success.main' sx={{ fontWeight: 'bold' }}>
+                                                            Save ${(pkg.credits * 0.01 - pkg.price / 100).toFixed(2)}
+                                                        </Typography>
+                                                    )}
                                                 </Box>
-                                                <Typography variant='body2' color='success.main'>
-                                                    ${(pkg.price / 100 / pkg.credits).toFixed(3)} per credit
-                                                </Typography>
+                                                <Box sx={{ textAlign: 'right' }}>
+                                                    <Typography variant='body2' color='text.secondary'>
+                                                        ${(pkg.price / 100 / pkg.credits).toFixed(3)} per credit
+                                                    </Typography>
+                                                    {pkg.hasDiscount && (
+                                                        <Typography variant='caption' color='success.main'>
+                                                            {pkg.discountPercent}% off
+                                                        </Typography>
+                                                    )}
+                                                </Box>
                                             </Box>
                                         </Box>
                                     ))
@@ -1782,7 +1796,9 @@ const AccountSettings = () => {
                                     Processing...
                                 </Box>
                             ) : (
-                                `Purchase ${selectedPackage?.credits || 0} Credits for $${((selectedPackage?.price || 0) / 100).toFixed(2)}`
+                                `Purchase ${(selectedPackage?.credits || 0).toLocaleString()} Credits for $${(
+                                    (selectedPackage?.price || 0) / 100
+                                ).toFixed(2)}`
                             )}
                         </Button>
                     </DialogActions>
