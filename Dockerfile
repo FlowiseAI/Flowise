@@ -29,6 +29,8 @@ WORKDIR /usr/src
 # Copy app source
 COPY . .
 
+RUN find . -name "pnpm-lock.yaml" -exec rm -f {} \;
+
 RUN pnpm install
 
 RUN pnpm build
