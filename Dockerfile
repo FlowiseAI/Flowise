@@ -33,7 +33,7 @@ RUN find . -name "pnpm-lock.yaml" -exec rm -f {} \;
 
 RUN pnpm install
 
-RUN pnpm build
+RUN pnpm run build -w packages/flowise
 
 EXPOSE 3000
 
