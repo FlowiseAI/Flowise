@@ -9,6 +9,7 @@ import { ChatMessage } from '../../database/entities/ChatMessage'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
 import { utilGetChatMessage } from '../../utils/getChatMessage'
+import { validateEnumArray } from '../../../components/src/validator'
 
 const getFeedbackTypeFilters = (_feedbackTypeFilters: ChatMessageRatingType[]): ChatMessageRatingType[] | undefined => {
     try {
@@ -50,18 +51,7 @@ const createChatMessage = async (req: Request, res: Response, next: NextFunction
 const getAllChatMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const _chatTypes = req.query?.chatType as string | undefined
-        let chatTypes: ChatType[] | undefined
-        if (_chatTypes) {
-            try {
-                if (Array.isArray(_chatTypes)) {
-                    chatTypes = _chatTypes
-                } else {
-                    chatTypes = JSON.parse(_chatTypes)
-                }
-            } catch (e) {
-                chatTypes = [_chatTypes as ChatType]
-            }
-        }
+        const chatTypes = validateEnumArray(_chatTypes, Object.values(ChatType))
         const sortOrder = req.query?.order as string | undefined
         const chatflowId = (req.query?.chatflowId ?? req.query?.id ?? req.params.id) as string
 
@@ -73,10 +63,10 @@ const getAllChatMessages = async (req: Request, res: Response, next: NextFunctio
         const endDate = req.query?.endDate as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
 
-        let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
-        if (feedbackTypeFilters) {
-            feedbackTypeFilters = getFeedbackTypeFilters(feedbackTypeFilters)
-        }
+        const _feedbackTypeFilters = req.query?.feedbackType
+        const feedbackTypeFilters = _feedbackTypeFilters
+            ? getFeedbackTypeFilters(validateEnumArray(_feedbackTypeFilters, Object.values(ChatMessageRatingType)) || [])
+            : undefined
         if (!chatflowId && !chatId) {
             throw new InternalFlowiseError(
                 StatusCodes.PRECONDITION_FAILED,
@@ -115,10 +105,10 @@ const getAllInternalChatMessages = async (req: Request, res: Response, next: Nex
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
         const feedback = req.query?.feedback as boolean | undefined
-        let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
-        if (feedbackTypeFilters) {
-            feedbackTypeFilters = getFeedbackTypeFilters(feedbackTypeFilters)
-        }
+        const _feedbackTypeFilters = req.query?.feedbackType
+        const feedbackTypeFilters = _feedbackTypeFilters
+            ? getFeedbackTypeFilters(validateEnumArray(_feedbackTypeFilters, Object.values(ChatMessageRatingType)) || [])
+            : undefined
         const apiResponse = await chatMessagesService.getAllInternalChatMessages(
             req.user!,
             req.params.id,
@@ -160,25 +150,14 @@ const removeAllChatMessages = async (req: Request, res: Response, next: NextFunc
         const memoryType = req.query?.memoryType as string | undefined
         const sessionId = req.query?.sessionId as string | undefined
         const _chatTypes = req.query?.chatType as string | undefined
-        let chatTypes: ChatType[] | undefined
-        if (_chatTypes) {
-            try {
-                if (Array.isArray(_chatTypes)) {
-                    chatTypes = _chatTypes
-                } else {
-                    chatTypes = JSON.parse(_chatTypes)
-                }
-            } catch (e) {
-                chatTypes = [_chatTypes as ChatType]
-            }
-        }
+        const chatTypes = validateEnumArray(_chatTypes, Object.values(ChatType))
         const startDate = req.query?.startDate as string | undefined
         const endDate = req.query?.endDate as string | undefined
         const isClearFromViewMessageDialog = req.query?.isClearFromViewMessageDialog as string | undefined
-        let feedbackTypeFilters = req.query?.feedbackType as ChatMessageRatingType[] | undefined
-        if (feedbackTypeFilters) {
-            feedbackTypeFilters = getFeedbackTypeFilters(feedbackTypeFilters)
-        }
+        const _feedbackTypeFilters = req.query?.feedbackType
+        const feedbackTypeFilters = _feedbackTypeFilters
+            ? getFeedbackTypeFilters(validateEnumArray(_feedbackTypeFilters, Object.values(ChatMessageRatingType)) || [])
+            : undefined
 
         if (!chatId) {
             const isFeedback = feedbackTypeFilters?.length ? true : false

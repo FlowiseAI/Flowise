@@ -13,6 +13,7 @@ import { Document } from '@langchain/core/documents'
 import { getFileFromStorage } from './storageUtils'
 import { GetSecretValueCommand, SecretsManagerClient, SecretsManagerClientConfig } from '@aws-sdk/client-secrets-manager'
 import { customGet } from '../nodes/sequentialagents/commonUtils'
+import { isSecureURL } from './validator'
 import { TextSplitter } from 'langchain/text_splitter'
 import { DocumentLoader } from 'langchain/document_loaders/base'
 
@@ -418,6 +419,9 @@ async function crawl(baseURL: string, currentURL: string, pages: string[], limit
 
     if (process.env.DEBUG === 'true') console.info(`actively crawling ${currentURL}`)
     try {
+        if (!isSecureURL(currentURL)) {
+            throw new Error(`Insecure URL blocked for security reasons: ${currentURL}`)
+        }
         const resp = await fetch(currentURL)
 
         if (resp.status > 399) {
@@ -473,6 +477,9 @@ export async function xmlScrape(currentURL: string, limit: number): Promise<stri
     let urls: string[] = []
     if (process.env.DEBUG === 'true') console.info(`actively scarping ${currentURL}`)
     try {
+        if (!isSecureURL(currentURL)) {
+            throw new Error(`Insecure URL blocked for security reasons: ${currentURL}`)
+        }
         const resp = await fetch(currentURL)
 
         if (resp.status > 399) {
