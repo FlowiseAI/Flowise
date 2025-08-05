@@ -29,7 +29,6 @@ WORKDIR /usr/src
 # Copy app source
 COPY . .
 
-RUN rm -f turbo.lock.yaml pnpm-lock.yaml
 RUN pnpm install
 
 RUN pnpm build
