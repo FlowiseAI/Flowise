@@ -922,7 +922,20 @@ export class StripeManager {
             // Get price
             const price = await this.stripe.prices.retrieve(process.env.METERED_PRICE_ID!)
 
-            // Create credit grant
+            // Get existing credit grants and calculate next priority
+            const existingGrants = await this.stripe.billing.creditGrants.list({
+                customer: customerId,
+                limit: 100
+            })
+
+            // Find highest existing priority and add 1
+            let nextPriority = 0
+            if (existingGrants.data.length > 0) {
+                const highestPriority = Math.max(...existingGrants.data.map((grant) => grant.priority || 0))
+                nextPriority = highestPriority + 1
+            }
+
+            // Create credit grant with priority
             const creditGrant = await this.stripe.billing.creditGrants.create({
                 customer: customerId,
                 amount: {
@@ -939,7 +952,11 @@ export class StripeManager {
                 } as any,
                 category: 'paid',
                 name: `${selectedPackage.credits} Credits Purchase`,
-                metadata: {}
+                priority: nextPriority,
+                metadata: {
+                    credits: selectedPackage.credits.toString(),
+                    package_type: packageType
+                }
             })
 
             // Update Redis with new credit purchase
