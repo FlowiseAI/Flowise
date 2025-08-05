@@ -31,8 +31,11 @@ COPY . .
 
 RUN find . -name "pnpm-lock.yaml" -exec rm -f {} \;
 
+# Alle Abhängigkeiten installieren (inkl. Workspaces)
 RUN pnpm install
-RUN pnpm --filter flowise build
+
+# Korrekt: Top-Level Build ruft turbo auf und baut rekursiv
+RUN pnpm build
 
 EXPOSE 3000
 
