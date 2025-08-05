@@ -15,6 +15,7 @@ overrides:
     braces: 3.0.3
     cross-spawn: 7.0.6
     ejs: ^3.1.10
+    form-data: ^4.0.4
     glob-parent: 6.0.2
     http-proxy-middleware: 3.0.3
     json5: 2.2.3
@@ -13803,22 +13804,6 @@ packages:
         resolution: { integrity: sha512-KQVhvhK8ZkWzxKxOr56CPulAhH3dobtuQ4+hNQ+HekH/Wp5gSOafqRAeTphQUJAIk0GBvHZgJ2ZGRWd5kphMuw== }
         engines: { node: '>= 18' }
 
-    form-data@2.3.3:
-        resolution: { integrity: sha512-1lLKB2Mu3aGP1Q/2eCOx0fNbRMe7XdwktwOruhfqqd0rIJWwN4Dh+E3hrPSlDCXnSR7UtZ1N38rVXm+6+MEhJQ== }
-        engines: { node: '>= 0.12' }
-
-    form-data@2.5.5:
-        resolution: { integrity: sha512-jqdObeR2rxZZbPSGL+3VckHMYtu+f9//KXBsVny6JSX/pa38Fy+bGjuG8eW/H6USNQWhLi8Num++cU2yOCNz4A== }
-        engines: { node: '>= 0.12' }
-
-    form-data@3.0.4:
-        resolution: { integrity: sha512-f0cRzm6dkyVYV3nPoooP8XlccPQukegwhAnpoLcXy+X+A8KfpGOoXwDr9FLZd3wzgLaBGQBE3lY93Zm/i1JvIQ== }
-        engines: { node: '>= 6' }
-
-    form-data@4.0.0:
-        resolution: { integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww== }
-        engines: { node: '>= 6' }
-
     form-data@4.0.4:
         resolution: { integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow== }
         engines: { node: '>= 6' }
@@ -27053,7 +27038,7 @@ snapshots:
             combined-stream: 1.0.8
             extend: 3.0.2
             forever-agent: 0.6.1
-            form-data: 2.3.3
+            form-data: 4.0.4
             http-signature: 1.3.6
             is-typedarray: 1.0.0
             isstream: 0.1.2
@@ -28397,7 +28382,7 @@ snapshots:
 
     '@getzep/zep-cloud@1.0.12(@langchain/core@0.3.59(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.202.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@4.96.0(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@6.0.5))(zod@3.25.67)))(encoding@0.1.13)(langchain@0.3.28(bjcfzkrvtvuxvaalmygapnmfim))':
         dependencies:
-            form-data: 4.0.0
+            form-data: 4.0.4
             node-fetch: 2.7.0(encoding@0.1.13)
             qs: 6.11.2
             url-join: 4.0.1
@@ -32954,7 +32939,7 @@ snapshots:
             '@types/node': 18.15.11
             axios: 1.7.9
             eventemitter3: 3.1.2
-            form-data: 2.5.5
+            form-data: 4.0.4
             is-electron: 2.2.2
             is-stream: 1.1.0
             p-queue: 6.6.2
@@ -34796,7 +34781,7 @@ snapshots:
             '@types/caseless': 0.12.5
             '@types/node': 18.15.11
             '@types/tough-cookie': 4.0.5
-            form-data: 2.5.5
+            form-data: 4.0.4
 
     '@types/resolve@1.17.1':
         dependencies:
@@ -37116,7 +37101,7 @@ snapshots:
 
     cohere-ai@7.9.5(encoding@0.1.13):
         dependencies:
-            form-data: 4.0.0
+            form-data: 4.0.4
             js-base64: 3.7.2
             node-fetch: 2.7.0(encoding@0.1.13)
             qs: 6.11.2
@@ -40647,35 +40632,6 @@ snapshots:
 
     form-data-encoder@4.0.2: {}
 
-    form-data@2.3.3:
-        dependencies:
-            asynckit: 0.4.0
-            combined-stream: 1.0.8
-            mime-types: 2.1.35
-
-    form-data@2.5.5:
-        dependencies:
-            asynckit: 0.4.0
-            combined-stream: 1.0.8
-            es-set-tostringtag: 2.1.0
-            hasown: 2.0.2
-            mime-types: 2.1.35
-            safe-buffer: 5.2.1
-
-    form-data@3.0.4:
-        dependencies:
-            asynckit: 0.4.0
-            combined-stream: 1.0.8
-            es-set-tostringtag: 2.1.0
-            hasown: 2.0.2
-            mime-types: 2.1.35
-
-    form-data@4.0.0:
-        dependencies:
-            asynckit: 0.4.0
-            combined-stream: 1.0.8
-            mime-types: 2.1.35
-
     form-data@4.0.4:
         dependencies:
             asynckit: 0.4.0
@@ -41303,7 +41259,7 @@ snapshots:
             '@graphql-typed-document-node/core': 3.2.0(graphql@16.10.0)
             cross-fetch: 3.2.0(encoding@0.1.13)
             extract-files: 9.0.0
-            form-data: 3.0.4
+            form-data: 4.0.4
             graphql: 16.10.0
         transitivePeerDependencies:
             - encoding
@@ -41976,7 +41932,7 @@ snapshots:
             dotenv: 16.6.1
             extend: 3.0.2
             file-type: 16.5.4
-            form-data: 4.0.0
+            form-data: 4.0.4
             isstream: 0.1.2
             jsonwebtoken: 9.0.2
             mime-types: 2.1.35
@@ -43542,7 +43498,7 @@ snapshots:
             decimal.js: 10.5.0
             domexception: 2.0.1
             escodegen: 2.1.0
-            form-data: 3.0.4
+            form-data: 4.0.4
             html-encoding-sniffer: 2.0.1
             http-proxy-agent: 4.0.1
             https-proxy-agent: 5.0.1
@@ -49987,7 +49943,7 @@ snapshots:
             combined-stream: 1.0.8
             extend: 3.0.2
             forever-agent: 0.6.1
-            form-data: 2.3.3
+            form-data: 4.0.4
             har-validator: 5.1.5
             http-signature: 1.2.0
             is-typedarray: 1.0.0
