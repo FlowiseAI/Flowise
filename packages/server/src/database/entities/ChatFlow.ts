@@ -60,4 +60,7 @@ export class ChatFlow implements IChatFlow {
 
     @Column({ nullable: true, type: 'text' })
     workspaceId?: string
+
+    @Column({ nullable: true, type: 'int' })
+    currentHistoryVersion?: number
 }

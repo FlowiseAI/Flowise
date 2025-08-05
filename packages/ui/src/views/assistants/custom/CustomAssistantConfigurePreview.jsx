@@ -20,7 +20,8 @@ import {
     IconX,
     IconTrash,
     IconWand,
-    IconArrowsMaximize
+    IconArrowsMaximize,
+    IconHistory
 } from '@tabler/icons-react'
 
 // Project import
@@ -42,6 +43,7 @@ import PromptGeneratorDialog from '@/ui-component/dialog/PromptGeneratorDialog'
 import { Available } from '@/ui-component/rbac/available'
 import ExpandTextDialog from '@/ui-component/dialog/ExpandTextDialog'
 import { SwitchInput } from '@/ui-component/switch/Switch'
+import HistoryDialog from '@/ui-component/dialog/HistoryDialog'
 
 // API
 import assistantsApi from '@/api/assistants'
@@ -115,6 +117,8 @@ const CustomAssistantConfigurePreview = () => {
     const [assistantPromptGeneratorDialogProps, setAssistantPromptGeneratorDialogProps] = useState({})
     const [showExpandDialog, setShowExpandDialog] = useState(false)
     const [expandDialogProps, setExpandDialogProps] = useState({})
+    const [historyDialogOpen, setHistoryDialogOpen] = useState(false)
+    const [historyDialogProps, setHistoryDialogProps] = useState({})
 
     const [loading, setLoading] = useState(false)
     const [loadingAssistant, setLoadingAssistant] = useState(true)
@@ -664,6 +668,55 @@ const CustomAssistantConfigurePreview = () => {
         setAPIDialogOpen(true)
     }
 
+    const onHistoryClick = () => {
+        if (selectedCustomAssistant?.id) {
+            setHistoryDialogProps({
+                entityType: 'ASSISTANT',
+                entityId: selectedCustomAssistant.id,
+                entityName: selectedCustomAssistant.name || selectedCustomAssistant.details?.name || 'Untitled',
+                currentVersion: selectedCustomAssistant.currentHistoryVersion
+            })
+            setHistoryDialogOpen(true)
+        }
+    }
+
+    const onHistoryRestore = async (restoredData) => {
+        try {
+            if (restoredData && restoredData.entity) {
+                enqueueSnackbar({
+                    message: `Successfully restored to version ${restoredData.version || 'previous'}. Refreshing...`,
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success'
+                    }
+                })
+
+                // Give the user a moment to see the success message, then reload
+                setTimeout(() => {
+                    window.location.reload()
+                }, 500)
+            } else {
+                enqueueSnackbar({
+                    message: 'Successfully restored. Please refresh the page to see changes.',
+                    options: {
+                        key: new Date().getTime() + Math.random(),
+                        variant: 'success',
+                        action: (_key) => (
+                            <Button color='inherit' onClick={() => window.location.reload()}>
+                                Refresh
+                            </Button>
+                        )
+                    }
+                })
+            }
+        } catch (error) {
+            enqueueSnackbar({
+                message: `Failed to restore: ${error.message}`,
+                options: { variant: 'error' }
+            })
+        }
+    }
+
     const onDocStoreItemSelected = (docStoreIds) => {
         const docStoresIds = JSON.parse(docStoreIds)
         const newSelectedDocumentStores = []
@@ -752,7 +805,12 @@ const CustomAssistantConfigurePreview = () => {
             setLoadingAssistant(false)
             try {
                 const assistantDetails = JSON.parse(getSpecificAssistantApi.data.details)
-                setSelectedCustomAssistant(assistantDetails)
+                // Set the full assistant entity (not just the details)
+                setSelectedCustomAssistant({
+                    ...getSpecificAssistantApi.data,
+                    name: assistantDetails.name,
+                    details: assistantDetails
+                })
 
                 if (assistantDetails.chatModel) {
                     setSelectedChatModel(assistantDetails.chatModel)
@@ -867,7 +925,7 @@ const CustomAssistantConfigurePreview = () => {
                                                         <IconArrowLeft />
                                                     </StyledFab>
                                                     <Typography sx={{ ml: 2, mr: 2 }} variant='h3'>
-                                                        {selectedCustomAssistant?.name ?? ''}
+                                                        {selectedCustomAssistant?.name || selectedCustomAssistant?.details?.name || ''}
                                                     </Typography>
                                                 </Box>
                                                 <div style={{ flex: 1 }}></div>
@@ -915,6 +973,30 @@ const CustomAssistantConfigurePreview = () => {
                                                         </Avatar>
                                                     </ButtonBase>
                                                 </Available>
+                                                {selectedCustomAssistant?.id && (
+                                                    <Available permission={'assistants:view'}>
+                                                        <ButtonBase title='Version History' sx={{ borderRadius: '50%', mr: 2 }}>
+                                                            <Avatar
+                                                                variant='rounded'
+                                                                sx={{
+                                                                    ...theme.typography.commonAvatar,
+                                                                    ...theme.typography.mediumAvatar,
+                                                                    transition: 'all .2s ease-in-out',
+                                                                    background: theme.palette.canvasHeader.deployLight,
+                                                                    color: theme.palette.canvasHeader.deployDark,
+                                                                    '&:hover': {
+                                                                        background: theme.palette.canvasHeader.deployDark,
+                                                                        color: theme.palette.canvasHeader.deployLight
+                                                                    }
+                                                                }}
+                                                                color='inherit'
+                                                                onClick={onHistoryClick}
+                                                            >
+                                                                <IconHistory stroke={1.5} size='1.3rem' />
+                                                            </Avatar>
+                                                        </ButtonBase>
+                                                    </Available>
+                                                )}
                                                 {customAssistantFlowId && !loadingAssistant && (
                                                     <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
                                                         <Avatar
@@ -1426,6 +1508,12 @@ const CustomAssistantConfigurePreview = () => {
                     setShowExpandDialog(false)
                 }}
             ></ExpandTextDialog>
+            <HistoryDialog
+                show={historyDialogOpen}
+                dialogProps={historyDialogProps}
+                onCancel={() => setHistoryDialogOpen(false)}
+                onRestore={onHistoryRestore}
+            />
             <ConfirmDialog />
         </>
     )

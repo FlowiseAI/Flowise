@@ -19,6 +19,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { utilGetUploadsConfig } from '../../utils/getUploadsConfig'
 import logger from '../../utils/logger'
 import { updateStorageUsage } from '../../utils/quotaUsage'
+import historyService from '../history'
 
 export const enum ChatflowErrorMessage {
     INVALID_CHATFLOW_TYPE = 'Invalid Chatflow Type'
@@ -263,51 +264,74 @@ const saveChatflow = async (
     subscriptionId: string,
     usageCacheManager: UsageCacheManager
 ): Promise<any> => {
-    validateChatflowType(newChatFlow.type)
-    const appServer = getRunningExpressApp()
+    try {
+        validateChatflowType(newChatFlow.type)
+        const appServer = getRunningExpressApp()
 
-    let dbResponse: ChatFlow
-    if (containsBase64File(newChatFlow)) {
-        // we need a 2-step process, as we need to save the chatflow first and then update the file paths
-        // this is because we need the chatflow id to create the file paths
+        let dbResponse: ChatFlow
+        if (containsBase64File(newChatFlow)) {
+            // we need a 2-step process, as we need to save the chatflow first and then update the file paths
+            // this is because we need the chatflow id to create the file paths
 
-        // step 1 - save with empty flowData
-        const incomingFlowData = newChatFlow.flowData
-        newChatFlow.flowData = JSON.stringify({})
-        const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-        const step1Results = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+            // step 1 - save with empty flowData
+            const incomingFlowData = newChatFlow.flowData
+            newChatFlow.flowData = JSON.stringify({})
+            const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+            const step1Results = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
 
-        // step 2 - convert base64 to file paths and update the chatflow
-        step1Results.flowData = await updateFlowDataWithFilePaths(
-            step1Results.id,
-            incomingFlowData,
-            orgId,
-            workspaceId,
-            subscriptionId,
-            usageCacheManager
+            // step 2 - convert base64 to file paths and update the chatflow
+            step1Results.flowData = await updateFlowDataWithFilePaths(
+                step1Results.id,
+                incomingFlowData,
+                orgId,
+                workspaceId,
+                subscriptionId,
+                usageCacheManager
+            )
+            await _checkAndUpdateDocumentStoreUsage(step1Results, newChatFlow.workspaceId)
+            dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
+        } else {
+            const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
+            dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+        }
+        await appServer.telemetry.sendTelemetry(
+            'chatflow_created',
+            {
+                version: await getAppVersion(),
+                chatflowId: dbResponse.id,
+                flowGraph: getTelemetryFlowObj(JSON.parse(dbResponse.flowData)?.nodes, JSON.parse(dbResponse.flowData)?.edges)
+            },
+            orgId
         )
-        await _checkAndUpdateDocumentStoreUsage(step1Results, newChatFlow.workspaceId)
-        dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(step1Results)
-    } else {
-        const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
-        dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
+
+        appServer.metricsProvider?.incrementCounter(
+            dbResponse?.type === 'MULTIAGENT' ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_CREATED : FLOWISE_METRIC_COUNTERS.CHATFLOW_CREATED,
+            { status: FLOWISE_COUNTER_STATUS.SUCCESS }
+        )
+
+        // Create initial history snapshot
+        const snapshot = await historyService.createSnapshot({
+            entityType: 'CHATFLOW',
+            entityId: dbResponse.id,
+            entityData: dbResponse,
+            changeDescription: 'Initial creation',
+            workspaceId: dbResponse.workspaceId
+        })
+        if (snapshot) {
+            // Re-fetch the chatflow to get the updated currentHistoryVersion
+            const updatedChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+                where: { id: dbResponse.id }
+            })
+            return updatedChatflow || dbResponse
+        }
+
+        return dbResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.saveChatflow - ${getErrorMessage(error)}`
+        )
     }
-    await appServer.telemetry.sendTelemetry(
-        'chatflow_created',
-        {
-            version: await getAppVersion(),
-            chatflowId: dbResponse.id,
-            flowGraph: getTelemetryFlowObj(JSON.parse(dbResponse.flowData)?.nodes, JSON.parse(dbResponse.flowData)?.edges)
-        },
-        orgId
-    )
-
-    appServer.metricsProvider?.incrementCounter(
-        dbResponse?.type === 'MULTIAGENT' ? FLOWISE_METRIC_COUNTERS.AGENTFLOW_CREATED : FLOWISE_METRIC_COUNTERS.CHATFLOW_CREATED,
-        { status: FLOWISE_COUNTER_STATUS.SUCCESS }
-    )
-
-    return dbResponse
 }
 
 const updateChatflow = async (
@@ -317,27 +341,76 @@ const updateChatflow = async (
     workspaceId: string,
     subscriptionId: string
 ): Promise<any> => {
-    const appServer = getRunningExpressApp()
-    if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
-        updateChatFlow.flowData = await updateFlowDataWithFilePaths(
-            chatflow.id,
-            updateChatFlow.flowData,
-            orgId,
-            workspaceId,
-            subscriptionId,
-            appServer.usageCacheManager
+    try {
+        const appServer = getRunningExpressApp()
+        if (updateChatFlow.flowData && containsBase64File(updateChatFlow)) {
+            updateChatFlow.flowData = await updateFlowDataWithFilePaths(
+                chatflow.id,
+                updateChatFlow.flowData,
+                orgId,
+                workspaceId,
+                subscriptionId,
+                appServer.usageCacheManager
+            )
+        }
+        if (updateChatFlow.type || updateChatFlow.type === '') {
+            validateChatflowType(updateChatFlow.type)
+        } else {
+            updateChatFlow.type = chatflow.type
+        }
+
+        const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
+        await _checkAndUpdateDocumentStoreUsage(newDbChatflow, chatflow.workspaceId)
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+
+        // Create history snapshot for update
+        const snapshot = await historyService.createSnapshot({
+            entityType: 'CHATFLOW',
+            entityId: dbResponse.id,
+            entityData: dbResponse,
+            changeDescription: 'Updated',
+            workspaceId: dbResponse.workspaceId
+        })
+        if (snapshot) {
+            // Re-fetch the chatflow to get the updated currentHistoryVersion
+            const updatedChatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOne({
+                where: { id: dbResponse.id }
+            })
+            return updatedChatflow || dbResponse
+        }
+
+        return dbResponse
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: chatflowsService.updateChatflow - ${getErrorMessage(error)}`
         )
     }
-    if (updateChatFlow.type || updateChatFlow.type === '') {
-        validateChatflowType(updateChatFlow.type)
-    } else {
-        updateChatFlow.type = chatflow.type
-    }
-    const newDbChatflow = appServer.AppDataSource.getRepository(ChatFlow).merge(chatflow, updateChatFlow)
-    await _checkAndUpdateDocumentStoreUsage(newDbChatflow, chatflow.workspaceId)
-    const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(newDbChatflow)
+}
 
-    return dbResponse
+// Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
+const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
+    try {
+        const appServer = getRunningExpressApp()
+        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
+            id: chatflowId
+        })
+        if (dbResponse && dbResponse.isPublic) {
+            return dbResponse
+        } else if (dbResponse && !dbResponse.isPublic) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
+        }
+        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
+    } catch (error) {
+        if (error instanceof InternalFlowiseError && error.statusCode === StatusCodes.UNAUTHORIZED) {
+            throw error
+        } else {
+            throw new InternalFlowiseError(
+                StatusCodes.INTERNAL_SERVER_ERROR,
+                `Error: chatflowsService.getSinglePublicChatflow - ${getErrorMessage(error)}`
+            )
+        }
+    }
 }
 
 // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
@@ -414,6 +487,7 @@ export default {
     getChatflowById,
     saveChatflow,
     updateChatflow,
+    getSinglePublicChatflow,
     getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged,
     getAllChatflowsCountByOrganization
