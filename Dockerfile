@@ -17,7 +17,7 @@ RUN apk add --no-cache chromium
 RUN apk add --no-cache curl
 
 #install PNPM globaly
-RUN npm install -g pnpm@10.13.1
+RUN npm install -g pnpm
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
@@ -31,10 +31,8 @@ COPY . .
 
 RUN find . -name "pnpm-lock.yaml" -exec rm -f {} \;
 
-# Alle Abhängigkeiten installieren (inkl. Workspaces)
 RUN pnpm install
 
-# Korrekt: Top-Level Build ruft turbo auf und baut rekursiv
 RUN pnpm build
 
 EXPOSE 3000
