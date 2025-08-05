@@ -20,21 +20,6 @@ async function getChat(chatId: string, user: User) {
         console.error('Auth error:', err)
     }
 
-    // // Fetch local chat
-    // const localChatPromise = prisma.chat.findUnique({
-    //     where: {
-    //         id: chatId,
-    //         users: {
-    //             some: {
-    //                 id: user.id
-    //             }
-    //         }
-    //     },
-    //     include: {
-    //         users: { select: { id: true, email: true, image: true, name: true } }
-    //     }
-    // })
-
     // Check if id corresponds to a valid chat
     const chatflowChatPromise = token
         ? fetch(`${user.chatflowDomain}/api/v1/chats/${chatId}`, {
@@ -59,7 +44,8 @@ async function getChat(chatId: string, user: User) {
             chatflowChatId: chatflowChat.id
         }
     }
-    // If no Chat, return a new chat page with the correctly selected Sidekick based on the chatId but as a chatflowid
+
+    // If no Chat, check if it's a chatflow ID
     const chatflow: Chatflow = await (token
         ? fetch(`${user.chatflowDomain}/api/v1/chatflows/${chatId}`, {
               headers: {
@@ -140,16 +126,10 @@ const ChatDetailPage = async ({ params }: { params: { chatId: string } }) => {
     }
 
     const user = session.user
-    let sidekicks = []
+    let sidekicks: any[] = []
 
     try {
-        // Fetch chat, messages and sidekicks in parallel
-        const [chat, { sidekicks: fetchedSidekicks } = {}] = await Promise.all([getChat(params.chatId, user), findSidekicksForChat(user)])
-
-        // Always assign sidekicks if they were fetched successfully
-        if (fetchedSidekicks) {
-            sidekicks = fetchedSidekicks
-        }
+        const [chat] = await Promise.all([getChat(params.chatId, user)])
 
         if (!chat) {
             return <ChatNotFound />
@@ -164,6 +144,8 @@ const ChatDetailPage = async ({ params }: { params: { chatId: string } }) => {
 
         // console.log('Chat', chat)
 
+        // Chat without credential issues - use regular Chat component
+        // The Chat component will handle credential checking using useCredentialChecker hook
         return <Chat {...params} chat={chatWithMessages} journey={chatWithMessages?.journey} sidekicks={sidekicks} />
     } catch (error) {
         console.error('Error loading chat:', error)

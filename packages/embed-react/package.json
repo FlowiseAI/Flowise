@@ -27,7 +27,7 @@
         "eslint": "8.37.0",
         "aai-embed": "workspace:*",
         "react": "18.2.0",
-        "rollup": "3.23.0",
+        "rollup": "3.29.5",
         "rollup-plugin-typescript-paths": "1.4.0",
         "tslib": "^2.6.2",
         "tsx": "3.12.6",

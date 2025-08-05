@@ -113,7 +113,7 @@ const MarketplaceCanvas = () => {
                     <Toolbar>
                         <MarketplaceCanvasHeader
                             flowName={name}
-                            flowData={JSON.parse(flowData)}
+                            flowData={flowData ? JSON.parse(flowData) : null}
                             onChatflowCopy={(flowData) => onChatflowCopy(flowData)}
                         />
                     </Toolbar>

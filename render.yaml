@@ -281,6 +281,7 @@ services:
       dockerfilePath: ./apps/web/Dockerfile
       # domains:
       #     - app.theanswer.ai
+      # healthCheckPath: /api/auth/session
     - type: redis
       name: theanswer
       plan: standard

@@ -9,6 +9,7 @@ const Modal = () => {
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const modal = searchParams?.get('modal')
+
     const handleClose = () => {
         if (pathname) router.push(pathname)
     }

@@ -1,5 +1,3 @@
-version: '3'
-
 services:
     # dev-inngest:
     #   image: node:18
@@ -34,6 +32,7 @@ services:
             - '5432:5432'
         volumes:
             - postgres_data:/var/lib/postgresql/data/
+            - ./docker/postgres-init:/docker-entrypoint-initdb.d
         environment:
             POSTGRES_PORT: 5432
             POSTGRES_USER: example_user
