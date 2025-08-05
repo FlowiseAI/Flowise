@@ -29,6 +29,9 @@ WORKDIR /usr/src
 # Copy app source
 COPY . .
 
+RUN [ -f turbo.lock.yaml ] && rm turbo.lock.yaml || echo "No turbo.lock.yaml found"
+RUN [ -f pnpm-lock.yaml ] && rm pnpm-lock.yaml || echo "No pnpm-lock.yaml found"
+
 RUN pnpm install
 
 RUN pnpm build
