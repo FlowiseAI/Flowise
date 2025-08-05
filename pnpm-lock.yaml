@@ -1399,8 +1399,8 @@ importers:
                 specifier: ^4.17.21
                 version: 4.17.21
             multer:
-                specifier: ^1.4.5-lts.1
-                version: 1.4.5-lts.1
+                specifier: ^2.0.2
+                version: 2.0.2
             node-fetch:
                 specifier: ^3.3.2
                 version: 3.3.2
@@ -1728,8 +1728,8 @@ importers:
                 specifier: ^0.5.34
                 version: 0.5.47
             multer:
-                specifier: ^1.4.5-lts.1
-                version: 1.4.5-lts.1
+                specifier: ^2.0.2
+                version: 2.0.2
             multer-cloud-storage:
                 specifier: ^4.0.0
                 version: 4.1.0(encoding@0.1.13)
@@ -1834,8 +1834,8 @@ importers:
                 specifier: ^10.0.6
                 version: 10.0.10
             '@types/multer':
-                specifier: ^1.4.7
-                version: 1.4.12
+                specifier: ^2.0.0
+                version: 2.0.0
             '@types/multer-s3':
                 specifier: ^3.0.3
                 version: 3.0.3(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
@@ -9179,6 +9179,9 @@ packages:
     '@types/express@4.17.21':
         resolution: { integrity: sha512-ejlPM315qwLpaQlQDTjPdsUFSc6ZsP4AN6AlWnogPjQ7CVi7PYF3YVz+CY3jE2pwYf7E/7HlDAN0rV2GxTG0HQ== }
 
+    '@types/express@4.17.23':
+        resolution: { integrity: sha512-Crp6WY9aTYP3qPi2wGDo9iUe/rceX01UMhnF1jmwDcKCFM6cx7YhGP/Mpr3y9AASpfHixIG0E6azCcL5OcDHsQ== }
+
     '@types/express@5.0.2':
         resolution: { integrity: sha512-BtjL3ZwbCQriyb0DGw+Rt12qAXPiBTPs815lsUvtt1Grk0vLRMZNMUZ741d5rjk+UQOxfDiBZ3dxpX00vSkK3g== }
 
@@ -9329,8 +9332,8 @@ packages:
     '@types/multer-s3@3.0.3':
         resolution: { integrity: sha512-VgWygI9UwyS7loLithUUi0qAMIDWdNrERS2Sb06UuPYiLzKuIFn2NgL7satyl4v8sh/LLoU7DiPanvbQaRg9Yg== }
 
-    '@types/multer@1.4.12':
-        resolution: { integrity: sha512-pQ2hoqvXiJt2FP9WQVLPRO+AmiIm/ZYkavPlIQnx282u4ZrVdztx0pkh3jjpQt0Kz+YI0YhSG264y08UJKoUQg== }
+    '@types/multer@2.0.0':
+        resolution: { integrity: sha512-C3Z9v9Evij2yST3RSBktxP9STm6OdMc5uR1xF1SGr98uv8dUlAL2hqwrZ3GVB3uyMyiegnscEK6PGtYvNrjTjw== }
 
     '@types/mysql@2.15.26':
         resolution: { integrity: sha512-DSLCOXhkvfS5WNNPbfn2KdICAmk8lLc+/PNvnPnF7gOdMZCxopXduqv0OQ13y/yA/zXTSikZZqVgybUxOEg6YQ== }
@@ -17155,8 +17158,8 @@ packages:
         resolution: { integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg== }
         engines: { node: '>= 0.6' }
 
-    mime-db@1.53.0:
-        resolution: { integrity: sha512-oHlN/w+3MQ3rba9rqFr6V/ypF10LSkdwUysQL7GkXoTgIWeV+tcXGA852TBxH+gsh8UWoyhR1hKcoMJTuWflpg== }
+    mime-db@1.54.0:
+        resolution: { integrity: sha512-aU5EJuIN2WDemCcAp2vFBfp/m4EAhWJnUNSSw0ixs7/kXbd6Pg64EmwJkNdFhB8aWt1sH2CTXrLxo/iAGV3oPQ== }
         engines: { node: '>= 0.6' }
 
     mime-format@2.0.1:
@@ -17170,8 +17173,8 @@ packages:
         resolution: { integrity: sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw== }
         engines: { node: '>= 0.6' }
 
-    mime-types@3.0.0:
-        resolution: { integrity: sha512-XqoSHeCGjVClAmoGFG3lVFqQFRIrTVw2OH3axRqAcfaw+gHWIfnASS92AV+Rl/mk0MupgZTRHQOjxY6YVnzK5w== }
+    mime-types@3.0.1:
+        resolution: { integrity: sha512-xRc4oEhT6eaBpU1XF7AjpOFD+xQmXNB5OVKwp4tqCuBpHLS/ZbBDrc07mYTDqVMg6PfxUjjNp85O6Cd2Z/5HWA== }
         engines: { node: '>= 0.6' }
 
     mime@1.6.0:
@@ -17463,13 +17466,8 @@ packages:
         peerDependencies:
             '@aws-sdk/client-s3': ^3.0.0
 
-    multer@1.4.5-lts.1:
-        resolution: { integrity: sha512-ywPWvcDMeH+z9gQq5qYHCCy+ethsk4goepZ45GLD63fOu0YcNecQxi64nDs3qluZB+murG3/D4dJ7+dGctcCQQ== }
-        engines: { node: '>= 6.0.0' }
-        deprecated: Multer 1.x is impacted by a number of vulnerabilities, which have been patched in 2.x. You should upgrade to the latest 2.x version.
-
-    multer@2.0.0:
-        resolution: { integrity: sha512-bS8rPZurbAuHGAnApbM9d4h1wSoYqrOqkE+6a64KLMK9yWU7gJXBDDVklKQ3TPi9DRb85cRs6yXaC0+cjxRtRg== }
+    multer@2.0.2:
+        resolution: { integrity: sha512-u7f2xaZ/UG8oLXHvtF/oWTRvT44p9ecwBBqTwgJVq0+4BW1g8OW01TyMEGWBHbyMOYVHXslaut7qEQ1meATXgw== }
         engines: { node: '>= 10.16.0' }
 
     multicast-dns@7.2.5:
@@ -22507,8 +22505,8 @@ packages:
         resolution: { integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g== }
         engines: { node: '>= 0.6' }
 
-    type-is@2.0.0:
-        resolution: { integrity: sha512-gd0sGezQYCbWSbkZr75mln4YBidWUN60+devscpLF5mtRDUpiaTvKpBNrdaCvel1NdR2k6vclXybU5fBd2i+nw== }
+    type-is@2.0.1:
+        resolution: { integrity: sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw== }
         engines: { node: '>= 0.6' }
 
     type@2.7.3:
@@ -34550,6 +34548,13 @@ snapshots:
             '@types/qs': 6.9.18
             '@types/serve-static': 1.15.7
 
+    '@types/express@4.17.23':
+        dependencies:
+            '@types/body-parser': 1.19.5
+            '@types/express-serve-static-core': 4.19.6
+            '@types/qs': 6.9.18
+            '@types/serve-static': 1.15.7
+
     '@types/express@5.0.2':
         dependencies:
             '@types/body-parser': 1.19.5
@@ -34708,12 +34713,12 @@ snapshots:
     '@types/multer-s3@3.0.3(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))':
         dependencies:
             '@aws-sdk/client-s3': 3.758.0(aws-crt@1.26.2(bufferutil@4.0.9)(utf-8-validate@6.0.5))
-            '@types/multer': 1.4.12
+            '@types/multer': 2.0.0
             '@types/node': 18.15.11
         transitivePeerDependencies:
             - aws-crt
 
-    '@types/multer@1.4.12':
+    '@types/multer@2.0.0':
         dependencies:
             '@types/express': 4.17.21
 
@@ -34926,7 +34931,7 @@ snapshots:
 
     '@types/serve-index@1.9.4':
         dependencies:
-            '@types/express': 4.17.21
+            '@types/express': 4.17.23
 
     '@types/serve-static@1.15.7':
         dependencies:
@@ -35543,7 +35548,7 @@ snapshots:
 
     accepts@2.0.0:
         dependencies:
-            mime-types: 3.0.0
+            mime-types: 3.0.1
             negotiator: 1.0.0
 
     acorn-globals@6.0.0:
@@ -37463,7 +37468,7 @@ snapshots:
 
     compressible@2.0.18:
         dependencies:
-            mime-db: 1.53.0
+            mime-db: 1.54.0
 
     compression@1.8.0:
         dependencies:
@@ -40354,7 +40359,7 @@ snapshots:
             http-errors: 2.0.0
             merge-descriptors: 2.0.0
             methods: 1.1.2
-            mime-types: 3.0.0
+            mime-types: 3.0.1
             on-finished: 2.4.1
             once: 1.4.0
             parseurl: 1.3.3
@@ -40367,7 +40372,7 @@ snapshots:
             serve-static: 2.1.0
             setprototypeof: 1.2.0
             statuses: 2.0.1
-            type-is: 2.0.0
+            type-is: 2.0.1
             utils-merge: 1.0.1
             vary: 1.1.2
         transitivePeerDependencies:
@@ -45975,7 +45980,7 @@ snapshots:
 
     mime-db@1.52.0: {}
 
-    mime-db@1.53.0: {}
+    mime-db@1.54.0: {}
 
     mime-format@2.0.1:
         dependencies:
@@ -45989,9 +45994,9 @@ snapshots:
         dependencies:
             mime-db: 1.52.0
 
-    mime-types@3.0.0:
+    mime-types@3.0.1:
         dependencies:
-            mime-db: 1.53.0
+            mime-db: 1.54.0
 
     mime@1.6.0: {}
 
@@ -46286,7 +46291,7 @@ snapshots:
         dependencies:
             '@google-cloud/storage': 7.16.0(encoding@0.1.13)
             '@types/express': 5.0.2
-            multer: 2.0.0
+            multer: 2.0.2
             urlencode: 2.0.0
             uuid: 11.1.0
         transitivePeerDependencies:
@@ -46301,21 +46306,11 @@ snapshots:
             html-comment-regex: 1.1.2
             run-parallel: 1.2.0
 
-    multer@1.4.5-lts.1:
+    multer@2.0.2:
         dependencies:
             append-field: 1.0.0
             busboy: 1.6.0
-            concat-stream: 1.6.2
-            mkdirp: 0.5.6
-            object-assign: 4.1.1
-            type-is: 1.6.18
-            xtend: 4.0.2
-
-    multer@2.0.0:
-        dependencies:
-            append-field: 1.0.0
-            busboy: 1.6.0
-            concat-stream: 1.6.2
+            concat-stream: 2.0.0
             mkdirp: 0.5.6
             object-assign: 4.1.1
             type-is: 1.6.18
@@ -52604,11 +52599,11 @@ snapshots:
             media-typer: 0.3.0
             mime-types: 2.1.35
 
-    type-is@2.0.0:
+    type-is@2.0.1:
         dependencies:
             content-type: 1.0.5
             media-typer: 1.1.0
-            mime-types: 3.0.0
+            mime-types: 3.0.1
 
     type@2.7.3: {}
 
@@ -53615,7 +53610,7 @@ snapshots:
         dependencies:
             '@types/bonjour': 3.5.13
             '@types/connect-history-api-fallback': 1.5.4
-            '@types/express': 4.17.21
+            '@types/express': 4.17.23
             '@types/serve-index': 1.9.4
             '@types/serve-static': 1.15.7
             '@types/sockjs': 0.3.36
@@ -53654,7 +53649,7 @@ snapshots:
         dependencies:
             '@types/bonjour': 3.5.13
             '@types/connect-history-api-fallback': 1.5.4
-            '@types/express': 4.17.21
+            '@types/express': 4.17.23
             '@types/serve-index': 1.9.4
             '@types/serve-static': 1.15.7
             '@types/sockjs': 0.3.36
