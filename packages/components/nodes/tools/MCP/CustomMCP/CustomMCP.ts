@@ -72,7 +72,11 @@ class Custom_MCP implements INode {
                     label: 'How to use',
                     value: howToUseCode
                 },
-                placeholder: mcpServerConfig
+                placeholder: mcpServerConfig,
+                warning:
+                    process.env.CUSTOM_MCP_SECURITY_CHECK === 'true'
+                        ? 'In next release, only Remote MCP with url is supported. Read more <a href="https://docs.flowiseai.com/tutorials/tools-and-mcp#streamable-http-recommended" target="_blank">here</a>'
+                        : undefined
             },
             {
                 label: 'Available Actions',
@@ -171,7 +175,9 @@ class Custom_MCP implements INode {
 
             // Compatible with stdio and SSE
             let toolkit: MCPToolkit
-            if (serverParams?.command === undefined) {
+            if (process.env.CUSTOM_MCP_PROTOCOL === 'sse') {
+                toolkit = new MCPToolkit(serverParams, 'sse')
+            } else if (serverParams?.command === undefined) {
                 toolkit = new MCPToolkit(serverParams, 'sse')
             } else {
                 toolkit = new MCPToolkit(serverParams, 'stdio')
