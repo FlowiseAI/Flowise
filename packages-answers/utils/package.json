@@ -67,7 +67,7 @@
         "openai": "4.96.0",
         "openapi-typescript": "^6.3.7",
         "pdfjs-dist": "^4.2.67",
-        "puppeteer": "^20.7.1",
+        "puppeteer": "^21.0.0",
         "react": "18.2.0",
         "react-dom": "18.2.0",
         "readline": "^1.3.0",

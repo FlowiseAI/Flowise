@@ -119,7 +119,11 @@
             "semver": "7.7.1",
             "set-value": "4.1.0",
             "unset-value": "2.0.1",
-            "webpack-dev-middleware": "7.4.2"
+            "webpack-dev-middleware": "7.4.2",
+            "ws": "8.17.1",
+            "axios": "1.8.2",
+            "qs": "6.7.3",
+            "tar-fs": "3.0.9"
         }
     },
     "engines": {

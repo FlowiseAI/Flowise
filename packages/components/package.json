@@ -148,7 +148,7 @@
         "pdfjs-dist": "^4.2.67",
         "pg": "^8.11.2",
         "playwright": "^1.35.0",
-        "puppeteer": "^20.7.1",
+        "puppeteer": "^21.0.0",
         "pyodide": ">=0.21.0-alpha.2",
         "redis": "^4.6.7",
         "replicate": "^0.31.1",
