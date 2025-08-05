@@ -108,6 +108,7 @@
             "body-parser": "2.0.2",
             "braces": "3.0.3",
             "cross-spawn": "7.0.6",
+            "ejs": "^3.1.10",
             "glob-parent": "6.0.2",
             "http-proxy-middleware": "3.0.3",
             "json5": "2.2.3",
