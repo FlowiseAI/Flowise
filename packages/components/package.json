@@ -175,7 +175,6 @@
         "@types/papaparse": "^5.3.16",
         "@types/pg": "^8.10.2",
         "@types/ws": "^8.18.1",
-        "babel-register": "^6.26.0",
         "gulp": "^4.0.2",
         "rimraf": "^5.0.5",
         "tsc-watch": "^6.0.4",
