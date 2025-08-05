@@ -17,7 +17,7 @@ RUN apk add --no-cache chromium
 RUN apk add --no-cache curl
 
 #install PNPM globaly
-RUN npm install -g pnpm
+RUN npm install -g pnpm@10.13.1
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
