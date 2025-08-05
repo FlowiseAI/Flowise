@@ -2,7 +2,9 @@
 
 ## Executive Summary
 
-TheAnswer.AI is a comprehensive AI agent platform built with a multi-layered architecture. The system combines a Next.js frontend with a Flowise backend, Auth0 authentication, AWS cloud services, and advanced observability through LangFuse. This document provides a detailed security analysis with accurate implementation references.
+TheAnswer.AI is a comprehensive AI agent platform built with a multi-layered security architecture. The system combines a Next.js frontend with a Flowise backend, Auth0 authentication, AWS cloud services, and advanced observability through LangFuse. This document provides a detailed security analysis with accurate implementation references.
+
+> **⚠️ Security Notice**: This document reflects the actual implementation state as of December 2024, including security gaps that need addressing.
 
 ## System Overview
 
@@ -14,7 +16,7 @@ TheAnswer.AI is a comprehensive AI agent platform built with a multi-layered arc
 -   **Cache**: Redis for sessions and rate limiting
 -   **File Storage**: Configurable (Local, AWS S3, Google Cloud Storage)
 -   **Deployment**: AWS ECS via Copilot / Docker containers
--   **Observability**: LangFuse for AI monitoring, Prometheus metrics
+-   **Observability**: LangFuse for AI monitoring, Sentry for error tracking, Prometheus metrics
 
 ## High-Level Architecture
 
@@ -56,7 +58,7 @@ graph TB
     %% Monitoring Layer
     subgraph "Monitoring & Observability"
         LANGFUSE[LangFuse<br/>AI Monitoring]
-
+        SENTRY[Sentry<br/>Error Tracking]
         PROMETHEUS[Prometheus<br/>Metrics]
     end
 
@@ -97,7 +99,7 @@ graph TB
     CHATFLOWS --> VECTOR
 
     CHATFLOWS --> LANGFUSE
-
+    WEB --> SENTRY
 
     CHATFLOWS --> TOOLS
 
@@ -116,7 +118,7 @@ graph TB
     class WEB,AUTH_MW,CHATFLOWS appLayer
     class POSTGRES,REDIS,S3 dataLayer
     class LLM,VECTOR aiLayer
-    class LANGFUSE,PROMETHEUS monitorLayer
+    class LANGFUSE,SENTRY,PROMETHEUS monitorLayer
     class AUTH0 authLayer
 ```
 
@@ -239,6 +241,7 @@ graph TB
 | Vector Databases                     | 20+ types (Pinecone, Qdrant, etc.)            | `/packages/components/nodes/vectorstores/`          | 20+ directories         |
 | **Monitoring & Observability**       |
 | LangFuse                             | AI monitoring (31 files)                      | `/packages/server/src/routes/langfuse/`             | Multiple                |
+| Sentry                               | Error tracking (web only)                     | `/apps/web/`                                        | `sentry.*.config.js`    |
 | Prometheus                           | Metrics endpoint                              | `/packages/server/src/metrics/`                     | `Prometheus.ts`         |
 | **External Integrations**            |
 | External Tools                       | 3rd party services                            | `/packages/components/nodes/tools/`                 | Multiple                |
@@ -248,6 +251,42 @@ graph TB
 | Aurora PostgreSQL                    | Managed database                              | `/copilot/environments/addons/`                     | CloudFormation          |
 | ElastiCache Redis                    | Managed Redis                                 | `/copilot/environments/addons/`                     | `redis-elasticache.yml` |
 | AWS Secrets Manager                  | Credential storage                            | `/packages/server/src/utils/`                       | `index.ts:1499-1536`    |
+
+## Security Gaps
+
+This section compares the documented security claims with the actual implementation found in the codebase.
+
+### Critical Security Gaps
+
+| Feature                   | Documentation Claim                               | Reality                               | Evidence                                                      | Fix Priority |
+| ------------------------- | ------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------- | ------------ |
+| **API Key Storage**       | "Scrypt-based key hashing with salt"              | 🔴 API keys stored in PLAIN TEXT      | `/packages/server/src/database/entities/ApiKey.ts:10`         | CRITICAL     |
+| **Authentication Bypass** | "All `/api/v1/` endpoints require authentication" | 🔴 Internal header bypasses ALL auth  | `/packages/server/src/index.ts:215-217`                       | CRITICAL     |
+| **Docker Security**       | Identified as security risk                       | 🔴 Flowise container runs as root     | `/Dockerfile` (no USER directive)                             | CRITICAL     |
+| **CORS Policy**           | "Strict origin validation"                        | 🔴 Default allows ALL origins (`*`)   | `/apps/web/middleware.ts:4`                                   | HIGH         |
+| **JWT Algorithm**         | "RS256 token signing algorithm"                   | ⚠️ Default is HS256, not RS256        | `/packages/server/src/middlewares/authentication/index.ts:18` | HIGH         |
+| **Vector Encryption**     | "Encrypted vector storage"                        | ⚠️ Vectors stored unencrypted         | Database schema analysis                                      | MEDIUM       |
+| **Chat Data Encryption**  | "Encrypted data" (in diagram)                     | ⚠️ Chat messages stored as plain text | `/packages/server/src/database/entities/ChatMessage.ts:26`    | MEDIUM       |
+| **Prompt Injection**      | "Input filtering: Malicious prompt detection"     | ❌ No implementation found            | N/A                                                           | HIGH         |
+
+### Accurately Documented Features
+
+| Feature                   | Documentation Claim                | Reality                                      | Evidence                                                               |
+| ------------------------- | ---------------------------------- | -------------------------------------------- | ---------------------------------------------------------------------- |
+| **XSS Protection**        | "Request sanitization middleware"  | ✅ Implemented with sanitize-html            | `/packages/server/src/utils/XSS.ts`                                    |
+| **Rate Limiting**         | "Per-endpoint and per-user limits" | ✅ Sophisticated Redis-backed implementation | `/packages/server/src/utils/rateLimit.ts`                              |
+| **Credential Encryption** | "Only credential data encrypted"   | ✅ 3rd party API keys encrypted with AES     | `/packages/server/src/database/entities/Credential.ts:23`              |
+| **S3 Integration**        | "Organization-scoped file paths"   | ✅ Properly implemented                      | `/packages/server/node_modules/flowise-components/src/storageUtils.ts` |
+| **Prometheus Metrics**    | "Metrics collection"               | ✅ Full implementation at `/api/v1/metrics`  | `/packages/server/src/metrics/Prometheus.ts`                           |
+| **LangFuse Integration**  | "AI Model Monitoring"              | ✅ Comprehensive (31 files)                  | `/packages/server/src/routes/langfuse/`                                |
+
+### Understated Features
+
+| Feature              | Documentation      | Reality                                                |
+| -------------------- | ------------------ | ------------------------------------------------------ |
+| **AI Providers**     | Lists ~6 providers | 40+ chat model implementations                         |
+| **Vector Databases** | Lists 3 types      | 20+ vector store implementations                       |
+| **Monitoring**       | Basic description  | Extensive LangFuse integration with billing, analytics |
 
 ## Authentication & Authorization Framework
 
@@ -298,6 +337,12 @@ export const compareKeys = (storedKey: string, suppliedKey: string): boolean => 
 -   **Middleware Chain**: Authentication → Authorization → Resource Access
 -   **Role-Based Permissions**: Organization-scoped user roles
 
+#### Whitelist System:
+
+-   Configurable URL whitelisting for public endpoints
+-   Bypass authentication for specific routes (health checks, webhooks)
+-   Case-insensitive URL matching
+
 ## Data Security Architecture
 
 ### 1. Database Security
@@ -309,11 +354,12 @@ export const compareKeys = (storedKey: string, suppliedKey: string): boolean => 
 -   **Vector Storage**: pgvector extension for AI embeddings
 -   **Connection Security**: SSL/TLS encrypted connections
 -   **Access Control**: Database-level user permissions
--   **Backup Strategy**: Standard database backups
+-   **Backup Strategy**: Standard database backups (not specifically encrypted)
 
 #### Redis Security:
 
 -   **Session Storage**: Secure session management
+-   **Rate Limiting**: Attack prevention
 -   **TTL Management**: Automatic data expiration
 -   **Connection Security**: Password-protected access
 
@@ -342,7 +388,15 @@ export const compareKeys = (storedKey: string, suppliedKey: string): boolean => 
     -   Generated content storage
     -   Chatflow-specific file organization
 
-### 3. Database Encryption
+#### Alternative Storage Options:
+
+-   **Google Cloud Storage**: When `STORAGE_TYPE=gcs`
+-   **Local Storage**: When `STORAGE_TYPE=local` (default)
+-   **Credential Management**: AWS SDK handles credential detection automatically
+
+### 3. Database Encryption (Limited Implementation)
+
+#### What's Actually Encrypted:
 
 -   **3rd Party Credentials**: `Credential.encryptedData` field uses AES encryption for API keys (OpenAI, Anthropic, etc.)
 -   **Encryption Key Sources**:
@@ -358,12 +412,111 @@ export const compareKeys = (storedKey: string, suppliedKey: string): boolean => 
     SECRETKEY_PATH=<custom-path-for-encryption-key>
     ```
 
+#### What's Partially Secured:
+
+-   **Flowise API Keys**:
+    -   `ApiKey.apiKey`: Stored as plain text (for lookup)
+    -   `ApiKey.apiSecret`: Scrypt-hashed with salt (secure storage)
+
 #### What's Stored as Plain Text:
 
 -   **User Data**: Names, emails, organization info (plain text)
 -   **Chat Messages**: Conversation history stored unencrypted
 -   **Chatflow Data**: Flow configurations stored as plain text
 -   **Vector Data**: Embeddings stored unencrypted in pgvector
+
+### 4. Secret Management
+
+#### BWS Secure Integration:
+
+-   **Environment Variables**: Encrypted storage and management
+-   **Multi-Environment Support**: Production, staging, development
+-   **Secret Rotation**: Automated credential updates
+-   **Ephemeral Keys**: Temporary encryption keys for builds
+-   **Platform Integration**: Netlify/Vercel deployment sync
+
+#### AWS Secrets Manager:
+
+-   **Credential Storage**: API keys and sensitive data
+-   **Automatic Rotation**: Built-in rotation policies
+-   **Regional Replication**: Multi-region availability
+-   **IAM Integration**: Fine-grained access control
+
+### 5. Data Flow Security
+
+#### Input Validation:
+
+-   **XSS Protection**: Request sanitization middleware
+-   **SQL Injection**: Parameterized queries via TypeORM
+-   **Rate Limiting**: Per-endpoint and per-user limits
+-   **File Upload Security**: Size limits, type validation
+
+#### Output Security:
+
+-   **Content Security Policy**: Frame ancestor controls
+-   **CORS Configuration**: Strict origin validation
+-   **Response Sanitization**: Sensitive data redaction
+
+## Infrastructure Security
+
+### 1. Containerization Security
+
+#### Docker Configuration (Actual Implementation):
+
+**✅ Implemented Security Features:**
+
+-   **Multi-stage builds**: Both Dockerfiles use base → pruner → installer/build → runner stages
+-   **Minimal base images**: `node:20-alpine` (Alpine Linux minimal images)
+-   **Network isolation**: Docker Compose creates `app-network` bridge for internal communication
+
+**❌ Missing Security Features:**
+
+-   **Non-root execution**:
+    -   ✅ Web app: Creates and uses `nextjs` user (uid 1001)
+    -   ❌ Flowise server: Runs as root user (security risk)
+-   **Read-only mounts**: No read-only volume configurations found
+-   **Volume security**: Standard read-write mounts used
+
+**Security Concerns:**
+
+-   Flowise container runs as root with full filesystem access
+-   Volumes mounted as read-write (no immutable configurations)
+-   Database credentials in plain text environment variables
+
+### 2. AWS Integration Security
+
+#### AWS Implementation (Actually Implemented):
+
+**S3 File Storage**:
+
+-   **SDK**: `@aws-sdk/client-s3` v3.x
+-   **Operations**: Upload, download, list, delete files
+-   **Security**: Configurable credentials, regional isolation
+-   **Organization Scoping**: Files organized by organization ID
+
+**AWS Secrets Manager**:
+
+-   **SDK**: `@aws-sdk/client-secrets-manager`
+-   **Activation**: `SECRETKEY_STORAGE_TYPE=aws`
+-   **Configuration**:
+    ```bash
+    SECRETKEY_AWS_REGION=us-east-1
+    SECRETKEY_AWS_ACCESS_KEY=<access-key>
+    SECRETKEY_AWS_SECRET_KEY=<secret-key>
+    ```
+-   **Use Case**: Secure storage of API keys and credentials
+
+**AWS Bedrock AI Models**:
+
+-   **SDK**: `@aws-sdk/client-bedrock-runtime`
+-   **Models**: Support for AWS-hosted LLMs
+-   **Security**: IAM-based access control
+
+**DynamoDB Memory Storage**:
+
+-   **SDK**: `@aws-sdk/client-dynamodb`
+-   **Use Case**: Agent memory persistence
+-   **Security**: Table-level access controls
 
 #### Network Security:
 
@@ -534,6 +687,250 @@ CORS_ORIGINS=*  # Configure appropriately for production
 -   **Registry Isolation**: Separate Prometheus registry to avoid conflicts
 -   **Service Labeling**: Configurable service name via `METRICS_SERVICE_NAME`
 -   **Node Metrics**: Optional inclusion via `METRICS_INCLUDE_NODE_METRICS`
+
+### 3. Sentry Error Tracking (Web App Only)
+
+#### Implementation Details:
+
+-   **Location**: `apps/web/sentry.*.config.js` files
+-   **Coverage**: Client-side, server-side, and edge runtime error tracking
+-   **DSN**: Hard-coded Sentry project DSN
+-   **Configuration**:
+    ```javascript
+    // Only enabled in production
+    enabled: !IS_DEVELOPMENT
+    tracesSampleRate: 1.0
+    ```
+
+#### Security Features:
+
+-   **Development Disabled**: No data sent during development
+-   **Error Dialog**: User-facing error reporting dialog
+-   **Release Tracking**: Automatic release correlation
+-   **Performance Monitoring**: 100% trace sampling rate
+
+### 4. Alternative Monitoring
+
+#### OpenTelemetry Support:
+
+-   **Implementation**: `packages/server/src/metrics/OpenTelemetry.ts`
+-   **Configuration**: Set `METRICS_PROVIDER=open_telemetry`
+-   **Endpoint**: Configurable via `METRICS_OPEN_TELEMETRY_METRIC_ENDPOINT`
+
+## Compliance & Governance
+
+### 1. Data Protection
+
+#### GDPR Compliance:
+
+-   **Data Minimization**: Only necessary data collection
+-   **Right to Deletion**: User data removal capabilities
+-   **Data Portability**: Secure data export features
+-   **Consent Management**: User permission tracking
+
+#### SOC 2 Considerations:
+
+-   **Access Controls**: Principle of least privilege
+-   **Audit Logging**: Comprehensive activity logs
+-   **Data Classification**: Sensitive data identification
+-   **Incident Response**: Security event procedures
+
+### 2. Security Policies
+
+#### Access Management:
+
+-   **User Provisioning**: Automated account creation/deletion
+-   **Permission Reviews**: Regular access audits
+-   **Multi-Factor Authentication**: Enhanced login security
+-   **Session Management**: Secure session handling
+
+## Threat Model & Risk Assessment
+
+### 1. Data Security Concerns
+
+#### Database Encryption Status:
+
+-   **Encrypted**: 3rd party credentials (OpenAI, Anthropic, etc.) using AES encryption
+-   **Hashed**: Flowise API secrets using scrypt with salt
+-   **Plain Text (Security Risk)**:
+    -   Flowise API keys (for lookup purposes)
+    -   User conversation history and chat messages
+    -   Chatflow configurations and business logic
+    -   Vector embeddings and document content
+    -   User personal information and organization data
+-   **Recommendation**: Consider implementing field-level encryption for sensitive chat data and user information
+
+### 2. Primary Attack Vectors
+
+#### Web Application Attacks:
+
+-   **XSS Protection**: Content sanitization middleware
+-   **CSRF Prevention**: Token-based validation
+-   **SQL Injection**: Parameterized queries
+-   **Authentication Bypass**: Multi-layer validation
+
+#### API Security:
+
+-   **Rate Limiting**: DDoS protection
+-   **API Key Compromise**: Key rotation procedures
+-   **Data Exfiltration**: Access logging and monitoring
+-   **Injection Attacks**: Input validation
+
+### 2. AI-Specific Threats
+
+#### Prompt Injection:
+
+-   **Input Filtering**: Malicious prompt detection
+-   **Context Isolation**: User-specific conversations
+-   **Output Validation**: Response content checking
+-   **Model Guardrails**: Safety constraints
+
+#### Data Poisoning:
+
+-   **Training Data Security**: Curated datasets
+-   **User Input Validation**: Content verification
+-   **Model Versioning**: Rollback capabilities
+-   **Audit Trails**: Data lineage tracking
+
+## Security Operations
+
+### 1. Incident Response
+
+#### Detection Capabilities:
+
+-   **Real-time Monitoring**: Automated threat detection
+-   **Log Analysis**: Security event correlation
+-   **User Behavior Analytics**: Anomaly detection
+-   **AI Model Monitoring**: Unusual AI behavior
+
+#### Response Procedures:
+
+-   **Incident Classification**: Severity-based response
+-   **Containment Strategies**: Threat isolation
+-   **Recovery Procedures**: Service restoration
+-   **Post-Incident Analysis**: Lessons learned
+
+### 2. Vulnerability Management
+
+#### Security Testing:
+
+-   **Dependency Scanning**: Third-party library security
+-   **Code Analysis**: Static security analysis
+-   **Penetration Testing**: External security assessment
+-   **Bug Bounty Program**: Community security research
+
+## Recommendations
+
+### 1. Immediate Security Enhancements
+
+1. **Fix Docker Security Issues (HIGH PRIORITY)**
+
+    - Create non-root user for Flowise container:
+        ```dockerfile
+        RUN addgroup --system --gid 1001 flowise
+        RUN adduser --system --uid 1001 flowise
+        USER flowise
+        ```
+    - Implement read-only root filesystem where possible
+    - Use secrets management for database passwords (not environment variables)
+
+2. **Database Security Improvements**
+
+    - Implement field-level encryption for chat messages and user data
+    - Enable database connection encryption (SSL/TLS)
+    - Regular security audits of database access patterns
+
+3. **Enhanced Monitoring**
+
+    - Security Information and Event Management (SIEM)
+    - User behavior analytics
+    - Container security monitoring
+
+4. **Web Application Firewall (WAF)**
+    - Advanced threat detection
+    - DDoS protection
+    - Bot management
+
+### 2. Long-term Security Strategy
+
+1. **Compliance Certifications**
+
+    - SOC 2 Type II
+    - ISO 27001
+    - GDPR compliance audit
+
+2. **Security Automation**
+
+    - Infrastructure as Code security
+    - Automated vulnerability scanning
+    - Security orchestration platforms
+
+3. **Advanced AI Security**
+    - AI red teaming
+    - Model security testing
+    - Adversarial attack protection
+
+## Configuration References
+
+### Environment Variables (Security-Related)
+
+```bash
+# Authentication
+AUTH0_SECRET=<jwt-secret>
+AUTH0_AUDIENCE=<api-identifier>
+AUTH0_ISSUER_BASE_URL=<auth0-domain>
+AUTH0_TOKEN_SIGN_ALG=RS256
+
+# API Security
+APIKEY_STORAGE_TYPE=db
+FLOWISE_SECRETKEY_OVERWRITE=<encryption-key>
+
+# Database Security
+DATABASE_URL=<encrypted-connection-string>
+REDIS_URL=<redis-connection-string>
+
+# AWS Security
+AWS_ACCESS_KEY_ID=<access-key>
+AWS_SECRET_ACCESS_KEY=<secret-key>
+SECRETKEY_STORAGE_TYPE=aws
+SECRETKEY_AWS_REGION=us-east-1
+
+# Monitoring
+LANGFUSE_SECRET_KEY=<langfuse-secret>
+LANGFUSE_PUBLIC_KEY=<langfuse-public>
+SENTRY_DSN=<sentry-endpoint>
+
+# Security Features
+CORS_ORIGINS=<allowed-origins>
+IFRAME_ORIGINS=<allowed-iframe-origins>
+DISABLE_FLOWISE_TELEMETRY=true
+
+# Storage Configuration
+STORAGE_TYPE=s3  # or 'local', 'gcs'
+S3_STORAGE_BUCKET_NAME=<bucket-name>
+S3_STORAGE_ACCESS_KEY_ID=<access-key>
+S3_STORAGE_SECRET_ACCESS_KEY=<secret-key>
+S3_STORAGE_REGION=<region>
+
+# Monitoring
+ENABLE_METRICS=true
+METRICS_PROVIDER=prometheus  # or 'open_telemetry'
+METRICS_SERVICE_NAME=TheAnswerAI
+```
+
+### Docker Security Configuration
+
+```dockerfile
+# Multi-stage build for security
+FROM node:18-alpine AS base
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+# Run as non-root user
+USER nextjs
+EXPOSE 3000
+ENV PORT 3000
+```
 
 ## Contact Information
 

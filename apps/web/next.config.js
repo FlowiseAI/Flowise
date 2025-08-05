@@ -5,7 +5,15 @@ const webpack = require('webpack')
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE === 'true'
 })
-
+if (process.env.DATABASE_SECRET) {
+    const { engine, host, port, dbname, username, password } = JSON.parse(process.env.DATABASE_SECRET)
+    process.env.DATABASE_HOST = host
+    process.env.DATABASE_PORT = port
+    process.env.DATABASE_NAME = dbname
+    process.env.DATABASE_USER = username
+    process.env.DATABASE_PASSWORD = password
+    process.env.DATABASE_TYPE = engine
+}
 /**
  * @type {import('next').NextConfig}
  */
@@ -69,15 +77,14 @@ let nextConfig = withBundleAnalyzer({
     },
     env: {
         // Use explicit AUTH0_BASE_URL from environment, fallback to VERCEL_BRANCH_URL if on Vercel
-        AUTH0_BASE_URL:
-            process.env.AUTH0_BASE_URL ?? (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : undefined),
-        REACT_APP_AUTH0_ORGANIZATION_ID: process.env.AUTH0_ORGANIZATION_ID,
-        REACT_APP_AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
-        REACT_APP_AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
-        REACT_APP_AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
-        FLAGSMITH_ENVIRONMENT_ID: process.env.FLAGSMITH_ENVIRONMENT_ID,
-        AUTH0_SECRET: process.env.AUTH0_SECRET ?? process.env.WEB_AUTH0_SECRET,
-        CHATFLOW_DOMAIN_OVERRIDE: process.env.CHATFLOW_DOMAIN_OVERRIDE
+        //AUTH0_BASE_URL: process.env.AUTH0_BASE_URL ?? (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : undefined),
+        // REACT_APP_AUTH0_ORGANIZATION_ID: process.env.AUTH0_ORGANIZATION_ID,
+        // REACT_APP_AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
+        // REACT_APP_AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
+        // REACT_APP_AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
+        // FLAGSMITH_ENVIRONMENT_ID: process.env.FLAGSMITH_ENVIRONMENT_ID,
+        // AUTH0_SECRET: process.env.AUTH0_SECRET ?? process.env.WEB_AUTH0_SECRET,
+        // CHATFLOW_DOMAIN_OVERRIDE: process.env.CHATFLOW_DOMAIN_OVERRIDE
     },
     webpack: (config, { isServer }) => {
         config.externals = [...config.externals, 'db', 'puppeteer', 'handlebars']

@@ -13,7 +13,9 @@ http:
     # Health check path for Next.js - checks Auth0 session endpoint
     healthcheck: '/api/auth/session'
     # Domain alias for the frontend
-    alias: ${COPILOT_ENVIRONMENT_NAME}.app.theanswer.ai
+    # <customer>.theanswer.ai
+    #alias: ${COPILOT_SVC_NAME}.${COPILOT_ENVIRONMENT_NAME}.${COPILOT_APPLICATION_NAME}.theanswer.ai
+    alias: web.${COPILOT_ENVIRONMENT_NAME}.${COPILOT_APPLICATION_NAME}.theanswer.ai
     # Enable session stickiness for consistent user experience
     stickiness: true
 
@@ -23,12 +25,18 @@ image:
     build:
         dockerfile: ./apps/web/Dockerfile
         context: .
+        args:
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+            NEXT_PUBLIC_GOOGLE_DEVELOPER_KEY: ${NEXT_PUBLIC_GOOGLE_DEVELOPER_KEY}
+            #AUTH0_BASE_URL: ${AUTH0_BASE_URL}
+            AUTH0_BASE_URL: app.${COPILOT_ENVIRONMENT_NAME}.${COPILOT_APPLICATION_NAME}.theanswer.ai
+
     # Port exposed through your container to route traffic to it.
     port: 3000
 
 cpu: 1024 # Number of CPU units for the task
 memory: 2048 # Amount of memory in MiB used by the task
-count: 2 # Number of tasks that should be running in your service
+count: 2 # Number of tasks that should be running in your servicde
 exec: true # Enable running commands in your container
 
 # Enable Service Connect for intra-environment traffic between services
@@ -43,34 +51,23 @@ variables: # Pass environment variables as key value pairs.
     HOSTNAME: '0.0.0.0'
     NEXT_TELEMETRY_DISABLED: '1'
 
-    # Database connection from backend service
-    DATABASE_TYPE: postgres
-    DATABASE_HOST:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterEndpoint
-    DATABASE_PORT: '5432'
-
-    # Redis connection
-    REDIS_URL:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
-
 # Load environment-specific variables from file
-env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
+env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.web.env
 
 # Secrets from AWS Secrets Manager or Parameter Store
 secrets:
-    # Database credentials from Aurora cluster
     DATABASE_SECRET:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterAuroraSecret
 
     # Auth0 secrets - should be stored in Parameter Store
-    AUTH0_SECRET:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-auth0-secret
-    AUTH0_CLIENT_SECRET:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-auth0-client-secret
+    # AUTH0_SECRET:
+    #     from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-auth0-secret
+    # AUTH0_CLIENT_SECRET:
+    #     from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-auth0-client-secret
 
     # Stripe secret for billing
-    BILLING_STRIPE_SECRET_KEY:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-stripe-secret
+    # BILLING_STRIPE_SECRET_KEY:
+    # from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-stripe-secret
 
 # Configure deployment strategy
 deployment:

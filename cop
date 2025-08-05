@@ -1,0 +1,9 @@
+#!/bin/bash
+W=copilot/.workspace
+[ -f $W ] && O=$(<$W)
+mkdir -p copilot
+echo "application: ${CUSTOMER_NAME:-default}" > $W
+copilot "$@"
+E=$?
+[ "$O" ] && echo "$O" > $W || rm -f $W
+exit $E

@@ -13,7 +13,7 @@ http:
     path: '/'
     # You can specify a custom health check path. The default is "/".
     healthcheck: '/api/v1/ping'
-    alias: ${COPILOT_ENVIRONMENT_NAME}.flowise.theanswer.ai
+    alias: ${COPILOT_ENVIRONMENT_NAME}--api.${COPILOT_APPLICATION_NAME}.theanswer.ai
     stickiness: true
 
 # Configuration for your containers and service.

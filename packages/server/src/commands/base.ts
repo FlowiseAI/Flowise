@@ -176,6 +176,22 @@ export abstract class BaseCommand extends Command {
             process.env.DATABASE_USER = username
             process.env.DATABASE_PASSWORD = password
             process.env.DATABASE_TYPE = engine
+
+            // PostgreSQL for Agent Memory
+            process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_DATABASE = dbname
+            process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_HOST = host
+            process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PASSWORD = password
+            process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PORT = '5432'
+            process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_TABLE_NAME = 'aai_agent_memory'
+            process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_USER = username
+
+            // PostgreSQL for Record Manager
+            process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_DATABASE = dbname
+            process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_HOST = host
+            process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PASSWORD = password
+            process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PORT = '5432'
+            process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_TABLE_NAME = 'aai_upsertion_records'
+            process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_USER = username
         }
 
         // Langsmith tracing

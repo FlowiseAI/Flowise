@@ -14,6 +14,7 @@
         "apps/desktop"
     ],
     "scripts": {
+        "copilot": "npx dotenv -- ./cop",
         "build": "pnpm secure-run \"turbo run build\"",
         "build-force": "pnpm clean && turbo run build --force",
         "dev": "pnpm secure-run \"turbo run dev dev-docker\"",
