@@ -13,7 +13,7 @@ class VertexAIEmbeddingsWithStripNewLines extends VertexAIEmbeddings {
     }
 
     async embedDocuments(texts: string[]): Promise<number[][]> {
-        const processedTexts = this.stripNewLines ? texts.map(text => text.replace(/\n/g, ' ')) : texts
+        const processedTexts = this.stripNewLines ? texts.map((text) => text.replace(/\n/g, ' ')) : texts
         return super.embedDocuments(processedTexts)
     }
 
