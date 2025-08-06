@@ -7,11 +7,11 @@
         "dev": "tsc -w"
     },
     "devDependencies": {
+        "@algolia/client-search": "^4.25.2",
+        "@types/node": "18.15.11",
         "db": "workspace:*",
         "openai": "4.96.0",
-        "@algolia/client-search": "^4.19.1",
-        "@types/node": "18.15.11",
         "tsconfig": "workspace:*",
-        "typescript": "~5.5.2"
+        "typescript": "~5.5.4"
     }
 }

@@ -18,7 +18,7 @@ import {
   readConfigFile,
   log
 } from './project-selector.js';
-import { validateDeployment } from './update-environments/utils.js';
+import { execBwsCommandWithRetrySync } from './bws-retry-utils.js';
 // Import functions from project-selector module
 
 // Get the directory name in ESM
@@ -91,13 +91,11 @@ async function readConfigFileWithFallback() {
       if (hasToken) {
         try {
           log('debug', 'Fetching secrets from BWS to look for _bwsconfig_json...');
-          // Get all secrets using BWS
-          const output = execSync(
+          // Get all secrets using BWS with retry logic
+          const output = execBwsCommandWithRetrySync(
             `${getBwsCommand()} secret list -t ${process.env.BWS_ACCESS_TOKEN} --output json`,
-            {
-              encoding: 'utf8',
-              env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' }
-            }
+            { encoding: 'utf8' },
+            'Config secrets fetch'
           );
 
           // Clean output of any ANSI codes
@@ -297,11 +295,12 @@ async function validateBwsToken() {
   }
 
   try {
-    // 2) Replace "./node_modules/.bin/bws" with the helper function
-    execSync(`${getBwsCommand()} project list -t ${process.env.BWS_ACCESS_TOKEN}`, {
-      stdio: 'ignore',
-      env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' }
-    });
+    // Use retry logic for BWS token validation
+    execBwsCommandWithRetrySync(
+      `${getBwsCommand()} project list -t ${process.env.BWS_ACCESS_TOKEN}`,
+      { stdio: 'ignore' },
+      'Token validation'
+    );
     return true;
   } catch {
     // prettier-ignore
@@ -872,15 +871,13 @@ async function loadEnvironmentSecrets(environment, projectId) {
     // More concise logging
     log('debug', `Loading secrets for ${projectId}...`);
 
-    // 3) Replace "./node_modules/.bin/bws" with getBwsCommand()
-    const output = execSync(
+    // Use retry logic for BWS secret list command
+    const output = execBwsCommandWithRetrySync(
       `${getBwsCommand()} secret list -t ${
         process.env.BWS_ACCESS_TOKEN
       } ${projectId} --output json`,
-      {
-        encoding: 'utf-8',
-        env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' }
-      }
+      { encoding: 'utf-8' },
+      `Loading secrets for ${projectId}`
     );
 
     let bwsSecrets;

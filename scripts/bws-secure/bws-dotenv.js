@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 import logger from './logger.js';
+import { execBwsCommandWithRetrySync } from './bws-retry-utils.js';
 
 // Helper function to properly parse multiline environment variables from BWS output
 function parseEnvironmentOutput(output) {
@@ -145,12 +146,10 @@ function loadBwsSecrets(encryptionKey) {
     try {
       console.log('Debug: Loading global secrets...');
 
-      const output = execSync(
+      const output = execBwsCommandWithRetrySync(
         `./node_modules/.bin/bws secret list -t ${process.env.BWS_ACCESS_TOKEN} -o env`,
-        {
-          encoding: 'utf-8',
-          env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' }
-        }
+        { encoding: 'utf-8' },
+        'Loading global secrets'
       );
 
       // These are data processing operations, not command executions
@@ -174,12 +173,10 @@ function loadBwsSecrets(encryptionKey) {
         console.log('Debug: Loading project secrets for:', process.env.BWS_PROJECT_ID);
         // NOSONAR: BWS CLI execution with system-controlled variables - no user input
         /* sonar-disable-next-line sonar:S4721 */
-        const projectOutput = execSync(
+        const projectOutput = execBwsCommandWithRetrySync(
           `./node_modules/.bin/bws secret list ${process.env.BWS_PROJECT_ID} -t ${process.env.BWS_ACCESS_TOKEN} -o env`,
-          {
-            encoding: 'utf-8',
-            env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' }
-          }
+          { encoding: 'utf-8' },
+          `Loading project secrets for ${process.env.BWS_PROJECT_ID}`
         );
 
         const projectSecrets = parseEnvironmentOutput(projectOutput);

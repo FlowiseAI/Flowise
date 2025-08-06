@@ -1,10 +1,10 @@
-import type { PyodideInterface } from 'pyodide'
+import type { PyodideAPI } from 'pyodide'
 import * as path from 'path'
 import { getUserHome } from '../../../src/utils'
 
-let pyodideInstance: PyodideInterface | undefined
+let pyodideInstance: PyodideAPI | undefined
 
-export async function LoadPyodide(): Promise<PyodideInterface> {
+export async function LoadPyodide(): Promise<PyodideAPI> {
     if (pyodideInstance === undefined) {
         const { loadPyodide } = await import('pyodide')
         const obj: any = { packageCacheDir: path.join(getUserHome(), '.flowise', 'pyodideCacheDir') }

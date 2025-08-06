@@ -96,7 +96,12 @@ export const utilGetChatMessage = async ({
             const indicesToKeep = new Set()
 
             messages.forEach((message, index) => {
-                if (message.role === 'apiMessage' && message.feedback && feedbackTypes.includes(message.feedback.rating)) {
+                if (
+                    message.role === 'apiMessage' &&
+                    message.feedback &&
+                    Array.isArray(feedbackTypes) &&
+                    feedbackTypes.includes(message.feedback.rating)
+                ) {
                     if (index > 0) indicesToKeep.add(index - 1)
                     indicesToKeep.add(index)
                 }

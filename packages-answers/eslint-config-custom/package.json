@@ -4,14 +4,14 @@
     "main": "index.js",
     "license": "MIT",
     "dependencies": {
-        "eslint": "^7.23.0",
-        "eslint-config-next": "^13.4.12",
-        "eslint-config-prettier": "^8.8.0",
-        "eslint-plugin-react": "^7.37.5",
-        "eslint-config-turbo": "^1.10.10"
+        "eslint": "^7.32.0",
+        "eslint-config-next": "^13.5.11",
+        "eslint-config-prettier": "^8.10.2",
+        "eslint-config-turbo": "^1.13.4",
+        "eslint-plugin-react": "^7.37.5"
     },
     "devDependencies": {
-        "typescript": "~5.5.2"
+        "typescript": "~5.5.4"
     },
     "publishConfig": {
         "access": "public"

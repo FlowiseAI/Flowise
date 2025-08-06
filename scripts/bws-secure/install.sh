@@ -305,22 +305,22 @@ try {
 
   // Add dependencies if they don't exist
   packageJson.devDependencies = packageJson.devDependencies || {};
-  packageJson.devDependencies['dotenv'] = packageJson.devDependencies['dotenv'] || '^16.4.7';
-  packageJson.devDependencies['dotenv-cli'] = packageJson.devDependencies['dotenv-cli'] || '^8.0.0';
-  packageJson.devDependencies['yargs'] = packageJson.devDependencies['yargs'] || '^17.7.2';
+  packageJson.devDependencies['dotenv'] = packageJson.devDependencies['dotenv'] || '^17.2.1';
+  packageJson.devDependencies['dotenv-cli'] = packageJson.devDependencies['dotenv-cli'] || '^10.0.0';
+  packageJson.devDependencies['yargs'] = packageJson.devDependencies['yargs'] || '^18.0.0';
   
   // Check Node.js version and apply appropriate glob version
   const nodeVersion = process.version.match(/^v(\d+)\./)[1];
   const nodeVersionNum = parseInt(nodeVersion, 10);
   if (nodeVersionNum >= 20) {
     // For Node.js 20+, use glob v11
-    packageJson.devDependencies['glob'] = '^11.0.1';
+    packageJson.devDependencies['glob'] = '^11.0.3';
   } else {
     // For Node.js < 20, use glob v10
     packageJson.devDependencies['glob'] = '^10.3.10';
   }
   
-  packageJson.devDependencies['axios'] = packageJson.devDependencies['axios'] || '^1.7.9';
+  packageJson.devDependencies['axios'] = packageJson.devDependencies['axios'] || '^1.11.0';
 
   // Write back to file
   fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
