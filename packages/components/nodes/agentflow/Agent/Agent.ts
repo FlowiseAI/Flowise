@@ -2126,7 +2126,6 @@ class Agent_Agentflow implements INode {
                                     )
 
                                     if (downloadResult) {
-                                        // Use simple {type, data} schema like CodeInterpreterE2B
                                         const fileType = this.getArtifactTypeFromFilename(annotation.filename)
 
                                         if (fileType === 'png' || fileType === 'jpeg' || fileType === 'jpg') {
