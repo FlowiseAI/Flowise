@@ -1403,6 +1403,29 @@ export const executeAgentFlow = async ({
             }
         }
 
+        // Check if startState has been overridden from overrideConfig.startState and is enabled
+        const startAgentflowNode = nodes.find((node) => node.data.name === 'startAgentflow')
+        const isStartStateEnabled =
+            nodeOverrides && startAgentflowNode
+                ? nodeOverrides[startAgentflowNode.data.label]?.find((param: any) => param.name === 'startState')?.enabled ?? false
+                : false
+
+        if (isStartStateEnabled && overrideConfig?.startState) {
+            if (Array.isArray(overrideConfig.startState)) {
+                // Handle array format: [{"key": "foo", "value": "foo4"}]
+                const overrideStateObj: ICommonObject = {}
+                for (const item of overrideConfig.startState) {
+                    if (item.key && item.value !== undefined) {
+                        overrideStateObj[item.key] = item.value
+                    }
+                }
+                previousState = { ...previousState, ...overrideStateObj }
+            } else if (typeof overrideConfig.startState === 'object') {
+                // Object override: "startState": {...}
+                previousState = { ...previousState, ...overrideConfig.startState }
+            }
+        }
+
         agentflowRuntime.state = previousState
     }
 
