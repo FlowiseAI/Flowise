@@ -866,6 +866,24 @@
             "name": "chatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5",
+                    "name": "gpt-5",
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gpt-5-mini",
+                    "name": "gpt-5-mini",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "gpt-5-nano",
+                    "name": "gpt-5-nano",
+                    "input_cost": 0.00000005,
+                    "output_cost": 0.0000004
+                },
+                {
                     "label": "gpt-4.1",
                     "name": "gpt-4.1",
                     "input_cost": 2e-6,

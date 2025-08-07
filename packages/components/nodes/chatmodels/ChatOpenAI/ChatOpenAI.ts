@@ -280,7 +280,7 @@ class ChatOpenAI_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (modelName.includes('o3') || modelName.includes('o1')) {
+        if (modelName.includes('o3') || modelName.includes('o1') || modelName.includes('gpt-5')) {
             delete obj.temperature
         }
         if (modelName.includes('o1') || modelName.includes('o3')) {
