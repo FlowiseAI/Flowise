@@ -217,7 +217,7 @@ class ExecuteFlow_Agentflow implements INode {
             if (newState && Object.keys(newState).length > 0) {
                 for (const key in newState) {
                     if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = newState[key].replace('{{ output }}', resultText)
+                        newState[key] = newState[key].replaceAll('{{ output }}', resultText)
                     }
                 }
             }
