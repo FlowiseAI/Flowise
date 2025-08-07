@@ -37,16 +37,16 @@
 
 ### Docker Compose
 
-1. 克隆 Flowise 項目
-2. 進入項目根目錄的 `docker` 文件夾
-3. 複製 `.env.example` 文件，粘貼到相同位置，並重命名為 `.env` 文件
+1. 複製 Flowise 專案
+2. 進入專案根目錄的 `docker` 資料夾
+3. 複製 `.env.example` 文件，貼到相同位置，並重新命名為 `.env` 文件
 4. `docker compose up -d`
 5. 打開 [http://localhost:3000](http://localhost:3000)
 6. 您可以通過 `docker compose stop` 停止容器
 
 ### Docker 映像
 
-1. 本地構建映像：
+1. 本地建置映像：
     ```bash
     docker build --no-cache -t flowise .
     ```
@@ -63,7 +63,7 @@
 
 ## 👨‍💻 開發者
 
-Flowise 在單個 mono 存儲庫中有 3 個不同的模塊。
+Flowise 在單個 mono 存儲庫中有 3 個不同的模組。
 
 -   `server`: 提供 API 邏輯的 Node 後端
 -   `ui`: React 前端
@@ -79,7 +79,7 @@ Flowise 在單個 mono 存儲庫中有 3 個不同的模塊。
 
 ### 設置
 
-1.  克隆存儲庫
+1.  複製存儲庫
 
     ```bash
     git clone https://github.com/FlowiseAI/Flowise.git
@@ -91,21 +91,21 @@ Flowise 在單個 mono 存儲庫中有 3 個不同的模塊。
     cd Flowise
     ```
 
-3.  安裝所有模塊的所有依賴項：
+3.  安裝所有模組的所有依賴項：
 
     ```bash
     pnpm install
     ```
 
-4.  構建所有代碼：
+4.  建置所有代碼：
 
     ```bash
     pnpm build
     ```
 
     <details>
-    <summary>退出代碼 134（JavaScript 堆內存不足）</summary>  
-      如果在運行上述 `build` 腳本時遇到此錯誤，請嘗試增加 Node.js 堆大小並重新運行腳本：
+    <summary>Exit code 134（JavaScript heap out of memory）</summary>  
+      如果在運行上述 `build` 腳本時遇到此錯誤，請嘗試增加 Node.js 中的 Heap 記憶體大小並重新運行腳本：
 
         export NODE_OPTIONS="--max-old-space-size=4096"
         pnpm build
@@ -118,9 +118,9 @@ Flowise 在單個 mono 存儲庫中有 3 個不同的模塊。
     pnpm start
     ```
 
-    您現在可以訪問 [http://localhost:3000](http://localhost:3000)
+    您現在可以開啟 [http://localhost:3000](http://localhost:3000)
 
-6.  對於開發構建：
+6.  對於開發建置：
 
     -   在 `packages/ui` 中創建 `.env` 文件並指定 `VITE_PORT`（參考 `.env.example`）
     -   在 `packages/server` 中創建 `.env` 文件並指定 `PORT`（參考 `.env.example`）
