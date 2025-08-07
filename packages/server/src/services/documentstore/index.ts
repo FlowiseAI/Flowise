@@ -573,7 +573,10 @@ const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComp
             chatflowid: uuidv4(),
             appDataSource,
             databaseEntities,
-            logger
+            logger,
+            preview: data.preview || false,
+            storeId: data.storeId,
+            loaderId: data.id
         }
         const docNodeInstance = new nodeModule.nodeClass()
         let docs: IDocument[] = await docNodeInstance.init(nodeData, '', options)
@@ -821,17 +824,31 @@ export const processLoader = async ({
             throw new Error('Unauthorized access')
         }
     }
-    await _saveChunksToStorage(
-        appDataSource,
-        componentNodes,
-        data,
-        entity,
-        docLoaderId,
-        orgId,
-        workspaceId,
-        subscriptionId,
-        usageCacheManager
-    )
+
+    // Check for existing loader and if stream is enabled
+    if (entity.loaders && entity.loaders.length > 0) {
+        const existingLoaders = JSON.parse(entity.loaders)
+        const existingLoader = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === docLoaderId)
+
+        // Check if the loader is configured for streaming
+        if (existingLoader && existingLoader.loaderConfig?.stream) {
+            // Handle streaming
+            await _streamChunksToStorage(appDataSource, componentNodes, data, entity, docLoaderId)
+        }
+    } else {
+        await _saveChunksToStorage(
+            appDataSource,
+            componentNodes,
+            data,
+            entity,
+            docLoaderId,
+            orgId,
+            workspaceId,
+            subscriptionId,
+            usageCacheManager
+        )
+    }
+
     return getDocumentStoreFileChunks(appDataSource, data.storeId as string, docLoaderId)
 }
 
@@ -1042,6 +1059,70 @@ const _saveChunksToStorage = async (
         throw new InternalFlowiseError(
             StatusCodes.INTERNAL_SERVER_ERROR,
             `Error: documentStoreServices._saveChunksToStorage - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const _streamChunksToStorage = async (
+    appDataSource: DataSource,
+    componentNodes: IComponentNodes,
+    data: IDocumentStoreLoaderForPreview,
+    entity: DocumentStore,
+    newLoaderId: string
+) => {
+    try {
+        // Step 1: remove all previous chunks for the loader
+        await appDataSource.getRepository(DocumentStoreFileChunk).delete({ docId: newLoaderId })
+
+        // Step 2: set the loader to SYNCING status
+        await updateDocumentStoreLoaderStatus(entity, newLoaderId, DocumentStoreStatus.SYNCING)
+
+        // Step 3: process the loaders data in streaming mode
+        const response = await _splitIntoChunks(appDataSource, componentNodes, data)
+
+        // Step 4: update the loaders with the new loaderConfig
+        const totalChunks = response[0].metadata?.totalChunks || 0
+        const totalChars = response[0].metadata?.totalChars || 0
+        await updateDocumentStoreLoaderStatus(entity, newLoaderId, DocumentStoreStatus.SYNC, totalChunks, totalChars)
+
+        return
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices._streamChunksToStorage - ${getErrorMessage(error)}`
+        )
+    }
+}
+
+const updateDocumentStoreLoaderStatus = async (
+    entity: DocumentStore,
+    loaderId: string,
+    status: DocumentStoreStatus,
+    totalChunks = 0,
+    totalChars = 0
+) => {
+    try {
+        const existingLoaders = JSON.parse(entity.loaders)
+        const loader = existingLoaders.find((ldr: IDocumentStoreLoader) => ldr.id === loaderId)
+        if (!loader) {
+            throw new InternalFlowiseError(
+                StatusCodes.NOT_FOUND,
+                `Error: documentStoreServices.updateDocumentStoreLoaderStatus - Loader ${loaderId} not found`
+            )
+        }
+        loader.status = status
+        if (totalChunks) {
+            loader.totalChunks = totalChunks
+        }
+        if (totalChars) {
+            loader.totalChars = totalChars
+        }
+        entity.loaders = JSON.stringify(existingLoaders)
+        await getRunningExpressApp().AppDataSource.getRepository(DocumentStore).save(entity)
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: documentStoreServices.updateDocumentStoreLoaderStatus - ${getErrorMessage(error)}`
         )
     }
 }
