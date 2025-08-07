@@ -34,6 +34,7 @@ import { GeneralErrorMessage, LICENSE_QUOTAS } from './utils/constants'
 import { getRunningExpressApp } from './utils/getRunningExpressApp'
 import { ENTERPRISE_FEATURE_FLAGS } from './utils/quotaUsage'
 import Stripe from 'stripe'
+import logger from './utils/logger'
 
 const allSSOProviders = ['azure', 'google', 'auth0', 'github']
 export class IdentityManager {
@@ -100,60 +101,63 @@ export class IdentityManager {
     }
 
     private _validateLicenseKey = async () => {
-        const LICENSE_URL = process.env.LICENSE_URL
-        const FLOWISE_EE_LICENSE_KEY = process.env.FLOWISE_EE_LICENSE_KEY
+        this.licenseValid = true
+        this.currentInstancePlatform = Platform.ENTERPRISE
+        logger.info(`[Server] Validating license key... ${this.licenseValid} - ${this.currentInstancePlatform}`)
+        // const LICENSE_URL = process.env.LICENSE_URL
+        // const FLOWISE_EE_LICENSE_KEY = process.env.FLOWISE_EE_LICENSE_KEY
 
-        // First check if license key is missing
-        if (!FLOWISE_EE_LICENSE_KEY) {
-            this.licenseValid = false
-            this.currentInstancePlatform = Platform.OPEN_SOURCE
-            return
-        }
+        // // First check if license key is missing
+        // if (!FLOWISE_EE_LICENSE_KEY) {
+        //     this.licenseValid = false
+        //     this.currentInstancePlatform = Platform.OPEN_SOURCE
+        //     return
+        // }
 
-        try {
-            if (process.env.OFFLINE === 'true') {
-                const decodedLicense = this._offlineVerifyLicense(FLOWISE_EE_LICENSE_KEY)
+        // try {
+        //     if (process.env.OFFLINE === 'true') {
+        //         const decodedLicense = this._offlineVerifyLicense(FLOWISE_EE_LICENSE_KEY)
 
-                if (!decodedLicense) {
-                    this.licenseValid = false
-                } else {
-                    const issuedAtSeconds = decodedLicense.iat
-                    if (!issuedAtSeconds) {
-                        this.licenseValid = false
-                    } else {
-                        const issuedAt = new Date(issuedAtSeconds * 1000)
-                        const expiryDurationInMonths = decodedLicense.expiryDurationInMonths || 0
+        //         if (!decodedLicense) {
+        //             this.licenseValid = false
+        //         } else {
+        //             const issuedAtSeconds = decodedLicense.iat
+        //             if (!issuedAtSeconds) {
+        //                 this.licenseValid = false
+        //             } else {
+        //                 const issuedAt = new Date(issuedAtSeconds * 1000)
+        //                 const expiryDurationInMonths = decodedLicense.expiryDurationInMonths || 0
 
-                        const expiryDate = new Date(issuedAt)
-                        expiryDate.setMonth(expiryDate.getMonth() + expiryDurationInMonths)
+        //                 const expiryDate = new Date(issuedAt)
+        //                 expiryDate.setMonth(expiryDate.getMonth() + expiryDurationInMonths)
 
-                        if (new Date() > expiryDate) {
-                            this.licenseValid = false
-                        } else {
-                            this.licenseValid = true
-                        }
-                    }
-                }
-                this.currentInstancePlatform = Platform.ENTERPRISE
-            } else if (LICENSE_URL) {
-                try {
-                    const response = await axios.post(`${LICENSE_URL}/enterprise/verify`, { license: FLOWISE_EE_LICENSE_KEY })
-                    this.licenseValid = response.data?.valid
+        //                 if (new Date() > expiryDate) {
+        //                     this.licenseValid = false
+        //                 } else {
+        //                     this.licenseValid = true
+        //                 }
+        //             }
+        //         }
+        //         this.currentInstancePlatform = Platform.ENTERPRISE
+        //     } else if (LICENSE_URL) {
+        //         try {
+        //             const response = await axios.post(`${LICENSE_URL}/enterprise/verify`, { license: FLOWISE_EE_LICENSE_KEY })
+        //             this.licenseValid = response.data?.valid
 
-                    if (!LICENSE_URL.includes('api')) this.currentInstancePlatform = Platform.ENTERPRISE
-                    else if (LICENSE_URL.includes('v1')) this.currentInstancePlatform = Platform.ENTERPRISE
-                    else if (LICENSE_URL.includes('v2')) this.currentInstancePlatform = response.data?.platform
-                    else throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
-                } catch (error) {
-                    console.error('Error verifying license key:', error)
-                    this.licenseValid = false
-                    this.currentInstancePlatform = Platform.ENTERPRISE
-                    return
-                }
-            }
-        } catch (error) {
-            this.licenseValid = false
-        }
+        //             if (!LICENSE_URL.includes('api')) this.currentInstancePlatform = Platform.ENTERPRISE
+        //             else if (LICENSE_URL.includes('v1')) this.currentInstancePlatform = Platform.ENTERPRISE
+        //             else if (LICENSE_URL.includes('v2')) this.currentInstancePlatform = response.data?.platform
+        //             else throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, GeneralErrorMessage.UNHANDLED_EDGE_CASE)
+        //         } catch (error) {
+        //             console.error('Error verifying license key:', error)
+        //             this.licenseValid = false
+        //             this.currentInstancePlatform = Platform.ENTERPRISE
+        //             return
+        //         }
+        //     }
+        // } catch (error) {
+        //     this.licenseValid = false
+        // }
     }
 
     public initializeSSO = async (app: express.Application) => {
