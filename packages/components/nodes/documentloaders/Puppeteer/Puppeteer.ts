@@ -114,8 +114,9 @@ class Puppeteer_DocumentLoaders implements INode {
                 label: 'CSS Selector (Optional)',
                 name: 'cssSelector',
                 type: 'string',
+                description: 'Only content inside this selector will be extracted. Leave empty to use the entire page body.',
                 optional: true,
-                description: 'Only content inside this selector will be extracted. Leave empty to use the entire page body.'
+                additionalParams: true
             },
             {
                 label: 'Additional Metadata',
@@ -135,14 +136,6 @@ class Puppeteer_DocumentLoaders implements INode {
                 placeholder: 'key1, key2, key3.nestedKey1',
                 optional: true,
                 additionalParams: true
-            },
-            {
-                label: 'Browser Executable File Path (Optional)',
-                name: 'executablePath',
-                type: 'string',
-                placeholder: 'For example C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-                optional: true,
-                description: 'Sometimes puppeteer cannot find/launch the browser executable without a specific path.'
             }
         ]
         this.outputs = [
@@ -170,7 +163,6 @@ class Puppeteer_DocumentLoaders implements INode {
         const waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as PuppeteerLifeCycleEvent
         const waitForSelector = nodeData.inputs?.waitForSelector as string
         const cssSelector = nodeData.inputs?.cssSelector as string
-        const executablePath = nodeData.inputs?.executablePath as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
         const orgId = options.orgId
@@ -193,7 +185,7 @@ class Puppeteer_DocumentLoaders implements INode {
                     launchOptions: {
                         args: ['--no-sandbox'],
                         headless: 'new',
-                        executablePath
+                        executablePath: process.env.PUPPETEER_EXECUTABLE_FILE_PATH
                     }
                 }
                 if (waitUntilGoToOption) {
