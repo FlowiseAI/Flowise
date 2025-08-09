@@ -32,6 +32,7 @@ export abstract class BaseCommand extends Command {
         DATABASE_PASSWORD: Flags.string(),
         DATABASE_SSL: Flags.string(),
         DATABASE_SSL_KEY_BASE64: Flags.string(),
+        DATABASE_PGSCHEMA: Flags.string(),
         LANGCHAIN_TRACING_V2: Flags.string(),
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
@@ -157,6 +158,7 @@ export abstract class BaseCommand extends Command {
         if (flags.DATABASE_PASSWORD) process.env.DATABASE_PASSWORD = flags.DATABASE_PASSWORD
         if (flags.DATABASE_SSL) process.env.DATABASE_SSL = flags.DATABASE_SSL
         if (flags.DATABASE_SSL_KEY_BASE64) process.env.DATABASE_SSL_KEY_BASE64 = flags.DATABASE_SSL_KEY_BASE64
+        if (flags.DATABASE_PGSCHEMA) process.env.DATABASE_PGSCHEMA = flags.DATABASE_PGSCHEMA
 
         // Langsmith tracing
         if (flags.LANGCHAIN_TRACING_V2) process.env.LANGCHAIN_TRACING_V2 = flags.LANGCHAIN_TRACING_V2
