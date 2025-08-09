@@ -402,6 +402,25 @@ function printEnvironmentSummary() {
 const originalEnvironment = { ...process.env };
 let originalEnvironmentFileContent = ''; // Store original .env file content
 
+// Helper function to get project ID with fallback to first available
+function getProjectIdWithFallback(project, environment) {
+  let projectId = project.bwsProjectIds?.[environment];
+
+  // If no project ID found for the specific environment, fall back to first available
+  if (!projectId && project.bwsProjectIds) {
+    const availableProjectIds = Object.values(project.bwsProjectIds).filter((id) => id);
+    if (availableProjectIds.length > 0) {
+      projectId = availableProjectIds[0];
+      log(
+        'info',
+        `No project ID found for environment '${environment}', using fallback: ${projectId}`
+      );
+    }
+  }
+
+  return projectId;
+}
+
 // Keep original setupEnvironment but enhance with platform support
 async function setupEnvironment(options = { isPlatformBuild: false }) {
   log('info', 'Creating project-specific secure files...');
@@ -702,7 +721,20 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
             (p) => p.projectName === originalEnvironment_.BWS_PROJECT
           );
           if (project) {
-            const projectId = project.bwsProjectIds[originalEnvironment_.BWS_ENV];
+            let projectId = project.bwsProjectIds[originalEnvironment_.BWS_ENV];
+
+            // If no project ID found for the specific environment, fall back to first available
+            if (!projectId && project.bwsProjectIds) {
+              const availableProjectIds = Object.values(project.bwsProjectIds).filter((id) => id);
+              if (availableProjectIds.length > 0) {
+                projectId = availableProjectIds[0];
+                log(
+                  'info',
+                  `No project ID found for environment '${originalEnvironment_.BWS_ENV}', using fallback: ${projectId}`
+                );
+              }
+            }
+
             if (projectId) {
               process.env.BWS_PROJECT_ID = projectId;
               const sourceFile = `.env.secure.${projectId}`;
@@ -746,7 +778,7 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
 
       // For local development, prioritize loading the current environment first
       const environment = process.env.BWS_ENV || 'local';
-      const currentProjectId = project.bwsProjectIds[environment];
+      const currentProjectId = getProjectIdWithFallback(project, environment);
 
       if (currentProjectId) {
         log(
@@ -779,7 +811,7 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
           log('info', `Loaded environment from ${sourceFile} for local development`);
         }
       } else {
-        log('warn', `No project ID found for environment ${environment}`);
+        log('warn', `No project ID found for environment ${environment} and no fallback available`);
       }
 
       // Then load any other project IDs that might be needed

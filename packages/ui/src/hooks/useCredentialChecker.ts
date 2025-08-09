@@ -1,34 +1,38 @@
 import { useState, useCallback } from 'react'
 import { useSidekickFetcher } from '@ui/SidekickSelect/hooks/useSidekickDetails'
 
+// Minimal interface for credential assignment callback
+type CredentialAssignmentCallback = (sidekick: any, assignments: Record<string, string>) => void
+
+// Type for credential assignments map
+type CredentialAssignments = Record<string, string>
+
 /**
  * Custom hook for checking and managing missing credentials in sidekicks
  */
 export const useCredentialChecker = () => {
-    const [showCredentialModal, setShowCredentialModal] = useState(false)
-    const [missingCredentials, setMissingCredentials] = useState([])
-    const [onCredentialsAssigned, setOnCredentialsAssigned] = useState(null)
+    const [showCredentialModal, setShowCredentialModal] = useState<boolean>(false)
+    const [missingCredentials, setMissingCredentials] = useState<any[]>([])
+    const [onCredentialsAssigned, setOnCredentialsAssigned] = useState<CredentialAssignmentCallback | null>(null)
 
     const { fetchDetails } = useSidekickFetcher()
 
     /**
      * Check if a sidekick has missing credentials and show modal if needed
-     * @param {string} sidekickId - Sidekick ID to check
-     * @param {function} onAssign - Callback when credentials are assigned
-     * @param {boolean} forceShow - Force show modal regardless of missing credentials
-     * @returns {Promise<boolean>} Whether modal was shown
+     * @param sidekickId - Sidekick ID to check
+     * @param onAssign - Callback when credentials are assigned
+     * @param forceShow - Force show modal regardless of missing credentials
+     * @returns Whether modal was shown
      */
     const checkCredentials = useCallback(
-        async (sidekickId, onAssign, forceShow = false) => {
+        async (sidekickId: string, onAssign: CredentialAssignmentCallback, forceShow: boolean = false): Promise<boolean> => {
             try {
                 console.log('[useCredentialChecker] checking credentials for sidekick', sidekickId)
                 const sidekick = await fetchDetails(sidekickId)
 
                 if (!sidekick) {
                     console.error('Failed to fetch sidekick details')
-                    if (onAssign) {
-                        onAssign(null, {})
-                    }
+                    onAssign(null, {})
                     return false
                 }
 
@@ -42,17 +46,13 @@ export const useCredentialChecker = () => {
                     setShowCredentialModal(true)
                     return true
                 } else {
-                    if (onAssign) {
-                        onAssign(sidekick, {})
-                    }
+                    onAssign(sidekick, {})
                     return false
                 }
             } catch (error) {
                 console.error('Error checking credentials:', error)
                 // Proceed without credentials modal on error
-                if (onAssign) {
-                    onAssign(null, {})
-                }
+                onAssign(null, {})
                 return false
             }
         },
@@ -61,10 +61,10 @@ export const useCredentialChecker = () => {
 
     /**
      * Handle credential assignments from the modal
-     * @param {object} credentialAssignments - Map of node IDs to credential IDs
+     * @param credentialAssignments - Map of node IDs to credential IDs
      */
     const handleAssign = useCallback(
-        (credentialAssignments) => {
+        (credentialAssignments: CredentialAssignments): void => {
             if (onCredentialsAssigned) {
                 onCredentialsAssigned(null, credentialAssignments)
             }
@@ -80,7 +80,7 @@ export const useCredentialChecker = () => {
     /**
      * Handle skipping credential assignment
      */
-    const handleSkip = useCallback(() => {
+    const handleSkip = useCallback((): void => {
         if (onCredentialsAssigned) {
             onCredentialsAssigned(null, {})
         }
@@ -94,7 +94,7 @@ export const useCredentialChecker = () => {
     /**
      * Handle canceling credential assignment
      */
-    const handleCancel = useCallback(() => {
+    const handleCancel = useCallback((): void => {
         // Reset state without calling onCredentialsAssigned
         setShowCredentialModal(false)
         setMissingCredentials([])

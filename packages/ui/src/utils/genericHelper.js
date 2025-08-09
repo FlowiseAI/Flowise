@@ -1,4 +1,4 @@
-import { uniq, get, isEqual } from 'lodash'
+import { uniq, get, isEqual, omit } from 'lodash'
 import moment from 'moment'
 
 export const getUniqueNodeId = (nodeData, nodes) => {
@@ -518,7 +518,7 @@ export const generateExportFlowData = (chatflow) => {
             error: error
         }
     }
-    
+
     const nodes = flowData.nodes
     const edges = flowData.edges
 
@@ -563,6 +563,7 @@ export const generateExportFlowData = (chatflow) => {
         nodes[i].data = _removeCredentialId(newNodeData)
     }
     const exportJson = {
+        ...omit(chatflow, ['createdDate', 'updatedDate', 'deletedDate', 'apikeyid', 'isOwner', 'canEdit', 'deployed']),
         id: chatflow.id,
         name: chatflow.name,
         description: chatflow.description,

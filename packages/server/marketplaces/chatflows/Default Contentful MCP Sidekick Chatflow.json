@@ -1,8 +1,13 @@
 {
-    "name": "Contentful Sidekick",
-    "description": "This Contentful MCP idelkick is a specialized assistant designed to streamline interactions with Contentful's Content Management API. It leverages the Contentful Model Context Protocol (MCP) to offer users a single, natural language interface for managing all aspects of their content. This includes tasks such as:\n\n• Creating, updating, and deleting content entries\n• Uploading, updating, and publishing assets\n• Managing content types and editing their configurations\n• Navigating spaces and environments for content staging and production\n\nIn essence, it allows developers and publishers to perform complex content operations easily, ensuring that all requests adhere to best practices and safe operations while offering step-by-step guidance throughout the process.",
+    "id": "17395c03-18f5-4f2c-a28e-0d4c4d1b4c95",
+    "name": "Default Contentful MCP Sidekick",
     "framework": ["Answer Agent"],
     "usecases": ["Contentful", "CMS"],
+    "description": "This Contentful MCP idelkick is a specialized assistant designed to streamline interactions with Contentful's Content Management API. It leverages the Contentful Model Context Protocol (MCP) to offer users a single, natural language interface for managing all aspects of their content. This includes tasks such as:\n\n• Creating, updating, and deleting content entries\n• Uploading, updating, and publishing assets\n• Managing content types and editing their configurations\n• Navigating spaces and environments for content staging and production\n\nIn essence, it allows developers and publishers to perform complex content operations easily, ensuring that all requests adhere to best practices and safe operations while offering step-by-step guidance throughout the process.",
+    "chatbotConfig": "{\"chatFeedback\":{\"status\":true},\"fullFileUpload\":{\"status\":true,\"allowedUploadFileTypes\":\"text/css,text/csv,text/html,application/json,text/markdown,application/pdf,application/sql,text/plain,application/xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document\",\"pdfFile\":{\"usage\":\"perPage\",\"legacyBuild\":false}},\"displayMode\":\"chatbot\",\"embeddedUrl\":\"\",\"starterPrompts\":{\"0\":{\"prompt\":\"I need to create a new content entry for my blog. Can you guide me through the process and publish it when ready?\"},\"1\":{\"prompt\":\"Show me all available assets in my space so I can review them; then help me update one of the asset’s metadata.\"},\"2\":{\"prompt\":\"I want to update my content type for articles. Please retrieve the current schema, apply modifications, and publish the changes.\"}}}",
+    "visibility": ["Private", "Browser Extension"],
+    "category": "",
+    "type": "CHATFLOW",
     "nodes": [
         {
             "id": "aaiToolAgent_0",

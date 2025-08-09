@@ -1,3 +1,4 @@
+/* eslint-disable max-len, complexity, max-lines-per-function, no-await-in-loop, no-console, unused-imports/no-unused-vars */
 /**
  * Chatflow Testing Script
  *
@@ -651,6 +652,7 @@ async function testChatflow(chatflowData) {
                 console.log(`  Files: ${turn.files.map((f) => f.path).join(', ')}`)
             }
             if (currentSessionId) {
+                /* codeql-disable-next-line js/clear-text-logging */
                 console.log(`  Using Session ID: ${currentSessionId}`)
             }
         } else {
@@ -983,6 +985,7 @@ async function main() {
 
                     console.log(statusLine)
                     if (result.finalSessionId) {
+                        /* codeql-disable-next-line js/clear-text-logging */
                         console.log(`   Session ID: ${result.finalSessionId}`)
                     }
                 } else {

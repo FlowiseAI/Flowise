@@ -305,7 +305,7 @@ const getChatflowById = async (chatflowId: string, user?: IUser): Promise<any> =
     }
 }
 
-const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
+const saveChatflow = async (newChatFlow: ChatFlow): Promise<ChatFlow> => {
     try {
         const appServer = getRunningExpressApp()
         let dbResponse: ChatFlow
@@ -395,6 +395,7 @@ const saveChatflow = async (newChatFlow: ChatFlow): Promise<any> => {
             const chatflow = appServer.AppDataSource.getRepository(ChatFlow).create(newChatFlow)
             dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).save(chatflow)
         }
+
         await appServer.telemetry.sendTelemetry('chatflow_created', {
             version: await getAppVersion(),
             chatflowId: dbResponse.id,

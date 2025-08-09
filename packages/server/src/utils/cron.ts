@@ -12,10 +12,10 @@ import generateCsv from '../jobs/generateCsv'
 const BILLING_SYNC_CRON_SCHEDULE = process.env.BILLING_SYNC_CRON_SCHEDULE || '*/15 * * * *'
 
 /**
- * Base URL for the API request
+ * API Host for the API request
  * Default: http://localhost:{PORT} where PORT is the server port
  */
-const API_BASE_URL = process.env.API_BASE_URL || `http://localhost:${process.env.PORT || 3000}`
+const API_HOST = process.env.API_HOST || `http://localhost:${process.env.PORT || 3000}`
 
 /**
  * Flag to enable/disable billing sync cron job
@@ -40,7 +40,7 @@ export function initCronJobs() {
         cron.schedule(BILLING_SYNC_CRON_SCHEDULE, async () => {
             try {
                 logger.info('📅 [cron]: Running billing usage sync job')
-                const response = await axios.post(`${API_BASE_URL}/api/v1/billing/usage/sync`, {})
+                const response = await axios.post(`${API_HOST}/api/v1/billing/usage/sync`, {})
                 logger.info(`📅 [cron]: Billing usage sync completed with status: ${response.status}`)
             } catch (error) {
                 logger.error('❌ [cron]: Error running billing usage sync:', error)

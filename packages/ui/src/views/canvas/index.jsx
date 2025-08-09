@@ -60,7 +60,6 @@ import { FLOWISE_CREDENTIAL_ID } from '@/store/constant'
 // credential checking
 import { useCredentialChecker } from '@/hooks/useCredentialChecker'
 import UnifiedCredentialsModal from '@/ui-component/dialog/UnifiedCredentialsModal'
-
 const nodeTypes = { customNode: CanvasNode, stickyNote: StickyNote }
 const edgeTypes = { buttonedge: ButtonEdge }
 
@@ -111,7 +110,6 @@ const Canvas = ({ chatflowid: chatflowId }) => {
     const reactFlowWrapper = useRef(null)
     const canvasHeaderRef = useRef(null)
 
-    // Credential checking hook
     const { showCredentialModal, missingCredentials, checkCredentials, handleAssign, handleSkip, handleCancel } = useCredentialChecker()
 
     // ==============================|| Chatflow API ||============================== //
@@ -179,7 +177,10 @@ const Canvas = ({ chatflowid: chatflowId }) => {
             let existingChatflow = null
             let hasAccess = false
 
-            if (flowData.id) {
+            // For imported chatflows, always treat as new to avoid 403 errors
+            const isImportedChatflow = !!fileName
+
+            if (flowData.id && !isImportedChatflow) {
                 try {
                     existingChatflow = await chatflowsApi.getSpecificChatflow(flowData.id)
                     hasAccess = true
@@ -251,10 +252,9 @@ const Canvas = ({ chatflowid: chatflowId }) => {
         try {
             const flowData = JSON.parse(file)
 
-            // Check for missing credentials before proceeding
-            checkCredentials(flowData, (updatedFlowData, credentialAssignments) => {
-                proceedWithFlow(updatedFlowData, credentialAssignments, fileName)
-            })
+            // Process flow data directly without credential checking
+            // This follows the same pattern as marketplace fix
+            proceedWithFlow(flowData, {}, fileName)
         } catch (e) {
             // console.error('handleLoadFlow - Error:', e)
             enqueueSnackbar({
@@ -307,14 +307,6 @@ const Canvas = ({ chatflowid: chatflowId }) => {
 
     const handleSaveFlow = (chatflowName, configs = {}) => {
         try {
-            // console.log('💾 handleSaveFlow called with:', {
-            //     chatflowName,
-            //     hasConfigs: !!configs,
-            //     hasChatflow: !!chatflow,
-            //     chatflowId: chatflow?.id,
-            //     isNewChatflow: !chatflow?.id
-            // })
-
             if (reactFlowInstance) {
                 const nodes = reactFlowInstance.getNodes().map((node) => {
                     const nodeData = cloneDeep(node.data)
@@ -336,7 +328,6 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                     typeof chatflow.chatbotConfig === 'object' ? JSON.stringify(chatflow.chatbotConfig) : chatflow.chatbotConfig
 
                 if (!chatflow.id) {
-                    // console.log('💾 Creating new chatflow...')
                     const duplicatedFlowData = localStorage.getItem('duplicatedFlowData')
                     let newChatflowBody
                     if (duplicatedFlowData) {
@@ -353,6 +344,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                     } else {
                         newChatflowBody = {
                             ...configs,
+                            ...omit(chatflow, ['edges', 'nodes']),
                             name: chatflowName,
                             parentChatflowId,
                             deployed: false,
@@ -635,14 +627,6 @@ const Canvas = ({ chatflowid: chatflowId }) => {
             if (duplicatedFlowData) {
                 try {
                     const parsedData = JSON.parse(duplicatedFlowData)
-                    // console.log('🎨 Parsed duplicated flow data:', {
-                    //     name: parsedData.name,
-                    //     hasNodes: !!parsedData.nodes,
-                    //     nodeCount: parsedData.nodes?.length || 0,
-                    //     hasEdges: !!parsedData.edges,
-                    //     edgeCount: parsedData.edges?.length || 0,
-                    //     hasFlowData: !!parsedData.flowData
-                    // })
 
                     setNodes(parsedData.nodes || [])
                     setEdges(parsedData.edges || [])
@@ -651,19 +635,11 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                         ...parsedData,
                         id: undefined,
                         name: `Copy of ${parsedData.name || templateName || 'Untitled Chatflow'}`,
-                        // Don't inherit marketplace-specific descriptions for file imports
-                        description: parsedData.description === 'Copied from marketplace' ? '' : parsedData.description,
+                        // Keep the original description from marketplace
+                        description: parsedData.description || '',
                         deployed: false,
                         isPublic: false
                     }
-
-                    // console.log('🎨 Setting new chatflow:', {
-                    //     name: newChatflow.name,
-                    //     id: newChatflow.id,
-                    //     nodesSet: parsedData.nodes?.length || 0,
-                    //     edgesSet: parsedData.edges?.length || 0
-                    // })
-
                     setChatflow(newChatflow)
                     dispatch({ type: SET_CHATFLOW, chatflow: newChatflow })
 
@@ -671,7 +647,6 @@ const Canvas = ({ chatflowid: chatflowId }) => {
                     setShouldShowSaveDialog(true)
 
                     setTimeout(() => {
-                        // console.log('🎨 Cleaning up localStorage...')
                         localStorage.removeItem('duplicatedFlowData')
                     }, 0)
                 } catch (error) {
@@ -829,6 +804,7 @@ const Canvas = ({ chatflowid: chatflowId }) => {
             </Box>
 
             {/* Unified Credentials Modal */}
+
             <UnifiedCredentialsModal
                 show={showCredentialModal}
                 missingCredentials={missingCredentials}

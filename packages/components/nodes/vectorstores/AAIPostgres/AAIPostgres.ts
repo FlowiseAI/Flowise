@@ -186,7 +186,6 @@ class AAIPostgres_VectorStores implements INode {
             if (!options.chatflowid) {
                 throw new Error('Chatflow ID is required for AAI Postgres Vector Store')
             }
-
             const flattenDocs = docs && docs.length ? flatten(docs) : []
             const finalDocs = []
 

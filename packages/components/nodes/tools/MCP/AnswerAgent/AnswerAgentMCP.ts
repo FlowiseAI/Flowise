@@ -100,9 +100,9 @@ class AnswerAgent_MCP implements INode {
     }
 
     async getTools(nodeData: INodeData, options: ICommonObject): Promise<Tool[]> {
-        // Get API base URL from environment variable
-        const apiBaseUrl = process.env.API_HOST
-        if (!apiBaseUrl) {
+        // Get API host from environment variable
+        const apiHost = options.user?.chatflowDomain
+        if (!apiHost) {
             throw new Error('API_HOST environment variable is not set')
         }
 
@@ -119,7 +119,7 @@ class AnswerAgent_MCP implements INode {
             command: process.execPath,
             args: [packagePath],
             env: {
-                ANSWERAGENT_AI_API_BASE_URL: apiBaseUrl,
+                ANSWERAGENT_AI_API_HOST: apiHost,
                 ANSWERAGENT_AI_API_TOKEN: apiKey
             }
         }
@@ -164,7 +164,7 @@ class AnswerAgent_MCP implements INode {
                 return null
             }
 
-            // Get database entities from options
+            // Fallback to ApiKey table
             const databaseEntities = options.databaseEntities
             if (!databaseEntities || !databaseEntities['ApiKey']) {
                 console.error('ApiKey entity not available in databaseEntities')
@@ -172,6 +172,7 @@ class AnswerAgent_MCP implements INode {
             }
 
             // Query the database for the user's API keys using the entity from databaseEntities
+
             const apiKeys = await appDataSource.getRepository(databaseEntities['ApiKey']).find({
                 where: {
                     userId: userId,
@@ -189,7 +190,9 @@ class AnswerAgent_MCP implements INode {
             }
 
             // Return the first (most recent) API key
-            return apiKeys[0].apiKey
+            const selectedApiKey = apiKeys[0].apiKey
+
+            return selectedApiKey
         } catch (error) {
             console.error('Error retrieving user API key:', error)
             return null

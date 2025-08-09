@@ -52,50 +52,27 @@ const MarketplaceCanvas = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [flowData])
 
-    const proceedWithTemplate = (updatedFlowData) => {
-        // console.log('🚀 MarketplaceCanvas proceedWithTemplate called with:', {
-        //     updatedFlowData: typeof updatedFlowData,
-        //     hasNodes: !!updatedFlowData?.nodes,
-        //     nodeCount: updatedFlowData?.nodes?.length || 0
-        // })
-
-        const isAgentCanvas = (updatedFlowData?.nodes || []).some(
+    const onChatflowCopy = (stateData) => {
+        // stateData is now the complete state with all template information
+        const flowDataParsed = stateData.flowData ? JSON.parse(stateData.flowData) : {}
+        
+        const isAgentCanvas = (flowDataParsed?.nodes || []).some(
             (node) => node.data.category === 'Multi Agents' || node.data.category === 'Sequential Agents'
         )
 
-        // console.log('🚀 Canvas type determined:', { isAgentCanvas })
-
-        const flowDataParsed = typeof updatedFlowData === 'string' ? JSON.parse(updatedFlowData) : updatedFlowData
-
-        // Store the data in the format Canvas component expects
+        // Use the complete state data which includes all template information
         const chatflowData = {
+            ...stateData,
             name: name || 'Copied Template',
-            description: 'Copied from marketplace',
             nodes: flowDataParsed.nodes || [],
             edges: flowDataParsed.edges || [],
-            flowData: JSON.stringify(flowDataParsed),
-            parentChatflowId: state?.parentChatflowId
+            parentChatflowId: stateData?.parentChatflowId
         }
-
-        // console.log('🚀 Storing duplicated flow data:', {
-        //     name: chatflowData.name,
-        //     nodeCount: chatflowData.nodes.length,
-        //     edgeCount: chatflowData.edges.length,
-        //     hasFlowDataString: !!chatflowData.flowData
-        // })
 
         localStorage.setItem('duplicatedFlowData', JSON.stringify(chatflowData))
 
         const targetPath = `/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`
-        // console.log('🚀 Navigating to:', targetPath)
         navigate(targetPath)
-    }
-
-    const onChatflowCopy = (flowData) => {
-        // console.log('🎯 MarketplaceCanvas onChatflowCopy called with flowData:', typeof flowData)
-
-        // Check for missing credentials before proceeding
-        checkCredentials(flowData, proceedWithTemplate)
     }
 
     return (
@@ -114,7 +91,10 @@ const MarketplaceCanvas = () => {
                         <MarketplaceCanvasHeader
                             flowName={name}
                             flowData={flowData ? JSON.parse(flowData) : null}
-                            onChatflowCopy={(flowData) => onChatflowCopy(flowData)}
+                            onChatflowCopy={(flowData) => {
+                                // Pass the complete state instead of just flowData
+                                onChatflowCopy(state)
+                            }}
                         />
                     </Toolbar>
                 </AppBar>

@@ -48,15 +48,16 @@
         "test:chatflows": "pnpm secure-run \"node ./scripts/testing-chatflows/testingChatflows.js\"",
         "logs": "docker compose logs -f",
         "dev-inngest": "npx inngest-cli@latest dev -u http://localhost:3001/api/inngest --no-discovery > /dev/null 2>&1",
-        "scripts:processCsvRows": "pnpm secure-run \"ts-node ./packages-answers/scripts/processCsvRows.ts\"",
         "scripts:generateCsv": "pnpm secure-run \"ts-node ./packages-answers/scripts/generateCsv.ts\"",
         "scripts:initCsvRun": "pnpm secure-run \"ts-node ./packages-answers/scripts/initCsvRun.ts\"",
         "secure-run": "node ./scripts/bws-secure/secureRun.js",
         "list-projects": "node ./scripts/bws-secure/list-projects.js",
         "bws-deps": "[ -d node_modules/dotenv ] && [ -d node_modules/dotenv-cli ] && [ -f node_modules/.bin/bws ] || npm install",
         "bws-update": "rm -rf scripts/bws-secure && git clone git@github.com:last-rev-llc/bws-secure.git scripts/bws-secure && rm -rf scripts/bws-secure/.git && bash scripts/bws-secure/install.sh",
-        "seed-credentials": "pnpm secure-run \"node ./scripts/seed-credentials/seed-credentials.js --test\"",
-        "seed-credentials:write": "pnpm secure-run \"node ./scripts/seed-credentials/seed-credentials.js\""
+        "seed-credentials": "pnpm secure-run \"node ./scripts/seed-credentials/seed-credentials.js --test --auto-detect\"",
+        "seed-credentials:write": "pnpm secure-run \"node ./scripts/seed-credentials/seed-credentials.js --auto-detect\"",
+        "submodule:init": "git submodule update --init --recursive --force",
+        "submodule:reset": "git submodule deinit -f --all && git submodule update --init --recursive"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": "eslint --fix"
@@ -105,36 +106,36 @@
             "sqlite3"
         ],
         "overrides": {
+            "axios": "1.8.2",
             "body-parser": "2.0.2",
             "braces": "3.0.3",
+            "cookie": ">=0.7.0",
             "cross-spawn": "7.0.6",
             "ejs": "^3.1.10",
+            "esbuild": ">=0.25.0",
+            "express": ">=4.19.2",
             "form-data": "^4.0.4",
             "glob-parent": "6.0.2",
             "http-proxy-middleware": ">=3.0.5",
+            "jsforce": "^3.10.0",
             "json5": "2.2.3",
-            "nth-check": "2.1.1",
-
-            "prismjs": ">=1.30.0",
-            "semver": "7.7.1",
-            "set-value": "4.1.0",
-            "unset-value": "2.0.1",
-            "webpack-dev-middleware": "7.4.2",
-            "ws": "8.17.1",
-            "axios": "1.8.2",
-            "qs": "6.7.3",
-            "tar-fs": "3.0.9",
-            "express": ">=4.19.2",
-            "tough-cookie": ">=4.1.3",
             "micromatch": ">=4.0.8",
-            "webpack-dev-server": ">=5.2.1",
-            "esbuild": ">=0.25.0",
+            "nth-check": "2.1.1",
+            "postcss": ">=8.4.31",
+            "prismjs": ">=1.30.0",
+            "qs": "6.7.3",
+            "semver": "7.7.1",
             "send": ">=0.19.0",
             "serve-static": ">=1.16.0",
-            "cookie": ">=0.7.0",
-            "postcss": ">=8.4.31",
+            "set-value": "4.1.0",
+            "tar-fs": "3.0.9",
+            "tmp": "^0.2.4",
+            "tough-cookie": ">=4.1.3",
             "tsup": ">=8.3.5",
-            "jsforce": "^3.10.0"
+            "unset-value": "2.0.1",
+            "webpack-dev-middleware": "7.4.2",
+            "webpack-dev-server": ">=5.2.1",
+            "ws": "8.17.1"
         }
     },
     "engines": {
@@ -177,5 +178,5 @@
             ]
         ]
     },
-    "packageManager": "pnpm@9.7.0"
+    "packageManager": "pnpm@9.15.9"
 }

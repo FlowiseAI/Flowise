@@ -52,8 +52,9 @@ const MarketplaceCanvasV2 = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [flowData])
 
-    const onChatflowCopy = (flowData) => {
-        const templateFlowData = JSON.stringify(flowData)
+    const onChatflowCopy = (stateData) => {
+        // stateData is now the complete state with all template information
+        const templateFlowData = JSON.stringify(stateData)
         navigate('/v2/agentcanvas', { state: { templateFlowData } })
     }
 
@@ -90,7 +91,7 @@ const MarketplaceCanvasV2 = () => {
                         <MarketplaceCanvasHeader
                             flowName={name}
                             flowData={JSON.parse(flowData)}
-                            onChatflowCopy={(flowData) => onChatflowCopy(flowData)}
+                            onChatflowCopy={state}
                         />
                     </Toolbar>
                 </AppBar>

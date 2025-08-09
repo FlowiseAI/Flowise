@@ -119,8 +119,8 @@ SALESFORCE_CLIENT_ID=your_consumer_key_here
 SALESFORCE_CLIENT_SECRET=your_consumer_secret_here
 SALESFORCE_INSTANCE_URL=https://your-domain.my.salesforce.com
 
-# API Base URL (for callback)
-API_BASE_URL=http://localhost:4000/api/v1
+# API Host (for callback)
+API_HOST=http://localhost:4000
 ```
 
 ### For Production
@@ -131,8 +131,8 @@ SALESFORCE_CLIENT_ID=your_consumer_key_here
 SALESFORCE_CLIENT_SECRET=your_consumer_secret_here
 SALESFORCE_INSTANCE_URL=https://your-domain.my.salesforce.com
 
-# API Base URL (for callback)
-API_BASE_URL=https://yourdomain.com/api/v1
+# API Host (for callback)
+API_HOST=https://yourdomain.com
 ```
 
 ## Step 4: Credential Configuration in AnswerAI
@@ -286,7 +286,7 @@ Once administrators have set up the Salesforce Connected App, end users can conn
 1. **"Error 400: redirect_uri_mismatch"**
 
     - **Cause**: Callback URL in Connected App doesn't match AnswerAI
-    - **Solution**: Verify `API_BASE_URL` environment variable and Connected App callback URL match exactly
+    - **Solution**: Verify `API_HOST` environment variable and Connected App callback URL match exactly
 
 2. **"Error 400: invalid_client_id"**
 

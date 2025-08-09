@@ -41,8 +41,8 @@ SALESFORCE_CLIENT_ID=your_consumer_key_here
 SALESFORCE_CLIENT_SECRET=your_consumer_secret_here
 SALESFORCE_INSTANCE_URL=https://your-domain.my.salesforce.com
 
-# API Base URL (for OAuth callbacks)
-API_BASE_URL=https://yourdomain.com/api/v1
+# API Host (for OAuth callbacks)
+API_HOST=https://yourdomain.com
 ```
 
 ### Step 2: Create Personal OAuth Credential
@@ -587,7 +587,7 @@ The Salesforce Personal OAuth MCP provides the same comprehensive set of tools a
     - **Symptom**: OAuth flow fails to start
     - **Solutions**:
         - Verify all required environment variables are set
-        - Check API_BASE_URL matches your deployment
+        - Check API_HOST matches your deployment
         - Ensure SALESFORCE_INSTANCE_URL is correct
 
 2. **Callback URL Problems**
@@ -596,7 +596,7 @@ The Salesforce Personal OAuth MCP provides the same comprehensive set of tools a
     - **Solutions**:
         - Verify callback URL in Connected App
         - Check network connectivity
-        - Ensure API_BASE_URL is accessible
+        - Ensure API_HOST is accessible
 
 3. **MCP Server Connection Issues**
     - **Symptom**: MCP actions don't load or fail to execute

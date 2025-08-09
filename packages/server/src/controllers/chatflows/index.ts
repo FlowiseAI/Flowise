@@ -125,6 +125,7 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         const newChatFlow = new ChatFlow()
 
         Object.assign(newChatFlow, { ...body, userId: req.user?.id, organizationId: req.user?.organizationId })
+
         const apiResponse = await chatflowsService.saveChatflow(newChatFlow)
 
         // TODO: Abstract sending to AnswerAI through events endpoint and move to service

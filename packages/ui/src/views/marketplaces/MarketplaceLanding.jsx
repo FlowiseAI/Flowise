@@ -32,8 +32,6 @@ import { useUser } from '@auth0/nextjs-auth0/client'
 import { useNavigationState } from '@/utils/navigation'
 import { Star as StarIcon, StarBorder as StarBorderIcon, Edit as EditIcon } from '@mui/icons-material'
 import { styled, alpha } from '@mui/material/styles'
-import { useCredentialChecker } from '@/hooks/useCredentialChecker'
-import UnifiedCredentialsModal from '@/ui-component/dialog/UnifiedCredentialsModal'
 
 const LoadingSkeleton = () => (
     <Box sx={{ maxWidth: '1080px', width: '100%', mx: 'auto', p: { xs: 2, sm: 3 }, height: '100%' }}>
@@ -125,9 +123,6 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
     const customization = useSelector((state) => state.customization)
 
     const [isFavorite, setIsFavorite] = useState(false)
-
-    // Credential checking hook
-    const { showCredentialModal, missingCredentials, checkCredentials, handleAssign, handleSkip, handleCancel } = useCredentialChecker()
 
     useEffect(() => {
         if (templateId) {
@@ -266,8 +261,9 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
 
             const flowData = typeof template.flowData === 'string' ? JSON.parse(template.flowData) : template.flowData
 
-            // Check for missing credentials before proceeding
-            checkCredentials(flowData, proceedWithTemplate)
+            // Process flow data directly without credential checking
+            // This follows the same pattern as Max's fix for marketplace
+            proceedWithTemplate(flowData, {})
         } else {
             setActionType(type)
             setIsSignInPromptOpen(true)
@@ -542,16 +538,6 @@ const MarketplaceLanding = forwardRef(function MarketplaceLanding({ templateId, 
                 )}
             </Box>
             <Snackbar open={snackbarOpen} autoHideDuration={3000} onClose={handleSnackbarClose} message={snackbarMessage} />
-
-            {/* Unified Credentials Modal */}
-            <UnifiedCredentialsModal
-                show={showCredentialModal}
-                missingCredentials={missingCredentials}
-                onAssign={handleAssign}
-                onSkip={handleSkip}
-                onCancel={handleCancel}
-                flowData={template?.flowData}
-            />
         </Box>
     )
 })

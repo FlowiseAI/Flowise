@@ -57,6 +57,7 @@ import { AddUserScopingToExecution1738091000000 } from './1738091000000-AddUserS
 import { AddOrganizationToCustomTemplate1752612517000 } from './1752612517000-AddOrganizationToCustomTemplate'
 import { AddParentIdToCustomTemplate1752780174000 } from './1752780174000-AddParentIdToCustomTemplate'
 import { AddTemplateIdToChatFlow1752780175000 } from './1752780175000-AddTemplateIdToChatFlow'
+import { AddSettingsToCustomTemplate1752780175001 } from './1752780175001-AddSettingsToCustomTemplate'
 import { AddPgvectorExtension1752614575000 } from './1752614575000-AddPgvectorExtension'
 
 export const postgresMigrations = [
@@ -119,5 +120,6 @@ export const postgresMigrations = [
     AddOrganizationToCustomTemplate1752612517000,
     AddParentIdToCustomTemplate1752780174000,
     AddTemplateIdToChatFlow1752780175000,
+    AddSettingsToCustomTemplate1752780175001,
     AddPgvectorExtension1752614575000
 ]

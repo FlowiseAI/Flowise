@@ -41,7 +41,15 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm, defaultVal
     }
 
     const handleConfirm = () => {
-        onConfirm(chatflowName, { visibility })
+        // Include all defaultValues in configs, not just visibility
+        const configs = {
+            visibility,
+            description: defaultValues.description || '',
+            category: defaultValues.category || '',
+            type: defaultValues.type || '',
+            chatbotConfig: defaultValues.chatbotConfig || ''
+        }
+        onConfirm(chatflowName, configs)
     }
 
     const component = show ? (

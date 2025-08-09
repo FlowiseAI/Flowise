@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Seed all default credentials from AAI_DEFAULT environment variables
  * This script automatically detects all AAI_DEFAULT_* variables and creates credentials for them
@@ -42,7 +43,7 @@ const path = require('node:path')
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') })
 const { DataSource } = require('typeorm')
 const fs = require('node:fs')
-const crypto = require('node:crypto')
+const _crypto = require('node:crypto')
 const readline = require('node:readline')
 
 // Map of environment variable prefixes to credential configurations
@@ -575,46 +576,101 @@ function detectUnmappedCredentials(defaultVars, mappedCredentials) {
         })
     })
 
+    // Group Postgres variants by their specific type
+    const postgresGroups = {}
+    const otherUnmapped = []
+
     // Find unmapped variables
     Object.keys(defaultVars).forEach((key) => {
         if (!mappedKeys.has(key)) {
-            // Try to guess credential type from key name
-            const parts = key.replace('AAI_DEFAULT_', '').split('_')
-            const apiName = parts[0].toLowerCase()
+            // Check if this is a Postgres variant (both AAI_DEFAULT_POSTGRES_ and POSTGRES_ patterns)
+            if (key.startsWith('AAI_DEFAULT_POSTGRES_') || key.startsWith('POSTGRES_')) {
+                const cleanKey = key.replace('AAI_DEFAULT_POSTGRES_', '').replace('POSTGRES_', '')
+                const parts = cleanKey.split('_')
+                const postgresType = parts[0].toLowerCase() // recordmanager, agentmemory, vectorstore, etc.
 
-            // Attempt to find matching credential file
-            try {
-                const credentialFiles = fs.readdirSync(path.resolve(__dirname, '../../packages/components/credentials'))
-                const matchingFiles = credentialFiles.filter(
-                    (file) => file.toLowerCase().includes(apiName) && file.endsWith('.credential.ts')
-                )
-
-                if (matchingFiles.length > 0) {
-                    const credentialFile = matchingFiles[0]
-                    const credName = credentialFile.replace('.credential.ts', '')
-
-                    // Create a default mapping for this credential
-                    const fieldName = `${apiName}ApiKey`
-                    const plainData = {}
-                    plainData[fieldName] = defaultVars[key]
-
-                    // Capitalize the API name properly for prettier display
-                    const prettyApiName = apiName.charAt(0).toUpperCase() + apiName.slice(1)
-
-                    unmappedCredentials.push({
-                        name: `${prettyApiName} - AAI - Default`,
-                        credentialName: `${apiName}Api`,
-                        plainDataObj: plainData,
-                        autoDetected: true
-                    })
-
-                    console.log(`Auto-detected credential for ${key} as ${credName}`)
+                if (!postgresGroups[postgresType]) {
+                    postgresGroups[postgresType] = {
+                        keys: [],
+                        vars: {}
+                    }
                 }
-            } catch (error) {
-                console.warn(`Could not auto-detect credential for ${key}:`, error.message)
+                postgresGroups[postgresType].keys.push(key)
+                postgresGroups[postgresType].vars[parts.slice(1).join('_').toLowerCase()] = defaultVars[key]
+            } else {
+                // Handle non-Postgres unmapped variables
+                const parts = key.replace('AAI_DEFAULT_', '').split('_')
+                const apiName = parts[0].toLowerCase()
+
+                // Attempt to find matching credential file
+                try {
+                    const credentialFiles = fs.readdirSync(path.resolve(__dirname, '../../packages/components/credentials'))
+                    const matchingFiles = credentialFiles.filter(
+                        (file) => file.toLowerCase().includes(apiName) && file.endsWith('.credential.ts')
+                    )
+
+                    if (matchingFiles.length > 0) {
+                        const credentialFile = matchingFiles[0]
+                        const credName = credentialFile.replace('.credential.ts', '')
+
+                        // Create a default mapping for this credential
+                        const fieldName = `${apiName}ApiKey`
+                        const plainData = {}
+                        plainData[fieldName] = defaultVars[key]
+
+                        // Capitalize the API name properly for prettier display
+                        const prettyApiName = apiName.charAt(0).toUpperCase() + apiName.slice(1)
+
+                        otherUnmapped.push({
+                            name: `${prettyApiName} - AAI - Default`,
+                            credentialName: `${apiName}Api`,
+                            plainDataObj: plainData,
+                            autoDetected: true
+                        })
+
+                        console.log(`Auto-detected credential for ${key} as ${credName}`)
+                    }
+                } catch (error) {
+                    console.warn(`Could not auto-detect credential for ${key}:`, error.message)
+                }
             }
         }
     })
+
+    // Process Postgres groups
+    Object.keys(postgresGroups).forEach((postgresType) => {
+        const group = postgresGroups[postgresType]
+        const vars = group.vars
+
+        // Create a meaningful name for this Postgres variant
+        const prettyType = postgresType.charAt(0).toUpperCase() + postgresType.slice(1)
+        const name = `Postgres ${prettyType} - AAI - Default`
+
+        // Map the variables to the appropriate Postgres credential fields
+        const plainData = {}
+
+        // Map common Postgres fields
+        if (vars.database) plainData.database = vars.database
+        if (vars.host) plainData.host = vars.host
+        if (vars.user) plainData.user = vars.user
+        if (vars.password) plainData.password = vars.password
+        if (vars.port) plainData.port = vars.port
+        if (vars.table_name) plainData.tableName = vars.table_name
+        if (vars.content_column_name) plainData.contentColumnName = vars.content_column_name
+        if (vars.ssl !== undefined) plainData.ssl = vars.ssl === 'true'
+
+        unmappedCredentials.push({
+            name: name,
+            credentialName: 'PostgresApi',
+            plainDataObj: plainData,
+            autoDetected: true
+        })
+
+        console.log(`Auto-detected Postgres ${prettyType} credential with ${Object.keys(plainData).length} fields`)
+    })
+
+    // Add other unmapped credentials
+    unmappedCredentials.push(...otherUnmapped)
 
     return unmappedCredentials
 }
@@ -622,6 +678,337 @@ function detectUnmappedCredentials(defaultVars, mappedCredentials) {
 // Check if running in test mode
 function isTestMode() {
     return process.argv.includes('--test') || process.argv.includes('--dry-run') || process.env.TEST_MODE === 'true'
+}
+
+// Check if running in auto-detect mode
+function isAutoDetectMode() {
+    return process.argv.includes('--auto-detect') || process.env.AUTO_DETECT === 'true'
+}
+
+// Check if running in update-env mode
+function _isUpdateEnvMode() {
+    return process.argv.includes('--update-env') || process.env.UPDATE_ENV === 'true'
+}
+
+// Detect local development scenario (single user and single org)
+async function detectLocalDevScenario(dataSource) {
+    try {
+        // Query all users and organizations
+        const usersQuery = `SELECT id, email, name, "createdDate" FROM "user" ORDER BY "createdDate" DESC`
+        const orgsQuery = `SELECT id, name, "createdDate" FROM organization ORDER BY "createdDate" DESC`
+
+        const users = await dataSource.query(usersQuery)
+        const orgs = await dataSource.query(orgsQuery)
+
+        const isLocalDev = users.length === 1 && orgs.length === 1
+
+        return {
+            isLocalDev,
+            users,
+            orgs,
+            suggestedUser: users[0] || null,
+            suggestedOrg: orgs[0] || null
+        }
+    } catch (error) {
+        console.warn(`Could not detect local dev scenario: ${error.message}`)
+        return {
+            isLocalDev: false,
+            users: [],
+            orgs: [],
+            suggestedUser: null,
+            suggestedOrg: null
+        }
+    }
+}
+
+// Find .env file paths in order of preference
+function findEnvFilePaths() {
+    const paths = [
+        path.resolve(process.cwd(), '.env'), // Current working directory (root)
+        path.resolve(process.cwd(), '.env.local'), // Current working directory local
+        path.resolve(__dirname, '../../.env'), // Project root (relative to script)
+        path.resolve(__dirname, '../../.env.local'), // Project root local
+        path.resolve(__dirname, '../.env'), // Scripts directory
+        path.resolve(__dirname, './.env') // Current script directory
+    ]
+
+    // Filter existing files and deduplicate by canonical path
+    const existingPaths = paths.filter((p) => fs.existsSync(p))
+    const uniquePaths = []
+    const seenPaths = new Set()
+
+    for (const filePath of existingPaths) {
+        try {
+            const canonicalPath = fs.realpathSync(filePath)
+            if (!seenPaths.has(canonicalPath)) {
+                seenPaths.add(canonicalPath)
+                uniquePaths.push(filePath)
+            }
+        } catch (error) {
+            // If realpath fails, use the original path
+            if (!seenPaths.has(filePath)) {
+                seenPaths.add(filePath)
+                uniquePaths.push(filePath)
+            }
+        }
+    }
+
+    return uniquePaths
+}
+
+// Read and parse .env file
+function readEnvFile(filePath) {
+    try {
+        const content = fs.readFileSync(filePath, 'utf8')
+        const lines = content.split('\n')
+        const envVars = {}
+
+        lines.forEach((line) => {
+            const trimmed = line.trim()
+            if (trimmed && !trimmed.startsWith('#')) {
+                const equalIndex = trimmed.indexOf('=')
+                if (equalIndex > 0) {
+                    const key = trimmed.substring(0, equalIndex)
+                    const value = trimmed.substring(equalIndex + 1)
+                    envVars[key] = value
+                }
+            }
+        })
+
+        return { content, envVars }
+    } catch (error) {
+        return { content: '', envVars: {} }
+    }
+}
+
+// Update .env file with new values
+function updateEnvFile(filePath, userId, orgId) {
+    try {
+        const { content, envVars } = readEnvFile(filePath)
+
+        // Update or add the values
+        envVars.DATABASE_SEED_USER_ID = userId
+        envVars.DATABASE_SEED_ORG_ID = orgId
+
+        // Rebuild the content
+        const lines = content.split('\n')
+        const updatedLines = []
+        const addedKeys = new Set()
+
+        // Process existing lines
+        lines.forEach((line) => {
+            const trimmed = line.trim()
+            if (trimmed && !trimmed.startsWith('#')) {
+                const equalIndex = trimmed.indexOf('=')
+                if (equalIndex > 0) {
+                    const key = trimmed.substring(0, equalIndex)
+                    if (key === 'DATABASE_SEED_USER_ID' || key === 'DATABASE_SEED_ORG_ID') {
+                        // Update existing line
+                        updatedLines.push(`${key}="${envVars[key]}"`)
+                        addedKeys.add(key)
+                    } else {
+                        // Keep existing line
+                        updatedLines.push(line)
+                    }
+                } else {
+                    updatedLines.push(line)
+                }
+            } else {
+                updatedLines.push(line)
+            }
+        })
+
+        // Add new lines for missing keys
+        if (!addedKeys.has('DATABASE_SEED_USER_ID') || !addedKeys.has('DATABASE_SEED_ORG_ID')) {
+            // Add a newline before new variables if the file doesn't end with one
+            if (updatedLines.length > 0 && !updatedLines[updatedLines.length - 1].endsWith('\n')) {
+                updatedLines.push('')
+            }
+        }
+
+        if (!addedKeys.has('DATABASE_SEED_USER_ID')) {
+            updatedLines.push(`DATABASE_SEED_USER_ID="${userId}"`)
+        }
+        if (!addedKeys.has('DATABASE_SEED_ORG_ID')) {
+            updatedLines.push(`DATABASE_SEED_ORG_ID="${orgId}"`)
+        }
+
+        // Write back to file with proper newlines
+        let updatedContent = updatedLines.join('\n')
+
+        // Ensure there's a newline at the end
+        if (!updatedContent.endsWith('\n')) {
+            updatedContent += '\n'
+        }
+
+        fs.writeFileSync(filePath, updatedContent)
+
+        return true
+    } catch (error) {
+        console.error(`Error updating .env file: ${error.message}`)
+        return false
+    }
+}
+
+// Interactive prompt for .env file update
+async function promptForEnvFileUpdate(userId, orgId) {
+    return new Promise((resolve) => {
+        const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+        })
+
+        console.log('\n' + '📝 ENVIRONMENT FILE UPDATE (OPTIONAL)'.padStart(35, '=').padEnd(60, '='))
+        console.log('Would you like to automatically save these values to a .env file?')
+        console.log('')
+        console.log('💡 This will prevent you from having to enter these values again.')
+        console.log('   (The export commands will be shown at the end regardless)')
+        console.log('')
+
+        const envFiles = findEnvFilePaths()
+        if (envFiles.length > 0) {
+            console.log('📁 Found existing .env files:')
+            envFiles.forEach((file, index) => {
+                const absolutePath = path.resolve(file)
+                console.log(`   ${index + 1}. ${absolutePath}`)
+            })
+            console.log('')
+        }
+
+        console.log('Options:')
+        console.log('   y - Update the first found .env file')
+        console.log("   n - Don't update any files (.env entries shown at end)")
+        console.log('')
+
+        rl.question('🔧 Your choice (y/n): ', (answer) => {
+            rl.close()
+            const choice = answer.trim().toLowerCase()
+
+            if (choice === 'y' && envFiles.length > 0) {
+                const targetFile = envFiles[0]
+                const success = updateEnvFile(targetFile, userId, orgId)
+
+                if (success) {
+                    const absolutePath = path.resolve(targetFile)
+                    console.log(`✅ Updated ${absolutePath} with your values`)
+                    console.log('💡 Next time you run this script, it will use these values automatically')
+                } else {
+                    console.log('❌ Failed to update .env file')
+                }
+            } else {
+                console.log('💡 No .env file updated. .env entries will be shown at the end.')
+            }
+
+            resolve()
+        })
+    })
+}
+
+// Enhanced prompt with auto-detection
+async function enhancedPromptWithAutoDetection(dataSource, promptType) {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    })
+
+    return new Promise(async (resolve) => {
+        // First, detect local dev scenario
+        const localDev = await detectLocalDevScenario(dataSource)
+
+        if (localDev.isLocalDev && (isAutoDetectMode() || promptType === 'user' || promptType === 'both')) {
+            const user = localDev.suggestedUser
+            const org = localDev.suggestedOrg
+
+            console.log('\n' + '🤖 AUTO-DETECTION ENABLED'.padStart(35, '=').padEnd(60, '='))
+            console.log('Found local development scenario:')
+            console.log(`   👤 Single user: ${user.email || '(no email)'} - ${user.name || '(no name)'}`)
+            console.log(`   🏢 Single organization: ${org.name || '(no name)'}`)
+            console.log('')
+            console.log('💡 These values will be used automatically for credential assignment.')
+            console.log('')
+
+            if (promptType === 'user') {
+                console.log('👤 Auto-selected USER_ID:')
+                console.log(`   ID: ${user.id}`)
+                console.log(`   Email: ${user.email || '(no email)'}`)
+                console.log(`   Name: ${user.name || '(no name)'}`)
+                console.log('')
+
+                rl.question('✅ Use this user? (Y/n): ', async (answer) => {
+                    rl.close()
+                    const choice = answer.trim().toLowerCase()
+                    if (choice === '' || choice === 'y' || choice === 'yes') {
+                        resolve(user.id)
+                    } else {
+                        // Fall back to manual selection
+                        await showAvailableUsersAndOrgs(dataSource)
+                        const userId = await promptForUserId()
+                        resolve(userId)
+                    }
+                })
+            } else if (promptType === 'org') {
+                console.log('🏢 Auto-selected ORG_ID:')
+                console.log(`   ID: ${org.id}`)
+                console.log(`   Name: ${org.name || '(no name)'}`)
+                console.log('')
+
+                rl.question('✅ Use this organization? (Y/n): ', async (answer) => {
+                    rl.close()
+                    const choice = answer.trim().toLowerCase()
+                    if (choice === '' || choice === 'y' || choice === 'yes') {
+                        resolve(org.id)
+                    } else {
+                        // Fall back to manual selection
+                        await showAvailableUsersAndOrgs(dataSource)
+                        const orgId = await promptForOrgId()
+                        resolve(orgId)
+                    }
+                })
+            } else if (promptType === 'both') {
+                console.log('👤 Auto-selected USER_ID:')
+                console.log(`   ID: ${user.id}`)
+                console.log(`   Email: ${user.email || '(no email)'}`)
+                console.log(`   Name: ${user.name || '(no name)'}`)
+                console.log('')
+                console.log('🏢 Auto-selected ORG_ID:')
+                console.log(`   ID: ${org.id}`)
+                console.log(`   Name: ${org.name || '(no name)'}`)
+                console.log('')
+
+                rl.question('✅ Use these user and organization? (Y/n): ', async (answer) => {
+                    rl.close()
+                    const choice = answer.trim().toLowerCase()
+                    if (choice === '' || choice === 'y' || choice === 'yes') {
+                        resolve({ userId: user.id, orgId: org.id })
+                    } else {
+                        // Fall back to manual selection
+                        await showAvailableUsersAndOrgs(dataSource)
+                        const userId = await promptForUserId()
+                        const orgId = await promptForOrgId()
+                        resolve({ userId, orgId })
+                    }
+                })
+            }
+        } else {
+            // Not local dev or auto-detect disabled, show available options
+            await showAvailableUsersAndOrgs(dataSource)
+
+            if (promptType === 'user') {
+                rl.close()
+                const userId = await promptForUserId()
+                resolve(userId)
+            } else if (promptType === 'org') {
+                rl.close()
+                const orgId = await promptForOrgId()
+                resolve(orgId)
+            } else if (promptType === 'both') {
+                rl.close()
+                const userId = await promptForUserId()
+                const orgId = await promptForOrgId()
+                resolve({ userId, orgId })
+            }
+        }
+    })
 }
 
 // Helper function to show available users and organizations
@@ -840,38 +1227,23 @@ async function seedCredentials() {
         let promptedForUserId = false
         let promptedForOrgId = false
 
-        // Prompt for DATABASE_SEED_USER_ID if missing
-        if (!userId) {
-            console.log('\n⚠️  DATABASE_SEED_USER_ID not found in environment variables')
-            await showAvailableUsersAndOrgs(dataSource)
-            userId = await promptForUserId()
+        // Enhanced prompting with auto-detection for missing values
+        if (!userId || !orgId) {
+            console.log('\n⚠️  Missing DATABASE_SEED_USER_ID or DATABASE_SEED_ORG_ID in environment variables')
+            const result = await enhancedPromptWithAutoDetection(dataSource, 'both')
 
-            if (!userId) {
-                console.log('❌ No DATABASE_SEED_USER_ID provided. Cannot proceed without valid user assignment.')
+            if (!result.userId || !result.orgId) {
+                console.log('❌ Both DATABASE_SEED_USER_ID and DATABASE_SEED_ORG_ID are required. Cannot proceed.')
                 process.exit(1)
             }
 
-            promptedForUserId = true
+            userId = result.userId
+            orgId = result.orgId
+            promptedForUserId = !process.env.DATABASE_SEED_USER_ID
+            promptedForOrgId = !process.env.DATABASE_SEED_ORG_ID
+
             // Override environment for this session
             process.env.DATABASE_SEED_USER_ID = userId
-        }
-
-        // Prompt for DATABASE_SEED_ORG_ID if missing
-        if (!orgId) {
-            console.log('\n⚠️  DATABASE_SEED_ORG_ID not found in environment variables')
-            if (!promptedForUserId) {
-                // Only show this again if we didn't show it for DATABASE_SEED_USER_ID
-                await showAvailableUsersAndOrgs(dataSource)
-            }
-            orgId = await promptForOrgId()
-
-            if (!orgId) {
-                console.log('❌ No DATABASE_SEED_ORG_ID provided. Cannot proceed without valid organization assignment.')
-                process.exit(1)
-            }
-
-            promptedForOrgId = true
-            // Override environment for this session
             process.env.DATABASE_SEED_ORG_ID = orgId
         }
 
@@ -967,6 +1339,28 @@ async function seedCredentials() {
             process.exit(1)
         } else {
             console.log('\n✅ DATABASE_SEED_USER_ID and DATABASE_SEED_ORG_ID are properly configured and verified in database!')
+        }
+
+        // Offer to update .env file if we prompted for values
+        if (promptedForUserId || promptedForOrgId) {
+            await promptForEnvFileUpdate(userId, orgId)
+        }
+
+        // Always display the .env file entries for easy copying
+        if (userId && orgId) {
+            // Note: This is a local development script that intentionally displays user/org IDs
+            // for convenience. These are not sensitive production secrets but local dev identifiers.
+            // CodeQL: This is intentional for local development - user/org IDs are not sensitive secrets
+            /* eslint-disable-next-line security/detect-object-injection, security/detect-non-literal-regexp */
+            /* codeql-disable-next-line js/clear-text-logging */
+            console.log('\n' + '📋 ADD TO YOUR .ENV FILE'.padStart(35, '=').padEnd(60, '='))
+            console.log('Add these lines to your .env file to avoid prompts next time:')
+            console.log('')
+            console.log(`DATABASE_SEED_USER_ID="${userId}"`)
+            console.log(`DATABASE_SEED_ORG_ID="${orgId}"`)
+            console.log('')
+            console.log('💡 Location: .env (in project root)')
+            console.log('='.repeat(60))
         }
 
         console.log('')
@@ -1078,7 +1472,7 @@ async function seedCredentials() {
                 }
             }
 
-            console.log('\n💡 To run in production mode: node scripts/seed-credentials/seed-credentials.js')
+            console.log('\n💡 To run in production mode: pnpm seed-credentials:write')
             console.log('='.repeat(60))
 
             return results

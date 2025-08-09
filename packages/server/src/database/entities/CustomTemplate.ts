@@ -27,6 +27,21 @@ export class CustomTemplate implements ICustomTemplate {
     @Column({ nullable: true, type: 'text' })
     type?: string
 
+    @Column({ nullable: true, type: 'text' })
+    chatbotConfig?: string
+
+    @Column({ nullable: true, type: 'text' })
+    visibility?: string[]
+
+    @Column({ nullable: true, type: 'text' })
+    apiConfig?: string
+
+    @Column({ nullable: true, type: 'text' })
+    speechToText?: string
+
+    @Column({ nullable: true, type: 'text' })
+    category?: string
+
     @Column({ type: 'timestamp' })
     @CreateDateColumn()
     createdDate: Date

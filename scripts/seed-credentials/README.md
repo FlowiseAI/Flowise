@@ -1,6 +1,6 @@
 # Credential Seeding Script
 
-This script automatically seeds default credentials from environment variables into the Flowise database. It detects all `AAI_DEFAULT_*` environment variables and creates encrypted credentials for various AI and third-party services with enhanced safety features and interactive database connection recovery.
+This script automatically seeds default credentials from environment variables into the Flowise database. It detects all `AAI_DEFAULT_*` environment variables and creates encrypted credentials for various AI and third-party services with enhanced safety features, interactive database connection recovery, and **smart auto-detection for local development scenarios**.
 
 ## Overview
 
@@ -16,19 +16,21 @@ The credential seeding script provides:
 -   **User/Organization Verification**: Verifies credentials will be assigned to valid users/organizations
 -   **Enhanced Safety**: Test mode shows what would be changed before making modifications
 -   **Robust Environment Loading**: Multiple fallback paths for .env file loading
+-   **Smart Auto-Detection**: **DEFAULT** - Automatically detects single user/org scenarios for local development
+-   **Environment File Management**: Offers to update .env files with selected values for future use
 
 ## Usage
 
-> **⚠️ Default is Safe: `pnpm seed-credentials` now runs in TEST MODE (dry-run, no writes).**
+> **⚠️ Default is Safe: `pnpm seed-credentials` now runs in TEST MODE with AUTO-DETECTION (dry-run, no writes).**
 > To actually write credentials to the database, you must use `pnpm seed-credentials:write`.
 
 ```bash
-# Test mode (shows what would be done without making changes)
+# Test mode with auto-detection (recommended for local development)
 pnpm seed-credentials
 # OR
 pnpm run seed-credentials
 
-# Production mode (actually creates/updates credentials)
+# Production mode with auto-detection (actually creates/updates credentials)
 pnpm seed-credentials:write
 # OR
 pnpm run seed-credentials:write
@@ -40,10 +42,53 @@ pnpm seed-credentials -- --debug
 pnpm seed-credentials -- --debug
 
 # Direct node usage (advanced)
-node scripts/seed-credentials/seed-credentials.js --test
+node scripts/seed-credentials/seed-credentials.js --test --auto-detect
 node scripts/seed-credentials/seed-credentials.js --debug
+node scripts/seed-credentials/seed-credentials.js --auto-detect
 node scripts/seed-credentials/seed-credentials.js --test --debug
 node scripts/seed-credentials/seed-credentials.js           # (production, not recommended)
+```
+
+## Smart Auto-Detection for Local Development
+
+The script now includes intelligent auto-detection for local development scenarios:
+
+### Local Development Detection
+
+When the script detects exactly one user and one organization in your database, it will:
+
+1. **Auto-Suggest Values**: Automatically select the single user and organization
+2. **Confirm with User**: Ask for confirmation before using the auto-detected values
+3. **Fallback to Manual**: If you decline, fall back to the traditional manual selection
+4. **Update .env Files**: Offer to save the selected values to your .env file for future use
+
+### Auto-Detection Behavior
+
+-   **Single User + Single Org**: Auto-detects and suggests these values
+-   **Multiple Users/Orgs**: Shows all available options for manual selection
+-   **No Users/Orgs**: Provides clear error messages and guidance
+-   **Confirmation Required**: Always asks for confirmation before using auto-detected values
+
+### Environment File Management
+
+After selecting user/organization values, the script will:
+
+1. **Detect .env Files**: Find existing .env files in common locations
+2. **Offer Updates**: Ask if you want to save the values for future use
+3. **Multiple Options**: Provide options to update files, copy commands, or skip
+4. **Smart Updates**: Preserve existing .env file structure and comments
+
+### Usage Examples
+
+```bash
+# Auto-detect single user/org (default behavior)
+pnpm seed-credentials
+
+# Traditional manual selection (disable auto-detection)
+pnpm seed-credentials -- --no-auto-detect
+
+# Test mode with auto-detection
+pnpm seed-credentials -- --test --auto-detect
 ```
 
 ## Database Configuration
@@ -101,10 +146,22 @@ postgresql://admin:mypassword@dpg-abc123.oregon-postgres.render.com/mydatabase
 
 #### Script Control
 
-| Variable     | Description                          |
-| ------------ | ------------------------------------ |
-| `TEST_MODE`  | Set to `true` to run in test mode    |
-| `DEBUG_MODE` | Set to `true` to enable debug output |
+| Variable      | Description                                      |
+| ------------- | ------------------------------------------------ |
+| `TEST_MODE`   | Set to `true` to run in test mode                |
+| `DEBUG_MODE`  | Set to `true` to enable debug output             |
+| `AUTO_DETECT` | Set to `true` to enable auto-detection mode      |
+| `UPDATE_ENV`  | Set to `true` to automatically update .env files |
+
+#### Command Line Options
+
+| Option          | Description                                    |
+| --------------- | ---------------------------------------------- |
+| `--test`        | Run in test mode (dry run, no database writes) |
+| `--dry-run`     | Alias for `--test`                             |
+| `--debug`       | Enable detailed debug output                   |
+| `--auto-detect` | Enable smart auto-detection for local dev      |
+| `--update-env`  | Automatically update .env files with values    |
 
 **Important**: `DATABASE_SEED_USER_ID` and `DATABASE_SEED_ORG_ID` must be valid UUIDs that exist in your database. The script will verify these exist and show you the associated user/organization details for safety.
 

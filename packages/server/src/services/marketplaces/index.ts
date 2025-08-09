@@ -13,19 +13,45 @@ import { ChatFlow } from '../../database/entities/ChatFlow'
 import { ChatflowVisibility } from '../../database/entities/ChatFlow'
 
 import chatflowsService from '../chatflows'
+import { omit } from 'lodash'
 // import checkOwnership from '../../utils/checkOwnership'
 type ITemplate = {
-    badge: string
+    badge?: string
     description: string
     framework: string[]
     usecases: string[]
     nodes: IReactFlowNode[]
     edges: IReactFlowEdge[]
     iconSrc?: string
+    name?: string
+    category?: string
+    type?: string
+    chatbotConfig?: string
+    apiConfig?: string
+    followUpPrompts?: string
+    userId?: string
+    organizationId?: string
+    browserExtConfig?: string
+    visibility?: string[]
 }
 
 const getCategories = (fileDataObj: ITemplate) => {
-    return Array.from(new Set(fileDataObj?.nodes?.map((node) => node.data.category).filter((category) => category)))
+    return Array.from(new Set(fileDataObj?.nodes?.map((node) => node.data?.category).filter((category) => category)))
+}
+
+// Helper function to create template object
+const TEMPLATE_FIELD_BLOCKLIST = ['userId', 'apikeyid', 'deletedDate', '']
+const createTemplate = (fileDataObj: ITemplate, file: string, fileData: string, type: string) => {
+    return {
+        ...omit(fileDataObj, TEMPLATE_FIELD_BLOCKLIST),
+        id: uuidv4(),
+        name: fileDataObj?.name || file.split('.json')[0],
+        templateName: file.split('.json')[0],
+        flowData: fileData,
+        categories: type === 'Tool' ? [] : getCategories(fileDataObj),
+        type,
+        requiresClone: true
+    }
 }
 
 // Add prefix to file-based template IDs to avoid collisions
@@ -67,110 +93,79 @@ const getAllTemplates = async (user: IUser | undefined) => {
         //     })
         // }
 
+        let templates: any[] = []
+
+        // Helper function to safely read directory
+        const safeReadDir = (dirPath: string): string[] => {
+            try {
+                if (fs.existsSync(dirPath)) {
+                    return fs.readdirSync(dirPath).filter((file) => path.extname(file) === '.json')
+                }
+                return []
+            } catch (error) {
+                console.warn(`Directory not found or not accessible: ${dirPath}`)
+                return []
+            }
+        }
+
         // Chatflow templates
         let marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows')
-        let jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-        let templates: any[] = []
+        let jsonsInDir = safeReadDir(marketplaceDir)
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows', file)
-            const fileData = fs.readFileSync(filePath)
-            const fileDataObj = JSON.parse(fileData.toString()) as ITemplate
-
-            const template = {
-                id: uuidv4(),
-                templateName: file.split('.json')[0],
-                flowData: fileData.toString(),
-                badge: fileDataObj?.badge,
-                framework: fileDataObj?.framework,
-                usecases: fileDataObj?.usecases,
-                categories: getCategories(fileDataObj),
-                type: 'Chatflow',
-                description: fileDataObj?.description || '',
-                iconSrc: fileDataObj?.iconSrc || '',
-                requiresClone: true // All marketplace templates require cloning
+            try {
+                const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'chatflows', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString()) as ITemplate
+                const template = createTemplate(fileDataObj, file, fileData.toString(), 'Chatflow')
+                templates.push(template)
+            } catch (error) {
+                console.error(`Error processing chatflow template ${file}:`, error)
             }
-            templates.push(template)
         })
 
         // Tool templates
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools')
-        jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+        jsonsInDir = safeReadDir(marketplaceDir)
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools', file)
-            const fileData = fs.readFileSync(filePath)
-            const fileDataObj = JSON.parse(fileData.toString())
-            const template = {
-                ...fileDataObj,
-                id: uuidv4(),
-                type: 'Tool',
-                framework: fileDataObj?.framework,
-                badge: fileDataObj?.badge,
-                usecases: fileDataObj?.usecases,
-                categories: [],
-                templateName: file.split('.json')[0],
-                requiresClone: true // All marketplace templates require cloning
+            try {
+                const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'tools', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString()) as ITemplate
+                const template = createTemplate(fileDataObj, file, fileData.toString(), 'Tool')
+                templates.push(template)
+            } catch (error) {
+                console.error(`Error processing tool template ${file}:`, error)
             }
-            templates.push(template)
         })
 
         // Agentflow templates
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows')
-        jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+        jsonsInDir = safeReadDir(marketplaceDir)
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows', file)
-            const fileData = fs.readFileSync(filePath)
-            const fileDataObj = JSON.parse(fileData.toString())
-            const template = {
-                id: uuidv4(),
-                templateName: file.split('.json')[0],
-                flowData: fileData.toString(),
-                badge: fileDataObj?.badge,
-                framework: fileDataObj?.framework,
-                usecases: fileDataObj?.usecases,
-                categories: fileDataObj?.categories,
-                type: 'Agentflow',
-                description: fileDataObj?.description || '',
-                iconSrc: fileDataObj?.iconSrc || '',
-                requiresClone: true // All marketplace templates require cloning
+            try {
+                const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflows', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString()) as ITemplate
+                const template = createTemplate(fileDataObj, file, fileData.toString(), 'Agentflow')
+                templates.push(template)
+            } catch (error) {
+                console.error(`Error processing agentflow template ${file}:`, error)
             }
-            templates.push(template)
         })
-        // marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'answerai')
-        // jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
-        // jsonsInDir.forEach((file, index) => {
-        //     const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'answerai', file)
-        //     const fileData = fs.readFileSync(filePath)
-        //     const fileDataObj = JSON.parse(fileData.toString())
-        //     const template = {
-        //         id: `${TEMPLATE_TYPE_PREFIXES.ANSWERAI}${index}`,
-        //         categories: fileDataObj?.categories,
-        //         type: 'AnswerAI',
-        //         templateName: file.split('.json')[0],
-        //         description: fileDataObj?.description || '',
-        //         iconSrc: fileDataObj?.iconSrc || '',
-        //         requiresClone: true // All marketplace templates require cloning
-        //     }
-        //     templates.push(template)
-        // })
 
+        // AgentflowV2 templates
         marketplaceDir = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2')
-        jsonsInDir = fs.readdirSync(marketplaceDir).filter((file) => path.extname(file) === '.json')
+        jsonsInDir = safeReadDir(marketplaceDir)
         jsonsInDir.forEach((file) => {
-            const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2', file)
-            const fileData = fs.readFileSync(filePath)
-            const fileDataObj = JSON.parse(fileData.toString())
-            const template = {
-                id: uuidv4(),
-                templateName: file.split('.json')[0],
-                flowData: fileData.toString(),
-                badge: fileDataObj?.badge,
-                framework: fileDataObj?.framework,
-                usecases: fileDataObj?.usecases,
-                categories: getCategories(fileDataObj),
-                type: 'AgentflowV2',
-                description: fileDataObj?.description || ''
+            try {
+                const filePath = path.join(__dirname, '..', '..', '..', 'marketplaces', 'agentflowsv2', file)
+                const fileData = fs.readFileSync(filePath)
+                const fileDataObj = JSON.parse(fileData.toString()) as ITemplate
+                const template = createTemplate(fileDataObj, file, fileData.toString(), 'AgentflowV2')
+                templates.push(template)
+            } catch (error) {
+                console.error(`Error processing agentflowv2 template ${file}:`, error)
             }
-            templates.push(template)
         })
 
         // const sortedTemplates = templates.sort((a, b) => a.templateName?.localeCompare(b.templateName))
@@ -390,6 +385,13 @@ const saveCustomTemplate = async (body: any, user: IUser): Promise<any> => {
             flowDataStr = JSON.stringify(exportJson)
             customTemplate.framework = framework
             customTemplate.parentId = body.chatflowId
+            customTemplate.chatbotConfig = chatflow.chatbotConfig
+            customTemplate.visibility = chatflow.visibility
+            customTemplate.apiConfig = chatflow.apiConfig
+            customTemplate.speechToText = chatflow.speechToText
+            customTemplate.category = chatflow.category
+            customTemplate.type = chatflow.type
+            customTemplate.description = customTemplate.description || chatflow.description
         } else if (body.tool) {
             const flowData = {
                 iconSrc: body.tool.iconSrc,
