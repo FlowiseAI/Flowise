@@ -240,6 +240,44 @@ const AgentflowCanvas = () => {
         }
     }
 
+    const handleFlowReload = (restoredChatflow) => {
+        // Directly update the canvas with the restored flow data
+        if (restoredChatflow && restoredChatflow.flowData) {
+            try {
+                const restoredFlow = JSON.parse(restoredChatflow.flowData)
+
+                // Force React Flow to recognize the change by creating new array references
+                const newNodes = [...(restoredFlow.nodes || [])]
+                const newEdges = [...(restoredFlow.edges || [])]
+
+                // Clear first, then set new data to force re-render
+                setNodes([])
+                setEdges([])
+
+                // Use setTimeout to ensure React processes the clear operation first
+                setTimeout(() => {
+                    setNodes(newNodes)
+                    setEdges(newEdges)
+                    dispatch({ type: SET_CHATFLOW, chatflow: restoredChatflow })
+                    dispatch({ type: REMOVE_DIRTY })
+
+                    // Force React Flow to update its viewport after restore
+                    if (reactFlowInstance) {
+                        setTimeout(() => {
+                            reactFlowInstance.fitView({ padding: 0.1 })
+                        }, 100)
+                    }
+                }, 10)
+            } catch (error) {
+                console.error('Error parsing restored flow data:', error)
+                // Fallback to refetching from server
+                if (restoredChatflow.id) {
+                    getSpecificChatflowApi.request(restoredChatflow.id)
+                }
+            }
+        }
+    }
+
     // eslint-disable-next-line
     const onNodeClick = useCallback((event, clickedNode) => {
         setSelectedNode(clickedNode)
@@ -694,6 +732,7 @@ const AgentflowCanvas = () => {
                             handleSaveFlow={handleSaveFlow}
                             handleDeleteFlow={handleDeleteFlow}
                             handleLoadFlow={handleLoadFlow}
+                            onFlowReload={handleFlowReload}
                             isAgentCanvas={true}
                             isAgentflowV2={true}
                         />

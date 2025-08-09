@@ -19,6 +19,7 @@ import logger from '../../utils/logger'
 import { ASSISTANT_PROMPT_GENERATOR } from '../../utils/prompt'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import nodesService from '../nodes'
+import historyService from '../history'
 
 const createAssistant = async (requestBody: any, orgId: string): Promise<Assistant> => {
     try {
@@ -46,6 +47,16 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
             appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.ASSISTANT_CREATED, {
                 status: FLOWISE_COUNTER_STATUS.SUCCESS
             })
+
+            // Create initial history snapshot for CUSTOM assistant
+            await historyService.createSnapshot({
+                entityType: 'ASSISTANT',
+                entityId: dbResponse.id,
+                entityData: dbResponse,
+                changeDescription: 'Initial creation',
+                workspaceId: dbResponse.workspaceId
+            })
+
             return dbResponse
         }
 
@@ -150,6 +161,15 @@ const createAssistant = async (requestBody: any, orgId: string): Promise<Assista
         )
 
         appServer.metricsProvider?.incrementCounter(FLOWISE_METRIC_COUNTERS.ASSISTANT_CREATED, { status: FLOWISE_COUNTER_STATUS.SUCCESS })
+
+        // Create initial history snapshot for OpenAI assistant
+        await historyService.createSnapshot({
+            entityType: 'ASSISTANT',
+            entityId: dbResponse.id,
+            entityData: dbResponse,
+            changeDescription: 'Initial creation',
+            workspaceId: dbResponse.workspaceId
+        })
 
         return dbResponse
     } catch (error) {
@@ -301,6 +321,16 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
 
             appServer.AppDataSource.getRepository(Assistant).merge(assistant, updateAssistant)
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
+
+            // Create history snapshot for CUSTOM assistant update
+            await historyService.createSnapshot({
+                entityType: 'ASSISTANT',
+                entityId: dbResponse.id,
+                entityData: dbResponse,
+                changeDescription: 'Updated',
+                workspaceId: dbResponse.workspaceId
+            })
+
             return dbResponse
         }
 
@@ -379,6 +409,16 @@ const updateAssistant = async (assistantId: string, requestBody: any): Promise<A
 
             appServer.AppDataSource.getRepository(Assistant).merge(assistant, updateAssistant)
             const dbResponse = await appServer.AppDataSource.getRepository(Assistant).save(assistant)
+
+            // Create history snapshot for OpenAI assistant update
+            await historyService.createSnapshot({
+                entityType: 'ASSISTANT',
+                entityId: dbResponse.id,
+                entityData: dbResponse,
+                changeDescription: 'Updated',
+                workspaceId: dbResponse.workspaceId
+            })
+
             return dbResponse
         } catch (error) {
             throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error updating assistant - ${getErrorMessage(error)}`)

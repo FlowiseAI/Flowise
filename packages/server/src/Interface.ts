@@ -70,6 +70,7 @@ export interface IChatFlow {
     category?: string
     type?: ChatflowType
     workspaceId?: string
+    currentHistoryVersion?: number
 }
 
 export interface IChatMessage {
@@ -125,6 +126,7 @@ export interface IAssistant {
     updatedDate: Date
     createdDate: Date
     workspaceId?: string
+    currentHistoryVersion?: number
 }
 
 export interface ICredential {
@@ -189,6 +191,17 @@ export interface IComponentCredentials {
 
 export interface IVariableDict {
     [key: string]: string
+}
+
+export interface IFlowHistory {
+    id: string
+    entityType: 'CHATFLOW' | 'ASSISTANT'
+    entityId: string
+    snapshotData: string
+    changeDescription?: string
+    version: number
+    createdDate: Date
+    workspaceId?: string
 }
 
 export interface INodeDependencies {
