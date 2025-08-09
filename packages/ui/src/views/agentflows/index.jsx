@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useSelector } from 'react-redux'
 
 // material-ui
-import { Chip, Box, Stack, ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { Chip, Box, Stack, ToggleButton, ToggleButtonGroup, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 
 // project imports
@@ -28,13 +29,14 @@ import { baseURL, AGENTFLOW_ICONS } from '@/store/constant'
 import { useError } from '@/store/context/ErrorContext'
 
 // icons
-import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
+import { IconPlus, IconLayoutGrid, IconList, IconX, IconAlertTriangle } from '@tabler/icons-react'
 
 // ==============================|| AGENTS ||============================== //
 
 const Agentflows = () => {
     const navigate = useNavigate()
     const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
 
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
@@ -45,6 +47,7 @@ const Agentflows = () => {
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
     const [agentflowVersion, setAgentflowVersion] = useState(localStorage.getItem('agentFlowVersion') || 'v2')
+    const [showDeprecationNotice, setShowDeprecationNotice] = useState(true)
 
     /* Table Pagination */
     const [currentPage, setCurrentPage] = useState(1)
@@ -104,6 +107,10 @@ const Agentflows = () => {
         } else {
             navigate(`/agentcanvas/${selectedAgentflow.id}`)
         }
+    }
+
+    const handleDismissDeprecationNotice = () => {
+        setShowDeprecationNotice(false)
     }
 
     useEffect(() => {
@@ -185,7 +192,7 @@ const Agentflows = () => {
                                 sx={{
                                     borderColor: theme.palette.grey[900] + 25,
                                     borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
                                 value='v2'
@@ -198,7 +205,7 @@ const Agentflows = () => {
                                 sx={{
                                     borderColor: theme.palette.grey[900] + 25,
                                     borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
                                 value='v1'
@@ -219,7 +226,7 @@ const Agentflows = () => {
                                 sx={{
                                     borderColor: theme.palette.grey[900] + 25,
                                     borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
                                 value='card'
@@ -231,7 +238,7 @@ const Agentflows = () => {
                                 sx={{
                                     borderColor: theme.palette.grey[900] + 25,
                                     borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
                                 variant='contained'
                                 value='list'
@@ -250,6 +257,49 @@ const Agentflows = () => {
                             Add New
                         </StyledPermissionButton>
                     </ViewHeader>
+
+                    {/* Deprecation Notice For V1 */}
+                    {agentflowVersion === 'v1' && showDeprecationNotice && (
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                padding: 2,
+                                background: customization.isDarkMode
+                                    ? 'linear-gradient(135deg,rgba(165, 128, 6, 0.31) 0%, #ffcc802f 100%)'
+                                    : 'linear-gradient(135deg, #fff8e17a 0%, #ffcc804a 100%)',
+                                color: customization.isDarkMode ? 'white' : '#333333',
+                                fontWeight: 400,
+                                borderRadius: 2,
+                                gap: 1.5
+                            }}
+                        >
+                            <IconAlertTriangle
+                                size={20}
+                                style={{
+                                    color: customization.isDarkMode ? '#ffcc80' : '#f57c00',
+                                    flexShrink: 0
+                                }}
+                            />
+                            <Box sx={{ flex: 1 }}>
+                                <strong>V1 Agentflows are deprecated.</strong> We recommend migrating to V2 for improved performance and
+                                continued support.
+                            </Box>
+                            <IconButton
+                                aria-label='dismiss'
+                                size='small'
+                                onClick={handleDismissDeprecationNotice}
+                                sx={{
+                                    color: customization.isDarkMode ? '#ffcc80' : '#f57c00',
+                                    '&:hover': {
+                                        backgroundColor: 'rgba(255, 204, 128, 0.1)'
+                                    }
+                                }}
+                            >
+                                <IconX size={16} />
+                            </IconButton>
+                        </Box>
+                    )}
                     {!isLoading && total > 0 && (
                         <>
                             {!view || view === 'card' ? (
