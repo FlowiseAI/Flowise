@@ -4,6 +4,13 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "anthropic.claude-opus-4-1-20250805-v1:0",
+                    "name": "anthropic.claude-opus-4-1-20250805-v1:0",
+                    "description": "Claude 4.1 Opus",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
+                {
                     "label": "anthropic.claude-sonnet-4-20250514-v1:0",
                     "name": "anthropic.claude-sonnet-4-20250514-v1:0",
                     "description": "Claude 4 Sonnet",
@@ -281,6 +288,24 @@
             "name": "azureChatOpenAI",
             "models": [
                 {
+                    "label": "gpt-5",
+                    "name": "gpt-5",
+                    "input_cost": 0.00000125,
+                    "output_cost": 0.00001
+                },
+                {
+                    "label": "gpt-5-mini",
+                    "name": "gpt-5-mini",
+                    "input_cost": 0.00000025,
+                    "output_cost": 0.000002
+                },
+                {
+                    "label": "gpt-5-nano",
+                    "name": "gpt-5-nano",
+                    "input_cost": 0.00000005,
+                    "output_cost": 0.0000004
+                },
+                {
                     "label": "gpt-4.1",
                     "name": "gpt-4.1",
                     "input_cost": 2e-6,
@@ -422,6 +447,13 @@
         {
             "name": "chatAnthropic",
             "models": [
+                {
+                    "label": "claude-opus-4-1",
+                    "name": "claude-opus-4-1",
+                    "description": "Claude 4.1 Opus",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
+                },
                 {
                     "label": "claude-sonnet-4-0",
                     "name": "claude-sonnet-4-0",
@@ -640,6 +672,13 @@
                     "name": "gemini-1.0-pro-vision",
                     "input_cost": 1.25e-7,
                     "output_cost": 3.75e-7
+                },
+                {
+                    "label": "claude-opus-4-1@20250805",
+                    "name": "claude-opus-4-1@20250805",
+                    "description": "Claude 4.1 Opus",
+                    "input_cost": 0.000015,
+                    "output_cost": 0.000075
                 },
                 {
                     "label": "claude-sonnet-4@20250514",
