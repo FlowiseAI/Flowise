@@ -13,11 +13,7 @@ class JSONPathExtractorTool extends StructuredTool {
 
     schema = z.object({
         json: z
-            .union([
-                z.string().describe('JSON string'),
-                z.record(z.any()).describe('JSON object'),
-                z.array(z.any()).describe('JSON array')
-            ])
+            .union([z.string().describe('JSON string'), z.record(z.any()).describe('JSON object'), z.array(z.any()).describe('JSON array')])
             .describe('JSON data to extract value from')
     })
 
