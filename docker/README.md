@@ -18,7 +18,7 @@ If you like to persist your data (flows, logs, credentials, storage), set these 
 -   SECRETKEY_PATH=/root/.flowise
 -   BLOB_STORAGE_PATH=/root/.flowise/storage
 
-Flowise also support different environment variables to configure your instance. Read [more](https://docs.flowiseai.com/environment-variables)
+Flowise also support different environment variables to configure your instance. Read [more](https://docs.flowiseai.com/configuration/environment-variables)
 
 ## Queue Mode:
 

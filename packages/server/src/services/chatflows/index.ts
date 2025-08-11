@@ -339,31 +339,6 @@ const updateChatflow = async (
     }
 }
 
-// Get specific chatflow via id (PUBLIC endpoint, used when sharing chatbot link)
-const getSinglePublicChatflow = async (chatflowId: string): Promise<any> => {
-    try {
-        const appServer = getRunningExpressApp()
-        const dbResponse = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-            id: chatflowId
-        })
-        if (dbResponse && dbResponse.isPublic) {
-            return dbResponse
-        } else if (dbResponse && !dbResponse.isPublic) {
-            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Unauthorized`)
-        }
-        throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowId} not found`)
-    } catch (error) {
-        if (error instanceof InternalFlowiseError && error.statusCode === StatusCodes.UNAUTHORIZED) {
-            throw error
-        } else {
-            throw new InternalFlowiseError(
-                StatusCodes.INTERNAL_SERVER_ERROR,
-                `Error: chatflowsService.getSinglePublicChatflow - ${getErrorMessage(error)}`
-            )
-        }
-    }
-}
-
 // Get specific chatflow chatbotConfig via id (PUBLIC endpoint, used to retrieve config for embedded chat)
 // Safe as public endpoint as chatbotConfig doesn't contain sensitive credential
 const getSinglePublicChatbotConfig = async (chatflowId: string): Promise<any> => {
@@ -438,7 +413,6 @@ export default {
     getChatflowById,
     saveChatflow,
     updateChatflow,
-    getSinglePublicChatflow,
     getSinglePublicChatbotConfig,
     checkIfChatflowHasChanged,
     getAllChatflowsCountByOrganization
