@@ -56,8 +56,9 @@ class ChatAIMLAPI_ChatModels implements INode {
         }
     ]
 
-    //@ts-ignore
-    loadMethods = {
+    loadMethods: {
+        listModels: () => Promise<INodeOptionsValue[]>
+    } = {
         async listModels(): Promise<INodeOptionsValue[]> {
             const returnData: INodeOptionsValue[] = []
             try {
