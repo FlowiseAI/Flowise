@@ -11,14 +11,26 @@ export class ReciprocalRankFusion extends BaseDocumentCompressor {
     private readonly queryCount: number
     private readonly topK: number
     private readonly c: number
+    private readonly systemMessage?: string
+    private readonly queryPrompt?: string
     private baseRetriever: VectorStoreRetriever
-    constructor(llm: BaseLanguageModel, baseRetriever: VectorStoreRetriever, queryCount: number, topK: number, c: number) {
+    constructor(
+        llm: BaseLanguageModel,
+        baseRetriever: VectorStoreRetriever,
+        queryCount: number,
+        topK: number,
+        c: number,
+        systemMessage?: string,
+        queryPrompt?: string
+    ) {
         super()
         this.queryCount = queryCount
         this.llm = llm
         this.baseRetriever = baseRetriever
         this.topK = topK
         this.c = c
+        this.systemMessage = systemMessage
+        this.queryPrompt = queryPrompt
     }
     async compressDocuments(
         documents: Document<Record<string, any>>[],
@@ -29,13 +41,17 @@ export class ReciprocalRankFusion extends BaseDocumentCompressor {
         if (documents.length === 0) {
             return []
         }
+        // Use custom prompts if provided, otherwise use defaults
+        const defaultSystemMessage = 'You are a helpful assistant that generates multiple search queries based on a single input query.'
+        const defaultQueryPrompt =
+            'Generate multiple search queries related to: {input}. Provide these alternative questions separated by newlines, do not add any numbers.'
+
+        const systemMsg = this.systemMessage || defaultSystemMessage
+        const queryMsg = this.queryPrompt || defaultQueryPrompt
+
         const chatPrompt = ChatPromptTemplate.fromMessages([
-            SystemMessagePromptTemplate.fromTemplate(
-                'You are a helpful assistant that generates multiple search queries based on a single input query.'
-            ),
-            HumanMessagePromptTemplate.fromTemplate(
-                'Generate multiple search queries related to: {input}. Provide these alternative questions separated by newlines, do not add any numbers.'
-            ),
+            SystemMessagePromptTemplate.fromTemplate(systemMsg),
+            HumanMessagePromptTemplate.fromTemplate(queryMsg),
             HumanMessagePromptTemplate.fromTemplate('OUTPUT (' + this.queryCount + ' queries):')
         ])
         const llmChain = new LLMChain({
@@ -50,7 +66,7 @@ export class ReciprocalRankFusion extends BaseDocumentCompressor {
         })
         const docList: Document<Record<string, any>>[][] = []
         for (let i = 0; i < queries.length; i++) {
-            const resultOne = await this.baseRetriever.vectorStore.similaritySearch(queries[i], 5, this.baseRetriever.filter)
+            const resultOne = await this.baseRetriever.vectorStore.similaritySearch(queries[i], this.topK, this.baseRetriever.filter)
             const docs: any[] = []
             resultOne.forEach((doc) => {
                 docs.push(doc)
