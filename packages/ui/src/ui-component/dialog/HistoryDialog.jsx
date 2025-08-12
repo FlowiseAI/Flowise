@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import {
     Dialog,
@@ -43,7 +43,7 @@ const HistoryDialog = ({ show, dialogProps, onCancel, onRestore }) => {
     const dispatch = useDispatch()
     useNotifier() // Side effect hook
 
-    const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
+    const enqueueSnackbar = useCallback((...args) => dispatch(enqueueSnackbarAction(...args)), [dispatch])
 
     const [historyItems, setHistoryItems] = useState([])
     const [loading, setLoading] = useState(false)
@@ -85,7 +85,7 @@ const HistoryDialog = ({ show, dialogProps, onCancel, onRestore }) => {
         }
 
         loadHistory()
-    }, [show, entityType, entityId, currentPage, reloadTrigger, latestVersion, enqueueSnackbar])
+    }, [show, entityType, entityId, currentPage, reloadTrigger, enqueueSnackbar])
 
     const handleRestore = async (historyItem) => {
         const confirmed = await confirm({
