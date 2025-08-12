@@ -62,6 +62,9 @@ class ChatAIMLAPI_ChatModels implements INode {
             const returnData: INodeOptionsValue[] = []
             try {
                 const response = await fetch('https://api.aimlapi.com/v1/models')
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch models: ${response.status} ${response.statusText}`)
+                }
                 const data = await response.json()
                 for (const model of data?.data || []) {
                     if (model.type === 'chat-completion') {
