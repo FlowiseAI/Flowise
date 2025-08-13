@@ -38,7 +38,8 @@ import {
     IconSquareFilled,
     IconCheck,
     IconPaperclip,
-    IconSparkles
+    IconSparkles,
+    IconVolume
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -250,6 +251,11 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const [formInputParams, setFormInputParams] = useState([])
 
     const [isConfigLoading, setIsConfigLoading] = useState(true)
+
+    // TTS state
+    const [ttsLoading, setTtsLoading] = useState({})
+    const [ttsAudio, setTtsAudio] = useState({})
+    const [isTTSEnabled, setIsTTSEnabled] = useState(false)
 
     const isFileAllowedForUpload = (file) => {
         const constraints = getAllowChatFlowUploads.data
@@ -1293,8 +1299,34 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 }
             }
         }
+
+        // Check if TTS is configured
+        if (getChatflowConfig.data && getChatflowConfig.data.textToSpeech) {
+            try {
+                const ttsConfig =
+                    typeof getChatflowConfig.data.textToSpeech === 'string'
+                        ? JSON.parse(getChatflowConfig.data.textToSpeech)
+                        : getChatflowConfig.data.textToSpeech
+
+                let isEnabled = false
+                if (ttsConfig) {
+                    Object.keys(ttsConfig).forEach((provider) => {
+                        if (ttsConfig[provider] && ttsConfig[provider].status && ttsConfig[provider].credentialId) {
+                            isEnabled = true
+                        }
+                    })
+                }
+                setIsTTSEnabled(isEnabled)
+            } catch (error) {
+                setIsTTSEnabled(false)
+            }
+        } else {
+            setIsTTSEnabled(false)
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChatflowConfig.data])
+
+    console.log('isTTSEnabled:', isTTSEnabled)
 
     useEffect(() => {
         if (getChatflowConfig.error) {
@@ -1497,7 +1529,108 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 return allMessages
             })
         }
+
         setIsLeadSaving(false)
+    }
+
+    const handleTTSClick = async (messageId, messageText) => {
+        if (ttsLoading[messageId]) return
+
+        if (ttsAudio[messageId]) {
+            ttsAudio[messageId].pause()
+            ttsAudio[messageId].currentTime = 0
+            setTtsAudio((prev) => {
+                const newState = { ...prev }
+                delete newState[messageId]
+                return newState
+            })
+            return
+        }
+
+        setTtsLoading((prev) => ({ ...prev, [messageId]: true }))
+
+        try {
+            let ttsConfig = null
+            if (getChatflowConfig.data && getChatflowConfig.data.textToSpeech) {
+                try {
+                    ttsConfig =
+                        typeof getChatflowConfig.data.textToSpeech === 'string'
+                            ? JSON.parse(getChatflowConfig.data.textToSpeech)
+                            : getChatflowConfig.data.textToSpeech
+                } catch (error) {
+                    console.error('Error parsing TTS config:', error)
+                }
+            }
+
+            let activeProvider = null
+            let providerConfig = null
+            if (ttsConfig) {
+                Object.keys(ttsConfig).forEach((provider) => {
+                    if (ttsConfig[provider] && ttsConfig[provider].status) {
+                        activeProvider = provider
+                        providerConfig = ttsConfig[provider]
+                    }
+                })
+            }
+
+            if (!activeProvider || !providerConfig || !providerConfig.credentialId) {
+                enqueueSnackbar({
+                    message: 'Text-to-speech is not configured for this chatflow',
+                    options: { variant: 'warning' }
+                })
+                return
+            }
+
+            const response = await fetch('/api/v1/text-to-speech/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-request-from': 'internal'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    text: messageText,
+                    provider: activeProvider,
+                    credentialId: providerConfig.credentialId,
+                    voice: providerConfig.voice,
+                    model: providerConfig.model
+                })
+            })
+
+            if (!response.ok) {
+                throw new Error(`TTS request failed: ${response.status}`)
+            }
+
+            const audioBuffer = await response.arrayBuffer()
+            const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' })
+            const audioUrl = URL.createObjectURL(audioBlob)
+            const audio = new Audio(audioUrl)
+
+            setTtsAudio((prev) => ({ ...prev, [messageId]: audio }))
+
+            audio.addEventListener('ended', () => {
+                setTtsAudio((prev) => {
+                    const newState = { ...prev }
+                    delete newState[messageId]
+                    return newState
+                })
+                URL.revokeObjectURL(audioUrl)
+            })
+
+            await audio.play()
+        } catch (error) {
+            console.error('Error with TTS:', error)
+            enqueueSnackbar({
+                message: `TTS failed: ${error.message}`,
+                options: { variant: 'error' }
+            })
+        } finally {
+            setTtsLoading((prev) => {
+                const newState = { ...prev }
+                delete newState[messageId]
+                return newState
+            })
+        }
     }
 
     const getInputDisabled = () => {
@@ -2151,7 +2284,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                 })}
                                             </div>
                                         )}
-                                        {message.type === 'apiMessage' && message.id && chatFeedbackStatus ? (
+                                        {message.type === 'apiMessage' && message.id ? (
                                             <>
                                                 <Box
                                                     sx={{
@@ -2161,25 +2294,53 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                                         gap: 1
                                                     }}
                                                 >
-                                                    <CopyToClipboardButton onClick={() => copyMessageToClipboard(message.message)} />
-                                                    {!message.feedback ||
-                                                    message.feedback.rating === '' ||
-                                                    message.feedback.rating === 'THUMBS_UP' ? (
-                                                        <ThumbsUpButton
-                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_UP'}
-                                                            rating={message.feedback ? message.feedback.rating : ''}
-                                                            onClick={() => onThumbsUpClick(message.id)}
-                                                        />
-                                                    ) : null}
-                                                    {!message.feedback ||
-                                                    message.feedback.rating === '' ||
-                                                    message.feedback.rating === 'THUMBS_DOWN' ? (
-                                                        <ThumbsDownButton
-                                                            isDisabled={message.feedback && message.feedback.rating === 'THUMBS_DOWN'}
-                                                            rating={message.feedback ? message.feedback.rating : ''}
-                                                            onClick={() => onThumbsDownClick(message.id)}
-                                                        />
-                                                    ) : null}
+                                                    {isTTSEnabled && (
+                                                        <IconButton
+                                                            size='small'
+                                                            onClick={() => handleTTSClick(message.id, message.message)}
+                                                            disabled={ttsLoading[message.id]}
+                                                            sx={{
+                                                                backgroundColor: ttsAudio[message.id] ? 'primary.main' : 'transparent',
+                                                                color: ttsAudio[message.id] ? 'white' : 'inherit',
+                                                                '&:hover': {
+                                                                    backgroundColor: ttsAudio[message.id] ? 'primary.dark' : 'action.hover'
+                                                                }
+                                                            }}
+                                                        >
+                                                            {ttsLoading[message.id] ? (
+                                                                <CircularProgress size={16} />
+                                                            ) : (
+                                                                <IconVolume size={16} />
+                                                            )}
+                                                        </IconButton>
+                                                    )}
+                                                    {chatFeedbackStatus && (
+                                                        <>
+                                                            <CopyToClipboardButton
+                                                                onClick={() => copyMessageToClipboard(message.message)}
+                                                            />
+                                                            {!message.feedback ||
+                                                            message.feedback.rating === '' ||
+                                                            message.feedback.rating === 'THUMBS_UP' ? (
+                                                                <ThumbsUpButton
+                                                                    isDisabled={message.feedback && message.feedback.rating === 'THUMBS_UP'}
+                                                                    rating={message.feedback ? message.feedback.rating : ''}
+                                                                    onClick={() => onThumbsUpClick(message.id)}
+                                                                />
+                                                            ) : null}
+                                                            {!message.feedback ||
+                                                            message.feedback.rating === '' ||
+                                                            message.feedback.rating === 'THUMBS_DOWN' ? (
+                                                                <ThumbsDownButton
+                                                                    isDisabled={
+                                                                        message.feedback && message.feedback.rating === 'THUMBS_DOWN'
+                                                                    }
+                                                                    rating={message.feedback ? message.feedback.rating : ''}
+                                                                    onClick={() => onThumbsDownClick(message.id)}
+                                                                />
+                                                            ) : null}
+                                                        </>
+                                                    )}
                                                 </Box>
                                             </>
                                         ) : null}
