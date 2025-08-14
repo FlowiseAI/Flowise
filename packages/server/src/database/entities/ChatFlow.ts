@@ -47,7 +47,7 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     category?: string
 
-    @Column({ nullable: false, type: 'text', default: ChatflowType.CHATFLOW })
+    @Column({ type: 'varchar', length: 20, default: ChatflowType.CHATFLOW })
     type?: string
 
     @Column({ type: 'timestamp' })
