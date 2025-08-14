@@ -393,6 +393,21 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
         }
     }
 
+    streamAudioEvent(chatId: string, audioData: string): void {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    eventType: 'audio',
+                    data: audioData
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming audio event:', error)
+        }
+    }
+
     async disconnect() {
         if (this.redisPublisher) {
             await this.redisPublisher.quit()

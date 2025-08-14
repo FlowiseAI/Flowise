@@ -955,6 +955,12 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     setLoading(false)
                     setUserInput('')
                     setUploadedFiles([])
+
+                    // Handle auto-play audio for non-streaming responses
+                    if (data.audioData) {
+                        handleAutoPlayAudio(data.audioData)
+                    }
+
                     setTimeout(() => {
                         inputRef.current?.focus()
                         scrollToBottom()
@@ -1032,6 +1038,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     case 'abort':
                         abortMessage(payload.data)
                         closeResponse()
+                        break
+                    case 'audio':
+                        handleAutoPlayAudio(payload.data)
                         break
                     case 'end':
                         setLocalStorageChatflow(chatflowid, chatId)
@@ -1628,6 +1637,37 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 delete newState[messageId]
                 return newState
             })
+        }
+    }
+
+    const handleAutoPlayAudio = async (audioData) => {
+        try {
+            // Convert base64 audio data to blob and play
+            const audioBuffer = Uint8Array.from(atob(audioData), (c) => c.charCodeAt(0))
+            const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' })
+            const audioUrl = URL.createObjectURL(audioBlob)
+            const audio = new Audio(audioUrl)
+
+            audio.addEventListener('ended', () => {
+                URL.revokeObjectURL(audioUrl)
+            })
+
+            await audio.play()
+        } catch (error) {
+            console.error('Error playing auto TTS audio:', error)
+            // Fallback: Use manual TTS API call
+            const lastMessage = messages[messages.length - 1]
+            if (lastMessage && lastMessage.type === 'apiMessage' && lastMessage.message) {
+                try {
+                    await handleTTSClick(lastMessage.id, lastMessage.message)
+                } catch (fallbackError) {
+                    console.error('TTS fallback also failed:', fallbackError)
+                    enqueueSnackbar({
+                        message: 'Auto-play audio failed',
+                        options: { variant: 'error' }
+                    })
+                }
+            }
         }
     }
 

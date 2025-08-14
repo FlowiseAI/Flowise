@@ -441,6 +441,7 @@ export interface IServerSideEventStreamer {
     streamAbortEvent(chatId: string): void
     streamEndEvent(chatId: string): void
     streamUsageMetadataEvent(chatId: string, data: any): void
+    streamAudioEvent(chatId: string, audioData: string): void
 }
 
 export enum FollowUpPromptProvider {

@@ -455,6 +455,24 @@ const TextToSpeech = ({ dialogProps }) => {
                             )}
                         </Box>
                     ))}
+
+                    {/* Auto-play Toggle */}
+                    <Box sx={{ p: 2 }}>
+                        <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                            <Typography>
+                                Automatically play audio
+                                <TooltipWithParser
+                                    style={{ marginLeft: 10 }}
+                                    title='When enabled, bot responses will be automatically converted to speech and played'
+                                />
+                            </Typography>
+                        </div>
+                        <SwitchInput
+                            onChange={(newValue) => setValue(newValue, selectedProvider, 'autoPlay')}
+                            value={textToSpeech[selectedProvider] ? textToSpeech[selectedProvider].autoPlay ?? false : false}
+                        />
+                    </Box>
+
                     {/* Test TTS Button */}
                     <Box sx={{ p: 2 }}>
                         <StyledButton

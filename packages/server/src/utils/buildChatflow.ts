@@ -6,6 +6,7 @@ import { omit } from 'lodash'
 import {
     IFileUpload,
     convertSpeechToText,
+    convertTextToSpeech,
     ICommonObject,
     addSingleFileToStorage,
     generateFollowUpPrompts,
@@ -70,9 +71,59 @@ import { executeAgentFlow } from './buildAgentflow'
 import { Workspace } from '../enterprise/database/entities/workspace.entity'
 import { Organization } from '../enterprise/database/entities/organization.entity'
 
-/*
- * Initialize the ending node to be executed
- */
+// Helper function to check if auto-play TTS is enabled
+const shouldAutoPlayTTS = (textToSpeechConfig: string | undefined | null): boolean => {
+    if (!textToSpeechConfig) return false
+    try {
+        const config = typeof textToSpeechConfig === 'string' ? JSON.parse(textToSpeechConfig) : textToSpeechConfig
+        // Check each provider to see if any has autoPlay enabled and status true
+        for (const providerKey in config) {
+            const provider = config[providerKey]
+            if (provider && provider.status === true && provider.autoPlay === true) {
+                return true
+            }
+        }
+        return false
+    } catch (error) {
+        return false
+    }
+}
+
+// Helper function to generate TTS for response
+const generateTTSForResponse = async (
+    responseText: string,
+    textToSpeechConfig: string | undefined,
+    options: ICommonObject
+): Promise<Buffer | null> => {
+    try {
+        if (!textToSpeechConfig) return null
+        const config = typeof textToSpeechConfig === 'string' ? JSON.parse(textToSpeechConfig) : textToSpeechConfig
+
+        // Find the active provider configuration
+        let activeProviderConfig = null
+        for (const providerKey in config) {
+            const provider = config[providerKey]
+            if (provider && provider.status === true) {
+                activeProviderConfig = {
+                    name: providerKey,
+                    credentialId: provider.credentialId,
+                    voice: provider.voice,
+                    model: provider.model
+                }
+                break
+            }
+        }
+
+        if (!activeProviderConfig) return null
+
+        const audioBuffer = await convertTextToSpeech(responseText, activeProviderConfig, options)
+        return audioBuffer
+    } catch (error) {
+        logger.error(`[server]: TTS generation failed: ${getErrorMessage(error)}`)
+        return null
+    }
+}
+
 const initEndingNode = async ({
     endingNodeIds,
     componentNodes,
@@ -827,6 +878,29 @@ export const executeFlow = async ({
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
         if (Object.keys(setVariableNodesOutput).length) result.flowVariables = setVariableNodesOutput
+
+        if (shouldAutoPlayTTS(chatflow.textToSpeech) && result.text) {
+            logger.info('[server]: Generating TTS for response')
+            logger.info(`[server/executeFlow]: TTS config: ${JSON.stringify(chatflow.textToSpeech)}`)
+            const options = {
+                orgId,
+                chatflowid,
+                chatId,
+                appDataSource,
+                databaseEntities
+            }
+
+            const audioBuffer = await generateTTSForResponse(result.text, chatflow.textToSpeech, options)
+            if (audioBuffer) {
+                const audioBase64 = audioBuffer.toString('base64')
+
+                if (streaming && sseStreamer) {
+                    sseStreamer.streamAudioEvent(chatId, audioBase64)
+                } else {
+                    result.audioData = audioBase64
+                }
+            }
+        }
 
         return result
     }
