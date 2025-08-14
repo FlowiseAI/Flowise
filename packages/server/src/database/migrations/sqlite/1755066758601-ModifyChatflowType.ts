@@ -18,7 +18,7 @@ export class ModifyChatflowType1755066758601 implements MigrationInterface {
                 "analytic" TEXT, 
                 "category" TEXT, 
                 "speechToText" TEXT, 
-                "type" TEXT NOT NULL DEFAULT '${ChatflowType.CHATFLOW}', 
+                "type" VARCHAR(20) NOT NULL DEFAULT '${ChatflowType.CHATFLOW}', 
                 "workspaceId" TEXT, 
                 "followUpPrompts" TEXT,
                 FOREIGN KEY ("workspaceId") REFERENCES "workspace"("id")
