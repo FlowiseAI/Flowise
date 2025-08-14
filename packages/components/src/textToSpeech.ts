@@ -85,7 +85,11 @@ export const getVoices = async (provider: string, credentialId: string, options:
                 apiKey: credentialData.elevenLabsApiKey
             })
 
-            const voices = await client.voices.search()
+            const voices = await client.voices.search({
+                pageSize: 100,
+                voiceType: 'default',
+                category: 'premade'
+            })
 
             return voices.voices.map((voice) => ({
                 id: voice.voiceId,

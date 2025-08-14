@@ -78,7 +78,7 @@ const getVoicesForProvider = async (provider: string, credentialId?: string): Pr
             chatflowid: '',
             chatId: '',
             appDataSource: appServer.AppDataSource,
-            databaseEntities: {}
+            databaseEntities: databaseEntities
         }
 
         return await getVoices(provider, credentialId, options)
