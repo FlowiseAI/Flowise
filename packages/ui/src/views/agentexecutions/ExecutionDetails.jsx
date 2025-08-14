@@ -725,7 +725,8 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                     flex: '1 1 35%',
                     padding: 2,
                     borderRight: 1,
-                    borderColor: 'divider'
+                    borderColor: 'divider',
+                    overflow: 'auto'
                 }}
             >
                 <Box
