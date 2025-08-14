@@ -33,7 +33,6 @@ import elevenLabsSVG from '@/assets/images/elevenlabs.svg'
 import useNotifier from '@/utils/useNotifier'
 
 // API
-import useApi from '@/hooks/useApi'
 import chatflowsApi from '@/api/chatflows'
 import ttsApi from '@/api/tts'
 
@@ -119,12 +118,10 @@ const TextToSpeech = ({ dialogProps }) => {
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
-    const [textToSpeech, setTextToSpeech] = useState({})
+    const [textToSpeech, setTextToSpeech] = useState(null)
     const [selectedProvider, setSelectedProvider] = useState('none')
     const [voices, setVoices] = useState([])
     const [loadingVoices, setLoadingVoices] = useState(false)
-
-    const listVoicesApi = useApi(ttsApi.listVoices)
 
     const onSave = async () => {
         const textToSpeechConfig = setValue(true, selectedProvider, 'status')
@@ -191,12 +188,12 @@ const TextToSpeech = ({ dialogProps }) => {
         return newVal
     }
 
-    const handleProviderChange = (event) => {
-        setSelectedProvider(event.target.value)
+    const handleProviderChange = (provider, configOverride = null) => {
+        setSelectedProvider(() => provider)
         setVoices([])
-        const provider = event.target.value
         if (provider !== 'none') {
-            const credentialId = textToSpeech[provider]?.credentialId
+            const config = configOverride || textToSpeech[provider]?.config
+            const credentialId = config[provider]?.credentialId
             if (credentialId) {
                 loadVoicesForProvider(provider, credentialId)
             }
@@ -245,18 +242,9 @@ const TextToSpeech = ({ dialogProps }) => {
                 voice: providerConfig.voice,
                 model: providerConfig.model
             }
-            const response = await fetch('/api/v1/text-to-speech/generate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-request-from': 'internal'
-                },
-                credentials: 'include',
-                body: JSON.stringify(body)
-            })
-            if (response.ok) {
-                const audioBuffer = await response.arrayBuffer()
-                const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' })
+            const response = await ttsApi.generateVoice(body)
+            if (response.data) {
+                const audioBlob = new Blob([response.data], { type: 'audio/mpeg' })
                 const audioUrl = URL.createObjectURL(audioBlob)
                 const audio = new Audio(audioUrl)
 
@@ -305,19 +293,19 @@ const TextToSpeech = ({ dialogProps }) => {
                 })
                 setSelectedProvider(selectedProvider)
                 setTextToSpeech(textToSpeechConfig)
-
-                // Voices will be loaded when credentials are configured
+                handleProviderChange(selectedProvider, textToSpeechConfig)
             } catch {
-                setTextToSpeech({})
+                setTextToSpeech(null)
                 setSelectedProvider('none')
             }
         }
 
         return () => {
-            setTextToSpeech({})
+            setTextToSpeech(null)
             setSelectedProvider('none')
             setVoices([])
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dialogProps])
 
     return (
@@ -328,7 +316,7 @@ const TextToSpeech = ({ dialogProps }) => {
                     <Select
                         size='small'
                         value={selectedProvider}
-                        onChange={handleProviderChange}
+                        onChange={(event) => handleProviderChange(event.target.value)}
                         sx={{
                             '& .MuiSvgIcon-root': {
                                 color: theme?.customization?.isDarkMode ? '#fff' : 'inherit'

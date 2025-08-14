@@ -1326,8 +1326,6 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getChatflowConfig.data])
 
-    console.log('isTTSEnabled:', isTTSEnabled)
-
     useEffect(() => {
         if (getChatflowConfig.error) {
             setIsConfigLoading(false)
