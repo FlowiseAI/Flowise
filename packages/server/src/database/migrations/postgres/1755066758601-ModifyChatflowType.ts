@@ -10,6 +10,9 @@ export class ModifyChatflowType1755066758601 implements MigrationInterface {
             ALTER TABLE "chat_flow" ALTER COLUMN "type" SET DEFAULT '${ChatflowType.CHATFLOW}';
         `)
         await queryRunner.query(`
+            ALTER TABLE "chat_flow" ALTER COLUMN "type" TYPE VARCHAR(20);
+        `)
+        await queryRunner.query(`
             ALTER TABLE "chat_flow" ALTER COLUMN "type" SET NOT NULL;
         `)
     }
