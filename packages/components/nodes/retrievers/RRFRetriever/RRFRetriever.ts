@@ -77,6 +77,26 @@ class RRFRetriever_Retrievers implements INode {
                 default: 60,
                 additionalParams: true,
                 optional: true
+            },
+            {
+                label: 'System Message',
+                name: 'systemMessage',
+                description: 'System message for query generation. Leave empty to use default.',
+                type: 'string',
+                rows: 2,
+                placeholder: 'You are a helpful assistant that generates multiple search queries based on a single input query.',
+                additionalParams: true,
+                optional: true
+            },
+            {
+                label: 'Query Generation Prompt',
+                name: 'queryPrompt',
+                description: 'Prompt template for generating query variations. Use {input} to refer to the original query.',
+                type: 'string',
+                rows: 4,
+                placeholder: 'Generate multiple search queries related to: {input}. Provide these alternative questions separated by newlines, do not add any numbers.',
+                additionalParams: true,
+                optional: true
             }
         ]
         this.outputs = [
@@ -110,9 +130,11 @@ class RRFRetriever_Retrievers implements INode {
         const k = topK ? parseFloat(topK) : (baseRetriever as VectorStoreRetriever).k ?? 4
         const constantC = nodeData.inputs?.c as string
         const c = topK ? parseFloat(constantC) : 60
+        const systemMessage = nodeData.inputs?.systemMessage as string
+        const queryPrompt = nodeData.inputs?.queryPrompt as string
         const output = nodeData.outputs?.output as string
 
-        const ragFusion = new ReciprocalRankFusion(llm, baseRetriever as VectorStoreRetriever, q, k, c)
+        const ragFusion = new ReciprocalRankFusion(llm, baseRetriever as VectorStoreRetriever, q, k, c, systemMessage, queryPrompt)
         const retriever = new ContextualCompressionRetriever({
             baseCompressor: ragFusion,
             baseRetriever: baseRetriever
