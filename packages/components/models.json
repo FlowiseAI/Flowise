@@ -556,16 +556,22 @@
             "name": "chatGoogleGenerativeAI",
             "models": [
                 {
-                    "label": "gemini-2.5-flash-preview-05-20",
-                    "name": "gemini-2.5-flash-preview-05-20",
-                    "input_cost": 0.15e-6,
-                    "output_cost": 6e-7
+                    "label": "gemini-2.5-pro",
+                    "name": "gemini-2.5-pro",
+                    "input_cost": 0.3e-6,
+                    "output_cost": 0.000025
                 },
                 {
-                    "label": "gemini-2.5-pro-preview-03-25",
-                    "name": "gemini-2.5-pro-preview-03-25",
+                    "label": "gemini-2.5-flash",
+                    "name": "gemini-2.5-flash",
                     "input_cost": 1.25e-6,
                     "output_cost": 0.00001
+                },
+                {
+                    "label": "gemini-2.5-flash-lite",
+                    "name": "gemini-2.5-flash-lite",
+                    "input_cost": 1e-7,
+                    "output_cost": 4e-7
                 },
                 {
                     "label": "gemini-2.0-flash",
@@ -614,16 +620,22 @@
             "name": "chatGoogleVertexAI",
             "models": [
                 {
-                    "label": "gemini-2.5-flash",
-                    "name": "gemini-2.5-flash",
-                    "input_cost": 0.15e-6,
-                    "output_cost": 6e-7
-                },
-                {
                     "label": "gemini-2.5-pro",
                     "name": "gemini-2.5-pro",
+                    "input_cost": 0.3e-6,
+                    "output_cost": 0.000025
+                },
+                {
+                    "label": "gemini-2.5-flash",
+                    "name": "gemini-2.5-flash",
                     "input_cost": 1.25e-6,
                     "output_cost": 0.00001
+                },
+                {
+                    "label": "gemini-2.5-flash-lite",
+                    "name": "gemini-2.5-flash-lite",
+                    "input_cost": 1e-7,
+                    "output_cost": 4e-7
                 },
                 {
                     "label": "gemini-2.0-flash",
