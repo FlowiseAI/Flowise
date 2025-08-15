@@ -441,6 +441,11 @@ export interface IServerSideEventStreamer {
     streamAbortEvent(chatId: string): void
     streamEndEvent(chatId: string): void
     streamUsageMetadataEvent(chatId: string, data: any): void
+    // Enhanced MCP streaming methods
+    addMcpConnection?(chatId: string, toolName?: string): void
+    removeMcpConnection?(chatId: string, toolName?: string): void
+    markMcpConnectionCompleting?(chatId: string, toolName?: string): void
+    hasMcpConnections?(chatId: string): boolean
 }
 
 export enum FollowUpPromptProvider {
