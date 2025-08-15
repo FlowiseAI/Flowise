@@ -1,5 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
-import { ChatflowType } from '../../entities/ChatFlow'
+import { EnumChatflowType } from '../../entities/ChatFlow'
 
 export class ModifyChatflowType1755066758601 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
@@ -18,7 +18,7 @@ export class ModifyChatflowType1755066758601 implements MigrationInterface {
                 "analytic" TEXT, 
                 "category" TEXT, 
                 "speechToText" TEXT, 
-                "type" VARCHAR(20) NOT NULL DEFAULT '${ChatflowType.CHATFLOW}', 
+                "type" VARCHAR(20) NOT NULL DEFAULT '${EnumChatflowType.CHATFLOW}', 
                 "workspaceId" TEXT, 
                 "followUpPrompts" TEXT,
                 FOREIGN KEY ("workspaceId") REFERENCES "workspace"("id")
@@ -28,7 +28,7 @@ export class ModifyChatflowType1755066758601 implements MigrationInterface {
         await queryRunner.query(`
             INSERT INTO "temp_chat_flow" ("id", "name", "flowData", "deployed", "isPublic", "apikeyid", "chatbotConfig", "createdDate", "updatedDate", "apiConfig", "analytic", "category", "speechToText", "type", "workspaceId", "followUpPrompts")
             SELECT "id", "name", "flowData", "deployed", "isPublic", "apikeyid", "chatbotConfig", "createdDate", "updatedDate", "apiConfig", "analytic", "category", "speechToText",
-            CASE WHEN "type" IS NULL OR "type" = '' THEN '${ChatflowType.CHATFLOW}' ELSE "type" END, "workspaceId", "followUpPrompts" FROM "chat_flow";
+            CASE WHEN "type" IS NULL OR "type" = '' THEN '${EnumChatflowType.CHATFLOW}' ELSE "type" END, "workspaceId", "followUpPrompts" FROM "chat_flow";
         `)
 
         await queryRunner.query(`DROP TABLE "chat_flow";`)

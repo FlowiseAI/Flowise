@@ -68,7 +68,7 @@ export interface IChatFlow {
     followUpPrompts?: string
     apiConfig?: string
     category?: string
-    type?: string
+    type?: ChatflowType
     workspaceId?: string
 }
 

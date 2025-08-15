@@ -1,8 +1,8 @@
 /* eslint-disable */
 import { Entity, Column, CreateDateColumn, UpdateDateColumn, PrimaryGeneratedColumn } from 'typeorm'
-import { IChatFlow } from '../../Interface'
+import { ChatflowType, IChatFlow } from '../../Interface'
 
-export enum ChatflowType {
+export enum EnumChatflowType {
     CHATFLOW = 'CHATFLOW',
     AGENTFLOW = 'AGENTFLOW',
     MULTIAGENT = 'MULTIAGENT',
@@ -47,8 +47,8 @@ export class ChatFlow implements IChatFlow {
     @Column({ nullable: true, type: 'text' })
     category?: string
 
-    @Column({ type: 'varchar', length: 20, default: ChatflowType.CHATFLOW })
-    type?: string
+    @Column({ type: 'varchar', length: 20, default: EnumChatflowType.CHATFLOW })
+    type?: ChatflowType
 
     @Column({ type: 'timestamp' })
     @CreateDateColumn()
