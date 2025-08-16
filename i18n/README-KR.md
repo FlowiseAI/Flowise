@@ -11,7 +11,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](../README.md) | [繁體中文](./README-TW.md) | [简体中文](./README-ZH.md) | [日本語](./README-JA.md) | 한국어
+[English](../README.md) | [繁體中文](./README-TW.md) | [简体中文](./README-ZH.md) | [日本語](./README-JA.md) | 한국어 | [Português](./README-PT.md)
 
 <h3>AI 에이전트를 시각적으로 구축하세요</h3>
 <a href="https://github.com/FlowiseAI/Flowise">

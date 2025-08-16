@@ -13,7 +13,7 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-Inglês | [繁體中文](./i18n/README-TW.md) | [简体中文](./i18n/README-ZH.md) | [日本語](./i18n/README-JA.md) | [한국어](./i18n/README-KR.md)
+[English](../README.md) | [繁體中文](./README-TW.md) | [简体中文](./README-ZH.md) | [日本語](./README-JA.md) | [한국어](./README-KR.md) | Português
 
 </div>
 
@@ -172,8 +172,8 @@ Fique à vontade para tirar dúvidas, relatar problemas ou sugerir novas funcion
 
 Agradecimentos aos incríveis contribuidores
 
-Veja o [Guia de Contribuição](CONTRIBUTING.md). Participe do nosso [Discord](https://discord.gg/jbaHfsRVBW) se tiver dúvidas ou problemas.
+Veja o [Guia de Contribuição](../CONTRIBUTING.md). Participe do nosso [Discord](https://discord.gg/jbaHfsRVBW) se tiver dúvidas ou problemas.
 
 ## 📄 Licença
 
-O código-fonte deste repositório está disponível sob a [Licença Apache versão 2.0](LICENSE.md).
+O código-fonte deste repositório está disponível sob a [Licença Apache versão 2.0](../LICENSE.md).
