@@ -175,6 +175,7 @@ const translations = {
         'action.invite': 'Convidar',
         'action.confirm': 'Confirmar',
         'action.apply': 'Aplicar',
+        'action.load': 'Carregar',
         
         // Document Stores
         'docstore.title': 'Armazenamento de Documentos',
@@ -184,6 +185,31 @@ const translations = {
         'docstore.noDocumentStoresYet': 'Nenhum Armazenamento de Documentos Criado Ainda',
         'docstore.cardView': 'Visualização em Cartão',
         'docstore.listView': 'Visualização em Lista',
+        
+        // Tools
+        'tools.title': 'Ferramentas',
+        'tools.description': 'Funções externas ou APIs que o agente pode usar para executar ações',
+        'tools.addNew': 'Adicionar Nova Ferramenta',
+        'tools.addNewTool': 'Adicionar Nova Ferramenta',
+        'tools.noToolsYet': 'Nenhuma Ferramenta Criada Ainda',
+        
+        // API Keys
+        'apikeys.title': 'Chaves de API',
+        'apikeys.addNew': 'Adicionar Nova Chave de API',
+        'apikeys.addNewAPIKey': 'Adicionar Nova Chave de API',
+        'apikeys.noAPIKeysYet': 'Nenhuma Chave de API Ainda',
+        
+        // Executions
+        'executions.title': 'Execuções',
+        'executions.noExecutionsYet': 'Nenhuma Execução Ainda',
+        
+        // Evaluations
+        'evaluations.title': 'Avaliações',
+        'evaluations.noEvaluationsYet': 'Nenhuma Avaliação Ainda',
+        
+        // Roles
+        'roles.title': 'Funções',
+        'roles.noRolesYet': 'Nenhuma Função Ainda',
         
         // Validation and Error Messages
         'error.required': 'Este campo é obrigatório',

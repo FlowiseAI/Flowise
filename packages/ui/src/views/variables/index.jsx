@@ -250,7 +250,7 @@ const Variables = () => {
                                         alt='VariablesEmptySVG'
                                     />
                                 </Box>
-                                <div>No Variables Yet</div>
+                                <div>{t('variables.noVariablesYet')}</div>
                             </Stack>
                         ) : (
                             <>
