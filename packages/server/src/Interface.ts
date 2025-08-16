@@ -56,6 +56,8 @@ export enum UserPlan {
 export interface IChatFlow {
     id: string
     name: string
+    tags: string
+    description: string
     flowData: string
     updatedDate: Date
     createdDate: Date

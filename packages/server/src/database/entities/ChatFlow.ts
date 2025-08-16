@@ -10,6 +10,12 @@ export class ChatFlow implements IChatFlow {
     @Column()
     name: string
 
+    @Column({ type: 'text', nullable: true })
+    tags: string
+
+    @Column({ type: 'text', nullable: true })
+    description: string
+
     @Column({ type: 'text' })
     flowData: string
 
