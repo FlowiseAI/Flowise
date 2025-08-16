@@ -2,10 +2,10 @@ import { flatten } from 'lodash'
 import { AmazonKendraRetriever } from '@langchain/aws'
 import { KendraClient, BatchPutDocumentCommand, BatchDeleteDocumentCommand } from '@aws-sdk/client-kendra'
 import { Document } from '@langchain/core/documents'
-import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams, IndexingResult } from '../../../../../../../../Code/Flowise/packages/components/src/Interface'
-import { FLOWISE_CHATID, getCredentialData, getCredentialParam } from '../../../../../../../../Code/Flowise/packages/components/src/utils'
-import { howToUseFileUpload } from '../../../../../../../../Code/Flowise/packages/components/nodes/vectorstores/VectorStoreUtils'
-import { MODEL_TYPE, getRegions } from '../../../../../../../../Code/Flowise/packages/components/src/modelLoader'
+import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
+import { FLOWISE_CHATID, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { howToUseFileUpload } from '../VectorStoreUtils'
+import { MODEL_TYPE, getRegions } from '../../../src/modelLoader'
 
 class Kendra_VectorStores implements INode {
     label: string
