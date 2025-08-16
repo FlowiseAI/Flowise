@@ -31,6 +31,9 @@ import { useError } from '@/store/context/ErrorContext'
 // icons
 import { IconPlus, IconLayoutGrid, IconList, IconX, IconAlertTriangle } from '@tabler/icons-react'
 
+// Translation
+import { t } from '@/i18n'
+
 // ==============================|| AGENTS ||============================== //
 
 const Agentflows = () => {
@@ -177,9 +180,9 @@ const Agentflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Pesquisar Nome ou Categoria'
-                        title='Fluxos de Agentes'
-                        description='Sistemas multi-agente, orquestração de fluxo de trabalho'
+                        searchPlaceholder={t('agentflows.searchPlaceholder')}
+                        title={t('agentflows.title')}
+                        description='Sistemas multi-agentes, orquestração de fluxo de trabalho'
                     >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
@@ -198,7 +201,7 @@ const Agentflows = () => {
                                 value='v2'
                                 title='V2'
                             >
-                                <Chip sx={{ mr: 1 }} label='NOVO' size='small' color='primary' />
+                                <Chip sx={{ mr: 1 }} label='NEW' size='small' color='primary' />
                                 V2
                             </ToggleButton>
                             <ToggleButton
@@ -230,7 +233,7 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='card'
-                                title='Visualização em Cartão'
+                                title={t('agentflows.cardView')}
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
@@ -242,7 +245,7 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='list'
-                                title='Visualização em Lista'
+                                title={t('agentflows.listView')}
                             >
                                 <IconList />
                             </ToggleButton>
@@ -254,7 +257,7 @@ const Agentflows = () => {
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
-                            Adicionar Novo
+                            {t('action.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
 
@@ -341,7 +344,7 @@ const Agentflows = () => {
                                     alt='AgentsEmptySVG'
                                 />
                             </Box>
-                            <div>Nenhum Agente Ainda</div>
+                            <div>{t('agentflows.noAgentsYet')}</div>
                         </Stack>
                     )}
                 </Stack>

@@ -23,6 +23,9 @@ import documentsApi from '@/api/documentstore'
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 import doc_store_empty from '@/assets/images/doc_store_empty.svg'
 
+// i18n
+import { t } from '@/i18n'
+
 // const
 import { baseURL, gridSpacing } from '@/store/constant'
 import { DocumentStoreTable } from '@/ui-component/table/DocumentStoreTable'
@@ -66,10 +69,10 @@ const Documents = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Adicionar Novo Armazenamento de Documentos',
+            title: t('docstore.addNewDocumentStore'),
             type: 'ADD',
-            cancelButtonName: 'Cancelar',
-            confirmButtonName: 'Adicionar'
+            cancelButtonName: t('common.cancel'),
+            confirmButtonName: t('common.add')
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -154,9 +157,9 @@ const Documents = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={hasDocStores}
-                        searchPlaceholder='Pesquisar Nome'
-                        title='Armazenamento de Documentos'
-                        description='Armazenar e inserir documentos para recuperação LLM (RAG)'
+                        searchPlaceholder={t('common.searchPlaceholder')}
+                        title={t('docstore.title')}
+                        description={t('docstore.description')}
                     >
                         {hasDocStores && (
                             <ToggleButtonGroup
@@ -174,7 +177,7 @@ const Documents = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title='Visualização em Cartão'
+                                    title={t('docstore.cardView')}
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -186,7 +189,7 @@ const Documents = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title='Visualização em Lista'
+                                    title={t('docstore.listView')}
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -200,7 +203,7 @@ const Documents = () => {
                             startIcon={<IconPlus />}
                             id='btn_createVariable'
                         >
-                            Adicionar Novo
+                            {t('docstore.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
                     {!hasDocStores ? (
@@ -212,7 +215,7 @@ const Documents = () => {
                                     alt='doc_store_empty'
                                 />
                             </Box>
-                            <div>Nenhum Armazenamento de Documentos Criado Ainda</div>
+                            <div>{t('docstore.noDocumentStoresYet')}</div>
                         </Stack>
                     ) : (
                         <React.Fragment>

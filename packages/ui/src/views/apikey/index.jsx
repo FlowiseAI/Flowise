@@ -46,6 +46,7 @@ import useConfirm from '@/hooks/useConfirm'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
+import { t } from '@/i18n'
 
 // Icons
 import {
@@ -100,10 +101,10 @@ function APIKeyRow(props) {
                         : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
                               props.apiKey.apiKey.length - 5
                           )}`}
-                    <IconButton title='Copiar' color='success' onClick={props.onCopyClick}>
+                    <IconButton title='Copy' color='success' onClick={props.onCopyClick}>
                         <IconCopy />
                     </IconButton>
-                    <IconButton title='Mostrar' color='inherit' onClick={props.onShowAPIClick}>
+                    <IconButton title='Show' color='inherit' onClick={props.onShowAPIClick}>
                         {props.showApiKeys.includes(props.apiKey.apiKey) ? <IconEyeOff /> : <IconEye />}
                     </IconButton>
                     <Popover
@@ -135,14 +136,14 @@ function APIKeyRow(props) {
                 <StyledTableCell>{moment(props.apiKey.createdAt).format('MMMM Do, YYYY')}</StyledTableCell>
                 <Available permission={'apikeys:update,apikeys:create'}>
                     <StyledTableCell>
-                        <IconButton title='Editar' color='primary' onClick={props.onEditClick}>
+                        <IconButton title='Edit' color='primary' onClick={props.onEditClick}>
                             <IconEdit />
                         </IconButton>
                     </StyledTableCell>
                 </Available>
                 <Available permission={'apikeys:delete'}>
                     <StyledTableCell>
-                        <IconButton title='Excluir' color='error' onClick={props.onDeleteClick}>
+                        <IconButton title='Delete' color='error' onClick={props.onDeleteClick}>
                             <IconTrash />
                         </IconButton>
                     </StyledTableCell>
@@ -273,10 +274,10 @@ const APIKey = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Adicionar Nova Chave de API',
+            title: t('apikeys.addNewAPIKey'),
             type: 'ADD',
-            cancelButtonName: 'Cancelar',
-            confirmButtonName: 'Adicionar',
+            cancelButtonName: t('common.cancel'),
+            confirmButtonName: t('common.add'),
             customBtnId: 'btn_confirmAddingApiKey'
         }
         setDialogProps(dialogProp)
@@ -285,10 +286,10 @@ const APIKey = () => {
 
     const edit = (key) => {
         const dialogProp = {
-            title: 'Edit API Key',
+            title: t('apikeys.editAPIKey'),
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('common.cancel'),
+            confirmButtonName: t('common.save'),
             customBtnId: 'btn_confirmEditingApiKey',
             key
         }
@@ -391,9 +392,9 @@ const APIKey = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Pesquisar Chaves de API'
-                            title='Chaves de API'
-                            description='Chaves de autenticação da API e SDK do Flowise'
+                            searchPlaceholder={t('common.searchPlaceholder')}
+                            title={t('apikeys.title')}
+                            description={t('apikeys.description')}
                         >
                             <PermissionButton
                                 permissionId={'apikeys:import'}
@@ -403,7 +404,7 @@ const APIKey = () => {
                                 startIcon={<IconFileUpload />}
                                 id='btn_importApiKeys'
                             >
-                                Import
+                                {t('action.import')}
                             </PermissionButton>
                             <StyledPermissionButton
                                 permissionId={'apikeys:create'}
@@ -413,7 +414,7 @@ const APIKey = () => {
                                 startIcon={<IconPlus />}
                                 id='btn_createApiKey'
                             >
-                                Create Key
+                                {t('apikeys.createKey')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && apiKeys?.length <= 0 ? (
@@ -425,7 +426,7 @@ const APIKey = () => {
                                         alt='APIEmptySVG'
                                     />
                                 </Box>
-                                <div>Nenhuma Chave de API Ainda</div>
+                                <div>{t('apikeys.noAPIKeysYet')}</div>
                             </Stack>
                         ) : (
                             <>
