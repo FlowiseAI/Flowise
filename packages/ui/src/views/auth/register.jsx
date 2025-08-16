@@ -38,26 +38,26 @@ import { IconCircleCheck, IconExclamationCircle } from '@tabler/icons-react'
 // packages/server/src/enterprise/Interface.Enterprise.ts
 const RegisterEnterpriseUserSchema = z
     .object({
-        username: z.string().min(1, 'Name is required'),
-        email: z.string().min(1, 'Email is required').email('Invalid email address'),
+        username: z.string().min(1, 'Nome é obrigatório'),
+        email: z.string().min(1, 'Email é obrigatório').email('Endereço de email inválido'),
         password: passwordSchema,
-        confirmPassword: z.string().min(1, 'Confirm Password is required'),
-        token: z.string().min(1, 'Invite Code is required')
+        confirmPassword: z.string().min(1, 'Confirmação de senha é obrigatória'),
+        token: z.string().min(1, 'Código de convite é obrigatório')
     })
     .refine((data) => data.password === data.confirmPassword, {
-        message: "Passwords don't match",
+        message: "As senhas não coincidem",
         path: ['confirmPassword']
     })
 
 const RegisterCloudUserSchema = z
     .object({
-        username: z.string().min(1, 'Name is required'),
-        email: z.string().min(1, 'Email is required').email('Invalid email address'),
+        username: z.string().min(1, 'Nome é obrigatório'),
+        email: z.string().min(1, 'Email é obrigatório').email('Endereço de email inválido'),
         password: passwordSchema,
-        confirmPassword: z.string().min(1, 'Confirm Password is required')
+        confirmPassword: z.string().min(1, 'Confirmação de senha é obrigatória')
     })
     .refine((data) => data.password === data.confirmPassword, {
-        message: "Passwords don't match",
+        message: "As senhas não coincidem",
         path: ['confirmPassword']
     })
 
@@ -67,35 +67,35 @@ const RegisterPage = () => {
     const { isEnterpriseLicensed, isCloud, isOpenSource } = useConfig()
 
     const usernameInput = {
-        label: 'Username',
+        label: 'Nome de usuário',
         name: 'username',
         type: 'text',
-        placeholder: 'John Doe'
+        placeholder: 'João Silva'
     }
 
     const passwordInput = {
-        label: 'Password',
+        label: 'Senha',
         name: 'password',
         type: 'password',
         placeholder: '********'
     }
 
     const confirmPasswordInput = {
-        label: 'Confirm Password',
+        label: 'Confirmar Senha',
         name: 'confirmPassword',
         type: 'password',
         placeholder: '********'
     }
 
     const emailInput = {
-        label: 'EMail',
+        label: 'Email',
         name: 'email',
         type: 'email',
-        placeholder: 'user@company.com'
+        placeholder: 'usuario@empresa.com'
     }
 
     const inviteCodeInput = {
-        label: 'Invite Code',
+        label: 'Código de Convite',
         name: 'inviteCode',
         type: 'text'
     }
@@ -181,10 +181,10 @@ const RegisterPage = () => {
         if (registerApi.error) {
             if (isEnterpriseLicensed) {
                 setAuthError(
-                    `Error in registering user. Please contact your administrator. (${registerApi.error?.response?.data?.message})`
+                    `Erro ao registrar usuário. Entre em contato com o administrador. (${registerApi.error?.response?.data?.message})`
                 )
             } else if (isCloud) {
-                setAuthError(`Error in registering user. Please try again.`)
+                setAuthError(`Erro ao registrar usuário. Tente novamente.`)
             }
             setLoading(false)
         }
@@ -236,9 +236,9 @@ const RegisterPage = () => {
             setUsername('')
             setEmail('')
             if (isEnterpriseLicensed) {
-                setSuccessMsg('Registration Successful. You will be redirected to the sign in page shortly.')
+                setSuccessMsg('Registro realizado com sucesso. Você será redirecionado para a página de login em breve.')
             } else if (isCloud) {
-                setSuccessMsg('To complete your registration, please click on the verification link we sent to your email address')
+                setSuccessMsg('Para completar seu registro, clique no link de verificação que enviamos para seu endereço de email')
             }
             setTimeout(() => {
                 navigate('/signin')
@@ -280,11 +280,11 @@ const RegisterPage = () => {
                         </Alert>
                     )}
                     <Stack sx={{ gap: 1 }}>
-                        <Typography variant='h1'>Sign Up</Typography>
+                        <Typography variant='h1'>Cadastrar</Typography>
                         <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
-                            Already have an account?{' '}
+                            Já tem uma conta?{' '}
                             <Link style={{ color: theme.palette.primary.main }} to='/signin'>
-                                Sign In
+                                Entrar
                             </Link>
                             .
                         </Typography>
@@ -294,19 +294,19 @@ const RegisterPage = () => {
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Full Name<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        Nome Completo<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
                                 <Input
                                     inputParam={usernameInput}
-                                    placeholder='Display Name'
+                                    placeholder='Nome de Exibição'
                                     onChange={(newValue) => setUsername(newValue)}
                                     value={username}
                                     showDialog={false}
                                 />
                                 <Typography variant='caption'>
-                                    <i>Is used for display purposes only.</i>
+                                    <i>Usado apenas para fins de exibição.</i>
                                 </Typography>
                             </Box>
                             <Box>
@@ -323,50 +323,50 @@ const RegisterPage = () => {
                                     showDialog={false}
                                 />
                                 <Typography variant='caption'>
-                                    <i>Kindly use a valid email address. Will be used as login id.</i>
+                                    <i>Use um endereço de email válido. Será usado como ID de login.</i>
                                 </Typography>
                             </Box>
                             {isEnterpriseLicensed && (
                                 <Box>
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                                         <Typography>
-                                            Invite Code<span style={{ color: 'red' }}>&nbsp;*</span>
+                                            Código de Convite<span style={{ color: 'red' }}>&nbsp;*</span>
                                         </Typography>
                                         <div style={{ flexGrow: 1 }}></div>
                                     </div>
                                     <OutlinedInput
                                         fullWidth
                                         type='string'
-                                        placeholder='Paste in the invite code.'
+                                        placeholder='Cole o código de convite.'
                                         multiline={false}
                                         inputParam={inviteCodeInput}
                                         onChange={(e) => setToken(e.target.value)}
                                         value={token}
                                     />
                                     <Typography variant='caption'>
-                                        <i>Please copy the token you would have received in your email.</i>
+                                        <i>Copie o token que você recebeu em seu email.</i>
                                     </Typography>
                                 </Box>
                             )}
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Password<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        Senha<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
                                 <Input inputParam={passwordInput} onChange={(newValue) => setPassword(newValue)} value={password} />
                                 <Typography variant='caption'>
                                     <i>
-                                        Password must be at least 8 characters long and contain at least one lowercase letter, one uppercase
-                                        letter, one digit, and one special character.
+                                        A senha deve ter pelo menos 8 caracteres e conter pelo menos uma letra minúscula, uma letra maiúscula,
+                                        um dígito e um caractere especial.
                                     </i>
                                 </Typography>
                             </Box>
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Confirm Password<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        Confirmar Senha<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
@@ -376,13 +376,13 @@ const RegisterPage = () => {
                                     value={confirmPassword}
                                 />
                                 <Typography variant='caption'>
-                                    <i>Confirm your password. Must match the password typed above.</i>
+                                    <i>Confirme sua senha. Deve coincidir com a senha digitada acima.</i>
                                 </Typography>
                             </Box>
                             <StyledButton variant='contained' style={{ borderRadius: 12, height: 40, marginRight: 5 }} type='submit'>
-                                Create Account
+                                Criar Conta
                             </StyledButton>
-                            {configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
+                            {configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OU</Divider>}
                             {configuredSsoProviders &&
                                 configuredSsoProviders.map(
                                     (ssoProvider) =>
@@ -399,7 +399,7 @@ const RegisterPage = () => {
                                                     </Icon>
                                                 }
                                             >
-                                                Sign In With Microsoft
+                                                Entrar com Microsoft
                                             </Button>
                                         )
                                 )}
@@ -418,7 +418,7 @@ const RegisterPage = () => {
                                                     </Icon>
                                                 }
                                             >
-                                                Sign In With Google
+                                                Entrar com Google
                                             </Button>
                                         )
                                 )}
@@ -437,7 +437,7 @@ const RegisterPage = () => {
                                                     </Icon>
                                                 }
                                             >
-                                                Sign In With Auth0 by Okta
+                                                Entrar com Auth0 by Okta
                                             </Button>
                                         )
                                 )}
@@ -456,7 +456,7 @@ const RegisterPage = () => {
                                                     </Icon>
                                                 }
                                             >
-                                                Sign In With Github
+                                                Entrar com Github
                                             </Button>
                                         )
                                 )}
