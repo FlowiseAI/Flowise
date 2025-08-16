@@ -15,6 +15,9 @@ import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 // Icons
 import { IconX, IconUser } from '@tabler/icons-react'
 
+// Translation
+import { t } from '@/i18n'
+
 // API
 import userApi from '@/api/user'
 
@@ -132,7 +135,7 @@ const EditUserDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =>
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <IconUser style={{ marginRight: '10px' }} />
-                    {'Edit User'}
+                    {t('users.editUser')}
                 </div>
             </DialogTitle>
             <DialogContent>

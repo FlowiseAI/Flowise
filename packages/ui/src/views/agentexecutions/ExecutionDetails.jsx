@@ -816,7 +816,7 @@ export const ExecutionDetails = ({ open, isPublic, execution, metadata, onClose,
                                         backgroundColor: (theme) => theme.palette.primary.main + '20'
                                     }
                                 }}
-                                title='Atualizar dados de execução'
+                                title='Refresh execution data'
                             >
                                 <IconRefresh size={20} />
                             </IconButton>

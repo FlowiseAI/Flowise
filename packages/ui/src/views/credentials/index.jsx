@@ -109,7 +109,7 @@ const Credentials = () => {
 
     const listCredential = () => {
         const dialogProp = {
-            title: 'Adicionar Nova Credencial',
+            title: 'Add New Credential',
             componentsCredentials
         }
         setCredentialListDialogProps(dialogProp)
@@ -141,12 +141,12 @@ const Credentials = () => {
     const share = (credential) => {
         const dialogProps = {
             type: 'EDIT',
-            cancelButtonName: 'Cancelar',
-            confirmButtonName: 'Compartilhar',
+            cancelButtonName: 'Cancel',
+            confirmButtonName: 'Share',
             data: {
                 id: credential.id,
                 name: credential.name,
-                title: 'Compartilhar Credencial',
+                title: 'Share Credential',
                 itemType: 'credential'
             }
         }
@@ -156,10 +156,10 @@ const Credentials = () => {
 
     const deleteCredential = async (credential) => {
         const confirmPayload = {
-            title: `Excluir`,
-            description: `Excluir credencial ${credential.name}?`,
-            confirmButtonName: 'Excluir',
-            cancelButtonName: 'Cancelar'
+            title: `Delete`,
+            description: `Delete credential ${credential.name}?`,
+            confirmButtonName: 'Delete',
+            cancelButtonName: 'Cancel'
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -245,9 +245,9 @@ const Credentials = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Pesquisar Credenciais'
-                            title='Credenciais'
-                            description='Chaves de API, tokens e segredos para integrações de terceiros'
+                            searchPlaceholder='Search Credentials'
+                            title='Credentials'
+                            description='API keys, tokens, and secrets for 3rd party integrations'
                         >
                             <StyledPermissionButton
                                 permissionId='credentials:create'
@@ -268,7 +268,7 @@ const Credentials = () => {
                                         alt='CredentialEmptySVG'
                                     />
                                 </Box>
-                                <div>Nenhuma Credencial Ainda</div>
+                                <div>No Credentials Yet</div>
                             </Stack>
                         ) : (
                             <TableContainer
@@ -391,7 +391,7 @@ const Credentials = () => {
                                                                     <PermissionIconButton
                                                                         permissionId={'credentials:share'}
                                                                         display={'feat:workspaces'}
-                                                                        title='Compartilhar'
+                                                                        title='Share'
                                                                         color='primary'
                                                                         onClick={() => share(credential)}
                                                                     >
@@ -401,7 +401,7 @@ const Credentials = () => {
                                                                 <StyledTableCell>
                                                                     <PermissionIconButton
                                                                         permissionId={'credentials:create,credentials:update'}
-                                                                        title='Editar'
+                                                                        title='Edit'
                                                                         color='primary'
                                                                         onClick={() => edit(credential)}
                                                                     >
@@ -411,7 +411,7 @@ const Credentials = () => {
                                                                 <StyledTableCell>
                                                                     <PermissionIconButton
                                                                         permissionId={'credentials:delete'}
-                                                                        title='Excluir'
+                                                                        title='Delete'
                                                                         color='error'
                                                                         onClick={() => deleteCredential(credential)}
                                                                     >
@@ -422,7 +422,7 @@ const Credentials = () => {
                                                         )}
                                                         {credential.shared && (
                                                             <>
-                                                                <StyledTableCell colSpan={'3'}>Credencial Compartilhada</StyledTableCell>
+                                                                <StyledTableCell colSpan={'3'}>Shared Credential</StyledTableCell>
                                                             </>
                                                         )}
                                                     </StyledTableRow>

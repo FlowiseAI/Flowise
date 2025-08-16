@@ -201,7 +201,7 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
                         {/* Delete button for array item */}
                         {isDeleteButtonVisible && (
                             <IconButton
-                                title='Excluir'
+                                title='Delete'
                                 onClick={() => handleDeleteItem(index)}
                                 sx={{
                                     position: 'absolute',
@@ -268,7 +268,7 @@ export const ArrayRenderer = ({ inputParam, data, disabled, isDocStore = false }
                 startIcon={<IconPlus />}
                 onClick={handleAddItem}
             >
-                Adicionar {inputParam.label}
+                Add {inputParam.label}
             </Button>
         </>
     )
