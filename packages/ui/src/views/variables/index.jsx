@@ -44,6 +44,7 @@ import useConfirm from '@/hooks/useConfirm'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
+import { t } from '@/i18n'
 
 // Icons
 import { IconTrash, IconEdit, IconX, IconPlus, IconVariable } from '@tabler/icons-react'
@@ -222,12 +223,12 @@ const Variables = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Variables'
-                            title='Variables'
-                            description='Create and manage global variables'
+                            searchPlaceholder={t('variables.searchPlaceholder')}
+                            title={t('variables.title')}
+                            description={t('variables.description')}
                         >
                             <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
-                                How To Use
+                                {t('variables.howToUse')}
                             </Button>
                             <StyledPermissionButton
                                 permissionId={'variables:create'}
@@ -237,7 +238,7 @@ const Variables = () => {
                                 startIcon={<IconPlus />}
                                 id='btn_createVariable'
                             >
-                                Add Variable
+                                {t('variables.addVariable')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && variables.length === 0 ? (
@@ -249,7 +250,7 @@ const Variables = () => {
                                         alt='VariablesEmptySVG'
                                     />
                                 </Box>
-                                <div>No Variables Yet</div>
+                                <div>{t('variables.noVariablesYet')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -267,11 +268,11 @@ const Variables = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <StyledTableCell>Name</StyledTableCell>
-                                                <StyledTableCell>Value</StyledTableCell>
-                                                <StyledTableCell>Type</StyledTableCell>
-                                                <StyledTableCell>Last Updated</StyledTableCell>
-                                                <StyledTableCell>Created</StyledTableCell>
+                                                <StyledTableCell>{t('variables.name')}</StyledTableCell>
+                                                <StyledTableCell>{t('variables.value')}</StyledTableCell>
+                                                <StyledTableCell>{t('variables.type')}</StyledTableCell>
+                                                <StyledTableCell>{t('variables.lastUpdated')}</StyledTableCell>
+                                                <StyledTableCell>{t('variables.created')}</StyledTableCell>
                                                 <Available permissionId={'variables:update'}>
                                                     <StyledTableCell> </StyledTableCell>
                                                 </Available>

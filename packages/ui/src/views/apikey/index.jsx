@@ -46,6 +46,7 @@ import useConfirm from '@/hooks/useConfirm'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
+import { t } from '@/i18n'
 
 // Icons
 import {
@@ -273,10 +274,10 @@ const APIKey = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New API Key',
+            title: t('apikeys.addNewAPIKey'),
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: t('common.cancel'),
+            confirmButtonName: t('common.add'),
             customBtnId: 'btn_confirmAddingApiKey'
         }
         setDialogProps(dialogProp)
@@ -285,10 +286,10 @@ const APIKey = () => {
 
     const edit = (key) => {
         const dialogProp = {
-            title: 'Edit API Key',
+            title: t('apikeys.editAPIKey'),
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('common.cancel'),
+            confirmButtonName: t('common.save'),
             customBtnId: 'btn_confirmEditingApiKey',
             key
         }
@@ -391,9 +392,9 @@ const APIKey = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search API Keys'
-                            title='API Keys'
-                            description='Flowise API & SDK authentication keys'
+                            searchPlaceholder={t('common.searchPlaceholder')}
+                            title={t('apikeys.title')}
+                            description={t('apikeys.description')}
                         >
                             <PermissionButton
                                 permissionId={'apikeys:import'}
@@ -403,7 +404,7 @@ const APIKey = () => {
                                 startIcon={<IconFileUpload />}
                                 id='btn_importApiKeys'
                             >
-                                Import
+                                {t('action.import')}
                             </PermissionButton>
                             <StyledPermissionButton
                                 permissionId={'apikeys:create'}
@@ -413,7 +414,7 @@ const APIKey = () => {
                                 startIcon={<IconPlus />}
                                 id='btn_createApiKey'
                             >
-                                Create Key
+                                {t('apikeys.createKey')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && apiKeys?.length <= 0 ? (
@@ -425,7 +426,7 @@ const APIKey = () => {
                                         alt='APIEmptySVG'
                                     />
                                 </Box>
-                                <div>No API Keys Yet</div>
+                                <div>{t('apikeys.noAPIKeysYet')}</div>
                             </Stack>
                         ) : (
                             <>
