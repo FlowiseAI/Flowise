@@ -41,6 +41,24 @@ const translations = {
         'common.loading': 'Carregando...',
         'common.retry': 'Tentar Novamente',
         
+        // Variables
+        'variables.title': 'Variáveis',
+        'variables.searchPlaceholder': 'Pesquisar Variáveis',
+        'variables.description': 'Criar e gerenciar variáveis globais',
+        'variables.addVariable': 'Adicionar Variável',
+        'variables.editVariable': 'Editar Variável',
+        'variables.noVariablesYet': 'Nenhuma Variável Ainda',
+        'variables.howToUse': 'Como Usar',
+        'variables.name': 'Nome',
+        'variables.value': 'Valor',
+        'variables.type': 'Tipo',
+        'variables.lastUpdated': 'Última Atualização',
+        'variables.created': 'Criado',
+        'variables.staticType': 'Estático',
+        'variables.runtimeType': 'Tempo de Execução',
+        'variables.staticDescription': 'O valor da variável será lido do valor inserido abaixo',
+        'variables.runtimeDescription': 'O valor da variável será lido do arquivo .env',
+        
         // Users
         'users.title': 'Usuários',
         'users.noUsersYet': 'Nenhum Usuário Ainda',
@@ -157,6 +175,15 @@ const translations = {
         'action.invite': 'Convidar',
         'action.confirm': 'Confirmar',
         'action.apply': 'Aplicar',
+        
+        // Document Stores
+        'docstore.title': 'Armazenamento de Documentos',
+        'docstore.description': 'Armazenar e inserir documentos para recuperação LLM (RAG)',
+        'docstore.addNew': 'Adicionar Novo',
+        'docstore.addNewDocumentStore': 'Adicionar Novo Armazenamento de Documentos',
+        'docstore.noDocumentStoresYet': 'Nenhum Armazenamento de Documentos Criado Ainda',
+        'docstore.cardView': 'Visualização em Cartão',
+        'docstore.listView': 'Visualização em Lista',
         
         // Validation and Error Messages
         'error.required': 'Este campo é obrigatório',
