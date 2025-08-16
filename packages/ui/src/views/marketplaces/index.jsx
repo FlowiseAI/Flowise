@@ -587,9 +587,9 @@ const Marketplace = () => {
                             }
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Name/Description/Node'
+                            searchPlaceholder='Pesquisar Nome/Descrição/Nó'
                             title='Marketplace'
-                            description='Explore and use pre-built templates'
+                            description='Explore e use templates pré-construídos'
                         >
                             <ToggleButtonGroup
                                 sx={{ borderRadius: 2, height: '100%' }}
@@ -606,7 +606,7 @@ const Marketplace = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title='Card View'
+                                    title='Visualização em Cartão'
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -618,7 +618,7 @@ const Marketplace = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title='List View'
+                                    title='Visualização em Lista'
                                 >
                                     <IconList />
                                 </ToggleButton>

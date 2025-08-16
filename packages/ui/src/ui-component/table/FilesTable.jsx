@@ -53,16 +53,16 @@ export const FilesTable = ({ data, isLoading, filterFunction, handleDelete }) =>
                     >
                         <TableRow>
                             <StyledTableCell component='th' scope='row' style={{ width: '25%' }} key='0'>
-                                Name
+                                Nome
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '40%' }} key='1'>
-                                Path
+                                Caminho
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '25%' }} key='2'>
-                                Size
+                                Tamanho
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '10%' }} key='3'>
-                                Actions
+                                Ações
                             </StyledTableCell>
                         </TableRow>
                     </TableHead>

@@ -33,28 +33,28 @@ const settings = {
     children: [
         {
             id: 'viewMessages',
-            title: 'View Messages',
+            title: 'Ver Mensagens',
             type: 'item',
             url: '',
             icon: icons.IconMessage
         },
         {
             id: 'viewLeads',
-            title: 'View Leads',
+            title: 'Ver Leads',
             type: 'item',
             url: '',
             icon: icons.IconUsers
         },
         {
             id: 'viewUpsertHistory',
-            title: 'Upsert History',
+            title: 'Histórico de Upsert',
             type: 'item',
             url: '',
             icon: icons.IconDatabaseExport
         },
         {
             id: 'chatflowConfiguration',
-            title: 'Configuration',
+            title: 'Configuração',
             type: 'item',
             url: '',
             permission: 'chatflows:config',
@@ -62,7 +62,7 @@ const settings = {
         },
         {
             id: 'saveAsTemplate',
-            title: 'Save As Template',
+            title: 'Salvar Como Template',
             type: 'item',
             url: '',
             icon: icons.IconTemplate,
@@ -70,7 +70,7 @@ const settings = {
         },
         {
             id: 'duplicateChatflow',
-            title: 'Duplicate Chatflow',
+            title: 'Duplicar Fluxo de Chat',
             type: 'item',
             url: '',
             icon: icons.IconCopy,
@@ -78,7 +78,7 @@ const settings = {
         },
         {
             id: 'loadChatflow',
-            title: 'Load Chatflow',
+            title: 'Carregar Fluxo de Chat',
             type: 'item',
             url: '',
             icon: icons.IconFileUpload,
@@ -86,7 +86,7 @@ const settings = {
         },
         {
             id: 'exportChatflow',
-            title: 'Export Chatflow',
+            title: 'Exportar Fluxo de Chat',
             type: 'item',
             url: '',
             icon: icons.IconFileExport,
@@ -94,7 +94,7 @@ const settings = {
         },
         {
             id: 'deleteChatflow',
-            title: 'Delete Chatflow',
+            title: 'Excluir Fluxo de Chat',
             type: 'item',
             url: '',
             icon: icons.IconTrash,
