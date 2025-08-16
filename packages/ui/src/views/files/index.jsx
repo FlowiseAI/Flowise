@@ -127,7 +127,7 @@ const Files = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search File' title='Files' />
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Pesquisar Arquivo' title='Arquivos' />
                     <FilesTable data={files} filterFunction={filterFiles} handleDelete={handleDeleteFile} isLoading={isLoading} />
                     {!isLoading && (!getAllFilesApi.data || getAllFilesApi.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
@@ -138,7 +138,7 @@ const Files = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Files Yet</div>
+                            <div>Nenhum Arquivo Ainda</div>
                         </Stack>
                     )}
                 </Stack>
