@@ -158,7 +158,6 @@ class Kendra_VectorStores implements INode {
                         Blob: new Uint8Array(Buffer.from(flattenDocs[i].pageContent, 'utf-8')),
                         ContentType: 'PLAIN_TEXT' as any
                     })
-
                 }
             }
 
