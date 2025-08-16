@@ -184,7 +184,7 @@ const Chatflows = () => {
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
-                            Adicionar Novo
+                            {t('action.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
 

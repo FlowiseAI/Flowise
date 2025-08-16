@@ -109,6 +109,22 @@ const translations = {
         'chatflows.addNew': 'Adicionar Novo',
         'chatflows.description': 'Construa sistemas de agente único, chatbots e fluxos LLM simples',
         
+        // Agentflows
+        'agentflows.title': 'Fluxos de Agente',
+        'agentflows.searchPlaceholder': 'Pesquisar Nome ou Categoria',
+        'agentflows.noAgentsYet': 'Nenhum Agente Ainda',
+        'agentflows.cardView': 'Visualização de Cartão',
+        'agentflows.listView': 'Visualização de Lista',
+        'agentflows.addNew': 'Adicionar Novo',
+        'agentflows.description': 'Construa sistemas multi-agentes complexos com planejamento, execução sequencial/paralela e ferramentas',
+        
+        // Assistants
+        'assistants.title': 'Assistentes',
+        'assistants.customAssistant': 'Assistente Personalizado',
+        'assistants.openaiAssistant': 'Assistente OpenAI',
+        'assistants.azureAssistant': 'Assistente Azure (Em Breve)',
+        'assistants.description': 'Construa assistentes avançados usando APIs nativas ou personalizadas',
+        
         // Status
         'status.active': 'Ativo',
         'status.inactive': 'Inativo',
@@ -137,6 +153,10 @@ const translations = {
         'action.duplicate': 'Duplicar',
         'action.share': 'Compartilhar',
         'action.publish': 'Publicar',
+        'action.addNew': 'Adicionar Novo',
+        'action.invite': 'Convidar',
+        'action.confirm': 'Confirmar',
+        'action.apply': 'Aplicar',
         
         // Validation and Error Messages
         'error.required': 'Este campo é obrigatório',
