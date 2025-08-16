@@ -25,6 +25,9 @@ import { IconX } from '@tabler/icons-react'
 import { useDispatch } from 'react-redux'
 import { useError } from '@/store/context/ErrorContext'
 
+// Translation
+import { t } from '@/i18n'
+
 // ==============================|| CHATFLOWS ||============================== //
 
 const Files = () => {
@@ -127,7 +130,7 @@ const Files = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
-                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search File' title='Files' />
+                    <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder={t('files.searchFile')} title={t('files.title')} />
                     <FilesTable data={files} filterFunction={filterFiles} handleDelete={handleDeleteFile} isLoading={isLoading} />
                     {!isLoading && (!getAllFilesApi.data || getAllFilesApi.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
@@ -138,7 +141,7 @@ const Files = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Files Yet</div>
+                            <div>{t('files.noFilesYet')}</div>
                         </Stack>
                     )}
                 </Stack>

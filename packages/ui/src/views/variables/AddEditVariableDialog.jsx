@@ -21,6 +21,7 @@ import variablesApi from '@/api/variables'
 
 // utils
 import useNotifier from '@/utils/useNotifier'
+import { t } from '@/i18n'
 
 // const
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
@@ -28,14 +29,14 @@ import { Dropdown } from '@/ui-component/dropdown/Dropdown'
 
 const variableTypes = [
     {
-        label: 'Static',
+        label: t('variables.staticType'),
         name: 'static',
-        description: 'Variable value will be read from the value entered below'
+        description: t('variables.staticDescription')
     },
     {
-        label: 'Runtime',
+        label: t('variables.runtimeType'),
         name: 'runtime',
-        description: 'Variable value will be read from .env file'
+        description: t('variables.runtimeDescription')
     }
 ]
 
@@ -188,7 +189,7 @@ const AddEditVariableDialog = ({ show, dialogProps, onCancel, onConfirm, setErro
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <IconVariable style={{ marginRight: '10px' }} />
-                    {dialogProps.type === 'ADD' ? 'Add Variable' : 'Edit Variable'}
+                    {dialogProps.type === 'ADD' ? t('variables.addVariable') : t('variables.editVariable')}
                 </div>
             </DialogTitle>
             <DialogContent>
