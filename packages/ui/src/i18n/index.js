@@ -67,6 +67,27 @@ const translations = {
         'assistant.configuration': 'Configuração',
         'assistant.deleteAssistant': 'Excluir Assistente',
         
+        // Chatflow Settings
+        'chatflow.viewMessages': 'Ver Mensagens',
+        'chatflow.viewLeads': 'Ver Leads',
+        'chatflow.upsertHistory': 'Histórico de Upsert',
+        'chatflow.configuration': 'Configuração',
+        'chatflow.saveAsTemplate': 'Salvar como Modelo',
+        'chatflow.duplicateChatflow': 'Duplicar Chatflow',
+        'chatflow.loadChatflow': 'Carregar Chatflow',
+        'chatflow.exportChatflow': 'Exportar Chatflow',
+        'chatflow.deleteChatflow': 'Excluir Chatflow',
+        
+        // Agent Settings
+        'agent.viewMessages': 'Ver Mensagens',
+        'agent.viewLeads': 'Ver Leads',
+        'agent.configuration': 'Configuração',
+        'agent.saveAsTemplate': 'Salvar como Modelo',
+        'agent.duplicateAgents': 'Duplicar Agentes',
+        'agent.loadAgents': 'Carregar Agentes',
+        'agent.exportAgents': 'Exportar Agentes',
+        'agent.deleteAgents': 'Excluir Agentes',
+        
         // Settings
         'settings.general': 'Geral',
         'settings.appearance': 'Aparência',
@@ -78,6 +99,15 @@ const translations = {
         'page.description': 'Plataforma de desenvolvimento de IA generativa de código aberto para construir agentes de IA, orquestração de LLM e muito mais',
         'page.keywords': 'react, material-ui, automação de fluxo de trabalho, llm, inteligência-artificial',
         'page.noScriptMessage': 'Você precisa habilitar o JavaScript para executar este aplicativo.',
+        
+        // Chatflows
+        'chatflows.title': 'Fluxos de Chat',
+        'chatflows.searchPlaceholder': 'Pesquisar Nome ou Categoria',
+        'chatflows.noChatflowsYet': 'Nenhum Fluxo de Chat Ainda',
+        'chatflows.cardView': 'Visualização de Cartão',
+        'chatflows.listView': 'Visualização de Lista',
+        'chatflows.addNew': 'Adicionar Novo',
+        'chatflows.description': 'Construa sistemas de agente único, chatbots e fluxos LLM simples',
         
         // Status
         'status.active': 'Ativo',

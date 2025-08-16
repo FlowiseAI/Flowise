@@ -11,6 +11,9 @@ import {
     IconTemplate
 } from '@tabler/icons-react'
 
+// Translation
+import { t } from '@/i18n'
+
 // constant
 const icons = {
     IconTrash,
@@ -33,28 +36,28 @@ const settings = {
     children: [
         {
             id: 'viewMessages',
-            title: 'View Messages',
+            title: t('chatflow.viewMessages'),
             type: 'item',
             url: '',
             icon: icons.IconMessage
         },
         {
             id: 'viewLeads',
-            title: 'View Leads',
+            title: t('chatflow.viewLeads'),
             type: 'item',
             url: '',
             icon: icons.IconUsers
         },
         {
             id: 'viewUpsertHistory',
-            title: 'Upsert History',
+            title: t('chatflow.upsertHistory'),
             type: 'item',
             url: '',
             icon: icons.IconDatabaseExport
         },
         {
             id: 'chatflowConfiguration',
-            title: 'Configuration',
+            title: t('chatflow.configuration'),
             type: 'item',
             url: '',
             permission: 'chatflows:config',
@@ -62,7 +65,7 @@ const settings = {
         },
         {
             id: 'saveAsTemplate',
-            title: 'Save As Template',
+            title: t('chatflow.saveAsTemplate'),
             type: 'item',
             url: '',
             icon: icons.IconTemplate,
@@ -70,7 +73,7 @@ const settings = {
         },
         {
             id: 'duplicateChatflow',
-            title: 'Duplicate Chatflow',
+            title: t('chatflow.duplicateChatflow'),
             type: 'item',
             url: '',
             icon: icons.IconCopy,
@@ -78,7 +81,7 @@ const settings = {
         },
         {
             id: 'loadChatflow',
-            title: 'Load Chatflow',
+            title: t('chatflow.loadChatflow'),
             type: 'item',
             url: '',
             icon: icons.IconFileUpload,
@@ -86,7 +89,7 @@ const settings = {
         },
         {
             id: 'exportChatflow',
-            title: 'Export Chatflow',
+            title: t('chatflow.exportChatflow'),
             type: 'item',
             url: '',
             icon: icons.IconFileExport,
@@ -94,7 +97,7 @@ const settings = {
         },
         {
             id: 'deleteChatflow',
-            title: 'Delete Chatflow',
+            title: t('chatflow.deleteChatflow'),
             type: 'item',
             url: '',
             icon: icons.IconTrash,

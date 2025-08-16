@@ -30,6 +30,9 @@ import { useError } from '@/store/context/ErrorContext'
 // icons
 import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 
+// Translation
+import { t } from '@/i18n'
+
 // ==============================|| CHATFLOWS ||============================== //
 
 const Chatflows = () => {
@@ -137,9 +140,9 @@ const Chatflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
-                        title='Chatflows'
-                        description='Build single-agent systems, chatbots and simple LLM flows'
+                        searchPlaceholder={t('chatflows.searchPlaceholder')}
+                        title={t('chatflows.title')}
+                        description='Construa sistemas de agente único, chatbots e fluxos LLM simples'
                     >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
@@ -157,7 +160,7 @@ const Chatflows = () => {
                                 }}
                                 variant='contained'
                                 value='card'
-                                title='Card View'
+                                title={t('chatflows.cardView')}
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
@@ -169,7 +172,7 @@ const Chatflows = () => {
                                 }}
                                 variant='contained'
                                 value='list'
-                                title='List View'
+                                title={t('chatflows.listView')}
                             >
                                 <IconList />
                             </ToggleButton>
@@ -181,7 +184,7 @@ const Chatflows = () => {
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
-                            Add New
+                            Adicionar Novo
                         </StyledPermissionButton>
                     </ViewHeader>
 
@@ -223,7 +226,7 @@ const Chatflows = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Chatflows Yet</div>
+                            <div>{t('chatflows.noChatflowsYet')}</div>
                         </Stack>
                     )}
                 </Stack>
