@@ -176,6 +176,7 @@ const translations = {
         'action.confirm': 'Confirmar',
         'action.apply': 'Aplicar',
         'action.load': 'Carregar',
+        'action.import': 'Importar',
         
         // Document Stores
         'docstore.title': 'Armazenamento de Documentos',
@@ -195,8 +196,11 @@ const translations = {
         
         // API Keys
         'apikeys.title': 'Chaves de API',
+        'apikeys.description': 'Gerenciar chaves de API para autenticação',
         'apikeys.addNew': 'Adicionar Nova Chave de API',
         'apikeys.addNewAPIKey': 'Adicionar Nova Chave de API',
+        'apikeys.editAPIKey': 'Editar Chave de API',
+        'apikeys.createKey': 'Criar Chave',
         'apikeys.noAPIKeysYet': 'Nenhuma Chave de API Ainda',
         
         // Executions
