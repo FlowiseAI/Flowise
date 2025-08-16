@@ -159,16 +159,11 @@ class Kendra_VectorStores implements INode {
                         ContentType: 'PLAIN_TEXT' as any
                     })
 
-                    console.log(
-                        `Preparing document for Kendra: ID=${docId}, Title=${docTitle}, Content length=${flattenDocs[i].pageContent.length}`
-                    )
                 }
             }
 
             try {
                 if (kendraDocuments.length > 0) {
-                    console.log(`Uploading ${kendraDocuments.length} documents to Kendra index ${indexId}`)
-
                     // Kendra has a limit of 10 documents per batch
                     const batchSize = 10
                     for (let i = 0; i < kendraDocuments.length; i += batchSize) {
@@ -178,16 +173,13 @@ class Kendra_VectorStores implements INode {
                             Documents: batch
                         })
 
-                        console.log(`Sending batch ${Math.floor(i / batchSize) + 1} with ${batch.length} documents`)
                         const response = await client.send(command)
-                        console.log(`Batch response:`, response)
 
                         if (response.FailedDocuments && response.FailedDocuments.length > 0) {
                             console.error('Failed documents:', response.FailedDocuments)
                             throw new Error(`Failed to index some documents: ${JSON.stringify(response.FailedDocuments)}`)
                         }
                     }
-                    console.log(`Successfully indexed ${kendraDocuments.length} documents to Kendra`)
                 }
 
                 return { numAdded: finalDocs.length, addedDocs: finalDocs }
