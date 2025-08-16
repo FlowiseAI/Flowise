@@ -43,13 +43,13 @@ const SignInPage = () => {
     const { isEnterpriseLicensed, isCloud, isOpenSource } = useConfig()
 
     const usernameInput = {
-        label: 'Nome de usuário',
+        label: 'Username',
         name: 'username',
         type: 'email',
-        placeholder: 'usuario@empresa.com'
+        placeholder: 'user@company.com'
     }
     const passwordInput = {
-        label: 'Senha',
+        label: 'Password',
         name: 'password',
         type: 'password',
         placeholder: '********'
@@ -192,7 +192,7 @@ const SignInPage = () => {
                         </Stack>
                     )}
                     <Stack sx={{ gap: 1 }}>
-                        <Typography variant='h1'>Entrar</Typography>
+                        <Typography variant='h1'>Sign In</Typography>
                         {isCloud && (
                             <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
                                 Don&apos;t have an account?{' '}
@@ -231,14 +231,14 @@ const SignInPage = () => {
                             <Box sx={{ p: 0 }}>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Senha<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        Password<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
                                 <Input inputParam={passwordInput} onChange={(newValue) => setPasswordVal(newValue)} value={passwordVal} />
                                 <Typography variant='body2' sx={{ color: theme.palette.grey[600], mt: 1, textAlign: 'right' }}>
                                     <Link style={{ color: theme.palette.primary.main }} to='/forgot-password'>
-                                        Esqueceu a senha?
+                                        Forgot password?
                                     </Link>
                                 </Typography>
                                 {isCloud && (
@@ -249,7 +249,7 @@ const SignInPage = () => {
                                             rel='noopener noreferrer'
                                             style={{ color: theme.palette.primary.main }}
                                         >
-                                            Migrar de conta existente?
+                                            Migrate from existing account?
                                         </a>
                                     </Typography>
                                 )}
@@ -260,9 +260,9 @@ const SignInPage = () => {
                                 style={{ borderRadius: 12, height: 40, marginRight: 5 }}
                                 type='submit'
                             >
-                                Entrar
+                                Login
                             </LoadingButton>
-                            {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OU</Divider>}
+                            {configuredSsoProviders && configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
                             {configuredSsoProviders &&
                                 configuredSsoProviders.map(
                                     (ssoProvider) =>
@@ -279,7 +279,7 @@ const SignInPage = () => {
                                                     </Icon>
                                                 }
                                             >
-                                                Entrar com Microsoft
+                                                Sign In With Microsoft
                                             </Button>
                                         )
                                 )}
@@ -298,7 +298,7 @@ const SignInPage = () => {
                                                     </Icon>
                                                 }
                                             >
-                                                Entrar com Google
+                                                Sign In With Google
                                             </Button>
                                         )
                                 )}
@@ -317,7 +317,7 @@ const SignInPage = () => {
                                                     </Icon>
                                                 }
                                             >
-                                                Entrar com Auth0 by Okta
+                                                Sign In With Auth0 by Okta
                                             </Button>
                                         )
                                 )}
@@ -336,7 +336,7 @@ const SignInPage = () => {
                                                     </Icon>
                                                 }
                                             >
-                                                Entrar com Github
+                                                Sign In With Github
                                             </Button>
                                         )
                                 )}

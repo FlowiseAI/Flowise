@@ -11,6 +11,9 @@ import {
     IconTemplate
 } from '@tabler/icons-react'
 
+// Translation
+import { t } from '@/i18n'
+
 // constant
 const icons = {
     IconTrash,
@@ -33,21 +36,21 @@ const agent_settings = {
     children: [
         {
             id: 'viewMessages',
-            title: 'Ver Mensagens',
+            title: t('agent.viewMessages'),
             type: 'item',
             url: '',
             icon: icons.IconMessage
         },
         {
             id: 'viewLeads',
-            title: 'Ver Leads',
+            title: t('agent.viewLeads'),
             type: 'item',
             url: '',
             icon: icons.IconUsers
         },
         {
             id: 'chatflowConfiguration',
-            title: 'Configuração',
+            title: t('agent.configuration'),
             type: 'item',
             url: '',
             icon: icons.IconAdjustmentsHorizontal,
@@ -55,7 +58,7 @@ const agent_settings = {
         },
         {
             id: 'saveAsTemplate',
-            title: 'Salvar Como Template',
+            title: t('agent.saveAsTemplate'),
             type: 'item',
             url: '',
             icon: icons.IconTemplate,
@@ -63,7 +66,7 @@ const agent_settings = {
         },
         {
             id: 'duplicateChatflow',
-            title: 'Duplicar Agentes',
+            title: t('agent.duplicateAgents'),
             type: 'item',
             url: '',
             icon: icons.IconCopy,
@@ -71,7 +74,7 @@ const agent_settings = {
         },
         {
             id: 'loadChatflow',
-            title: 'Carregar Agentes',
+            title: t('agent.loadAgents'),
             type: 'item',
             url: '',
             icon: icons.IconFileUpload,
@@ -79,7 +82,7 @@ const agent_settings = {
         },
         {
             id: 'exportChatflow',
-            title: 'Exportar Agentes',
+            title: t('agent.exportAgents'),
             type: 'item',
             url: '',
             icon: icons.IconFileExport,
@@ -87,7 +90,7 @@ const agent_settings = {
         },
         {
             id: 'deleteChatflow',
-            title: 'Excluir Agentes',
+            title: t('agent.deleteAgents'),
             type: 'item',
             url: '',
             icon: icons.IconTrash,

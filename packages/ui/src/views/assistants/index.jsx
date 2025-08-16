@@ -12,24 +12,27 @@ import ViewHeader from '@/layout/MainLayout/ViewHeader'
 // icons
 import { IconRobotFace, IconBrandOpenai, IconBrandAzure } from '@tabler/icons-react'
 
+// Translation
+import { t } from '@/i18n'
+
 const cards = [
     {
-        title: 'Custom Assistant',
-        description: 'Create custom assistant using your choice of LLMs',
+        title: t('assistants.customAssistant'),
+        description: 'Crie assistente personalizado usando sua escolha de LLMs',
         icon: <IconRobotFace />,
         iconText: 'Custom',
         gradient: 'linear-gradient(135deg, #fff8e14e 0%, #ffcc802f 100%)'
     },
     {
-        title: 'OpenAI Assistant',
-        description: 'Create assistant using OpenAI Assistant API',
+        title: t('assistants.openaiAssistant'),
+        description: 'Crie assistente usando a API do Assistente OpenAI',
         icon: <IconBrandOpenai />,
         iconText: 'OpenAI',
         gradient: 'linear-gradient(135deg, #c9ffd85f 0%, #a0f0b567 100%)'
     },
     {
-        title: 'Azure Assistant (Coming Soon)',
-        description: 'Create assistant using Azure Assistant API',
+        title: t('assistants.azureAssistant'),
+        description: 'Crie assistente usando a API do Assistente Azure',
         icon: <IconBrandAzure />,
         iconText: 'Azure',
         gradient: 'linear-gradient(135deg, #c4e1ff57 0%, #80b7ff5a 100%)'
@@ -123,8 +126,8 @@ const Assistants = () => {
             <MainCard>
                 <Stack flexDirection='column' sx={{ gap: 3 }}>
                     <ViewHeader
-                        title='Assistentes'
-                        description='Assistentes de chat com instruções, ferramentas e arquivos para responder às consultas do usuário'
+                        title={t('assistants.title')}
+                        description='Assistentes de chat com instruções, ferramentas e arquivos para responder a consultas do usuário'
                     />
                     <FeatureCards />
                 </Stack>

@@ -46,6 +46,9 @@ import useNotifier from '@/utils/useNotifier'
 import { IconTrash, IconEdit, IconX, IconPlus, IconUser, IconEyeOff, IconEye, IconUserStar } from '@tabler/icons-react'
 import users_emptySVG from '@/assets/images/users_empty.svg'
 
+// Translation
+import { t } from '@/i18n'
+
 // store
 import { useError } from '@/store/context/ErrorContext'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
@@ -201,8 +204,8 @@ function ShowUserRow(props) {
                                 }}
                             >
                                 <TableRow>
-                                    <StyledTableCell sx={{ width: '50%' }}>Role</StyledTableCell>
-                                    <StyledTableCell sx={{ width: '50%' }}>Workspace</StyledTableCell>
+                                    <StyledTableCell sx={{ width: '50%' }}>{t('users.role')}</StyledTableCell>
+                                    <StyledTableCell sx={{ width: '50%' }}>{t('users.workspace')}</StyledTableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -400,7 +403,7 @@ const Users = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Users' title='User Management'>
+                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Pesquisar Usuários' title='Gerenciamento de Usuários'>
                             <StyledPermissionButton
                                 permissionId={'workspace:add-user,users:manage'}
                                 variant='contained'
@@ -409,7 +412,7 @@ const Users = () => {
                                 startIcon={<IconPlus />}
                                 id='btn_createUser'
                             >
-                                Invite User
+                                Convidar Usuário
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && users.length === 0 ? (
@@ -421,7 +424,7 @@ const Users = () => {
                                         alt='users_emptySVG'
                                     />
                                 </Box>
-                                <div>No Users Yet</div>
+                                <div>{t('users.noUsersYet')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -443,10 +446,10 @@ const Users = () => {
                                                 >
                                                     <TableRow>
                                                         <StyledTableCell>&nbsp;</StyledTableCell>
-                                                        <StyledTableCell>Email/Name</StyledTableCell>
-                                                        <StyledTableCell>Assigned Roles</StyledTableCell>
-                                                        <StyledTableCell>Status</StyledTableCell>
-                                                        <StyledTableCell>Last Login</StyledTableCell>
+                                                        <StyledTableCell>{t('users.emailName')}</StyledTableCell>
+                                                        <StyledTableCell>{t('users.assignedRoles')}</StyledTableCell>
+                                                        <StyledTableCell>{t('users.status')}</StyledTableCell>
+                                                        <StyledTableCell>{t('users.lastLogin')}</StyledTableCell>
                                                         <StyledTableCell> </StyledTableCell>
                                                     </TableRow>
                                                 </TableHead>
