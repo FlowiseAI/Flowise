@@ -137,9 +137,9 @@ const Chatflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
-                        title='Chatflows'
-                        description='Build single-agent systems, chatbots and simple LLM flows'
+                        searchPlaceholder='Pesquisar Nome ou Categoria'
+                        title='Fluxos de Chat'
+                        description='Construa sistemas de agente único, chatbots e fluxos LLM simples'
                     >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
@@ -157,7 +157,7 @@ const Chatflows = () => {
                                 }}
                                 variant='contained'
                                 value='card'
-                                title='Card View'
+                                title='Visualização em Cartão'
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
@@ -169,7 +169,7 @@ const Chatflows = () => {
                                 }}
                                 variant='contained'
                                 value='list'
-                                title='List View'
+                                title='Visualização em Lista'
                             >
                                 <IconList />
                             </ToggleButton>
@@ -181,7 +181,7 @@ const Chatflows = () => {
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
-                            Add New
+                            Adicionar Novo
                         </StyledPermissionButton>
                     </ViewHeader>
 
@@ -223,7 +223,7 @@ const Chatflows = () => {
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Chatflows Yet</div>
+                            <div>Nenhum Fluxo de Chat Ainda</div>
                         </Stack>
                     )}
                 </Stack>

@@ -33,21 +33,21 @@ const agent_settings = {
     children: [
         {
             id: 'viewMessages',
-            title: 'View Messages',
+            title: 'Ver Mensagens',
             type: 'item',
             url: '',
             icon: icons.IconMessage
         },
         {
             id: 'viewLeads',
-            title: 'View Leads',
+            title: 'Ver Leads',
             type: 'item',
             url: '',
             icon: icons.IconUsers
         },
         {
             id: 'chatflowConfiguration',
-            title: 'Configuration',
+            title: 'Configuração',
             type: 'item',
             url: '',
             icon: icons.IconAdjustmentsHorizontal,
@@ -55,7 +55,7 @@ const agent_settings = {
         },
         {
             id: 'saveAsTemplate',
-            title: 'Save As Template',
+            title: 'Salvar Como Template',
             type: 'item',
             url: '',
             icon: icons.IconTemplate,
@@ -63,7 +63,7 @@ const agent_settings = {
         },
         {
             id: 'duplicateChatflow',
-            title: 'Duplicate Agents',
+            title: 'Duplicar Agentes',
             type: 'item',
             url: '',
             icon: icons.IconCopy,
@@ -71,7 +71,7 @@ const agent_settings = {
         },
         {
             id: 'loadChatflow',
-            title: 'Load Agents',
+            title: 'Carregar Agentes',
             type: 'item',
             url: '',
             icon: icons.IconFileUpload,
@@ -79,7 +79,7 @@ const agent_settings = {
         },
         {
             id: 'exportChatflow',
-            title: 'Export Agents',
+            title: 'Exportar Agentes',
             type: 'item',
             url: '',
             icon: icons.IconFileExport,
@@ -87,7 +87,7 @@ const agent_settings = {
         },
         {
             id: 'deleteChatflow',
-            title: 'Delete Agents',
+            title: 'Excluir Agentes',
             type: 'item',
             url: '',
             icon: icons.IconTrash,

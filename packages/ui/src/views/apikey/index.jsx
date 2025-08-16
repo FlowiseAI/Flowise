@@ -100,10 +100,10 @@ function APIKeyRow(props) {
                         : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
                               props.apiKey.apiKey.length - 5
                           )}`}
-                    <IconButton title='Copy' color='success' onClick={props.onCopyClick}>
+                    <IconButton title='Copiar' color='success' onClick={props.onCopyClick}>
                         <IconCopy />
                     </IconButton>
-                    <IconButton title='Show' color='inherit' onClick={props.onShowAPIClick}>
+                    <IconButton title='Mostrar' color='inherit' onClick={props.onShowAPIClick}>
                         {props.showApiKeys.includes(props.apiKey.apiKey) ? <IconEyeOff /> : <IconEye />}
                     </IconButton>
                     <Popover
@@ -135,14 +135,14 @@ function APIKeyRow(props) {
                 <StyledTableCell>{moment(props.apiKey.createdAt).format('MMMM Do, YYYY')}</StyledTableCell>
                 <Available permission={'apikeys:update,apikeys:create'}>
                     <StyledTableCell>
-                        <IconButton title='Edit' color='primary' onClick={props.onEditClick}>
+                        <IconButton title='Editar' color='primary' onClick={props.onEditClick}>
                             <IconEdit />
                         </IconButton>
                     </StyledTableCell>
                 </Available>
                 <Available permission={'apikeys:delete'}>
                     <StyledTableCell>
-                        <IconButton title='Delete' color='error' onClick={props.onDeleteClick}>
+                        <IconButton title='Excluir' color='error' onClick={props.onDeleteClick}>
                             <IconTrash />
                         </IconButton>
                     </StyledTableCell>
@@ -273,10 +273,10 @@ const APIKey = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New API Key',
+            title: 'Adicionar Nova Chave de API',
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: 'Cancelar',
+            confirmButtonName: 'Adicionar',
             customBtnId: 'btn_confirmAddingApiKey'
         }
         setDialogProps(dialogProp)
@@ -391,9 +391,9 @@ const APIKey = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search API Keys'
-                            title='API Keys'
-                            description='Flowise API & SDK authentication keys'
+                            searchPlaceholder='Pesquisar Chaves de API'
+                            title='Chaves de API'
+                            description='Chaves de autenticação da API e SDK do Flowise'
                         >
                             <PermissionButton
                                 permissionId={'apikeys:import'}
@@ -425,7 +425,7 @@ const APIKey = () => {
                                         alt='APIEmptySVG'
                                     />
                                 </Box>
-                                <div>No API Keys Yet</div>
+                                <div>Nenhuma Chave de API Ainda</div>
                             </Stack>
                         ) : (
                             <>

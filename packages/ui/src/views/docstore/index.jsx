@@ -66,10 +66,10 @@ const Documents = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New Document Store',
+            title: 'Adicionar Novo Armazenamento de Documentos',
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add'
+            cancelButtonName: 'Cancelar',
+            confirmButtonName: 'Adicionar'
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -154,9 +154,9 @@ const Documents = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={hasDocStores}
-                        searchPlaceholder='Search Name'
-                        title='Document Store'
-                        description='Store and upsert documents for LLM retrieval (RAG)'
+                        searchPlaceholder='Pesquisar Nome'
+                        title='Armazenamento de Documentos'
+                        description='Armazenar e inserir documentos para recuperação LLM (RAG)'
                     >
                         {hasDocStores && (
                             <ToggleButtonGroup
@@ -174,7 +174,7 @@ const Documents = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title='Card View'
+                                    title='Visualização em Cartão'
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -186,7 +186,7 @@ const Documents = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title='List View'
+                                    title='Visualização em Lista'
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -200,7 +200,7 @@ const Documents = () => {
                             startIcon={<IconPlus />}
                             id='btn_createVariable'
                         >
-                            Add New
+                            Adicionar Novo
                         </StyledPermissionButton>
                     </ViewHeader>
                     {!hasDocStores ? (
@@ -212,7 +212,7 @@ const Documents = () => {
                                     alt='doc_store_empty'
                                 />
                             </Box>
-                            <div>No Document Stores Created Yet</div>
+                            <div>Nenhum Armazenamento de Documentos Criado Ainda</div>
                         </Stack>
                     ) : (
                         <React.Fragment>

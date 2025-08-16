@@ -22,7 +22,7 @@ const ViewHeader = ({
     filters = null,
     onSearchChange,
     search,
-    searchPlaceholder = 'Search',
+    searchPlaceholder = 'Pesquisar',
     title,
     description,
     isBackButton,
@@ -47,7 +47,7 @@ const ViewHeader = ({
             >
                 <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'row' }}>
                     {isBackButton && (
-                        <StyledFab sx={{ mr: 3 }} size='small' color='secondary' aria-label='back' title='Back' onClick={onBack}>
+                        <StyledFab sx={{ mr: 3 }} size='small' color='secondary' aria-label='voltar' title='Voltar' onClick={onBack}>
                             <IconArrowLeft />
                         </StyledFab>
                     )}
@@ -88,7 +88,7 @@ const ViewHeader = ({
                         )}
                     </Box>
                     {isEditButton && (
-                        <IconButton sx={{ ml: 3 }} color='secondary' title='Edit' onClick={onEdit}>
+                        <IconButton sx={{ ml: 3 }} color='secondary' title='Editar' onClick={onEdit}>
                             <IconEdit />
                         </IconButton>
                     )}

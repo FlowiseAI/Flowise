@@ -5,7 +5,7 @@ export const initialState = {
     title: '',
     description: '',
     confirmButtonName: 'OK',
-    cancelButtonName: 'Cancel',
+    cancelButtonName: 'Cancelar',
     customBtnId: ''
 }
 

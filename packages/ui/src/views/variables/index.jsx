@@ -123,8 +123,8 @@ const Variables = () => {
     const addNew = () => {
         const dialogProp = {
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add',
+            cancelButtonName: 'Cancelar',
+            confirmButtonName: 'Adicionar',
             customBtnId: 'btn_confirmAddingVariable',
             data: {}
         }
@@ -135,8 +135,8 @@ const Variables = () => {
     const edit = (variable) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: 'Cancelar',
+            confirmButtonName: 'Salvar',
             data: variable
         }
         setVariableDialogProps(dialogProp)
@@ -145,10 +145,10 @@ const Variables = () => {
 
     const deleteVariable = async (variable) => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete variable ${variable.name}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: `Excluir`,
+            description: `Excluir variável ${variable.name}?`,
+            confirmButtonName: 'Excluir',
+            cancelButtonName: 'Cancelar'
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -222,12 +222,12 @@ const Variables = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Variables'
-                            title='Variables'
-                            description='Create and manage global variables'
+                            searchPlaceholder='Pesquisar Variáveis'
+                            title='Variáveis'
+                            description='Criar e gerenciar variáveis globais'
                         >
                             <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
-                                How To Use
+                                Como Usar
                             </Button>
                             <StyledPermissionButton
                                 permissionId={'variables:create'}
@@ -249,7 +249,7 @@ const Variables = () => {
                                         alt='VariablesEmptySVG'
                                     />
                                 </Box>
-                                <div>No Variables Yet</div>
+                                <div>Nenhuma Variável Ainda</div>
                             </Stack>
                         ) : (
                             <>
@@ -389,7 +389,7 @@ const Variables = () => {
                                                             </StyledTableCell>
                                                             <Available permission={'variables:create,variables:update'}>
                                                                 <StyledTableCell>
-                                                                    <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
+                                                                    <IconButton title='Editar' color='primary' onClick={() => edit(variable)}>
                                                                         <IconEdit />
                                                                     </IconButton>
                                                                 </StyledTableCell>
@@ -397,7 +397,7 @@ const Variables = () => {
                                                             <Available permission={'variables:delete'}>
                                                                 <StyledTableCell>
                                                                     <IconButton
-                                                                        title='Delete'
+                                                                        title='Excluir'
                                                                         color='error'
                                                                         onClick={() => deleteVariable(variable)}
                                                                     >

@@ -18,21 +18,21 @@ const customAssistantSettings = {
     children: [
         {
             id: 'viewMessages',
-            title: 'View Messages',
+            title: 'Ver Mensagens',
             type: 'item',
             url: '',
             icon: icons.IconMessage
         },
         {
             id: 'viewLeads',
-            title: 'View Leads',
+            title: 'Ver Leads',
             type: 'item',
             url: '',
             icon: icons.IconUsers
         },
         {
             id: 'chatflowConfiguration',
-            title: 'Configuration',
+            title: 'Configuração',
             type: 'item',
             url: '',
             icon: icons.IconAdjustmentsHorizontal,
@@ -40,7 +40,7 @@ const customAssistantSettings = {
         },
         {
             id: 'deleteAssistant',
-            title: 'Delete Assistant',
+            title: 'Excluir Assistente',
             type: 'item',
             url: '',
             icon: icons.IconTrash,
