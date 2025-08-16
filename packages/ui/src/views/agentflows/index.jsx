@@ -177,9 +177,9 @@ const Agentflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
-                        title='Agentflows'
-                        description='Multi-agent systems, workflow orchestration'
+                        searchPlaceholder='Pesquisar Nome ou Categoria'
+                        title='Fluxos de Agentes'
+                        description='Sistemas multi-agente, orquestração de fluxo de trabalho'
                     >
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
@@ -198,7 +198,7 @@ const Agentflows = () => {
                                 value='v2'
                                 title='V2'
                             >
-                                <Chip sx={{ mr: 1 }} label='NEW' size='small' color='primary' />
+                                <Chip sx={{ mr: 1 }} label='NOVO' size='small' color='primary' />
                                 V2
                             </ToggleButton>
                             <ToggleButton
@@ -230,7 +230,7 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='card'
-                                title='Card View'
+                                title='Visualização em Cartão'
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
@@ -242,7 +242,7 @@ const Agentflows = () => {
                                 }}
                                 variant='contained'
                                 value='list'
-                                title='List View'
+                                title='Visualização em Lista'
                             >
                                 <IconList />
                             </ToggleButton>
@@ -254,7 +254,7 @@ const Agentflows = () => {
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
                         >
-                            Add New
+                            Adicionar Novo
                         </StyledPermissionButton>
                     </ViewHeader>
 
@@ -341,7 +341,7 @@ const Agentflows = () => {
                                     alt='AgentsEmptySVG'
                                 />
                             </Box>
-                            <div>No Agents Yet</div>
+                            <div>Nenhum Agente Ainda</div>
                         </Stack>
                     )}
                 </Stack>

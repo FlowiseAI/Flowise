@@ -68,10 +68,10 @@ const Tools = () => {
     const onUploadFile = (file) => {
         try {
             const dialogProp = {
-                title: 'Add New Tool',
+                title: 'Adicionar Nova Ferramenta',
                 type: 'IMPORT',
-                cancelButtonName: 'Cancel',
-                confirmButtonName: 'Save',
+                cancelButtonName: 'Cancelar',
+                confirmButtonName: 'Salvar',
                 data: JSON.parse(file)
             }
             setDialogProps(dialogProp)
@@ -99,10 +99,10 @@ const Tools = () => {
 
     const addNew = () => {
         const dialogProp = {
-            title: 'Add New Tool',
+            title: 'Adicionar Nova Ferramenta',
             type: 'ADD',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Add'
+            cancelButtonName: 'Cancelar',
+            confirmButtonName: 'Adicionar'
         }
         setDialogProps(dialogProp)
         setShowDialog(true)
@@ -161,9 +161,9 @@ const Tools = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Tools'
-                            title='Tools'
-                            description='External functions or APIs the agent can use to take action'
+                            searchPlaceholder='Pesquisar Ferramentas'
+                            title='Ferramentas'
+                            description='Funções externas ou APIs que o agente pode usar para realizar ações'
                         >
                             <ToggleButtonGroup
                                 sx={{ borderRadius: 2, maxHeight: 40 }}
@@ -181,7 +181,7 @@ const Tools = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title='Card View'
+                                    title='Visualização em Cartão'
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -193,7 +193,7 @@ const Tools = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title='List View'
+                                    title='Visualização em Lista'
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -260,7 +260,7 @@ const Tools = () => {
                                         alt='ToolEmptySVG'
                                     />
                                 </Box>
-                                <div>No Tools Created Yet</div>
+                                <div>Nenhuma Ferramenta Criada Ainda</div>
                             </Stack>
                         )}
                     </Stack>
