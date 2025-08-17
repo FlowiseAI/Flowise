@@ -7,6 +7,7 @@ import { useTheme } from '@mui/material/styles'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
+import { Typography } from '@mui/material'
 import ItemCard from '@/ui-component/cards/ItemCard'
 import { gridSpacing } from '@/store/constant'
 import WorkflowEmptySVG from '@/assets/images/workflow_empty.svg'
@@ -128,6 +129,16 @@ const Chatflows = () => {
         }
     }, [getAllChatflowsApi.data])
 
+    // Grouping chatflows by tags
+    const groupedChatflows = getAllChatflowsApi.data?.data
+        ?.filter(filterFlows)
+        .reduce((acc, item) => {
+            const tag = item.tags || 'Untagged'
+            if (!acc[tag]) acc[tag] = []
+            acc[tag].push(item)
+            return acc
+        }, {})
+
     return (
         <MainCard>
             {error ? (
@@ -192,14 +203,44 @@ const Chatflows = () => {
                             <Skeleton variant='rounded' height={160} />
                         </Box>
                     )}
+
                     {!isLoading && total > 0 && (
                         <>
                             {!view || view === 'card' ? (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllChatflowsApi.data?.data?.filter(filterFlows).map((data, index) => (
-                                        <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
-                                    ))}
-                                </Box>
+                                <Stack spacing={4}>
+                                    {groupedChatflows &&
+                                        Object.entries(groupedChatflows).map(([tag, items]) => (
+                                            <Box key={tag}>
+                                                <Box
+                                                    sx={{
+                                                        mb: 2,
+                                                        px: 2,
+                                                        py: 1,
+                                                        display: 'inline-block',
+                                                        borderRadius: 2,
+                                                        backgroundColor: theme.palette.primary.light,
+                                                        color: theme.palette.primary.contrastText,
+                                                        fontWeight: 600,
+                                                        boxShadow: 1
+                                                    }}
+                                                >
+                                                    <Typography variant="subtitle1">{tag}</Typography>
+                                                </Box>
+
+                                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                                    {items.map((data) => (
+                                                        <ItemCard
+                                                            key={data.id}
+                                                            onClick={() => goToCanvas(data)}
+                                                            data={data}
+                                                            images={images[data.id]}
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                </Stack>
+
                             ) : (
                                 <FlowListTable
                                     data={getAllChatflowsApi.data?.data}
@@ -210,10 +251,10 @@ const Chatflows = () => {
                                     setError={setError}
                                 />
                             )}
-                            {/* Pagination and Page Size Controls */}
                             <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
                         </>
                     )}
+
                     {!isLoading && (!getAllChatflowsApi.data?.data || getAllChatflowsApi.data?.data.length === 0) && (
                         <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                             <Box sx={{ p: 2, height: 'auto' }}>
