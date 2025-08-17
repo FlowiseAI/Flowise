@@ -67,26 +67,31 @@ const dashboard = {
             type: 'group',
             children: [
                 {
-                    id: 'chatflows',
-                    title: 'Chatflows',
+                    id: 'overview',
+                    title: 'Overview',
                     type: 'item',
-                    url: '/chatflows',
+                    url: '/overview',
+                    icon: icons.IconChartHistogram, // already imported in this file
+                    breadcrumbs: true,
+                    permission: 'chatflows:view'
+                  },
+                  
+                // 🔁 Chatflows → Studio (only change) + keep same permission as Chatflows
+                {
+                    id: 'studio',
+                    title: 'Studio',
+                    type: 'item',
+                    url: '/studio',
                     icon: icons.IconHierarchy,
                     breadcrumbs: true,
                     permission: 'chatflows:view'
                 },
-                {
-                    id: 'agentflows',
-                    title: 'Agentflows',
-                    type: 'item',
-                    url: '/agentflows',
-                    icon: icons.IconUsersGroup,
-                    breadcrumbs: true,
-                    permission: 'agentflows:view'
-                },
+
+                // ❌ Removed (per your request): agentflows, assistants
+
                 {
                     id: 'executions',
-                    title: 'Executions',
+                    title: 'Activity Tracker',
                     type: 'item',
                     url: '/executions',
                     icon: icons.IconListCheck,
@@ -94,17 +99,8 @@ const dashboard = {
                     permission: 'executions:view'
                 },
                 {
-                    id: 'assistants',
-                    title: 'Assistants',
-                    type: 'item',
-                    url: '/assistants',
-                    icon: icons.IconRobot,
-                    breadcrumbs: true,
-                    permission: 'assistants:view'
-                },
-                {
                     id: 'marketplaces',
-                    title: 'Marketplaces',
+                    title: 'Workforce',
                     type: 'item',
                     url: '/marketplaces',
                     icon: icons.IconBuildingStore,
@@ -140,7 +136,7 @@ const dashboard = {
                 },
                 {
                     id: 'apikey',
-                    title: 'API Keys',
+                    title: 'Developer Guides',
                     type: 'item',
                     url: '/apikey',
                     icon: icons.IconKey,
@@ -149,7 +145,7 @@ const dashboard = {
                 },
                 {
                     id: 'document-stores',
-                    title: 'Document Stores',
+                    title: 'Documents',
                     type: 'item',
                     url: '/document-stores',
                     icon: icons.IconFiles,
