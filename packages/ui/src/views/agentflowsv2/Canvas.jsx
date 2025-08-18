@@ -223,7 +223,9 @@ const AgentflowCanvas = () => {
 
             if (!chatflow.id) {
                 const newChatflowBody = {
-                    name: chatflowName,
+                    name: chatflowName?.name,
+                    tags: chatflowName?.tags,
+                    description: chatflowName?.description,
                     deployed: false,
                     isPublic: false,
                     flowData,

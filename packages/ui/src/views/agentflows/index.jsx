@@ -42,9 +42,10 @@ const Agentflows = () => {
     const [images, setImages] = useState({})
     const [icons, setIcons] = useState({})
     const [search, setSearch] = useState('')
-    const { error, setError } = useError()
 
+    const { error, setError } = useError()
     const getAllAgentflows = useApi(chatflowsApi.getAllAgentflows)
+
     const [view, setView] = useState(localStorage.getItem('flowDisplayStyle') || 'card')
     const [agentflowVersion, setAgentflowVersion] = useState(localStorage.getItem('agentFlowVersion') || 'v2')
     const [showDeprecationNotice, setShowDeprecationNotice] = useState(true)
@@ -61,10 +62,7 @@ const Agentflows = () => {
     }
 
     const refresh = (page, limit, nextView) => {
-        const params = {
-            page: page || currentPage,
-            limit: limit || pageLimit
-        }
+        const params = { page: page || currentPage, limit: limit || pageLimit }
         getAllAgentflows.request(nextView === 'v2' ? 'AGENTFLOW' : 'MULTIAGENT', params)
     }
 
@@ -115,7 +113,6 @@ const Agentflows = () => {
 
     useEffect(() => {
         refresh(currentPage, pageLimit, agentflowVersion)
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -123,7 +120,6 @@ const Agentflows = () => {
         if (getAllAgentflows.error) {
             setError(getAllAgentflows.error)
         }
-
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [getAllAgentflows.error])
 
@@ -138,24 +134,25 @@ const Agentflows = () => {
                 setTotal(getAllAgentflows.data?.total)
                 const images = {}
                 const icons = {}
+
                 for (let i = 0; i < agentflows.length; i += 1) {
                     const flowDataStr = agentflows[i].flowData
                     const flowData = JSON.parse(flowDataStr)
                     const nodes = flowData.nodes || []
+
                     images[agentflows[i].id] = []
                     icons[agentflows[i].id] = []
+
                     for (let j = 0; j < nodes.length; j += 1) {
                         if (nodes[j].data.name === 'stickyNote' || nodes[j].data.name === 'stickyNoteAgentflow') continue
+
                         const foundIcon = AGENTFLOW_ICONS.find((icon) => icon.name === nodes[j].data.name)
                         if (foundIcon) {
                             icons[agentflows[i].id].push(foundIcon)
                         } else {
                             const imageSrc = `${baseURL}/api/v1/node-icon/${nodes[j].data.name}`
                             if (!images[agentflows[i].id].some((img) => img.imageSrc === imageSrc)) {
-                                images[agentflows[i].id].push({
-                                    imageSrc,
-                                    label: nodes[j].data.label
-                                })
+                                images[agentflows[i].id].push({ imageSrc, label: nodes[j].data.label })
                             }
                         }
                     }
@@ -168,23 +165,34 @@ const Agentflows = () => {
         }
     }, [getAllAgentflows.data])
 
+    // Group agentflows by tags
+    const groupedAgentflows = getAllAgentflows.data?.data
+        ?.filter(filterFlows)
+        .reduce((acc, item) => {
+            const tag = item.tags || 'Untagged'
+            if (!acc[tag]) acc[tag] = []
+            acc[tag].push(item)
+            return acc
+        }, {})
+
     return (
         <MainCard>
             {error ? (
                 <ErrorBoundary error={error} />
             ) : (
-                <Stack flexDirection='column' sx={{ gap: 3 }}>
+                <Stack flexDirection="column" sx={{ gap: 3 }}>
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
-                        title='Agentflows'
-                        description='Multi-agent systems, workflow orchestration'
+                        searchPlaceholder="Search Name or Category"
+                        title="Agentflows"
+                        description="Multi-agent systems, workflow orchestration"
                     >
+                        {/* Version Toggle */}
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={agentflowVersion}
-                            color='primary'
+                            color="primary"
                             exclusive
                             onChange={handleVersionChange}
                         >
@@ -194,11 +202,11 @@ const Agentflows = () => {
                                     borderRadius: 2,
                                     color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
-                                variant='contained'
-                                value='v2'
-                                title='V2'
+                                variant="contained"
+                                value="v2"
+                                title="V2"
                             >
-                                <Chip sx={{ mr: 1 }} label='NEW' size='small' color='primary' />
+                                <Chip sx={{ mr: 1 }} label="NEW" size="small" color="primary" />
                                 V2
                             </ToggleButton>
                             <ToggleButton
@@ -207,18 +215,20 @@ const Agentflows = () => {
                                     borderRadius: 2,
                                     color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
-                                variant='contained'
-                                value='v1'
-                                title='V1'
+                                variant="contained"
+                                value="v1"
+                                title="V1"
                             >
                                 V1
                             </ToggleButton>
                         </ToggleButtonGroup>
+
+                        {/* View Toggle */}
                         <ToggleButtonGroup
                             sx={{ borderRadius: 2, maxHeight: 40 }}
                             value={view}
                             disabled={total === 0}
-                            color='primary'
+                            color="primary"
                             exclusive
                             onChange={handleChange}
                         >
@@ -228,9 +238,9 @@ const Agentflows = () => {
                                     borderRadius: 2,
                                     color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
-                                variant='contained'
-                                value='card'
-                                title='Card View'
+                                variant="contained"
+                                value="card"
+                                title="Card View"
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
@@ -240,16 +250,17 @@ const Agentflows = () => {
                                     borderRadius: 2,
                                     color: customization.isDarkMode ? 'white' : 'inherit'
                                 }}
-                                variant='contained'
-                                value='list'
-                                title='List View'
+                                variant="contained"
+                                value="list"
+                                title="List View"
                             >
                                 <IconList />
                             </ToggleButton>
                         </ToggleButtonGroup>
+
                         <StyledPermissionButton
                             permissionId={'agentflows:create'}
-                            variant='contained'
+                            variant="contained"
                             onClick={addNew}
                             startIcon={<IconPlus />}
                             sx={{ borderRadius: 2, height: 40 }}
@@ -276,44 +287,73 @@ const Agentflows = () => {
                         >
                             <IconAlertTriangle
                                 size={20}
-                                style={{
-                                    color: customization.isDarkMode ? '#ffcc80' : '#f57c00',
-                                    flexShrink: 0
-                                }}
+                                style={{ color: customization.isDarkMode ? '#ffcc80' : '#f57c00', flexShrink: 0 }}
                             />
                             <Box sx={{ flex: 1 }}>
-                                <strong>V1 Agentflows are deprecated.</strong> We recommend migrating to V2 for improved performance and
-                                continued support.
+                                <strong>V1 Agentflows are deprecated.</strong> We recommend migrating to V2 for
+                                improved performance and continued support.
                             </Box>
                             <IconButton
-                                aria-label='dismiss'
-                                size='small'
+                                aria-label="dismiss"
+                                size="small"
                                 onClick={handleDismissDeprecationNotice}
                                 sx={{
                                     color: customization.isDarkMode ? '#ffcc80' : '#f57c00',
-                                    '&:hover': {
-                                        backgroundColor: 'rgba(255, 204, 128, 0.1)'
-                                    }
+                                    '&:hover': { backgroundColor: 'rgba(255, 204, 128, 0.1)' }
                                 }}
                             >
                                 <IconX size={16} />
                             </IconButton>
                         </Box>
                     )}
+
                     {!isLoading && total > 0 && (
                         <>
                             {!view || view === 'card' ? (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
-                                    {getAllAgentflows.data?.data.filter(filterFlows).map((data, index) => (
-                                        <ItemCard
-                                            key={index}
-                                            onClick={() => goToCanvas(data)}
-                                            data={data}
-                                            images={images[data.id]}
-                                            icons={icons[data.id]}
-                                        />
-                                    ))}
-                                </Box>
+                                <Stack spacing={4}>
+                                    {groupedAgentflows &&
+                                        Object.entries(groupedAgentflows).map(([tag, items]) => (
+                                            <Box key={tag}>
+                                                {/* Tag Header */}
+                                                <Box
+                                                    sx={{
+                                                        mb: 2,
+                                                        px: 2.5,
+                                                        py: 0.8,
+                                                        display: 'inline-block',
+                                                        borderRadius: '20px',
+                                                        backgroundColor: theme.palette.mode === 'dark'
+                                                            ? theme.palette.grey[800]
+                                                            : theme.palette.grey[200],
+                                                        color: theme.palette.text.primary,
+                                                        fontWeight: 600,
+                                                        fontSize: '0.9rem',
+                                                        boxShadow: theme.shadows[1],
+                                                    }}
+                                                >
+                                                    {tag}
+                                                </Box>
+
+
+                                                {/* Grid of ItemCards */}
+                                                <Box
+                                                    display="grid"
+                                                    gridTemplateColumns="repeat(3, 1fr)"
+                                                    gap={gridSpacing}
+                                                >
+                                                    {items.map((data) => (
+                                                        <ItemCard
+                                                            key={data.id}
+                                                            onClick={() => goToCanvas(data)}
+                                                            data={data}
+                                                            images={images[data.id]}
+                                                            icons={icons[data.id]}
+                                                        />
+                                                    ))}
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                </Stack>
                             ) : (
                                 <FlowListTable
                                     isAgentCanvas={true}
@@ -327,18 +367,24 @@ const Agentflows = () => {
                                     setError={setError}
                                 />
                             )}
+
                             {/* Pagination and Page Size Controls */}
-                            <TablePagination currentPage={currentPage} limit={pageLimit} total={total} onChange={onChange} />
+                            <TablePagination
+                                currentPage={currentPage}
+                                limit={pageLimit}
+                                total={total}
+                                onChange={onChange}
+                            />
                         </>
                     )}
 
                     {!isLoading && total === 0 && (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection="column">
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img
                                     style={{ objectFit: 'cover', height: '12vh', width: 'auto' }}
                                     src={AgentsEmptySVG}
-                                    alt='AgentsEmptySVG'
+                                    alt="AgentsEmptySVG"
                                 />
                             </Box>
                             <div>No Agents Yet</div>
