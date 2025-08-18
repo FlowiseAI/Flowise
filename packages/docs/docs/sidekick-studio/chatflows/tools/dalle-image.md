@@ -6,17 +6,17 @@ description: Create images using Dall-E OpenAI model
 
 ## Overview
 
-The Dall-E Post Tool allows you to generate images using OpenAI's Dall-E AI model directly within your AnswerAI workflows. This powerful feature enables you to create unique, AI-generated images based on text prompts, enhancing your creative capabilities and visual content production.
+The Dall-E Post Tool allows you to generate images using OpenAI's Dall-E AI model directly within your AnswerAgentAI workflows. This powerful feature enables you to create unique, AI-generated images based on text prompts, enhancing your creative capabilities and visual content production.
 
 ## Key Benefits
 
 -   Generate custom images on-demand using natural language prompts
 -   Seamlessly integrate AI-powered image creation into your workflows
--   Access cutting-edge image generation technology without leaving the AnswerAI platform
+-   Access cutting-edge image generation technology without leaving the AnswerAgentAI platform
 
 ## How to Use
 
-1. Add the Dall-E Post Tool to your canvas in the AnswerAI Studio.
+1. Add the Dall-E Post Tool to your canvas in the AnswerAgentAI Studio.
 2. Connect your OpenAI API credential to the tool.
 3. Configure the tool's inputs:
     - **Prompt**: Enter the text description of the image you want to generate.
@@ -50,4 +50,4 @@ The Dall-E Post Tool allows you to generate images using OpenAI's Dall-E AI mode
     - Try refining your prompt with more specific details or adjusting the language.
     - Experiment with different model versions if available.
 
-Remember that the quality and relevance of the generated images depend largely on the clarity and specificity of your prompts. Practice and experimentation will help you get the best results from the Dall-E Post Tool in your AnswerAI workflows.
+Remember that the quality and relevance of the generated images depend largely on the clarity and specificity of your prompts. Practice and experimentation will help you get the best results from the Dall-E Post Tool in your AnswerAgentAI workflows.

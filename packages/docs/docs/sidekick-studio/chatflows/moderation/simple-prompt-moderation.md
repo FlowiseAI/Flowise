@@ -6,7 +6,7 @@ description: Check and prevent sensitive input from being sent to the language m
 
 ## Overview
 
-The Simple Prompt Moderation feature in AnswerAI allows you to implement a basic content filter for user inputs before they are processed by the language model. This feature helps maintain content safety and prevents potentially harmful or unwanted content from being processed.
+The Simple Prompt Moderation feature in AnswerAgentAI allows you to implement a basic content filter for user inputs before they are processed by the language model. This feature helps maintain content safety and prevents potentially harmful or unwanted content from being processed.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Simple Prompt Moderation feature in AnswerAI allows you to implement a basic
 
 ## How to Use
 
-1. Add the Simple Prompt Moderation node to your AnswerAI workflow canvas.
+1. Add the Simple Prompt Moderation node to your AnswerAgentAI workflow canvas.
 
 <!-- TODO: Screenshot of adding the Simple Prompt Moderation node to the canvas -->
 <figure><img src="/.gitbook/assets/screenshots/simplepromptmoderaation.png" alt="" /><figcaption><p> Simple Prompt Moderation Node &#x26; Drop UI</p></figcaption></figure>
@@ -59,4 +59,4 @@ The Simple Prompt Moderation feature in AnswerAI allows you to implement a basic
 4. Issue: Error message is not displaying correctly
    Solution: Check the "Error Message" field in the node configuration and ensure it contains the desired text.
 
-Remember, while the Simple Prompt Moderation feature provides a good starting point for content filtering, it's important to continuously monitor and adjust your moderation strategy to ensure the best balance between safety and usability in your AnswerAI workflows.
+Remember, while the Simple Prompt Moderation feature provides a good starting point for content filtering, it's important to continuously monitor and adjust your moderation strategy to ensure the best balance between safety and usability in your AnswerAgentAI workflows.

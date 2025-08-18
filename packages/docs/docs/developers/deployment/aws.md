@@ -1,12 +1,12 @@
 ---
-description: Learn how to deploy AnswerAI on AWS using Copilot
+description: Learn how to deploy AnswerAgentAI on AWS using Copilot
 ---
 
 # AWS
 
 ## Overview
 
-AWS Copilot is a command-line interface (CLI) tool that simplifies the process of deploying and managing containerized applications on AWS. This guide will walk you through the steps to deploy AnswerAI using AWS Copilot.
+AWS Copilot is a command-line interface (CLI) tool that simplifies the process of deploying and managing containerized applications on AWS. This guide will walk you through the steps to deploy AnswerAgentAI using AWS Copilot.
 
 ## Key Benefits
 
@@ -22,7 +22,7 @@ Before you begin, ensure you have the following:
 -   AWS CLI installed and configured
 -   Docker installed
 -   AWS Copilot CLI installed
--   AnswerAI application code
+-   AnswerAgentAI application code
 -   Environment variables for your application
 
 ## How to Use
@@ -45,9 +45,9 @@ Ensure your AWS CLI is configured with the correct credentials:
 aws configure
 ```
 
-### 3. Clone the AnswerAI Repository
+### 3. Clone the AnswerAgentAI Repository
 
-Clone the AnswerAI repository to your local machine:
+Clone the AnswerAgentAI repository to your local machine:
 
 ```bash
 git clone https://github.com/the-answeri/theanswer
@@ -56,7 +56,7 @@ cd theanswer
 
 ### 4. Initialize the Copilot Application
 
-In the root directory of your AnswerAI project, run:
+In the root directory of your AnswerAgentAI project, run:
 Ensure yo uhave setup a hosted zone in AWS.
 // TODO: Add Details
 
@@ -96,7 +96,7 @@ For a list of all environment variables, please refer to the [Environment Variab
 
 ### 7. Deploy the Service
 
-Deploy your AnswerAI service to the created environment:
+Deploy your AnswerAgentAI service to the created environment:
 
 ```bash
 copilot svc deploy --env <env-name>
@@ -148,6 +148,6 @@ copilot svc status --env <env-name>
 2. Check if the correct ports are exposed in your Dockerfile and Copilot configuration.
 3. Ensure your domain's DNS settings are correctly configured to point to the AWS-provided URL.
 
-Remember to regularly update your AnswerAI application and redeploy using Copilot to ensure you have the latest features and security updates.
+Remember to regularly update your AnswerAgentAI application and redeploy using Copilot to ensure you have the latest features and security updates.
 
 <!-- TODO: Add a screenshot of the successful deployment -->

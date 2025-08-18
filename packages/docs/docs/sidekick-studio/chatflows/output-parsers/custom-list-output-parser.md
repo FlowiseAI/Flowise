@@ -6,7 +6,7 @@ description: Parse LLM output as a list of values
 
 ## Overview
 
-The Custom List Output Parser is a powerful tool in AnswerAI that allows you to parse the output of a Language Model (LLM) call as a list of values. This feature is particularly useful when you need to extract structured information from the LLM's response in a list format.
+The Custom List Output Parser is a powerful tool in AnswerAgentAI that allows you to parse the output of a Language Model (LLM) call as a list of values. This feature is particularly useful when you need to extract structured information from the LLM's response in a list format.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Custom List Output Parser is a powerful tool in AnswerAI that allows you to 
 
 ## How to Use
 
-To use the Custom List Output Parser in your AnswerAI workflow:
+To use the Custom List Output Parser in your AnswerAgentAI workflow:
 
 1. Locate the "Custom List Output Parser" node in the node library.
 2. Drag and drop the node onto your canvas.

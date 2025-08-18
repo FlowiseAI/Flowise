@@ -6,11 +6,11 @@ description: Perform calculations on responses using the Calculator tool
 
 ## Overview
 
-The Calculator tool in AnswerAI allows you to perform mathematical calculations within your workflows. This powerful feature enables you to process numerical data, solve equations, and incorporate mathematical operations into your AI-powered applications.
+The Calculator tool in AnswerAgentAI allows you to perform mathematical calculations within your workflows. This powerful feature enables you to process numerical data, solve equations, and incorporate mathematical operations into your AI-powered applications.
 
 ## Key Benefits
 
--   Perform complex calculations without leaving the AnswerAI environment
+-   Perform complex calculations without leaving the AnswerAgentAI environment
 -   Enhance your AI workflows with precise mathematical operations
 -   Easily integrate numerical processing into your chatbots and AI agents
 
@@ -35,4 +35,4 @@ The Calculator tool in AnswerAI allows you to perform mathematical calculations 
 -   If you're not getting the expected results, double-check the input format and ensure that the mathematical expressions are correctly formatted.
 -   For complex calculations, consider breaking them down into smaller steps using multiple Calculator nodes for better clarity and easier debugging.
 
-The Calculator tool in AnswerAI is a versatile addition to your toolkit, allowing you to seamlessly integrate mathematical operations into your AI workflows. Whether you're building a financial analysis bot or a scientific calculator application, this tool provides the computational power you need to deliver accurate and efficient results.
+The Calculator tool in AnswerAgentAI is a versatile addition to your toolkit, allowing you to seamlessly integrate mathematical operations into your AI workflows. Whether you're building a financial analysis bot or a scientific calculator application, this tool provides the computational power you need to deliver accurate and efficient results.

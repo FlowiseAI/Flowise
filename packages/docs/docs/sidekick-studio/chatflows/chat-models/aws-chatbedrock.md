@@ -1,12 +1,12 @@
 ---
-description: AWS ChatBedrock - Chat Models for AnswerAI
+description: AWS ChatBedrock - Chat Models for AnswerAgentAI
 ---
 
 # AWS ChatBedrock
 
 ## Overview
 
-AWS ChatBedrock is a powerful integration in AnswerAI that allows you to use Amazon Web Services (AWS) Bedrock large language models for chat-based applications. This feature provides access to advanced AI models like Claude 3, enabling you to create sophisticated conversational experiences.
+AWS ChatBedrock is a powerful integration in AnswerAgentAI that allows you to use Amazon Web Services (AWS) Bedrock large language models for chat-based applications. This feature provides access to advanced AI models like Claude 3, enabling you to create sophisticated conversational experiences.
 
 ## Key Benefits
 
@@ -16,9 +16,9 @@ AWS ChatBedrock is a powerful integration in AnswerAI that allows you to use Ama
 
 ## How to Use
 
-Follow these steps to set up and use AWS ChatBedrock in AnswerAI:
+Follow these steps to set up and use AWS ChatBedrock in AnswerAgentAI:
 
-1. Navigate to the Chat Models section in AnswerAI.
+1. Navigate to the Chat Models section in AnswerAgentAI.
 2. Locate and select the "AWS ChatBedrock" node.
 
 3. Configure the following settings:
@@ -35,7 +35,7 @@ Follow these steps to set up and use AWS ChatBedrock in AnswerAI:
     - Max Tokens to Sample: Specify the maximum number of tokens for the model to generate (default: 200).
     - Allow Image Uploads: Enable this option for multi-modal interactions with compatible Claude 3 models.
 
-5. Connect the AWS ChatBedrock node to other components in your AnswerAI workflow.
+5. Connect the AWS ChatBedrock node to other components in your AnswerAgentAI workflow.
 
 6. Run your workflow to start using AWS ChatBedrock for generating responses.
 
@@ -49,7 +49,7 @@ Follow these steps to set up and use AWS ChatBedrock in AnswerAI:
 2. Experiment with different temperature values to find the right balance between creativity and coherence in responses.
 3. Adjust the Max Tokens to Sample based on the desired length of the model's output.
 4. When using Claude 3 models, enable the "Allow Image Uploads" option for multi-modal capabilities in compatible chains and agents.
-5. If you have specific AWS credentials, make sure to set them up in the AnswerAI credential manager for secure access.
+5. If you have specific AWS credentials, make sure to set them up in the AnswerAgentAI credential manager for secure access.
 
 ## Troubleshooting
 
@@ -60,7 +60,7 @@ Follow these steps to set up and use AWS ChatBedrock in AnswerAI:
 
 2. Credential issues:
 
-    - Double-check that your AWS API credentials are correctly set up in AnswerAI.
+    - Double-check that your AWS API credentials are correctly set up in AnswerAgentAI.
     - If using environment-based credentials, ensure they are properly configured on your system.
 
 3. Unexpected responses:
@@ -72,4 +72,4 @@ Follow these steps to set up and use AWS ChatBedrock in AnswerAI:
     - Confirm that you're using a Claude 3 model and have enabled the "Allow Image Uploads" option.
     - Check that you're using a compatible chain or agent (e.g., LLMChain, Conversation Chain, ReAct Agent, or Conversational Agent).
 
-By following this guide, you'll be able to harness the power of AWS ChatBedrock models in your AnswerAI workflows, creating sophisticated chat-based applications with ease.
+By following this guide, you'll be able to harness the power of AWS ChatBedrock models in your AnswerAgentAI workflows, creating sophisticated chat-based applications with ease.

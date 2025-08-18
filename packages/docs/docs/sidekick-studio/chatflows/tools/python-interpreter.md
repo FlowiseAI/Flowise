@@ -6,17 +6,17 @@ description: Execute Python code in a sandbox environment
 
 ## Overview
 
-The Python Interpreter tool in AnswerAI allows you to execute Python code within a secure sandbox environment. This powerful feature enables you to run Python scripts directly within your workflows, expanding the capabilities of your AI agents.
+The Python Interpreter tool in AnswerAgentAI allows you to execute Python code within a secure sandbox environment. This powerful feature enables you to run Python scripts directly within your workflows, expanding the capabilities of your AI agents.
 
 ## Key Benefits
 
--   Execute Python code safely within AnswerAI workflows
+-   Execute Python code safely within AnswerAgentAI workflows
 -   Access a wide range of Python libraries and functions
 -   Integrate complex computations and data processing into your AI agents
 
 ## How to Use
 
-1. Add the Python Interpreter node to your canvas in the AnswerAI Studio.
+1. Add the Python Interpreter node to your canvas in the AnswerAgentAI Studio.
 2. Configure the tool settings:
     - Tool Name: Enter a custom name for the tool (default: "python_interpreter")
     - Tool Description: Provide a description of the tool's functionality (a default description is provided)
@@ -56,4 +56,4 @@ print(f"The area of a circle with radius {radius} is {area:.2f}")
 
 This script will calculate and print the area of a circle with a radius of 5 units.
 
-Remember, the Python Interpreter tool is a powerful feature that allows you to extend the capabilities of your AnswerAI workflows with custom Python code. Use it wisely to enhance your AI agents' functionality and problem-solving abilities.
+Remember, the Python Interpreter tool is a powerful feature that allows you to extend the capabilities of your AnswerAgentAI workflows with custom Python code. Use it wisely to enhance your AI agents' functionality and problem-solving abilities.

@@ -6,7 +6,7 @@ description: Cache generated Embeddings in memory for improved performance and e
 
 ## Overview
 
-The InMemory Embedding Cache feature in AnswerAI allows you to store generated embeddings in local memory. This caching mechanism improves performance by avoiding the need to recompute embeddings for previously processed text, leading to faster response times and reduced computational overhead.
+The InMemory Embedding Cache feature in AnswerAgentAI allows you to store generated embeddings in local memory. This caching mechanism improves performance by avoiding the need to recompute embeddings for previously processed text, leading to faster response times and reduced computational overhead.
 
 ## Key Benefits
 
@@ -16,15 +16,15 @@ The InMemory Embedding Cache feature in AnswerAI allows you to store generated e
 
 ## How to Use
 
-1. Add the InMemory Embedding Cache node to your AnswerAI workflow:
+1. Add the InMemory Embedding Cache node to your AnswerAgentAI workflow:
  <figure><img src="/.gitbook/assets/screenshots/inmemory embedding cache.png" alt="" /><figcaption><p>In Memory Embedding Cache &#x26; Drop UI</p></figcaption></figure><!-- TODO: Screenshot of adding InMemory Embedding Cache node to the workflow -->
 
 2. Configure the InMemory Embedding Cache node:
 
     - Connect an Embeddings node to the "Embeddings" input.
     - (Optional) Specify a "Namespace" for the cache.
-      <!-- TODO: Screenshot showing the configuration of the InMemory Embedding Cache node -->
-      <figure><img src="/.gitbook/assets/screenshots/inmemory embedding cache configuration.png" alt="" /><figcaption><p>In Memory Embedding Cache Configuration &#x26; Drop UI</p></figcaption></figure>
+          <!-- TODO: Screenshot showing the configuration of the InMemory Embedding Cache node -->
+          <figure><img src="/.gitbook/assets/screenshots/inmemory embedding cache configuration.png" alt="" /><figcaption><p>In Memory Embedding Cache Configuration &#x26; Drop UI</p></figcaption></figure>
 
 3. Connect the InMemory Embedding Cache node to other nodes in your workflow that require embeddings:
        <!-- TODO: Screenshot showing the connection between InMemory Embedding Cache and other relevant nodes -->
@@ -76,9 +76,9 @@ The InMemory Embedding Cache feature in AnswerAI allows you to store generated e
     - Check that the InMemory Embedding Cache node is correctly connected in your workflow.
 
 4. Cache not persisting between sessions:
-    - Remember that the InMemory Embedding Cache is cleared when the AnswerAI app is restarted.
+    - Remember that the InMemory Embedding Cache is cleared when the AnswerAgentAI app is restarted.
     - For persistent caching across restarts, consider implementing a database-backed caching solution.
 
-Remember that the InMemory Embedding Cache is cleared when the AnswerAI app is restarted. For long-term persistence, consider implementing a database-backed caching solution in addition to or instead of the InMemory Embedding Cache.
+Remember that the InMemory Embedding Cache is cleared when the AnswerAgentAI app is restarted. For long-term persistence, consider implementing a database-backed caching solution in addition to or instead of the InMemory Embedding Cache.
 
-By leveraging the InMemory Embedding Cache feature, you can significantly enhance the performance and efficiency of your AnswerAI workflows, especially for tasks involving repetitive text processing or embedding-based operations.
+By leveraging the InMemory Embedding Cache feature, you can significantly enhance the performance and efficiency of your AnswerAgentAI workflows, especially for tasks involving repetitive text processing or embedding-based operations.

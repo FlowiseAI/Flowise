@@ -6,17 +6,17 @@ description: Upsert embedded data and perform similarity search using Faiss libr
 
 ## Overview
 
-The Faiss Vector Store node in AnswerAI allows you to store and retrieve high-dimensional vectors efficiently using the Faiss library developed by Meta. This node is particularly useful for similarity search operations on large datasets of embedded documents.
+The Faiss Vector Store node in AnswerAgentAI allows you to store and retrieve high-dimensional vectors efficiently using the Faiss library developed by Meta. This node is particularly useful for similarity search operations on large datasets of embedded documents.
 
 ## Key Benefits
 
 -   Fast and efficient similarity search on large datasets
--   Seamless integration with other AnswerAI components
+-   Seamless integration with other AnswerAgentAI components
 -   Supports both document storage and retrieval operations
 
 ## How to Use
 
-1. Add the Faiss Vector Store node to your AnswerAI canvas.
+1. Add the Faiss Vector Store node to your AnswerAgentAI canvas.
 2. Connect the required input nodes:
 
     - Document: (Optional) Connect a Document node if you want to add new documents to the vector store.
@@ -45,7 +45,7 @@ The Faiss Vector Store node in AnswerAI allows you to store and retrieve high-di
 
 1. If you encounter an error related to the Faiss index, ensure that the Base Path is correct and that the directory exists.
 2. If the similarity search returns fewer results than expected, check if the Top K value is set appropriately and if your index contains enough documents.
-3. In case of "illegal invocation" errors, make sure you're using the latest version of AnswerAI, as this issue has been addressed in recent updates.
+3. In case of "illegal invocation" errors, make sure you're using the latest version of AnswerAgentAI, as this issue has been addressed in recent updates.
 
 <!-- TODO: Add a screenshot showing the configuration panel of the Faiss Vector Store node -->
 <figure><img src="/.gitbook/assets/screenshots/faissconfiguration.png" alt="" /><figcaption><p> Faiss Vector Store Configuration Panel    &#x26; Drop UI</p></figcaption></figure>

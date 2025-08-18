@@ -1,12 +1,12 @@
 ---
-description: Manage Google Calendar events with AnswerAI tools
+description: Manage Google Calendar events with AnswerAgentAI tools
 ---
 
 # Google Calendar Tools
 
 ## Overview
 
-The Google Calendar Tools suite enables you to create, update, and delete calendar events directly from your AnswerAI workflows. These powerful integrations allow you to build AI assistants that can manage schedules, book appointments, and automate calendar management tasks.
+The Google Calendar Tools suite enables you to create, update, and delete calendar events directly from your AnswerAgentAI workflows. These powerful integrations allow you to build AI assistants that can manage schedules, book appointments, and automate calendar management tasks.
 
 ## Available Tools
 

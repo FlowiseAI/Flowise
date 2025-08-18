@@ -1,5 +1,5 @@
 ---
-description: Learn how to use external API integrations with AnswerAI
+description: Learn how to use external API integrations with AnswerAgentAI
 ---
 
 # Interacting with API

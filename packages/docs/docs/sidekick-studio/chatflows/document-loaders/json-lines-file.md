@@ -1,12 +1,12 @@
 ---
-description: Load and process data from JSON Lines files in AnswerAI
+description: Load and process data from JSON Lines files in AnswerAgentAI
 ---
 
 # JSON Lines File Loader
 
 ## Overview
 
-The JSON Lines File Loader is a powerful feature in AnswerAI that allows you to load and process data from JSON Lines (.jsonl) files. This tool is particularly useful when working with large datasets or when you need to extract specific information from structured JSON data.
+The JSON Lines File Loader is a powerful feature in AnswerAgentAI that allows you to load and process data from JSON Lines (.jsonl) files. This tool is particularly useful when working with large datasets or when you need to extract specific information from structured JSON data.
 
 ## Key Benefits
 
@@ -16,11 +16,11 @@ The JSON Lines File Loader is a powerful feature in AnswerAI that allows you to 
 
 ## How to Use
 
-Follow these steps to use the JSON Lines File Loader in AnswerAI:
+Follow these steps to use the JSON Lines File Loader in AnswerAgentAI:
 
-1. In the AnswerAI interface, locate and select the "Json Lines File" node from the "Document Loaders" category.
+1. In the AnswerAgentAI interface, locate and select the "Json Lines File" node from the "Document Loaders" category.
 
-<!-- TODO: Screenshot of the JSON Lines File node in the AnswerAI interface -->
+<!-- TODO: Screenshot of the JSON Lines File node in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/jsonlinesfile.png" alt="" /><figcaption><p> JSON Lines File Node Configuration &#x26; Drop UI</p></figcaption></figure>
 
 2. Configure the node by setting the following parameters:
@@ -38,7 +38,7 @@ Follow these steps to use the JSON Lines File Loader in AnswerAI:
 <!-- TODO: Screenshot of the configured JSON Lines File node with all parameters filled out -->
 <figure><img src="/.gitbook/assets/screenshots/jsonlinesfileinaworkflow.png" alt="" /><figcaption><p> JSON Lines File Node In A Workflow &#x26; Drop UI</p></figcaption></figure>
 
-3. Connect the JSON Lines File node to other nodes in your AnswerAI workflow as needed.
+3. Connect the JSON Lines File node to other nodes in your AnswerAgentAI workflow as needed.
 
 4. Run your workflow to process the JSON Lines file and use the extracted data in subsequent steps.
 
@@ -50,7 +50,7 @@ Follow these steps to use the JSON Lines File Loader in AnswerAI:
 
 3. **Metadata Management**: Use the "Additional Metadata" field to add context to your extracted data, and leverage the "Omit Metadata Keys" option to keep your output clean and focused on the most important information.
 
-4. **File Storage**: For large files or frequently used datasets, consider using AnswerAI's file storage feature. This allows you to easily reuse the same file across multiple workflows.
+4. **File Storage**: For large files or frequently used datasets, consider using AnswerAgentAI's file storage feature. This allows you to easily reuse the same file across multiple workflows.
 
 ## Troubleshooting
 
@@ -60,6 +60,6 @@ Follow these steps to use the JSON Lines File Loader in AnswerAI:
 
 3. **Unexpected metadata**: If you're seeing unwanted metadata in your output, use the "Omit Metadata Keys" field to exclude specific keys, or use "\*" to omit all default metadata.
 
-4. **Performance issues with large files**: If processing large files is slow, try using a text splitter to break the content into smaller chunks, or consider pre-processing your data to reduce its size before loading it into AnswerAI.
+4. **Performance issues with large files**: If processing large files is slow, try using a text splitter to break the content into smaller chunks, or consider pre-processing your data to reduce its size before loading it into AnswerAgentAI.
 
-By following this guide, you should be able to effectively use the JSON Lines File Loader in AnswerAI to process and extract valuable information from your JSON Lines files.
+By following this guide, you should be able to effectively use the JSON Lines File Loader in AnswerAgentAI to process and extract valuable information from your JSON Lines files.

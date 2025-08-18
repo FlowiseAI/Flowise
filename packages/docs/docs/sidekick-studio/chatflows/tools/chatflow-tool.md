@@ -59,4 +59,4 @@ The Chatflow Tool allows you to use another chatflow as a tool within your curre
     - Review the description and input settings to make sure they align with the selected chatflow's purpose.
     - Test the selected chatflow independently to ensure it's functioning as expected.
 
-Remember that the Chatflow Tool allows you to leverage the power of existing chatflows within new workflows, promoting code reuse and modular design in your AnswerAI projects.
+Remember that the Chatflow Tool allows you to leverage the power of existing chatflows within new workflows, promoting code reuse and modular design in your AnswerAgentAI projects.

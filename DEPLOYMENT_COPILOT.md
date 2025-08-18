@@ -10,7 +10,7 @@ ${copilot-env} = AWS copilot environment name
 -   Route53 Hosted zone configured with `${copilot-env}.theanswer.ai` (make sure the NS records are shared with the AnswerAI team)
 -   Environment variables for the application saved into a `copilot-${copilot-env}.env`
 -   Install saml2aws: https://github.com/Versent/saml2aws
--   If you are using Okta you need to Run saml2aws login
+-   If you are using Okta you need to Run saml2aws login with (saml2aws login --role=[SPECIFIC IAM ROLE])
 -   duplicate the manifest folder for staging `copilot/environments/staging` and update the folder name to be the ${copilot-env} value and update the name in the manifest.yaml file to have the same ${copilot-env} value
 -   before running commands run this in the terminal `export AWS_PROFILE=saml`
     Use the template for env variables: ./copilot._environment_.env.template

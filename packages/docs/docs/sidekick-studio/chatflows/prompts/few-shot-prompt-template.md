@@ -16,7 +16,7 @@ The Few Shot Prompt Template node allows you to create dynamic prompt templates 
 
 ## How to Use
 
-1. Add the "Few Shot Prompt Template" node to your AnswerAI canvas.
+1. Add the "Few Shot Prompt Template" node to your AnswerAgentAI canvas.
 2. Configure the node with the following inputs:
 
     a. Examples: Provide a JSON array of example input-output pairs.
@@ -110,4 +110,4 @@ This setup creates a prompt template that demonstrates how to generate concise a
 <!-- TODO: Add a screenshot showing the Few Shot Prompt Template node configuration panel with one of the example use cases filled in -->
 <figure><img src="/.gitbook/assets/screenshots/fewshotprompt.png" alt="" /><figcaption><p> Few Shot Template Node Configuration &#x26; Drop UI</p></figcaption></figure>
 
-By using these example configurations, you can create powerful Few Shot Prompt Templates tailored to various tasks and domains in AnswerAI.
+By using these example configurations, you can create powerful Few Shot Prompt Templates tailored to various tasks and domains in AnswerAgentAI.

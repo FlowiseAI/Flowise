@@ -6,7 +6,7 @@ description: Enhance document retrieval with embeddings-based filtering
 
 ## Overview
 
-The Embeddings Filter Retriever is a powerful tool in AnswerAI that enhances document retrieval by using embeddings to filter out documents unrelated to the query. This retriever combines the efficiency of vector store retrieval with the precision of embeddings-based filtering, resulting in more relevant and focused document retrieval.
+The Embeddings Filter Retriever is a powerful tool in AnswerAgentAI that enhances document retrieval by using embeddings to filter out documents unrelated to the query. This retriever combines the efficiency of vector store retrieval with the precision of embeddings-based filtering, resulting in more relevant and focused document retrieval.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Embeddings Filter Retriever is a powerful tool in AnswerAI that enhances doc
 
 ## How to Use
 
-1. Add the Embeddings Filter Retriever node to your AnswerAI workflow canvas.
+1. Add the Embeddings Filter Retriever node to your AnswerAgentAI workflow canvas.
 2. Connect a Vector Store Retriever to the "Vector Store Retriever" input.
 3. Connect an Embeddings model to the "Embeddings" input.
 4. (Optional) Specify a query in the "Query" input field. If left empty, the user's question will be used.

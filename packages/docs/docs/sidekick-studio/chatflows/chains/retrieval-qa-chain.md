@@ -1,12 +1,12 @@
 ---
-description: Learn about the Retrieval QA Chain in AnswerAI and how it differs from the Conversational Retrival QA Chain
+description: Learn about the Retrieval QA Chain in AnswerAgentAI and how it differs from the Conversational Retrival QA Chain
 ---
 
 # Retrieval QA Chain
 
 ## Overview
 
-The Retrieval QA Chain in AnswerAI is a specialized chain designed to answer questions based on retrieved documents. Unlike the [Conversational Retrival QA Chain](./conversational-retrieval-qa-chain.md), this chain focuses on providing accurate answers from a knowledge base without maintaining conversation history.
+The Retrieval QA Chain in AnswerAgentAI is a specialized chain designed to answer questions based on retrieved documents. Unlike the [Conversational Retrival QA Chain](./conversational-retrieval-qa-chain.md), this chain focuses on providing accurate answers from a knowledge base without maintaining conversation history.
 
 ## Key Differences from Conversational Chain
 
@@ -36,7 +36,7 @@ Use this chain when:
 
 ## How It Works
 
-1. Query Reception: The chain receives a question via the AnswerAI API.
+1. Query Reception: The chain receives a question via the AnswerAgentAI API.
 2. Document Retrieval: Relevant documents are fetched from the vector store.
 3. Context Preparation: Retrieved documents are prepared as context for the language model.
 4. Answer Generation: The language model generates an answer based on the question and retrieved context.
@@ -48,7 +48,7 @@ Use this chain when:
 2. Vector Store Retriever: Fetches relevant documents based on the query.
 3. Input Moderation (Optional): Ensures safe and appropriate inputs.
 
-## Using the Retrieval QA Chain with AnswerAI API
+## Using the Retrieval QA Chain with AnswerAgentAI API
 
 ### Basic Usage
 
@@ -144,4 +144,4 @@ print(technical_support("What are the system requirements for the latest softwar
 -   Retrieval Dependence: The quality of answers heavily depends on the quality and relevance of retrieved documents.
 -   Single-Query Focus: May not perform as well for complex queries that require multi-step reasoning.
 
-By leveraging the Retrieval QA Chain in AnswerAI, you can create powerful question-answering systems that provide accurate, knowledge-based responses without the need for maintaining conversation history. This makes it ideal for scenarios where factual, consistent information retrieval is more important than contextual conversation.
+By leveraging the Retrieval QA Chain in AnswerAgentAI, you can create powerful question-answering systems that provide accurate, knowledge-based responses without the need for maintaining conversation history. This makes it ideal for scenarios where factual, consistent information retrieval is more important than contextual conversation.

@@ -6,7 +6,7 @@ description: Execute HTTP GET requests with the Requests Get tool
 
 ## Overview
 
-The Requests Get tool allows you to execute HTTP GET requests within your AnswerAI workflows. This powerful feature enables your agents to interact with external APIs and retrieve data from specified URLs.
+The Requests Get tool allows you to execute HTTP GET requests within your AnswerAgentAI workflows. This powerful feature enables your agents to interact with external APIs and retrieve data from specified URLs.
 
 ## Key Benefits
 
@@ -41,4 +41,4 @@ The Requests Get tool allows you to execute HTTP GET requests within your Answer
 -   For APIs requiring authentication, verify that you've included the correct headers and that your authentication credentials are valid.
 -   If the agent isn't using the Requests Get tool when expected, review and refine the Description field to provide clearer instructions.
 
-Remember that the Requests Get tool is a powerful way to extend your AnswerAI workflows by incorporating external data. Use it wisely to create more dynamic and informative agent interactions.
+Remember that the Requests Get tool is a powerful way to extend your AnswerAgentAI workflows by incorporating external data. Use it wisely to create more dynamic and informative agent interactions.

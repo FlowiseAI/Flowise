@@ -1,24 +1,24 @@
 ---
-description: Custom Document Loader in AnswerAI
+description: Custom Document Loader in AnswerAgentAI
 ---
 
 # Custom Document Loader
 
 ## Overview
 
-The Custom Document Loader is a powerful feature in AnswerAI that allows you to create custom functions for loading documents. This feature provides flexibility in handling various document formats and sources, enabling you to tailor the document loading process to your specific needs.
+The Custom Document Loader is a powerful feature in AnswerAgentAI that allows you to create custom functions for loading documents. This feature provides flexibility in handling various document formats and sources, enabling you to tailor the document loading process to your specific needs.
 
 ## Key Benefits
 
 -   Customizable document loading: Create custom functions to load documents from any source or format.
 -   Flexible output options: Choose between returning document objects or plain text.
--   Integration with AnswerAI variables: Utilize input variables and system variables in your custom functions.
+-   Integration with AnswerAgentAI variables: Utilize input variables and system variables in your custom functions.
 
 ## How to Use
 
 1. Navigate to the Custom Document Loader in the Document Loaders category.
 
-<!-- TODO: Screenshot of the Custom Document Loader node in the AnswerAI interface -->
+<!-- TODO: Screenshot of the Custom Document Loader node in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/customdocumentloader.png" alt="" /><figcaption><p> Custom Document Loader  &#x26; Drop UI</p></figcaption></figure>
 
 2. Configure the Input Variables (optional):
@@ -39,7 +39,7 @@ The Custom Document Loader is a powerful feature in AnswerAI that allows you to 
 
     - Choose between "Document" or "Text" in the output options.
 
-5. Connect the Custom Document Loader to other nodes in your AnswerAI workflow.
+5. Connect the Custom Document Loader to other nodes in your AnswerAgentAI workflow.
 
 6. Run your workflow to test the custom document loading function.
 
@@ -65,11 +65,11 @@ The Custom Document Loader is a powerful feature in AnswerAI that allows you to 
 
 3. Dependency issues:
 
-    - If you need to use external dependencies, make sure they are allowed in your AnswerAI environment.
+    - If you need to use external dependencies, make sure they are allowed in your AnswerAgentAI environment.
     - Check the `TOOL_FUNCTION_BUILTIN_DEP` and `TOOL_FUNCTION_EXTERNAL_DEP` environment variables for available dependencies.
 
 4. Errors in the custom function:
-    - Use console.log statements to debug your function (output will be visible in the AnswerAI logs).
+    - Use console.log statements to debug your function (output will be visible in the AnswerAgentAI logs).
     - Ensure that all asynchronous operations are properly handled using async/await or promises.
 
 ## Example Custom Function
@@ -91,4 +91,4 @@ return [
 
 This function returns a single document object with page content and metadata. You can expand on this example to load documents from files, databases, or APIs based on your specific requirements.
 
-Remember to test your custom document loader thoroughly to ensure it integrates smoothly with the rest of your AnswerAI workflow.
+Remember to test your custom document loader thoroughly to ensure it integrates smoothly with the rest of your AnswerAgentAI workflow.

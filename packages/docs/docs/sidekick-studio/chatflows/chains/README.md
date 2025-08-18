@@ -1,10 +1,10 @@
 ---
-description: LangChain Chain Nodes - A Fundamental Building Block in AnswerAI
+description: LangChain Chain Nodes - A Fundamental Building Block in AnswerAgentAI
 ---
 
 # Chains
 
-Chains are one of the main starting points for every new LLM route, chatbot, and application being developed in AnswerAI, alongside agents and sidekick teams. They form a crucial foundation for creating sophisticated AI-powered solutions.
+Chains are one of the main starting points for every new LLM route, chatbot, and application being developed in AnswerAgentAI, alongside agents and sidekick teams. They form a crucial foundation for creating sophisticated AI-powered solutions.
 
 ## Overview
 
@@ -20,21 +20,21 @@ In the context of large language models and AI applications, "chains" refer to s
 
 4. **Context Preservation**: By maintaining a history of interactions or operations, chains ensure that the AI system understands the broader context of a conversation or task.
 
-## Importance in AnswerAI
+## Importance in AnswerAgentAI
 
-Chains play a crucial role in AnswerAI for several reasons:
+Chains play a crucial role in AnswerAgentAI for several reasons:
 
 1. **Starting Point for Development**: When creating new LLM routes, chatbots, or applications, chains often serve as the initial framework, providing a structured way to design the flow of information and operations.
 
-2. **Customization and Flexibility**: AnswerAI offers various types of chains that can be combined and customized to suit specific use cases, from simple question-answering to complex multi-step reasoning.
+2. **Customization and Flexibility**: AnswerAgentAI offers various types of chains that can be combined and customized to suit specific use cases, from simple question-answering to complex multi-step reasoning.
 
-3. **Integration with Other Components**: Chains in AnswerAI can easily integrate with other powerful features like vector stores, APIs, and databases, enabling the creation of sophisticated AI solutions.
+3. **Integration with Other Components**: Chains in AnswerAgentAI can easily integrate with other powerful features like vector stores, APIs, and databases, enabling the creation of sophisticated AI solutions.
 
 4. **Scalability**: As your AI applications grow in complexity, chains provide a scalable architecture that can be extended and modified to accommodate new features and capabilities.
 
-## Types of Chains in AnswerAI
+## Types of Chains in AnswerAgentAI
 
-AnswerAI offers a variety of chain types to suit different needs:
+AnswerAgentAI offers a variety of chain types to suit different needs:
 
 -   [GET API Chain](get-api-chain.md)
 -   [OpenAPI Chain](openapi-chain.md)
@@ -53,7 +53,7 @@ Each of these chains serves specific purposes and can be combined to create powe
 
 ## Getting Started
 
-To begin using chains in AnswerAI:
+To begin using chains in AnswerAgentAI:
 
 1. Identify the type of task or application you want to build.
 2. Choose the appropriate chain type(s) that best suit your needs.

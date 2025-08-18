@@ -6,7 +6,7 @@ description: Split text into chunks using token-based methods
 
 ## Overview
 
-The Token Text Splitter is a powerful tool in AnswerAI that allows you to split long pieces of text into smaller, more manageable chunks. This splitter works by first converting the text into BPE (Byte Pair Encoding) tokens, then splitting these tokens into chunks, and finally converting the tokens within each chunk back into text.
+The Token Text Splitter is a powerful tool in AnswerAgentAI that allows you to split long pieces of text into smaller, more manageable chunks. This splitter works by first converting the text into BPE (Byte Pair Encoding) tokens, then splitting these tokens into chunks, and finally converting the tokens within each chunk back into text.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Token Text Splitter is a powerful tool in AnswerAI that allows you to split 
 
 ## How to Use
 
-1. Add the Token Text Splitter node to your AnswerAI workflow canvas.
+1. Add the Token Text Splitter node to your AnswerAgentAI workflow canvas.
 2. Configure the node with the following parameters:
 
     a. Encoding Name:
@@ -51,4 +51,4 @@ The Token Text Splitter is a powerful tool in AnswerAI that allows you to split 
 2. If you encounter performance issues, try reducing the chunk size or using a different encoding that may be more efficient for your specific text.
 3. Ensure that the encoding you choose is compatible with the models or processes you'll be using later in your workflow.
 
-By using the Token Text Splitter, you can efficiently prepare large volumes of text for further processing in your AnswerAI workflows, ensuring that your AI models receive optimally sized input for the best possible performance.
+By using the Token Text Splitter, you can efficiently prepare large volumes of text for further processing in your AnswerAgentAI workflows, ensuring that your AI models receive optimally sized input for the best possible performance.

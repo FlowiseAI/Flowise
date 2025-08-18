@@ -6,7 +6,7 @@ description: Use HyDE retriever to retrieve relevant documents from a vector sto
 
 ## Overview
 
-The HyDE (Hypothetical Document Embeddings) Retriever is a powerful tool in AnswerAI that enhances document retrieval from a vector store. It uses a language model to generate a hypothetical answer to a query, which is then used to find relevant documents. This approach can significantly improve the quality and relevance of retrieved documents, especially for complex or nuanced queries.
+The HyDE (Hypothetical Document Embeddings) Retriever is a powerful tool in AnswerAgentAI that enhances document retrieval from a vector store. It uses a language model to generate a hypothetical answer to a query, which is then used to find relevant documents. This approach can significantly improve the quality and relevance of retrieved documents, especially for complex or nuanced queries.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The HyDE (Hypothetical Document Embeddings) Retriever is a powerful tool in Answ
 
 ## How to Use
 
-1. Add the HyDE Retriever node to your AnswerAI canvas.
+1. Add the HyDE Retriever node to your AnswerAgentAI canvas.
 2. Connect a Language Model node to the "Language Model" input.
 3. Connect a Vector Store node to the "Vector Store" input.
 4. (Optional) Provide a specific query in the "Query" field. If left empty, the user's question will be used.

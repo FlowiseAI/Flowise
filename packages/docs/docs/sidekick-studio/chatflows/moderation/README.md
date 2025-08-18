@@ -1,10 +1,10 @@
 ---
-description: AnswerAI Moderation Nodes
+description: AnswerAgentAI Moderation Nodes
 ---
 
 # Moderation Nodes
 
-Moderation nodes play a crucial role in maintaining the integrity and safety of your AnswerAI workflows. They analyze text content to identify and flag potentially problematic material, helping to create a safer and more controlled environment for your applications.
+Moderation nodes play a crucial role in maintaining the integrity and safety of your AnswerAgentAI workflows. They analyze text content to identify and flag potentially problematic material, helping to create a safer and more controlled environment for your applications.
 
 ## Key Benefits
 
@@ -14,7 +14,7 @@ Moderation nodes play a crucial role in maintaining the integrity and safety of 
 
 ## Available Moderation Nodes
 
-AnswerAI offers two types of moderation nodes:
+AnswerAgentAI offers two types of moderation nodes:
 
 -   [OpenAI Moderation](openai-moderation.md)
 -   [Simple Prompt Moderation](simple-prompt-moderation.md)

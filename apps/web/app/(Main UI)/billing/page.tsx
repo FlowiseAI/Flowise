@@ -19,12 +19,6 @@ const Page = () => {
                 <Box sx={{ mt: 4 }}>
                     <CostCalculator />
                 </Box>
-                {/* <Box sx={{ mt: 4 }}>
-                    <PurchaseCredits />
-                </Box> */}
-                {/* <Box sx={{ mt: 4 }}>
-                    <PurchaseSubscription />
-                </Box> */}
             </Box>
         </Container>
     )

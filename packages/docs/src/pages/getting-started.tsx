@@ -1,8 +1,9 @@
 import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
+import JsonLd from '@site/src/components/JsonLd'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -74,7 +75,7 @@ function ThreeSteps() {
                             <div className={styles.stepNumber}>2</div>
                             <h3>Sign Up for Free</h3>
                             <p>
-                                Create your AnswerAI account and get instant access to specialized AI sidekicks, chat features, and the
+                                Create your AnswerAgentAI account and get instant access to specialized AI sidekicks, chat features, and the
                                 visual Studio builder.
                             </p>
                             <div className={styles.appFeatures}>
@@ -381,11 +382,29 @@ export default function GettingStarted(): JSX.Element {
     return (
         <div data-theme='dark'>
             <Layout
-                title='Get Started with AnswerAI - 3 Simple Steps'
+                title='Get Started with AnswerAgentAI - 3 Simple Steps'
                 description='Transform your productivity in minutes. Install the Chrome extension, sign up for free, and start chatting with AI sidekicks that understand your workflow.'
             >
+                <JsonLd
+                    data={{
+                        '@context': 'https://schema.org',
+                        '@type': 'HowTo',
+                        name: 'Get Started with AnswerAgent - 3 Simple Steps',
+                        description:
+                            'Install the Chrome extension, sign up for free, and start chatting with AI sidekicks that understand your workflow.',
+                        step: [
+                            { '@type': 'HowToStep', name: 'Install Extension' },
+                            { '@type': 'HowToStep', name: 'Sign Up' },
+                            { '@type': 'HowToStep', name: 'Start Chatting' }
+                        ],
+                        mainEntityOfPage: {
+                            '@type': 'WebPage',
+                            '@id': 'https://answeragent.ai/getting-started'
+                        }
+                    }}
+                />
                 <GettingStartedHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <ThreeSteps />
                     <LearningResources />

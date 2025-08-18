@@ -6,7 +6,7 @@ description: Parse LLM output as a comma-separated list of values
 
 ## Overview
 
-The CSV Output Parser is a powerful tool in AnswerAI that transforms the output of a language model into a comma-separated list of values. This parser is particularly useful when you need to generate structured data from LLM responses or normalize output from chat models and LLMs.
+The CSV Output Parser is a powerful tool in AnswerAgentAI that transforms the output of a language model into a comma-separated list of values. This parser is particularly useful when you need to generate structured data from LLM responses or normalize output from chat models and LLMs.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The CSV Output Parser is a powerful tool in AnswerAI that transforms the output 
 
 ## How to Use
 
-1. Add the CSV Output Parser node to your AnswerAI workflow canvas.
+1. Add the CSV Output Parser node to your AnswerAgentAI workflow canvas.
 2. Connect the output of your LLM or chat model to the input of the CSV Output Parser.
 3. Configure the parser settings:
     - **Autofix**: Enable this option if you want the parser to attempt fixing errors automatically.
@@ -40,4 +40,4 @@ The CSV Output Parser is a powerful tool in AnswerAI that transforms the output 
 2. **Issue**: Unexpected empty values in the parsed list
    **Solution**: Review your LLM prompt to ensure it's not generating empty list items. You may need to post-process the parsed list to remove empty values.
 
-By leveraging the CSV Output Parser in your AnswerAI workflows, you can efficiently transform unstructured LLM outputs into structured, comma-separated lists, enabling smoother data processing and analysis in your projects.
+By leveraging the CSV Output Parser in your AnswerAgentAI workflows, you can efficiently transform unstructured LLM outputs into structured, comma-separated lists, enabling smoother data processing and analysis in your projects.

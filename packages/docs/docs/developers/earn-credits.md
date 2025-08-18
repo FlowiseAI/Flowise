@@ -1,6 +1,6 @@
 ---
 title: Earn Credits - Developer Rewards
-description: Detailed guide to earning credits through AnswerAI contributions - transparent tracking, reward tiers, and future benefits
+description: Detailed guide to earning credits through AnswerAgentAI contributions - transparent tracking, reward tiers, and future benefits
 ---
 
 # Earn Credits Through Contributions
@@ -9,7 +9,7 @@ Your work has value, and we're committed to ensuring you're fairly compensated f
 
 ## 💰 Credit System Overview
 
-We track every meaningful contribution transparently on the blockchain. Credits earned during the Alpha Sprint will unlock increasing benefits as AnswerAI grows.
+We track every meaningful contribution transparently on the blockchain. Credits earned during the Alpha Sprint will unlock increasing benefits as AnswerAgentAI grows.
 
 ### Why Credits Matter
 
@@ -43,10 +43,6 @@ We track every meaningful contribution transparently on the blockchain. Credits 
 | **Video Tutorials**   | 50-200 credits | Educational content creation             |
 
 ### Multipliers & Bonuses
-
-#### Alpha Sprint Bonus
-
-**2x credits** for all contributions during the Alpha Sprint (Now - July 21st)
 
 #### Quality Multipliers
 
@@ -269,15 +265,6 @@ If you believe your credits are incorrect:
 -   Detailed contribution stories
 -   Technical deep-dives on their work
 -   Community Q&A sessions
-
-### Alpha Sprint Finale
-
-**July 21st Recognition Event:**
-
--   Public credit leaderboard reveal
--   Individual contributor showcases
--   Future roadmap presentations
--   Reward distribution ceremony
 
 ### Annual Contributors Conference
 

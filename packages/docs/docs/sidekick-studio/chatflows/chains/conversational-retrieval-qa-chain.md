@@ -1,12 +1,12 @@
 ---
-description: Learn about the Conversational Retrieval QA Chain, a powerful tool for document-based Q&A with conversation history in AnswerAI
+description: Learn about the Conversational Retrieval QA Chain, a powerful tool for document-based Q&A with conversation history in AnswerAgentAI
 ---
 
 # Conversational Retrieval QA Chain
 
 ## Overview
 
-The Conversational Retrieval QA Chain is an advanced chain in AnswerAI that combines document retrieval capabilities with conversation history management. This chain is designed to provide context-aware answers to user queries by referencing a large corpus of documents while maintaining the flow of a conversation.
+The Conversational Retrieval QA Chain is an advanced chain in AnswerAgentAI that combines document retrieval capabilities with conversation history management. This chain is designed to provide context-aware answers to user queries by referencing a large corpus of documents while maintaining the flow of a conversation.
 
 ## Key Benefits
 

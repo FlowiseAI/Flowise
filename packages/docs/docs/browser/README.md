@@ -2,6 +2,9 @@
 title: Your Guide to AnswerAgent Sidekick
 sidebar_label: Introduction
 slug: /browser
+jsonld:
+    type: TechArticle
+    headline: AnswerAgent Sidekick Browser Extension
 ---
 
 import Tabs from '@theme/Tabs';
@@ -22,22 +25,6 @@ The AnswerAgent Sidekick is a browser extension that integrates your AnswerAgent
 3. **Confirm Installation:** Click "Add extension" when prompted to confirm the installation
 
 4. **Pin for easy access:** Click the puzzle piece icon in your Chrome toolbar, then click the pin icon next to AnswerAgent Sidekick to keep it visible in your toolbar.
-
-### Alternative: Installing Beta Version (Developer Mode)
-
-If you want to try the latest beta features or the Chrome Web Store version is not available:
-
-1. **[Click here to download the beta](/sidekick-alpha-20250604.zip)**
-
-2. **Install as an unpacked extension:**
-
-    - Extract the downloaded ZIP file to a folder on your computer
-    - Open Chrome and navigate to `chrome://extensions/`
-    - Enable "Developer mode" in the top-right corner
-    - Click "Load unpacked" and select the extracted folder
-    - The AnswerAgent Sidekick extension will now be installed
-
-3. **Pin for easy access:** Click the puzzle piece icon in your Chrome toolbar, then click the pin icon next to AnswerAgent Sidekick to keep it visible in your toolbar.
 
 ## What is AnswerAgent Sidekick?
 

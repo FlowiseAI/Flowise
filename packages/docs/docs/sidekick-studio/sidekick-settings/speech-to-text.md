@@ -1,5 +1,5 @@
 ---
-description: Learn how to manage speech-to-text in AnswerAI
+description: Learn how to manage speech-to-text in AnswerAgentAI
 ---
 
 # Speech to Text

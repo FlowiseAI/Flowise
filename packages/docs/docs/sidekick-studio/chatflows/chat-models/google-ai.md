@@ -1,12 +1,12 @@
 ---
-description: Integrate Google's Gemini AI models for chat functionality in AnswerAI
+description: Integrate Google's Gemini AI models for chat functionality in AnswerAgentAI
 ---
 
 # ChatGoogleGenerativeAI
 
 ## Overview
 
-ChatGoogleGenerativeAI is a wrapper around Google's Gemini large language models that use the Chat endpoint. This feature allows you to integrate powerful AI-driven chat capabilities into your AnswerAI projects, leveraging Google's state-of-the-art language models.
+ChatGoogleGenerativeAI is a wrapper around Google's Gemini large language models that use the Chat endpoint. This feature allows you to integrate powerful AI-driven chat capabilities into your AnswerAgentAI projects, leveraging Google's state-of-the-art language models.
 
 ## Key Benefits
 
@@ -19,7 +19,7 @@ ChatGoogleGenerativeAI is a wrapper around Google's Gemini large language models
 1. Set up Google Generative AI credentials:
 
     - Obtain an API key from Google's Generative AI service
-    - Configure the credential in AnswerAI, naming it 'googleGenerativeAI'
+    - Configure the credential in AnswerAgentAI, naming it 'googleGenerativeAI'
 
 2. Add the ChatGoogleGenerativeAI node to your flow:
 
@@ -58,7 +58,7 @@ ChatGoogleGenerativeAI is a wrapper around Google's Gemini large language models
 
 1. API Key Issues:
 
-    - Ensure your Google Generative AI API key is correctly set up in the AnswerAI credentials.
+    - Ensure your Google Generative AI API key is correctly set up in the AnswerAgentAI credentials.
     - Verify that the API key has the necessary permissions for the selected model.
 
 2. Model Availability:

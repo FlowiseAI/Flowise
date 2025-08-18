@@ -6,17 +6,17 @@ description: Read files from disk using the Read File tool
 
 ## Overview
 
-The Read File tool is a powerful feature in AnswerAI that allows you to read files directly from your computer's disk. This tool is particularly useful when you need to access and process local file contents within your workflows.
+The Read File tool is a powerful feature in AnswerAgentAI that allows you to read files directly from your computer's disk. This tool is particularly useful when you need to access and process local file contents within your workflows.
 
 ## Key Benefits
 
 -   Easy access to local file contents
--   Seamless integration with other AnswerAI tools and workflows
+-   Seamless integration with other AnswerAgentAI tools and workflows
 -   Flexible file path configuration
 
 ## How to Use
 
-1. Add the Read File tool to your canvas in the AnswerAI Studio.
+1. Add the Read File tool to your canvas in the AnswerAgentAI Studio.
 2. Configure the tool's settings:
     - (Optional) Set the "Base Path" if you want to specify a default directory for file operations.
 3. Connect the Read File tool to other nodes in your workflow.
@@ -29,7 +29,7 @@ The Read File tool is a powerful feature in AnswerAI that allows you to read fil
 
 -   Always use forward slashes (/) in file paths, even on Windows systems, to ensure compatibility.
 -   If you frequently access files from the same directory, set the "Base Path" to avoid repeating the full path for each file.
--   Ensure that the AnswerAI application has the necessary permissions to access the files you want to read.
+-   Ensure that the AnswerAgentAI application has the necessary permissions to access the files you want to read.
 -   Use relative paths when possible to make your workflows more portable across different systems.
 
 ## Troubleshooting
@@ -42,11 +42,11 @@ The Read File tool is a powerful feature in AnswerAI that allows you to read fil
 
 2. **Permission denied error**:
 
-    - Ensure that the AnswerAI application has read permissions for the file and its parent directories.
-    - Try running AnswerAI with elevated privileges if necessary.
+    - Ensure that the AnswerAgentAI application has read permissions for the file and its parent directories.
+    - Try running AnswerAgentAI with elevated privileges if necessary.
 
 3. **Unexpected file contents**:
     - Verify that the file is not open or locked by another application.
     - Check if the file is in the expected format (e.g., text file vs. binary file).
 
-Remember that the Read File tool is designed to work with text-based files. For binary files or more complex file operations, you may need to use specialized tools or custom scripts within your AnswerAI workflow.
+Remember that the Read File tool is designed to work with text-based files. For binary files or more complex file operations, you may need to use specialized tools or custom scripts within your AnswerAgentAI workflow.

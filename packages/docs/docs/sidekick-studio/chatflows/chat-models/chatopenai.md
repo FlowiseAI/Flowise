@@ -6,7 +6,7 @@ description: ChatOpenAI - Wrapper for OpenAI's Chat Models
 
 ## Overview
 
-ChatOpenAI is a powerful wrapper around OpenAI's large language models that use the Chat endpoint. It serves as the default chat model for most workflows in AnswerAI, providing a seamless integration with OpenAI's GPT models.
+ChatOpenAI is a powerful wrapper around OpenAI's large language models that use the Chat endpoint. It serves as the default chat model for most workflows in AnswerAgentAI, providing a seamless integration with OpenAI's GPT models.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ ChatOpenAI is a powerful wrapper around OpenAI's large language models that use 
 
 ## How to Use
 
-1. In the AnswerAI interface, locate the "ChatOpenAI" node in the "Chat Models" category.
+1. In the AnswerAgentAI interface, locate the "ChatOpenAI" node in the "Chat Models" category.
 2. Drag and drop the ChatOpenAI node into your workflow.
 3. Connect your OpenAI API credentials:
 
@@ -66,4 +66,4 @@ ChatOpenAI is a powerful wrapper around OpenAI's large language models that use 
     - If responses are slow, check your internet connection and consider using a model with lower latency.
     - Adjust the timeout parameter if needed.
 
-Remember, while ChatOpenAI is a great starting point, AnswerAI offers a variety of other models that might better suit your specific needs. Don't hesitate to experiment with different options to find the perfect balance of performance, cost, and capabilities for your project.
+Remember, while ChatOpenAI is a great starting point, AnswerAgentAI offers a variety of other models that might better suit your specific needs. Don't hesitate to experiment with different options to find the perfect balance of performance, cost, and capabilities for your project.

@@ -6,13 +6,13 @@ description: Chroma Vector Store for efficient similarity search and data retrie
 
 ## Overview
 
-The Chroma Vector Store node in AnswerAI allows you to store and retrieve high-dimensional vectors efficiently. It's designed for embedding and indexing data, enabling fast similarity searches. This node is particularly useful for tasks involving natural language processing, recommendation systems, and other AI applications that require quick retrieval of similar items.
+The Chroma Vector Store node in AnswerAgentAI allows you to store and retrieve high-dimensional vectors efficiently. It's designed for embedding and indexing data, enabling fast similarity searches. This node is particularly useful for tasks involving natural language processing, recommendation systems, and other AI applications that require quick retrieval of similar items.
 
 ## Key Benefits
 
 -   Efficient storage and retrieval of high-dimensional vectors
 -   Fast similarity searches for embedded data
--   Seamless integration with other AnswerAI components
+-   Seamless integration with other AnswerAgentAI components
 
 ## How to Use
 
@@ -42,7 +42,7 @@ The Chroma Vector Store node in AnswerAI allows you to store and retrieve high-d
 1. Connection issues:
 
     - Ensure that the Chroma URL is correct if using a remote instance.
-    - Check that your AnswerAI instance has network access to the Chroma server.
+    - Check that your AnswerAgentAI instance has network access to the Chroma server.
 
 2. Slow performance:
 
@@ -55,4 +55,4 @@ The Chroma Vector Store node in AnswerAI allows you to store and retrieve high-d
 
 <!-- TODO: Add a screenshot showing an example of a successful Chroma Vector Store query result -->
 <figure><img src="/.gitbook/assets/screenshots/chromainaworkflow.png" alt="" /><figcaption><p> Chroma Vector Store Node In a workflow   &#x26; Drop UI</p></figcaption></figure>
-By using the Chroma Vector Store node in AnswerAI, you can efficiently manage and query large amounts of embedded data, enhancing your AI workflows with powerful similarity search capabilities.
+By using the Chroma Vector Store node in AnswerAgentAI, you can efficiently manage and query large amounts of embedded data, enhancing your AI workflows with powerful similarity search capabilities.

@@ -6,7 +6,7 @@ description: Recursive Character Text Splitter for Advanced Document Chunking
 
 ## Overview
 
-The Recursive Character Text Splitter is an advanced text splitting tool in AnswerAI that allows you to split documents recursively using different characters or custom separators. This splitter offers more sophisticated chunking capabilities compared to the simpler Character Text Splitter, giving you greater control over how your text is divided.
+The Recursive Character Text Splitter is an advanced text splitting tool in AnswerAgentAI that allows you to split documents recursively using different characters or custom separators. This splitter offers more sophisticated chunking capabilities compared to the simpler Character Text Splitter, giving you greater control over how your text is divided.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Recursive Character Text Splitter is an advanced text splitting tool in Answ
 
 ## How to Use
 
-1. In the AnswerAI Studio, add the "Recursive Character Text Splitter" node to your canvas.
+1. In the AnswerAgentAI Studio, add the "Recursive Character Text Splitter" node to your canvas.
 2. Configure the following parameters:
 
     - Chunk Size: Set the maximum number of characters per chunk (default: 1000)
@@ -25,7 +25,7 @@ The Recursive Character Text Splitter is an advanced text splitting tool in Answ
 
 3. Connect the splitter to your document input and subsequent processing nodes.
 
-<!-- TODO: Add a screenshot of the Recursive Character Text Splitter node configuration in the AnswerAI Studio -->
+<!-- TODO: Add a screenshot of the Recursive Character Text Splitter node configuration in the AnswerAgentAI Studio -->
 <figure><img src="/.gitbook/assets/screenshots/recursivetextsplitter.png" alt="" /><figcaption><p> Recursive Text Splitter &#x26; Drop UI</p></figcaption></figure>
 ## Tips and Best Practices
 
@@ -65,4 +65,4 @@ Example custom separator input:
 
 This configuration would split the text first by "##", then "###", followed by double newlines, single newlines, and finally spaces.
 
-By leveraging the Recursive Character Text Splitter with custom separators, you gain ultimate control over how your documents are processed, ensuring that the resulting chunks are optimally suited for your specific use case in AnswerAI.
+By leveraging the Recursive Character Text Splitter with custom separators, you gain ultimate control over how your documents are processed, ensuring that the resulting chunks are optimally suited for your specific use case in AnswerAgentAI.

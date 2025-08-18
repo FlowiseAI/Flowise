@@ -57,6 +57,23 @@ const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<U
 export const authenticationHandlerMiddleware =
     ({ whitelistURLs, AppDataSource }: { whitelistURLs: string[]; AppDataSource: DataSource }) =>
     async (req: Request, res: Response, next: NextFunction) => {
+        /**
+         * Organization-Based Authentication Security Model:
+         *
+         * 1. Protected Routes (requireAuth = true):
+         *    - Valid org users: Full authentication and user creation
+         *    - Invalid org users: 401 Unauthorized
+         *    - API key with invalid org: 401 Unauthorized
+         *
+         * 2. Public Routes (requireAuth = false):
+         *    - Valid org JWT users: Full authentication and user creation
+         *    - Invalid org JWT users: Treated as anonymous (req.user = undefined)
+         *    - API key users: Full access regardless of org
+         *
+         * This ensures only authorized organization users can access protected
+         * resources while maintaining public access for cross-org scenarios.
+         */
+
         // const startTime = new Date().getTime()
         const requireAuth = /\/api\/v1\//i.test(req.url) && !whitelistURLs.some((url) => req.url.includes(url))
         const jwtMiddleware = requireAuth ? jwtCheck : jwtCheckPublic
@@ -77,8 +94,21 @@ export const authenticationHandlerMiddleware =
         }
 
         if (apiKeyUser) {
-            req.user = apiKeyUser
-            // return next()
+            // For API key users, we need to get the organization's auth0Id
+            const organization = await AppDataSource.getRepository(Organization).findOne({
+                where: { id: apiKeyUser.organizationId }
+            })
+
+            const isValidApiKeyOrg = organization?.auth0Id && process.env.AUTH0_ORGANIZATION_ID?.split(',')?.includes(organization.auth0Id)
+
+            if (requireAuth && !isValidApiKeyOrg) {
+                return res.status(401).send("Unauthorized: API key organization doesn't match")
+            }
+
+            // Store API key user with additional auth0 org info
+            req.user = apiKeyUser as any
+            ;(req.user as any).auth0OrgId = organization?.auth0Id
+            return next()
         }
 
         // Fall back to JWT authentication
@@ -101,12 +131,9 @@ export const authenticationHandlerMiddleware =
 
                 // Check for organization match if required
                 const userOrgId = req?.auth?.payload?.org_id
-                if (requireAuth) {
-                    const validOrgs = process.env.AUTH0_ORGANIZATION_ID?.split(',') || []
-                    const isInvalidOrg = validOrgs?.length > 0 && !validOrgs.includes(userOrgId)
-                    if (isInvalidOrg) {
-                        return res.status(401).send("Unauthorized: Organization doesn't match")
-                    }
+                const isValidOrg = userOrgId && process.env.AUTH0_ORGANIZATION_ID?.split(',')?.includes(userOrgId)
+                if (requireAuth && !isValidOrg) {
+                    return res.status(401).send("Unauthorized: Organization doesn't match")
                 }
 
                 // Get user from auth payload
@@ -120,23 +147,35 @@ export const authenticationHandlerMiddleware =
                 }
 
                 try {
-                    // Get or create organization using transaction-safe method
-                    const organization = await findOrCreateOrganization(AppDataSource, userOrgId, authUser.org_name)
+                    if (isValidOrg) {
+                        // Get or create organization using transaction-safe method
+                        const organization = await findOrCreateOrganization(AppDataSource, userOrgId, authUser.org_name)
 
-                    // Get or create user using transaction-safe method
-                    let user = await findOrCreateUser(AppDataSource, auth0Id, email, name, organization.id)
+                        // Get or create user using transaction-safe method
+                        let user = await findOrCreateUser(AppDataSource, auth0Id, email, name, organization.id)
 
-                    // Replace the Stripe customer logic with the new ensureStripeCustomerForUser function
-                    user = await ensureStripeCustomerForUser(AppDataSource, user, organization, auth0Id, email, name)
+                        // Replace the Stripe customer logic with the new ensureStripeCustomerForUser function
+                        user = await ensureStripeCustomerForUser(AppDataSource, user, organization, auth0Id, email, name)
 
-                    // Find or create default chatflows for the user
-                    const defaultChatflowId = await findOrCreateDefaultChatflowsForUser(AppDataSource, user)
-                    // Update user with the latest defaultChatflowId
-                    if (defaultChatflowId) {
-                        user.defaultChatflowId = defaultChatflowId
+                        // Find or create default chatflows for the user
+                        const defaultChatflowId = await findOrCreateDefaultChatflowsForUser(AppDataSource, user)
+                        // Update user with the latest defaultChatflowId
+                        if (defaultChatflowId) {
+                            user.defaultChatflowId = defaultChatflowId
+                        }
+
+                        // Set permissions based on roles
+                        const permissions: string[] = []
+                        if (roles?.includes('Admin')) {
+                            permissions.push('org:manage')
+                        }
+
+                        req.user = { ...authUser, ...user, roles, permissions }
+                    } else {
+                        // User authenticated but from unauthorized organization - treat as anonymous user
+                        console.warn(`Auth: User ${email} from org '${userOrgId}' treated as anonymous - not in allowed orgs`)
+                        req.user = undefined
                     }
-
-                    req.user = { ...authUser, ...user, roles }
                 } catch (error) {
                     console.error('Authentication error:', error)
                     return res.status(500).send('Internal Server Error during authentication')
@@ -146,6 +185,12 @@ export const authenticationHandlerMiddleware =
             // Handle /auth/me endpoint directly in middleware
             if (req.url === '/api/v1/auth/me' && req.method === 'GET') {
                 if (!req.user) {
+                    return res.status(401).json({ error: 'Unauthorized' })
+                }
+                // For JWT users, org_id comes from auth payload. For API key users, we need to check the organization
+                const userAuth0OrgId = (req.user as any).org_id || (req.user as any).auth0OrgId
+                const isValidOrg = userAuth0OrgId && process.env.AUTH0_ORGANIZATION_ID?.split(',')?.includes(userAuth0OrgId)
+                if (!isValidOrg) {
                     return res.status(401).json({ error: 'Unauthorized' })
                 }
 

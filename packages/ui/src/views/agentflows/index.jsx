@@ -87,7 +87,7 @@ const Agentflows = () => {
     }
 
     const goToCanvas = (selectedAgentflow) => {
-        if (selectedAgentflow.type === 'AGENTFLOW') {
+        if (agentflowVersion === 'v2') {
             navigate(`/v2/agentcanvas/${selectedAgentflow.id}`)
         } else {
             navigate(`/agentcanvas/${selectedAgentflow.id}`)

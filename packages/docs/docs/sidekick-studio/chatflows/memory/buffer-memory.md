@@ -1,22 +1,22 @@
 ---
-description: Buffer Memory for Quick Testing in AnswerAI
+description: Buffer Memory for Quick Testing in AnswerAgentAI
 ---
 
 # Buffer Memory
 
 ## Overview
 
-Buffer Memory is a simple, built-in memory solution in AnswerAI that allows for quick setup and testing of workflows without the need for external dependencies. It stores chat messages temporarily, making it ideal for development and testing purposes.
+Buffer Memory is a simple, built-in memory solution in AnswerAgentAI that allows for quick setup and testing of workflows without the need for external dependencies. It stores chat messages temporarily, making it ideal for development and testing purposes.
 
 ## Key Benefits
 
 -   Quick and easy setup for testing workflows
 -   No external dependencies required
--   Seamless integration with AnswerAI's core functionality
+-   Seamless integration with AnswerAgentAI's core functionality
 
 ## How to Use
 
-1. In the AnswerAI Studio, drag the "Buffer Memory" node onto your canvas.
+1. In the AnswerAgentAI Studio, drag the "Buffer Memory" node onto your canvas.
 2. Connect the Buffer Memory node to other nodes in your workflow.
 3. Configure the node settings:
     - Session ID (optional): Specify a custom session ID or leave blank for a random ID.
@@ -44,7 +44,7 @@ While Buffer Memory is convenient for quick testing, it is not recommended for p
 
 ## Transitioning to Production
 
-When moving your AnswerAI workflow from development to production:
+When moving your AnswerAgentAI workflow from development to production:
 
 1. Replace the Buffer Memory node with a production-ready memory solution (e.g., Redis Memory or Upstash Memory).
 2. Update your workflow connections to use the new memory node.
@@ -54,4 +54,4 @@ When moving your AnswerAI workflow from development to production:
 <!-- TODO: Side-by-side comparison screenshot of Buffer Memory vs. Redis/Upstash Memory node configuration -->
 <figure><img src="/.gitbook/assets/screenshots/buffervsupstashmemory.png" alt="" /><figcaption><p> Buffer Memory Nodes vs Redis/Upstash Memory node configuration &#x26; Drop UI</p></figcaption></figure>
 
-By following these guidelines, you can leverage Buffer Memory for efficient development and testing, while ensuring robust and scalable memory management in your production AnswerAI applications.
+By following these guidelines, you can leverage Buffer Memory for efficient development and testing, while ensuring robust and scalable memory management in your production AnswerAgentAI applications.

@@ -1,12 +1,12 @@
 ---
-description: Load and process emails from Gmail in AnswerAI
+description: Load and process emails from Gmail in AnswerAgentAI
 ---
 
 # Gmail Document Loader
 
 ## Overview
 
-The Gmail Document Loader enables you to extract and process email content from your Gmail account. This powerful integration allows you to bring email data into your AnswerAI workflows, making it ideal for customer support analysis, email processing automation, and knowledge base creation from email conversations.
+The Gmail Document Loader enables you to extract and process email content from your Gmail account. This powerful integration allows you to bring email data into your AnswerAgentAI workflows, making it ideal for customer support analysis, email processing automation, and knowledge base creation from email conversations.
 
 ## Key Benefits
 
@@ -253,7 +253,7 @@ Purpose: Focus on email content analysis without metadata noise
     - **Optimize:** Use more specific labels to reduce API calls
 
 5. **"Token expired" errors**
-    - **Solution:** AnswerAI automatically refreshes tokens
+    - **Solution:** AnswerAgentAI automatically refreshes tokens
     - **Manual fix:** Re-authorize the credential if automatic refresh fails
     - **Check:** Ensure your OAuth application is still active
 

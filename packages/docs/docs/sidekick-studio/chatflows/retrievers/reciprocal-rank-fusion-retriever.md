@@ -16,7 +16,7 @@ The Reciprocal Rank Fusion (RRF) Retriever is an advanced retrieval method that 
 
 ## How to Use
 
-1. Add the "Reciprocal Rank Fusion Retriever" node to your AnswerAI workflow canvas.
+1. Add the "Reciprocal Rank Fusion Retriever" node to your AnswerAgentAI workflow canvas.
 
 2. Connect the required inputs:
 

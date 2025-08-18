@@ -6,7 +6,7 @@ description: Split code documents based on language-specific syntax
 
 ## Overview
 
-The Code Text Splitter is a powerful feature in AnswerAI that allows you to split code documents into smaller, manageable chunks based on language-specific syntax. This tool is particularly useful when working with large codebases or when you need to process code in a more granular manner.
+The Code Text Splitter is a powerful feature in AnswerAgentAI that allows you to split code documents into smaller, manageable chunks based on language-specific syntax. This tool is particularly useful when working with large codebases or when you need to process code in a more granular manner.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Code Text Splitter is a powerful feature in AnswerAI that allows you to spli
 
 ## How to Use
 
-1. In the AnswerAI Studio, locate the "Text Splitters" category in the node palette.
+1. In the AnswerAgentAI Studio, locate the "Text Splitters" category in the node palette.
 2. Drag and drop the "Code Text Splitter" node onto your canvas.
 3. Connect the Code Text Splitter node to your input source (e.g., a document loader or another node that outputs text).
 4. Configure the Code Text Splitter node:

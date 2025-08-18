@@ -6,7 +6,7 @@ description: Cache LLM responses using Momento, a distributed, serverless cache
 
 ## Overview
 
-The Momento Cache feature in AnswerAI allows you to store Language Model (LLM) responses using Momento, a distributed, serverless cache. This caching mechanism improves performance and reduces costs by storing and retrieving responses for repeated queries, eliminating the need for redundant API calls.
+The Momento Cache feature in AnswerAgentAI allows you to store Language Model (LLM) responses using Momento, a distributed, serverless cache. This caching mechanism improves performance and reduces costs by storing and retrieving responses for repeated queries, eliminating the need for redundant API calls.
 
 ## Key Benefits
 
@@ -23,21 +23,21 @@ The Momento Cache feature in AnswerAI allows you to store Language Model (LLM) r
     - Create a new cache and note down the cache name
     - Generate an API key for authentication
 
-2. Configure the Momento Cache credential in AnswerAI:
+2. Configure the Momento Cache credential in AnswerAgentAI:
 
-    - Navigate to the credentials section in AnswerAI
+    - Navigate to the credentials section in AnswerAgentAI
     - Create a new credential of type 'momentoCacheApi'
     - Enter your Momento API key and cache name
-          <figure><img src="/.gitbook/assets/screenshots/momento cache api credentials.png" alt="" /><figcaption><p>Momento Cache Node &#x26; Drop UI</p></figcaption></figure><!-- TODO: Screenshot of creating Momento Cache credential -->
+        <figure><img src="/.gitbook/assets/screenshots/momento cache api credentials.png" alt="" /><figcaption><p>Momento Cache Node &#x26; Drop UI</p></figcaption></figure><!-- TODO: Screenshot of creating Momento Cache credential -->
 
-3. Add the Momento Cache node to your AnswerAI workflow:
+3. Add the Momento Cache node to your AnswerAgentAI workflow:
     <!-- TODO: Screenshot of adding Momento Cache node to the workflow -->
     <figure><img src="/.gitbook/assets/screenshots/momento cache configuration.png" alt="" /><figcaption><p>Momento  Cache Node Configuration &#x26; Drop UI</p></figcaption></figure>
 
 4. Configure the Momento Cache node:
 
     - Connect the previously created credential to the node
-          <!-- TODO: Screenshot showing the configuration of the Momento Cache node -->
+        <!-- TODO: Screenshot showing the configuration of the Momento Cache node -->
 
 5. Connect the Momento Cache node to your LLM node:
      <!-- TODO: Screenshot showing the connection between Momento Cache and LLM nodes -->
@@ -94,6 +94,6 @@ The Momento Cache feature in AnswerAI allows you to store Language Model (LLM) r
     - Remember that Momento Cache has a default TTL (Time To Live) of 24 hours
     - Adjust the TTL in your workflow if you need longer or shorter cache persistence
 
-If you encounter any issues not covered here, refer to the Momento documentation or contact AnswerAI support for assistance.
+If you encounter any issues not covered here, refer to the Momento documentation or contact AnswerAgentAI support for assistance.
 
-By leveraging the Momento Cache feature, you can significantly enhance the performance, efficiency, and scalability of your AnswerAI workflows, especially for frequently repeated queries or stable information retrieval tasks.
+By leveraging the Momento Cache feature, you can significantly enhance the performance, efficiency, and scalability of your AnswerAgentAI workflows, especially for frequently repeated queries or stable information retrieval tasks.

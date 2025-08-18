@@ -1,12 +1,12 @@
 ---
-description: Load and process text files in AnswerAI
+description: Load and process text files in AnswerAgentAI
 ---
 
 # Text File Document Loader
 
 ## Overview
 
-The Text File Document Loader is a powerful feature in AnswerAI that allows you to import and process data from various text-based file formats. This tool is essential for users who need to work with existing text documents, source code files, or any other text-based data in their AnswerAI workflows.
+The Text File Document Loader is a powerful feature in AnswerAgentAI that allows you to import and process data from various text-based file formats. This tool is essential for users who need to work with existing text documents, source code files, or any other text-based data in their AnswerAgentAI workflows.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Text File Document Loader is a powerful feature in AnswerAI that allows you 
 
 ## How to Use
 
-1. In your AnswerAI workflow, add the "Text File" node from the "Document Loaders" category.
+1. In your AnswerAgentAI workflow, add the "Text File" node from the "Document Loaders" category.
 2. Configure the node with the following settings:
 
     - Txt File: Upload or select the text file(s) you want to process.

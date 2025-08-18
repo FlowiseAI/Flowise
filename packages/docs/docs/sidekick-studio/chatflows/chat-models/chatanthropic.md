@@ -6,7 +6,7 @@ description: ChatAnthropic - Powerful AI Chat Model Integration
 
 ## Overview
 
-ChatAnthropic is a powerful AI chat model integration in AnswerAI that allows you to interact with Anthropic's large language models using the Chat endpoint. This feature provides advanced natural language processing capabilities for various applications, including conversational AI, text generation, and more.
+ChatAnthropic is a powerful AI chat model integration in AnswerAgentAI that allows you to interact with Anthropic's large language models using the Chat endpoint. This feature provides advanced natural language processing capabilities for various applications, including conversational AI, text generation, and more.
 
 ## Key Benefits
 
@@ -37,7 +37,7 @@ ChatAnthropic is a powerful AI chat model integration in AnswerAI that allows yo
     - Toggle "Allow Image Uploads" to enable multimodal interactions with claude-3-\* models.
 
 5. Integrate with Other Components:
-    - Connect the ChatAnthropic node to other components in your AnswerAI workflow, such as LLMChain, Conversation Chain, ReAct Agent, or Conversational Agent.
+    - Connect the ChatAnthropic node to other components in your AnswerAgentAI workflow, such as LLMChain, Conversation Chain, ReAct Agent, or Conversational Agent.
 
 <!-- TODO: Screenshot of the ChatAnthropic node configuration panel -->
 <figure><img src="/.gitbook/assets/screenshots/chat anthropic.png" alt="" /><figcaption><p>Chat Anthropic Node &#x26; Drop UI</p></figcaption></figure>
@@ -70,4 +70,4 @@ ChatAnthropic is a powerful AI chat model integration in AnswerAI that allows yo
     - Confirm that "Allow Image Uploads" is enabled for multimodal interactions.
     - Verify that you're using a compatible workflow component (LLMChain, Conversation Chain, or Conversational Agent).
 
-By following this guide, you'll be able to effectively integrate and utilize the powerful ChatAnthropic feature in your AnswerAI projects, enhancing your AI-driven applications with advanced language processing capabilities.
+By following this guide, you'll be able to effectively integrate and utilize the powerful ChatAnthropic feature in your AnswerAgentAI projects, enhancing your AI-driven applications with advanced language processing capabilities.

@@ -16,7 +16,7 @@ The GoogleVertexAI Embeddings feature allows you to generate embeddings for give
 
 ## How to Use
 
-1. Navigate to the Embeddings section in AnswerAI.
+1. Navigate to the Embeddings section in AnswerAgentAI.
 2. Locate and select the "GoogleVertexAI Embeddings" node.
 3. Configure the node with the following settings:
 
@@ -32,7 +32,7 @@ The GoogleVertexAI Embeddings feature allows you to generate embeddings for give
 
 ## Tips and Best Practices
 
-1. If you're running AnswerAI on Google Cloud Platform services like Cloud Run, you may not need to provide explicit credentials.
+1. If you're running AnswerAgentAI on Google Cloud Platform services like Cloud Run, you may not need to provide explicit credentials.
 2. Choose the appropriate embedding model based on your specific use case and performance requirements.
 3. Be mindful of API usage and costs associated with generating embeddings, especially for large volumes of text.
 4. Consider caching embeddings for frequently used text to improve performance and reduce API calls.
@@ -41,7 +41,7 @@ The GoogleVertexAI Embeddings feature allows you to generate embeddings for give
 
 1. **Authentication Issues**:
 
-    - Ensure you have the correct credentials set up, either through the AnswerAI interface or by using default GCP credentials.
+    - Ensure you have the correct credentials set up, either through the AnswerAgentAI interface or by using default GCP credentials.
     - Verify that your Google Cloud project has the necessary APIs enabled for Vertex AI.
 
 2. **Model Not Found**:
@@ -57,4 +57,4 @@ The GoogleVertexAI Embeddings feature allows you to generate embeddings for give
 4. **Performance Issues**:
     - If embedding generation is slow, try using a different model or optimizing your input text (e.g., batching requests).
 
-For any persistent issues, consult the Google Vertex AI documentation or contact AnswerAI support for further assistance.
+For any persistent issues, consult the Google Vertex AI documentation or contact AnswerAgentAI support for further assistance.

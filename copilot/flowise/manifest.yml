@@ -24,6 +24,10 @@ image:
     # Port exposed through your container to route traffic to it.
     port: 4000
 
+    # Container dependencies - main container depends on Lacework sidecar
+    depends_on:
+        datacollector-sidecar: start
+
 cpu: 2048 # Number of CPU units for the task.
 memory: 4096 # Amount of memory in MiB used by the task.
 count: 1 # Number of tasks that should be running in your service.
@@ -42,6 +46,24 @@ storage:
             read_only: false
 # readonly_fs: true       # Limit to read-only access to mounted root filesystems.
 
+# Lacework sidecar configuration
+sidecars:
+    datacollector-sidecar:
+        image: lacework/datacollector:latest-sidecar
+        essential: false
+
+# Task definition overrides for Lacework integration
+taskdef_overrides:
+    # Override main container entrypoint to use Lacework sidecar script and then start the app
+    - path: ContainerDefinitions[0].EntryPoint
+      value: ['/bin/sh', '-c', '/var/lib/lacework-backup/lacework-sidecar.sh; exec node dist/index.js']
+
+    # Add volume mount from sidecar to main container
+    - path: ContainerDefinitions[0].VolumesFrom
+      value:
+          - sourceContainer: datacollector-sidecar
+            readOnly: true
+
 # Optional fields for more advanced use-cases.
 #
 variables: # Pass environment variables as key value pairs.
@@ -52,6 +74,8 @@ variables: # Pass environment variables as key value pairs.
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
     REDIS_URL:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
+    # Lacework configuration variables - will be loaded from env file
+    LaceworkVerbose: 'true'
 env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
 secrets:
     DATABASE_SECRET:

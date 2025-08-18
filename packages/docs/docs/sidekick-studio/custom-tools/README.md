@@ -1,10 +1,10 @@
 ---
-description: Custom Tools in AnswerAI allow you to integrate your own functions into the AI workflow.
+description: Custom Tools in AnswerAgentAI allow you to integrate your own functions into the AI workflow.
 ---
 
 # Custom Tools
 
-Custom Tools in AnswerAI allow you to integrate your own functions into the AI workflow.
+Custom Tools in AnswerAgentAI allow you to integrate your own functions into the AI workflow.
 
 ## Creating a Custom Tool
 
@@ -87,4 +87,4 @@ In this example:
 
 Remember to replace `'your-hubspot-api-token'` with your actual HubSpot API token.
 
-By following these guidelines, you can create powerful custom tools that integrate seamlessly with AnswerAI's workflow.
+By following these guidelines, you can create powerful custom tools that integrate seamlessly with AnswerAgentAI's workflow.

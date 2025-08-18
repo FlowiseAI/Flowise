@@ -4,7 +4,7 @@ description: Load data from webpages using Puppeteer Web Scraper
 
 # Puppeteer Web Scraper
 
-The Puppeteer Web Scraper is a powerful tool in AnswerAI that allows you to extract data from webpages. It uses Puppeteer, a Node.js library that controls Chrome or Chromium browsers, to load and scrape web content.
+The Puppeteer Web Scraper is a powerful tool in AnswerAgentAI that allows you to extract data from webpages. It uses Puppeteer, a Node.js library that controls Chrome or Chromium browsers, to load and scrape web content.
 
 ## Overview
 
@@ -18,7 +18,7 @@ This feature enables you to load data from single or multiple webpages, with opt
 
 ## How to Use
 
-1. In the AnswerAI interface, locate and select the "Puppeteer Web Scraper" node.
+1. In the AnswerAgentAI interface, locate and select the "Puppeteer Web Scraper" node.
 
 2. Configure the following required settings:
 

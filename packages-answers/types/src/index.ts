@@ -47,6 +47,32 @@ export interface AppService {
     enabled?: boolean
     imageURL?: string
 }
+
+export interface OrgCredentialSetting {
+    name: string
+    label: string
+    enabled: boolean
+}
+
+export interface OrganizationCredentialEnvironmentVariable {
+    key: string
+    value: string
+    description?: string
+}
+
+export interface EnabledIntegration {
+    credentialName: string
+    label: string
+    description?: string
+    enabled: boolean
+    environmentVariables?: OrganizationCredentialEnvironmentVariable[]
+    organizationCredentialIds?: string[]
+}
+
+export interface EnabledIntegrationsData {
+    integrations: EnabledIntegration[]
+}
+
 export interface ConfluenceSettings {
     enabled: boolean
     accessToken?: string
@@ -120,6 +146,9 @@ export interface AppSettings {
             name: string
             enabled: boolean
         }[]
+    }
+    orgCredentials?: {
+        credentials?: OrgCredentialSetting[]
     }
     models?: Models
     filters?: AnswersFilters

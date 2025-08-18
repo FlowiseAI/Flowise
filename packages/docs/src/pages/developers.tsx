@@ -14,7 +14,7 @@ function DevelopersHero() {
             <div className={styles.heroContent}>
                 <h1 className={styles.heroTitle}>Help Us Build the Future of AI—Together</h1>
                 <p className={styles.heroSubtitle}>
-                    A Call to Builders for the AnswerAI Alpha Sprint. Not your data, not your soul—just your code and your conviction.
+                    A Call to Builders for the AnswerAgentAI Alpha Sprint. Not your data, not your soul—just your code and your conviction.
                 </p>
                 <div className={styles.heroCTAs}>
                     <a href='https://github.com/orgs/the-answerai/repositories' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
@@ -34,6 +34,8 @@ function DevelopersHero() {
     )
 }
 
+const LayoutComponent: any = Layout
+
 function OpeningHook() {
     return (
         <section className={clsx(styles.missionSection, styles.comingSoonSection)}>
@@ -45,9 +47,8 @@ function OpeningHook() {
                             <div className={styles.commandmentText}>
                                 <h2 style={{ color: '#00ffff', marginBottom: '1.5rem' }}>Hey Builders. We Need You.</h2>
                                 <p style={{ fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
-                                    From now until <strong style={{ color: '#ff00ff' }}>July 21st</strong>, we&apos;re sprinting to create
-                                    something that shouldn&apos;t exist according to Big Tech: a fully local AI platform that respects your
-                                    privacy and amplifies your creativity.
+                                    We&apos;re sprinting to create something that shouldn&apos;t exist according to Big Tech: a fully local
+                                    AI platform that respects your privacy and amplifies your creativity.
                                 </p>
                                 <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
                                     <strong style={{ color: '#00ffff' }}>No surveillance. No lock-in.</strong> Just pure, ethical computing
@@ -232,9 +233,9 @@ function RewardStructure() {
     return (
         <section className={styles.featuresSection} id='rewards'>
             <div className='container'>
-                <h2 className='text--center'>This Isn't Charity Work</h2>
+                <h2 className='text--center'>This Isn&apos;t Charity Work</h2>
                 <p className='text--center' style={{ marginBottom: '3rem', fontSize: '1.2rem', opacity: 0.9 }}>
-                    Every contribution earns credits—we're tracking everything transparently
+                    Every contribution earns credits—we&apos;re tracking everything transparently
                 </p>
                 <div className='row'>
                     <div className='col col--6'>
@@ -377,9 +378,8 @@ function QuickReference() {
                     <div className='col col--6'>
                         <div className={styles.featureCard}>
                             <div className={styles.appIcon}>📅</div>
-                            <h3>Sprint Timeline</h3>
+                            <h3>Help Build the Community</h3>
                             <div className={styles.appFeatures}>
-                                <span>⏰ Now - July 21st: Alpha Sprint</span>
                                 <span>🎯 Focus: Chrome Extension & Web App</span>
                                 <span>🏗️ Foundation: Desktop Architecture</span>
                             </div>
@@ -409,12 +409,12 @@ function QuickReference() {
 }
 
 export default function Developers(): JSX.Element {
-    const { siteConfig } = useDocusaurusContext()
+    const { siteConfig: _siteConfig } = useDocusaurusContext()
     return (
         <div data-theme='dark'>
-            <Layout
+            <LayoutComponent
                 title='Developers - Help Us Build the Future of AI'
-                description='Join the AnswerAI Alpha Sprint. Build privacy-first AI tools that empower, not exploit. Earn credits for contributions. July 21st deadline - let us show Big Tech what committed developers can build.'
+                description='Join the AnswerAgentAI Alpha Sprint. Build privacy-first AI tools that empower, not exploit. Earn credits for contributions. Let us show Big Tech what committed developers can build.'
             >
                 <DevelopersHero />
                 <main>
@@ -425,7 +425,7 @@ export default function Developers(): JSX.Element {
                     <ClosingRally />
                     <QuickReference />
                 </main>
-            </Layout>
+            </LayoutComponent>
         </div>
     )
 }

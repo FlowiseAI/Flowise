@@ -1,22 +1,22 @@
 ---
-description: OpenAI Embeddings for Text Processing in AnswerAI
+description: OpenAI Embeddings for Text Processing in AnswerAgentAI
 ---
 
 # OpenAI Embeddings
 
 ## Overview
 
-OpenAI Embeddings is a powerful feature in AnswerAI that generates vector representations (embeddings) of text. These embeddings are crucial for various natural language processing tasks, including semantic search, text classification, and content recommendation.
+OpenAI Embeddings is a powerful feature in AnswerAgentAI that generates vector representations (embeddings) of text. These embeddings are crucial for various natural language processing tasks, including semantic search, text classification, and content recommendation.
 
 ## Key Benefits
 
 -   High-quality text representations for improved language understanding
--   Seamless integration with other AnswerAI features
+-   Seamless integration with other AnswerAgentAI features
 -   Versatile applications across various NLP tasks
 
 ## How to Use
 
-1. In your AnswerAI workflow, locate the Embeddings section.
+1. In your AnswerAgentAI workflow, locate the Embeddings section.
 2. Select "OpenAI Embeddings" from the available options.
 3. Configure the embedding parameters:
     - Model Name: Choose the desired OpenAI embedding model (default is "text-embedding-ada-002").
@@ -33,9 +33,9 @@ OpenAI Embeddings is a powerful feature in AnswerAI that generates vector repres
 
 ## Tips and Best Practices
 
-1. **Default Option**: OpenAI Embeddings is often the default choice for many sidekick workflows in AnswerAI due to its high quality and versatility.
+1. **Default Option**: OpenAI Embeddings is often the default choice for many sidekick workflows in AnswerAgentAI due to its high quality and versatility.
 
-2. **Experiment with Alternatives**: While OpenAI Embeddings is a solid choice, consider experimenting with different embedding models for your specific use case. AnswerAI offers various embedding options that may perform better for certain tasks or domains.
+2. **Experiment with Alternatives**: While OpenAI Embeddings is a solid choice, consider experimenting with different embedding models for your specific use case. AnswerAgentAI offers various embedding options that may perform better for certain tasks or domains.
 
 3. **Model Selection**: The "text-embedding-ada-002" model is a good starting point, but be aware of newer models that OpenAI may release, as they could offer improved performance.
 
@@ -45,7 +45,7 @@ OpenAI Embeddings is a powerful feature in AnswerAI that generates vector repres
 
 ## Troubleshooting
 
-1. **API Key Issues**: Ensure your OpenAI API key is correctly configured in your AnswerAI credentials.
+1. **API Key Issues**: Ensure your OpenAI API key is correctly configured in your AnswerAgentAI credentials.
 
 2. **Rate Limiting**: If you encounter rate limit errors, try reducing the batch size or implementing a retry mechanism with exponential backoff.
 
@@ -53,4 +53,4 @@ OpenAI Embeddings is a powerful feature in AnswerAI that generates vector repres
 
 4. **Unsupported Models**: If you receive an error about an unsupported model, check the OpenAI API documentation for the latest available embedding models.
 
-Remember, while OpenAI Embeddings is an excellent default choice, the best embedding model for your project may vary depending on your specific requirements, data characteristics, and performance needs. Don't hesitate to experiment with different embedding options available in AnswerAI to find the optimal solution for your use case.
+Remember, while OpenAI Embeddings is an excellent default choice, the best embedding model for your project may vary depending on your specific requirements, data characteristics, and performance needs. Don't hesitate to experiment with different embedding options available in AnswerAgentAI to find the optimal solution for your use case.

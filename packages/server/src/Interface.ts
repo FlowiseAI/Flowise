@@ -77,6 +77,7 @@ export interface IOrganization {
     stripeCustomerId?: string
     updatedDate: Date
     createdDate: Date
+    enabledIntegrations?: string
 }
 
 export interface IChatFlow {

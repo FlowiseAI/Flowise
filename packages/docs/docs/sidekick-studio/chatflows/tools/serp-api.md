@@ -6,7 +6,7 @@ description: SERP API Tool Node Documentation
 
 ## Overview
 
-The SERP API Tool Node allows you to integrate Google search results into your AnswerAI workflows. It provides access to real-time Google search data, enabling your agents to retrieve up-to-date information from the web.
+The SERP API Tool Node allows you to integrate Google search results into your AnswerAgentAI workflows. It provides access to real-time Google search data, enabling your agents to retrieve up-to-date information from the web.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The SERP API Tool Node allows you to integrate Google search results into your A
 
 ## How to Use
 
-1. Add the SERP API Tool Node to your AnswerAI workflow canvas.
+1. Add the SERP API Tool Node to your AnswerAgentAI workflow canvas.
 2. Connect your SERP API credential to the node.
 3. Configure the search parameters as needed for your use case.
 4. Connect the SERP API Tool Node to other nodes in your workflow to process the search results.
@@ -82,7 +82,7 @@ The SERP API Tool Node accepts the following parameters:
 2. Ensure that your search query is properly formatted and encoded.
 3. If you're hitting rate limits, consider implementing caching or reducing the frequency of requests.
 
-<!-- TODO: Add a screenshot of the SERP API Tool Node configuration in the AnswerAI canvas -->
+<!-- TODO: Add a screenshot of the SERP API Tool Node configuration in the AnswerAgentAI canvas -->
 <figure><img src="/.gitbook/assets/screenshots/serperapi.png" alt="" /><figcaption><p> SERP API Tool  node    &#x26; Drop UI</p></figcaption></figure>
 
-By configuring these parameters, you can customize the SERP API Tool Node to retrieve the most relevant search results for your AnswerAI workflows.
+By configuring these parameters, you can customize the SERP API Tool Node to retrieve the most relevant search results for your AnswerAgentAI workflows.

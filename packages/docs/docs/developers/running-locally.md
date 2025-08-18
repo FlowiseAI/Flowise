@@ -1,10 +1,10 @@
 ---
-description: Learn how to deploy AnswerAI locally
+description: Learn how to deploy AnswerAgentAI locally
 ---
 
 # Local Development
 
-This guide will help you set up and run AnswerAI in your local development environment for ultimate privacy and control.
+This guide will help you set up and run AnswerAgentAI in your local development environment for ultimate privacy and control.
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ Before you begin, ensure you have the following installed:
 
 ## Project Structure
 
-AnswerAI is a monorepo project with multiple packages:
+AnswerAgentAI is a monorepo project with multiple packages:
 
 Certainly! I'll list out the rest of the @packages folders with descriptions based on the information available in the provided code blocks. Here's an expanded list of the packages:
 
@@ -24,45 +24,45 @@ Certainly! I'll list out the rest of the @packages folders with descriptions bas
 -   `ui`: React frontend
 -   `components`: Integration components
 -   `docs`: Documentation site
--   `embed`: Javascript library to display AnswerAI chatbot on your website
+-   `embed`: Javascript library to display AnswerAgentAI chatbot on your website
 
 Here's a more detailed breakdown of each package:
 
 1. `server`:
 
-    - Main backend server for AnswerAI
+    - Main backend server for AnswerAgentAI
     - Handles API logic, database interactions, and server-side operations
     - Contains marketplaces and chatflow configurations
 
 2. `ui`:
 
-    - React-based frontend for the AnswerAI application
-    - Provides the user interface for interacting with AnswerAI
+    - React-based frontend for the AnswerAgentAI application
+    - Provides the user interface for interacting with AnswerAgentAI
 
 3. `components`:
 
-    - Contains integration components and nodes for AnswerAI
+    - Contains integration components and nodes for AnswerAgentAI
     - Includes various LLM models, tools, and utilities
 
 4. `docs`:
 
-    - Documentation site for AnswerAI
+    - Documentation site for AnswerAgentAI
     - Contains user guides, API documentation, and developer resources
 
 5. `embed`:
 
-    - Javascript library for embedding AnswerAI chatbot on websites
+    - Javascript library for embedding AnswerAgentAI chatbot on websites
     - Provides components and features for full chatbot integration
 
-These packages work together to create the full AnswerAI ecosystem, providing a comprehensive solution for building and deploying AI-powered chatbots and workflows.
+These packages work together to create the full AnswerAgentAI ecosystem, providing a comprehensive solution for building and deploying AI-powered chatbots and workflows.
 
 ## Setup
 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/AnswerAI/AnswerAI.git
-cd AnswerAI
+git clone https://github.com/AnswerAgentAI/AnswerAgentAI.git
+cd AnswerAgentAI
 ```
 
 2. Install dependencies:
@@ -219,4 +219,4 @@ pnpm build
 
 Please refer to the `CONTRIBUTING.md` file in the repository for guidelines on how to contribute to the project.
 
-This guide should help you get started with running AnswerAI locally. If you encounter any issues or have questions, please refer to the project's documentation or reach out to the development team.
+This guide should help you get started with running AnswerAgentAI locally. If you encounter any issues or have questions, please refer to the project's documentation or reach out to the development team.

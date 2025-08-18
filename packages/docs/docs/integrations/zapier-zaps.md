@@ -1,5 +1,5 @@
 ---
-description: Learn how to integrate AnswerAI and Zapier
+description: Learn how to integrate AnswerAgentAI and Zapier
 ---
 
 # Zapier Zaps

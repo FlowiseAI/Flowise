@@ -1,29 +1,29 @@
 ---
-description: Load and use OpenAPI specifications as tools in AnswerAI workflows
+description: Load and use OpenAPI specifications as tools in AnswerAgentAI workflows
 ---
 
 # OpenAPI Toolkit
 
 ## Overview
 
-The OpenAPI Toolkit node allows you to load an OpenAPI specification and use it as a set of tools in your AnswerAI workflows. This feature enables your agents to interact with APIs defined by OpenAPI (formerly known as Swagger) specifications, expanding their capabilities to include external services and data sources.
+The OpenAPI Toolkit node allows you to load an OpenAPI specification and use it as a set of tools in your AnswerAgentAI workflows. This feature enables your agents to interact with APIs defined by OpenAPI (formerly known as Swagger) specifications, expanding their capabilities to include external services and data sources.
 
 ## Key Benefits
 
--   Easily integrate external APIs into your AnswerAI workflows
+-   Easily integrate external APIs into your AnswerAgentAI workflows
 -   Automatically generate tools based on API endpoints and operations
 -   Enhance your agents' abilities with access to a wide range of web services
 
 ## How to Use
 
-1. Add the OpenAPI Toolkit node to your canvas in the AnswerAI Studio.
+1. Add the OpenAPI Toolkit node to your canvas in the AnswerAgentAI Studio.
 2. Connect a Language Model node to the OpenAPI Toolkit node.
 3. Upload your OpenAPI specification YAML file.
 4. (Optional) Connect an OpenAPI Auth credential if your API requires authentication.
 5. Configure any additional settings as needed.
 6. Connect the OpenAPI Toolkit node to other nodes in your workflow to utilize the generated tools.
 
-<!-- TODO: Add a screenshot of the OpenAPI Toolkit node configuration in the AnswerAI Studio -->
+<!-- TODO: Add a screenshot of the OpenAPI Toolkit node configuration in the AnswerAgentAI Studio -->
 <figure><img src="/.gitbook/assets/screenshots/openapitoolkit.png" alt="" /><figcaption><p> OpenAPI Toolkit node configuration   &#x26; Drop UI</p></figcaption></figure>
 
 ## Tips and Best Practices
@@ -49,4 +49,4 @@ The OpenAPI Toolkit node allows you to load an OpenAPI specification and use it 
     - Double-check the OpenAPI specification to ensure it accurately describes the API endpoints and operations.
     - Verify that the API server is accessible and responding correctly to requests.
 
-If you continue to experience issues, consult the AnswerAI documentation or reach out to support for further assistance.
+If you continue to experience issues, consult the AnswerAgentAI documentation or reach out to support for further assistance.

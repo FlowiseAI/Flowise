@@ -6,11 +6,11 @@ description: Load and process documents from exported Notion folders
 
 ## Overview
 
-The Notion Folder Document Loader is a powerful feature in AnswerAI that allows you to import and process content from exported Notion folders. This tool is perfect for users who want to leverage their Notion content within AnswerAI for various natural language processing tasks.
+The Notion Folder Document Loader is a powerful feature in AnswerAgentAI that allows you to import and process content from exported Notion folders. This tool is perfect for users who want to leverage their Notion content within AnswerAgentAI for various natural language processing tasks.
 
 ## Key Benefits
 
--   Easily import content from Notion into AnswerAI
+-   Easily import content from Notion into AnswerAgentAI
 -   Process and split large Notion documents for improved handling
 -   Customize metadata for better organization and searchability
 
@@ -22,7 +22,7 @@ The Notion Folder Document Loader is a powerful feature in AnswerAI that allows 
     - Choose "Export" from the menu and select your preferred format
     - Download and unzip the exported folder
 
-2. Configure the Notion Folder Document Loader in AnswerAI:
+2. Configure the Notion Folder Document Loader in AnswerAgentAI:
 
     - Navigate to the Document Loaders section
     - Select "Notion Folder" from the available options
@@ -34,17 +34,17 @@ The Notion Folder Document Loader is a powerful feature in AnswerAI that allows 
     - (Optional) Add additional metadata in JSON format
     - (Optional) Specify metadata keys to omit
 
-4. Run the loader to import your Notion content into AnswerAI
+4. Run the loader to import your Notion content into AnswerAgentAI
 
 <!-- TODO: Add a screenshot of the Notion Folder Document Loader configuration interface -->
 <figure><img src="/.gitbook/assets/screenshots/notionfolder.png" alt="" /><figcaption><p> Notion Folder Document Loader Node &#x26; Drop UI</p></figcaption></figure>
 
 ## Tips and Best Practices
 
-1. Organize your Notion content before exporting to make it easier to process in AnswerAI
+1. Organize your Notion content before exporting to make it easier to process in AnswerAgentAI
 2. Use a Text Splitter for large documents to improve processing efficiency
 3. Add relevant metadata to enhance searchability and organization of your imported content
-4. Regularly update your imported Notion content to keep your AnswerAI data current
+4. Regularly update your imported Notion content to keep your AnswerAgentAI data current
 
 ## Troubleshooting
 
@@ -62,4 +62,4 @@ The Notion Folder Document Loader is a powerful feature in AnswerAI that allows 
 3. If documents are too large or small after splitting:
     - Adjust the Text Splitter settings to find the right balance for your content
 
-Remember, the Notion Folder Document Loader is a powerful tool to bridge your Notion workspace with AnswerAI's capabilities. Experiment with different settings to find the best configuration for your specific use case.
+Remember, the Notion Folder Document Loader is a powerful tool to bridge your Notion workspace with AnswerAgentAI's capabilities. Experiment with different settings to find the best configuration for your specific use case.

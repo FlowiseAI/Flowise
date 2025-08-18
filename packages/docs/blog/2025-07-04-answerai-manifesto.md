@@ -12,7 +12,7 @@ tags: [manifesto, vision, philosophy, ai-ethics, decentralization]
     width="560" 
     height="315" 
     src="https://www.youtube.com/embed/2HVcHMaaMM0" 
-    title="AnswerAI Manifesto Video"
+    title="AnswerAgentAI Manifesto Video"
     frameBorder="0" 
     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
     allowFullScreen
@@ -23,6 +23,8 @@ tags: [manifesto, vision, philosophy, ai-ethics, decentralization]
 ## 1. The Problem We Face
 
 We live in a world where power over AI is centralized—controlled by corporations, governments, and unelected technocrats. These entities harvest our data, profit from our creativity, and shape our digital reality. The most powerful technology ever created is being used not to uplift, but to manipulate.
+
+<!-- truncate -->
 
 ## 2. What We Believe
 
@@ -81,5 +83,5 @@ We need people who care. People who see through the illusion.
 
 ---
 
-**AnswerAI**  
+**AnswerAgentAI**  
 _AI for all, not for the few._

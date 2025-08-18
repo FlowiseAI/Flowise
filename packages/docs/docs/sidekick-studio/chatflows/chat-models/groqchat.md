@@ -6,7 +6,7 @@ description: GroqChat - Blazing Fast LLM Inference with Groq
 
 ## Overview
 
-GroqChat is a powerful integration in AnswerAI that leverages Groq's Lightning-fast Processing Unit (LPU) Inference Engine. This feature allows you to access state-of-the-art language models like Llama, Mixtral, and Gemma, including Groq's own fine-tuned versions, with unprecedented speed and efficiency.
+GroqChat is a powerful integration in AnswerAgentAI that leverages Groq's Lightning-fast Processing Unit (LPU) Inference Engine. This feature allows you to access state-of-the-art language models like Llama, Mixtral, and Gemma, including Groq's own fine-tuned versions, with unprecedented speed and efficiency.
 
 ## Key Benefits
 
@@ -19,7 +19,7 @@ GroqChat is a powerful integration in AnswerAI that leverages Groq's Lightning-f
 1. **Set up Groq API Credentials**:
 
     - Obtain a Groq API key from the Groq platform.
-    - Add your Groq API credentials to AnswerAI.
+    - Add your Groq API credentials to AnswerAgentAI.
 
 2. **Configure GroqChat Node**:
 
@@ -56,11 +56,11 @@ GroqChat is a powerful integration in AnswerAI that leverages Groq's Lightning-f
 
 2. **API Key Issues**:
 
-    - Verify that your Groq API key is correctly entered in the AnswerAI credentials.
+    - Verify that your Groq API key is correctly entered in the AnswerAgentAI credentials.
     - Check if your API key has the necessary permissions.
 
 3. **Model Unavailability**:
     - If a specific model is unavailable, try selecting an alternative model from the list.
     - Check Groq's status page for any ongoing issues or maintenance.
 
-GroqChat in AnswerAI opens up new possibilities for blazing-fast language model interactions. By leveraging Groq's LPU technology, you can now process complex language tasks at unprecedented speeds, making your AI workflows more efficient and responsive than ever before.
+GroqChat in AnswerAgentAI opens up new possibilities for blazing-fast language model interactions. By leveraging Groq's LPU technology, you can now process complex language tasks at unprecedented speeds, making your AI workflows more efficient and responsive than ever before.

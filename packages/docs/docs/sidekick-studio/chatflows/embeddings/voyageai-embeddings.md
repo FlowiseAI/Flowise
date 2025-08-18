@@ -6,17 +6,17 @@ description: Generate embeddings using VoyageAI API
 
 ## Overview
 
-VoyageAI Embeddings is a powerful feature in AnswerAI that allows you to generate embeddings for given text using the Voyage AI API. Embeddings are numerical representations of text that capture semantic meaning, making them useful for various natural language processing tasks.
+VoyageAI Embeddings is a powerful feature in AnswerAgentAI that allows you to generate embeddings for given text using the Voyage AI API. Embeddings are numerical representations of text that capture semantic meaning, making them useful for various natural language processing tasks.
 
 ## Key Benefits
 
 -   Generate high-quality embeddings for text analysis and processing
 -   Utilize state-of-the-art models from VoyageAI for improved accuracy
--   Easily integrate embeddings into your AnswerAI workflows
+-   Easily integrate embeddings into your AnswerAgentAI workflows
 
 ## How to Use
 
-To use VoyageAI Embeddings in AnswerAI, follow these steps:
+To use VoyageAI Embeddings in AnswerAgentAI, follow these steps:
 
 1. Add the VoyageAI Embeddings node to your workflow.
     <!-- TODO: Screenshot of adding VoyageAI Embeddings node to the workflow -->
@@ -26,15 +26,15 @@ To use VoyageAI Embeddings in AnswerAI, follow these steps:
 
     - Click on the VoyageAI Embeddings node to open its settings.
     - In the "Connect Credential" field, select your VoyageAI API credential or create a new one if you haven't already.
-      <!-- TODO: Screenshot of connecting VoyageAI API credential -->
-      <figure><img src="/.gitbook/assets/screenshots/voyageaiapicredentials.png" alt="" /><figcaption><p> VoyageAI Embedding Node &#x26; Drop UI</p></figcaption></figure>
+          <!-- TODO: Screenshot of connecting VoyageAI API credential -->
+          <figure><img src="/.gitbook/assets/screenshots/voyageaiapicredentials.png" alt="" /><figcaption><p> VoyageAI Embedding Node &#x26; Drop UI</p></figcaption></figure>
 
 3. Choose the model:
 
     - In the "Model Name" dropdown, select the desired VoyageAI model for generating embeddings.
     - The default model is "voyage-2", but you can choose other available models.
-      <!-- TODO: Screenshot of model selection dropdown -->
-      <figure><img src="/.gitbook/assets/screenshots/voyagemodelselection.png" alt="" /><figcaption><p> VoyageAI Embedding Node Model Selection &#x26; Drop UI</p></figcaption></figure>
+          <!-- TODO: Screenshot of model selection dropdown -->
+          <figure><img src="/.gitbook/assets/screenshots/voyagemodelselection.png" alt="" /><figcaption><p> VoyageAI Embedding Node Model Selection &#x26; Drop UI</p></figcaption></figure>
 
 4. Connect the VoyageAI Embeddings node to other nodes in your workflow as needed.
 
@@ -56,7 +56,7 @@ To use VoyageAI Embeddings in AnswerAI, follow these steps:
 
 2. Model Availability:
 
-    - If a specific model is not available in the dropdown, it may not be supported by the current version of AnswerAI or your API access level. Try updating AnswerAI or contacting VoyageAI support for more information.
+    - If a specific model is not available in the dropdown, it may not be supported by the current version of AnswerAgentAI or your API access level. Try updating AnswerAgentAI or contacting VoyageAI support for more information.
 
 3. Endpoint Errors:
 
@@ -65,4 +65,4 @@ To use VoyageAI Embeddings in AnswerAI, follow these steps:
 4. Input Text Limitations:
     - If you receive errors related to input text, check if your text exceeds the maximum length supported by the chosen model. Try breaking longer text into smaller chunks if necessary.
 
-By following this guide, you should be able to effectively use VoyageAI Embeddings in your AnswerAI workflows to generate high-quality text embeddings for various natural language processing tasks.
+By following this guide, you should be able to effectively use VoyageAI Embeddings in your AnswerAgentAI workflows to generate high-quality text embeddings for various natural language processing tasks.

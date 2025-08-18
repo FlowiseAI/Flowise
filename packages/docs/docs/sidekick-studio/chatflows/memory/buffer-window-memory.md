@@ -1,12 +1,12 @@
 ---
-description: Buffer Window Memory for AnswerAI
+description: Buffer Window Memory for AnswerAgentAI
 ---
 
 # Buffer Window Memory
 
 ## Overview
 
-The Buffer Window Memory node is a memory component in AnswerAI that stores and retrieves a fixed number of recent conversation turns. It uses a window of size k to surface the last k back-and-forth exchanges to use as memory for the AI model.
+The Buffer Window Memory node is a memory component in AnswerAgentAI that stores and retrieves a fixed number of recent conversation turns. It uses a window of size k to surface the last k back-and-forth exchanges to use as memory for the AI model.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Buffer Window Memory node is a memory component in AnswerAI that stores and 
 
 ## How to Use
 
-1. Add the Buffer Window Memory node to your AnswerAI workflow canvas.
+1. Add the Buffer Window Memory node to your AnswerAgentAI workflow canvas.
 2. Configure the node settings:
     - Set the "Size" parameter to determine how many conversation turns to remember (default is 4).
     - Optionally, specify a "Session ID" for managing multiple conversations.
@@ -45,13 +45,13 @@ The Buffer Window Memory node is a memory component in AnswerAI that stores and 
 
 ## Advanced Usage
 
-The Buffer Window Memory node in AnswerAI is built on top of Langchain's BufferWindowMemory class and includes additional functionality for database integration. Here are some advanced features:
+The Buffer Window Memory node in AnswerAgentAI is built on top of Langchain's BufferWindowMemory class and includes additional functionality for database integration. Here are some advanced features:
 
 -   Database Integration: The node can store and retrieve conversation history from a database, allowing for persistent memory across sessions.
 -   Flexible Retrieval: You can retrieve chat messages as either simple message objects or as BaseMessage instances for more advanced processing.
 -   Prepend Messages: The node allows you to prepend additional messages to the retrieved history, useful for adding context or system messages.
 
-<!-- TODO: Add a diagram showing how Buffer Window Memory integrates with other components in a typical AnswerAI workflow -->
+<!-- TODO: Add a diagram showing how Buffer Window Memory integrates with other components in a typical AnswerAgentAI workflow -->
 <figure><img src="/.gitbook/assets/screenshots/bufferwindowmemoryinaworkflow.png" alt="" /><figcaption><p> Buffer Window Memory Node in a workflow&#x26; Drop UI</p></figcaption></figure>
 
 Remember that while this node provides powerful memory capabilities, it's important to use it responsibly and in compliance with data privacy regulations, especially when storing user conversations.

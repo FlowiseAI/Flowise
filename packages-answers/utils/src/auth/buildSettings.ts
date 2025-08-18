@@ -137,92 +137,57 @@ export const buildSettings = async (user: User, org?: Organization) => {
     //   newSettings.codebase = {
     //     repos: [
     //       {
-    //         id: 'docubot-v0.2.2',
-    //         name: 'docubot-v0.2.2',
+    //         id: 'example-repo-v1.0.0',
+    //         name: 'example-repo-v1.0.0',
     //         enabled: true
     //       },
     //       {
-    //         id: 'answers-ai-v0.1.1',
-    //         name: 'answers-ai-v0.1.1',
-    //         enabled: true
-    //       },
-    //       {
-    //         id: 'lastrev-marketing-site-v0.1.0',
-    //         name: 'lastrev-marketing-site-v0.1.0',
-    //         enabled: true
-    //       },
-    //       {
-    //         id: 'langchainjs-v0.0.4',
-    //         name: 'langchainjs-v0.0.4',
-    //         enabled: true
-    //       },
-    //       {
-    //         id: 'cams-env-test-v0.1.0',
-    //         name: 'cams-env-test-v0.1.0',
-    //         enabled: true
-    //       },
-    //       {
-    //         id: 'ias-knowledge-base-v0.1.0',
-    //         name: 'ias-knowledge-base-v0.1.0',
-    //         enabled: true
-    //       },
-    //       {
-    //         id: 'answersai-marketing-v0.1.0',
-    //         name: 'answersai-marketing-v0.1.0',
-    //         enabled: true
-    //       },
-    //       {
-    //         id: 'trotto-go-links-v0.1.0',
-    //         name: 'trotto-go-links-v0.1.0',
-    //         enabled: true
-    //       },
-    //       {
-    //         id: 'last-rev-contentful-app-v0.1.0',
-    //         name: 'last-rev-contentful-app-v0.1.0',
-    //         enabled: true
-    //       },
-    //       {
-    //         id: 'contentful-sidekick-v1.0.0',
-    //         name: 'contentful-sidekick-v1.0.0',
-    //         enabled: true
-    //       },
-    //       {
-    //         id: 'lastrev-next-starter-v0.1.0',
-    //         name: 'lastrev-next-starter-v0.1.0',
+    //         id: 'sample-project-v2.1.0',
+    //         name: 'sample-project-v2.1.0',
     //         enabled: true
     //       }
     //     ]
     //   };
     // } catch (error) {
-    //   console.log('JiraSettingsError', error);
+    //   console.log('CodebaseSettingsError', error);
     // }
-
-    // const fileSettings =
-    //   (newSettings as any)?.files?.url?.reduce((acc: any, file: string) => {
-    //     acc[file] = { file };
-    //     return acc;
-    //   }, {}) || {};
 
     // try {
     //   newSettings.files = {
-    //     url: [...fileSettings]
+    //     url: [
+    //       {
+    //         id: 'sample-document',
+    //         fileId: 'https://example.com/sample-document.pdf',
+    //         enabled: true
+    //       },
+    //       {
+    //         id: 'user-guide',
+    //         fileId: 'https://example.com/guide.pdf',
+    //         enabled: true
+    //       }
+    //     ]
     //   };
     // } catch (error) {
     //   console.log('FilesSettingsError', error);
     // }
 
-    // const documentSettings =
-    //   (newSettings as any)?.document?.url?.reduce((acc: any, document: string) => {
-    //     acc[document] = { document };
-    //     return acc;
-    //   }, {}) || {};
-
     // try {
     //   newSettings.document = {
-    //     url: [...documentSettings]
+    //     url: [
+    //       {
+    //         id: 'api-reference',
+    //         title: 'API Reference Documentation',
+    //         enabled: true
+    //       },
+    //       {
+    //         id: 'user-guide',
+    //         title: 'User Guide Documentation',
+    //         enabled: true
+    //       }
+    //     ]
     //   };
     // } catch (error) {
-    //   console.log('DocumenteSettingsError', error);
+    //   console.log('DocumentSettingsError', error);
     // }
 
     try {

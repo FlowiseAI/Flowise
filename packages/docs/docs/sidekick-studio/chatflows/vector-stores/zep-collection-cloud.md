@@ -1,12 +1,12 @@
 ---
-description: Zep Collection - Cloud Vector Store for AnswerAI
+description: Zep Collection - Cloud Vector Store for AnswerAgentAI
 ---
 
 # Zep Collection - Cloud Vector Store
 
 ## Overview
 
-The Zep Collection - Cloud Vector Store is a powerful component in AnswerAI that allows you to store, retrieve, and search vector embeddings efficiently. It uses Zep, a fast and scalable building block for LLM applications, to manage your vector data in the cloud.
+The Zep Collection - Cloud Vector Store is a powerful component in AnswerAgentAI that allows you to store, retrieve, and search vector embeddings efficiently. It uses Zep, a fast and scalable building block for LLM applications, to manage your vector data in the cloud.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Zep Collection - Cloud Vector Store is a powerful component in AnswerAI that
 
 ## How to Use
 
-1. Add the "Zep Collection - Cloud" node to your AnswerAI canvas.
+1. Add the "Zep Collection - Cloud" node to your AnswerAgentAI canvas.
 2. Configure the node with the following settings:
 
     a. Connect Credential: Select or create a Zep Memory API credential.
@@ -60,4 +60,4 @@ The Zep Collection - Cloud Vector Store is a powerful component in AnswerAI that
     - Verify that your metadata filters are correctly formatted as JSON.
     - Double-check the "Top K" value to ensure you're retrieving the desired number of results.
 
-If you encounter persistent issues, consult the AnswerAI documentation or reach out to support for assistance.
+If you encounter persistent issues, consult the AnswerAgentAI documentation or reach out to support for assistance.

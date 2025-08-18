@@ -6,13 +6,13 @@ description: Zep Collection - Open Source Vector Store
 
 ## Overview
 
-The Zep Vector Store is a powerful component in AnswerAI that allows you to store, retrieve, and search embedded data efficiently. It's designed for fast and scalable operations, making it an excellent building block for LLM applications.
+The Zep Vector Store is a powerful component in AnswerAgentAI that allows you to store, retrieve, and search embedded data efficiently. It's designed for fast and scalable operations, making it an excellent building block for LLM applications.
 
 ## Key Benefits
 
 -   Fast and scalable similarity search
 -   Efficient storage and retrieval of embedded data
--   Seamless integration with AnswerAI workflows
+-   Seamless integration with AnswerAgentAI workflows
 
 ## How to Use
 
@@ -56,4 +56,4 @@ The Zep Vector Store is a powerful component in AnswerAI that allows you to stor
     - Double-check your metadata filter syntax if you're using one.
     - Verify that your documents were properly ingested into the vector store.
 
-If you encounter persistent issues, consult the AnswerAI documentation or reach out to our support team for assistance.
+If you encounter persistent issues, consult the AnswerAgentAI documentation or reach out to our support team for assistance.

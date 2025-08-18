@@ -6,7 +6,7 @@ description: Cache LLM response in Redis, useful for sharing cache across multip
 
 ## Overview
 
-The Redis Cache feature in AnswerAI allows you to store Language Model (LLM) responses using Redis, a high-performance, in-memory data store. This caching mechanism is particularly useful for sharing cache across multiple processes or servers, improving response times, and reducing the load on your LLM service.
+The Redis Cache feature in AnswerAgentAI allows you to store Language Model (LLM) responses using Redis, a high-performance, in-memory data store. This caching mechanism is particularly useful for sharing cache across multiple processes or servers, improving response times, and reducing the load on your LLM service.
 
 ## Key Benefits
 
@@ -23,9 +23,9 @@ The Redis Cache feature in AnswerAI allows you to store Language Model (LLM) res
     -   Install Redis on your server or use a managed Redis service
     -   Note down the connection details (host, port, username, password)
 
-2.  Configure the Redis Cache credential in AnswerAI:
+2.  Configure the Redis Cache credential in AnswerAgentAI:
 
-    -   Navigate to the credentials section in AnswerAI
+    -   Navigate to the credentials section in AnswerAgentAI
     -   Create a new credential of type 'redisCacheApi' or 'redisCacheUrlApi'
     -   For 'redisCacheApi', enter the Redis host, port, username, and password
     -   For 'redisCacheUrlApi', enter the Redis connection URL
@@ -33,7 +33,7 @@ The Redis Cache feature in AnswerAI allows you to store Language Model (LLM) res
         <!-- TODO: Screenshot of creating Redis Cache credential -->
             <figure><img src="/.gitbook/assets/screenshots/redis cache api credentials.png" alt="" /><figcaption><p>Redis Cache Credentials &#x26; Drop UI</p></figcaption></figure>
 
-3.  Add the Redis Cache node to your AnswerAI workflow:
+3.  Add the Redis Cache node to your AnswerAgentAI workflow:
     <!-- TODO: Screenshot of adding Redis Cache node to the workflow -->
     <figure><img src="/.gitbook/assets/screenshots/redis cache configuration.png" alt="" /><figcaption><p>Redis Cache Configuration &#x26; Drop UI</p></figcaption></figure>
 
@@ -110,9 +110,9 @@ The Redis Cache feature in AnswerAI allows you to store Language Model (LLM) res
     - Implement proper error handling for scenarios where cached data might be inconsistent
 
 5. SSL connection problems:
-    - Verify that SSL is properly configured on both the Redis server and in the AnswerAI credential
+    - Verify that SSL is properly configured on both the Redis server and in the AnswerAgentAI credential
     - Check SSL certificate validity and expiration
 
-If you encounter any issues not covered here, refer to the Redis documentation or contact AnswerAI support for assistance.
+If you encounter any issues not covered here, refer to the Redis documentation or contact AnswerAgentAI support for assistance.
 
-By leveraging the Redis Cache feature, you can significantly enhance the performance, scalability, and efficiency of your AnswerAI workflows, especially for high-traffic applications or scenarios requiring shared caching across multiple processes or servers.
+By leveraging the Redis Cache feature, you can significantly enhance the performance, scalability, and efficiency of your AnswerAgentAI workflows, especially for high-traffic applications or scenarios requiring shared caching across multiple processes or servers.

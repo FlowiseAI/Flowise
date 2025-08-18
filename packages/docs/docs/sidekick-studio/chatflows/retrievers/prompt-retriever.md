@@ -16,7 +16,7 @@ The Prompt Retriever node allows you to store prompt templates with a name and d
 
 ## How to Use
 
-1. Add the Prompt Retriever node to your canvas in the AnswerAI Studio.
+1. Add the Prompt Retriever node to your canvas in the AnswerAgentAI Studio.
 2. Configure the node by filling in the following fields:
 
     a. Prompt Name: Enter a unique name for your prompt template (e.g., "physics-qa").
@@ -53,4 +53,4 @@ The Prompt Retriever node allows you to store prompt templates with a name and d
     - Try to keep your system messages concise while still providing necessary context.
     - Avoid creating too many Prompt Retriever nodes in a single workflow, as this may impact performance.
 
-By using the Prompt Retriever node effectively, you can create a powerful and flexible system for managing specialized prompts in your AnswerAI workflows, enhancing the capabilities and accuracy of your AI-powered applications.
+By using the Prompt Retriever node effectively, you can create a powerful and flexible system for managing specialized prompts in your AnswerAgentAI workflows, enhancing the capabilities and accuracy of your AI-powered applications.

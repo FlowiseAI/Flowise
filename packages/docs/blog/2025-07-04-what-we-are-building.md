@@ -9,6 +9,8 @@ tags: [release, alpha, platform, development, decentralization, local-first]
 
 Today marks a pivotal moment in our journey toward democratizing AI. With the release of **AnswerAgent Alpha 0.42**, we're not just shipping features—we're delivering on our promise to build AI for all, not for the few.
 
+<!-- truncate -->
+
 ## 🚀 A Complete AI Workforce Platform
 
 AnswerAgent has evolved into something remarkable: **the world's first comprehensive, privacy-first platform for building and managing intelligent agent workforces**. But what does that actually mean for you?
@@ -92,7 +94,7 @@ The web platform you're using today is just the beginning. We're actively develo
 
 **This is where you come in.**
 
-We're in the middle of our **Alpha Sprint** (ending July 21st), and we need developers who share our vision of ethical, decentralized AI.
+We need developers who share our vision of ethical, decentralized AI.
 
 ### Join the Alpha Sprint
 

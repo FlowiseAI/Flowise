@@ -6,7 +6,7 @@ description: Load and process documents from a folder using Unstructured.io
 
 ## Overview
 
-The Unstructured Folder Loader is a powerful feature in AnswerAI that allows you to load and process documents from a specified folder using Unstructured.io. This tool is particularly useful for extracting and structuring data from various file types, making it easier to work with large volumes of unstructured documents.
+The Unstructured Folder Loader is a powerful feature in AnswerAgentAI that allows you to load and process documents from a specified folder using Unstructured.io. This tool is particularly useful for extracting and structuring data from various file types, making it easier to work with large volumes of unstructured documents.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Unstructured Folder Loader is a powerful feature in AnswerAI that allows you
 
 ## How to Use
 
-1. In the AnswerAI interface, locate and select the "Unstructured Folder Loader" node.
+1. In the AnswerAgentAI interface, locate and select the "Unstructured Folder Loader" node.
 
 2. Configure the following required settings:
 
@@ -35,7 +35,7 @@ The Unstructured Folder Loader is a powerful feature in AnswerAI that allows you
 
 5. Configure any other optional parameters to fine-tune the document processing.
 
-6. Connect the Unstructured Folder Loader node to other nodes in your AnswerAI workflow.
+6. Connect the Unstructured Folder Loader node to other nodes in your AnswerAgentAI workflow.
 
 7. Run your workflow to process the documents in the specified folder.
 

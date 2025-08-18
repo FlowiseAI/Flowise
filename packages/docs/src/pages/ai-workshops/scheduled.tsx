@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
 
 import styles from '../index.module.css'
@@ -118,7 +118,7 @@ export default function AIWorkshopsScheduled(): JSX.Element {
                 description='Your AI workshop consultation has been scheduled. Learn what happens next and explore our resources while you wait.'
             >
                 <ScheduledHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <AdditionalResourcesSection />
                 </main>

@@ -6,17 +6,17 @@ description: Split flows based on If Else javascript functions
 
 ## Overview
 
-The IfElse Function is a powerful utility node in AnswerAI that allows you to create conditional logic within your workflows. This node evaluates a condition and directs the flow based on whether the condition is true or false.
+The IfElse Function is a powerful utility node in AnswerAgentAI that allows you to create conditional logic within your workflows. This node evaluates a condition and directs the flow based on whether the condition is true or false.
 
 ## Key Benefits
 
 -   Create dynamic, branching workflows based on specific conditions
 -   Implement custom logic using JavaScript functions
--   Easily integrate with other nodes and variables in your AnswerAI workflow
+-   Easily integrate with other nodes and variables in your AnswerAgentAI workflow
 
 ## How to Use
 
-1. Add the IfElse Function node to your canvas in the AnswerAI Studio.
+1. Add the IfElse Function node to your canvas in the AnswerAgentAI Studio.
 2. Configure the node's settings:
    a. Input Variables (optional): Define any variables you want to use in your functions.
    b. IfElse Name (optional): Give your condition a descriptive name.
@@ -62,4 +62,4 @@ return false
 <!-- TODO: Add a screenshot showing an example of a complete IfElse Function node setup in a workflow -->
 <figure><img src="/.gitbook/assets/screenshots/ifelseinworkflow.png" alt="" /><figcaption><p> Ifelse Function Example   &#x26; Drop UI</p></figcaption></figure>
 
-Remember, the IfElse Function node is a powerful tool for creating dynamic workflows in AnswerAI. By mastering its use, you can create sophisticated, responsive chatbots and applications that adapt to various conditions and user inputs.
+Remember, the IfElse Function node is a powerful tool for creating dynamic workflows in AnswerAgentAI. By mastering its use, you can create sophisticated, responsive chatbots and applications that adapt to various conditions and user inputs.

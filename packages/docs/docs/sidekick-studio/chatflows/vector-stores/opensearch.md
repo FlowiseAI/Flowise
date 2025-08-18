@@ -6,17 +6,17 @@ description: OpenSearch Vector Store for efficient similarity search and data re
 
 ## Overview
 
-The OpenSearch Vector Store node in AnswerAI allows you to store and retrieve high-dimensional vectors efficiently. It's designed for performing similarity searches on embedded data, making it ideal for various natural language processing and machine learning tasks.
+The OpenSearch Vector Store node in AnswerAgentAI allows you to store and retrieve high-dimensional vectors efficiently. It's designed for performing similarity searches on embedded data, making it ideal for various natural language processing and machine learning tasks.
 
 ## Key Benefits
 
 -   Efficient storage and retrieval of high-dimensional vectors
 -   Fast similarity searches for improved query performance
--   Seamless integration with other AnswerAI components
+-   Seamless integration with other AnswerAgentAI components
 
 ## How to Use
 
-1. Add the OpenSearch Vector Store node to your AnswerAI workflow canvas.
+1. Add the OpenSearch Vector Store node to your AnswerAgentAI workflow canvas.
 2. Connect the necessary input nodes:
 
     - Document (optional): Connect a Document node if you want to upsert data.
@@ -63,4 +63,4 @@ The OpenSearch Vector Store node in AnswerAI allows you to store and retrieve hi
     - Check if the embeddings model used for indexing matches the one used for querying.
     - Verify that the index contains data by querying it directly in OpenSearch.
 
-If you encounter persistent issues, consult the AnswerAI documentation or reach out to our support team for assistance.
+If you encounter persistent issues, consult the AnswerAgentAI documentation or reach out to our support team for assistance.

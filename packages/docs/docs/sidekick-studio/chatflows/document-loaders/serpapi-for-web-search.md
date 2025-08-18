@@ -6,11 +6,11 @@ description: Load and process data from web search results using SerpAPI
 
 ## Overview
 
-The SerpAPI For Web Search feature in AnswerAI allows you to load and process data from web search results. This powerful tool enables you to integrate web search capabilities into your workflows, providing access to a wide range of up-to-date information from the internet.
+The SerpAPI For Web Search feature in AnswerAgentAI allows you to load and process data from web search results. This powerful tool enables you to integrate web search capabilities into your workflows, providing access to a wide range of up-to-date information from the internet.
 
 ## Key Benefits
 
--   Access real-time web search results within AnswerAI
+-   Access real-time web search results within AnswerAgentAI
 -   Easily integrate web data into your workflows
 -   Customize search queries and process results according to your needs
 
@@ -46,4 +46,4 @@ The SerpAPI For Web Search feature in AnswerAI allows you to load and process da
 <!-- TODO: Screenshot of a complete workflow using SerpAPI For Web Search -->
 <figure><img src="/.gitbook/assets/screenshots/serpapiinaworkflow.png" alt="" /><figcaption><p> Search API Node Configuration Node  &#x26; Drop UI</p></figcaption></figure>
 
-By following this documentation, you should be able to effectively use the SerpAPI For Web Search feature in AnswerAI to enhance your workflows with web search capabilities.
+By following this documentation, you should be able to effectively use the SerpAPI For Web Search feature in AnswerAgentAI to enhance your workflows with web search capabilities.

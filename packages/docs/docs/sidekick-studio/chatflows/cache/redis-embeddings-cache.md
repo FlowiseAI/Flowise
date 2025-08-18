@@ -6,7 +6,7 @@ description: Cache generated Embeddings in Redis to improve performance and effi
 
 ## Overview
 
-The Redis Embeddings Cache feature in AnswerAI allows you to store generated embeddings in Redis, a high-performance, in-memory data store. This caching mechanism improves performance by avoiding the need to recompute embeddings for previously processed text, leading to faster response times and reduced computational overhead.
+The Redis Embeddings Cache feature in AnswerAgentAI allows you to store generated embeddings in Redis, a high-performance, in-memory data store. This caching mechanism improves performance by avoiding the need to recompute embeddings for previously processed text, leading to faster response times and reduced computational overhead.
 
 ## Key Benefits
 
@@ -23,16 +23,16 @@ The Redis Embeddings Cache feature in AnswerAI allows you to store generated emb
     - Install Redis on your server or use a managed Redis service
     - Note down the connection details (host, port, username, password)
 
-2. Configure the Redis Cache credential in AnswerAI:
+2. Configure the Redis Cache credential in AnswerAgentAI:
 
-    - Navigate to the credentials section in AnswerAI
+    - Navigate to the credentials section in AnswerAgentAI
     - Create a new credential of type 'redisCacheApi' or 'redisCacheUrlApi'
     - For 'redisCacheApi', enter the Redis host, port, username, and password
     - For 'redisCacheUrlApi', enter the Redis connection URL
     - If using SSL, enable the SSL option
-          <figure><img src="/.gitbook/assets/screenshots/redis cache api credentials.png" alt="" /><figcaption><p>Redis Cache API Configuration &#x26; Drop UI</p></figcaption></figure> <!-- TODO: Screenshot of creating Redis Cache credential -->
+        <figure><img src="/.gitbook/assets/screenshots/redis cache api credentials.png" alt="" /><figcaption><p>Redis Cache API Configuration &#x26; Drop UI</p></figcaption></figure> <!-- TODO: Screenshot of creating Redis Cache credential -->
 
-3. Add the Redis Embeddings Cache node to your AnswerAI workflow:
+3. Add the Redis Embeddings Cache node to your AnswerAgentAI workflow:
     <!-- TODO: Screenshot of adding Redis Embeddings Cache node to the workflow -->
     <figure><img src="/.gitbook/assets/screenshots/redis embedding cache configuration.png" alt="" /><figcaption><p>Redis Embedding Cache Node &#x26; Drop UI</p></figcaption></figure>  <!-- TODO: Screenshot of creating Redis Cache credential -->
 
@@ -42,7 +42,7 @@ The Redis Embeddings Cache feature in AnswerAI allows you to store generated emb
     - Connect the previously created Redis credential to the node
     - (Optional) Set the Time to Live (TTL) in seconds (default is 3600 seconds or 1 hour)
     - (Optional) Specify a namespace for the cache
-          <!-- TODO: Screenshot showing the configuration of the Redis Embeddings Cache node -->
+        <!-- TODO: Screenshot showing the configuration of the Redis Embeddings Cache node -->
 
 5. Connect the Redis Embeddings Cache node to other nodes in your workflow that require embeddings:
       <!-- TODO: Screenshot showing the connection between Redis Embeddings Cache and other relevant nodes -->
@@ -115,7 +115,7 @@ The Redis Embeddings Cache feature in AnswerAI allows you to store generated emb
 
 5. SSL connection problems:
 
-    - Verify that SSL is properly configured on both the Redis server and in the AnswerAI credential
+    - Verify that SSL is properly configured on both the Redis server and in the AnswerAgentAI credential
     - Check SSL certificate validity and expiration
 
 6. Unexpected cache evictions:
@@ -123,4 +123,4 @@ The Redis Embeddings Cache feature in AnswerAI allows you to store generated emb
 
 Remember that the Redis Embeddings Cache is cleared based on the TTL you set (default 1 hour). For long-term persistence, consider implementing a database-backed caching solution in addition to or instead of the Redis Embeddings Cache.
 
-By leveraging the Redis Embeddings Cache feature, you can significantly enhance the performance and efficiency of your AnswerAI workflows, especially for tasks involving repetitive text processing or embedding-based operations across multiple processes or servers.
+By leveraging the Redis Embeddings Cache feature, you can significantly enhance the performance and efficiency of your AnswerAgentAI workflows, especially for tasks involving repetitive text processing or embedding-based operations across multiple processes or servers.

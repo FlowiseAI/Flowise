@@ -1,12 +1,12 @@
 ---
-description: Learn how to use the Vectara QA Chain feature in AnswerAI
+description: Learn how to use the Vectara QA Chain feature in AnswerAgentAI
 ---
 
 # Vectara QA Chain
 
 ## Overview
 
-The Vectara QA Chain is a powerful feature in AnswerAI that enables you to perform question-answering tasks using Vectara's advanced retrieval and summarization capabilities. This chain allows you to query your knowledge base in natural language and receive concise, relevant answers based on the information stored in your Vectara vector store.
+The Vectara QA Chain is a powerful feature in AnswerAgentAI that enables you to perform question-answering tasks using Vectara's advanced retrieval and summarization capabilities. This chain allows you to query your knowledge base in natural language and receive concise, relevant answers based on the information stored in your Vectara vector store.
 
 ## Key Benefits
 

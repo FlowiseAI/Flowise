@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -15,8 +15,8 @@ function BrowserExtensionHero() {
             <div className={styles.heroContent}>
                 <h1 className={styles.heroTitle}>Browser Sidekick</h1>
                 <p className={styles.heroSubtitle}>
-                   Bring Alpha along as you browse the web as well as access specialized sidekicks, connect to your tools, and
-                    supercharge your workflow without leaving your tab.
+                    Bring Alpha along as you browse the web as well as access specialized sidekicks, connect to your tools, and supercharge
+                    your workflow without leaving your tab.
                 </p>
                 <div className={styles.heroCTAs}>
                     <a
@@ -287,7 +287,7 @@ export default function BrowserExtension(): JSX.Element {
                 description='Bring AI assistance to every website. Get page summaries, enhanced search, and access to your AI sidekicks without leaving your browser tab.'
             >
                 <BrowserExtensionHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <CoreFeatures />
                     <AIModels />

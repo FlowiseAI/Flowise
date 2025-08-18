@@ -29,6 +29,10 @@ function log(level, message) {
   console.log(`${prefix} ${message}${colors.reset}`);
 }
 
+// Suppress missing variable warnings when set to 'true' or '1'
+const SUPPRESS_MISSING =
+  process.env.BWS_SUPPRESS_MISSING === 'true' || process.env.BWS_SUPPRESS_MISSING === '1';
+
 // Common environment variables that can be excluded
 const envCheckExclusions = [
   'ALGOLIA_MAX_RECORDS',
@@ -107,14 +111,16 @@ function validateEnvironment() {
 
   // Report findings
   if (missingVars.length > 0) {
-    log('warn', 'The following environment variables are missing:');
-    missingVars.forEach((varName) => {
-      const inTurbo = turboVars.includes(varName);
-      const inRuntime = runtimeVars.includes(varName);
-      const source =
-        inTurbo && inRuntime ? 'turbo.json & runtime' : inTurbo ? 'turbo.json' : 'runtime scan';
-      console.log(`  ${colors.yellow}${varName}${colors.reset} (${source})`);
-    });
+    if (!SUPPRESS_MISSING) {
+      log('warn', 'The following environment variables are missing:');
+      missingVars.forEach((varName) => {
+        const inTurbo = turboVars.includes(varName);
+        const inRuntime = runtimeVars.includes(varName);
+        const source =
+          inTurbo && inRuntime ? 'turbo.json & runtime' : inTurbo ? 'turbo.json' : 'runtime scan';
+        console.log(`  ${colors.yellow}${varName}${colors.reset} (${source})`);
+      });
+    }
 
     // Don't fail the build, just warn
     log('warn', 'Some environment variables are missing but continuing build...');

@@ -1,12 +1,12 @@
 ---
-description: Conversation Summary Buffer Memory in AnswerAI
+description: Conversation Summary Buffer Memory in AnswerAgentAI
 ---
 
 # Conversation Summary Buffer Memory
 
 ## Overview
 
-The Conversation Summary Buffer Memory is a powerful feature in AnswerAI that uses token length to decide when to summarize conversations. This memory type helps manage long conversations efficiently by summarizing older parts of the conversation when a token limit is reached.
+The Conversation Summary Buffer Memory is a powerful feature in AnswerAgentAI that uses token length to decide when to summarize conversations. This memory type helps manage long conversations efficiently by summarizing older parts of the conversation when a token limit is reached.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Conversation Summary Buffer Memory is a powerful feature in AnswerAI that us
 
 ## How to Use
 
-1. Add the Conversation Summary Buffer Memory node to your AnswerAI workflow canvas.
+1. Add the Conversation Summary Buffer Memory node to your AnswerAgentAI workflow canvas.
 2. Configure the node with the following settings:
 
     a. **Chat Model**: Select the language model to use for summarization.

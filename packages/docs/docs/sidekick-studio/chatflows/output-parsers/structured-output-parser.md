@@ -6,7 +6,7 @@ description: Parse LLM output into structured JSON format
 
 ## Overview
 
-The Structured Output Parser is a powerful feature in AnswerAI that allows you to parse the output of a Language Model (LLM) call into a predefined JSON structure. This tool is essential for extracting structured information from the LLM's responses, making it easier to process and use the data in your workflows.
+The Structured Output Parser is a powerful feature in AnswerAgentAI that allows you to parse the output of a Language Model (LLM) call into a predefined JSON structure. This tool is essential for extracting structured information from the LLM's responses, making it easier to process and use the data in your workflows.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Structured Output Parser is a powerful feature in AnswerAI that allows you t
 
 ## How to Use
 
-1. Add the Structured Output Parser node to your AnswerAI canvas.
+1. Add the Structured Output Parser node to your AnswerAgentAI canvas.
 2. Configure the node with the following settings:
 
     a. Autofix (Optional):
@@ -79,4 +79,4 @@ This structure will parse the LLM output into an object with 'answer' and 'sourc
 <!-- TODO: Add a screenshot of a sample workflow using the Structured Output Parser -->
 <figure><img src="/.gitbook/assets/screenshots/structuredoutputparserinaworkflow.png" alt="" /><figcaption><p> Structured Output Parser node In a workflow &#x26; Drop UI</p></figcaption></figure>
 
-By using the Structured Output Parser, you can transform raw LLM responses into clean, structured data, enhancing the capabilities and reliability of your AnswerAI workflows.
+By using the Structured Output Parser, you can transform raw LLM responses into clean, structured data, enhancing the capabilities and reliability of your AnswerAgentAI workflows.

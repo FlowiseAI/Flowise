@@ -6,7 +6,7 @@ description: Load and process multiple files from a folder (Local Only)
 
 ## Overview
 
-The Folder with Files feature in AnswerAI allows you to load and process multiple documents from a specified folder on your system. This powerful tool supports various file formats and provides options for recursive folder scanning, text splitting, and metadata management.
+The Folder with Files feature in AnswerAgentAI allows you to load and process multiple documents from a specified folder on your system. This powerful tool supports various file formats and provides options for recursive folder scanning, text splitting, and metadata management.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Folder with Files feature in AnswerAI allows you to load and process multipl
 
 ## How to Use
 
-1. In the AnswerAI interface, locate and select the "Folder with Files" option from the Document Loaders category.
+1. In the AnswerAgentAI interface, locate and select the "Folder with Files" option from the Document Loaders category.
 
 2. Configure the following required settings:
 
@@ -30,11 +30,11 @@ The Folder with Files feature in AnswerAI allows you to load and process multipl
     - Additional Metadata: Add extra metadata to the extracted documents in JSON format.
     - Omit Metadata Keys: Specify metadata keys to exclude from the final output.
 
-4. Connect the Folder with Files node to other nodes in your AnswerAI workflow as needed.
+4. Connect the Folder with Files node to other nodes in your AnswerAgentAI workflow as needed.
 
 5. Run your workflow to process the documents from the specified folder.
 
-<!-- TODO: Add a screenshot showing the Folder with Files node configuration in the AnswerAI interface -->
+<!-- TODO: Add a screenshot showing the Folder with Files node configuration in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/folderwithfiles.png" alt="" /><figcaption><p> Folder with Files Node Configuration &#x26; Drop UI</p></figcaption></figure>
 
 <figure><img src="/.gitbook/assets/screenshots/folder with files in a workflow.png" alt="" /><figcaption><p> Folder with Files Nodes Configuration In a workflow &#x26; Drop UI</p></figcaption></figure>
@@ -70,4 +70,4 @@ The Folder with Files feature in AnswerAI allows you to load and process multipl
 
 <!-- TODO: Add a screenshot showing example output or error messages for common issues -->
 
-By following these instructions and best practices, you can effectively use the Folder with Files feature in AnswerAI to process multiple documents from a single folder, streamlining your document analysis workflows.
+By following these instructions and best practices, you can effectively use the Folder with Files feature in AnswerAgentAI to process multiple documents from a single folder, streamlining your document analysis workflows.

@@ -6,7 +6,7 @@ description: Upsert embedded data and perform similarity or mmr search using Sup
 
 ## Overview
 
-The Supabase Vector Store node in AnswerAI allows you to store and retrieve embedded data using Supabase's pgvector extension. This feature enables efficient similarity searches and MMR (Maximal Marginal Relevance) queries on your vector data.
+The Supabase Vector Store node in AnswerAgentAI allows you to store and retrieve embedded data using Supabase's pgvector extension. This feature enables efficient similarity searches and MMR (Maximal Marginal Relevance) queries on your vector data.
 
 ## Key Benefits
 
@@ -17,7 +17,7 @@ The Supabase Vector Store node in AnswerAI allows you to store and retrieve embe
 ## How to Use
 
 1. Set up a Supabase project and enable the pgvector extension (see Prerequisites section).
-2. Add the Supabase Vector Store node to your AnswerAI workflow.
+2. Add the Supabase Vector Store node to your AnswerAgentAI workflow.
 3. Connect the required inputs:
     - Document: Connect to a Document Loader node (optional)
     - Embeddings: Connect to an Embeddings node
@@ -98,7 +98,7 @@ $$;
 2. **Embedding dimension mismatch**: If you encounter errors related to embedding dimensions, make sure the vector size in your SQL setup matches the output of your chosen embedding model (e.g., 1536 for OpenAI embeddings).
 3. **Metadata filtering not working**: Double-check the JSON format of your metadata filter and ensure that the metadata keys exist in your stored documents.
 
-If you continue to experience issues, consult the AnswerAI documentation or reach out to support for further assistance.
+If you continue to experience issues, consult the AnswerAgentAI documentation or reach out to support for further assistance.
 
 ## Resources
 

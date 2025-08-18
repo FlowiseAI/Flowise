@@ -165,6 +165,10 @@ Optional variables:
 - `DEBUG=true`: Enable detailed logging
 - `VERBOSE=true`: Show additional debug information
 - `BWS_ENV`: Force specific environment (prod/dev/local)
+- `BWS_PROJECT_ID`: Directly specify a BWS project UUID to bypass project configuration (e.g., `4ba4dc04-091f-4bf9-ba82-b2f900ee7d2a`)
+- `BWS_NO_OVERRIDE=true`: Prevent automatic updates to local `bwsconfig.json` from BWS secrets (useful in CI/CD or when you want to preserve local configuration)
+- `BWS_SUPPRESS_ALL=true`: Suppress all secure-run output while preserving wrapped command output (errors remain visible)
+- `BWS_SUPPRESS_MISSING=true`: Suppress missing environment variable warnings during validation
 
 ### Platform-Specific Setup
 
@@ -221,6 +225,12 @@ BWS_ENV=dev pnpm dev
 
 # Debug mode
 DEBUG=true pnpm dev
+
+# Prevent BWS config override (useful in CI/CD)
+BWS_NO_OVERRIDE=true pnpm dev
+
+# Use direct project ID (bypass project configuration)
+BWS_PROJECT_ID=4ba4dc04-091f-4bf9-ba82-b2f900ee7d2a pnpm dev
 ```
 
 2. Testing Platform Builds:

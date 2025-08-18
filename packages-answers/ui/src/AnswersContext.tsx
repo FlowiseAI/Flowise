@@ -209,9 +209,42 @@ export function AnswersProvider({
     const chatbotConfig = React.useMemo(() => selectedSidekickData?.chatbotConfig, [selectedSidekickData])
     useEffect(() => {
         if (sidekicks) {
-            setSidekick(
-                sidekicks.find((s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid || s.id === chat?.chatflowId)
+            // Helper function to transform Sidekick to basic SidekickListItem structure
+            const transformSidekick = (sidekick: any): SidekickListItem =>
+                ({
+                    id: sidekick.id,
+                    chatbotConfig: sidekick.chatflow?.chatbotConfig,
+                    flowData: sidekick.chatflow?.flowData || sidekick.flowData,
+                    // Add minimal required properties
+                    isFavorite: false,
+                    sharedWith: '',
+                    tagString: '',
+                    chatflowId: sidekick.id,
+                    answersConfig: sidekick.chatflow?.answersConfig,
+                    constraints: {
+                        isSpeechToTextEnabled: false,
+                        isImageUploadAllowed: false,
+                        uploadSizeAndTypes: []
+                    },
+                    chatflow: sidekick.chatflow,
+                    placeholder: sidekick.placeholder || '',
+                    tags: sidekick.tags || [],
+                    aiModel: sidekick.aiModel || '',
+                    label: sidekick.label || '',
+                    chatflowDomain: sidekick.chatflowDomain || ''
+                } as SidekickListItem)
+
+            // First, try to find sidekick from existing chat context
+            const existingSidekick = sidekicks.find(
+                (s) => s.id === chat?.messages?.[chat?.messages?.length - 1]?.chatflowid || s.id === chat?.chatflowId
             )
+
+            if (existingSidekick) {
+                setSidekick(transformSidekick(existingSidekick))
+            } else if (!chat && sidekicks.length > 0) {
+                // If no chat exists, set the first available sidekick to enable starter prompts
+                setSidekick(transformSidekick(sidekicks[0]))
+            }
         }
     }, [sidekicks, chat])
 

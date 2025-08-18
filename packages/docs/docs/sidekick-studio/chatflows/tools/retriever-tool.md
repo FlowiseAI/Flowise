@@ -6,7 +6,7 @@ description: Use a retriever as an allowed tool for agents
 
 ## Overview
 
-The Retriever Tool node allows you to incorporate a retriever as a tool for agents in AnswerAI workflows. This tool enables agents to search and retrieve relevant documents based on a given query, enhancing their ability to access and utilize information.
+The Retriever Tool node allows you to incorporate a retriever as a tool for agents in AnswerAgentAI workflows. This tool enables agents to search and retrieve relevant documents based on a given query, enhancing their ability to access and utilize information.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Retriever Tool node allows you to incorporate a retriever as a tool for agen
 
 ## How to Use
 
-1. Add the Retriever Tool node to your AnswerAI canvas.
+1. Add the Retriever Tool node to your AnswerAgentAI canvas.
 2. Configure the following parameters:
 
     - Retriever Name: Provide a unique name for the retriever tool (e.g., "search_state_of_union").

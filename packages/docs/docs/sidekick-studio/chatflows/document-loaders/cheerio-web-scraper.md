@@ -1,12 +1,12 @@
 ---
-description: Load and process web content using Cheerio Web Scraper in AnswerAI
+description: Load and process web content using Cheerio Web Scraper in AnswerAgentAI
 ---
 
 # Cheerio Web Scraper
 
 ## Overview
 
-The Cheerio Web Scraper is a powerful tool in AnswerAI that allows you to load and process data from web pages. It provides flexible options for scraping content, handling relative links, and customizing the extracted data.
+The Cheerio Web Scraper is a powerful tool in AnswerAgentAI that allows you to load and process data from web pages. It provides flexible options for scraping content, handling relative links, and customizing the extracted data.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Cheerio Web Scraper is a powerful tool in AnswerAI that allows you to load a
 
 ## How to Use
 
-1. Add the Cheerio Web Scraper node to your AnswerAI workflow.
+1. Add the Cheerio Web Scraper node to your AnswerAgentAI workflow.
 2. Configure the node with the following settings:
 
     a. **URL**: Enter the target web page URL.
@@ -73,7 +73,7 @@ class Cheerio_DocumentLoaders implements INode {
 
 The `init` method is the main function that processes the input and returns the extracted documents. It handles URL validation, web crawling or XML sitemap scraping, content extraction, and metadata customization.
 
-Remember to handle errors and edge cases when integrating the Cheerio Web Scraper into your AnswerAI workflows, especially when dealing with external websites that may change or become unavailable.
+Remember to handle errors and edge cases when integrating the Cheerio Web Scraper into your AnswerAgentAI workflows, especially when dealing with external websites that may change or become unavailable.
 
 ## Resources
 

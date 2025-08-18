@@ -6,17 +6,17 @@ description: Generate embeddings for text using TogetherAI models
 
 ## Overview
 
-TogetherAI Embedding is a powerful feature in AnswerAI that allows you to generate embeddings for a given text using TogetherAI's embedding models. Embeddings are numerical representations of text that capture semantic meaning, making them useful for various natural language processing tasks.
+TogetherAI Embedding is a powerful feature in AnswerAgentAI that allows you to generate embeddings for a given text using TogetherAI's embedding models. Embeddings are numerical representations of text that capture semantic meaning, making them useful for various natural language processing tasks.
 
 ## Key Benefits
 
 -   Access to state-of-the-art embedding models from TogetherAI
--   Easily integrate embeddings into your AnswerAI workflows
+-   Easily integrate embeddings into your AnswerAgentAI workflows
 -   Improve the performance of text-based tasks such as similarity search and text classification
 
 ## How to Use
 
-To use the TogetherAI Embedding feature in AnswerAI, follow these steps:
+To use the TogetherAI Embedding feature in AnswerAgentAI, follow these steps:
 
 1. Add the TogetherAI Embedding node to your workflow.
 2. Connect your TogetherAI API credential:
@@ -32,7 +32,7 @@ To use the TogetherAI Embedding feature in AnswerAI, follow these steps:
 
 4. Connect the TogetherAI Embedding node to other nodes in your workflow that require text embeddings.
 
-<!-- TODO: Add a screenshot of the TogetherAI Embedding node configuration in the AnswerAI interface -->
+<!-- TODO: Add a screenshot of the TogetherAI Embedding node configuration in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/togetheraiembeddingnode.png" alt="" /><figcaption><p> TogetherAI Embedding Node  &#x26; Drop UI</p></figcaption></figure>
 
 ## Tips and Best Practices
@@ -61,4 +61,4 @@ To use the TogetherAI Embedding feature in AnswerAI, follow these steps:
     - Consider using a cache to store and reuse embedding results for frequently used text.
     - Check your internet connection, as embedding generation requires API calls to TogetherAI servers.
 
-If you encounter any other issues or have questions about using TogetherAI Embedding in AnswerAI, please refer to our support documentation or contact our customer support team for assistance.
+If you encounter any other issues or have questions about using TogetherAI Embedding in AnswerAgentAI, please refer to our support documentation or contact our customer support team for assistance.

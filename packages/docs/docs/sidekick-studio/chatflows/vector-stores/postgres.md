@@ -6,7 +6,7 @@ description: Upsert embedded data and perform similarity search using pgvector o
 
 ## Overview
 
-The Postgres Vector Store node in AnswerAI allows you to store and retrieve embedded data using pgvector on a PostgreSQL database. This feature enables efficient similarity searches on high-dimensional vectors, making it ideal for various AI and machine learning applications.
+The Postgres Vector Store node in AnswerAgentAI allows you to store and retrieve embedded data using pgvector on a PostgreSQL database. This feature enables efficient similarity searches on high-dimensional vectors, making it ideal for various AI and machine learning applications.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Postgres Vector Store node in AnswerAI allows you to store and retrieve embe
 
 ## How to Use
 
-1. Add the Postgres Vector Store node to your AnswerAI workflow canvas.
+1. Add the Postgres Vector Store node to your AnswerAgentAI workflow canvas.
 2. Configure the node with the following parameters:
 
     - Connect Credential: Select or create a PostgresAPI credential
@@ -47,7 +47,7 @@ The Postgres Vector Store node in AnswerAI allows you to store and retrieve embe
 1. Connection issues:
 
     - Verify that the host, port, database name, and credentials are correct.
-    - Ensure that the PostgreSQL server is accessible from your AnswerAI instance.
+    - Ensure that the PostgreSQL server is accessible from your AnswerAgentAI instance.
 
 2. Performance problems:
 
@@ -59,4 +59,4 @@ The Postgres Vector Store node in AnswerAI allows you to store and retrieve embe
 
 <!-- TODO: Add a screenshot showing common error messages and their solutions -->
 
-If you encounter persistent issues, consult the AnswerAI documentation or reach out to support for further assistance.
+If you encounter persistent issues, consult the AnswerAgentAI documentation or reach out to support for further assistance.

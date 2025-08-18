@@ -1,5 +1,5 @@
 ---
-description: Vector Store Nodes in AnswerAI
+description: Vector Store Nodes in AnswerAgentAI
 ---
 
 # Vector Store Nodes
@@ -30,9 +30,9 @@ Vector stores are databases that specialize in:
 
 4. **Integration**: They often offer APIs and integrations with popular machine learning frameworks and tools.
 
-## Vector Store Nodes in AnswerAI
+## Vector Store Nodes in AnswerAgentAI
 
-AnswerAI provides a variety of vector store nodes that can be added to the canvas of Sidekick workflows in the Sidekick Studio. Each of these nodes represents a different vector store solution, offering unique features and capabilities.
+AnswerAgentAI provides a variety of vector store nodes that can be added to the canvas of Sidekick workflows in the Sidekick Studio. Each of these nodes represents a different vector store solution, offering unique features and capabilities.
 
 ### Available Vector Store Nodes
 
@@ -111,7 +111,7 @@ AnswerAI provides a variety of vector store nodes that can be added to the canva
 19. [Zep Collection - Cloud](zep-collection-cloud.md)
     - A cloud-hosted version of the Zep memory store for LLM applications.
 
-Each of these vector store nodes offers unique features and integrations within AnswerAI, allowing users to choose the most suitable solution for their specific use case and requirements.
+Each of these vector store nodes offers unique features and integrations within AnswerAgentAI, allowing users to choose the most suitable solution for their specific use case and requirements.
 
 <!-- TODO: Add a screenshot of the Vector Store Nodes section in the Sidekick Studio canvas -->
 <figure><img src="/.gitbook/assets/screenshots/vectorstorenodes.png" alt="" /><figcaption><p> Vector Store Nodes   &#x26; Drop UI</p></figcaption></figure>

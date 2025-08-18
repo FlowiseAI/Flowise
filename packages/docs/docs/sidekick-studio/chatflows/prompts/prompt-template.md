@@ -6,7 +6,7 @@ description: Create and customize templates for language model prompts
 
 ## Overview
 
-The Prompt Template node in AnswerAI allows you to create structured templates for generating prompts for language models. This feature enables you to design reusable prompt structures with placeholders for dynamic content, making it easier to create consistent and customizable prompts for various use cases.
+The Prompt Template node in AnswerAgentAI allows you to create structured templates for generating prompts for language models. This feature enables you to design reusable prompt structures with placeholders for dynamic content, making it easier to create consistent and customizable prompts for various use cases.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Prompt Template node in AnswerAI allows you to create structured templates f
 
 ## How to Use
 
-1. Add the Prompt Template node to your AnswerAI canvas.
+1. Add the Prompt Template node to your AnswerAgentAI canvas.
 2. Configure the template:
    a. In the "Template" field, enter your prompt structure with placeholders in curly braces, e.g., `{placeholder}`.
    b. (Optional) In the "Format Prompt Values" field, provide JSON data for the placeholders.

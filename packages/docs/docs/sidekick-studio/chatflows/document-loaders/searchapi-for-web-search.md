@@ -6,13 +6,13 @@ description: Load data from real-time search results using SearchAPI
 
 ## Overview
 
-The SearchAPI For Web Search feature in AnswerAI allows you to load data from real-time search results across multiple search engines. This powerful tool enables you to incorporate up-to-date information from the web directly into your AnswerAI workflows.
+The SearchAPI For Web Search feature in AnswerAgentAI allows you to load data from real-time search results across multiple search engines. This powerful tool enables you to incorporate up-to-date information from the web directly into your AnswerAgentAI workflows.
 
 ## Key Benefits
 
 -   Access real-time search results from multiple search engines
 -   Customize search parameters for precise data retrieval
--   Seamlessly integrate web search data into your AnswerAI projects
+-   Seamlessly integrate web search data into your AnswerAgentAI projects
 
 ## How to Use
 

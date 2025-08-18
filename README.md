@@ -382,6 +382,47 @@ pnpm seed-credentials:write
 
 The script supports a wide range of credential types and includes robust safety checks. For more details, troubleshooting, and environment variable examples, refer to the [seed-credentials README](./scripts/seed-credentials/README.md).
 
+## 🔒 Lacework Security Integration
+
+TheAnswer supports optional Lacework FortiCNAPP Agent integration for runtime security monitoring and anomaly detection in AWS Fargate deployments.
+
+### Quick Setup
+
+**Enable Lacework:**
+
+1. Add `LaceworkAccessToken=your_token_here` to your `copilot.{environment}.env` file
+2. Deploy with `copilot deploy --env your-environment`
+
+**Disable Lacework:**
+
+1. Remove or comment out `LaceworkAccessToken` from your environment file
+2. Deploy with `copilot deploy --env your-environment`
+
+### Key Features
+
+-   **Optional Integration**: Controlled by presence of `LaceworkAccessToken`
+-   **Graceful Fallback**: Application runs normally if Lacework token is not provided
+-   **Non-Essential Sidecar**: Sidecar failure doesn't affect main application startup
+-   **AWS Fargate Optimized**: Designed for Copilot deployments
+
+### Verification
+
+```bash
+# Connect to container
+copilot svc exec --env your-environment
+
+# Check Lacework status
+ps aux | grep datacollector
+tail -f /var/log/lacework/datacollector.log
+
+# Check environment variables (WARNING: Do not screenshare - contains sensitive tokens)
+env | grep -i lacework
+```
+
+**⚠️ Security Note**: Never screenshare or share output from commands that display Lacework tokens.
+
+For detailed configuration, troubleshooting, and advanced setup, see [Lacework Integration Documentation](./packages/docs/docs/integrations/lacework.md).
+
 <!-- BWS-SECURE-DOCS-START -->
 
 ## BWS Secure Environmental Variable Integration

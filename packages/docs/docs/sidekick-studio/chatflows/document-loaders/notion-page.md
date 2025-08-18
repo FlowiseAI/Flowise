@@ -6,11 +6,11 @@ description: Load and process data from Notion pages
 
 ## Overview
 
-The Notion Page Document Loader is a powerful feature in AnswerAI that allows you to import content from Notion pages, including child pages, and process them as separate documents. This tool is perfect for users who want to leverage their Notion content within AnswerAI for various applications such as analysis, summarization, or integration with other AI-powered features.
+The Notion Page Document Loader is a powerful feature in AnswerAgentAI that allows you to import content from Notion pages, including child pages, and process them as separate documents. This tool is perfect for users who want to leverage their Notion content within AnswerAgentAI for various applications such as analysis, summarization, or integration with other AI-powered features.
 
 ## Key Benefits
 
--   Easily import content from Notion pages into AnswerAI
+-   Easily import content from Notion pages into AnswerAgentAI
 -   Process parent and child pages as separate documents
 -   Customize metadata and control which metadata is included in the final output
 
@@ -19,12 +19,12 @@ The Notion Page Document Loader is a powerful feature in AnswerAI that allows yo
 1. Connect your Notion API credential:
 
     - Ensure you have a Notion API integration token
-    - In AnswerAI, go to the Credentials section and add a new "Notion API" credential
+    - In AnswerAgentAI, go to the Credentials section and add a new "Notion API" credential
     - Enter your Notion integration token
 
 2. Set up the Notion Page Document Loader:
 
-    - In your AnswerAI workflow, add a new "Notion Page" node
+    - In your AnswerAgentAI workflow, add a new "Notion Page" node
     - Connect your Notion API credential to the node
 
 3. Configure the Notion Page loader:
@@ -59,4 +59,4 @@ The Notion Page Document Loader is a powerful feature in AnswerAI that allows yo
 3. Issue: Unexpected metadata in output
    Solution: Review your "Omit Metadata Keys" settings and ensure you've correctly specified which keys to exclude. Remember to use commas to separate multiple keys.
 
-By following this guide, you'll be able to efficiently load and process your Notion pages within AnswerAI, opening up new possibilities for leveraging your Notion content in your AI-powered workflows.
+By following this guide, you'll be able to efficiently load and process your Notion pages within AnswerAgentAI, opening up new possibilities for leveraging your Notion content in your AI-powered workflows.

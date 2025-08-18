@@ -111,8 +111,6 @@ export const authOptions: AuthOptions = {
                 if (url.startsWith('/')) url = `${baseUrl}${url}`
                 // Allows callback URLs on the same origin
                 if (new URL(url).origin === baseUrl) finalUrl = url
-                if (['http://localhost:3000', 'https://theanswer.ai', 'https://ias.theanswer.ai'].includes(new URL(url).origin))
-                    finalUrl = url
             } catch (err) {
                 console.log('Redirect error', { err, url, baseUrl })
             }

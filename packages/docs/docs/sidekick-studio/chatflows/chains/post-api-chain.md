@@ -1,12 +1,12 @@
 ---
-description: Learn how to use the POST API Chain feature in AnswerAI
+description: Learn how to use the POST API Chain feature in AnswerAgentAI
 ---
 
 # POST API Chain
 
 ## Overview
 
-The POST API Chain is a powerful feature in AnswerAI that allows you to run queries against POST APIs. This feature enables you to integrate external API data into your workflows, enhancing the capabilities of your AI-powered applications by sending data to and receiving responses from external services.
+The POST API Chain is a powerful feature in AnswerAgentAI that allows you to run queries against POST APIs. This feature enables you to integrate external API data into your workflows, enhancing the capabilities of your AI-powered applications by sending data to and receiving responses from external services.
 
 ## Key Benefits
 
@@ -18,10 +18,10 @@ The POST API Chain is a powerful feature in AnswerAI that allows you to run quer
 
 ### 1. Set up the POST API Chain
 
-<!-- TODO: Screenshot of the POST API Chain node in the AnswerAI interface -->
+<!-- TODO: Screenshot of the POST API Chain node in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/postapinode.png" alt="" /><figcaption><p>Post API Chain &#x26; Drop UI</p></figcaption></figure>
 
-1. In your AnswerAI workflow, locate and add the "POST API Chain" node.
+1. In your AnswerAgentAI workflow, locate and add the "POST API Chain" node.
 2. Connect the node to your desired input and output nodes.
 
 ### 2. Configure the Language Model
@@ -44,10 +44,10 @@ The POST API Chain is a powerful feature in AnswerAI that allows you to run quer
 
 ### 5. Customize Prompts (Optional)
 
-1. To fine-tune how AnswerAI interacts with the API, you can customize two prompts:
+1. To fine-tune how AnswerAgentAI interacts with the API, you can customize two prompts:
 
-    - URL Prompt: Determines how AnswerAI constructs the API URL and request body
-    - Answer Prompt: Guides AnswerAI on how to process and return the API response
+    - URL Prompt: Determines how AnswerAgentAI constructs the API URL and request body
+    - Answer Prompt: Guides AnswerAgentAI on how to process and return the API response
 
 2. To customize, click on "Add Additional Parameter" and select the prompt you want to modify.
 3. Ensure that you include the required placeholders in your custom prompts:
@@ -90,4 +90,4 @@ The POST API Chain is a powerful feature in AnswerAI that allows you to run quer
 
 -   **Solution**: Ensure that the POST data being sent matches the format expected by the API. Review the API documentation and adjust your prompts if necessary.
 
-If you encounter persistent issues, consult the AnswerAI documentation or reach out to our support team for assistance.
+If you encounter persistent issues, consult the AnswerAgentAI documentation or reach out to our support team for assistance.

@@ -4,11 +4,11 @@ description: Utility Nodes for Enhanced Workflow Control
 
 # Utility Nodes
 
-Utility nodes are powerful development tools that allow you to implement custom JavaScript functions, manage variables, control flow logic, and add notes within your AnswerAI workflows. These nodes enhance the flexibility and functionality of your workflows, enabling you to create more complex and customized solutions.
+Utility nodes are powerful development tools that allow you to implement custom JavaScript functions, manage variables, control flow logic, and add notes within your AnswerAgentAI workflows. These nodes enhance the flexibility and functionality of your workflows, enabling you to create more complex and customized solutions.
 
 ## Overview
 
-Utility nodes in AnswerAI provide a set of versatile tools that can be added to the canvas of Sidekick workflows in the Sidekick Studio. These nodes help you extend the capabilities of your workflows beyond the standard node functionalities.
+Utility nodes in AnswerAgentAI provide a set of versatile tools that can be added to the canvas of Sidekick workflows in the Sidekick Studio. These nodes help you extend the capabilities of your workflows beyond the standard node functionalities.
 
 ## Key Benefits
 
@@ -54,4 +54,4 @@ The Sticky Note node lets you add comments and notes directly on the workflow ca
 <figure><img src="/.gitbook/assets/screenshots/stickynote.png" alt="" /><figcaption><p>Sticky Note  node   &#x26; Drop UI</p></figcaption></figure>
 [Learn more about Sticky Note](sticky-note.md)
 
-By mastering the use of Utility Nodes, you can create more powerful, flexible, and maintainable workflows in AnswerAI, tailoring your solutions to meet specific requirements and challenges.
+By mastering the use of Utility Nodes, you can create more powerful, flexible, and maintainable workflows in AnswerAgentAI, tailoring your solutions to meet specific requirements and challenges.

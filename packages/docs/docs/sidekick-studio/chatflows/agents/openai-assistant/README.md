@@ -6,11 +6,11 @@ description: An agent that uses OpenAI Assistant API to pick the tool and args t
 
 ## Overview
 
-The OpenAI Assistant feature in AnswerAI allows users to import and utilize their OpenAI assistants within the AnswerAI platform. This integration leverages the powerful Assistants API from OpenAI, enabling you to build sophisticated AI assistants tailored to your specific needs.
+The OpenAI Assistant feature in AnswerAgentAI allows users to import and utilize their OpenAI assistants within the AnswerAgentAI platform. This integration leverages the powerful Assistants API from OpenAI, enabling you to build sophisticated AI assistants tailored to your specific needs.
 
 ## Key Benefits
 
--   Seamless Integration: Import your existing OpenAI assistants directly into AnswerAI.
+-   Seamless Integration: Import your existing OpenAI assistants directly into AnswerAgentAI.
 -   Powerful Capabilities: Access models, tools, and files to respond to user queries effectively.
 -   Versatile Tool Support: Utilize Code Interpreter, File Search, and Function calling tools.
 -   Persistent Conversations: Benefit from OpenAI's Thread system for maintaining context in long interactions.
@@ -24,35 +24,35 @@ The OpenAI Assistant feature in AnswerAI allows users to import and utilize thei
 
 2. Import Your Assistant:
 
-    - In the AnswerAI Sidekick studio, locate the OpenAI Assistant node.
-    - Use the import feature to bring your OpenAI assistant into AnswerAI.
+    - In the AnswerAgentAI Sidekick studio, locate the OpenAI Assistant node.
+    - Use the import feature to bring your OpenAI assistant into AnswerAgentAI.
 
 3. Configure the OpenAI Assistant Node:
 
-    - Connect the necessary inputs and outputs within your AnswerAI workflow.
+    - Connect the necessary inputs and outputs within your AnswerAgentAI workflow.
     - Adjust any additional settings specific to your use case.
 
 4. Run Your Workflow:
-    - Start your AnswerAI workflow to begin interacting with your imported OpenAI assistant.
+    - Start your AnswerAgentAI workflow to begin interacting with your imported OpenAI assistant.
 
-<figure><img src="/.gitbook/assets/screenshots/openaiassistant.png" alt="" /><figcaption><p>OpenAI Assistant Tool &#x26; Drop UI</p></figcaption></figure><!-- TODO: Add a screenshot of the OpenAI Assistant import process in AnswerAI -->
+<figure><img src="/.gitbook/assets/screenshots/openaiassistant.png" alt="" /><figcaption><p>OpenAI Assistant Tool &#x26; Drop UI</p></figcaption></figure><!-- TODO: Add a screenshot of the OpenAI Assistant import process in AnswerAgentAI -->
 
 ## Tips and Best Practices
 
 -   Review the latest OpenAI documentation for up-to-date information on assistant capabilities and best practices.
 -   Experiment with different tool combinations to enhance your assistant's problem-solving abilities.
--   Use the Assistants playground on the OpenAI platform to test and refine your assistant before importing it into AnswerAI.
+-   Use the Assistants playground on the OpenAI platform to test and refine your assistant before importing it into AnswerAgentAI.
 -   Take advantage of the persistent Threads feature for maintaining context in long-running conversations.
 
 ## Troubleshooting
 
 -   If your assistant isn't performing as expected, double-check its configuration on the OpenAI platform.
--   Ensure that your OpenAI API credentials are correctly set up in AnswerAI.
+-   Ensure that your OpenAI API credentials are correctly set up in AnswerAgentAI.
 -   For issues with specific tools, refer to the OpenAI documentation for tool-specific troubleshooting advice.
 
 ## Technical Details
 
-The OpenAI Assistant in AnswerAI utilizes the following key components from the Assistants API:
+The OpenAI Assistant in AnswerAgentAI utilizes the following key components from the Assistants API:
 
 1. **Assistant**: The AI entity with specific instructions, model preferences, and tool access.
 2. **Thread**: A conversation session that stores messages and handles context management.
@@ -64,4 +64,4 @@ The OpenAI Assistant in AnswerAI utilizes the following key components from the 
 
 Remember to review the [latest OpenAI documentation](https://platform.openai.com/docs/assistants/overview) for the most up-to-date information on the Assistants API and its capabilities.
 
-By importing your OpenAI assistants into AnswerAI, you can leverage their advanced capabilities within your custom workflows, creating powerful and flexible AI-driven applications.
+By importing your OpenAI assistants into AnswerAgentAI, you can leverage their advanced capabilities within your custom workflows, creating powerful and flexible AI-driven applications.

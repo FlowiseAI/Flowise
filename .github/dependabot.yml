@@ -1,14 +1,61 @@
 version: 2
 updates:
+    # Node deps (pnpm users still use ecosystem "npm")
     - package-ecosystem: 'npm'
       directory: '/'
+      target-branch: 'staging'
       schedule:
           interval: 'daily'
-      target-branch: 'staging'
+          time: '09:00'
       open-pull-requests-limit: 10
+      ignore:
+          - dependency-name: '*'
+            update-types:
+                - 'version-update:semver-major' # block major bumps
+      groups:
+          npm-minor-patch:
+              update-types:
+                  - 'minor'
+                  - 'patch' # group minor/patch into one PR where possible
+
+    # GitHub Actions
     - package-ecosystem: 'github-actions'
       directory: '/'
-      schedule:
-          interval: 'daily'
       target-branch: 'staging'
+      schedule:
+          interval: 'weekly'
+          day: 'monday'
+          time: '09:00'
       open-pull-requests-limit: 10
+      ignore:
+          - dependency-name: '*'
+            update-types:
+                - 'version-update:semver-major'
+      groups:
+          gha-minor-patch:
+              update-types:
+                  - 'minor'
+                  - 'patch'
+
+    # --------------------------------------------------------------------
+    # OPTIONAL: If you ever want to review majors separately,
+    # uncomment this block and use a different target branch so it doesn't
+    # conflict with the rule above.
+    #
+    # - package-ecosystem: "npm"
+    #   directory: "/"
+    #   target-branch: "release/majors"
+    #   schedule:
+    #     interval: "monthly"
+    #     day: "sunday"
+    #     time: "09:00"
+    #     timezone: "America/Indiana/Indianapolis"
+    #   ignore:
+    #     - dependency-name: "*"
+    #       update-types:
+    #         - "version-update:semver-minor"
+    #         - "version-update:semver-patch"  # only majors allowed here
+    #   groups:
+    #     npm-majors:
+    #       update-types:
+    #         - "major"

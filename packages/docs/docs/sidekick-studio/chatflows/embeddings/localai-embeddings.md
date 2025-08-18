@@ -1,12 +1,12 @@
 ---
-description: Use local embeddings models with AnswerAI
+description: Use local embeddings models with AnswerAgentAI
 ---
 
 # LocalAI Embeddings
 
 ## Overview
 
-LocalAI Embeddings is a powerful feature in AnswerAI that allows you to use local embeddings models, such as those compatible with the ggml format. This feature enables you to run Language Learning Models (LLMs) locally or on-premises using consumer-grade hardware, providing a more private and customizable alternative to cloud-based solutions.
+LocalAI Embeddings is a powerful feature in AnswerAgentAI that allows you to use local embeddings models, such as those compatible with the ggml format. This feature enables you to run Language Learning Models (LLMs) locally or on-premises using consumer-grade hardware, providing a more private and customizable alternative to cloud-based solutions.
 
 ## Key Benefits
 
@@ -51,9 +51,9 @@ LocalAI Embeddings is a powerful feature in AnswerAI that allows you to use loca
 
 <!-- TODO: Screenshot showing the response from the curl command -->
 
-### Step 2: Configure AnswerAI
+### Step 2: Configure AnswerAgentAI
 
-1. In the AnswerAI canvas, drag and drop a new LocalAIEmbeddings component:
+1. In the AnswerAgentAI canvas, drag and drop a new LocalAIEmbeddings component:
 
 <!-- TODO: Screenshot showing the LocalAIEmbeddings component being added to the canvas -->
 <figure><img src="/.gitbook/assets/screenshots/localembeddingsai.png" alt="" /><figcaption><p> LocalAIEmbeddings Node  &#x26; Drop UI</p></figcaption></figure>
@@ -64,13 +64,13 @@ LocalAI Embeddings is a powerful feature in AnswerAI that allows you to use loca
 
 ## Tips and Best Practices
 
-1. Ensure that the model you specify in AnswerAI matches the one you've downloaded to the `/models` folder in LocalAI.
+1. Ensure that the model you specify in AnswerAgentAI matches the one you've downloaded to the `/models` folder in LocalAI.
 2. Keep your local models up to date to benefit from the latest improvements in embedding technology.
 3. Experiment with different models to find the best balance between performance and resource usage for your specific use case.
 
 ## Troubleshooting
 
-1. **Model not found error**: Make sure the model name specified in AnswerAI exactly matches the filename in the `/models` folder of LocalAI.
+1. **Model not found error**: Make sure the model name specified in AnswerAgentAI exactly matches the filename in the `/models` folder of LocalAI.
 2. **Connection issues**: Verify that LocalAI is running and accessible at the specified base path.
 3. **Slow performance**: Consider using a more powerful machine or optimizing your LocalAI setup for better performance.
 

@@ -1,22 +1,22 @@
 ---
-description: Learn how to build a custom node for AnswerAI
+description: Learn how to build a custom node for AnswerAgentAI
 ---
 
 # Custom Nodes
 
 ## Overview
 
-This guide will walk you through the process of creating a custom node for AnswerAI. We'll be building a simple Calculator tool as an example. Custom nodes can only be deployed to AnswerAI if you self host.
+This guide will walk you through the process of creating a custom node for AnswerAgentAI. We'll be building a simple Calculator tool as an example. Custom nodes can only be deployed to AnswerAgentAI if you self host.
 
 ## Prerequisites
 
 -   Git installed on your system
--   AnswerAI repository cloned locally
+-   AnswerAgentAI repository cloned locally
 -   Familiarity with TypeScript and Node.js
 
 ## Step 1: Set Up the Project Structure
 
-1. Navigate to the `packages/componentschatflowstools` directory in your AnswerAI project.
+1. Navigate to the `packages/componentschatflowstools` directory in your AnswerAgentAI project.
 2. Create a new folder named `Calculator`.
 
 ## Step 2: Create the Base Class
@@ -125,25 +125,25 @@ The `init` function will be called when the flow is executed, and the `_call` fu
 SHOW_COMMUNITY_NODES=true
 ```
 
-This allows AnswerAI to recognize and use your custom node.
+This allows AnswerAgentAI to recognize and use your custom node.
 
 ## Step 6: Build and Run
 
-1. In the root directory of your AnswerAI project, run:
+1. In the root directory of your AnswerAgentAI project, run:
 
 ```bash
 pnpm build
 ```
 
-2. Once the build is complete, start AnswerAI:
+2. Once the build is complete, start AnswerAgentAI:
 
 ```bash
 pnpm start
 ```
 
-3. Open the AnswerAI interface in your browser. You should now see your Calculator node available in the Tools category.
+3. Open the AnswerAgentAI interface in your browser. You should now see your Calculator node available in the Tools category.
 
-<figure><img src="/.gitbook/assets/screenshots/calculator node.png" alt="" /><figcaption><p>Calculator Node &#x26; Drop UI</p></figcaption></figure><!-- TODO: Add a screenshot of the Calculator node in the AnswerAI interface -->
+<figure><img src="/.gitbook/assets/screenshots/calculator node.png" alt="" /><figcaption><p>Calculator Node &#x26; Drop UI</p></figcaption></figure><!-- TODO: Add a screenshot of the Calculator node in the AnswerAgentAI interface -->
 
 ## Troubleshooting
 
@@ -155,6 +155,6 @@ pnpm start
 
 -   Consider adding more complex functionality to your Calculator tool.
 -   Explore creating nodes for other categories, such as Memory or Chains.
--   Share your custom node with the AnswerAI community!
+-   Share your custom node with the AnswerAgentAI community!
 
-Remember to test your node thoroughly to ensure it interacts correctly with other components in AnswerAI flows.
+Remember to test your node thoroughly to ensure it interacts correctly with other components in AnswerAgentAI flows.

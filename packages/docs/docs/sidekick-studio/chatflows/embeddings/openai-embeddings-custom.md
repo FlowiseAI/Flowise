@@ -6,7 +6,7 @@ description: OpenAI Embeddings Custom - Generate tailored embeddings for your te
 
 ## Overview
 
-The OpenAI Embeddings Custom feature in AnswerAI allows you to generate customized embeddings for your text using OpenAI's powerful API. This feature provides flexibility in creating embeddings tailored to your specific needs, enabling more accurate and relevant text representations for various natural language processing tasks.
+The OpenAI Embeddings Custom feature in AnswerAgentAI allows you to generate customized embeddings for your text using OpenAI's powerful API. This feature provides flexibility in creating embeddings tailored to your specific needs, enabling more accurate and relevant text representations for various natural language processing tasks.
 
 [Customizing OpenAI Embeddings](https://cookbook.openai.com/examples/customizing_embeddings)
 
@@ -18,7 +18,7 @@ The OpenAI Embeddings Custom feature in AnswerAI allows you to generate customiz
 
 ## How to Use
 
-1. Navigate to the Embeddings section in AnswerAI.
+1. Navigate to the Embeddings section in AnswerAgentAI.
 2. Select "OpenAI Embeddings Custom" from the available options.
 3. Connect your OpenAI API credential.
 4. Configure the embedding parameters:
@@ -43,7 +43,7 @@ The OpenAI Embeddings Custom feature in AnswerAI allows you to generate customiz
 
 ## Customizing Embeddings
 
-AnswerAI's OpenAI Embeddings Custom feature allows you to create tailored embeddings, similar to the process described in the OpenAI Cookbook. Here's how you can leverage this functionality:
+AnswerAgentAI's OpenAI Embeddings Custom feature allows you to create tailored embeddings, similar to the process described in the OpenAI Cookbook. Here's how you can leverage this functionality:
 
 1. **Model Selection**: Choose from various OpenAI models to generate embeddings that best suit your needs. Different models may produce embeddings with varying characteristics.
 
@@ -64,4 +64,4 @@ AnswerAI's OpenAI Embeddings Custom feature allows you to create tailored embedd
 3. **Dimension Mismatch**: Make sure the specified number of dimensions is supported by the chosen model.
 4. **Rate Limiting**: If you hit API rate limits, consider adjusting your batch size or implementing a backoff strategy in your workflows.
 
-By leveraging the OpenAI Embeddings Custom feature in AnswerAI, you can create powerful, tailored text representations that enhance the performance of your natural language processing tasks.
+By leveraging the OpenAI Embeddings Custom feature in AnswerAgentAI, you can create powerful, tailored text representations that enhance the performance of your natural language processing tasks.

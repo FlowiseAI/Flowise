@@ -6,7 +6,7 @@ description: Load and process documents from GitHub repositories
 
 ## Overview
 
-The GitHub Document Loader is a powerful feature in AnswerAI that allows you to load and process data directly from GitHub repositories. This tool is perfect for users who want to analyze, search, or work with content stored in GitHub, whether it's documentation, code, or other text-based files.
+The GitHub Document Loader is a powerful feature in AnswerAgentAI that allows you to load and process data directly from GitHub repositories. This tool is perfect for users who want to analyze, search, or work with content stored in GitHub, whether it's documentation, code, or other text-based files.
 
 ## Key Benefits
 
@@ -16,9 +16,9 @@ The GitHub Document Loader is a powerful feature in AnswerAI that allows you to 
 
 ## How to Use
 
-1. In the AnswerAI interface, locate and select the "GitHub" option in the Document Loaders category.
+1. In the AnswerAgentAI interface, locate and select the "GitHub" option in the Document Loaders category.
 
-<!-- TODO: Screenshot of the GitHub loader option in the AnswerAI interface -->
+<!-- TODO: Screenshot of the GitHub loader option in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/githubloader.png" alt="" /><figcaption><p> Github Loader Configuration &#x26; Drop UI</p></figcaption></figure>
 
 2. Configure the loader with the following required settings:
@@ -80,4 +80,4 @@ The GitHub Document Loader is a powerful feature in AnswerAI that allows you to 
     - Consider using the "Ignore Paths" feature to exclude large or unnecessary files
     - Adjust the "Max Concurrency" setting to find the optimal balance between speed and stability
 
-By following these instructions, you'll be able to effectively use the GitHub Document Loader in AnswerAI to access and process content from GitHub repositories, enhancing your workflow and data analysis capabilities.
+By following these instructions, you'll be able to effectively use the GitHub Document Loader in AnswerAgentAI to access and process content from GitHub repositories, enhancing your workflow and data analysis capabilities.

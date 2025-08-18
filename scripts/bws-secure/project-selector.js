@@ -300,6 +300,14 @@ async function getProjectFromEnvironmentFile() {
 
 // Prompt user to select a project
 async function promptForProject(projects) {
+  // Handle empty projects array - suggest using BWS_PROJECT_ID directly
+  if (!projects || projects.length === 0) {
+    log('error', 'No projects found in configuration');
+    log('info', 'You can bypass project configuration by setting BWS_PROJECT_ID directly:');
+    log('info', 'BWS_PROJECT_ID=4ba4dc04-091f-4bf9-ba82-b2f900ee7d2a pnpm dev');
+    throw new Error('No projects available in configuration. Use BWS_PROJECT_ID to bypass.');
+  }
+
   // Capture currently saved project if it exists
   let currentProject = null;
 
@@ -308,8 +316,14 @@ async function promptForProject(projects) {
     currentProject = projects.find((p) => p.projectName === process.env.BWS_PROJECT);
     if (currentProject) {
       log('debug', `Using project from environment variable: ${currentProject.projectName}`);
-      await updateEnvironmentBwsSection(currentProject, process.env.BWS_ENV || 'local');
+      // Don't update BWS section - project is valid
       return currentProject;
+    } else {
+      // Project is invalid - will need to update BWS section
+      log(
+        'warn',
+        `Selected project '${process.env.BWS_PROJECT}' no longer exists in config - will update BWS section`
+      );
     }
   }
 
@@ -322,8 +336,14 @@ async function promptForProject(projects) {
         // Set the environment variable to match what's in the file
         process.env.BWS_PROJECT = currentProject.projectName;
         log('debug', `Using project from .env file: ${currentProject.projectName}`);
-        await updateEnvironmentBwsSection(currentProject, process.env.BWS_ENV || 'local');
+        // Don't update BWS section - project is valid
         return currentProject;
+      } else {
+        // Project in .env is invalid - will need to update BWS section
+        log(
+          'warn',
+          `Saved project '${savedProjectName}' no longer exists in config - will update BWS section`
+        );
       }
     }
   }
@@ -354,7 +374,7 @@ async function promptForProject(projects) {
   // Multiple projects in local development - prompt only if we don't have a valid current project
   if (currentProject) {
     log('debug', `Using current project: ${currentProject.projectName}`);
-    await updateEnvironmentBwsSection(currentProject, process.env.BWS_ENV || 'local');
+    // Don't update BWS section - project is valid (already validated above)
     return currentProject;
   }
 

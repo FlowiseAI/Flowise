@@ -271,7 +271,7 @@ const sidebars: SidebarsConfig = {
             label: 'Learn',
             link: {
                 type: 'generated-index',
-                title: 'Learn AI & Master AnswerAI',
+                title: 'Learn AI & Master AnswerAgentAI',
                 description: 'Master AI fundamentals and explore practical use cases'
             },
             items: [
@@ -309,7 +309,7 @@ const sidebars: SidebarsConfig = {
             link: {
                 type: 'generated-index',
                 title: 'Support Resources',
-                description: 'Get help with AnswerAI'
+                description: 'Get help with AnswerAgentAI'
             },
             items: [
                 {

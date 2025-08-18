@@ -4,11 +4,11 @@ description: Document Loaders - Enhancing AI Responses with Your Data
 
 # Document Loaders
 
-Document loaders are a powerful feature of AnswerAI that allow you to integrate your own data from various sources, significantly enhancing the quality and relevance of AI responses. By incorporating files, web content, or third-party services, you can create a rich knowledge base tailored to your specific needs.
+Document loaders are a powerful feature of AnswerAgentAI that allow you to integrate your own data from various sources, significantly enhancing the quality and relevance of AI responses. By incorporating files, web content, or third-party services, you can create a rich knowledge base tailored to your specific needs.
 
 ## Overview
 
-Document loaders serve as a bridge between your data sources and AnswerAI's language models. They enable the system to ingest, process, and understand information from diverse formats and locations, making this data available for AI-powered analysis and response generation.
+Document loaders serve as a bridge between your data sources and AnswerAgentAI's language models. They enable the system to ingest, process, and understand information from diverse formats and locations, making this data available for AI-powered analysis and response generation.
 
 ## Key Benefits
 
@@ -21,11 +21,11 @@ Document loaders serve as a bridge between your data sources and AnswerAI's lang
 1. Choose the appropriate document loader based on your data source.
 2. Configure the loader with necessary parameters (e.g., file paths, API keys, URLs).
 3. Use the loader to extract and process the data.
-4. Integrate the loaded documents into your AnswerAI workflows or knowledge bases.
+4. Integrate the loaded documents into your AnswerAgentAI workflows or knowledge bases.
 
 ## Types of Document Loaders
 
-AnswerAI offers a variety of document loaders to accommodate different data sources:
+AnswerAgentAI offers a variety of document loaders to accommodate different data sources:
 
 ### File-based Loaders
 
@@ -70,9 +70,9 @@ AnswerAI offers a variety of document loaders to accommodate different data sour
 -   [Unstructured Folder Loader](unstructured-folder-loader.md)
 -   [VectorStore To Document](vectorstore-to-document.md)
 
-## Using Document Loaders in AnswerAI Workflows
+## Using Document Loaders in AnswerAgentAI Workflows
 
-Document loaders can be seamlessly integrated into AnswerAI workflows to create powerful, data-driven AI applications:
+Document loaders can be seamlessly integrated into AnswerAgentAI workflows to create powerful, data-driven AI applications:
 
 1. **Information Retrieval**: Use document loaders to create a custom knowledge base, then use retrieval techniques to find relevant information for user queries.
 
@@ -86,7 +86,7 @@ For detailed information on creating workflows with document loaders, refer to o
 
 ## Creating Knowledge Bases with Document Loaders
 
-Document loaders are essential for building comprehensive knowledge bases in AnswerAI. By combining different loaders, you can create a rich, diverse pool of information:
+Document loaders are essential for building comprehensive knowledge bases in AnswerAgentAI. By combining different loaders, you can create a rich, diverse pool of information:
 
 1. Choose relevant document loaders for your data sources.
 2. Load and process documents from each source.
@@ -109,4 +109,4 @@ For in-depth guidance on creating and managing knowledge bases with document loa
 -   For web-based loaders, ensure you have the necessary permissions and that the target site allows scraping.
 -   When dealing with large volumes of data, monitor system resources and consider splitting the load into smaller batches using text splitters.
 
-By leveraging document loaders effectively, you can significantly enhance the capabilities of AnswerAI, creating AI-powered solutions that are deeply integrated with your specific data and knowledge domains.
+By leveraging document loaders effectively, you can significantly enhance the capabilities of AnswerAgentAI, creating AI-powered solutions that are deeply integrated with your specific data and knowledge domains.

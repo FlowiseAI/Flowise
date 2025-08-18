@@ -6,7 +6,7 @@ description: Generate embeddings for text using Cohere API
 
 ## Overview
 
-Cohere Embeddings is a powerful feature in AnswerAI that allows you to generate embeddings for a given text using the Cohere API. Embeddings are numerical representations of text that capture semantic meaning, making them useful for various natural language processing tasks.
+Cohere Embeddings is a powerful feature in AnswerAgentAI that allows you to generate embeddings for a given text using the Cohere API. Embeddings are numerical representations of text that capture semantic meaning, making them useful for various natural language processing tasks.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ Cohere Embeddings is a powerful feature in AnswerAI that allows you to generate 
 
 ## How to Use
 
-To use the Cohere Embeddings feature in AnswerAI, follow these steps:
+To use the Cohere Embeddings feature in AnswerAgentAI, follow these steps:
 
 1. Add the Cohere Embeddings node to your workflow.
 2. Configure the node settings:

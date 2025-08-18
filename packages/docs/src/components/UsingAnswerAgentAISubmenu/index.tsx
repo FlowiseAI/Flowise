@@ -1,4 +1,3 @@
-import React from 'react'
 import { useLocation } from '@docusaurus/router'
 import Link from '@docusaurus/Link'
 import clsx from 'clsx'
@@ -43,7 +42,7 @@ const submenuItems = [
     }
 ]
 
-export default function UsingAnswerAISubmenu(): JSX.Element {
+export default function UsingAnswerAgentAISubmenu(): JSX.Element {
     const location = useLocation()
 
     return (

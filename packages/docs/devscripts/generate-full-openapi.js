@@ -167,8 +167,8 @@ for (const path in combinedSpec.paths) {
 }
 
 // Update the info section
-combinedSpec.info.title = 'AnswerAI Complete API'
-combinedSpec.info.description = 'Complete API documentation for all AnswerAI services'
+combinedSpec.info.title = 'AnswerAgentAI Complete API'
+combinedSpec.info.description = 'Complete API documentation for all AnswerAgentAI services'
 
 // Write the combined spec to yaml file
 fs.writeFileSync(outputPath, yaml.dump(combinedSpec))

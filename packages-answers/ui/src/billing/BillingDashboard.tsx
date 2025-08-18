@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { Box, Stack, Typography, CircularProgress } from '@mui/material'
+import { Box, Stack, Typography, CircularProgress, Button } from '@mui/material'
+import { Link } from 'react-router-dom'
 import TotalCreditsProgress from './TotalCreditsProgress'
 import { useBillingData } from './hooks/useBillingData'
 import BillingOverview from './BillingOverview'
@@ -43,7 +44,12 @@ const BillingDashboard: React.FC = () => {
     }
 
     return (
-        <Box>
+        <Box sx={{ p: { xs: 1, md: 4 } }}>
+            <Box sx={{ mb: 2 }}>
+                <Button component={Link} to='/admin' size='small' variant='text'>
+                    ← Back to admin
+                </Button>
+            </Box>
             <Stack spacing={4}>
                 <Box>
                     <Typography variant='h4' sx={{ fontWeight: 600, color: '#fff', mb: 1 }}>

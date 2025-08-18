@@ -1,5 +1,10 @@
 ---
 description: Learn how to contribute to this project
+jsonld:
+    type: TechArticle
+    headline: Community Guide
+---
+
 ---
 
 # Community Guide
@@ -14,7 +19,7 @@ Star and share the [Github Repo](https://github.com/the-answerai/).
 
 ## 🙌 Share Chatflow
 
-Yes! Sharing how you use AnswerAI is a way of contribution. Export your chatflow as JSON, attach a screenshot and share it in [Show and Tell section](https://github.com/the-answerai).
+Yes! Sharing how you use AnswerAgentAI is a way of contribution. Export your chatflow as JSON, attach a screenshot and share it in [Show and Tell section](https://github.com/the-answerai).
 
 ## 🐞 Report Bugs
 

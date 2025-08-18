@@ -6,7 +6,7 @@ description: Cache LLM responses in Upstash Redis for improved performance and s
 
 ## Overview
 
-The Upstash Redis Cache feature in AnswerAI allows you to store Language Model (LLM) responses using Upstash Redis, a serverless data solution for Redis. This caching mechanism improves performance by storing and retrieving responses for repeated queries, eliminating the need for redundant API calls while leveraging the scalability and ease of use of a serverless architecture.
+The Upstash Redis Cache feature in AnswerAgentAI allows you to store Language Model (LLM) responses using Upstash Redis, a serverless data solution for Redis. This caching mechanism improves performance by storing and retrieving responses for repeated queries, eliminating the need for redundant API calls while leveraging the scalability and ease of use of a serverless architecture.
 
 ## Key Benefits
 
@@ -24,22 +24,22 @@ The Upstash Redis Cache feature in AnswerAI allows you to store Language Model (
     - Create a new Redis database
     - Note down the Redis connection URL and token
 
-2. Configure the Upstash Redis Cache credential in AnswerAI:
+2. Configure the Upstash Redis Cache credential in AnswerAgentAI:
 
-    - Navigate to the credentials section in AnswerAI
+    - Navigate to the credentials section in AnswerAgentAI
     - Create a new credential of type 'upstashRedisApi'
     - Enter your Upstash Redis connection URL and token
-          <figure><img src="/.gitbook/assets/screenshots/upstash redis cache credentials.png" alt="" /><figcaption><p>Upstash Redis Cache API Credential &#x26; Drop UI</p></figcaption></figure>
-          <!-- TODO: Screenshot of creating Upstash Redis Cache credential -->
+        <figure><img src="/.gitbook/assets/screenshots/upstash redis cache credentials.png" alt="" /><figcaption><p>Upstash Redis Cache API Credential &#x26; Drop UI</p></figcaption></figure>
+        <!-- TODO: Screenshot of creating Upstash Redis Cache credential -->
 
-3. Add the Upstash Redis Cache node to your AnswerAI workflow:
+3. Add the Upstash Redis Cache node to your AnswerAgentAI workflow:
        <!-- TODO: Screenshot of adding Upstash Redis Cache node to the workflow -->
     <figure><img src="/.gitbook/assets/screenshots/upstash redis cache configuration.png" alt="" /><figcaption><p>Upstash Redis Cache Node &#x26; Drop UI</p></figcaption></figure>
 
 4. Configure the Upstash Redis Cache node:
 
     - Connect the previously created credential to the node
-          <!-- TODO: Screenshot showing the configuration of the Upstash Redis Cache node -->
+        <!-- TODO: Screenshot showing the configuration of the Upstash Redis Cache node -->
 
 5. Connect the Upstash Redis Cache node to your LLM node:
     <!-- TODO: Screenshot showing the connection between Upstash Redis Cache and LLM nodes -->
@@ -84,7 +84,7 @@ The Upstash Redis Cache feature in AnswerAI allows you to store Language Model (
 1. Connection issues:
 
     - Verify that your Upstash Redis database is active
-    - Double-check that your connection URL and token are correct in the AnswerAI credential
+    - Double-check that your connection URL and token are correct in the AnswerAgentAI credential
     - Ensure your network allows outbound connections to Upstash servers
 
 2. Cache misses or unexpected responses:
@@ -108,6 +108,6 @@ The Upstash Redis Cache feature in AnswerAI allows you to store Language Model (
     - Monitor your Upstash usage to ensure it aligns with your budget
     - Implement cache eviction strategies if needed to manage storage costs
 
-If you encounter any issues not covered here, refer to the Upstash documentation or contact AnswerAI support for assistance.
+If you encounter any issues not covered here, refer to the Upstash documentation or contact AnswerAgentAI support for assistance.
 
-By leveraging the Upstash Redis Cache feature, you can significantly enhance the performance, efficiency, and scalability of your AnswerAI workflows, especially for serverless architectures or globally distributed applications requiring low-latency caching solutions.
+By leveraging the Upstash Redis Cache feature, you can significantly enhance the performance, efficiency, and scalability of your AnswerAgentAI workflows, especially for serverless architectures or globally distributed applications requiring low-latency caching solutions.

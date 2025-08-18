@@ -11,12 +11,12 @@ The DynamoDB Chat Memory feature allows you to store and retrieve conversation h
 ## Key Benefits
 
 -   **Persistent Storage**: Safely store conversation history in a reliable and scalable AWS service.
--   **Seamless Integration**: Easily incorporate long-term memory into your AnswerAI workflows.
+-   **Seamless Integration**: Easily incorporate long-term memory into your AnswerAgentAI workflows.
 -   **Flexible Configuration**: Customize settings to match your specific DynamoDB setup and requirements.
 
 ## How to Use
 
-1. Add the "DynamoDB Chat Memory" node to your AnswerAI canvas.
+1. Add the "DynamoDB Chat Memory" node to your AnswerAgentAI canvas.
 2. Configure the node with the following required parameters:
 
     - Table Name: The name of your DynamoDB table
@@ -61,7 +61,7 @@ The DynamoDB Chat Memory feature allows you to store and retrieve conversation h
 3. **Performance Concerns**:
     - If you experience slow response times, consider optimizing your DynamoDB table's read and write capacity units.
 
-For more advanced usage and integration details, refer to the AnswerAI API documentation on DynamoDB Chat Memory implementation.
+For more advanced usage and integration details, refer to the AnswerAgentAI API documentation on DynamoDB Chat Memory implementation.
 
-<!-- TODO: Screenshot showing a successful integration of DynamoDB Chat Memory in an AnswerAI workflow -->
+<!-- TODO: Screenshot showing a successful integration of DynamoDB Chat Memory in an AnswerAgentAI workflow -->
 <figure><img src="/.gitbook/assets/screenshots/dynamochatmemoryinaworkflow.png" alt="" /><figcaption><p> Dynamo Chat Memory Node Configuration In a Workflow &#x26; Drop UI</p></figcaption></figure>

@@ -23,6 +23,71 @@ const SubscriptionDialogProvider = dynamic(() => import('../SubscriptionDialogCo
 })
 
 import React from 'react'
+import { useFlagsmith, useFlags } from 'flagsmith/react'
+
+function FlagsmithDebug({ session }: { session?: Session }) {
+    const flagsmithClient = useFlagsmith()
+    const flags = useFlags(['flagsmith_debug'])
+
+    React.useEffect(() => {
+        if (typeof window === 'undefined') return
+        try {
+            // derive identity same as server
+            const email = session?.user?.email || ''
+            const orgId = (session as any)?.user?.organizationId
+            const hash = email
+                ? email.split('').reduce((a: any, b: any) => {
+                      a = (a << 5) - a + b.charCodeAt(0)
+                      return a & a
+                  }, 0)
+                : ''
+            const identity = `user_${orgId}_${hash}`
+
+            const currentIdentity = (flagsmithClient as any).identity
+            if (!currentIdentity || currentIdentity !== identity) {
+                const traits = (session as any)?.user?.roles
+                    ? {
+                          env: 'production',
+                          organization: orgId,
+                          roles: ((session as any)?.user?.roles || []).join(',') ?? '',
+                          invited: !!(session as any)?.user?.invited,
+                          domain: email.split('@')[1] || ''
+                      }
+                    : undefined
+                // identify will refetch flags for this identity
+                flagsmithClient.identify(identity as any, traits as any)
+            }
+
+            ;(window as any).__flagsmith = flagsmithClient
+
+            // Check if debug flag is enabled OR if in development mode (fallback)
+            const shouldShowDebug = flags.flagsmith_debug?.enabled || process.env.NODE_ENV === 'development'
+
+            if (shouldShowDebug) {
+                const all = flagsmithClient.getAllFlags()
+                const enabled = Object.entries(all)
+                    .filter(([, f]: any) => f?.enabled)
+                    .map(([k, f]: any) => ({ flag: k, value: f?.value ?? true }))
+
+                // eslint-disable-next-line no-console
+                console.log('🚩 Flagsmith Debug Information')
+                // eslint-disable-next-line no-console
+                console.log('Environment ID:', process.env.FLAGSMITH_ENVIRONMENT_ID)
+                // eslint-disable-next-line no-console
+                console.log('Identity:', (flagsmithClient as any).identity)
+                // eslint-disable-next-line no-console
+                console.log('Environment:', process.env.NODE_ENV)
+                // eslint-disable-next-line no-console
+                console.log('Debug enabled by flag:', !!flags.flagsmith_debug?.enabled)
+                // eslint-disable-next-line no-console
+                console.table(enabled)
+            }
+        } catch (e) {
+            // noop
+        }
+    }, [flagsmithClient, session, flags.flagsmith_debug])
+    return null
+}
 
 export default function AppLayout({
     session,
@@ -59,6 +124,7 @@ export default function AppLayout({
                     }}
                     flagsmith={flagsmith}
                 >
+                    <FlagsmithDebug session={session} />
                     {/* <Auth0Provider
                         domain={process.env.VITE_AUTH_DOMAIN!}
                         clientId={process.env.VITE_AUTH_CLIENT_ID!}

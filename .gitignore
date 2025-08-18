@@ -192,3 +192,4 @@ requiredVars.env
 .env-debug.html
 
 bwsconfig.json
+.bwsconfig.cache

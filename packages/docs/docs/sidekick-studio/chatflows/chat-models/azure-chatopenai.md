@@ -1,17 +1,17 @@
 ---
-description: Azure ChatOpenAI - Chat Models for AnswerAI
+description: Azure ChatOpenAI - Chat Models for AnswerAgentAI
 ---
 
 # Azure ChatOpenAI
 
 ## Overview
 
-Azure ChatOpenAI is a powerful feature in AnswerAI that allows you to interact with Azure OpenAI's large language models using the Chat endpoint. This integration enables you to leverage the advanced capabilities of Azure's AI services within your AnswerAI workflows.
+Azure ChatOpenAI is a powerful feature in AnswerAgentAI that allows you to interact with Azure OpenAI's large language models using the Chat endpoint. This integration enables you to leverage the advanced capabilities of Azure's AI services within your AnswerAgentAI workflows.
 
 ## Key Benefits
 
 -   Access to state-of-the-art language models hosted on Azure
--   Seamless integration with AnswerAI's existing features
+-   Seamless integration with AnswerAgentAI's existing features
 -   Customizable parameters for fine-tuned AI responses
 
 ## How to Use
@@ -33,7 +33,7 @@ Azure ChatOpenAI is a powerful feature in AnswerAI that allows you to interact w
     - Toggle "Allow Image Uploads" to enable image processing capabilities
     - Select the preferred image resolution (Low, High, or Auto)
 
-4. Integrate the Azure ChatOpenAI node into your AnswerAI workflow
+4. Integrate the Azure ChatOpenAI node into your AnswerAgentAI workflow
 
 <!-- TODO: Screenshot of the Azure ChatOpenAI node configuration panel -->
 <figure><img src="/.gitbook/assets/screenshots/azure chatopen ai node configuration.png" alt="" /><figcaption><p>Azure ChatOpenAI Configuration &#x26; Drop UI</p></figcaption></figure>
@@ -64,4 +64,4 @@ Azure ChatOpenAI is a powerful feature in AnswerAI that allows you to interact w
 
 Remember to refer to the Azure OpenAI documentation for more detailed information on API usage and best practices.
 
-<!-- TODO: Add a screenshot of a successful Azure ChatOpenAI interaction in AnswerAI -->
+<!-- TODO: Add a screenshot of a successful Azure ChatOpenAI interaction in AnswerAgentAI -->

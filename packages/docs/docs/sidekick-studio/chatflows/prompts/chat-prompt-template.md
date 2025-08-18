@@ -16,7 +16,7 @@ The Chat Prompt Template node allows you to create structured prompts for chat-b
 
 ## How to Use
 
-1. Add the Chat Prompt Template node to your AnswerAI canvas.
+1. Add the Chat Prompt Template node to your AnswerAgentAI canvas.
 2. Configure the node with the following inputs:
 
     a. System Message:
@@ -84,4 +84,4 @@ This setup will create a prompt that instructs the AI to act as a translator fro
 <!-- TODO: Add a screenshot of a completed Chat Prompt Template node connected to other nodes in a workflow -->
 <figure><img src="/.gitbook/assets/screenshots/chatpromptnodeinaworkflow.png" alt="" /><figcaption><p> Chat Prompt Template Node In Workflow &#x26; Drop UI</p></figcaption></figure>
 
-By using the Chat Prompt Template node, you can create flexible and powerful prompts that adapt to various use cases in your AnswerAI workflows.
+By using the Chat Prompt Template node, you can create flexible and powerful prompts that adapt to various use cases in your AnswerAgentAI workflows.

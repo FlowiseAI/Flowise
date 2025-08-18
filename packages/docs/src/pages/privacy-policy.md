@@ -4,7 +4,7 @@ title: Privacy Policy
 
 ## **_I. Introduction_**
 
-AnswerAI, Inc. (“Company,” or “we,” “us” and “our”) values your privacy and is committed to maintaining your trust. We provide this Privacy Policy to inform you of our policies and procedures regarding the collection, use, and disclosure of personally identifiable information received from visitors to and/or users of the Company’s website located at https://theanswer.ai (the "Website"), mobile application (“App”), and provision of services online. Specifically, the Company provides a generative artificial intelligence (“AI”) services that offers a comprehensive solution for teams to train datasets, create contextually relevant prompts, and capitalize on their enterprise data (collectively, the "Services"), through its Website and/or mobile application (“App”).
+AnswerAgentAI, Inc. (“Company,” or “we,” “us” and “our”) values your privacy and is committed to maintaining your trust. We provide this Privacy Policy to inform you of our policies and procedures regarding the collection, use, and disclosure of personally identifiable information received from visitors to and/or users of the Company’s website located at https://theanswer.ai (the "Website"), mobile application (“App”), and provision of services online. Specifically, the Company provides a generative artificial intelligence (“AI”) services that offers a comprehensive solution for teams to train datasets, create contextually relevant prompts, and capitalize on their enterprise data (collectively, the "Services"), through its Website and/or mobile application (“App”).
 
 ## **_II. Collection, Use, Processing, and Sharing of Personal Information_**
 
@@ -269,4 +269,4 @@ If, at any time after registering, you change your mind about receiving informat
 ## **_XIX. Contact Us_**
 
 If you have any questions or concerns relating to our use of your Personal Information, please email info@theanswer.ai. Additionally, you may reach us by postal mail at:  
-AnswerAI, Inc. 1116 Balboa St San Francisco, CA 94118
+AnswerAgentAI, Inc. 1116 Balboa St San Francisco, CA 94118

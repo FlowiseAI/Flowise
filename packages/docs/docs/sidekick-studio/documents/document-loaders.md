@@ -1,5 +1,5 @@
 ---
-description: Document Loaders are used to load documents into the AnswerAI knowledge base.
+description: Document Loaders are used to load documents into the AnswerAgentAI knowledge base.
 ---
 
 # Document Loaders
@@ -26,7 +26,7 @@ By utilizing document loaders, you can efficiently populate your document store 
 
 ## Types of Document Loaders
 
-AnswerAI offers a variety of document loaders to accommodate different data sources:
+AnswerAgentAI offers a variety of document loaders to accommodate different data sources:
 
 ### File-based Loaders
 

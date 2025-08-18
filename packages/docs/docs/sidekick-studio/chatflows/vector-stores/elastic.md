@@ -12,11 +12,11 @@ The Elasticsearch Vector Store node allows you to store and retrieve embedded da
 
 -   Efficient similarity search: Quickly find and retrieve the most relevant vector data based on similarity measures.
 -   Scalable storage: Leverage Elasticsearch's distributed architecture for storing large amounts of vector data.
--   Flexible integration: Easily integrate with other AnswerAI components for advanced AI workflows.
+-   Flexible integration: Easily integrate with other AnswerAgentAI components for advanced AI workflows.
 
 ## How to Use
 
-1. Add the Elasticsearch Vector Store node to your AnswerAI canvas.
+1. Add the Elasticsearch Vector Store node to your AnswerAgentAI canvas.
 2. Connect the required input nodes:
     - Document (optional): Connect a Document node if you want to add new documents to the vector store.
     - Embeddings: Connect an Embeddings node to specify the embedding model for your vectors.

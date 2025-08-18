@@ -6,7 +6,7 @@ description: Chatflows are powerful, configurable workflows that enable AI-power
 
 ## Overview
 
-Chatflows are the core building blocks of AnswerAI that allow you to create intelligent, interactive AI experiences. They represent configurable workflows that connect various nodes - from AI models to tools and data sources - creating complete solutions that can be deployed across multiple platforms.
+Chatflows are the core building blocks of AnswerAgentAI that allow you to create intelligent, interactive AI experiences. They represent configurable workflows that connect various nodes - from AI models to tools and data sources - creating complete solutions that can be deployed across multiple platforms.
 
 ## Key Features
 
@@ -34,7 +34,7 @@ Deploy chatflows as interactive chatbots directly on your website or application
 
 ### In-App Chat Interface
 
-Integrate chatflows within the AnswerAI interface for internal teams to:
+Integrate chatflows within the AnswerAgentAI interface for internal teams to:
 
 -   Test and iterate on AI workflows
 -   Access powerful AI assistants

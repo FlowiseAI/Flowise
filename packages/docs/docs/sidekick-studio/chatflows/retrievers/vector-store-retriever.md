@@ -6,7 +6,7 @@ description: Store and retrieve vector data for efficient information retrieval
 
 ## Overview
 
-The Vector Store Retriever is a powerful node in AnswerAI that allows you to store and retrieve vector data efficiently. This feature is particularly useful for organizing and querying large amounts of information, making it an essential tool for building advanced question-answering systems and other AI-powered applications.
+The Vector Store Retriever is a powerful node in AnswerAgentAI that allows you to store and retrieve vector data efficiently. This feature is particularly useful for organizing and querying large amounts of information, making it an essential tool for building advanced question-answering systems and other AI-powered applications.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Vector Store Retriever is a powerful node in AnswerAI that allows you to sto
 
 ## How to Use
 
-1. Add the Vector Store Retriever node to your AnswerAI canvas.
+1. Add the Vector Store Retriever node to your AnswerAgentAI canvas.
 
 2. Connect a Vector Store node to the "Vector Store" input of the Vector Store Retriever.
 
@@ -52,4 +52,4 @@ The Vector Store Retriever is a powerful node in AnswerAI that allows you to sto
 3. **Issue**: The Vector Store Retriever node is not connecting to other nodes in the workflow.
    **Solution**: Verify that the node connections are correct and that the output of the Vector Store Retriever is compatible with the input requirements of the connected nodes. If you're using a MultiRetrievalQAChain, ensure that it's configured to accept the Vector Store Retriever as an input.
 
-By leveraging the Vector Store Retriever node in AnswerAI, you can create powerful and efficient information retrieval systems that form the backbone of advanced AI applications. Whether you're building a question-answering system, a recommendation engine, or any other application that requires fast and accurate information lookup, the Vector Store Retriever is an invaluable tool in your AnswerAI toolkit.
+By leveraging the Vector Store Retriever node in AnswerAgentAI, you can create powerful and efficient information retrieval systems that form the backbone of advanced AI applications. Whether you're building a question-answering system, a recommendation engine, or any other application that requires fast and accurate information lookup, the Vector Store Retriever is an invaluable tool in your AnswerAgentAI toolkit.

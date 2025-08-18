@@ -1,12 +1,12 @@
 ---
-description: Character Text Splitter Node for AnswerAI
+description: Character Text Splitter Node for AnswerAgentAI
 ---
 
 # Character Text Splitter
 
 ## Overview
 
-The Character Text Splitter is a powerful tool in AnswerAI that allows you to split long pieces of text into smaller, more manageable chunks. This splitter focuses on dividing text based on a specific character or sequence of characters, making it ideal for processing large documents or datasets.
+The Character Text Splitter is a powerful tool in AnswerAgentAI that allows you to split long pieces of text into smaller, more manageable chunks. This splitter focuses on dividing text based on a specific character or sequence of characters, making it ideal for processing large documents or datasets.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Character Text Splitter is a powerful tool in AnswerAI that allows you to sp
 
 ## How to Use
 
-1. Add the Character Text Splitter node to your AnswerAI workflow canvas.
+1. Add the Character Text Splitter node to your AnswerAgentAI workflow canvas.
 2. Configure the node parameters:
 
     - Chunk Size: Set the number of characters for each chunk (default: 1000)
@@ -26,7 +26,7 @@ The Character Text Splitter is a powerful tool in AnswerAI that allows you to sp
 3. Connect the Character Text Splitter node to your text input source.
 4. Run your workflow to split the input text into chunks.
 
-<!-- TODO: Add a screenshot of the Character Text Splitter node on the AnswerAI canvas -->
+<!-- TODO: Add a screenshot of the Character Text Splitter node on the AnswerAgentAI canvas -->
 <figure><img src="/.gitbook/assets/screenshots/charactertextsplitter.png" alt="" /><figcaption><p> Character Text Splitter &#x26; Drop UI</p></figcaption></figure>
 
 ## Tips and Best Practices
@@ -44,4 +44,4 @@ The Character Text Splitter is a powerful tool in AnswerAI that allows you to sp
 
 This will create a new Character Text Splitter with custom parameters and use it to split the `longText` into chunks.
 
-Remember that the Character Text Splitter is just one of many text splitting options in AnswerAI. Depending on your specific use case, you might want to explore other splitters like the Token Text Splitter or the Recursive Character Text Splitter for more advanced splitting strategies.
+Remember that the Character Text Splitter is just one of many text splitting options in AnswerAgentAI. Depending on your specific use case, you might want to explore other splitters like the Token Text Splitter or the Recursive Character Text Splitter for more advanced splitting strategies.

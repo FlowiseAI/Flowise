@@ -4,11 +4,11 @@ description: Load website content using Apify Website Content Crawler
 
 # Apify Website Content Crawler
 
-The Apify Website Content Crawler is a powerful tool that allows you to extract and load content from websites for use in AnswerAI. This feature is particularly useful for gathering large amounts of web data for analysis, research, or training language models.
+The Apify Website Content Crawler is a powerful tool that allows you to extract and load content from websites for use in AnswerAgentAI. This feature is particularly useful for gathering large amounts of web data for analysis, research, or training language models.
 
 ## Overview
 
-The Apify Website Content Crawler uses advanced web scraping techniques to navigate through websites, clean HTML content, and convert it into a format suitable for processing within AnswerAI. It can crawl multiple pages, follow links, and extract text content efficiently.
+The Apify Website Content Crawler uses advanced web scraping techniques to navigate through websites, clean HTML content, and convert it into a format suitable for processing within AnswerAgentAI. It can crawl multiple pages, follow links, and extract text content efficiently.
 
 ## Key Benefits
 
@@ -18,7 +18,7 @@ The Apify Website Content Crawler uses advanced web scraping techniques to navig
 
 ## How to Use
 
-1. In the AnswerAI interface, locate and add the "Apify Website Content Crawler" node to your workflow.
+1. In the AnswerAgentAI interface, locate and add the "Apify Website Content Crawler" node to your workflow.
 
 2. Configure the node with the following settings:
 
@@ -47,7 +47,7 @@ The Apify Website Content Crawler uses advanced web scraping techniques to navig
 3. Connect your Apify API credentials:
 
     - If you haven't already, create an Apify account and obtain an API token.
-    - In AnswerAI, create a new credential for the Apify API and enter your API token.
+    - In AnswerAgentAI, create a new credential for the Apify API and enter your API token.
 
 4. Connect the Apify Website Content Crawler node to other nodes in your workflow as needed.
 
@@ -78,7 +78,7 @@ The Apify Website Content Crawler uses advanced web scraping techniques to navig
 <!-- TODO: Add a screenshot of the Apify Website Content Crawler node configuration interface -->
 <figure><img src="/.gitbook/assets/screenshots/apifywebsitecontentcrawler.png" alt="" /><figcaption><p> Apify website Content Crawler Node Configuration &#x26; Drop UI</p></figcaption></figure>
 
-By following these instructions, you can effectively use the Apify Website Content Crawler to gather web content for your AnswerAI projects. This powerful tool opens up a world of possibilities for data collection and analysis within your workflows.
+By following these instructions, you can effectively use the Apify Website Content Crawler to gather web content for your AnswerAgentAI projects. This powerful tool opens up a world of possibilities for data collection and analysis within your workflows.
 
 ## Resources
 

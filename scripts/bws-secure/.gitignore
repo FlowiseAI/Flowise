@@ -4,6 +4,7 @@
 .env.secure.*
 requiredVars.env
 .env-debug.html
+.bwsconfig.cache
 
 node_modules/
 package-lock.json

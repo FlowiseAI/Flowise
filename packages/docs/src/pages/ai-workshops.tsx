@@ -1,6 +1,6 @@
 import clsx from 'clsx'
 import Layout from '@theme/Layout'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
 import ElevenLabsInlineWidget from '@site/src/components/ElevenLabsInlineWidget'
 
@@ -534,7 +534,7 @@ export default function AIWorkshops(): JSX.Element {
                 description='Expert-led AI workshops for your team. 3 days online + 2 days in-person training. Complete experience with Answer Academy access, hands-on learning, and team events.'
             >
                 <WorkshopsHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <BenefitsSection />
                     <HowItWorksSection />

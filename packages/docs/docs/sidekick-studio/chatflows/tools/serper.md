@@ -6,17 +6,17 @@ description: Serper - Google Search API Integration
 
 ## Overview
 
-The Serper Tools node in AnswerAI integrates the Serper.dev Google Search API, allowing workflows to perform powerful web searches directly within the AnswerAI Studio. This tool enables agents to access up-to-date information from the internet, enhancing their ability to provide relevant and current responses.
+The Serper Tools node in AnswerAgentAI integrates the Serper.dev Google Search API, allowing workflows to perform powerful web searches directly within the AnswerAgentAI Studio. This tool enables agents to access up-to-date information from the internet, enhancing their ability to provide relevant and current responses.
 
 ## Key Benefits
 
--   Access to real-time web search results within AnswerAI workflows
+-   Access to real-time web search results within AnswerAgentAI workflows
 -   Enhance agent capabilities with current and relevant information
 -   Seamless integration with Google Search functionality
 
 ## How to Use
 
-1. Add the Serper Tools node to your canvas in the AnswerAI Studio.
+1. Add the Serper Tools node to your canvas in the AnswerAgentAI Studio.
 2. Connect your Serper API credential:
     - Click on the node to open its settings.
     - Under the "Connect Credential" section, select or add your Serper API credentials.

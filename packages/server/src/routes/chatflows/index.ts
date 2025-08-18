@@ -18,4 +18,9 @@ router.put(['/', '/:id'], enforceAbility('ChatFlow'), chatflowsController.update
 // DELETE
 router.delete('/:id', enforceAbility('ChatFlow'), chatflowsController.deleteChatflow)
 
+// VERSIONING
+router.get('/:id/versions', enforceAbility('ChatFlow'), chatflowsController.getChatflowVersions)
+router.get('/:id/versions/:version', enforceAbility('ChatFlow'), chatflowsController.getChatflowVersion)
+router.post('/:id/rollback/:version', enforceAbility('ChatFlow'), chatflowsController.rollbackChatflowToVersion)
+
 export default router

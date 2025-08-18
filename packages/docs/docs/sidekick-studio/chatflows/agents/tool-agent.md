@@ -1,5 +1,5 @@
 ---
-description: Learn how to use the Tool Agent in AnswerAI
+description: Learn how to use the Tool Agent in AnswerAgentAI
 ---
 
 # Tool Agent
@@ -28,7 +28,7 @@ The Tool Agent is an advanced AI assistant that uses Function Calling to select 
     - Input Moderation: Add moderation checks to prevent harmful content.
     - Max Iterations: Set a limit on the number of tool-using steps the agent can take.
 
-3. Connect the Tool Agent node to your AnswerAI workflow.
+3. Connect the Tool Agent node to your AnswerAgentAI workflow.
 
 4. Run your workflow and interact with the Tool Agent by providing input queries or tasks.
 

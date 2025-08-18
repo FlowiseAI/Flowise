@@ -1,12 +1,12 @@
 ---
-description: Load and process PDF documents in AnswerAI
+description: Load and process PDF documents in AnswerAgentAI
 ---
 
 # PDF Document Loader
 
 ## Overview
 
-The PDF Document Loader is a powerful feature in AnswerAI that allows you to extract and process text content from PDF files. This tool is essential for users who need to work with information stored in PDF format, enabling easy integration of PDF content into their AnswerAI workflows.
+The PDF Document Loader is a powerful feature in AnswerAgentAI that allows you to extract and process text content from PDF files. This tool is essential for users who need to work with information stored in PDF format, enabling easy integration of PDF content into their AnswerAgentAI workflows.
 
 ## Key Benefits
 

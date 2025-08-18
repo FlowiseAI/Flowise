@@ -1,12 +1,12 @@
 ---
-description: Pinecone Vector Store for AnswerAI
+description: Pinecone Vector Store for AnswerAgentAI
 ---
 
 # Pinecone Vector Store
 
 ## Overview
 
-The Pinecone Vector Store node in AnswerAI allows you to upsert embedded data and perform similarity or MMR (Maximal Marginal Relevance) searches using Pinecone, a leading fully managed hosted vector database. This node enables efficient storage and retrieval of high-dimensional vectors, making it ideal for various AI and machine learning applications.
+The Pinecone Vector Store node in AnswerAgentAI allows you to upsert embedded data and perform similarity or MMR (Maximal Marginal Relevance) searches using Pinecone, a leading fully managed hosted vector database. This node enables efficient storage and retrieval of high-dimensional vectors, making it ideal for various AI and machine learning applications.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Pinecone Vector Store node in AnswerAI allows you to upsert embedded data an
 
 ## How to Use
 
-1. Add the Pinecone Vector Store node to your AnswerAI workflow canvas.
+1. Add the Pinecone Vector Store node to your AnswerAgentAI workflow canvas.
 2. Connect the required input nodes (Document, Embeddings, etc.) to the Pinecone node.
 3. Configure the node parameters:
     - Connect your Pinecone API credential
@@ -40,7 +40,7 @@ The Pinecone Vector Store node in AnswerAI allows you to upsert embedded data an
 
 ## Tips and Best Practices
 
-1. Ensure your Pinecone API credential is properly set up in AnswerAI before using this node.
+1. Ensure your Pinecone API credential is properly set up in AnswerAgentAI before using this node.
 2. Use meaningful names for your Pinecone index and namespace to organize your vector data effectively.
 3. Experiment with different embedding models to find the best performance for your specific use case.
 4. Utilize the metadata filter to narrow down search results when dealing with large datasets.

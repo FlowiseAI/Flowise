@@ -34,6 +34,7 @@ import { AddFollowUpPrompts1726666302024 } from './1726666302024-AddFollowUpProm
 import { AddTypeToAssistant1733011290987 } from './1733011290987-AddTypeToAssistant'
 import { AddExecutionEntity1738090872625 } from './1738090872625-AddExecutionEntity'
 import { AddUserScopingToExecution1738091000000 } from './1738091000000-AddUserScopingToExecution'
+import { AddVersioningToChatFlow1753000000000 } from './1753000000000-AddVersioningToChatFlow'
 
 export const mysqlMigrations = [
     Init1693840429259,
@@ -71,5 +72,6 @@ export const mysqlMigrations = [
     AddFollowUpPrompts1726666302024,
     AddTypeToAssistant1733011290987,
     AddExecutionEntity1738090872625,
-    AddUserScopingToExecution1738091000000
+    AddUserScopingToExecution1738091000000,
+    AddVersioningToChatFlow1753000000000
 ]

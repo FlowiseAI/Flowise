@@ -8,17 +8,17 @@ description: Summarizes the conversation and stores the memory in Zep server
 
 ## Overview
 
-Zep Memory is a powerful long-term memory store for LLM applications in AnswerAI. It stores, summarizes, embeds, indexes, and enriches chatbot histories, making them accessible through simple, low-latency APIs. This feature allows your AnswerAI workflows to maintain context and remember previous conversations efficiently.
+Zep Memory is a powerful long-term memory store for LLM applications in AnswerAgentAI. It stores, summarizes, embeds, indexes, and enriches chatbot histories, making them accessible through simple, low-latency APIs. This feature allows your AnswerAgentAI workflows to maintain context and remember previous conversations efficiently.
 
 ## Key Benefits
 
 -   Long-term memory storage for chatbots and LLM applications
 -   Efficient summarization and indexing of conversation histories
--   Easy integration with AnswerAI workflows
+-   Easy integration with AnswerAgentAI workflows
 
 ## How to Use (Zep Cloud Node)
 
-1. Add the Zep Memory - Cloud node to your AnswerAI workflow canvas.
+1. Add the Zep Memory - Cloud node to your AnswerAgentAI workflow canvas.
 2. Configure the node settings:
     - Connect your Zep Memory API credential (optional)
     - Set a Session ID (optional)
@@ -42,7 +42,7 @@ Zep Memory is a powerful long-term memory store for LLM applications in AnswerAI
 
 ## Troubleshooting
 
-1. **Authentication Issues**: Ensure your Zep Memory API credential is correctly configured in AnswerAI.
+1. **Authentication Issues**: Ensure your Zep Memory API credential is correctly configured in AnswerAgentAI.
 2. **Missing Context**: Verify that the Session ID is consistent across related conversations.
 3. **Unexpected Behavior**: Double-check the Memory Type setting to ensure it aligns with your intended use case.
 
@@ -66,7 +66,7 @@ By leveraging these options, you can fine-tune the Zep Memory - Cloud node to be
 ## How to Use (Custom Server)
 
 1. Deploy a Zep server (see deployment guides below)
-2. In your AnswerAI canvas, add the Zep Memory node to your workflow
+2. In your AnswerAgentAI canvas, add the Zep Memory node to your workflow
 3. Configure the Zep Memory node with your Zep server's base URL
 4. Connect the Zep Memory node to your conversation flow
 5. Save and run your workflow
@@ -91,7 +91,7 @@ By leveraging these options, you can fine-tune the Zep Memory - Cloud node to be
 
 ## Troubleshooting
 
-1. Connection issues: Ensure your Zep server is running and accessible from your AnswerAI instance
+1. Connection issues: Ensure your Zep server is running and accessible from your AnswerAgentAI instance
 2. Memory not persisting: Verify that the Session ID is consistent across interactions
 3. Slow performance: Consider adjusting the Size parameter or scaling your Zep server
 
@@ -161,7 +161,7 @@ To secure your Zep instance using JWT authentication:
     ZEP_AUTH_SECRET=<the secret you generated>
     ```
 
-4. In AnswerAI, create a new credential for Zep:
+4. In AnswerAgentAI, create a new credential for Zep:
 
     - Add a new credential
     - Enter the JWT Token in the API Key field
@@ -172,4 +172,4 @@ To secure your Zep instance using JWT authentication:
 <!-- TODO: Screenshot of the Zep Memory node configuration with the credential selected -->
 <figure><img src="/.gitbook/assets/screenshots/zepmemoryapi.png" alt="" /><figcaption><p> Zep Memory Node Credential &#x26; Drop UI</p></figcaption></figure>
 
-By following these steps, you'll have a secure, authenticated connection between your AnswerAI workflow and your Zep memory server.
+By following these steps, you'll have a secure, authenticated connection between your AnswerAgentAI workflow and your Zep memory server.

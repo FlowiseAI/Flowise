@@ -1,16 +1,16 @@
 ---
-description: Load data from a Contentful Space into AnswerAI
+description: Load data from a Contentful Space into AnswerAgentAI
 ---
 
 # Contentful Document Loader
 
 ## Overview
 
-The Contentful Document Loader is a powerful feature that allows you to import content from your Contentful space directly into AnswerAI. This integration enables you to leverage your existing Contentful content within AnswerAI, making it easier to create AI-powered applications using your own data.
+The Contentful Document Loader is a powerful feature that allows you to import content from your Contentful space directly into AnswerAgentAI. This integration enables you to leverage your existing Contentful content within AnswerAgentAI, making it easier to create AI-powered applications using your own data.
 
 ## Key Benefits
 
--   Seamlessly import content from Contentful into AnswerAI
+-   Seamlessly import content from Contentful into AnswerAgentAI
 -   Customize content retrieval based on your specific needs
 -   Maintain your content in Contentful while utilizing it in AI applications
 
@@ -26,7 +26,7 @@ The Contentful Document Loader is a powerful feature that allows you to import c
     - Set up your Content Type configuration using the Config Utility.
     - Adjust additional parameters as needed (e.g., Environment ID, Include Levels, Limit).
 
-3. Run the loader to import your Contentful content into AnswerAI.
+3. Run the loader to import your Contentful content into AnswerAgentAI.
 
 <!-- TODO: Add a screenshot of the Contentful Document Loader configuration interface -->
 <figure><img src="/.gitbook/assets/screenshots/contentfuldocumentloader.png" alt="" /><figcaption><p> Contentful Document Loader Node Configuration &#x26; Drop UI</p></figcaption></figure>
@@ -101,4 +101,4 @@ You can use the "Search Query" parameter to filter the content you import. For e
 
 This query would import only blog posts in the "technology" category, ordered by creation date (newest first).
 
-By mastering these configuration options, you can tailor the Contentful Document Loader to fit your specific use case in AnswerAI.
+By mastering these configuration options, you can tailor the Contentful Document Loader to fit your specific use case in AnswerAgentAI.

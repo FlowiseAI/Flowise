@@ -1,12 +1,12 @@
 ---
-description: MongoDB Atlas Vector Store for AnswerAI
+description: MongoDB Atlas Vector Store for AnswerAgentAI
 ---
 
 # MongoDB Atlas Vector Store
 
 ## Overview
 
-The MongoDB Atlas Vector Store node in AnswerAI allows you to store, retrieve, and search vector embeddings using MongoDB Atlas, a managed cloud MongoDB database. This node enables efficient similarity searches and supports upsert operations for embedded data.
+The MongoDB Atlas Vector Store node in AnswerAgentAI allows you to store, retrieve, and search vector embeddings using MongoDB Atlas, a managed cloud MongoDB database. This node enables efficient similarity searches and supports upsert operations for embedded data.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The MongoDB Atlas Vector Store node in AnswerAI allows you to store, retrieve, a
 
 ## How to Use
 
-1. Add the MongoDB Atlas Vector Store node to your AnswerAI canvas.
+1. Add the MongoDB Atlas Vector Store node to your AnswerAgentAI canvas.
 2. Configure the node with the following parameters:
 
     - Document: (Optional) Input the documents you want to store in the vector database.
@@ -57,4 +57,4 @@ The MongoDB Atlas Vector Store node in AnswerAI allows you to store, retrieve, a
     - Confirm that the document format matches the expected schema for your collection.
     - Verify that the embeddings model is compatible with the vector dimensions in your Atlas index.
 
-If you encounter persistent issues, consult the MongoDB Atlas documentation or reach out to the AnswerAI support team for assistance.
+If you encounter persistent issues, consult the MongoDB Atlas documentation or reach out to the AnswerAgentAI support team for assistance.

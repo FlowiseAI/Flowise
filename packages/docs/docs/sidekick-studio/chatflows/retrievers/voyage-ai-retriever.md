@@ -6,7 +6,7 @@ description: Voyage AI Rerank Retriever - Enhance document retrieval with semant
 
 ## Overview
 
-The Voyage AI Rerank Retriever is a powerful feature in AnswerAI that enhances document retrieval by semantically ranking documents based on their relevance to a given query. This retriever uses Voyage AI's reranking model to sort documents from most to least semantically relevant, improving the quality of retrieved information.
+The Voyage AI Rerank Retriever is a powerful feature in AnswerAgentAI that enhances document retrieval by semantically ranking documents based on their relevance to a given query. This retriever uses Voyage AI's reranking model to sort documents from most to least semantically relevant, improving the quality of retrieved information.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Voyage AI Rerank Retriever is a powerful feature in AnswerAI that enhances d
 
 ## How to Use
 
-1. Add the Voyage AI Rerank Retriever node to your AnswerAI workflow canvas.
+1. Add the Voyage AI Rerank Retriever node to your AnswerAgentAI workflow canvas.
 2. Connect a Vector Store Retriever to the Voyage AI Rerank Retriever node.
 3. Configure the node settings:
     - Select the model (currently only 'rerank-lite-1' is available)
@@ -36,6 +36,6 @@ The Voyage AI Rerank Retriever is a powerful feature in AnswerAI that enhances d
 
 ## Troubleshooting
 
-1. If you encounter authentication errors, double-check that your Voyage AI API credentials are correctly configured in the AnswerAI credential manager.
+1. If you encounter authentication errors, double-check that your Voyage AI API credentials are correctly configured in the AnswerAgentAI credential manager.
 2. Ensure that the connected Vector Store Retriever is properly set up and contains indexed documents.
 3. If the retrieved documents seem irrelevant, try adjusting the Top K value or refining your query input.

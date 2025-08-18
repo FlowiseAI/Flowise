@@ -1,16 +1,16 @@
 ---
-description: Load and process Figma file data in AnswerAI
+description: Load and process Figma file data in AnswerAgentAI
 ---
 
 # Figma Document Loader
 
 ## Overview
 
-The Figma Document Loader is a powerful feature in AnswerAI that allows you to import and process data from Figma files. This tool is essential for designers and developers who want to integrate Figma designs into their AnswerAI workflows.
+The Figma Document Loader is a powerful feature in AnswerAgentAI that allows you to import and process data from Figma files. This tool is essential for designers and developers who want to integrate Figma designs into their AnswerAgentAI workflows.
 
 ## Key Benefits
 
--   Seamlessly import Figma file data into AnswerAI
+-   Seamlessly import Figma file data into AnswerAgentAI
 -   Process and analyze design elements within your AI workflows
 -   Enhance collaboration between design and development teams
 
@@ -18,9 +18,9 @@ The Figma Document Loader is a powerful feature in AnswerAI that allows you to i
 
 ### 1. Connect Your Figma Account
 
-Before using the Figma Document Loader, you need to connect your Figma account to AnswerAI:
+Before using the Figma Document Loader, you need to connect your Figma account to AnswerAgentAI:
 
-1. Go to the Credentials section in AnswerAI.
+1. Go to the Credentials section in AnswerAgentAI.
 2. Select "Figma API" from the list of available integrations.
 3. Enter your Figma API access token.
 4. Save the credential.
@@ -30,7 +30,7 @@ Before using the Figma Document Loader, you need to connect your Figma account t
 
 ### 2. Configure the Figma Document Loader
 
-1. In your AnswerAI workflow, add a new node and select "Figma" from the "Document Loaders" category.
+1. In your AnswerAgentAI workflow, add a new node and select "Figma" from the "Document Loaders" category.
 2. Configure the following settings:
 
     a. **File Key**: Enter the Figma file key. You can find this in the Figma file URL: `https://www.figma.com/file/:key/:title`. For example, in `https://www.figma.com/file/12345/Website`, the file key is `12345`.
@@ -83,4 +83,4 @@ Before using the Figma Document Loader, you need to connect your Figma account t
     - When using the Additional Metadata field, ensure the JSON format is correct.
     - If certain metadata is not appearing, check the Omit Metadata Keys field to ensure you haven't excluded it.
 
-By following this guide, you should be able to effectively use the Figma Document Loader in AnswerAI
+By following this guide, you should be able to effectively use the Figma Document Loader in AnswerAgentAI

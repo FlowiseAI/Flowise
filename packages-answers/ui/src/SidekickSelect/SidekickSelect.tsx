@@ -1,6 +1,21 @@
 'use client'
 import React, { useState, useRef } from 'react'
-import { Button, Box, Snackbar, Typography, Card, CardContent, Avatar, Chip, Grid, Container, Paper } from '@mui/material'
+import {
+    Button,
+    Box,
+    DialogContent,
+    DialogTitle,
+    Fade,
+    Snackbar,
+    Typography,
+    Card,
+    CardContent,
+    Avatar,
+    Chip,
+    Grid,
+    Container,
+    Paper
+} from '@mui/material'
 import {
     ExpandMore as ExpandMoreIcon,
     Add as AddIcon,
@@ -14,11 +29,13 @@ import { useNavigate } from '@/utils/navigation'
 import dynamic from 'next/dynamic'
 import { alpha, useTheme } from '@mui/material/styles'
 
+import { StyledDialog } from './StyledComponents'
 import { Sidekick } from './SidekickSelect.types'
 import useSidekickFavorites from './hooks/useSidekickFavorites'
 import useSidekickData from './hooks/useSidekickData'
-
+import useSidekickCategories from './hooks/useSidekickCategories'
 import useSidekickSelectionHandlers from './hooks/useSidekickSelectionHandlers'
+import SidekickDialogContent from './components/SidekickDialogContent'
 import SidekickSearchPanel from './SidekickSearchPanel'
 
 // Add marketplace dialog type definition
@@ -37,6 +54,7 @@ interface SidekickSelectProps {
     onSidekickSelected?: (sidekick: Sidekick) => void
     sidekicks?: Sidekick[]
     noDialog?: boolean
+    variant?: 'dropdown' | 'modal' | 'inline'
 }
 
 // New simplified card component
@@ -207,7 +225,7 @@ const SimpleSidekickCard: React.FC<{
     )
 }
 
-const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false }) => {
+const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidekicks = [], noDialog = false, variant = 'modal' }) => {
     // Add render counter for debugging
     const renderCountRef = useRef(0)
     renderCountRef.current++
@@ -225,7 +243,7 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     const [open, setOpen] = useState(false || noDialog)
 
     // Use the sidekick data hook
-    const { combinedSidekicks, isLoading } = useSidekickData({
+    const { combinedSidekicks, isLoading, sidekicksByCategoryCache, perfLog, allCategories, data } = useSidekickData({
         defaultSidekicks,
         enablePerformanceLogs
     })
@@ -233,7 +251,25 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     // Use the favorites hook
     const { favorites, toggleFavorite } = useSidekickFavorites()
 
-    // No longer need categories hook for inline search
+    // Use the categories hook
+    const {
+        expandedCategory,
+        setExpandedCategory,
+        focusedCategory,
+        setFocusedCategory,
+        viewMode,
+        setViewMode,
+        activeFilterCategory,
+        setActiveFilterCategory,
+        toggleViewMode,
+        getSidekicksByCategory
+    } = useSidekickCategories({
+        combinedSidekicks,
+        favorites,
+        enablePerformanceLogs,
+        sidekicksByCategoryCache,
+        perfLog
+    })
 
     // Use selection handlers hook
     const {
@@ -256,7 +292,40 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
         setOpen(false)
     }
 
-    // Simplify for inline mode - we'll let the search panel handle organization
+    // Filter and organize sidekicks for display
+    const organizeSidekicks = () => {
+        if (!combinedSidekicks?.length) return { personal: [] }
+
+        const personal = combinedSidekicks.filter((s) => s.chatflow.isOwner)
+
+        if (enablePerformanceLogs) {
+            console.log('Organized sidekicks:', { personal: personal.length })
+        }
+
+        return { personal }
+    }
+
+    const { personal } = organizeSidekicks()
+
+    if (enablePerformanceLogs) {
+        console.log(`[SidekickSelect] Before final render, noDialog: ${noDialog}, variant: ${variant}, render #${renderCountRef.current}`)
+    }
+
+    // Handle dropdown variant - simple typeahead search
+    if (variant === 'dropdown') {
+        return (
+            <SidekickSearchPanel
+                sidekicks={combinedSidekicks || []}
+                isLoading={isLoading}
+                favorites={favorites}
+                toggleFavorite={toggleFavorite}
+                handleSidekickSelect={handleSidekickSelect}
+                enablePerformanceLogs={enablePerformanceLogs}
+                shouldAutoFocus={false}
+                autoOpen={false}
+            />
+        )
+    }
 
     if (noDialog) {
         return (
@@ -321,30 +390,28 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
                 {!isLoading && (
                     <>
                         {/* Personal Sidekicks */}
-                        {combinedSidekicks && combinedSidekicks.filter((s) => s.chatflow.isOwner).length > 0 && (
+                        {personal.length > 0 && (
                             <Paper sx={{ p: 3, mb: 3, borderRadius: 3, bgcolor: alpha(theme.palette.background.paper, 0.6) }}>
                                 <Typography variant='h6' sx={{ fontWeight: 600, mb: 2, color: theme.palette.text.primary }}>
-                                    Your Sidekicks ({combinedSidekicks.filter((s) => s.chatflow.isOwner).length})
+                                    Your Sidekicks ({personal.length})
                                 </Typography>
                                 <Grid container spacing={2}>
-                                    {combinedSidekicks
-                                        .filter((s) => s.chatflow.isOwner)
-                                        .map((sidekick) => (
-                                            <Grid item xs={12} sm={6} md={6} lg={6} key={`personal-${sidekick.id}`}>
-                                                <SimpleSidekickCard
-                                                    sidekick={sidekick}
-                                                    onSelect={handleSidekickSelect}
-                                                    favorites={favorites}
-                                                    toggleFavorite={toggleFavorite}
-                                                />
-                                            </Grid>
-                                        ))}
+                                    {personal.map((sidekick) => (
+                                        <Grid item xs={12} sm={6} md={6} lg={6} key={`personal-${sidekick.id}`}>
+                                            <SimpleSidekickCard
+                                                sidekick={sidekick}
+                                                onSelect={handleSidekickSelect}
+                                                favorites={favorites}
+                                                toggleFavorite={toggleFavorite}
+                                            />
+                                        </Grid>
+                                    ))}
                                 </Grid>
                             </Paper>
                         )}
 
                         {/* Empty state */}
-                        {!isLoading && (!combinedSidekicks || combinedSidekicks.filter((s) => s.chatflow.isOwner).length === 0) && (
+                        {!isLoading && personal.length === 0 && (
                             <Paper sx={{ p: 4, textAlign: 'center', borderRadius: 3 }}>
                                 <Typography variant='h6' sx={{ mb: 2 }}>
                                     No sidekicks yet
@@ -369,41 +436,48 @@ const SidekickSelect: React.FC<SidekickSelectProps> = ({ sidekicks: defaultSidek
     }
 
     return (
-        <Box sx={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
-            {!open ? (
-                // Closed state - show button with selected sidekick or placeholder
-                <Button
-                    variant='outlined'
-                    onClick={() => setOpen(true)}
-                    endIcon={<ExpandMoreIcon />}
-                    sx={{
-                        justifyContent: 'space-between',
-                        width: '100%',
-                        textAlign: 'left',
-                        height: '40px' // Fixed height to match TextField
-                    }}
-                >
-                    {selectedSidekick && 'chatflow' in selectedSidekick ? selectedSidekick.chatflow.name : 'Select Sidekick'}
-                </Button>
-            ) : (
-                // Open state - show search field with dropdown
-                <Box sx={{ width: '100%' }}>
-                    <SidekickSearchPanel
-                        sidekicks={combinedSidekicks || []}
+        <Box>
+            <Button variant='outlined' onClick={() => setOpen(true)} endIcon={<ExpandMoreIcon />} sx={{ justifyContent: 'space-between' }}>
+                {selectedSidekick && 'chatflow' in selectedSidekick ? selectedSidekick.chatflow.name : 'Select Sidekick'}
+            </Button>
+            <StyledDialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth='lg' TransitionComponent={Fade}>
+                <DialogTitle sx={{ pb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Select a Sidekick
+                    <Button variant='contained' color='primary' onClick={handleCreateNewSidekick}>
+                        Create
+                    </Button>
+                </DialogTitle>
+                <DialogContent>
+                    <SidekickDialogContent
+                        user={user}
+                        focusedCategory={focusedCategory}
                         isLoading={isLoading}
+                        combinedSidekicks={combinedSidekicks}
+                        allCategories={allCategories}
+                        getSidekicksByCategory={getSidekicksByCategory}
+                        expandedCategory={expandedCategory}
+                        viewMode={viewMode}
+                        toggleViewMode={toggleViewMode}
+                        activeFilterCategory={activeFilterCategory}
+                        setActiveFilterCategory={setActiveFilterCategory}
                         favorites={favorites}
                         toggleFavorite={toggleFavorite}
-                        handleSidekickSelect={(sidekick) => {
-                            handleSidekickSelect(sidekick)
-                            setOpen(false)
-                        }}
+                        navigate={navigate}
+                        handleSidekickSelect={handleSidekickSelect}
+                        isMarketplaceDialogOpen={isMarketplaceDialogOpen}
+                        setIsMarketplaceDialogOpen={setIsMarketplaceDialogOpen}
+                        selectedTemplateId={selectedTemplateId}
+                        setSelectedTemplateId={setSelectedTemplateId}
+                        setExpandedCategory={setExpandedCategory}
+                        setFocusedCategory={setFocusedCategory}
+                        setViewMode={setViewMode}
+                        sidekicksByCategoryCache={sidekicksByCategoryCache}
+                        handleCreateNewSidekick={handleCreateNewSidekick}
                         enablePerformanceLogs={enablePerformanceLogs}
-                        onClose={() => setOpen(false)}
-                        shouldAutoFocus={true}
+                        perfLog={perfLog}
                     />
-                </Box>
-            )}
-
+                </DialogContent>
+            </StyledDialog>
             <MarketplaceDialogComponent
                 key='marketplace-dialog-outer'
                 open={isMarketplaceDialogOpen}

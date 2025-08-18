@@ -4,19 +4,19 @@ import type * as Preset from '@docusaurus/preset-classic'
 import type * as OpenApiPlugin from 'docusaurus-plugin-openapi-docs'
 
 const config: Config = {
-    title: 'AnswerAI',
+    title: 'AnswerAgentAI',
     tagline: 'Intelligent Answers, Instantly',
     favicon: 'img/favicon.png',
 
     // Set the production url of your site here
-    url: 'https://docs.theanswer.ai',
+    url: 'https://answeragent.ai',
     // Set the /<baseUrl>/ pathname under which your site is served
     // For GitHub pages deployment, it is often '/<projectName>/'
     baseUrl: '/',
 
     // GitHub pages deployment config.
     // If you aren't using GitHub pages, you don't need these.
-    organizationName: 'AnswerAI', // Usually your GitHub org/user name.
+    organizationName: 'AnswerAgentAI', // Usually your GitHub org/user name.
     projectName: 'answerai', // Usually your repo name.
 
     onBrokenLinks: 'log',
@@ -524,12 +524,12 @@ const config: Config = {
         image: 'img/answer-angent-ai-ogimage.png',
         colorMode: {
             defaultMode: 'dark',
-            disableSwitch: false,
+            disableSwitch: true,
             respectPrefersColorScheme: false
         },
         navbar: {
             logo: {
-                alt: 'AnswerAI Logo',
+                alt: 'AnswerAgentAI Logo',
                 src: 'img/answerai-wide-black.png',
                 srcDark: 'img/answerai-logo-600-wide-white.png' // Add this line for dark mode logo
             },

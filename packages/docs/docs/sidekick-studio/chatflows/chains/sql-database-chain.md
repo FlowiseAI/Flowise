@@ -1,12 +1,12 @@
 ---
-description: Learn how to use the SQL Database Chain feature in AnswerAI
+description: Learn how to use the SQL Database Chain feature in AnswerAgentAI
 ---
 
 # SQL Database Chain
 
 ## Overview
 
-The SQL Database Chain is a powerful feature in AnswerAI that allows you to query SQL databases using natural language. This feature bridges the gap between human language and SQL, enabling you to interact with your databases more intuitively and efficiently.
+The SQL Database Chain is a powerful feature in AnswerAgentAI that allows you to query SQL databases using natural language. This feature bridges the gap between human language and SQL, enabling you to interact with your databases more intuitively and efficiently.
 
 ## Key Benefits
 
@@ -70,7 +70,7 @@ Follow these steps to set up and use the SQL Database Chain:
 1. Connection Issues:
 
     - Double-check your connection string or file path.
-    - Ensure your database is accessible from the environment where AnswerAI is running.
+    - Ensure your database is accessible from the environment where AnswerAgentAI is running.
 
 2. Unexpected Results:
 

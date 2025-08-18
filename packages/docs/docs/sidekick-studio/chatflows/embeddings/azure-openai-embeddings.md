@@ -12,17 +12,17 @@ description: Generate embeddings using Azure OpenAI API
 
 ## Overview
 
-The Azure OpenAI Embeddings feature in AnswerAI allows you to generate embeddings for given text using the Azure OpenAI API. Embeddings are vector representations of text that capture semantic meaning, which can be used for various natural language processing tasks.
+The Azure OpenAI Embeddings feature in AnswerAgentAI allows you to generate embeddings for given text using the Azure OpenAI API. Embeddings are vector representations of text that capture semantic meaning, which can be used for various natural language processing tasks.
 
 ## Key Benefits
 
 -   Leverage Azure's powerful OpenAI models for generating high-quality embeddings
--   Easily integrate embeddings into your AnswerAI workflows
+-   Easily integrate embeddings into your AnswerAgentAI workflows
 -   Customize batch size and timeout settings for optimal performance
 
 ## How to Use
 
-1. Add the Azure OpenAI Embeddings node to your AnswerAI workflow.
+1. Add the Azure OpenAI Embeddings node to your AnswerAgentAI workflow.
 
 <!-- TODO: Screenshot of adding the Azure OpenAI Embeddings node to the workflow -->
 <figure><img src="/.gitbook/assets/screenshots/azureopenaiembeddinginaworkflow.png" alt="" /><figcaption><p> Azure OpenAI Embeddings Node In a Workflow   &#x26; Drop UI</p></figcaption></figure>
@@ -56,7 +56,7 @@ The Azure OpenAI Embeddings feature in AnswerAI allows you to generate embedding
 1. API Key Issues:
 
     - Ensure that your Azure OpenAI API key is correct and has the necessary permissions.
-    - Check that the API key is properly stored in your AnswerAI credentials.
+    - Check that the API key is properly stored in your AnswerAgentAI credentials.
 
 2. Timeout Errors:
 
@@ -70,4 +70,4 @@ The Azure OpenAI Embeddings feature in AnswerAI allows you to generate embedding
 4. API Version Compatibility:
     - Make sure you're using a compatible Azure OpenAI API version. Check the Azure documentation for the latest supported versions.
 
-If you continue to experience issues, consult the AnswerAI documentation or reach out to our support team for assistance.
+If you continue to experience issues, consult the AnswerAgentAI documentation or reach out to our support team for assistance.

@@ -6,7 +6,7 @@ description: Redis Vector Store for efficient similarity search and data storage
 
 ## Overview
 
-The Redis Vector Store node in AnswerAI allows you to store and retrieve high-dimensional vectors efficiently using Redis, an open-source, in-memory data structure store. This node enables you to perform similarity searches on embedded data, making it ideal for various AI and machine learning applications.
+The Redis Vector Store node in AnswerAgentAI allows you to store and retrieve high-dimensional vectors efficiently using Redis, an open-source, in-memory data structure store. This node enables you to perform similarity searches on embedded data, making it ideal for various AI and machine learning applications.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Redis Vector Store node in AnswerAI allows you to store and retrieve high-di
 
 ## How to Use
 
-1. Add the Redis Vector Store node to your AnswerAI workflow canvas.
+1. Add the Redis Vector Store node to your AnswerAgentAI workflow canvas.
 2. Connect an Embeddings node to the "Embeddings" input of the Redis node.
 3. (Optional) Connect a Document node to the "Document" input if you want to upsert data.
 4. Configure the node parameters:
@@ -43,7 +43,7 @@ The Redis Vector Store node in AnswerAI allows you to store and retrieve high-di
 1. Connection issues:
 
     - Verify that the Redis connection credentials are correct.
-    - Ensure that the Redis instance is running and accessible from your AnswerAI environment.
+    - Ensure that the Redis instance is running and accessible from your AnswerAgentAI environment.
 
 2. Performance problems:
 
@@ -54,4 +54,4 @@ The Redis Vector Store node in AnswerAI allows you to store and retrieve high-di
     - Verify that the embeddings used for storage and querying are consistent.
     - Double-check the field names (Content Field, Metadata Field, Vector Field) to ensure they match your data structure.
 
-If you encounter any other issues or need further assistance, please consult the AnswerAI documentation or reach out to our support team.
+If you encounter any other issues or need further assistance, please consult the AnswerAgentAI documentation or reach out to our support team.

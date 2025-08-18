@@ -1,22 +1,22 @@
 ---
-description: Integrate Mistral AI's powerful chat models into your AnswerAI workflows
+description: Integrate Mistral AI's powerful chat models into your AnswerAgentAI workflows
 ---
 
 # ChatMistralAI
 
 ## Overview
 
-ChatMistralAI is a powerful integration that allows you to use Mistral AI's advanced language models within your AnswerAI workflows. This feature enables you to leverage state-of-the-art natural language processing capabilities for various tasks such as text generation, conversation, and more.
+ChatMistralAI is a powerful integration that allows you to use Mistral AI's advanced language models within your AnswerAgentAI workflows. This feature enables you to leverage state-of-the-art natural language processing capabilities for various tasks such as text generation, conversation, and more.
 
 ## Key Benefits
 
 -   Access to cutting-edge language models from Mistral AI
--   Seamless integration with other AnswerAI components
+-   Seamless integration with other AnswerAgentAI components
 -   Customizable parameters for fine-tuned outputs
 
 ## How to Use
 
-Follow these steps to set up and use the ChatMistralAI feature in AnswerAI:
+Follow these steps to set up and use the ChatMistralAI feature in AnswerAgentAI:
 
 1. **Prerequisites**
 
@@ -24,7 +24,7 @@ Follow these steps to set up and use the ChatMistralAI feature in AnswerAI:
     - Generate an API key from the [Mistral AI console](https://console.mistral.ai/user/api-keys/)
 
 2. **Add ChatMistralAI to Your Workflow**
-    - In the AnswerAI interface, navigate to the "Chat Models" section
+    - In the AnswerAgentAI interface, navigate to the "Chat Models" section
     - Drag and drop the "ChatMistralAI" node into your workflow canvas
 
 <!-- TODO: Screenshot of dragging ChatMistralAI node into the workflow -->
@@ -80,4 +80,4 @@ Follow these steps to set up and use the ChatMistralAI feature in AnswerAI:
 4. **Rate Limiting**
     - If you encounter rate limit errors, review your Mistral AI account usage and consider upgrading your plan if necessary
 
-For any persistent issues or advanced configurations, refer to the [Mistral AI documentation](https://docs.mistral.ai/) or contact AnswerAI support for assistance.
+For any persistent issues or advanced configurations, refer to the [Mistral AI documentation](https://docs.mistral.ai/) or contact AnswerAgentAI support for assistance.

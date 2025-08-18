@@ -1,8 +1,9 @@
 import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
+import JsonLd from '@site/src/components/JsonLd'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -42,16 +43,16 @@ function FlowiseFoundation() {
             <div className='container'>
                 <h2 className='text--center'>Built on Flowise Excellence</h2>
                 <p className='text--center' style={{ marginBottom: '3rem', fontSize: '1.2rem', opacity: 0.9 }}>
-                    Leverage the proven power of Flowise with AnswerAI enhancements
+                    Leverage the proven power of Flowise with AnswerAgentAI enhancements
                 </p>
-              
+
                 {/* Image at the top */}
                 <div className='row' style={{ marginBottom: '3rem' }}>
                     <div className='col col--12'>
                         <div style={{ textAlign: 'center' }}>
                             <img
                                 src='/.gitbook/assets/agentflowsv2/agentflowsv2-1-flow-types.png'
-                                alt='AnswerAI Flow Types'
+                                alt='AnswerAgentAI Flow Types'
                                 style={{
                                     maxWidth: '100%',
                                     height: 'auto',
@@ -105,8 +106,8 @@ function FlowiseFoundation() {
                             <div className={styles.commandmentText}>
                                 <strong>Enhanced Features</strong>
                                 <br />
-                                All the power of Flowise plus AnswerAI-specific enhancements, integrations, and enterprise-grade security
-                                features.
+                                All the power of Flowise plus AnswerAgentAI-specific enhancements, integrations, and enterprise-grade
+                                security features.
                             </div>
                         </div>
                     </div>
@@ -219,11 +220,11 @@ function MCPToolsImage() {
         <section style={{ padding: '2rem 0', backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
             <div className='container'>
                 <div style={{ textAlign: 'center' }}>
-                    <img 
-                        src='/.gitbook/assets/agentflowsv2/agentflowsv2-5-mcp-tools.png' 
+                    <img
+                        src='/.gitbook/assets/agentflowsv2/agentflowsv2-5-mcp-tools.png'
                         alt='MCP Tools Integration'
-                        style={{ 
-                            maxWidth: '100%', 
+                        style={{
+                            maxWidth: '100%',
                             height: 'auto',
                             borderRadius: '12px',
                             boxShadow: '0 8px 32px rgba(0, 255, 255, 0.15)',
@@ -286,11 +287,11 @@ function NodeReferenceImage() {
         <section style={{ padding: '2rem 0', backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
             <div className='container'>
                 <div style={{ textAlign: 'center' }}>
-                    <img 
-                        src='/.gitbook/assets/agentflowsv2/agentflowsv2-6-node-ref.png' 
+                    <img
+                        src='/.gitbook/assets/agentflowsv2/agentflowsv2-6-node-ref.png'
                         alt='Node Reference Guide'
-                        style={{ 
-                            maxWidth: '100%', 
+                        style={{
+                            maxWidth: '100%',
                             height: 'auto',
                             borderRadius: '12px',
                             boxShadow: '0 8px 32px rgba(0, 255, 255, 0.15)',
@@ -356,8 +357,22 @@ export default function SidekickStudio(): JSX.Element {
                 title='Sidekick Studio - Visual AI Workflow Builder'
                 description='Build complex AI workflows with our visual no-code editor. Connect tools, create agents, and automate processes without coding.'
             >
+                <JsonLd
+                    data={{
+                        '@context': 'https://schema.org',
+                        '@type': 'TechArticle',
+                        headline: 'Sidekick Studio - Visual AI Workflow Builder',
+                        description:
+                            'Build complex AI workflows with our visual no-code editor. Connect tools, create agents, and automate processes.',
+                        author: { '@type': 'Organization', name: 'AnswerAgent' },
+                        mainEntityOfPage: {
+                            '@type': 'WebPage',
+                            '@id': 'https://answeragent.ai/sidekick-studio'
+                        }
+                    }}
+                />
                 <SidekickStudioHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <FlowiseFoundation />
                     <PlatformSupport />

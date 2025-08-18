@@ -1,12 +1,12 @@
 ---
-description: Redis-Backed Chat Memory for AnswerAI
+description: Redis-Backed Chat Memory for AnswerAgentAI
 ---
 
 # Redis-Backed Chat Memory
 
 ## Overview
 
-The Redis-Backed Chat Memory is a powerful feature in AnswerAI that allows you to store and retrieve conversation history using a Redis server. This memory node summarizes conversations and provides long-term storage, enabling more context-aware and personalized interactions in your AI applications.
+The Redis-Backed Chat Memory is a powerful feature in AnswerAgentAI that allows you to store and retrieve conversation history using a Redis server. This memory node summarizes conversations and provides long-term storage, enabling more context-aware and personalized interactions in your AI applications.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Redis-Backed Chat Memory is a powerful feature in AnswerAI that allows you t
 
 ## How to Use
 
-1. Add the Redis-Backed Chat Memory node to your AnswerAI workflow canvas.
+1. Add the Redis-Backed Chat Memory node to your AnswerAgentAI workflow canvas.
 2. Configure the node settings:
     - Connect your Redis credential (optional)
     - Set a Session ID (optional)
@@ -25,7 +25,7 @@ The Redis-Backed Chat Memory is a powerful feature in AnswerAI that allows you t
     - Set the Window Size (optional)
 3. Connect the memory node to other nodes in your workflow that require conversation history.
 
-<!-- TODO: Screenshot of the Redis-Backed Chat Memory node on the AnswerAI canvas -->
+<!-- TODO: Screenshot of the Redis-Backed Chat Memory node on the AnswerAgentAI canvas -->
 <figure><img src="/.gitbook/assets/screenshots/redischatmemory.png" alt="" /><figcaption><p> RedicBacked Chat Memory Node  &#x26; Drop UI</p></figcaption></figure>
 
 ## Tips and Best Practices
@@ -40,7 +40,7 @@ The Redis-Backed Chat Memory is a powerful feature in AnswerAI that allows you t
 1. **Connection Issues**:
 
     - Verify that your Redis server is running and accessible.
-    - Double-check the connection credentials in the AnswerAI settings.
+    - Double-check the connection credentials in the AnswerAgentAI settings.
 
 2. **Memory Not Persisting**:
 
@@ -79,4 +79,4 @@ The Redis-Backed Chat Memory is a powerful feature in AnswerAI that allows you t
 <!-- TODO: Screenshot of the configuration panel for the Redis-Backed Chat Memory node -->
 <figure><img src="/.gitbook/assets/screenshots/redismemoryconfiguration.png" alt="" /><figcaption><p> Redis-Backed Chat Memory Node Configuration &#x26; Drop UI</p></figcaption></figure>
 
-By leveraging the Redis-Backed Chat Memory in AnswerAI, you can create more intelligent and context-aware conversational AI applications that maintain user interactions over extended periods.
+By leveraging the Redis-Backed Chat Memory in AnswerAgentAI, you can create more intelligent and context-aware conversational AI applications that maintain user interactions over extended periods.

@@ -1,12 +1,12 @@
 ---
-description: Web Browser Tool for AnswerAI
+description: Web Browser Tool for AnswerAgentAI
 ---
 
 # Web Browser Tool
 
 ## Overview
 
-The Web Browser tool in AnswerAI gives agents the ability to visit websites and extract information. This powerful feature allows your workflows to interact with web content, enabling a wide range of web-based tasks and information retrieval.
+The Web Browser tool in AnswerAgentAI gives agents the ability to visit websites and extract information. This powerful feature allows your workflows to interact with web content, enabling a wide range of web-based tasks and information retrieval.
 
 ## Key Benefits
 
@@ -40,4 +40,4 @@ The Web Browser tool in AnswerAI gives agents the ability to visit websites and 
 -   Ensure that your language model and embeddings are correctly configured and compatible with the Web Browser tool.
 -   If you encounter performance issues, consider optimizing your workflow to minimize unnecessary web requests.
 
-By incorporating the Web Browser tool into your AnswerAI workflows, you can create more dynamic and information-rich applications that leverage the vast resources available on the web.
+By incorporating the Web Browser tool into your AnswerAgentAI workflows, you can create more dynamic and information-rich applications that leverage the vast resources available on the web.

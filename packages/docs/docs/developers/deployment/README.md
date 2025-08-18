@@ -1,14 +1,14 @@
 ---
-description: Learn how to deploy AnswerAI to the cloud
+description: Learn how to deploy AnswerAgentAI to the cloud
 ---
 
 # Deployment
 
-AnswerAI is designed with a platform-agnostic architecture, ensuring compatibility with a wide range of deployment environments to suit your infrastructure needs.
+AnswerAgentAI is designed with a platform-agnostic architecture, ensuring compatibility with a wide range of deployment environments to suit your infrastructure needs.
 
 ## Cloud Providers
 
-The following cloud providers offer robust platforms for deploying AnswerAI. These established providers require a higher level of technical expertise to manage and optimize for your specific needs, but grant greater flexibility and control over your cloud environment.
+The following cloud providers offer robust platforms for deploying AnswerAgentAI. These established providers require a higher level of technical expertise to manage and optimize for your specific needs, but grant greater flexibility and control over your cloud environment.
 
 -   [AWS](aws.md)
 -   [Azure](azure.md)
@@ -21,4 +21,4 @@ For detailed deployment instructions for each platform, please refer to the resp
 
 ## Local Machine
 
-To deploy AnswerAI locally, follow our [Get Started Running Locally](../running-locally.md) guide.
+To deploy AnswerAgentAI locally, follow our [Get Started Running Locally](../running-locally.md) guide.

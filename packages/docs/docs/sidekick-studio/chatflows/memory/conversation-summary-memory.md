@@ -6,7 +6,7 @@ description: Summarizes the conversation and stores the current summary in memor
 
 ## Overview
 
-The Conversation Summary Memory node is a powerful feature in AnswerAI that summarizes the conversation and stores the current summary in memory. This node is particularly useful for maintaining context in long conversations or when dealing with large amounts of information.
+The Conversation Summary Memory node is a powerful feature in AnswerAgentAI that summarizes the conversation and stores the current summary in memory. This node is particularly useful for maintaining context in long conversations or when dealing with large amounts of information.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Conversation Summary Memory node is a powerful feature in AnswerAI that summ
 
 ## How to Use
 
-1. Drag the Conversation Summary Memory node onto your canvas in the AnswerAI Studio.
+1. Drag the Conversation Summary Memory node onto your canvas in the AnswerAgentAI Studio.
 2. Connect the node to your chat model and other relevant nodes in your workflow.
 3. Configure the node settings:
     - **Chat Model**: Select the chat model to use for summarization.

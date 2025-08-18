@@ -1,12 +1,12 @@
 ---
-description: Load and process plain text data in AnswerAI
+description: Load and process plain text data in AnswerAgentAI
 ---
 
 # Plain Text Document Loader
 
 ## Overview
 
-The Plain Text Document Loader is a versatile feature in AnswerAI that allows you to load and process plain text data. This tool is particularly useful for importing text content into your workflows, splitting it into manageable chunks, and adding metadata to your documents.
+The Plain Text Document Loader is a versatile feature in AnswerAgentAI that allows you to load and process plain text data. This tool is particularly useful for importing text content into your workflows, splitting it into manageable chunks, and adding metadata to your documents.
 
 ## Key Benefits
 
@@ -17,7 +17,7 @@ The Plain Text Document Loader is a versatile feature in AnswerAI that allows yo
 
 ## How to Use
 
-1. Navigate to the Document Loaders section in AnswerAI.
+1. Navigate to the Document Loaders section in AnswerAgentAI.
 2. Select the "Plain Text" loader.
 3. Enter your text in the "Text" field.
 4. (Optional) Configure a Text Splitter if you want to split your text into smaller chunks.
@@ -81,4 +81,4 @@ The Plain Text Document Loader is a versatile feature in AnswerAI that allows yo
 
 4. If you are using a Plain Text loader as a variable, be sure to select Text as the output type and not Document or you will receive a JSON error
 
-By mastering the Plain Text Document Loader, you can efficiently import, process, and enrich text data in your AnswerAI workflows, enabling more dynamic and powerful AI-driven applications.
+By mastering the Plain Text Document Loader, you can efficiently import, process, and enrich text data in your AnswerAgentAI workflows, enabling more dynamic and powerful AI-driven applications.

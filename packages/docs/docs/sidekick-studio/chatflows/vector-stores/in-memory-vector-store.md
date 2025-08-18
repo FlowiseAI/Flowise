@@ -1,12 +1,12 @@
 ---
-description: In-Memory Vector Store for AnswerAI
+description: In-Memory Vector Store for AnswerAgentAI
 ---
 
 # In-Memory Vector Store
 
 ## Overview
 
-The In-Memory Vector Store is a fundamental component in AnswerAI's workflow system. It provides a quick and easy way to store and retrieve vector embeddings directly in memory. This feature is particularly useful for testing, prototyping, and small-scale applications where persistence is not required.
+The In-Memory Vector Store is a fundamental component in AnswerAgentAI's workflow system. It provides a quick and easy way to store and retrieve vector embeddings directly in memory. This feature is particularly useful for testing, prototyping, and small-scale applications where persistence is not required.
 
 ## Key Benefits
 
@@ -16,13 +16,13 @@ The In-Memory Vector Store is a fundamental component in AnswerAI's workflow sys
 
 ## How to Use
 
-1. Add the "In-Memory Vector Store" node to your AnswerAI canvas.
+1. Add the "In-Memory Vector Store" node to your AnswerAgentAI canvas.
 2. Connect a Document source to the "Document" input (optional).
 3. Connect an Embeddings model to the "Embeddings" input.
 4. Set the "Top K" value if you want to change the default number of results (optional).
 5. Choose the output type: either "Memory Retriever" or "Memory Vector Store".
 
-<!-- TODO: Screenshot of the In-Memory Vector Store node on the AnswerAI canvas with inputs and outputs connected -->
+<!-- TODO: Screenshot of the In-Memory Vector Store node on the AnswerAgentAI canvas with inputs and outputs connected -->
 
 <figure><img src="/.gitbook/assets/screenshots/inmemoryvectorstore.png" alt="" /><figcaption><p> In-Memory Vector Store   &#x26; Drop UI</p></figcaption></figure>
 
@@ -40,6 +40,6 @@ The In-Memory Vector Store is a fundamental component in AnswerAI's workflow sys
 
 ## Important Note for Production Use
 
-While the In-Memory Vector Store is an excellent tool for getting started quickly and for testing purposes, it is not recommended for production use with large datasets or when data persistence is required. For production environments, consider using more robust and persistent storage solutions available in AnswerAI, such as Pinecone, Weaviate, or other database-backed vector stores. These will provide better scalability, persistence, and performance for larger-scale applications.
+While the In-Memory Vector Store is an excellent tool for getting started quickly and for testing purposes, it is not recommended for production use with large datasets or when data persistence is required. For production environments, consider using more robust and persistent storage solutions available in AnswerAgentAI, such as Pinecone, Weaviate, or other database-backed vector stores. These will provide better scalability, persistence, and performance for larger-scale applications.
 
-When you're ready to move beyond testing and prototyping, explore AnswerAI's other vector store options that offer long-term storage and are better suited for production workflows.
+When you're ready to move beyond testing and prototyping, explore AnswerAgentAI's other vector store options that offer long-term storage and are better suited for production workflows.

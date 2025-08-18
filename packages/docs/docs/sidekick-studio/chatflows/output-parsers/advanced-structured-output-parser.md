@@ -6,7 +6,7 @@ description: Parse LLM output into structured data using Zod schemas
 
 ## Overview
 
-The Advanced Structured Output Parser is a powerful tool in AnswerAI that allows you to parse the output of a language model into a predefined structure. By providing a Zod schema, you can ensure that the model's output adheres to a specific format, making it easier to work with structured data in your workflows.
+The Advanced Structured Output Parser is a powerful tool in AnswerAgentAI that allows you to parse the output of a language model into a predefined structure. By providing a Zod schema, you can ensure that the model's output adheres to a specific format, making it easier to work with structured data in your workflows.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Advanced Structured Output Parser is a powerful tool in AnswerAI that allows
 
 ## How to Use
 
-1. Add the "Advanced Structured Output Parser" node to your AnswerAI canvas.
+1. Add the "Advanced Structured Output Parser" node to your AnswerAgentAI canvas.
 2. Configure the node settings:
     - Set the "Autofix" option if you want the parser to attempt fixing errors automatically.
     - Provide a Zod schema in the "Example JSON" field.
@@ -135,4 +135,4 @@ z.object({
 })
 ```
 
-By using these Zod schema examples as a starting point, you can create custom schemas tailored to your specific use cases in AnswerAI. Remember to adjust the validation rules and structure to match your exact requirements.
+By using these Zod schema examples as a starting point, you can create custom schemas tailored to your specific use cases in AnswerAgentAI. Remember to adjust the validation rules and structure to match your exact requirements.

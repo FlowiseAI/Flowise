@@ -1,5 +1,8 @@
 ---
 description: Learn how to use the Answer Chat and Sidekicks
+jsonld:
+    type: TechArticle
+    headline: Chat - AnswerAgent Sidekicks
 ---
 
 # Chat
@@ -37,11 +40,11 @@ Sidekicks can come in various forms, such as:
 
 To expand your collection of Sidekicks, you can use the Sidekick Studio. Here's how to access and use it:
 
-1. Navigate to the Sidekick Studio within the AnswerAI platform.
+1. Navigate to the Sidekick Studio within the AnswerAgentAI platform.
 2. In the Sidekick Studio, you'll find three tabs:
 
     - **My Sidekicks**: View and manage your current Sidekicks (chatflows).
-    - **AnswerAI Suggested**: Explore Sidekicks recommended by AnswerAI.
+    - **AnswerAgentAI Suggested**: Explore Sidekicks recommended by AnswerAgentAI.
     - **Shared**: Access Sidekicks shared by your organization or the community.
 
 3. Browse through the available Sidekicks in each tab.

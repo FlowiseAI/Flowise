@@ -6,17 +6,17 @@ description: Retrieve documents based on similarity score threshold
 
 ## Overview
 
-The Similarity Score Threshold Retriever is a powerful tool in AnswerAI that allows you to retrieve documents from a vector store based on a minimum similarity percentage. This retriever ensures that only the most relevant documents are returned, improving the quality of information used in your workflows.
+The Similarity Score Threshold Retriever is a powerful tool in AnswerAgentAI that allows you to retrieve documents from a vector store based on a minimum similarity percentage. This retriever ensures that only the most relevant documents are returned, improving the quality of information used in your workflows.
 
 ## Key Benefits
 
 -   Retrieve highly relevant documents by setting a minimum similarity score
 -   Customize the retrieval process with adjustable parameters
--   Improve the accuracy of your AnswerAI workflows by filtering out less relevant information
+-   Improve the accuracy of your AnswerAgentAI workflows by filtering out less relevant information
 
 ## How to Use
 
-1. Add the Similarity Score Threshold Retriever node to your AnswerAI canvas.
+1. Add the Similarity Score Threshold Retriever node to your AnswerAgentAI canvas.
 2. Connect a Vector Store node to the "Vector Store" input of the retriever.
 3. Configure the following parameters:
     - Query (optional): Specify a custom query for document retrieval. If left empty, the user's question will be used.
@@ -41,4 +41,4 @@ The Similarity Score Threshold Retriever is a powerful tool in AnswerAI that all
 2. Ensure that your Vector Store is properly configured and contains relevant documents for your queries.
 3. If the retriever is slow, try reducing the Max K value or increasing the K Increment to balance between thoroughness and speed.
 
-This retriever is based on the `ScoreThresholdRetriever` class from LangChain, adapted for use in AnswerAI. For more detailed information on the underlying implementation, refer to the LangChain documentation.
+This retriever is based on the `ScoreThresholdRetriever` class from LangChain, adapted for use in AnswerAgentAI. For more detailed information on the underlying implementation, refer to the LangChain documentation.

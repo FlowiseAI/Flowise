@@ -1,12 +1,12 @@
 ---
-description: Learn about the OpenAPI Chain, a powerful tool for automatic API selection and calling in AnswerAI
+description: Learn about the OpenAPI Chain, a powerful tool for automatic API selection and calling in AnswerAgentAI
 ---
 
 # OpenAPI Chain
 
 ## Overview
 
-The OpenAPI Chain in AnswerAI is an advanced chain type that automatically selects and calls APIs based solely on an OpenAPI specification. This chain is particularly useful when you need to interact with external APIs dynamically, without hardcoding specific API calls in your application.
+The OpenAPI Chain in AnswerAgentAI is an advanced chain type that automatically selects and calls APIs based solely on an OpenAPI specification. This chain is particularly useful when you need to interact with external APIs dynamically, without hardcoding specific API calls in your application.
 
 ## Key Benefits
 
@@ -27,7 +27,7 @@ The OpenAPI Chain is ideal for:
 
 ## How It Works
 
-1. Input Processing: The chain receives a user query via the AnswerAI API.
+1. Input Processing: The chain receives a user query via the AnswerAgentAI API.
 2. OpenAPI Spec Analysis: The system analyzes the provided OpenAPI specification.
 3. API Selection: Based on the user's query, the appropriate API endpoint is selected.
 4. API Call Execution: The selected API is called with the necessary parameters.
@@ -41,11 +41,11 @@ The OpenAPI Chain is ideal for:
 3. Headers: Optional HTTP headers for API calls.
 4. Input Moderation: Optional filters to ensure safe and appropriate inputs.
 
-## Using the OpenAPI Chain with AnswerAI API
+## Using the OpenAPI Chain with AnswerAgentAI API
 
 ### Basic Usage
 
-Here's how to use the OpenAPI Chain via the AnswerAI API:
+Here's how to use the OpenAPI Chain via the AnswerAgentAI API:
 
 ```python
 import requests
@@ -196,4 +196,4 @@ financialInfo('Give me a summary of the latest market trends').then(console.log)
 6. Keep OpenAPI Specs Updated: Regularly update the OpenAPI specifications to ensure you're working with the latest API versions.
 7. Monitor Usage: Keep track of API usage to optimize performance and manage costs.
 
-By leveraging the OpenAPI Chain in AnswerAI, you can create flexible and powerful applications that dynamically interact with a wide range of APIs, providing rich and varied functionalities without the need for extensive custom integration code.
+By leveraging the OpenAPI Chain in AnswerAgentAI, you can create flexible and powerful applications that dynamically interact with a wide range of APIs, providing rich and varied functionalities without the need for extensive custom integration code.

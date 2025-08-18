@@ -1,12 +1,12 @@
 ---
-description: Learn about the Multi Retrieval QA Chain, a powerful tool for automatic vector store selection in AnswerAI
+description: Learn about the Multi Retrieval QA Chain, a powerful tool for automatic vector store selection in AnswerAgentAI
 ---
 
 # Multi Retrieval QA Chain
 
 ## Overview
 
-The Multi Retrieval QA Chain in AnswerAI is an advanced chain type that automatically selects the most appropriate vector store from multiple retrievers based on the input query. This chain is particularly useful when dealing with diverse types of questions that require information from different specialized knowledge bases.
+The Multi Retrieval QA Chain in AnswerAgentAI is an advanced chain type that automatically selects the most appropriate vector store from multiple retrievers based on the input query. This chain is particularly useful when dealing with diverse types of questions that require information from different specialized knowledge bases.
 
 ## Key Benefits
 
@@ -27,7 +27,7 @@ The Multi Retrieval QA Chain is ideal for:
 
 ## How It Works
 
-1. Input Processing: The chain receives a user query via the AnswerAI API.
+1. Input Processing: The chain receives a user query via the AnswerAgentAI API.
 2. Retriever Analysis: The system evaluates the input against available retriever descriptions.
 3. Retriever Selection: The most suitable vector store retriever is automatically chosen.
 4. Information Retrieval: The selected retriever fetches relevant documents from its vector store.
@@ -41,11 +41,11 @@ The Multi Retrieval QA Chain is ideal for:
 3. Return Source Documents Option: Allows including source documents in the response.
 4. Input Moderation (Optional): Filters to ensure safe and appropriate inputs.
 
-## Using the Multi Retrieval QA Chain with AnswerAI API
+## Using the Multi Retrieval QA Chain with AnswerAgentAI API
 
 ### Basic Usage
 
-Here's how to use the Multi Retrieval QA Chain via the AnswerAI API:
+Here's how to use the Multi Retrieval QA Chain via the AnswerAgentAI API:
 
 ```python
 import requests
@@ -218,4 +218,4 @@ productRecommendation('I need a new laptop for graphic design', { budget: 'high'
 5. Use Source Documents: Enable returnSourceDocuments for transparency and to provide additional context.
 6. Monitor Performance: Regularly review which retrievers are being selected to optimize your system.
 
-By leveraging the Multi Retrieval QA Chain in AnswerAI, you can create more sophisticated and intelligent QA systems that adapt to various query types and information sources, providing more accurate and comprehensive responses across a wide range of domains.
+By leveraging the Multi Retrieval QA Chain in AnswerAgentAI, you can create more sophisticated and intelligent QA systems that adapt to various query types and information sources, providing more accurate and comprehensive responses across a wide range of domains.

@@ -6,17 +6,17 @@ description: Write files to disk using the Write File tool
 
 ## Overview
 
-The Write File tool allows you to write text content to files on your computer's disk. This powerful feature enables AnswerAI to create and modify files as part of its workflows, making it useful for tasks such as generating reports, saving data, or creating log files.
+The Write File tool allows you to write text content to files on your computer's disk. This powerful feature enables AnswerAgentAI to create and modify files as part of its workflows, making it useful for tasks such as generating reports, saving data, or creating log files.
 
 ## Key Benefits
 
 -   Easily save generated content or data to files on your local system
--   Integrate file writing capabilities into your AnswerAI workflows
+-   Integrate file writing capabilities into your AnswerAgentAI workflows
 -   Flexible file path options for organizing your saved files
 
 ## How to Use
 
-1. Add the Write File tool to your canvas in the AnswerAI Studio.
+1. Add the Write File tool to your canvas in the AnswerAgentAI Studio.
 2. Configure the tool by setting the optional Base Path parameter.
 3. Use the tool in your workflow by providing a file path and the text content to write.
 
@@ -42,7 +42,7 @@ To use the Write File tool in your workflows, you need to provide two pieces of 
 
 ## Troubleshooting
 
-1. **Permission Issues**: Ensure that AnswerAI has the necessary permissions to write to the specified directory.
+1. **Permission Issues**: Ensure that AnswerAgentAI has the necessary permissions to write to the specified directory.
 
     - Solution: Check the file system permissions and adjust them if needed.
 

@@ -1,10 +1,10 @@
 openapi: 3.0.0
 info:
     title: Document Store API
-    description: API for managing document stores, collections, and documents in AnswerAI
+    description: API for managing document stores, collections, and documents in AnswerAgentAI
     version: 1.0.0
     contact:
-        name: AnswerAI Support
+        name: AnswerAgentAI Support
         url: https://theanswer.ai
         email: support@theanswer.ai
 servers:

@@ -4,7 +4,7 @@ description: LangChain Memory Nodes
 
 # Memory Nodes
 
-Memory nodes in AnswerAI allow you to create chatbots with persistent memory, enabling more natural and context-aware conversations. This feature simulates human-like memory, allowing the AI to recall information from previous interactions within the same conversation.
+Memory nodes in AnswerAgentAI allow you to create chatbots with persistent memory, enabling more natural and context-aware conversations. This feature simulates human-like memory, allowing the AI to recall information from previous interactions within the same conversation.
 
 ## Overview
 
@@ -45,12 +45,12 @@ Current conversation:
 
 ## How to Use
 
-1. Select a memory node from the available options in the AnswerAI canvas.
+1. Select a memory node from the available options in the AnswerAgentAI canvas.
 2. Connect the memory node to your conversation flow.
 3. Configure the memory node settings as needed (e.g., memory size, storage method).
 4. Test your chatbot to ensure it correctly remembers and uses information from previous exchanges.
 
-<!-- TODO: Screenshot of the AnswerAI canvas showing where to find and how to connect a memory node -->
+<!-- TODO: Screenshot of the AnswerAgentAI canvas showing where to find and how to connect a memory node -->
 <figure><img src="/.gitbook/assets/screenshots/memorynodes.png" alt="" /><figcaption><p> Memory Nodes &#x26; Drop UI</p></figcaption></figure>
 
 ### Memory Nodes
@@ -72,15 +72,15 @@ Each memory node type has its own configuration options and is suitable for diff
 1. Choose the appropriate memory node based on your specific use case and requirements.
 2. Consider the trade-off between memory size and performance when configuring your memory nodes.
 3. Regularly test your chatbot to ensure it's using the stored memory effectively and accurately.
-4. Use memory nodes in combination with other AnswerAI features for more sophisticated conversational AI experiences.
+4. Use memory nodes in combination with other AnswerAgentAI features for more sophisticated conversational AI experiences.
 
 ## Handling Multiple Users
 
-AnswerAI provides methods to maintain separate conversation histories for multiple users:
+AnswerAgentAI provides methods to maintain separate conversation histories for multiple users:
 
 ### UI & Embedded Chat
 
-For UI and Embedded Chat implementations, AnswerAI automatically separates conversations for different users by generating a unique `chatId` for each new interaction.
+For UI and Embedded Chat implementations, AnswerAgentAI automatically separates conversations for different users by generating a unique `chatId` for each new interaction.
 
 ### Prediction API
 
@@ -119,9 +119,9 @@ Query parameters:
 
 ## Conversation Management
 
-AnswerAI provides a user interface for visualizing and managing conversations:
+AnswerAgentAI provides a user interface for visualizing and managing conversations:
 
-<!-- TODO: Screenshot of the AnswerAI conversation management interface -->
+<!-- TODO: Screenshot of the AnswerAgentAI conversation management interface -->
 
 This interface allows you to review, analyze, and manage conversation histories for different users or sessions.
 
@@ -132,4 +132,4 @@ This interface allows you to review, analyze, and manage conversation histories 
 3. If you're experiencing performance issues, consider adjusting the memory size or using a different type of memory node.
 4. For persistent storage issues, verify the connection settings for database-backed memory nodes (e.g., DynamoDB, MongoDB, Redis).
 
-By effectively using memory nodes in AnswerAI, you can create more engaging, context-aware conversational AI experiences that better simulate human-like interactions.
+By effectively using memory nodes in AnswerAgentAI, you can create more engaging, context-aware conversational AI experiences that better simulate human-like interactions.

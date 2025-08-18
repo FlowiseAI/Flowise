@@ -1,16 +1,16 @@
 ---
-description: Load and process documents from Confluence in AnswerAI
+description: Load and process documents from Confluence in AnswerAgentAI
 ---
 
 # Confluence Document Loader
 
 ## Overview
 
-The Confluence Document Loader is a powerful feature in AnswerAI that allows you to import and process documents from your Confluence workspace. This tool seamlessly integrates with your Confluence account, enabling you to leverage your existing knowledge base within AnswerAI.
+The Confluence Document Loader is a powerful feature in AnswerAgentAI that allows you to import and process documents from your Confluence workspace. This tool seamlessly integrates with your Confluence account, enabling you to leverage your existing knowledge base within AnswerAgentAI.
 
 ## Key Benefits
 
--   Easily import Confluence pages and spaces into AnswerAI
+-   Easily import Confluence pages and spaces into AnswerAgentAI
 -   Maintain up-to-date information by connecting directly to your Confluence workspace
 -   Customize document processing with text splitting and metadata options
 
@@ -18,7 +18,7 @@ The Confluence Document Loader is a powerful feature in AnswerAI that allows you
 
 Follow these steps to use the Confluence Document Loader:
 
-1. In the AnswerAI interface, locate and select the Confluence Document Loader node.
+1. In the AnswerAgentAI interface, locate and select the Confluence Document Loader node.
 
 2. Configure the following required settings:
 
@@ -33,7 +33,7 @@ Follow these steps to use the Confluence Document Loader:
     - Additional Metadata: Add custom metadata to the imported documents.
     - Omit Metadata Keys: Specify metadata keys to exclude from the imported documents.
 
-4. Connect the Confluence Document Loader node to other nodes in your AnswerAI workflow.
+4. Connect the Confluence Document Loader node to other nodes in your AnswerAgentAI workflow.
 
 5. Run your workflow to import and process the Confluence documents.
 
@@ -45,7 +45,7 @@ Follow these steps to use the Confluence Document Loader:
 
 2. Optimize performance: If you're working with a large Confluence space, consider using the "Limit" option to import a smaller subset of documents initially.
 
-3. Customize metadata: Use the "Additional Metadata" option to add relevant information to your imported documents, making them easier to organize and search within AnswerAI.
+3. Customize metadata: Use the "Additional Metadata" option to add relevant information to your imported documents, making them easier to organize and search within AnswerAgentAI.
 
 4. Text splitting: If you're working with large Confluence pages, use a Text Splitter to break them into smaller, more manageable chunks for processing.
 
@@ -65,4 +65,4 @@ Follow these steps to use the Confluence Document Loader:
     - If you're not seeing expected metadata, make sure you haven't accidentally omitted important keys using the "Omit Metadata Keys" option.
     - When adding custom metadata, ensure your JSON format is correct in the "Additional Metadata" field.
 
-By following this guide, you'll be able to efficiently import and process your Confluence documents within AnswerAI, enhancing your workflows with valuable information from your existing knowledge base.
+By following this guide, you'll be able to efficiently import and process your Confluence documents within AnswerAgentAI, enhancing your workflows with valuable information from your existing knowledge base.

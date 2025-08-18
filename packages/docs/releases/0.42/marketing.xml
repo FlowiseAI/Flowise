@@ -24,7 +24,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -581,7 +581,7 @@ export default function Agents(): JSX.Element {
                 description='Build intelligent AI agents that understand your needs, connect to your tools, and execute complex workflows autonomously.'
             >
                 <AgentsHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <WhatIsAnAgent />
                     <AgentToolIntegrations />
@@ -599,7 +599,7 @@ export default function Agents(): JSX.Element {
 import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
 
 import styles from './index.module.css'
@@ -1012,7 +1012,7 @@ export default function AIWorkshops(): JSX.Element {
                 description='Expert-led AI workshops for your team. 3 days online + 2 days in-person training. Complete experience with Answer Academy access, hands-on learning, and team events.'
             >
                 <WorkshopsHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <BenefitsSection />
                     <HowItWorksSection />
@@ -1031,7 +1031,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -1588,7 +1588,7 @@ export default function Agents(): JSX.Element {
                 description='Build intelligent AI agents that understand your needs, connect to your tools, and execute complex workflows autonomously.'
             >
                 <AgentsHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <WhatIsAnAgent />
                     <AgentToolIntegrations />
@@ -1607,7 +1607,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -1892,7 +1892,7 @@ export default function BrowserExtension(): JSX.Element {
                 description='Bring AI assistance to every website. Get page summaries, enhanced search, and access to your AI sidekicks without leaving your browser tab.'
             >
                 <BrowserExtensionHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <CoreFeatures />
                     <AIModels />
@@ -1910,7 +1910,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -2104,8 +2104,8 @@ function SidekickStudio() {
                     <div className='col col--4'>
                         <div className={clsx(styles.featureCard, styles.stepCard)}>
                             <div className={styles.stepNumber}>⭐</div>
-                            <h3>AnswerAI Suggested</h3>
-                            <p>Explore curated sidekicks recommended by AnswerAI. Discover new capabilities and specialized assistants.</p>
+                            <h3>AnswerAgentAI Suggested</h3>
+                            <p>Explore curated sidekicks recommended by AnswerAgentAI. Discover new capabilities and specialized assistants.</p>
                         </div>
                     </div>
                     <div className='col col--4'>
@@ -2157,7 +2157,7 @@ export default function Chat(): JSX.Element {
                 description='Your central hub for AI conversations with specialized sidekicks. Manage chat histories, access different AI agents, and boost productivity.'
             >
                 <ChatHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <FeaturedSidekicks />
                     <ChatFeatures />
@@ -2187,7 +2187,7 @@ function DevelopersHero() {
             <div className={styles.heroContent}>
                 <h1 className={styles.heroTitle}>Help Us Build the Future of AI—Together</h1>
                 <p className={styles.heroSubtitle}>
-                    A Call to Builders for the AnswerAI Alpha Sprint. Not your data, not your soul—just your code and your conviction.
+                    A Call to Builders for the AnswerAgentAI Alpha Sprint. Not your data, not your soul—just your code and your conviction.
                 </p>
                 <div className={styles.heroCTAs}>
                     <a href='https://github.com/orgs/the-answerai/repositories' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
@@ -2218,7 +2218,7 @@ function OpeningHook() {
                             <div className={styles.commandmentText}>
                                 <h2 style={{ color: '#00ffff', marginBottom: '1.5rem' }}>Hey Builders. We Need You.</h2>
                                 <p style={{ fontSize: '1.2rem', lineHeight: '1.8', marginBottom: '1.5rem' }}>
-                                    From now until <strong style={{ color: '#ff00ff' }}>July 21st</strong>, we&apos;re sprinting to create
+                                    We&apos;re sprinting to create
                                     something that shouldn&apos;t exist according to Big Tech: a fully local AI platform that respects your
                                     privacy and amplifies your creativity.
                                 </p>
@@ -2550,9 +2550,8 @@ function QuickReference() {
                     <div className='col col--6'>
                         <div className={styles.featureCard}>
                             <div className={styles.appIcon}>📅</div>
-                            <h3>Sprint Timeline</h3>
+                            <h3>Help Build the Community</h3>
                             <div className={styles.appFeatures}>
-                                <span>⏰ Now - July 21st: Alpha Sprint</span>
                                 <span>🎯 Focus: Chrome Extension & Web App</span>
                                 <span>🏗️ Foundation: Desktop Architecture</span>
                             </div>
@@ -2587,7 +2586,7 @@ export default function Developers(): JSX.Element {
         <div data-theme='dark'>
             <Layout
                 title='Developers - Help Us Build the Future of AI'
-                description='Join the AnswerAI Alpha Sprint. Build privacy-first AI tools that empower, not exploit. Earn credits for contributions. July 21st deadline - let us show Big Tech what committed developers can build.'
+                description='Join the AnswerAgentAI Alpha Sprint. Build privacy-first AI tools that empower, not exploit. Earn credits for contributions. Let us show Big Tech what committed developers can build.'
             >
                 <DevelopersHero />
                 <main>
@@ -2609,7 +2608,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -2681,7 +2680,7 @@ function ThreeSteps() {
                             <div className={styles.stepNumber}>2</div>
                             <h3>Sign Up for Free</h3>
                             <p>
-                                Create your AnswerAI account and get instant access to specialized AI sidekicks, chat features, and the
+                                Create your AnswerAgentAI account and get instant access to specialized AI sidekicks, chat features, and the
                                 visual Studio builder.
                             </p>
                             <div className={styles.appFeatures}>
@@ -2988,11 +2987,11 @@ export default function GettingStarted(): JSX.Element {
     return (
         <div data-theme='dark'>
             <Layout
-                title='Get Started with AnswerAI - 3 Simple Steps'
+                title='Get Started with AnswerAgentAI - 3 Simple Steps'
                 description='Transform your productivity in minutes. Install the Chrome extension, sign up for free, and start chatting with AI sidekicks that understand your workflow.'
             >
                 <GettingStartedHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <ThreeSteps />
                     <LearningResources />
@@ -3769,7 +3768,7 @@ function HomepageHeader() {
                 <ThreeJsScene className={styles.threeJsCanvas} />
             </div>
             <div className={styles.heroContent}>
-                <img src='img/answerai-logo-600-wide-white.png' alt='AnswerAI Logo' className={styles.heroLogo} />
+                <img src='img/answerai-logo-600-wide-white.png' alt='AnswerAgentAI Logo' className={styles.heroLogo} />
                 <h1 className={styles.heroTitle}>AI for ALL, <em>not for the few.</em> </h1>
                 <p className={styles.heroSubtitle}>Building a decentralized, open, and creative future you can trust.</p>
                 <div className={styles.heroCTAs}>
@@ -3826,7 +3825,7 @@ function MissionSection() {
                                 width='100%'
                                 height='315'
                                 src='https://www.youtube.com/embed/McrDhKBA5Ac'
-                                title='AnswerAI Vision'
+                                title='AnswerAgentAI Vision'
                                 frameBorder='0'
                                 allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
                                 allowFullScreen
@@ -4072,7 +4071,7 @@ function PricingSection() {
                                 <h3 style={{ color: '#00ffff', marginBottom: '1rem' }}>Enterprise</h3>
                                 <div className={styles.pricingHighlight}>Fully Local</div>
                                 <p style={{ marginBottom: '1.5rem' }}>
-                                    Complete enterprise solution with full self-hosted licensing and services. Deploy AnswerAI entirely
+                                    Complete enterprise solution with full self-hosted licensing and services. Deploy AnswerAgentAI entirely
                                     within your infrastructure for maximum security and control.
                                 </p>
                                 <div style={{ marginBottom: '1.5rem' }}>
@@ -4120,7 +4119,7 @@ function PricingSection() {
                                 <p style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
                                     We provide completely transparent metrics and cost calculators inside the app. See exactly what
                                     you&apos;re spending, when, and why. We take only a small nominal fee on commercial AI tools and
-                                    licensed AnswerAI versions to keep the platform running.
+                                    licensed AnswerAgentAI versions to keep the platform running.
                                 </p>
                                 <div style={{ marginTop: '2rem' }}>
                                     <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
@@ -4199,7 +4198,7 @@ export default function Home(): JSX.Element {
 import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
 
 import styles from './index.module.css'
@@ -4213,7 +4212,7 @@ function LearnHero() {
             <div className={styles.heroContent}>
                 <h1 className={styles.heroTitle}>Learn AI & Accelerate Your Journey</h1>
                 <p className={styles.heroSubtitle}>
-                    Master AI fundamentals, discover practical applications, and unlock the full potential of AnswerAI with our
+                    Master AI fundamentals, discover practical applications, and unlock the full potential of AnswerAgentAI with our
                     comprehensive learning resources.
                 </p>
                 <div className={styles.heroCTAs}>
@@ -4256,7 +4255,7 @@ function AlphaExtensionPromo() {
                                                 <strong style={{ color: '#ff00ff' }}>🧠 Smart Platform Assistant</strong>
                                                 <br />
                                                 Ask questions about any feature, get instant explanations, and discover hidden capabilities
-                                                while using AnswerAI.
+                                                while using AnswerAgentAI.
                                             </div>
                                             <div style={{ textAlign: 'left' }}>
                                                 <strong style={{ color: '#ff00ff' }}>🎯 Agent Creation Helper</strong>
@@ -4275,7 +4274,7 @@ function AlphaExtensionPromo() {
                                             <div style={{ textAlign: 'left' }}>
                                                 <strong style={{ color: '#ff00ff' }}>💬 Universal Q&A</strong>
                                                 <br />
-                                                Ask anything about AI, productivity, or how to get the most out of your AnswerAI experience.
+                                                Ask anything about AI, productivity, or how to get the most out of your AnswerAgentAI experience.
                                             </div>
                                         </div>
                                     </div>
@@ -4308,13 +4307,13 @@ function AIModules() {
                             <div className={styles.stepNumber}>1</div>
                             <h3>Welcome to the World of AI!</h3>
                             <p>
-                                The bare essentials of AI, Chatbots, and what AnswerAI is all about. Perfect starting point for AI
+                                The bare essentials of AI, Chatbots, and what AnswerAgentAI is all about. Perfect starting point for AI
                                 newcomers.
                             </p>
                             <div className={styles.appFeatures}>
                                 <span>🧠 AI Basics</span>
                                 <span>🤖 Chatbot Fundamentals</span>
-                                <span>🎯 AnswerAI Overview</span>
+                                <span>🎯 AnswerAgentAI Overview</span>
                             </div>
                             <a href='/docs/use-cases/module-1-welcome-to-ai' className={styles.featureCardCTA}>
                                 Start Module 1 →
@@ -4344,8 +4343,8 @@ function AIModules() {
                     <div className='col col--4'>
                         <div className={clsx(styles.featureCard, styles.stepCard)}>
                             <div className={styles.stepNumber}>3</div>
-                            <h3>AnswerAI in Action</h3>
-                            <p>Discover practical ways you can use AnswerAI for daily tasks and unlock everyday superpowers.</p>
+                            <h3>AnswerAgentAI in Action</h3>
+                            <p>Discover practical ways you can use AnswerAgentAI for daily tasks and unlock everyday superpowers.</p>
                             <a href='/docs/use-cases/module-3-answeragent-in-action' className={styles.featureCardCTA}>
                                 Start Module 3 →
                             </a>
@@ -4354,8 +4353,8 @@ function AIModules() {
                     <div className='col col--4'>
                         <div className={clsx(styles.featureCard, styles.stepCard)}>
                             <div className={styles.stepNumber}>4</div>
-                            <h3>AnswerAI vs. Others</h3>
-                            <p>Understand how AnswerAI compares to ChatGPT, Claude, NotebookLM and other popular AI tools.</p>
+                            <h3>AnswerAgentAI vs. Others</h3>
+                            <p>Understand how AnswerAgentAI compares to ChatGPT, Claude, NotebookLM and other popular AI tools.</p>
                             <a href='/docs/use-cases/module-4-answeragent-vs-others' className={styles.featureCardCTA}>
                                 Start Module 4 →
                             </a>
@@ -4365,7 +4364,7 @@ function AIModules() {
                         <div className={clsx(styles.featureCard, styles.stepCard)}>
                             <div className={styles.stepNumber}>5</div>
                             <h3>Supercharge Your Experience</h3>
-                            <p>Tips and advanced features to get the most out of AnswerAI, including Sidekicks and Extensions.</p>
+                            <p>Tips and advanced features to get the most out of AnswerAgentAI, including Sidekicks and Extensions.</p>
                             <a href='/docs/use-cases/module-5-supercharging-answeragent' className={styles.featureCardCTA}>
                                 Start Module 5 →
                             </a>
@@ -4483,7 +4482,7 @@ function LearningResources() {
                         <div className={styles.featureCard}>
                             <div className={styles.appIcon}>📖</div>
                             <h3>Complete Documentation</h3>
-                            <p>Comprehensive guides, API references, and step-by-step tutorials for every aspect of AnswerAI.</p>
+                            <p>Comprehensive guides, API references, and step-by-step tutorials for every aspect of AnswerAgentAI.</p>
                             <a href='/docs' className={styles.featureCardCTA}>
                                 Browse Documentation →
                             </a>
@@ -4526,11 +4525,11 @@ export default function Learn(): JSX.Element {
     return (
         <div data-theme='dark'>
             <Layout
-                title='Learn AI & Master AnswerAI'
+                title='Learn AI & Master AnswerAgentAI'
                 description='Master AI fundamentals with interactive modules, video courses, and comprehensive learning resources. Start with our Alpha browser extension for instant AI assistance.'
             >
                 <LearnHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <AlphaExtensionPromo />
                     <AIModules />
@@ -4550,7 +4549,7 @@ title: Privacy Policy
 
 ## **_I. Introduction_**
 
-AnswerAI, Inc. (“Company,” or “we,” “us” and “our”) values your privacy and is committed to maintaining your trust. We provide this Privacy Policy to inform you of our policies and procedures regarding the collection, use, and disclosure of personally identifiable information received from visitors to and/or users of the Company’s website located at https://theanswer.ai (the "Website"), mobile application (“App”), and provision of services online. Specifically, the Company provides a generative artificial intelligence (“AI”) services that offers a comprehensive solution for teams to train datasets, create contextually relevant prompts, and capitalize on their enterprise data (collectively, the "Services"), through its Website and/or mobile application (“App”).
+AnswerAgentAI, Inc. (“Company,” or “we,” “us” and “our”) values your privacy and is committed to maintaining your trust. We provide this Privacy Policy to inform you of our policies and procedures regarding the collection, use, and disclosure of personally identifiable information received from visitors to and/or users of the Company’s website located at https://theanswer.ai (the "Website"), mobile application (“App”), and provision of services online. Specifically, the Company provides a generative artificial intelligence (“AI”) services that offers a comprehensive solution for teams to train datasets, create contextually relevant prompts, and capitalize on their enterprise data (collectively, the "Services"), through its Website and/or mobile application (“App”).
 
 ## **_II. Collection, Use, Processing, and Sharing of Personal Information_**
 
@@ -4815,7 +4814,7 @@ If, at any time after registering, you change your mind about receiving informat
 ## **_XIX. Contact Us_**
 
 If you have any questions or concerns relating to our use of your Personal Information, please email info@theanswer.ai. Additionally, you may reach us by postal mail at:  
-AnswerAI, Inc. 1116 Balboa St San Francisco, CA 94118
+AnswerAgentAI, Inc. 1116 Balboa St San Francisco, CA 94118
 </file>
 
 <file path="sidekick-studio.tsx">
@@ -4823,7 +4822,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -4863,7 +4862,7 @@ function FlowiseFoundation() {
             <div className='container'>
                 <h2 className='text--center'>Built on Flowise Excellence</h2>
                 <p className='text--center' style={{ marginBottom: '3rem', fontSize: '1.2rem', opacity: 0.9 }}>
-                    Leverage the proven power of Flowise with AnswerAI enhancements
+                    Leverage the proven power of Flowise with AnswerAgentAI enhancements
                 </p>
 
                 {/* Image at the top */}
@@ -4872,7 +4871,7 @@ function FlowiseFoundation() {
                         <div style={{ textAlign: 'center' }}>
                             <img
                                 src='/.gitbook/assets/agentflowsv2/agentflowsv2-1-flow-types.png'
-                                alt='AnswerAI Flow Types'
+                                alt='AnswerAgentAI Flow Types'
                                 style={{
                                     maxWidth: '100%',
                                     height: 'auto',
@@ -4926,7 +4925,7 @@ function FlowiseFoundation() {
                             <div className={styles.commandmentText}>
                                 <strong>Enhanced Features</strong>
                                 <br />
-                                All the power of Flowise plus AnswerAI-specific enhancements, integrations, and enterprise-grade security
+                                All the power of Flowise plus AnswerAgentAI-specific enhancements, integrations, and enterprise-grade security
                                 features.
                             </div>
                         </div>
@@ -5178,7 +5177,7 @@ export default function SidekickStudio(): JSX.Element {
                 description='Build complex AI workflows with our visual no-code editor. Connect tools, create agents, and automate processes without coding.'
             >
                 <SidekickStudioHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <FlowiseFoundation />
                     <PlatformSupport />
@@ -5200,7 +5199,7 @@ title: Terms of Service
 ---
 
 **_Introduction_**  
-Thank you for choosing AnswerAI, Inc. (“Company”) for your business. The Company provides generative artificial intelligence (“AI”) services that offers a comprehensive solution for teams to train datasets, create contextually relevant prompts, and capitalize on their enterprise data (collectively, the "Services"), through its website located at https://theanswer.ai (“Website”) and/or mobile application (“App”).  
+Thank you for choosing AnswerAgentAI, Inc. (“Company”) for your business. The Company provides generative artificial intelligence (“AI”) services that offers a comprehensive solution for teams to train datasets, create contextually relevant prompts, and capitalize on their enterprise data (collectively, the "Services"), through its website located at https://theanswer.ai (“Website”) and/or mobile application (“App”).  
 These Terms of Service (“Agreement,” or “Terms of Service”) apply to any use of and access to our Services and/or our Website or App by you and/or your agents (collectively, “you”). When you use our Services, you are agreeing to our Terms of Service and Privacy Policy, incorporated herein, as these documents contain important information regarding your legal rights and obligations.  
 THIS DOCUMENT, THE TERMS OF SERVICE, IS A LEGAL AGREEMENT BETWEEN THE COMPANY AND YOU WHICH GOVERNS YOUR USE OF THE COMPANY’S SERVICES, WEBSITE, AND APP. YOUR USE OF THE SERVICES,WEBSITE, AND/OR APP CONSTITUTES YOUR ACCEPTANCE OF AND AGREEMENT TO ALL OF THE TERMS AND CONDITIONS IN THESE TERMS OF SERVICE AND THE PRIVACY POLICY INCORPORATED HEREIN; AND YOUR REPRESENTATION THAT YOU ARE AT LEAST 16 YEARS OF AGE OR OLDER. IF YOU OBJECT TO ANYTHING IN THESE TERMS OF SERVICE, YOU ARE NOT PERMITTED TO USE THE SERVICES. If you accept these Terms of Service and use the Services on behalf of a company, organization, or other legal entity, you represent and warrant to the Company that you have full power and authority to do so.  
 **PLEASE BE ADVISED THAT THESE TERMS OF SERVICE CONTAIN PROVISIONS THAT GOVERN HOW YOU CAN BRING CLAIMS BETWEEN YOU AND THE COMPANY, INCLUDING THE ARBITRATION AGREEMENT BELOW**. THESE TERMS OF SERVICE OUTLINE HOW SUCH CLAIMS ARE RESOLVED, INCLUDING, WITHOUT LIMITATION, ANY CLAIMS THAT AROSE OR WERE ASSERTED BEFORE THE EFFECTIVE DATE OF THESE TERMS OF SERVICE. PLEASE REVIEW THE ARBITRATION AGREEMENT HEREIN CAREFULLY, AS IT REQUIRES YOU TO RESOLVE ALL DISPUTES WITH THE COMPANY ON AN INDIVIDUAL BASIS AND, WITH LIMITED EXCEPTIONS, THROUGH FINAL AND BINDING ARBITRATION. YOU ARE WAIVING YOUR RIGHT TO SEEK RELIEF IN A COURT OF LAW AND TO HAVE A JURY TRIAL ON YOUR CLAIMS.  
@@ -5329,7 +5328,7 @@ THE FOREGOING EXCLUSIONS OR LIMITATIONS MAY NOT APPLY TO THE EXTENT PROHIBITED B
 -   **_Severability._** Should any provision of these Terms of Service be found invalid or unenforceable, the remaining terms shall still apply.
 -   **_Force Majeure._** Neither Party will be liable for any failure or delay in performance under this Agreement (other than for delay in the payment of money due and payable hereunder) for causes beyond that Party’s reasonable control and occurring without that Party’s fault or negligence, including, but not limited to, acts of God, acts of government, flood, fire, civil unrest, acts of terror, strikes or other labor problems (other than those involving the Company’s or your employees, respectively), computer attacks (by government/nation entities or otherwise) or malicious acts, such as attacks on or through the Internet, any Internet service provider, telecommunications or hosting facility. Dates by which performance obligations are scheduled to be met will be extended for a period of time equal to the time lost due to any delay so caused.
 -   **_Electronic Communications and Signatures._** You agree to the use of electronic communication in order to enter into agreements and place orders, and to the electronic delivery of notices, policies and records of transactions initiated or completed through the Services. Furthermore, you hereby waive any rights or requirements under any laws or regulations in any jurisdiction that require an original (non-electronic) signature or delivery or retention of non-electronic records, to the extent permitted under applicable law.
--   **_Notices._** Any notices provided by the Company under this Agreement and/or the Privacy Policy may be delivered to you to the email address(es) we have on file for your Account. You hereby consent to receive notice from us through the foregoing means, and such notices will be deemed effective when sent if on a business day, and if not sent on a business day then on the next business day. Except as otherwise specified in the Agreement, any notices to the Company under this Agreement must be delivered either via email to info@theanswer.ai or via first class registered U.S. mail, overnight courier, to: AnswerAI, Inc., 1116 Balboa St San Francisco, CA 94118\.
+-   **_Notices._** Any notices provided by the Company under this Agreement and/or the Privacy Policy may be delivered to you to the email address(es) we have on file for your Account. You hereby consent to receive notice from us through the foregoing means, and such notices will be deemed effective when sent if on a business day, and if not sent on a business day then on the next business day. Except as otherwise specified in the Agreement, any notices to the Company under this Agreement must be delivered either via email to info@theanswer.ai or via first class registered U.S. mail, overnight courier, to: AnswerAgentAI, Inc., 1116 Balboa St San Francisco, CA 94118\.
 
 I HEREBY ACKNOWLEDGE THAT I HAVE READ AND UNDERSTAND THE FOREGOING TERMS OF SERVICE, WHICH INCLUDE FULLY BY REFERENCE THE ARBITRATION PROVISION HEREIN, THE COMPANY'S PRIVACY POLICY, AND THE COMPANY’S EULA, AND AGREE THAT MY USE OF THE WEBSITE, APP, AND/OR COMPANY’S SERVICES IS AN ACKNOWLEDGMENT OF MY AGREEMENT TO BE BOUND BY THE TERMS AND CONDITIONS OF THESE TERMS OF SERVICE AND THE COMPANY’S PRIVACY POLICY AND EULA INCORPORATED HEREIN.
 </file>

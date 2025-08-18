@@ -6,7 +6,7 @@ description: Add notes and comments to your workflow
 
 ## Overview
 
-The Sticky Note utility node allows you to add notes, comments, or reminders directly to your AnswerAI workflow canvas. This feature is useful for documenting your workflow, leaving reminders for yourself or team members, or providing context for specific parts of your flow.
+The Sticky Note utility node allows you to add notes, comments, or reminders directly to your AnswerAgentAI workflow canvas. This feature is useful for documenting your workflow, leaving reminders for yourself or team members, or providing context for specific parts of your flow.
 
 ## Key Benefits
 

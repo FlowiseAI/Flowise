@@ -84,9 +84,26 @@ if [ "$NODE_VERSION" -lt "20" ]; then
       const packageJsonPath = '$(pwd)/package.json';
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
       
-      // Update glob version to compatible one
-      if (packageJson.dependencies && packageJson.dependencies.glob) {
-        packageJson.dependencies.glob = '^10.3.10';
+      // Check Node.js version and apply appropriate versions
+      const nodeVersion = process.version.match(/^v(\d+)\./)[1];
+      const nodeVersionNum = parseInt(nodeVersion, 10);
+      
+      if (nodeVersionNum >= 20) {
+        // For Node.js 20+, use newer versions
+        if (packageJson.dependencies && packageJson.dependencies.yargs) {
+          packageJson.dependencies.yargs = '^18.0.0';
+        }
+        if (packageJson.dependencies && packageJson.dependencies.glob) {
+          packageJson.dependencies.glob = '^11.0.3';
+        }
+      } else {
+        // For Node.js < 20, use compatible versions
+        if (packageJson.dependencies && packageJson.dependencies.yargs) {
+          packageJson.dependencies.yargs = '^17.7.2';
+        }
+        if (packageJson.dependencies && packageJson.dependencies.glob) {
+          packageJson.dependencies.glob = '^10.3.10';
+        }
       }
       
       // Write back to file
@@ -100,7 +117,7 @@ EOF
     
     # Run the temporary Node.js script
     if node "$BWS_TMP_SCRIPT"; then
-      echo "Updated BWS Secure package.json with compatible glob version"
+      echo "Updated BWS Secure package.json with compatible yargs and glob versions"
     else
       echo "Warning: Failed to update BWS Secure package.json"
     fi
@@ -238,6 +255,7 @@ GITIGNORE_ENTRIES=(
   ".env.secure.*"
   "requiredVars.env"
   ".env-debug.html"
+  ".bwsconfig.cache"
 )
 
 if [ ! -f ".gitignore" ]; then
@@ -307,16 +325,17 @@ try {
   packageJson.devDependencies = packageJson.devDependencies || {};
   packageJson.devDependencies['dotenv'] = packageJson.devDependencies['dotenv'] || '^17.2.1';
   packageJson.devDependencies['dotenv-cli'] = packageJson.devDependencies['dotenv-cli'] || '^10.0.0';
-  packageJson.devDependencies['yargs'] = packageJson.devDependencies['yargs'] || '^18.0.0';
   
-  // Check Node.js version and apply appropriate glob version
+  // Check Node.js version and apply appropriate versions
   const nodeVersion = process.version.match(/^v(\d+)\./)[1];
   const nodeVersionNum = parseInt(nodeVersion, 10);
   if (nodeVersionNum >= 20) {
-    // For Node.js 20+, use glob v11
+    // For Node.js 20+, use newer versions
+    packageJson.devDependencies['yargs'] = packageJson.devDependencies['yargs'] || '^18.0.0';
     packageJson.devDependencies['glob'] = '^11.0.3';
   } else {
-    // For Node.js < 20, use glob v10
+    // For Node.js < 20, use compatible versions
+    packageJson.devDependencies['yargs'] = packageJson.devDependencies['yargs'] || '^17.7.2';
     packageJson.devDependencies['glob'] = '^10.3.10';
   }
   

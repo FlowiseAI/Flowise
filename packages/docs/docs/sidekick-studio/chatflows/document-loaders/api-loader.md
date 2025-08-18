@@ -1,24 +1,24 @@
 ---
-description: Load data from an API using the API Loader in AnswerAI
+description: Load data from an API using the API Loader in AnswerAgentAI
 ---
 
 # API Loader
 
 ## Overview
 
-The API Loader is a powerful feature in AnswerAI that allows you to fetch data from external APIs and use it in your workflows. This tool supports both GET and POST requests, making it versatile for various data retrieval scenarios.
+The API Loader is a powerful feature in AnswerAgentAI that allows you to fetch data from external APIs and use it in your workflows. This tool supports both GET and POST requests, making it versatile for various data retrieval scenarios.
 
 ## Key Benefits
 
--   Easily integrate external data sources into your AnswerAI workflows
+-   Easily integrate external data sources into your AnswerAgentAI workflows
 -   Support for both GET and POST requests to accommodate different API requirements
 -   Customizable headers and body parameters for flexible API interactions
 
 ## How to Use
 
-Follow these steps to use the API Loader in AnswerAI:
+Follow these steps to use the API Loader in AnswerAgentAI:
 
-1. In the AnswerAI interface, locate and select the "API Loader" node.
+1. In the AnswerAgentAI interface, locate and select the "API Loader" node.
 2. Configure the API Loader with the following settings:
 
     a. **Method**: Choose between GET or POST, depending on the API requirements.
@@ -75,4 +75,4 @@ Follow these steps to use the API Loader in AnswerAI:
     - Implement appropriate delays between requests if you're making multiple API calls
     - Check the API documentation for rate limiting guidelines
 
-If you encounter persistent issues, consult the API's documentation or reach out to the AnswerAI support team for assistance.
+If you encounter persistent issues, consult the API's documentation or reach out to the AnswerAgentAI support team for assistance.

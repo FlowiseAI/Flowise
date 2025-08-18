@@ -1,12 +1,12 @@
 ---
-description: Store conversation history in MongoDB Atlas for AnswerAI workflows
+description: Store conversation history in MongoDB Atlas for AnswerAgentAI workflows
 ---
 
 # MongoDB Atlas Chat Memory
 
 ## Overview
 
-The MongoDB Atlas Chat Memory node allows you to store conversation history in a MongoDB Atlas database. This feature enables long-term memory storage for your AnswerAI workflows, allowing chatbots and AI assistants to maintain context across multiple sessions or interactions.
+The MongoDB Atlas Chat Memory node allows you to store conversation history in a MongoDB Atlas database. This feature enables long-term memory storage for your AnswerAgentAI workflows, allowing chatbots and AI assistants to maintain context across multiple sessions or interactions.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The MongoDB Atlas Chat Memory node allows you to store conversation history in a
 
 ## How to Use
 
-1. Add the MongoDB Atlas Chat Memory node to your AnswerAI workflow canvas.
+1. Add the MongoDB Atlas Chat Memory node to your AnswerAgentAI workflow canvas.
 2. Configure the node with the following settings:
 
     a. Connect Credential: Select or add your MongoDB Atlas connection credentials.
@@ -55,4 +55,4 @@ The MongoDB Atlas Chat Memory node allows you to store conversation history in a
 
 <!-- TODO: Add a screenshot showing where to find logs or error messages related to the MongoDB Atlas Chat Memory node -->
 
-By utilizing the MongoDB Atlas Chat Memory node, you can enhance your AnswerAI workflows with robust, scalable, and persistent conversation storage, enabling more context-aware and personalized AI interactions.
+By utilizing the MongoDB Atlas Chat Memory node, you can enhance your AnswerAgentAI workflows with robust, scalable, and persistent conversation storage, enabling more context-aware and personalized AI interactions.

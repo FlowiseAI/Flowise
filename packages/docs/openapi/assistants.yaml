@@ -4,7 +4,7 @@ info:
     description: API for managing AI assistants
     version: 1.0.0
     contact:
-        name: AnswerAI Support
+        name: AnswerAgentAI Support
         url: https://theanswer.ai
         email: support@theanswer.ai
 servers:

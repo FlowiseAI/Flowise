@@ -1,17 +1,17 @@
 ---
-description: Learn how to deploy AnswerAI on Azure using Terraform and Azure Container Instances
+description: Learn how to deploy AnswerAgentAI on Azure using Terraform and Azure Container Instances
 ---
 
 # Azure
 
 ## Overview
 
-This guide covers two methods for deploying AnswerAI on Azure:
+This guide covers two methods for deploying AnswerAgentAI on Azure:
 
-1. Using Terraform to deploy AnswerAI as an Azure App Service with Postgres
+1. Using Terraform to deploy AnswerAgentAI as an Azure App Service with Postgres
 2. Using Azure Container Instances (ACI) through the Azure Portal UI or Azure CLI
 
-## Method 1: AnswerAI as Azure App Service with Postgres Using Terraform
+## Method 1: AnswerAgentAI as Azure App Service with Postgres Using Terraform
 
 ### Prerequisites
 
@@ -138,7 +138,7 @@ az container create -g flowise-rg \
     --restart-policy OnFailure
 ```
 
-3. Access AnswerAI at the IP address (including port :3000) provided in the output.
+3. Access AnswerAgentAI at the IP address (including port :3000) provided in the output.
 
 ### Option B: Create a Container Instance with Persistent Storage
 
@@ -171,12 +171,12 @@ az container create -g flowise-rg \
 
 Replace the placeholders with your actual values.
 
-4. Access AnswerAI at the IP address (including port :3000) provided in the output.
+4. Access AnswerAgentAI at the IP address (including port :3000) provided in the output.
 
 ## Tips and Best Practices
 
 -   Use separate resource groups for different environments (e.g., development, staging, production).
--   Regularly update your AnswerAI image to get the latest features and security updates.
+-   Regularly update your AnswerAgentAI image to get the latest features and security updates.
 -   Monitor your Azure resources for performance and cost optimization.
 -   Implement proper security measures, such as network security groups and Azure Private Link, for production deployments.
 
@@ -184,8 +184,8 @@ Replace the placeholders with your actual values.
 
 -   If you encounter issues with Terraform deployment, check the Azure activity log for detailed error messages.
 -   For Container Instances, use `az container logs` to view container logs for debugging.
--   Ensure that all required environment variables are correctly set for AnswerAI to function properly.
+-   Ensure that all required environment variables are correctly set for AnswerAgentAI to function properly.
 
-Remember to comply with Azure's best practices for security and cost management when deploying your AnswerAI instance.
+Remember to comply with Azure's best practices for security and cost management when deploying your AnswerAgentAI instance.
 
 <!-- TODO: Add a video tutorial on deploying to Azure Container Instance -->

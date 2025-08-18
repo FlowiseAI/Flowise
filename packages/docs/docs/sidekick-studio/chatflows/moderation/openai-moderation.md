@@ -6,7 +6,7 @@ description: Check whether content complies with OpenAI usage policies
 
 ## Overview
 
-The OpenAI Moderation node is a powerful tool in AnswerAI that allows you to check whether content complies with OpenAI's usage policies. This feature is essential for maintaining ethical AI practices and ensuring that your generated content adheres to OpenAI's guidelines.
+The OpenAI Moderation node is a powerful tool in AnswerAgentAI that allows you to check whether content complies with OpenAI's usage policies. This feature is essential for maintaining ethical AI practices and ensuring that your generated content adheres to OpenAI's guidelines.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The OpenAI Moderation node is a powerful tool in AnswerAI that allows you to che
 
 ## How to Use
 
-1. Add the OpenAI Moderation node to your canvas in the AnswerAI Studio.
+1. Add the OpenAI Moderation node to your canvas in the AnswerAgentAI Studio.
 
 <!-- TODO: Screenshot of adding the OpenAI Moderation node to the canvas -->
 <figure><img src="/.gitbook/assets/screenshots/openaimoderation.png" alt="" /><figcaption><p> OpenAI Moderation Node &#x26; Drop UI</p></figcaption></figure>
@@ -63,4 +63,4 @@ The OpenAI Moderation node is a powerful tool in AnswerAI that allows you to che
 3. **Issue**: The custom error message is not displaying.
    **Solution**: Make sure you have entered the custom message correctly in the "Error Message" field and that there are no formatting issues.
 
-By using the OpenAI Moderation node in your AnswerAI workflows, you can ensure that your AI-generated content remains compliant with OpenAI's usage policies, promoting responsible and ethical AI practices.
+By using the OpenAI Moderation node in your AnswerAgentAI workflows, you can ensure that your AI-generated content remains compliant with OpenAI's usage policies, promoting responsible and ethical AI practices.

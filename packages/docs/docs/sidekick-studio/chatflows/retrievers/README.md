@@ -1,12 +1,12 @@
 ---
-description: Understanding and Using Retriever Nodes in AnswerAI
+description: Understanding and Using Retriever Nodes in AnswerAgentAI
 ---
 
 # Retriever Nodes
 
 ## Overview
 
-Retriever Nodes are powerful components in AnswerAI that allow you to fetch relevant documents based on unstructured queries. These nodes are designed to enhance your workflow by providing efficient and accurate document retrieval capabilities.
+Retriever Nodes are powerful components in AnswerAgentAI that allow you to fetch relevant documents based on unstructured queries. These nodes are designed to enhance your workflow by providing efficient and accurate document retrieval capabilities.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ Retriever Nodes are powerful components in AnswerAI that allow you to fetch rele
 
 ## Types of Retriever Nodes
 
-AnswerAI offers several types of Retriever Nodes, each with its unique capabilities:
+AnswerAgentAI offers several types of Retriever Nodes, each with its unique capabilities:
 
 -   [Cohere Rerank Retriever](cohere-rerank-retriever.md)
 -   [Embeddings Filter Retriever](embeddings-filter-retriever.md)
@@ -56,9 +56,9 @@ Common issues and solutions:
 3. **Error messages**:
     - Check your node connections
     - Verify API keys and permissions
-    - Consult the AnswerAI documentation for specific error codes
+    - Consult the AnswerAgentAI documentation for specific error codes
 
 <!-- TODO: Add a screenshot showing the configuration panel of a Retriever Node with highlighted troubleshooting options -->
 <figure><img src="/.gitbook/assets/screenshots/retreivernodes.png" alt="" /><figcaption><p> Retreiver Node &#x26; Drop UI</p></figcaption></figure>
 
-By mastering the use of Retriever Nodes, you can significantly enhance your AnswerAI workflows, enabling more accurate and efficient information retrieval for your AI-powered applications.
+By mastering the use of Retriever Nodes, you can significantly enhance your AnswerAgentAI workflows, enabling more accurate and efficient information retrieval for your AI-powered applications.

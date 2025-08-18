@@ -1,12 +1,12 @@
 ---
-description: Learn how to use the GET API Chain feature in AnswerAI
+description: Learn how to use the GET API Chain feature in AnswerAgentAI
 ---
 
 # GET API Chain
 
 ## Overview
 
-The GET API Chain is a powerful feature in AnswerAI that allows you to run queries against GET APIs. This feature enables you to integrate external API data into your workflows, enhancing the capabilities of your AI-powered applications.
+The GET API Chain is a powerful feature in AnswerAgentAI that allows you to run queries against GET APIs. This feature enables you to integrate external API data into your workflows, enhancing the capabilities of your AI-powered applications.
 
 ## Key Benefits
 
@@ -18,10 +18,10 @@ The GET API Chain is a powerful feature in AnswerAI that allows you to run queri
 
 ### 1. Set up the GET API Chain
 
-<!-- TODO: Screenshot of the GET API Chain node in the AnswerAI interface -->
+<!-- TODO: Screenshot of the GET API Chain node in the AnswerAgentAI interface -->
  <figure><img src="/.gitbook/assets/screenshots/get api chain node.png" alt="" /><figcaption><p>Get API Chain &#x26; Drop UI</p></figcaption></figure>
 
-1. In your AnswerAI workflow, locate and add the "GET API Chain" node.
+1. In your AnswerAgentAI workflow, locate and add the "GET API Chain" node.
 2. Connect the node to your desired input and output nodes.
 
  <figure><img src="/.gitbook/assets/screenshots/get api configuration.png" alt="" /><figcaption><p>Get API Chain Configuration &#x26; Drop UI</p></figcaption></figure>
@@ -81,10 +81,10 @@ visibility Instant meters Viewing distance in meters. Influenced by low clouds, 
 
 ### 5. Customize Prompts (Optional)
 
-1. To fine-tune how AnswerAI interacts with the API, you can customize two prompts:
+1. To fine-tune how AnswerAgentAI interacts with the API, you can customize two prompts:
 
-    - URL Prompt: Determines how AnswerAI constructs the API URL
-    - Answer Prompt: Guides AnswerAI on how to process and return the API response
+    - URL Prompt: Determines how AnswerAgentAI constructs the API URL
+    - Answer Prompt: Guides AnswerAgentAI on how to process and return the API response
 
 2. To customize, click on "Add Additional Parameter" and select the prompt you want to modify.
 3. Ensure that you include the required placeholders (`{api_docs}, {question}, {api_response}, {api_url}`) in your custom prompts.
@@ -120,4 +120,4 @@ visibility Instant meters Viewing distance in meters. Influenced by low clouds, 
 
 -   **Solution**: Implement appropriate rate limiting in your workflow or consider using caching mechanisms to reduce API calls.
 
-If you encounter persistent issues, consult the AnswerAI documentation or reach out to our support team for assistance.
+If you encounter persistent issues, consult the AnswerAgentAI documentation or reach out to our support team for assistance.

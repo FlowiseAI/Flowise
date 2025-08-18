@@ -1,12 +1,12 @@
 ---
-description: Powerful Chat Models in AnswerAI
+description: Powerful Chat Models in AnswerAgentAI
 ---
 
 # Chat Models
 
 ## Overview
 
-Chat models are a cornerstone feature of AnswerAI, providing powerful natural language processing capabilities for a wide range of applications. By integrating various state-of-the-art language models, AnswerAI empowers users to create sophisticated conversational AI experiences with ease.
+Chat models are a cornerstone feature of AnswerAgentAI, providing powerful natural language processing capabilities for a wide range of applications. By integrating various state-of-the-art language models, AnswerAgentAI empowers users to create sophisticated conversational AI experiences with ease.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ Chat models are a cornerstone feature of AnswerAI, providing powerful natural la
 4. **Privacy and Control**: Options for both cloud-based and on-premise deployments to meet various security requirements.
 5. **Cost-Effectiveness**: Choose models that balance performance and cost for your specific needs.
 
-## Best Practices for Chat Models in AnswerAI
+## Best Practices for Chat Models in AnswerAgentAI
 
 ### 1. Model Selection
 
@@ -59,9 +59,9 @@ Optimize your usage to control costs:
 -   Use smaller or more efficient models for simpler tasks.
 -   Implement usage limits and monitoring to prevent unexpected expenses.
 
-## Available Chat Models in AnswerAI
+## Available Chat Models in AnswerAgentAI
 
-AnswerAI offers integration with a wide range of chat models to suit various needs:
+AnswerAgentAI offers integration with a wide range of chat models to suit various needs:
 
 ### Chat Model Nodes
 

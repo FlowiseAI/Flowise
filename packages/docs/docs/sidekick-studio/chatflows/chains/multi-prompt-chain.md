@@ -1,12 +1,12 @@
 ---
-description: Learn about the Multi Prompt Chain, a powerful tool for automatic prompt selection in AnswerAI
+description: Learn about the Multi Prompt Chain, a powerful tool for automatic prompt selection in AnswerAgentAI
 ---
 
 # Multi Prompt Chain
 
 ## Overview
 
-The Multi Prompt Chain in AnswerAI is an advanced chain type that automatically selects the most appropriate prompt from multiple prompt templates based on the input. This chain is particularly useful when dealing with diverse types of queries that require different specialized prompts.
+The Multi Prompt Chain in AnswerAgentAI is an advanced chain type that automatically selects the most appropriate prompt from multiple prompt templates based on the input. This chain is particularly useful when dealing with diverse types of queries that require different specialized prompts.
 
 ## Key Benefits
 
@@ -27,7 +27,7 @@ The Multi Prompt Chain is ideal for:
 
 ## How It Works
 
-1. Input Processing: The chain receives a user query via the AnswerAI API.
+1. Input Processing: The chain receives a user query via the AnswerAgentAI API.
 2. Prompt Analysis: The system evaluates the input against available prompt descriptions.
 3. Prompt Selection: The most suitable prompt is automatically chosen.
 4. LLM Interaction: The selected prompt is used with the input to query the language model.
@@ -39,11 +39,11 @@ The Multi Prompt Chain is ideal for:
 2. Prompt Retrievers: A collection of prompts, each with a name, description, and template.
 3. Input Moderation (Optional): Filters to ensure safe and appropriate inputs.
 
-## Using the Multi Prompt Chain with AnswerAI API
+## Using the Multi Prompt Chain with AnswerAgentAI API
 
 ### Basic Usage
 
-Here's how to use the Multi Prompt Chain via the AnswerAI API:
+Here's how to use the Multi Prompt Chain via the AnswerAgentAI API:
 
 ```python
 import requests
@@ -202,4 +202,4 @@ generateEducationalContent('Photosynthesis', '8')
 4. Fallback Option: Include a general-purpose prompt as a fallback for unexpected query types.
 5. Monitor Performance: Regularly review which prompts are being selected to optimize your system.
 
-By leveraging the Multi Prompt Chain in AnswerAI, you can create more versatile and intelligent AI applications that adapt to various user inputs and contexts, providing more accurate and relevant responses across a wide range of scenarios.
+By leveraging the Multi Prompt Chain in AnswerAgentAI, you can create more versatile and intelligent AI applications that adapt to various user inputs and contexts, providing more accurate and relevant responses across a wide range of scenarios.

@@ -93,4 +93,10 @@ export class ChatFlow implements IChatFlow {
     @Index()
     @Column({ type: 'uuid', nullable: true })
     templateId: string
+
+    @Column({ nullable: true, type: 'int', default: 1 })
+    currentVersion?: number
+
+    @Column({ nullable: true, type: 'text' })
+    s3Location?: string
 }

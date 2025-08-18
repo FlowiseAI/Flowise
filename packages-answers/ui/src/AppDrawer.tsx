@@ -31,6 +31,7 @@ import VpnKeyOutlinedIcon from '@mui/icons-material/VpnKeyOutlined'
 import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined'
 import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined'
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
+import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import { ExportImportMenuItems } from './components/ExportImportComponent'
 import { useSubscriptionDialog } from './SubscriptionDialogContext'
 
@@ -104,7 +105,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
     const { openDialog: openSubscriptionDialog, closeDialog: closeSubscriptionDialog } = useSubscriptionDialog()
     const pathname = usePathname()
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-    const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage'])
+    const flags = useFlags(['chatflow:use', 'chatflow:manage', 'org:manage', 'enterprise_admin'])
 
     // Helper function to determine if this is a public organization
     // TODO: This should be refined to compare against actual PUBLIC_ORG_ID from backend
@@ -144,13 +145,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
 
     if (isPrivateOrg) {
         // New logic for private organizations
-        // Everyone in private orgs sees these basic items
-        menuConfig.push({
-            id: 'marketplaces',
-            text: 'Sidekick Store',
-            link: '/sidekick-studio/marketplaces',
-            icon: <StorefrontOutlinedIcon color='primary' />
-        })
+        // Sidekick Store moved under Sidekick Studio
 
         // Builders and Admins see Sidekick Studio
         if (userRole === 'builder' || userRole === 'admin') {
@@ -159,6 +154,12 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                 text: 'Sidekick Studio',
                 icon: <BuildOutlinedIcon color='primary' />,
                 subMenu: [
+                    {
+                        id: 'marketplaces',
+                        text: 'Sidekick Store',
+                        link: '/sidekick-studio/marketplaces',
+                        icon: <StorefrontOutlinedIcon color='primary' />
+                    },
                     {
                         id: 'chatflows',
                         text: 'Chatflows',
@@ -206,37 +207,44 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                         text: 'API Keys',
                         link: '/sidekick-studio/apikey',
                         icon: <VpnKeyOutlinedIcon color='primary' />
+                    },
+                    {
+                        id: 'credentials',
+                        text: 'Credentials',
+                        link: '/sidekick-studio/credentials',
+                        icon: <PasswordIcon color='primary' />
                     }
                 ]
             })
         }
 
-        // Account section - everyone sees credentials, only admins see billing
-        const accountSubMenu: MenuConfig[] = [
-            {
-                id: 'credentials',
-                text: 'Credentials',
-                link: '/sidekick-studio/credentials',
-                icon: <PasswordIcon color='primary' />
-            }
-        ]
+        // Enterprise Admin - top-level (feature-flagged)
+        if (flags['enterprise_admin']?.enabled && userRole === 'admin') {
+            menuConfig.push({
+                id: 'enterprise_admin',
+                text: 'Enterprise Admin',
+                link: '/sidekick-studio/admin',
+                icon: <AssessmentOutlinedIcon color='primary' />
+            })
+        }
 
-        // Only admins see billing
+        // Top-level Profile (everyone)
+        menuConfig.push({
+            id: 'profile',
+            text: 'Profile',
+            link: '/profile',
+            icon: <AccountCircleIcon color='primary' />
+        })
+
+        // Top-level Billing (admins only)
         if (userRole === 'admin') {
-            accountSubMenu.push({
+            menuConfig.push({
                 id: 'billing',
                 text: 'Billing',
                 link: '/billing',
                 icon: <AssessmentOutlinedIcon color='primary' />
             })
         }
-
-        menuConfig.push({
-            id: 'account',
-            text: 'Account',
-            icon: <AssessmentOutlinedIcon color='primary' />,
-            subMenu: accountSubMenu
-        })
     } else {
         // Original logic for public organizations - everyone sees everything
         const filterMenuItems = (items: MenuConfig[]) => {
@@ -250,14 +258,15 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
         }
 
         menuConfig = filterMenuItems([
-            // Marketplaces moved to top level
-            ...(flags['chatflow:use'].enabled
+            // Sidekick Store moved under Sidekick Studio
+            // Enterprise Admin - top-level (feature-flagged)
+            ...(flags['enterprise_admin']?.enabled && userRole === 'admin'
                 ? [
                       {
-                          id: 'marketplaces',
-                          text: 'Sidekick Store',
-                          link: '/sidekick-studio/marketplaces',
-                          icon: <StorefrontOutlinedIcon color='primary' />
+                          id: 'enterprise_admin',
+                          text: 'Enterprise Admin',
+                          link: '/sidekick-studio/admin',
+                          icon: <AssessmentOutlinedIcon color='primary' />
                       }
                   ]
                 : []),
@@ -316,33 +325,57 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                   text: 'API Keys',
                                   link: '/sidekick-studio/apikey',
                                   icon: <VpnKeyOutlinedIcon color='primary' />
-                              }
-                          ]
-                      }
-                  ]
-                : []),
-            // Account section (collapsible) with Credentials moved in
-            ...(flags['chatflow:use'].enabled
-                ? [
-                      {
-                          id: 'account',
-                          text: 'Account',
-                          icon: <AssessmentOutlinedIcon color='primary' />,
-                          subMenu: [
-                              {
-                                  id: 'billing',
-                                  text: 'Billing',
-                                  link: '/billing',
-                                  icon: <AssessmentOutlinedIcon color='primary' />
                               },
                               {
                                   id: 'credentials',
                                   text: 'Credentials',
                                   link: '/sidekick-studio/credentials',
                                   icon: <PasswordIcon color='primary' />
-                              }
+                              },
+                              ...(userRole === 'admin'
+                                  ? [
+                                        // Show nested Admin only when enterprise admin flag is disabled
+                                        ...(flags['enterprise_admin']?.enabled
+                                            ? []
+                                            : [
+                                                  {
+                                                      id: 'admin',
+                                                      text: 'Admin',
+                                                      link: '/sidekick-studio/admin',
+                                                      icon: <AssessmentOutlinedIcon color='primary' />
+                                                  }
+                                              ]),
+                                        {
+                                            id: 'apps',
+                                            text: 'Apps',
+                                            link: '/sidekick-studio/apps',
+                                            icon: <AppsOutlinedIcon color='primary' />
+                                        }
+                                    ]
+                                  : [])
                           ]
                       }
+                  ]
+                : []),
+            // Top-level Profile and Billing for public orgs
+            ...(flags['chatflow:use'].enabled
+                ? [
+                      {
+                          id: 'profile',
+                          text: 'Profile',
+                          link: '/profile',
+                          icon: <AccountCircleIcon color='primary' />
+                      },
+                      ...(userRole === 'admin'
+                          ? [
+                                {
+                                    id: 'billing',
+                                    text: 'Billing',
+                                    link: '/billing',
+                                    icon: <AssessmentOutlinedIcon color='primary' />
+                                }
+                            ]
+                          : [])
                   ]
                 : [])
         ])
@@ -425,7 +458,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                         {drawerOpen ? (
                             <Tooltip title='Start a new conversation with your sidekicks' placement='right'>
                                 <Button
-                                    href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/chat'}
+                                    href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/'}
                                     variant='outlined'
                                     component={NextLink}
                                     onClick={handleNewChat}
@@ -444,7 +477,7 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                             <Tooltip title='Start a new conversation with your sidekicks' placement='right'>
                                 <IconButton
                                     component={NextLink}
-                                    href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/chat'}
+                                    href={user?.defaultChatflowId ? `/chat/${user.defaultChatflowId}` : '/'}
                                     onClick={handleNewChat}
                                 >
                                     <RateReviewIcon sx={{ color: 'primary.main' }} />
@@ -483,6 +516,8 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                     return 'Browse and install sidekicks from the marketplace'
                                 case 'studio':
                                     return 'Build and customize your own sidekicks'
+                                case 'enterprise_admin':
+                                    return 'Organization admin and enterprise settings'
                                 case 'account':
                                     return 'Manage your account settings and preferences'
                                 default:
@@ -542,16 +577,22 @@ export const AppDrawer = ({ session, flagsmithState }: AppDrawerProps) => {
                                                         return 'Organize and manage your knowledge base'
                                                     case 'executions':
                                                         return 'Monitor and review execution history'
+                                                    case 'marketplaces':
+                                                        return 'Browse and install sidekicks from the marketplace'
                                                     case 'tools':
                                                         return 'Configure tools and integrations'
                                                     case 'variables':
                                                         return 'Set up variables for reuse across sidekicks'
                                                     case 'apikey':
                                                         return 'Manage authentication keys for external services'
+                                                    case 'admin':
+                                                        return 'Access admin dashboard and organization management'
                                                     case 'billing':
                                                         return 'View and manage your subscription and payments'
                                                     case 'credentials':
                                                         return 'Store and manage API credentials securely'
+                                                    case 'profile':
+                                                        return 'View and manage your personal profile information'
                                                     default:
                                                         return subItem.text || ''
                                                 }

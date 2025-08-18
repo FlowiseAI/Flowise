@@ -6,22 +6,22 @@ description: ChatCohere - Interact with Cohere's Chat AI Models
 
 ## Overview
 
-ChatCohere is a powerful feature in AnswerAI that allows you to interact with Cohere's advanced chat AI models. This integration enables you to leverage Cohere's natural language processing capabilities for various conversational AI tasks.
+ChatCohere is a powerful feature in AnswerAgentAI that allows you to interact with Cohere's advanced chat AI models. This integration enables you to leverage Cohere's natural language processing capabilities for various conversational AI tasks.
 
 ## Key Benefits
 
 -   Access to state-of-the-art chat AI models from Cohere
 -   Customizable settings for fine-tuned responses
--   Seamless integration with AnswerAI's workflow
+-   Seamless integration with AnswerAgentAI's workflow
 
 ## How to Use
 
 Follow these steps to set up and use the ChatCohere feature:
 
-1. Navigate to the Chat Models section in AnswerAI.
+1. Navigate to the Chat Models section in AnswerAgentAI.
 2. Locate and select the ChatCohere node.
 
-<!-- TODO: Screenshot of the ChatCohere node in the AnswerAI interface -->
+<!-- TODO: Screenshot of the ChatCohere node in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/chatcohere node configuration.png" alt="" /><figcaption><p>ChatCohere Node &#x26; Drop UI</p></figcaption></figure>
 
 3. Configure the ChatCohere node with the following settings:
@@ -37,7 +37,7 @@ Follow these steps to set up and use the ChatCohere feature:
 <!-- TODO: Screenshot of the ChatCohere configuration panel -->
 <figure><img src="/.gitbook/assets/screenshots/chatcohere node in a workflow.png" alt="" /><figcaption><p> ChatCohere Node Configuration &#x26; Drop UI</p></figcaption></figure>
 
-4. Connect the ChatCohere node to other nodes in your AnswerAI workflow.
+4. Connect the ChatCohere node to other nodes in your AnswerAgentAI workflow.
 5. Run your workflow to start interacting with the Cohere chat model.
 
 ## Tips and Best Practices
@@ -57,4 +57,4 @@ Follow these steps to set up and use the ChatCohere feature:
 
 4. **Performance Issues**: If responses are slow, consider using the cache option or checking your internet connection.
 
-For any persistent issues, refer to the AnswerAI support documentation or contact our support team for assistance.
+For any persistent issues, refer to the AnswerAgentAI support documentation or contact our support team for assistance.

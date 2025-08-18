@@ -1,6 +1,6 @@
-# AnswerAI Documentation Website
+# AnswerAgentAI Documentation Website
 
-This documentation website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator, and serves as both the marketing site and comprehensive documentation hub for the entire AnswerAI platform ecosystem.
+This documentation website is built using [Docusaurus](https://docusaurus.io/), a modern static website generator, and serves as both the marketing site and comprehensive documentation hub for the entire AnswerAgentAI platform ecosystem.
 
 ## 🎯 Purpose & Scope
 
@@ -10,13 +10,13 @@ This package serves multiple critical functions:
 
 -   **Answer Agent Documentation**: Comprehensive guides for using Answer Agent across all platforms
 -   **API Reference**: Complete API documentation auto-generated from OpenAPI specs
--   **Integration Guides**: Step-by-step tutorials for integrating with AnswerAI services
--   **User Guides**: End-user documentation for all AnswerAI products and features
--   **Developer Resources**: Technical documentation for building on the AnswerAI platform
+-   **Integration Guides**: Step-by-step tutorials for integrating with AnswerAgentAI services
+-   **User Guides**: End-user documentation for all AnswerAgentAI products and features
+-   **Developer Resources**: Technical documentation for building on the AnswerAgentAI platform
 
 ### 🚀 **Marketing Website**
 
--   **Product Landing Pages**: Dedicated pages for each AnswerAI product and service
+-   **Product Landing Pages**: Dedicated pages for each AnswerAgentAI product and service
 -   **Feature Showcases**: Interactive demonstrations of platform capabilities
 -   **Customer Journey**: Guided paths from awareness to conversion
 -   **SEO Optimization**: Search engine optimized content for discoverability
@@ -71,7 +71,7 @@ packages/docs/
 │   ├── components/               # Custom React components
 │   │   ├── ElevenLabsInlineWidget/  # Voice agent integration
 │   │   ├── AnimatedIntegrations/    # UI animations
-│   │   └── UsingAnswerAISubmenu/    # Navigation component
+│   │   └── UsingAnswerAgentAISubmenu/    # Navigation component
 │   ├── pages/                    # Marketing pages (React)
 │   │   ├── index.tsx            # Homepage
 │   │   ├── ai-workshops.tsx     # AI Workshops landing page
@@ -177,7 +177,7 @@ export default PageComponent
 
 #### Apps (`apps.tsx`) - Application Ecosystem
 
--   **Application overview** of the entire AnswerAI suite
+-   **Application overview** of the entire AnswerAgentAI suite
 -   **Feature comparisons** between different apps
 -   **Download links** for desktop and mobile applications
 -   **Integration capabilities** with existing workflows
@@ -278,7 +278,6 @@ The site uses the `ElevenLabsInlineWidget` component to integrate voice conversa
 
 ```tsx
 import ElevenLabsInlineWidget from '@site/src/components/ElevenLabsInlineWidget'
-
 ;<ElevenLabsInlineWidget agentId='agent_01k03gnw7xe11btz2vprkf7ay5' text='🤖 Talk to an Agent' variant='cta' />
 ```
 

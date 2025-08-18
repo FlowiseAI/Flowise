@@ -1,22 +1,22 @@
 ---
-description: Use custom fine-tuned OpenAI models or try new models with AnswerAI
+description: Use custom fine-tuned OpenAI models or try new models with AnswerAgentAI
 ---
 
 # ChatOpenAI Custom
 
 ## Overview
 
-The ChatOpenAI Custom feature allows you to use custom fine-tuned OpenAI models or experiment with new models before they are officially added to AnswerAI's OpenAI model selection. This feature provides flexibility for advanced users who want to leverage their own fine-tuned models or test cutting-edge OpenAI offerings.
+The ChatOpenAI Custom feature allows you to use custom fine-tuned OpenAI models or experiment with new models before they are officially added to AnswerAgentAI's OpenAI model selection. This feature provides flexibility for advanced users who want to leverage their own fine-tuned models or test cutting-edge OpenAI offerings.
 
 ## Key Benefits
 
 -   Use custom fine-tuned OpenAI models tailored to your specific needs
--   Experiment with new OpenAI models before they're officially supported in AnswerAI
+-   Experiment with new OpenAI models before they're officially supported in AnswerAgentAI
 -   Customize various parameters to optimize model performance
 
 ## How to Use
 
-1. In the AnswerAI interface, locate and select the "ChatOpenAI Custom" node from the "Chat Models" category.
+1. In the AnswerAgentAI interface, locate and select the "ChatOpenAI Custom" node from the "Chat Models" category.
 
 2. Configure the node with the following settings:
 
@@ -30,7 +30,7 @@ The ChatOpenAI Custom feature allows you to use custom fine-tuned OpenAI models 
 
     e. Additional Parameters: Configure advanced settings like Top Probability, Frequency Penalty, Presence Penalty, Timeout, BasePath, and BaseOptions as needed.
 
-3. Connect the ChatOpenAI Custom node to other nodes in your AnswerAI workflow.
+3. Connect the ChatOpenAI Custom node to other nodes in your AnswerAgentAI workflow.
 
 4. Run your workflow to utilize the custom or new OpenAI model.
 
@@ -57,10 +57,10 @@ The ChatOpenAI Custom feature allows you to use custom fine-tuned OpenAI models 
 
 ## Important Notes
 
--   This feature does not support streaming responses. If you require streaming, use the standard OpenAI models provided in AnswerAI.
+-   This feature does not support streaming responses. If you require streaming, use the standard OpenAI models provided in AnswerAgentAI.
 
 -   Custom models may have different token limits or capabilities compared to standard OpenAI models. Refer to your model's documentation for specific details.
 
 -   Be aware of any additional costs associated with using custom or experimental models through the OpenAI API.
 
-By using the ChatOpenAI Custom feature, you can harness the power of specialized models and stay at the forefront of AI technology within your AnswerAI workflows.
+By using the ChatOpenAI Custom feature, you can harness the power of specialized models and stay at the forefront of AI technology within your AnswerAgentAI workflows.

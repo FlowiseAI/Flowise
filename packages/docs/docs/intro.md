@@ -1,5 +1,9 @@
 ---
 description: Welcome to the official Answer Agent AI documentation
+jsonld:
+    type: TechArticle
+---
+
 ---
 
 # Getting Started

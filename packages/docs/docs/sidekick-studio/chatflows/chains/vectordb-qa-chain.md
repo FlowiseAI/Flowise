@@ -1,12 +1,12 @@
 ---
-description: Learn how to use the VectorDB QA Chain feature in AnswerAI
+description: Learn how to use the VectorDB QA Chain feature in AnswerAgentAI
 ---
 
 # VectorDB QA Chain
 
 ## Overview
 
-The VectorDB QA Chain is a powerful feature in AnswerAI that enables you to perform question-answering tasks using vector databases. This chain combines the capabilities of a language model with a vector store to provide accurate and contextual answers to your queries.
+The VectorDB QA Chain is a powerful feature in AnswerAgentAI that enables you to perform question-answering tasks using vector databases. This chain combines the capabilities of a language model with a vector store to provide accurate and contextual answers to your queries.
 
 ## Key Benefits
 

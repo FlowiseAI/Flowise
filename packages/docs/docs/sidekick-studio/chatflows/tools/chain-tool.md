@@ -6,7 +6,7 @@ description: Use a chain as an allowed tool for agents
 
 ## Overview
 
-The Chain Tool node allows you to use a chain as an allowed tool for agents in AnswerAI. This feature enables you to incorporate complex chains of operations as tools that agents can utilize, enhancing their capabilities and allowing for more sophisticated workflows.
+The Chain Tool node allows you to use a chain as an allowed tool for agents in AnswerAgentAI. This feature enables you to incorporate complex chains of operations as tools that agents can utilize, enhancing their capabilities and allowing for more sophisticated workflows.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Chain Tool node allows you to use a chain as an allowed tool for agents in A
 
 ## How to Use
 
-1. Locate the Chain Tool node in the Tools category of the AnswerAI Studio.
+1. Locate the Chain Tool node in the Tools category of the AnswerAgentAI Studio.
 2. Drag and drop the Chain Tool node onto your canvas.
 3. Configure the node by providing the following information:
     - Chain Name: Enter a unique name for your chain tool (e.g., "state-of-union-qa").
@@ -43,4 +43,4 @@ The Chain Tool node allows you to use a chain as an allowed tool for agents in A
 -   Ensure that the Base Chain connected to the Chain Tool node is compatible and properly configured.
 -   If the chain tool is not producing the expected results, review the Chain Description to make sure it accurately represents the tool's functionality.
 
-By utilizing the Chain Tool node in AnswerAI, you can create powerful and flexible agents capable of leveraging complex chains as tools, opening up new possibilities for automation and problem-solving in your workflows.
+By utilizing the Chain Tool node in AnswerAgentAI, you can create powerful and flexible agents capable of leveraging complex chains as tools, opening up new possibilities for automation and problem-solving in your workflows.

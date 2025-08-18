@@ -6,7 +6,7 @@ description: Astra Vector Store for efficient similarity search and retrieval
 
 ## Overview
 
-The Astra Vector Store node in AnswerAI allows you to store and retrieve embedded data using DataStax Astra DB, a serverless vector database designed for managing mission-critical AI workloads. This node enables you to perform similarity or MMR (Maximal Marginal Relevance) searches on your embedded data.
+The Astra Vector Store node in AnswerAgentAI allows you to store and retrieve embedded data using DataStax Astra DB, a serverless vector database designed for managing mission-critical AI workloads. This node enables you to perform similarity or MMR (Maximal Marginal Relevance) searches on your embedded data.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Astra Vector Store node in AnswerAI allows you to store and retrieve embedde
 
 ## How to Use
 
-1. Add the Astra Vector Store node to your AnswerAI workflow canvas.
+1. Add the Astra Vector Store node to your AnswerAgentAI workflow canvas.
 2. Connect the necessary input nodes (e.g., Document and Embeddings).
 3. Configure the node parameters:
     - Connect Credential: Select your Astra DB API credential.
@@ -34,7 +34,7 @@ The Astra Vector Store node in AnswerAI allows you to store and retrieve embedde
 <figure><img src="/.gitbook/assets/screenshots/astravectorstore.png" alt="" /><figcaption><p> Astra Vector Store Node   &#x26; Drop UI</p></figcaption></figure>
 ## Tips and Best Practices
 
-1. Ensure your Astra DB API credentials are correctly set up in AnswerAI before using this node.
+1. Ensure your Astra DB API credentials are correctly set up in AnswerAgentAI before using this node.
 2. Choose the appropriate similarity metric based on your specific use case and data characteristics.
 3. Experiment with different 'Top K' values to find the optimal number of results for your application.
 4. When using the MMR search, adjust the lambda parameter to balance between relevance and diversity in the results.
@@ -53,4 +53,4 @@ The Astra Vector Store node in AnswerAI allows you to store and retrieve embedde
 3. Dimension mismatch:
     - Ensure that the Vector Dimension parameter matches the dimension of your embedding model.
 
-If you encounter any other issues, double-check your node configuration and input connections. For persistent problems, consult the AnswerAI documentation or reach out to support.
+If you encounter any other issues, double-check your node configuration and input connections. For persistent problems, consult the AnswerAgentAI documentation or reach out to support.

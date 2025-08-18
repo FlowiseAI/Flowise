@@ -12,7 +12,7 @@ The Vectara Vector Store node allows you to store and retrieve embedded data usi
 
 -   Efficient similarity search: Quickly find relevant information based on semantic similarity.
 -   LLM-powered search: Leverage advanced language models for improved search accuracy.
--   Flexible integration: Easily incorporate Vectara's capabilities into your AnswerAI workflows.
+-   Flexible integration: Easily incorporate Vectara's capabilities into your AnswerAgentAI workflows.
 
 ## How to Use
 

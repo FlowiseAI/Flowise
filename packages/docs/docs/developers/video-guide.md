@@ -1,11 +1,11 @@
 ---
 title: Video Contribution Guide
-description: Complete guide to creating effective contribution videos for AnswerAI Alpha Sprint - technical requirements, content guidelines, and examples
+description: Complete guide to creating effective contribution videos for AnswerAgentAI Alpha Sprint - technical requirements, content guidelines, and examples
 ---
 
 # Video Contribution Guide
 
-Every merged contribution to AnswerAI requires a video explanation. This creates a human connection to each contribution and reinforces our mission alignment. Here's how to create compelling videos that earn your credits.
+Every merged contribution to AnswerAgentAI requires a video explanation. This creates a human connection to each contribution and reinforces our mission alignment. Here's how to create compelling videos that earn your credits.
 
 ## 🎥 Why Videos Matter
 
@@ -123,7 +123,7 @@ Your 1-3 minute video must cover:
 
 ```
 "Hi, I'm [Name], and I just contributed [brief description]
-to the AnswerAI [repository name]. This addresses [problem]
+to the AnswerAgentAI [repository name]. This addresses [problem]
 and helps users [benefit]."
 ```
 
@@ -165,7 +165,7 @@ and helps users [benefit]."
 
 ### Mission Connection (30-45 seconds)
 
-**Connect your work to AnswerAI's mission:**
+**Connect your work to AnswerAgentAI's mission:**
 
 1. **Privacy Benefits**
 
@@ -275,7 +275,7 @@ and helps users [benefit]."
 **YouTube (Recommended):**
 
 -   Upload as "Unlisted" video
--   Use descriptive title: "AnswerAI Contribution: [Brief Description]"
+-   Use descriptive title: "AnswerAgentAI Contribution: [Brief Description]"
 -   Include link in PR description
 
 **Direct File Upload:**

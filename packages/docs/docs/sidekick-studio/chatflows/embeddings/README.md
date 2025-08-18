@@ -1,5 +1,5 @@
 ---
-description: LangChain Embedding Nodes in AnswerAI
+description: LangChain Embedding Nodes in AnswerAgentAI
 ---
 
 # Embeddings
@@ -16,7 +16,7 @@ Embeddings are a crucial component in modern natural language processing and mac
 
 ## How to Use
 
-Embedding nodes in AnswerAI are typically used as part of a larger workflow. Here's a general process for using embeddings:
+Embedding nodes in AnswerAgentAI are typically used as part of a larger workflow. Here's a general process for using embeddings:
 
 1. Choose an appropriate embedding node based on your requirements and available APIs.
 2. Configure the node with necessary credentials and parameters.
@@ -51,9 +51,9 @@ Embeddings are powerful tools that can be applied to various natural language pr
 -   **Poor Performance**: If embeddings aren't performing well for your task, try a different model or consider fine-tuning on domain-specific data.
 -   **API Errors**: Check your API key and usage limits if you encounter errors when calling external embedding services.
 
-## Available Embedding Nodes in AnswerAI
+## Available Embedding Nodes in AnswerAgentAI
 
-AnswerAI offers a variety of embedding nodes to suit different needs and integrate with various services:
+AnswerAgentAI offers a variety of embedding nodes to suit different needs and integrate with various services:
 
 -   [AWS Bedrock Embeddings](aws-bedrock-embeddings.md)
 -   [Azure OpenAI Embeddings](azure-openai-embeddings.md)
@@ -72,4 +72,4 @@ Each of these nodes provides unique features and capabilities. Refer to their in
 
 <!-- TODO: Add a comparison table of different embedding nodes with their key features -->
 
-By leveraging these embedding nodes, you can enhance your AnswerAI workflows with powerful text analysis and processing capabilities, opening up a wide range of applications in natural language understanding and generation.
+By leveraging these embedding nodes, you can enhance your AnswerAgentAI workflows with powerful text analysis and processing capabilities, opening up a wide range of applications in natural language understanding and generation.

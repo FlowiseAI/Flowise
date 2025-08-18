@@ -6,7 +6,7 @@ description: Learn how to effectively use the Chatflow Tool and the Custom Tool
 
 ---
 
-One of the powerful features of AnswerAI is that you can turn flows into tools. For example, having a main flow to orchestrate which/when to use the necessary tools. And each tool is designed to perform a niece/specific thing.
+One of the powerful features of AnswerAgentAI is that you can turn flows into tools. For example, having a main flow to orchestrate which/when to use the necessary tools. And each tool is designed to perform a niece/specific thing.
 
 This offers a few benefits:
 

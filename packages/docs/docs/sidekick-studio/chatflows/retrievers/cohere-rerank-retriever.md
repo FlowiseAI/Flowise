@@ -6,7 +6,7 @@ description: Cohere Rerank Retriever - Enhance document retrieval with semantic 
 
 ## Overview
 
-The Cohere Rerank Retriever is a powerful feature in AnswerAI that enhances document retrieval by ranking documents based on their semantic relevance to a given query. This retriever uses Cohere's advanced reranking models to provide more accurate and contextually appropriate search results.
+The Cohere Rerank Retriever is a powerful feature in AnswerAgentAI that enhances document retrieval by ranking documents based on their semantic relevance to a given query. This retriever uses Cohere's advanced reranking models to provide more accurate and contextually appropriate search results.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Cohere Rerank Retriever is a powerful feature in AnswerAI that enhances docu
 
 ## How to Use
 
-1. Add the Cohere Rerank Retriever node to your AnswerAI workflow canvas.
+1. Add the Cohere Rerank Retriever node to your AnswerAgentAI workflow canvas.
 2. Connect a Vector Store Retriever to the Cohere Rerank Retriever node.
 3. Configure the node settings:
     - Select the Cohere API credential.

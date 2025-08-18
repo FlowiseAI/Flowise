@@ -6,20 +6,20 @@ description: Generate embeddings using Google Generative AI
 
 ## Overview
 
-The GoogleGenerativeAI Embeddings feature in AnswerAI allows you to generate embeddings for given text using Google's Generative AI API. Embeddings are vector representations of text that capture semantic meaning, which can be used for various natural language processing tasks.
+The GoogleGenerativeAI Embeddings feature in AnswerAgentAI allows you to generate embeddings for given text using Google's Generative AI API. Embeddings are vector representations of text that capture semantic meaning, which can be used for various natural language processing tasks.
 
 ## Key Benefits
 
 -   Leverage Google's advanced AI technology for generating high-quality embeddings
 -   Customize embeddings for specific task types to improve performance
--   Seamlessly integrate with other AnswerAI features
+-   Seamlessly integrate with other AnswerAgentAI features
 
 ## How to Use
 
 1. Connect your Google Generative AI Credential:
 
     - Ensure you have a valid Google Generative AI API key
-    - Configure your credential in AnswerAI
+    - Configure your credential in AnswerAgentAI
 
 2. Configure the GoogleGenerativeAI Embeddings node:
    a. Select the model:
@@ -58,7 +58,7 @@ The following task types are available:
 
 1. If you encounter authentication errors:
 
-    - Double-check that your Google Generative AI credential is correctly configured in AnswerAI
+    - Double-check that your Google Generative AI credential is correctly configured in AnswerAgentAI
     - Verify that your API key is valid and has the necessary permissions
 
 2. If embedding generation is slow:
@@ -70,7 +70,7 @@ The following task types are available:
     - Verify that you've selected the appropriate task type for your use case
     - Try using a different model to see if it produces better results
 
-For any persistent issues, please consult the AnswerAI documentation or contact support for assistance.
+For any persistent issues, please consult the AnswerAgentAI documentation or contact support for assistance.
 
 <!-- TODO: Add a screenshot of a sample workflow using the GoogleGenerativeAI Embeddings node -->
 <figure><img src="/.gitbook/assets/screenshots/googlegenerativeaiembeddingnodeinaowrkflow.png" alt="" /><figcaption><p> GoogleGenerativeAI Embeddings Node In A Workflow  &#x26; Drop UI</p></figcaption></figure>

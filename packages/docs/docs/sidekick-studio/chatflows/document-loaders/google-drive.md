@@ -1,5 +1,5 @@
 ---
-description: Load and process documents from Google Drive in AnswerAI
+description: Load and process documents from Google Drive in AnswerAgentAI
 ---
 
 # Google Drive Document Loader
@@ -155,7 +155,7 @@ Control which metadata fields to include:
 
 ### Other File Types
 
--   **Best Effort:** AnswerAI attempts to extract readable text
+-   **Best Effort:** AnswerAgentAI attempts to extract readable text
 -   **Encoding:** UTF-8 encoding assumed
 -   **Binary Files:** May not process correctly if containing binary data
 
@@ -338,7 +338,7 @@ To enable sync:
 
 ### Data Privacy
 
--   **Local Processing:** File content processed locally in AnswerAI
+-   **Local Processing:** File content processed locally in AnswerAgentAI
 -   **No Storage:** Original files not permanently stored
 -   **Metadata Only:** Only necessary metadata retained
 -   **Compliance:** Follow your organization's data handling policies

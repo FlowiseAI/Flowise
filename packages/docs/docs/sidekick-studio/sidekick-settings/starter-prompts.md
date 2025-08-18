@@ -1,5 +1,5 @@
 ---
-description: Learn how to manage starter prompts in AnswerAI
+description: Learn how to manage starter prompts in AnswerAgentAI
 ---
 
 # Starter Prompts Settings

@@ -1,8 +1,9 @@
 import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
+import JsonLd from '@site/src/components/JsonLd'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -166,7 +167,7 @@ function ChatFeatures() {
                             <div className={styles.commandmentText}>
                                 <strong>Customizable Parameters</strong>
                                 <br />
-                                Fine-tune your sidekicks' responses by adjusting creativity, specificity, and behavior to match your
+                                Fine-tune your sidekicks&apos; responses by adjusting creativity, specificity, and behavior to match your
                                 preferences.
                             </div>
                         </div>
@@ -196,15 +197,18 @@ function SidekickStudio() {
                     <div className='col col--4'>
                         <div className={clsx(styles.featureCard, styles.stepCard)}>
                             <div className={styles.stepNumber}>⭐</div>
-                            <h3>AnswerAI Suggested</h3>
-                            <p>Explore curated sidekicks recommended by AnswerAI. Discover new capabilities and specialized assistants.</p>
+                            <h3>AnswerAgentAI Suggested</h3>
+                            <p>
+                                Explore curated sidekicks recommended by AnswerAgentAI. Discover new capabilities and specialized
+                                assistants.
+                            </p>
                         </div>
                     </div>
                     <div className='col col--4'>
                         <div className={clsx(styles.featureCard, styles.stepCard)}>
                             <div className={styles.stepNumber}>🌐</div>
                             <h3>Community Shared</h3>
-                            <p>Access sidekicks shared by your organization and the global community. Learn from others' creations.</p>
+                            <p>Access sidekicks shared by your organization and the global community. Learn from others&apos; creations.</p>
                         </div>
                     </div>
                 </div>
@@ -248,8 +252,18 @@ export default function Chat(): JSX.Element {
                 title='Chat - AI Conversation Hub'
                 description='Your central hub for AI conversations with specialized sidekicks. Manage chat histories, access different AI agents, and boost productivity.'
             >
+                <JsonLd
+                    data={{
+                        '@context': 'https://schema.org',
+                        '@type': 'WebPage',
+                        name: 'Chat - AI Conversation Hub',
+                        description:
+                            'Your central hub for AI conversations with specialized sidekicks. Manage chat histories, access different AI agents, and boost productivity.',
+                        url: 'https://answeragent.ai/chat'
+                    }}
+                />
                 <ChatHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <FeaturedSidekicks />
                     <ChatFeatures />

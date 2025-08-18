@@ -6,7 +6,7 @@ description: Convert HTML to Markdown and split text based on Markdown headers
 
 ## Overview
 
-The HtmlToMarkdown Text Splitter is a powerful tool in AnswerAI that converts HTML content to Markdown format and then splits the resulting text into smaller, manageable chunks based on Markdown headers. This feature is particularly useful when dealing with large HTML documents or web content that needs to be processed or analyzed in smaller segments.
+The HtmlToMarkdown Text Splitter is a powerful tool in AnswerAgentAI that converts HTML content to Markdown format and then splits the resulting text into smaller, manageable chunks based on Markdown headers. This feature is particularly useful when dealing with large HTML documents or web content that needs to be processed or analyzed in smaller segments.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The HtmlToMarkdown Text Splitter is a powerful tool in AnswerAI that converts HT
 
 ## How to Use
 
-1. Locate the HtmlToMarkdown Text Splitter in the Text Splitters category of the AnswerAI Studio.
+1. Locate the HtmlToMarkdown Text Splitter in the Text Splitters category of the AnswerAgentAI Studio.
 2. Drag and drop the HtmlToMarkdown Text Splitter node onto your workflow canvas.
 3. Connect the node to your HTML input source.
 4. Configure the node settings:
@@ -57,4 +57,4 @@ The HtmlToMarkdown Text Splitter is a powerful tool in AnswerAI that converts HT
 
 <!-- TODO: Add a screenshot showing an example of the HtmlToMarkdown Text Splitter output, displaying how the HTML has been converted to Markdown and split into chunks -->
 
-By using the HtmlToMarkdown Text Splitter, you can efficiently process HTML content in your AnswerAI workflows, making it easier to analyze, summarize, or perform other operations on web-based text data.
+By using the HtmlToMarkdown Text Splitter, you can efficiently process HTML content in your AnswerAgentAI workflows, making it easier to analyze, summarize, or perform other operations on web-based text data.

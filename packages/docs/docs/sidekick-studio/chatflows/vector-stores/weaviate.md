@@ -1,12 +1,12 @@
 ---
-description: Weaviate Vector Store for AnswerAI
+description: Weaviate Vector Store for AnswerAgentAI
 ---
 
 # Weaviate Vector Store
 
 ## Overview
 
-The Weaviate Vector Store node in AnswerAI allows you to store, retrieve, and search vector embeddings using Weaviate, a scalable open-source vector database. This node enables you to perform similarity searches and MMR (Maximal Marginal Relevance) searches on your embedded data.
+The Weaviate Vector Store node in AnswerAgentAI allows you to store, retrieve, and search vector embeddings using Weaviate, a scalable open-source vector database. This node enables you to perform similarity searches and MMR (Maximal Marginal Relevance) searches on your embedded data.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Weaviate Vector Store node in AnswerAI allows you to store, retrieve, and se
 
 ## How to Use
 
-1. Add the Weaviate Vector Store node to your AnswerAI canvas.
+1. Add the Weaviate Vector Store node to your AnswerAgentAI canvas.
 2. Connect the necessary input nodes (Document, Embeddings, and optionally RecordManager).
 3. Configure the Weaviate connection settings and other parameters.
 4. Run your workflow to store or retrieve data from the Weaviate Vector Store.
@@ -58,7 +58,7 @@ The node provides two outputs:
 
 4. **Search Returns No Results**: Verify that you have data in your index and that your search filter (if used) is not too restrictive.
 
-<!-- TODO: Add a screenshot of the Weaviate Vector Store node configuration in the AnswerAI canvas -->
+<!-- TODO: Add a screenshot of the Weaviate Vector Store node configuration in the AnswerAgentAI canvas -->
 <figure><img src="/.gitbook/assets/screenshots/weaviate.png" alt="" /><figcaption><p> Weaviate Vector Store node configuration panel &#x26; Drop UI</p></figcaption></figure>
 
 Remember to refer to the Weaviate documentation for more advanced configurations and features specific to the Weaviate vector database.

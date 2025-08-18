@@ -12,7 +12,7 @@ The S3 File Loader is a powerful feature that allows you to retrieve files from 
 
 -   Access and process files directly from your S3 buckets
 -   Support for multiple file types through Unstructured.io integration
--   Seamless integration with AnswerAI's document processing pipeline
+-   Seamless integration with AnswerAgentAI's document processing pipeline
 
 ## How to Use
 
@@ -37,16 +37,16 @@ The S3 File Loader is a powerful feature that allows you to retrieve files from 
     - Create a new credential for your AWS account
     - Provide the access key and secret key
     - Ensure proper S3 bucket policy is granted to the associated account
-      <!-- TODO: Screenshot of AWS Credential configuration -->
-      <figure><img src="/.gitbook/assets/screenshots/s3awsconfiguration.png" alt="" /><figcaption><p> S3 File Loader Node AWS COnfiguration &#x26; Drop UI</p></figcaption></figure>
+          <!-- TODO: Screenshot of AWS Credential configuration -->
+          <figure><img src="/.gitbook/assets/screenshots/s3awsconfiguration.png" alt="" /><figcaption><p> S3 File Loader Node AWS COnfiguration &#x26; Drop UI</p></figcaption></figure>
 
     c. Configure S3 settings:
 
     - Enter your S3 Bucket name
     - Specify the Object Key (unique identifier for your file in S3)
     - Select the appropriate AWS Region
-      <!-- TODO: Screenshot of S3 configuration settings -->
-      <figure><img src="/.gitbook/assets/screenshots/s3configuration.png" alt="" /><figcaption><p> S3 File Loader Node Settings &#x26; Drop UI</p></figcaption></figure>
+          <!-- TODO: Screenshot of S3 configuration settings -->
+          <figure><img src="/.gitbook/assets/screenshots/s3configuration.png" alt="" /><figcaption><p> S3 File Loader Node Settings &#x26; Drop UI</p></figcaption></figure>
 
     d. Set up Unstructured API:
 
@@ -54,7 +54,7 @@ The S3 File Loader is a powerful feature that allows you to retrieve files from 
     - If using the Hosted API, provide the API key
 
 3. Start using the S3 File Loader:
-    - Once configured, you can begin interacting with your S3-stored files through AnswerAI
+    - Once configured, you can begin interacting with your S3-stored files through AnswerAgentAI
     - The system will automatically handle document chunking using Unstructured
 
 ## Tips and Best Practices
@@ -75,4 +75,4 @@ The S3 File Loader is a powerful feature that allows you to retrieve files from 
 3. Issue: Slow performance
    Solution: Consider using an AWS region closer to your location or upgrading your Unstructured API plan for better performance.
 
-By leveraging the S3 File Loader, you can seamlessly integrate your Amazon S3-stored documents into your AnswerAI workflows, enabling powerful document processing and analysis capabilities.
+By leveraging the S3 File Loader, you can seamlessly integrate your Amazon S3-stored documents into your AnswerAgentAI workflows, enabling powerful document processing and analysis capabilities.

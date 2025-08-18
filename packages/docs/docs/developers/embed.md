@@ -1,5 +1,10 @@
 ---
 description: Learn how to embed our in-house chat widget
+jsonld:
+    type: TechArticle
+    headline: Embed the AnswerAgent Chat Widget
+---
+
 ---
 
 # Embed
@@ -115,7 +120,7 @@ You can change the pop up button properties, as well as the chat window:
             chatWindow: {
                 showTitle: true,
                 showAgentMessages: true,
-                title: 'AnswerAI Bot',
+                title: 'AnswerAgentAI Bot',
                 titleAvatarSrc: 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/google-messages.svg',
                 welcomeMessage: 'Hello! This is custom welcome message',
                 errorMessage: 'This is a custom error message',
@@ -158,7 +163,7 @@ You can change the pop up button properties, as well as the chat window:
                 footer: {
                     textColor: '#303235',
                     text: 'Powered by',
-                    company: 'AnswerAI',
+                    company: 'AnswerAgentAI',
                     companyLink: 'https://theanswer.ai'
                 }
             }

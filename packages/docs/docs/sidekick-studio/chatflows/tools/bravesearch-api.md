@@ -6,17 +6,17 @@ description: Access Brave search results in real-time with the BraveSearch API T
 
 ## Overview
 
-The BraveSearch API Tool allows you to integrate Brave's search capabilities into your AnswerAI workflows. This tool provides real-time access to Brave search results, enabling you to retrieve up-to-date information on various topics directly within your projects.
+The BraveSearch API Tool allows you to integrate Brave's search capabilities into your AnswerAgentAI workflows. This tool provides real-time access to Brave search results, enabling you to retrieve up-to-date information on various topics directly within your projects.
 
 ## Key Benefits
 
 -   Access to current and relevant search results from Brave
--   Easy integration with AnswerAI workflows
+-   Easy integration with AnswerAgentAI workflows
 -   Real-time information retrieval for enhanced decision-making
 
 ## How to Use
 
-1. Add the BraveSearch API Tool to your canvas in the AnswerAI Studio.
+1. Add the BraveSearch API Tool to your canvas in the AnswerAgentAI Studio.
 
 <!-- TODO: Screenshot of adding BraveSearch API Tool to the canvas -->
 <figure><img src="/.gitbook/assets/screenshots/braveapi.png" alt="" /><figcaption><p>BraveSearch API Tool  &#x26; Drop UI</p></figcaption></figure>

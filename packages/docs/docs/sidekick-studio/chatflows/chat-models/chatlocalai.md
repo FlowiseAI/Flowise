@@ -1,12 +1,12 @@
 ---
-description: Using ChatLocalAI with AnswerAI
+description: Using ChatLocalAI with AnswerAgentAI
 ---
 
 # ChatLocalAI Integration
 
 ## Overview
 
-ChatLocalAI is a powerful feature in AnswerAI that allows you to run language models locally or on-premise using consumer-grade hardware. It provides a drop-in replacement REST API compatible with OpenAI API specifications, supporting multiple model families in the ggml format.
+ChatLocalAI is a powerful feature in AnswerAgentAI that allows you to run language models locally or on-premise using consumer-grade hardware. It provides a drop-in replacement REST API compatible with OpenAI API specifications, supporting multiple model families in the ggml format.
 
 ## Key Benefits
 
@@ -51,9 +51,9 @@ ChatLocalAI is a powerful feature in AnswerAI that allows you to run language mo
     curl http://localhost:8080/v1/models
     ```
 
-### Integrating with AnswerAI
+### Integrating with AnswerAgentAI
 
-1. Open your AnswerAI canvas.
+1. Open your AnswerAgentAI canvas.
 
 2. Drag and drop a new ChatLocalAI component onto the canvas.
 
@@ -72,7 +72,7 @@ ChatLocalAI is a powerful feature in AnswerAI that allows you to run language mo
 
 1. Experiment with different models to find the best balance between performance and resource usage for your specific use case.
 
-2. If you're running both AnswerAI and LocalAI on Docker, you may need to adjust the base path:
+2. If you're running both AnswerAgentAI and LocalAI on Docker, you may need to adjust the base path:
 
     - For Windows/macOS: Use `http://host.docker.internal:8080/v1`
     - For Linux: Use `http://172.17.0.1:8080/v1`
@@ -87,11 +87,11 @@ ChatLocalAI is a powerful feature in AnswerAI that allows you to run language mo
    **Solution**: Ensure that the LocalAI service is running and that the base path is correct. Check your firewall settings if necessary.
 
 2. **Issue**: Model not found
-   **Solution**: Verify that the model file is present in the `models/` directory of your LocalAI installation and that the model name in AnswerAI matches the filename exactly.
+   **Solution**: Verify that the model file is present in the `models/` directory of your LocalAI installation and that the model name in AnswerAgentAI matches the filename exactly.
 
 3. **Issue**: Poor performance or high resource usage
    **Solution**: Try using a smaller or more efficient model, or upgrade your hardware if possible.
 
 For more detailed information and advanced usage, refer to the [LocalAI documentation](https://localai.io/basics/getting_started/index.html).
 
-<!-- TODO: Embed video tutorial on using LocalAI with AnswerAI -->
+<!-- TODO: Embed video tutorial on using LocalAI with AnswerAgentAI -->

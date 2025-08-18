@@ -1,18 +1,18 @@
 ---
-description: Complete guide to setting up Google OAuth for AnswerAI integrations
+description: Complete guide to setting up Google OAuth for AnswerAgentAI integrations
 ---
 
 # Google OAuth Setup
 
 ## Overview
 
-Google OAuth 2.0 is required for integrating Google services with AnswerAI, including Gmail, Google Drive, and Google Calendar. This guide covers the complete setup process from creating a Google Cloud Console project to configuring OAuth in your AnswerAI instance.
+Google OAuth 2.0 is required for integrating Google services with AnswerAgentAI, including Gmail, Google Drive, and Google Calendar. This guide covers the complete setup process from creating a Google Cloud Console project to configuring OAuth in your AnswerAgentAI instance.
 
 ## Prerequisites
 
 -   A Google account
 -   Access to Google Cloud Console
--   AnswerAI instance (local or deployed)
+-   AnswerAgentAI instance (local or deployed)
 
 ## Step 1: Create Google Cloud Console Project
 
@@ -25,7 +25,7 @@ Google OAuth 2.0 is required for integrating Google services with AnswerAI, incl
 
     - Click on the project dropdown at the top of the page
     - Click "New Project"
-    - Enter a project name (e.g., "AnswerAI Integration")
+    - Enter a project name (e.g., "AnswerAgentAI Integration")
     - Click "Create"
 
 3. **Select Your Project**
@@ -35,7 +35,7 @@ Google OAuth 2.0 is required for integrating Google services with AnswerAI, incl
 
 Navigate to **APIs & Services > Library** and enable the following APIs:
 
-### Required APIs for AnswerAI Integrations:
+### Required APIs for AnswerAgentAI Integrations:
 
 -   **Gmail API** - For Gmail document loader
 -   **Google Drive API** - For Google Drive document loader
@@ -61,13 +61,13 @@ For each API:
 
 3. **App Information**
 
-    - App name: `AnswerAI` (or your custom name)
+    - App name: `AnswerAgentAI` (or your custom name)
     - User support email: Your email address
     - Developer contact information: Your email address
 
 4. **App Domain (Optional but Recommended)**
 
-    - Homepage URL: Your AnswerAI instance URL
+    - Homepage URL: Your AnswerAgentAI instance URL
     - Privacy policy URL: Your privacy policy URL
     - Terms of service URL: Your terms of service URL
 
@@ -82,7 +82,7 @@ For each API:
 
 1. **Click "Add or Remove Scopes"**
 
-2. **Add the following scopes for AnswerAI integrations:**
+2. **Add the following scopes for AnswerAgentAI integrations:**
 
     ```
     https://www.googleapis.com/auth/gmail.readonly
@@ -124,7 +124,7 @@ For each API:
 3. **Configure OAuth Client**
 
     - Application type: "Web application"
-    - Name: `AnswerAI OAuth Client`
+    - Name: `AnswerAgentAI OAuth Client`
 
 4. **Authorized Redirect URIs**
    Add the following URIs based on your setup:
@@ -148,7 +148,7 @@ For each API:
 
 ## Step 6: Configure Environment Variables
 
-Add the following environment variables to your AnswerAI instance:
+Add the following environment variables to your AnswerAgentAI instance:
 
 ```bash
 # Google OAuth Configuration
@@ -160,13 +160,13 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/v1/callback/googleoauth
 # GOOGLE_CALLBACK_URL=https://yourdomain.com/api/v1/callback/googleoauth
 ```
 
-## Step 7: Credential Configuration in AnswerAI
+## Step 7: Credential Configuration in AnswerAgentAI
 
 ### Creating Google OAuth Credential
 
 1. **Navigate to Credentials**
 
-    - In AnswerAI, go to the Credentials section
+    - In AnswerAgentAI, go to the Credentials section
     - Click "Add Credential"
 
 2. **Select Google OAuth**
@@ -181,7 +181,7 @@ GOOGLE_CALLBACK_URL=http://localhost:3000/api/v1/callback/googleoauth
 4. **Authorize Access**
     - Sign in to your Google account
     - Review and accept the requested permissions
-    - You'll be redirected back to AnswerAI
+    - You'll be redirected back to AnswerAgentAI
 
 ## End User OAuth Flow
 
@@ -191,7 +191,7 @@ Once developers have set up the Google OAuth application, end users can connect 
 
 1. **Access Credentials Section**
 
-    - Navigate to the Credentials section in AnswerAI
+    - Navigate to the Credentials section in AnswerAgentAI
     - Click "Add Credential"
 
 2. **Select Google OAuth**
@@ -207,12 +207,12 @@ Once developers have set up the Google OAuth application, end users can connect 
 4. **Grant Permissions**
 
     - Review the requested permissions
-    - These permissions allow AnswerAI to access specific Google services
+    - These permissions allow AnswerAgentAI to access specific Google services
     - Click "Allow" to grant access
 
 5. **Confirmation**
 
-    - You'll be redirected back to AnswerAI
+    - You'll be redirected back to AnswerAgentAI
     - Your Google account is now connected and ready to use
 
 6. **Using the Credential**
@@ -227,7 +227,7 @@ Once developers have set up the Google OAuth application, end users can connect 
 
 1. **"Error 400: redirect_uri_mismatch"**
 
-    - Ensure the redirect URI in Google Console matches your AnswerAI instance URL
+    - Ensure the redirect URI in Google Console matches your AnswerAgentAI instance URL
     - Check that GOOGLE_CALLBACK_URL environment variable is correct
 
 2. **"Access Blocked: This app's request is invalid"**
@@ -254,7 +254,7 @@ Once developers have set up the Google OAuth application, end users can connect 
 
 3. **Token Management**
 
-    - AnswerAI automatically handles token refresh
+    - AnswerAgentAI automatically handles token refresh
     - Monitor token usage and expiration
 
 4. **Domain Verification**
@@ -311,13 +311,13 @@ For Google Workspace customers, you can use "Internal" user type for enhanced se
     - Some scopes may require Google verification for production use
 
 4. **Token Expiration**
-    - AnswerAI handles automatic token refresh
+    - AnswerAgentAI handles automatic token refresh
     - If issues persist, re-authorize the credential
 
 ### Getting Help
 
 -   Check Google Cloud Console error logs
--   Review AnswerAI application logs
+-   Review AnswerAgentAI application logs
 -   Ensure environment variables are correctly set
 -   Verify network connectivity to Google APIs
 

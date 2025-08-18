@@ -4,8 +4,8 @@ import { AxiosError } from 'axios'
 import { useFlags } from 'flagsmith/react'
 import Image from 'next/image'
 import { JsonViewer } from '@textea/json-viewer'
-import { Box, Typography, Avatar, Chip, Button, Divider, IconButton, Link } from '@mui/material'
-import { IconDownload } from '@tabler/icons-react'
+import { Box, Typography, Avatar, Chip, Button, Divider, IconButton } from '@mui/material'
+import { IconTool } from '@tabler/icons-react'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import AttachFileIcon from '@mui/icons-material/AttachFile'
 
@@ -17,15 +17,14 @@ import {
 } from '../Accordion'
 import { AppService, Document, Message } from 'types'
 import { Rating } from 'db/generated/prisma-client'
-import { getHTMLPreview, getReactPreview, isReactComponent } from '../utils/previewUtils'
+import { getHTMLPreview, getReactPreview } from '../utils/previewUtils'
 import ThumbUpIcon from '@mui/icons-material/ThumbUp'
 import ThumbDownIcon from '@mui/icons-material/ThumbDown'
 import dynamic from 'next/dynamic'
 import { FileUpload } from '../types'
 import isArray from 'lodash/isArray'
-
-const ReactMarkdown = dynamic(() => import('react-markdown'))
-const remarkGfm = dynamic(() => import('remark-gfm'))
+import { SimpleMarkdown } from './SimpleMarkdown'
+import { LoadingAnimation } from './LoadingAnimation'
 const CodeCard = dynamic(() => import('./CodeCard').then((mod) => ({ default: mod.CodeCard })))
 const Dialog = dynamic(() => import('@mui/material/Dialog'))
 const DialogActions = dynamic(() => import('@mui/material/DialogActions'))
@@ -51,10 +50,10 @@ interface MessageExtra {
     setSelectedDocuments?: (documents: Document[]) => void
     isLoading?: boolean
     fileUploads?: string | FileUpload[]
-    content: undefined | string | any
     usedTools?: any[]
 }
-interface MessageCardProps extends Partial<Message>, MessageExtra {
+interface MessageCardProps extends Partial<Omit<Message, 'content'>>, MessageExtra {
+    content?: undefined | string | any
     error?: AxiosError<MessageExtra>
     openLinksInNewTab?: boolean
     role: string
@@ -145,7 +144,7 @@ export const MessageCard = ({
     const sourceDocuments = isArray(other.sourceDocuments) ? other.sourceDocuments : JSON.parse(other.sourceDocuments ?? '[]')
     const contextDocumentsBySource: Record<string, Document[]> = React.useMemo(
         () =>
-            sourceDocuments?.reduce((uniqueDocuments: Record<string, Document[]>, current) => {
+            sourceDocuments?.reduce((uniqueDocuments: Record<string, Document[]>, current: Document) => {
                 const key = current.metadata.url ?? current.metadata.source
                 return {
                     ...uniqueDocuments,
@@ -155,7 +154,13 @@ export const MessageCard = ({
         [sourceDocuments]
     )
     const [showFeedback, setShowFeedback] = useState(false)
-    const [sourceDialogProps, setSourceDialogProps] = useState<{ data: any; title: string } | null>({
+    const [sourceDialogProps, setSourceDialogProps] = useState<{
+        input?: any
+        data: any
+        title: string
+        isTextOutput?: boolean
+        hasNewlines?: boolean
+    } | null>({
         data: null,
         title: ''
     })
@@ -396,7 +401,7 @@ export const MessageCard = ({
                                             agentObject.usedTools.length > 0 &&
                                             agentObject.usedTools[0] !== null && (
                                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
-                                                    {agentObject.usedTools.map(({ tool, toolInput }: any, idx) => {
+                                                    {agentObject.usedTools.map(({ tool, toolInput }: any, idx: number) => {
                                                         if (!tool) return null
                                                         return (
                                                             // <Chip
@@ -544,7 +549,7 @@ export const MessageCard = ({
                                                     >
                                                         Artifacts:
                                                     </Typography>
-                                                    {agentObject.artifacts.map((artifact, idx) => {
+                                                    {agentObject.artifacts.map((artifact: any, idx: number) => {
                                                         if (!artifact) return null
                                                         return (
                                                             <Chip
@@ -649,7 +654,9 @@ export const MessageCard = ({
                 )}
 
                 {/* Message content bubble */}
-                {hasContent && content && typeof content === 'string' && content !== '[object Object]' ? (
+                {isLoading && !isUserMessage && (!content || content === '' || content === '...') && role !== 'assistant' ? (
+                    <LoadingAnimation duration={1200} />
+                ) : hasContent && content && typeof content === 'string' && content !== '[object Object]' ? (
                     <Box
                         sx={{
                             display: 'flex',
@@ -668,15 +675,13 @@ export const MessageCard = ({
                             }
                         }}
                     >
-                        <Typography
-                            variant='body1'
-                            color={isUserMessage ? 'white' : '#E0E0E0'}
-                            component='div'
+                        <Box
                             sx={{
                                 overflow: 'hidden',
                                 fontSize: '0.875rem',
                                 lineHeight: 1.75,
                                 width: '100%',
+                                color: isUserMessage ? 'white' : '#E0E0E0',
                                 '& > *': {
                                     maxWidth: '100%'
                                 },
@@ -697,125 +702,11 @@ export const MessageCard = ({
                                 }
                             }}
                         >
-                            <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={{
-                                    p: (paragraph: any) => {
-                                        const { node } = paragraph
-
-                                        if (node.children[0].tagName === 'img') {
-                                            const image = node.children[0]
-                                            const metastring = image.properties.alt
-                                            const alt = metastring?.replace(/ *\{[^)]*\} */g, '')
-                                            const metaWidth = metastring.match(/{([^}]+)x/)
-                                            const metaHeight = metastring.match(/x([^}]+)}/)
-                                            const width = metaWidth ? metaWidth[1] : undefined
-                                            const height = metaHeight ? metaHeight[1] : undefined
-                                            const isPriority = metastring?.toLowerCase().match('{priority}')
-                                            const hasCaption = metastring?.toLowerCase().includes('{caption:')
-                                            const caption = metastring?.match(/{caption: (.*?)}/)?.pop()
-
-                                            return (
-                                                <Box
-                                                    sx={{
-                                                        display: 'block',
-                                                        position: 'relative',
-                                                        width: '100%'
-                                                    }}
-                                                >
-                                                    <Image
-                                                        src={image.properties.src}
-                                                        width={width || 700}
-                                                        height={height || 400}
-                                                        layout='responsive'
-                                                        objectFit='contain'
-                                                        className='postImg'
-                                                        alt={alt}
-                                                        priority={isPriority}
-                                                    />
-                                                    {hasCaption ? (
-                                                        <div className='caption' aria-label={caption}>
-                                                            {caption}
-                                                        </div>
-                                                    ) : null}
-                                                    <Box sx={{ mt: 1, textAlign: 'center' }}>
-                                                        <Link
-                                                            href={image.properties.src}
-                                                            download
-                                                            target='_blank'
-                                                            sx={{
-                                                                display: 'inline-flex',
-                                                                alignItems: 'center',
-                                                                gap: 0.5,
-                                                                fontSize: '0.875rem',
-                                                                textDecoration: 'none',
-                                                                '&:hover': {
-                                                                    textDecoration: 'underline'
-                                                                }
-                                                            }}
-                                                        >
-                                                            <IconDownload size={16} />
-                                                            Download Image
-                                                        </Link>
-                                                    </Box>
-                                                </Box>
-                                            )
-                                        }
-                                        return <p>{paragraph.children}</p>
-                                    },
-
-                                    a: ({ node, ...props }) => (
-                                        <a {...props} target={openLinksInNewTab ? '_blank' : '_self'} rel='noopener noreferrer'>
-                                            {props.children}
-                                        </a>
-                                    ),
-
-                                    code({ node, inline, className, children, ...props }) {
-                                        const codeExample = String(children).replace(/\n$/, '')
-
-                                        if (!inline) {
-                                            const language = getLanguageFromClassName(className)
-                                            const canPreview =
-                                                ['html', 'jsx', 'tsx'].includes(language) ||
-                                                (language === 'javascript' && isReactComponent(codeExample))
-
-                                            // Show all non-inline code as CodeCard
-                                            return (
-                                                <Box sx={{ my: 2 }}>
-                                                    <CodeCard
-                                                        code={codeExample}
-                                                        language={language}
-                                                        title='Code'
-                                                        onCopy={() => handleCopyCodeClick(codeExample)}
-                                                        onPreview={() =>
-                                                            setPreviewCode?.({
-                                                                code: codeExample,
-                                                                language,
-                                                                getHTMLPreview,
-                                                                getReactPreview
-                                                            })
-                                                        }
-                                                        expandable={true}
-                                                    />
-                                                </Box>
-                                            )
-                                        }
-
-                                        return (
-                                            <code className={className} {...props}>
-                                                {children}
-                                            </code>
-                                        )
-                                    }
-                                }}
-                            >
-                                {content}
-                            </ReactMarkdown>
-                        </Typography>
+                            <SimpleMarkdown content={content} openLinksInNewTab={openLinksInNewTab} setPreviewCode={setPreviewCode} />
+                        </Box>
                     </Box>
                 ) : null}
             </Box>
-
             {(other as any).action && (
                 <Box sx={{ mt: 2, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                     {(other as any).action.text && (
@@ -885,17 +776,97 @@ export const MessageCard = ({
                     )}
                 </Box>
             )}
-
             {sourceDialogOpen && sourceDialogProps && (
                 <Dialog open={sourceDialogOpen} onClose={() => setSourceDialogOpen(false)} maxWidth='md' fullWidth>
-                    <DialogTitle>{sourceDialogProps.title || 'Source'}</DialogTitle>
+                    <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <IconTool size={20} />
+                        {sourceDialogProps.title || 'Tool Output'}
+                    </DialogTitle>
                     <DialogContent>
-                        <Box sx={{ maxHeight: '60vh', overflow: 'auto' }}>
-                            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                                {typeof sourceDialogProps.data === 'string'
-                                    ? sourceDialogProps.data
-                                    : JSON.stringify(sourceDialogProps.data, null, 2)}
-                            </pre>
+                        <Box sx={{ maxHeight: '60vh', overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                            {/* Tool Input Section */}
+                            {sourceDialogProps.input && (
+                                <Box>
+                                    <Typography variant='subtitle2' sx={{ mb: 1, color: '#B0B0B0' }}>
+                                        Tool Input:
+                                    </Typography>
+                                    <JsonViewer
+                                        rootName='input'
+                                        value={sourceDialogProps.input}
+                                        theme={'dark'}
+                                        defaultInspectDepth={1}
+                                        collapseStringsAfterLength={200}
+                                        displayDataTypes={true}
+                                        quotesOnKeys={false}
+                                        enableClipboard={true}
+                                        displayObjectSize={true}
+                                        maxDisplayLength={500}
+                                    />
+                                </Box>
+                            )}
+
+                            {/* Tool Output Section */}
+                            <Box>
+                                <Typography variant='subtitle2' sx={{ mb: 1, color: '#B0B0B0' }}>
+                                    Tool Output:
+                                </Typography>
+                                {(() => {
+                                    let parsedData = sourceDialogProps.data
+                                    let isJsonData = false
+
+                                    // Try to parse as JSON if it's a string
+                                    if (typeof sourceDialogProps.data === 'string') {
+                                        try {
+                                            parsedData = JSON.parse(sourceDialogProps.data)
+                                            isJsonData = true
+                                        } catch {
+                                            // Keep as string, it's not valid JSON
+                                            isJsonData = false
+                                        }
+                                    } else if (typeof sourceDialogProps.data === 'object') {
+                                        isJsonData = true
+                                    }
+
+                                    return isJsonData ? (
+                                        <JsonViewer
+                                            rootName='output'
+                                            value={parsedData}
+                                            theme={'dark'}
+                                            defaultInspectDepth={2}
+                                            collapseStringsAfterLength={300}
+                                            displayDataTypes={true}
+                                            quotesOnKeys={false}
+                                            enableClipboard={true}
+                                            displayObjectSize={true}
+                                            maxDisplayLength={1000}
+                                        />
+                                    ) : (
+                                        <Box
+                                            sx={{
+                                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                borderRadius: 1,
+                                                p: 2,
+                                                border: '1px solid rgba(255, 255, 255, 0.1)'
+                                            }}
+                                        >
+                                            <Typography
+                                                component='pre'
+                                                sx={{
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word',
+                                                    margin: 0,
+                                                    fontFamily: 'monospace',
+                                                    fontSize: '0.875rem',
+                                                    lineHeight: 1.4,
+                                                    color: '#E0E0E0'
+                                                }}
+                                            >
+                                                {sourceDialogProps.data}
+                                            </Typography>
+                                        </Box>
+                                    )
+                                })()}
+                            </Box>
                         </Box>
                     </DialogContent>
                     <DialogActions>
@@ -903,7 +874,6 @@ export const MessageCard = ({
                     </DialogActions>
                 </Dialog>
             )}
-
             {(role === 'assistant' || role === 'apiMessage') && isFeedbackAllowed && !isLoading ? (
                 <Box
                     sx={{
@@ -953,19 +923,19 @@ export const MessageCard = ({
                     )}
                 </Box>
             ) : null}
-
             {developer_mode?.enabled ? (
                 <Box>
                     {sourceDocuments?.length ? (
                         <CustomAccordion TransitionProps={{ unmountOnExit: true }}>
                             <CustomAccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                                 <Typography variant='overline'>
-                                    Source Documents ({countTokensLite(sourceDocuments?.map((d) => d.pageContent)?.join('/n'))} Tokens)
+                                    Source Documents ({countTokensLite(sourceDocuments?.map((d: Document) => d.pageContent)?.join('/n'))}{' '}
+                                    Tokens)
                                 </Typography>
                             </CustomAccordionSummary>
                             <CustomAccordionDetails>
                                 <Typography sx={{ whiteSpace: 'pre-line' }} variant='body1' color='text.secondary' component='div'>
-                                    {sourceDocuments?.map((d) => d.pageContent)?.join('/n')}
+                                    {sourceDocuments?.map((d: Document) => d.pageContent)?.join('/n')}
                                 </Typography>
                             </CustomAccordionDetails>
                         </CustomAccordion>
@@ -1110,53 +1080,61 @@ export const MessageCard = ({
                     </Box>
                 </>
             ) : null}
-            {/* Tools used section */}
-
-            {usedTools?.map(({ tool, toolInput, toolOutput }: any, idx) => {
-                if (!tool) return null
-                return (
-                    <CustomAccordion
-                        key={`tool-${idx}`}
+            {/* Tools used section - Enhanced bubble UI */}
+            {usedTools && usedTools.length > 0 && (
+                <Box sx={{ mt: 2, mb: 1 }}>
+                    Tools Used
+                    <Box
                         sx={{
-                            p: 0,
-                            borderRadius: 1,
-                            boxShadow: 'none',
-                            '&:before': { display: 'none' },
-
-                            mb: '8px!important',
-                            mt: '8px!important'
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: 1,
+                            alignItems: 'center'
                         }}
                     >
-                        <CustomAccordionSummary
-                            expandIcon={<ExpandMoreIcon sx={{ color: '#e0e0e0' }} width={16} height={16} />}
-                            sx={{
-                                p: 0,
-                                minHeight: '36px'
-                            }}
-                        >
-                            <Typography
-                                variant='body2'
-                                color='text.secondary'
-                                sx={{
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}
-                            >
-                                {`${tool} ${Object.entries(toolInput)
-                                    .map(([key, value]) => `"${value}"`)
-                                    .join(', ')}`}
-                            </Typography>
-                        </CustomAccordionSummary>
-                        <CustomAccordionDetails sx={{ p: 0 }}>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                <Typography variant='body2'>
-                                    <pre>{JSON.stringify(toolOutput, null, 2)}</pre>
-                                </Typography>
-                            </Box>
-                        </CustomAccordionDetails>
-                    </CustomAccordion>
-                )
-            })}
+                        {usedTools.map(({ tool, toolInput, toolOutput }: any, toolIdx: number) => {
+                            if (!tool || !toolOutput) return null
+
+                            // Handle toolOutput as array - create bubbles for each result
+                            const outputArray = Array.isArray(toolOutput) ? toolOutput : [toolOutput]
+
+                            return outputArray.map((output: any, outputIdx: number) => {
+                                return (
+                                    <Chip
+                                        key={`tool-${toolIdx}-output-${outputIdx}`}
+                                        icon={<IconTool size={14} />}
+                                        label={`${tool}${outputArray.length > 1 ? ` (${outputIdx + 1})` : ''}`}
+                                        variant='outlined'
+                                        clickable
+                                        sx={{
+                                            height: '28px',
+                                            fontSize: '0.75rem',
+                                            color: '#e0e0e0',
+                                            borderColor: 'rgba(224, 224, 224, 0.3)',
+                                            backgroundColor: 'rgba(224, 224, 224, 0.05)',
+                                            '&:hover': {
+                                                backgroundColor: 'rgba(224, 224, 224, 0.1)',
+                                                borderColor: 'rgba(224, 224, 224, 0.5)'
+                                            },
+                                            '& .MuiChip-icon': {
+                                                color: '#e0e0e0'
+                                            }
+                                        }}
+                                        onClick={() => {
+                                            setSourceDialogProps({
+                                                input: toolInput,
+                                                data: output,
+                                                title: `${tool} ${outputArray.length > 1 ? ` ${outputIdx + 1}` : ''}`
+                                            })
+                                            setSourceDialogOpen(true)
+                                        }}
+                                    />
+                                )
+                            })
+                        })}
+                    </Box>
+                </Box>
+            )}
         </Box>
     )
 }

@@ -1,12 +1,12 @@
 ---
-description: Milvus Vector Store for AnswerAI
+description: Milvus Vector Store for AnswerAgentAI
 ---
 
 # Milvus Vector Store
 
 ## Overview
 
-The Milvus Vector Store node in AnswerAI allows you to store and retrieve embedded data using Milvus, an advanced open-source vector database. This node enables efficient similarity searches on your vector data, making it ideal for various AI and machine learning applications.
+The Milvus Vector Store node in AnswerAgentAI allows you to store and retrieve embedded data using Milvus, an advanced open-source vector database. This node enables efficient similarity searches on your vector data, making it ideal for various AI and machine learning applications.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Milvus Vector Store node in AnswerAI allows you to store and retrieve embedd
 
 ## How to Use
 
-1. Add the Milvus Vector Store node to your AnswerAI workflow canvas.
+1. Add the Milvus Vector Store node to your AnswerAgentAI workflow canvas.
 2. Configure the node with the following parameters:
     - Document: (Optional) The input documents to be stored in the vector database.
     - Embeddings: The embedding model to use for converting text to vectors.
@@ -53,7 +53,7 @@ The Milvus Vector Store node in AnswerAI allows you to store and retrieve embedd
     - Double-check your filter string syntax for any errors.
     - Verify that the embedded data is correctly stored in the specified collection.
 
-If you encounter any persistent issues, consult the AnswerAI documentation or reach out to our support team for assistance.
+If you encounter any persistent issues, consult the AnswerAgentAI documentation or reach out to our support team for assistance.
 
 <!-- TODO: Add a screenshot of a sample workflow using the Milvus Vector Store node -->
 <figure><img src="/.gitbook/assets/screenshots/milvusinaworkflow.png" alt="" /><figcaption><p> Milvus Vector Store node In a workflow  &#x26; Drop UI</p></figcaption></figure>

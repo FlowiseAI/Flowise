@@ -25,6 +25,27 @@ import { execBwsCommandWithRetrySync } from './bws-retry-utils.js';
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
 
+// Global suppression: mute all secure-run output while preserving wrapped command output
+const SUPPRESS_ALL =
+  process.env.BWS_SUPPRESS_ALL === 'true' || process.env.BWS_SUPPRESS_ALL === '1';
+
+const originalConsole = {
+  log: console.log,
+  warn: console.warn,
+  error: console.error,
+  info: console.info,
+  debug: console.debug
+};
+
+if (SUPPRESS_ALL) {
+  console.log = () => {};
+  console.warn = () => {};
+  // Do NOT suppress errors; keep them visible
+  // console.error = () => {};
+  console.info = () => {};
+  console.debug = () => {};
+}
+
 // Helper function to properly parse multiline environment variables from BWS output
 function parseEnvironmentOutput(output) {
   const result = {};
@@ -72,107 +93,125 @@ function getMachineAccountsUrl() {
   return `\nhttps://vault.bitwarden.com/#/sm/${orgId}/machine-accounts\n`;
 }
 
-// Add wrapper function to handle environment variable fallback
+// Wrapper function to handle environment variable fallback - see README.md for BWS_NO_OVERRIDE option
 async function readConfigFileWithFallback() {
+  const hasToken = process.env.BWS_ACCESS_TOKEN;
+  const noOverride = process.env.BWS_NO_OVERRIDE === 'true';
+  const cacheFile = path.join(process.cwd(), '.bwsconfig.cache');
+  const cacheTimeout = 5 * 60 * 1000; // 5 minutes cache
+
+  // Skip BWS override if BWS_NO_OVERRIDE is set
+  if (noOverride) {
+    log('debug', 'BWS_NO_OVERRIDE=true, skipping BWS config update');
+  }
+  // Check cache before hitting BWS
+  else if (hasToken) {
+    // Check if cache exists and is still valid
+    let skipUpdate = false;
+    try {
+      if (fs.existsSync(cacheFile)) {
+        const cacheStats = fs.statSync(cacheFile);
+        const cacheAge = Date.now() - cacheStats.mtimeMs;
+        if (cacheAge < cacheTimeout) {
+          log(
+            'debug',
+            `BWS config cache is still valid (${Math.round(cacheAge / 1000)}s old), skipping update`
+          );
+          skipUpdate = true;
+        }
+      }
+    } catch (err) {
+      // Ignore cache errors, just proceed with update
+    }
+
+    if (!skipUpdate) {
+      try {
+        log('debug', 'Checking BWS for _bwsconfig_json secrets...');
+        // Get all secrets using BWS with retry logic
+        const output = execBwsCommandWithRetrySync(
+          `${getBwsCommand()} secret list -t ${process.env.BWS_ACCESS_TOKEN} --output json`,
+          { encoding: 'utf8' },
+          'Config secrets fetch'
+        );
+
+        // Clean output of any ANSI codes
+        const cleanOutput = output.replace(/\u001B\[\d+m/g, '').trim();
+        const secrets = JSON.parse(cleanOutput);
+
+        // Look for all _bwsconfig_json secrets (could be _bwsconfig_json, _bwsconfig_json_1, etc.)
+        const configSecrets = secrets.filter((secret) => secret.key.startsWith('_bwsconfig_json'));
+
+        if (configSecrets.length > 0) {
+          log(
+            'debug',
+            `Found ${configSecrets.length} _bwsconfig_json secret(s), parsing and merging content...`
+          );
+
+          // Parse all configs and merge them
+          const mergedConfig = { projects: [] };
+          const projectMap = new Map(); // Use Map to track projects by platform+projectName
+
+          for (const configSecret of configSecrets) {
+            try {
+              log('debug', `Processing secret: ${configSecret.key}`);
+              const configContent = JSON.parse(configSecret.value);
+
+              if (configContent.projects && Array.isArray(configContent.projects)) {
+                for (const project of configContent.projects) {
+                  const projectKey = `${project.platform}:${project.projectName}`;
+
+                  if (projectMap.has(projectKey)) {
+                    // Merge bwsProjectIds with existing project
+                    const existingProject = projectMap.get(projectKey);
+                    existingProject.bwsProjectIds = {
+                      ...existingProject.bwsProjectIds,
+                      ...project.bwsProjectIds
+                    };
+                    log('debug', `Merged bwsProjectIds for project: ${project.projectName}`);
+                  } else {
+                    // Add new project
+                    projectMap.set(projectKey, { ...project });
+                    log('debug', `Added new project: ${project.projectName}`);
+                  }
+                }
+              }
+            } catch (parseError) {
+              log('error', `Failed to parse secret ${configSecret.key}: ${parseError.message}`);
+            }
+          }
+
+          // Convert map back to array
+          mergedConfig.projects = Array.from(projectMap.values());
+
+          // Always update the local file with BWS secrets
+          const configPath = path.join(process.cwd(), 'bwsconfig.json');
+          await fsPromises.writeFile(configPath, JSON.stringify(mergedConfig, null, 2));
+
+          // Touch the cache file to mark successful update
+          fs.writeFileSync(cacheFile, '');
+
+          const secretNames = configSecrets.map((s) => s.key).join(', ');
+          log('info', `✓ Updated bwsconfig.json from BWS secrets: ${secretNames}`);
+          log(
+            'info',
+            `✓ Merged ${mergedConfig.projects.length} project(s) with combined environments`
+          );
+
+          return mergedConfig;
+        } else {
+          log('debug', '_bwsconfig_json secret not found in BWS');
+        }
+      } catch (bwsError) {
+        log('error', `Failed to retrieve _bwsconfig_json from BWS: ${bwsError.message}`);
+      }
+    } // end if (!skipUpdate)
+  }
+
+  // Fall back to reading local config file
   try {
-    // First try the normal readConfigFile
     return await readConfigFile();
   } catch (error) {
     log('debug', `readConfigFile failed with error: ${error.message}`);
-
-    // If it fails and the error is about missing bwsconfig.json, check for _bwsconfig_json in BWS secrets
-    if (error.message.includes('bwsconfig.json not found')) {
-      log('debug', 'bwsconfig.json not found, checking for _bwsconfig_json in BWS secrets');
-
-      const hasToken = process.env.BWS_ACCESS_TOKEN;
-
-      log('debug', `BWS_ACCESS_TOKEN exists: ${!!hasToken}`);
-
-      if (hasToken) {
-        try {
-          log('debug', 'Fetching secrets from BWS to look for _bwsconfig_json...');
-          // Get all secrets using BWS with retry logic
-          const output = execBwsCommandWithRetrySync(
-            `${getBwsCommand()} secret list -t ${process.env.BWS_ACCESS_TOKEN} --output json`,
-            { encoding: 'utf8' },
-            'Config secrets fetch'
-          );
-
-          // Clean output of any ANSI codes
-          const cleanOutput = output.replace(/\u001B\[\d+m/g, '').trim();
-          const secrets = JSON.parse(cleanOutput);
-
-          // Look for all _bwsconfig_json secrets (could be _bwsconfig_json, _bwsconfig_json_1, etc.)
-          const configSecrets = secrets.filter((secret) =>
-            secret.key.startsWith('_bwsconfig_json')
-          );
-
-          if (configSecrets.length > 0) {
-            log(
-              'debug',
-              `Found ${configSecrets.length} _bwsconfig_json secret(s), parsing and merging content...`
-            );
-
-            // Parse all configs and merge them
-            const mergedConfig = { projects: [] };
-            const projectMap = new Map(); // Use Map to track projects by platform+projectName
-
-            for (const configSecret of configSecrets) {
-              try {
-                log('debug', `Processing secret: ${configSecret.key}`);
-                const configContent = JSON.parse(configSecret.value);
-
-                if (configContent.projects && Array.isArray(configContent.projects)) {
-                  for (const project of configContent.projects) {
-                    const projectKey = `${project.platform}:${project.projectName}`;
-
-                    if (projectMap.has(projectKey)) {
-                      // Merge bwsProjectIds with existing project
-                      const existingProject = projectMap.get(projectKey);
-                      existingProject.bwsProjectIds = {
-                        ...existingProject.bwsProjectIds,
-                        ...project.bwsProjectIds
-                      };
-                      log('debug', `Merged bwsProjectIds for project: ${project.projectName}`);
-                    } else {
-                      // Add new project
-                      projectMap.set(projectKey, { ...project });
-                      log('debug', `Added new project: ${project.projectName}`);
-                    }
-                  }
-                }
-              } catch (parseError) {
-                log('error', `Failed to parse secret ${configSecret.key}: ${parseError.message}`);
-              }
-            }
-
-            // Convert map back to array
-            mergedConfig.projects = Array.from(projectMap.values());
-
-            // Create the file locally
-            const configPath = path.join(process.cwd(), 'bwsconfig.json');
-            await fsPromises.writeFile(configPath, JSON.stringify(mergedConfig, null, 2));
-
-            const secretNames = configSecrets.map((s) => s.key).join(', ');
-            log('info', `✓ Created bwsconfig.json from BWS secrets: ${secretNames}`);
-            log(
-              'info',
-              `✓ Merged ${mergedConfig.projects.length} project(s) with combined environments`
-            );
-
-            return mergedConfig;
-          } else {
-            log('debug', '_bwsconfig_json secret not found in BWS');
-          }
-        } catch (bwsError) {
-          log('error', `Failed to retrieve _bwsconfig_json from BWS: ${bwsError.message}`);
-        }
-      } else {
-        log('debug', 'BWS_ACCESS_TOKEN not set');
-      }
-    }
-
-    // Re-throw the original error if we can't handle it
     throw error;
   }
 }
@@ -207,7 +246,7 @@ async function ensureRequiredVariablesFile() {
     'node',
     [path.join(dirname, 'check-vars', 'requiredRuntimeVars.js')],
     {
-      stdio: 'inherit',
+      stdio: SUPPRESS_ALL ? 'ignore' : 'inherit',
       env: process.env
     }
   );
@@ -446,6 +485,40 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
     process.env.BWS_EPHEMERAL_KEY = crypto.randomBytes(32).toString('hex');
   }
 
+  // Direct BWS_PROJECT_ID bypass - if a valid UUID is provided, use it directly
+  if (
+    process.env.BWS_PROJECT_ID &&
+    process.env.BWS_PROJECT_ID.match(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    )
+  ) {
+    log('info', `Using direct BWS_PROJECT_ID: ${process.env.BWS_PROJECT_ID}`);
+
+    // Load secrets directly using the provided project ID
+    const projectId = process.env.BWS_PROJECT_ID;
+    await loadEnvironmentSecrets(projectId, projectId);
+    loadedProjectIds.add(projectId);
+
+    // Load the variables into process.env
+    const sourceFile = `.env.secure.${projectId}`;
+    if (fs.existsSync(sourceFile)) {
+      const content = fs.readFileSync(sourceFile, 'utf8');
+      const decrypted = decryptContent(content, process.env.BWS_EPHEMERAL_KEY);
+      const decryptedVariables = parseEnvironmentOutput(decrypted);
+
+      for (const key of Object.keys(decryptedVariables)) {
+        if (!(key in process.env)) {
+          process.env[key] = decryptedVariables[key];
+        }
+      }
+
+      log('info', `Loaded environment from direct BWS_PROJECT_ID: ${projectId}`);
+    }
+
+    printEnvironmentSummary();
+    return; // Exit early, bypassing all project selection logic
+  }
+
   try {
     const config = await readConfigFileWithFallback();
     if (!config || !config.projects) {
@@ -497,12 +570,25 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
         // Only use this project for the rest of the process
         projectsToUse = [projectMatch];
       } else {
-        // CRITICAL CHANGE: Fail immediately if BWS_PROJECT doesn't match any project
+        // Auto-update: BWS_PROJECT doesn't match, use what's available in BWS config
+        if (config.projects.length === 0) {
+          log('error', 'Critical Error: No projects found in BWS configuration');
+          process.exit(1);
+        }
+
+        log('warn', `BWS_PROJECT '${process.env.BWS_PROJECT}' not found in BWS config`);
+        log('info', `Auto-updating to available project: ${config.projects[0].projectName}`);
+
+        // Update BWS_PROJECT to match what's actually available
+        process.env.BWS_PROJECT = config.projects[0].projectName;
+        projectsToUse = config.projects;
+
+        // This will trigger updateEnvironmentBwsSection to fix the .env file
         log(
-          'error',
-          `Critical Error: No project found matching BWS_PROJECT: ${process.env.BWS_PROJECT}`
+          'info',
+          `✓ Updated BWS_PROJECT from '${process.env.BWS_PROJECT}' to '${config.projects[0].projectName}'`
         );
-        process.exit(1);
+        log('info', `✓ Will update .env file with correct project and environment options`);
       }
     } else if (isNetlify || isVercel) {
       // CRITICAL CHANGE: Fail build immediately if neither SITE_NAME nor BWS_PROJECT is set
@@ -559,7 +645,8 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
               NO_COLOR: '1',
               FORCE_COLOR: '0',
               TERM: 'dumb' // Add this to further discourage color output
-            }
+            },
+            stdio: SUPPRESS_ALL ? 'ignore' : undefined
           }
         );
 
@@ -678,7 +765,7 @@ async function setupEnvironment(options = { isPlatformBuild: false }) {
           'node',
           [path.join(dirname, 'update-environments', 'updateEnvVars.js')],
           {
-            stdio: 'inherit',
+            stdio: SUPPRESS_ALL ? 'ignore' : 'inherit',
             env: process.env
           }
         );
@@ -1060,7 +1147,7 @@ async function handleUploadCommand() {
   const arguments_ = clearVariables ? ['--clearvars'] : [];
 
   const result = spawnSync('node', [uploadScript, ...arguments_], {
-    stdio: 'inherit',
+    stdio: SUPPRESS_ALL ? 'ignore' : 'inherit',
     env: process.env
   });
 
@@ -1159,7 +1246,7 @@ async function handleUploadCommand() {
             'node',
             [path.join(dirname, 'update-environments', 'map-env-files.js')],
             {
-              stdio: 'inherit',
+              stdio: SUPPRESS_ALL ? 'ignore' : 'inherit',
               env: process.env
             }
           );
@@ -1180,7 +1267,7 @@ async function handleUploadCommand() {
       // 4. Run environment validation regardless
       log('info', 'Running environment validation...');
       const validator = spawnSync('node', [path.join(dirname, 'env_validator.js')], {
-        stdio: 'inherit',
+        stdio: SUPPRESS_ALL ? 'ignore' : 'inherit',
         env: process.env
       });
 
@@ -1211,7 +1298,8 @@ async function handleUploadCommand() {
 
     process.exit(result.status);
   } catch (error) {
-    log('error', error.message);
+    // Always show critical errors even when suppressed
+    console.error(error?.message || String(error));
     process.exit(1);
   }
 })();

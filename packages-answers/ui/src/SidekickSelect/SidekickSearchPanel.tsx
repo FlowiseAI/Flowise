@@ -13,6 +13,7 @@ interface SidekickSearchPanelProps {
     enablePerformanceLogs?: boolean
     onClose?: () => void
     shouldAutoFocus?: boolean
+    autoOpen?: boolean
 }
 
 const SidekickSearchPanel: React.FC<SidekickSearchPanelProps> = ({
@@ -23,7 +24,8 @@ const SidekickSearchPanel: React.FC<SidekickSearchPanelProps> = ({
     handleSidekickSelect,
     enablePerformanceLogs = false,
     onClose,
-    shouldAutoFocus = false
+    shouldAutoFocus = false,
+    autoOpen = false
 }) => {
     return (
         <Box sx={{ width: '100%', maxWidth: '400px' }}>
@@ -37,6 +39,7 @@ const SidekickSearchPanel: React.FC<SidekickSearchPanelProps> = ({
                 enablePerformanceLogs={enablePerformanceLogs}
                 onClose={onClose}
                 shouldAutoFocus={shouldAutoFocus}
+                autoOpen={autoOpen}
             />
         </Box>
     )

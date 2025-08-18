@@ -6,7 +6,7 @@ description: Load and scrape web content using Playwright
 
 ## Overview
 
-The Playwright Web Scraper is a powerful tool in AnswerAI that allows you to load and extract data from web pages. It uses the Playwright library, which automates web browsers for efficient web scraping. This feature is particularly useful for gathering information from websites, performing web research, or collecting data for analysis.
+The Playwright Web Scraper is a powerful tool in AnswerAgentAI that allows you to load and extract data from web pages. It uses the Playwright library, which automates web browsers for efficient web scraping. This feature is particularly useful for gathering information from websites, performing web research, or collecting data for analysis.
 
 ## Key Benefits
 
@@ -18,7 +18,7 @@ The Playwright Web Scraper is a powerful tool in AnswerAI that allows you to loa
 
 ### Scraping a Single URL
 
-1. In the AnswerAI interface, locate and select the "Playwright Web Scraper" node.
+1. In the AnswerAgentAI interface, locate and select the "Playwright Web Scraper" node.
 2. In the "URL" field, enter the web address you want to scrape.
 3. (Optional) Connect a Text Splitter node if you need to process the scraped content further.
 4. Run the workflow to initiate the scraping process.
@@ -61,7 +61,7 @@ To scrape multiple pages, you can use the web crawling feature:
 
 ## Output
 
-The Playwright Web Scraper outputs the scraped content as Document objects, which can be further processed or analyzed in your AnswerAI workflow.
+The Playwright Web Scraper outputs the scraped content as Document objects, which can be further processed or analyzed in your AnswerAgentAI workflow.
 
 <!-- TODO: Screenshot or code snippet showing an example of the scraped output -->
 <figure><img src="/.gitbook/assets/screenshots/playrightwebscreapperlinks.png" alt="" /><figcaption><p> Playwright Web Scrapper Node Configuration  &#x26; Drop UI</p></figcaption></figure>

@@ -1,12 +1,12 @@
 ---
-description: Complete guide to setting up Salesforce Personal OAuth for AnswerAI integrations
+description: Complete guide to setting up Salesforce Personal OAuth for AnswerAgentAI integrations
 ---
 
 # Salesforce Personal OAuth Setup
 
 ## Overview
 
-Salesforce Personal OAuth 2.0 enables individual users to connect their personal Salesforce accounts with AnswerAI, allowing for user-specific data access and operations. This is distinct from system-wide Salesforce API credentials and provides a more secure, user-controlled authentication method.
+Salesforce Personal OAuth 2.0 enables individual users to connect their personal Salesforce accounts with AnswerAgentAI, allowing for user-specific data access and operations. This is distinct from system-wide Salesforce API credentials and provides a more secure, user-controlled authentication method.
 
 ### Personal OAuth vs System-Wide Credentials
 
@@ -22,7 +22,7 @@ Salesforce Personal OAuth 2.0 enables individual users to connect their personal
 
 -   A Salesforce account with admin access
 -   Access to Salesforce Setup menu
--   AnswerAI instance (local or deployed)
+-   AnswerAgentAI instance (local or deployed)
 -   Basic understanding of OAuth 2.0 concepts
 
 ## Step 1: Create Salesforce Connected App
@@ -42,22 +42,22 @@ Salesforce Personal OAuth 2.0 enables individual users to connect their personal
 3. **Create New Connected App**
     - Click **New Connected App**
     - Fill in the basic information:
-        - **Connected App Name**: `AnswerAI Personal OAuth`
-        - **API Name**: `AnswerAI_Personal_OAuth`
+        - **Connected App Name**: `AnswerAgentAI Personal OAuth`
+        - **API Name**: `AnswerAgentAI_Personal_OAuth`
         - **Contact Email**: Your email address
-        - **Description**: OAuth integration for personal AnswerAI access
+        - **Description**: OAuth integration for personal AnswerAgentAI access
 
 ### Configure OAuth Settings
 
 1. **Enable OAuth Settings**
 
     - Check **Enable OAuth Settings**
-    - **Callback URL**: Add your AnswerAI callback URL
+    - **Callback URL**: Add your AnswerAgentAI callback URL
         - For local development: `http://localhost:4000/api/v1/salesforce-auth/callback`
         - For production: `https://yourdomain.com/api/v1/salesforce-auth/callback`
 
 2. **Select OAuth Scopes**
-   Add the following scopes for comprehensive AnswerAI integration:
+   Add the following scopes for comprehensive AnswerAgentAI integration:
 
     ```
     Access and manage your data (api)
@@ -82,7 +82,7 @@ Salesforce Personal OAuth 2.0 enables individual users to connect their personal
 1. **Access Connected App**
 
     - Navigate back to **App Manager**
-    - Find your `AnswerAI Personal OAuth` app
+    - Find your `AnswerAgentAI Personal OAuth` app
     - Click the dropdown arrow and select **Edit**
 
 2. **Configure OAuth Policies**
@@ -109,7 +109,7 @@ Salesforce Personal OAuth 2.0 enables individual users to connect their personal
 
 ## Step 3: Configure Environment Variables
 
-Add the following environment variables to your AnswerAI instance:
+Add the following environment variables to your AnswerAgentAI instance:
 
 ### For Local Development
 
@@ -135,13 +135,13 @@ SALESFORCE_INSTANCE_URL=https://your-domain.my.salesforce.com
 API_HOST=https://yourdomain.com
 ```
 
-## Step 4: Credential Configuration in AnswerAI
+## Step 4: Credential Configuration in AnswerAgentAI
 
 ### Creating Salesforce Personal OAuth Credential
 
 1. **Navigate to Credentials**
 
-    - In AnswerAI, go to the Credentials section
+    - In AnswerAgentAI, go to the Credentials section
     - Click **Add Credential**
 
 2. **Select Salesforce OAuth**
@@ -161,7 +161,7 @@ API_HOST=https://yourdomain.com
     - You'll be redirected to Salesforce login
     - Sign in to your Salesforce account
     - Review and approve the requested permissions
-    - You'll be redirected back to AnswerAI
+    - You'll be redirected back to AnswerAgentAI
 
 ## End User OAuth Flow
 
@@ -171,7 +171,7 @@ Once administrators have set up the Salesforce Connected App, end users can conn
 
 1. **Access Credentials Section**
 
-    - Navigate to the Credentials section in AnswerAI
+    - Navigate to the Credentials section in AnswerAgentAI
     - Click **Add Credential**
 
 2. **Select Salesforce OAuth**
@@ -201,7 +201,7 @@ Once administrators have set up the Salesforce Connected App, end users can conn
 
 6. **Confirmation**
 
-    - You'll be redirected back to AnswerAI
+    - You'll be redirected back to AnswerAgentAI
     - Your personal Salesforce account is now connected
     - The refresh token is securely stored
 
@@ -229,7 +229,7 @@ Once administrators have set up the Salesforce Connected App, end users can conn
 
 1. **Refresh Token Handling**
 
-    - AnswerAI automatically handles token refresh
+    - AnswerAgentAI automatically handles token refresh
     - Refresh tokens are stored encrypted
     - Tokens can be revoked by users at any time
 
@@ -257,7 +257,7 @@ Once administrators have set up the Salesforce Connected App, end users can conn
 
 1. **Check OAuth Settings**
 
-    - Verify callback URL matches your AnswerAI instance
+    - Verify callback URL matches your AnswerAgentAI instance
     - Confirm all required scopes are enabled
     - Test the OAuth flow in a sandbox first
 
@@ -285,7 +285,7 @@ Once administrators have set up the Salesforce Connected App, end users can conn
 
 1. **"Error 400: redirect_uri_mismatch"**
 
-    - **Cause**: Callback URL in Connected App doesn't match AnswerAI
+    - **Cause**: Callback URL in Connected App doesn't match AnswerAgentAI
     - **Solution**: Verify `API_HOST` environment variable and Connected App callback URL match exactly
 
 2. **"Error 400: invalid_client_id"**
@@ -302,11 +302,11 @@ Once administrators have set up the Salesforce Connected App, end users can conn
 1. **Popup Blocked**
 
     - **Cause**: Browser blocking OAuth popup
-    - **Solution**: Allow popups for AnswerAI domain
+    - **Solution**: Allow popups for AnswerAgentAI domain
 
 2. **Token Not Saving**
 
-    - **Cause**: Callback not reaching AnswerAI properly
+    - **Cause**: Callback not reaching AnswerAgentAI properly
     - **Solution**: Check network connectivity and callback URL configuration
 
 3. **Refresh Token Issues**
@@ -375,9 +375,9 @@ For multiple environments (dev, staging, production):
 -   [Connected App Setup Guide](https://help.salesforce.com/s/articleView?id=sf.connected_app_create.htm)
 -   [OAuth Troubleshooting](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_troubleshoot.htm)
 
-### AnswerAI Support
+### AnswerAgentAI Support
 
--   Check AnswerAI application logs for OAuth errors
+-   Check AnswerAgentAI application logs for OAuth errors
 -   Verify environment variables are correctly set
 -   Test in a development environment first
 

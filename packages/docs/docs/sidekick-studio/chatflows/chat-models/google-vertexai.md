@@ -1,17 +1,17 @@
 ---
-description: Integrate Google VertexAI with AnswerAI for powerful language model capabilities
+description: Integrate Google VertexAI with AnswerAgentAI for powerful language model capabilities
 ---
 
 # Google VertexAI Integration
 
 ## Overview
 
-Google VertexAI integration allows you to leverage Google's powerful language models within AnswerAI. This feature enables you to use ChatGoogleVertexAI for various natural language processing tasks, enhancing your AI-powered applications.
+Google VertexAI integration allows you to leverage Google's powerful language models within AnswerAgentAI. This feature enables you to use ChatGoogleVertexAI for various natural language processing tasks, enhancing your AI-powered applications.
 
 ## Key Benefits
 
 -   Access to state-of-the-art language models from Google
--   Seamless integration with AnswerAI's workflow
+-   Seamless integration with AnswerAgentAI's workflow
 -   Customizable model parameters for fine-tuned outputs
 
 ## How to Use
@@ -52,9 +52,9 @@ Choose one of the following methods:
 5. Click on the created service account, then "ADD KEY" -> "Create new key"
 6. Select JSON format and click "CREATE" to download your credential file
 
-### Step 3: Configure AnswerAI
+### Step 3: Configure AnswerAgentAI
 
-1. In AnswerAI, go to the Credential page and click "Add credential"
+1. In AnswerAgentAI, go to the Credential page and click "Add credential"
 2. Select "Google Vertex Auth"
 3. Register your credential file using one of these options:
     - Enter the path to your credential file in "Google Application Credential File Path"
@@ -63,7 +63,7 @@ Choose one of the following methods:
 
 ### Step 4: Use ChatGoogleVertexAI in Your Workflow
 
-1. In your AnswerAI workflow, add a ChatGoogleVertexAI node
+1. In your AnswerAgentAI workflow, add a ChatGoogleVertexAI node
 2. Configure the node parameters:
     - Select the credential you created
     - Choose a model name (e.g., "chat-bison")
@@ -79,7 +79,7 @@ Choose one of the following methods:
 
 ## Troubleshooting
 
--   If you encounter authentication errors, double-check your credential file and ensure it's correctly configured in AnswerAI
+-   If you encounter authentication errors, double-check your credential file and ensure it's correctly configured in AnswerAgentAI
 -   For "Model not found" errors, verify that you've selected a valid model name from the available options
 -   If you experience rate limiting, consider upgrading your GCP account or optimizing your usage
 

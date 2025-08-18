@@ -6,7 +6,7 @@ description: Learn how to managing API requests in Flowise
 
 ---
 
-This section provides in-depth guides on core AnswerAI functionalities, including API usage, variables, and telemetry collection practices.
+This section provides in-depth guides on core AnswerAgentAI functionalities, including API usage, variables, and telemetry collection practices.
 
 ## Guides
 

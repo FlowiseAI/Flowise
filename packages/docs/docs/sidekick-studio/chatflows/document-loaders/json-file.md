@@ -1,12 +1,12 @@
 ---
-description: Load and process data from JSON files in AnswerAI
+description: Load and process data from JSON files in AnswerAgentAI
 ---
 
 # JSON File Document Loader
 
 ## Overview
 
-The JSON File Document Loader is a powerful feature in AnswerAI that allows you to import and process data from JSON files. This tool is particularly useful when you need to extract specific information from JSON-structured data and convert it into a format that can be used within AnswerAI's workflows.
+The JSON File Document Loader is a powerful feature in AnswerAgentAI that allows you to import and process data from JSON files. This tool is particularly useful when you need to extract specific information from JSON-structured data and convert it into a format that can be used within AnswerAgentAI's workflows.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The JSON File Document Loader is a powerful feature in AnswerAI that allows you 
 
 ## How to Use
 
-1. In the AnswerAI interface, locate and select the "JSON File" node from the "Document Loaders" category.
+1. In the AnswerAgentAI interface, locate and select the "JSON File" node from the "Document Loaders" category.
 
 2. Configure the node by setting the following parameters:
 

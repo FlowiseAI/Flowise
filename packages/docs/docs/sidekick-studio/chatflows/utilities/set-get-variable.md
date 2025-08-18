@@ -6,7 +6,7 @@ description: Set and Get Variable Nodes for Dynamic Data Management
 
 ## Overview
 
-The Set Variable and Get Variable nodes are powerful utility tools in AnswerAI that allow you to store and retrieve data dynamically within your workflows. These nodes are essential for managing information across different parts of your flow, enabling you to save computation time and create more efficient workflows.
+The Set Variable and Get Variable nodes are powerful utility tools in AnswerAgentAI that allow you to store and retrieve data dynamically within your workflows. These nodes are essential for managing information across different parts of your flow, enabling you to save computation time and create more efficient workflows.
 
 ## Key Benefits
 
@@ -57,4 +57,4 @@ The Get Variable node allows you to retrieve previously stored data using the va
     - Verify the data type being stored in the Set Variable node.
     - Check if any transformations are applied to the data between setting and getting the variable.
 
-By effectively using the Set and Get Variable nodes, you can create more dynamic and efficient workflows in AnswerAI, allowing for better data management and reusability across your chatbot or application logic.
+By effectively using the Set and Get Variable nodes, you can create more dynamic and efficient workflows in AnswerAgentAI, allowing for better data management and reusability across your chatbot or application logic.

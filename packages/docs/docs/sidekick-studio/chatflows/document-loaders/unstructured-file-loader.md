@@ -6,17 +6,17 @@ description: Load and process various file types using Unstructured.io
 
 ## Overview
 
-The Unstructured File Loader is a powerful feature in AnswerAI that allows you to load and process various file types using Unstructured.io. This tool enables you to extract structured data from unstructured documents, making it easier to work with a wide range of file formats.
+The Unstructured File Loader is a powerful feature in AnswerAgentAI that allows you to load and process various file types using Unstructured.io. This tool enables you to extract structured data from unstructured documents, making it easier to work with a wide range of file formats.
 
 ## Key Benefits
 
 -   Supports multiple file formats, including PDF, DOCX, JPG, HTML, and more
 -   Offers flexible processing options to optimize data extraction
--   Integrates seamlessly with other AnswerAI features for enhanced document analysis
+-   Integrates seamlessly with other AnswerAgentAI features for enhanced document analysis
 
 ## How to Use
 
-1. Navigate to the Document Loaders section in AnswerAI.
+1. Navigate to the Document Loaders section in AnswerAgentAI.
 2. Select the "Unstructured File Loader" option.
 3. Configure the loader settings:
     - Choose between uploading files or specifying a file path
@@ -31,7 +31,7 @@ The Unstructured File Loader is a powerful feature in AnswerAI that allows you t
 
 ## Tips and Best Practices
 
-1. Use the File Upload option for easier file management within AnswerAI.
+1. Use the File Upload option for easier file management within AnswerAgentAI.
 2. Experiment with different processing strategies to find the best balance between speed and accuracy for your specific documents.
 3. Utilize the "Additional Metadata" field to add custom information to your extracted documents.
 4. When working with multi-language documents, specify the appropriate OCR languages for better text recognition.
@@ -68,4 +68,4 @@ The Unstructured File Loader offers several advanced configuration options to fi
 <!-- TODO: Add a screenshot showcasing the advanced configuration options -->
 <figure><img src="/.gitbook/assets/screenshots/unstructuredfileloaderadvanced.png" alt="" /><figcaption><p> Unstructured File Loader Advanced Configuration   &#x26; Drop UI</p></figcaption></figure>
 
-By leveraging these options, you can customize the Unstructured File Loader to best suit your specific document processing needs in AnswerAI.
+By leveraging these options, you can customize the Unstructured File Loader to best suit your specific document processing needs in AnswerAgentAI.

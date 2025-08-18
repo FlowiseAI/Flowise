@@ -6,7 +6,7 @@ description: Execute HTTP POST requests with the Requests Post tool
 
 ## Overview
 
-The Requests Post tool allows you to execute HTTP POST requests within your AnswerAI workflows. This powerful feature enables your agents to interact with external APIs and services, sending data and receiving responses.
+The Requests Post tool allows you to execute HTTP POST requests within your AnswerAgentAI workflows. This powerful feature enables your agents to interact with external APIs and services, sending data and receiving responses.
 
 ## Key Benefits
 

@@ -1,12 +1,15 @@
 ---
 sidebar_position: 1
 title: Introduction
-description: AnswerAI's Sidekick Studio is a visual development environment for building generative AI applications.
+description: AnswerAgentAI's Sidekick Studio is a visual development environment for building generative AI applications.
+jsonld:
+    type: TechArticle
+    headline: Sidekick Studio Overview
 ---
 
 # Introduction
 
-The AnswerAI Sidekick Studio provides a powerful canvas for building generative AI applications through a variety of specialized nodes. These nodes are organized into distinct categories, enabling users to create sophisticated workflows with ease.
+The AnswerAgentAI Sidekick Studio provides a powerful canvas for building generative AI applications through a variety of specialized nodes. These nodes are organized into distinct categories, enabling users to create sophisticated workflows with ease.
 
 ## Overview
 
@@ -20,7 +23,7 @@ Sidekick Studio Nodes are the building blocks of your AI workflows. Each node re
 
 ## How to Use
 
-1. Open the Sidekick Studio in your AnswerAI dashboard.
+1. Open the Sidekick Studio in your AnswerAgentAI dashboard.
 2. Drag and drop nodes from the sidebar onto the canvas.
 3. Connect nodes by drawing lines between their input and output ports.
 4. Configure each node by clicking on it and adjusting its settings in the properties panel.
@@ -58,7 +61,7 @@ Sidekick Studio offers nodes in the following categories:
 -   Regularly test your workflow as you build to catch issues early.
 -   Use comments and labels to document your workflow for future reference.
 
-By mastering the use of Sidekick Studio Nodes, you can create powerful, custom AI solutions tailored to your specific needs. Explore each category to discover the full potential of AnswerAI's Sidekick Studio.
+By mastering the use of Sidekick Studio Nodes, you can create powerful, custom AI solutions tailored to your specific needs. Explore each category to discover the full potential of AnswerAgentAI's Sidekick Studio.
 
 -   [Settings](sidekick-settings/README.md)
 -   [Agent Flows](agentflows/README.md)

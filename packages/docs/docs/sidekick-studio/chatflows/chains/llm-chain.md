@@ -1,12 +1,12 @@
 ---
-description: Learn about the LLM Chain, a fundamental building block for AI-powered applications in AnswerAI
+description: Learn about the LLM Chain, a fundamental building block for AI-powered applications in AnswerAgentAI
 ---
 
 # LLM Chain
 
 ## Overview
 
-The LLM Chain is the most basic and versatile chain type in AnswerAI. It provides a straightforward way to interact with Large Language Models (LLMs), making it an essential tool for a wide range of AI-powered applications. This chain is designed for simplicity and flexibility, allowing you to quickly implement AI capabilities in various scenarios.
+The LLM Chain is the most basic and versatile chain type in AnswerAgentAI. It provides a straightforward way to interact with Large Language Models (LLMs), making it an essential tool for a wide range of AI-powered applications. This chain is designed for simplicity and flexibility, allowing you to quickly implement AI capabilities in various scenarios.
 
 ## Key Benefits
 
@@ -28,7 +28,7 @@ The LLM Chain is an excellent choice for many applications, including:
 
 ## How It Works
 
-1. **Input Processing**: The chain receives input through the AnswerAI API.
+1. **Input Processing**: The chain receives input through the AnswerAgentAI API.
 2. **Prompt Preparation**: The input is combined with a predefined prompt template.
 3. **LLM Interaction**: The prepared prompt is sent to the specified language model for processing.
 4. **Response Generation**: The model generates a response based on the input and prompt.
@@ -36,7 +36,7 @@ The LLM Chain is an excellent choice for many applications, including:
 
 ## Key Components
 
-### 1. AnswerAI API Endpoint
+### 1. AnswerAgentAI API Endpoint
 
 The entry point for interacting with the LLM Chain.
 
@@ -127,7 +127,7 @@ async function generateResponse(customerQuery) {
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>AnswerAI Story Generator</title>
+        <title>AnswerAgentAI Story Generator</title>
     </head>
     <body>
         <input type="text" id="theme" placeholder="Enter a story theme" />
@@ -169,4 +169,4 @@ async function generateResponse(customerQuery) {
 -   **Cost Consideration**: Frequent use, especially with more advanced models, can incur significant API costs.
 -   **Potential for Inconsistency**: Without careful prompt engineering, responses may vary in style or content.
 
-By leveraging the LLM Chain through the AnswerAI API, you can quickly implement AI capabilities in a wide range of applications. Its simplicity and flexibility make it an excellent starting point for many AI projects, particularly for standalone queries or as components in larger, more complex systems.
+By leveraging the LLM Chain through the AnswerAgentAI API, you can quickly implement AI capabilities in a wide range of applications. Its simplicity and flexibility make it an excellent starting point for many AI projects, particularly for standalone queries or as components in larger, more complex systems.

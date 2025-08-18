@@ -6,7 +6,7 @@ description: ChatHuggingFace - Interact with Hugging Face language models
 
 ## Overview
 
-ChatHuggingFace is a powerful feature in AnswerAI that allows you to interact with Hugging Face's large language models. This feature provides a user-friendly interface to leverage state-of-the-art natural language processing capabilities for various tasks such as text generation, question-answering, and more.
+ChatHuggingFace is a powerful feature in AnswerAgentAI that allows you to interact with Hugging Face's large language models. This feature provides a user-friendly interface to leverage state-of-the-art natural language processing capabilities for various tasks such as text generation, question-answering, and more.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ ChatHuggingFace is a powerful feature in AnswerAI that allows you to interact wi
 
 ## How to Use
 
-1. Navigate to the ChatHuggingFace node in the AnswerAI interface.
+1. Navigate to the ChatHuggingFace node in the AnswerAgentAI interface.
 2. Configure the following settings:
 
     a. **Connect Credential**: Link your Hugging Face API credentials.
@@ -36,7 +36,7 @@ ChatHuggingFace is a powerful feature in AnswerAI that allows you to interact wi
     <!-- TODO: Screenshot of the ChatHuggingFace node configuration panel -->
     <figure><img src="/.gitbook/assets/screenshots/chathuggingface.png" alt="" /><figcaption><p> ChatHugging Face Node Configuration &#x26; Drop UI</p></figcaption></figure>
 
-3. Connect the ChatHuggingFace node to other nodes in your AnswerAI workflow.
+3. Connect the ChatHuggingFace node to other nodes in your AnswerAgentAI workflow.
 
 4. Run your workflow to interact with the Hugging Face model.
 
@@ -50,7 +50,7 @@ ChatHuggingFace is a powerful feature in AnswerAI that allows you to interact wi
     - Decrease temperature for more focused and deterministic responses
     - Adjust max tokens to control the length of the generated text
 
-3. **API Key Security**: Always keep your Hugging Face API key secure. Use the credential management system in AnswerAI to safely store and use your API key.
+3. **API Key Security**: Always keep your Hugging Face API key secure. Use the credential management system in AnswerAgentAI to safely store and use your API key.
 
 4. **Custom Endpoints**: If you have specific requirements or want to use a fine-tuned model, consider setting up your own inference endpoint.
 
@@ -58,7 +58,7 @@ ChatHuggingFace is a powerful feature in AnswerAI that allows you to interact wi
 
 1. **Model Not Found**: Ensure that you've entered the correct model name. Check the Hugging Face model hub for available models.
 
-2. **API Key Issues**: Verify that your Hugging Face API key is correctly entered in the AnswerAI credential manager.
+2. **API Key Issues**: Verify that your Hugging Face API key is correctly entered in the AnswerAgentAI credential manager.
 
 3. **Endpoint Errors**: If using a custom endpoint, make sure the URL is correct and the endpoint is accessible.
 
@@ -70,4 +70,4 @@ Remember that different models may have different available parameters. Always r
 
 <!-- TODO: Screenshot of a sample output from the ChatHuggingFace node -->
 
-By leveraging the ChatHuggingFace feature in AnswerAI, you can easily integrate powerful open-sourcelanguage models into your workflows, enabling sophisticated natural language processing capabilities for a wide range of applications.
+By leveraging the ChatHuggingFace feature in AnswerAgentAI, you can easily integrate powerful open-sourcelanguage models into your workflows, enabling sophisticated natural language processing capabilities for a wide range of applications.

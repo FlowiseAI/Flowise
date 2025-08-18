@@ -6,9 +6,9 @@ description: Learn to build your own Flowise solutions through practical example
 
 ---
 
-This section provides a collection of practical examples to demonstrate how AnswerAI can be used to build a variety of solutions.
+This section provides a collection of practical examples to demonstrate how AnswerAgentAI can be used to build a variety of solutions.
 
-Each use case will guide you through the process of designing, building, and deploying real-world applications using AnswerAI.
+Each use case will guide you through the process of designing, building, and deploying real-world applications using AnswerAgentAI.
 
 ## Guides
 

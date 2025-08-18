@@ -6,17 +6,17 @@ description: Generate embeddings using AWS Bedrock embedding models
 
 ## Overview
 
-AWS Bedrock Embeddings is a powerful feature in AnswerAI that allows you to generate embeddings for a given text using AWS Bedrock embedding models. Embeddings are vector representations of text that capture semantic meaning, making them useful for various natural language processing tasks.
+AWS Bedrock Embeddings is a powerful feature in AnswerAgentAI that allows you to generate embeddings for a given text using AWS Bedrock embedding models. Embeddings are vector representations of text that capture semantic meaning, making them useful for various natural language processing tasks.
 
 ## Key Benefits
 
 -   Access to state-of-the-art embedding models from AWS Bedrock
 -   Flexible configuration options for different use cases
--   Seamless integration with other AnswerAI components
+-   Seamless integration with other AnswerAgentAI components
 
 ## How to Use
 
-To use AWS Bedrock Embeddings in AnswerAI, follow these steps:
+To use AWS Bedrock Embeddings in AnswerAgentAI, follow these steps:
 
 1. Add the AWS Bedrock Embeddings node to your workflow.
 2. Configure the node settings:
@@ -100,4 +100,4 @@ Specifies the type of input passed to Cohere embedding models. Options include:
     - Ensure that the input text is properly formatted and cleaned (the node automatically replaces newlines with spaces).
     - Try a different model or adjust the input type (for Cohere models) to see if it improves results.
 
-For any persistent issues, consult the AWS Bedrock documentation or contact AnswerAI support for assistance.
+For any persistent issues, consult the AWS Bedrock documentation or contact AnswerAgentAI support for assistance.

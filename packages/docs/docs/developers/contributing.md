@@ -1,11 +1,11 @@
 ---
-title: Contributing to AnswerAI
-description: Complete guide to contributing to the AnswerAI Alpha Sprint - PR process, guidelines, and best practices
+title: Contributing to AnswerAgentAI
+description: Complete guide to contributing to the AnswerAgentAI Alpha Sprint - PR process, guidelines, and best practices
 ---
 
-# Contributing to AnswerAI
+# Contributing to AnswerAgentAI
 
-Welcome to the AnswerAI Alpha Sprint! This guide will help you contribute effectively to our mission of building privacy-first AI tools.
+Welcome to the AnswerAgentAI Alpha Sprint! This guide will help you contribute effectively to our mission of building privacy-first AI tools.
 
 ## 🚀 Getting Started
 
@@ -26,7 +26,6 @@ Look for issues tagged with:
 -   `beginner` - Perfect for first-time contributors
 -   `good first issue` - Well-documented starter tasks
 -   `help wanted` - Community assistance needed
--   `alpha-sprint` - High-priority for July 21st deadline
 
 ## 📋 PR Process
 
@@ -279,7 +278,7 @@ pnpm test:watch
 ## 🎉 After Your PR is Merged
 
 1. **Record your video** (if not done already)
-2. **Share on social media** with #AnswerAIAlphaSprint
+2. **Share on social media** with #AnswerAgentAIAlphaSprint
 3. **Find your next issue** to continue contributing
 4. **Help other contributors** in discussions
 
@@ -296,22 +295,6 @@ pnpm test:watch
 -   **Stuck on setup?** Tag `@core-team` in discussions
 -   **Architecture questions?** Create detailed GitHub issue
 -   **Urgent blockers?** Message in #alpha-sprint Discord channel
-
-## 📅 Sprint Timeline
-
-**Now - July 21st, 2025**
-
--   Core development phase
--   Daily progress updates
--   Weekly community calls
-
-**July 21st**
-
--   Alpha release celebration
--   Contributor recognition event
--   Roadmap for post-alpha development
-
----
 
 Remember: We're not just building software—we're proving that committed developers can create better tools than billion-dollar corporations. Every contribution matters in showing the world what privacy-first, developer-owned AI looks like.
 

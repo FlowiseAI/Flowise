@@ -1,24 +1,24 @@
 ---
-description: Load and process data from CSV files in AnswerAI
+description: Load and process data from CSV files in AnswerAgentAI
 ---
 
 # CSV File Document Loader
 
 ## Overview
 
-The CSV File Document Loader is a powerful feature in AnswerAI that allows you to import and process data from CSV (Comma-Separated Values) files. This tool is essential for users who need to work with structured data stored in spreadsheets or tabular formats.
+The CSV File Document Loader is a powerful feature in AnswerAgentAI that allows you to import and process data from CSV (Comma-Separated Values) files. This tool is essential for users who need to work with structured data stored in spreadsheets or tabular formats.
 
 ## Key Benefits
 
 -   Easy import of structured data from CSV files
 -   Flexible options for data extraction and processing
--   Seamless integration with other AnswerAI features
+-   Seamless integration with other AnswerAgentAI features
 
 ## How to Use
 
 1. Select the CSV File Document Loader from the Document Loaders category.
 
-<!-- TODO: Screenshot of the CSV File Document Loader node in the AnswerAI interface -->
+<!-- TODO: Screenshot of the CSV File Document Loader node in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/csvfiledocumentloader.png" alt="" /><figcaption><p> CSV File Document Loader  &#x26; Drop UI</p></figcaption></figure>
 
 2. Configure the loader with the following options:
@@ -36,7 +36,7 @@ The CSV File Document Loader is a powerful feature in AnswerAI that allows you t
 <!-- TODO: Screenshot of the configuration options for the CSV File Document Loader -->
 <figure><img src="/.gitbook/assets/screenshots/csv file node configuraation.png" alt="" /><figcaption><p> CSV File Document Loader Node Configuration &#x26; Drop UI</p></figcaption></figure>
 
-3. Connect the CSV File Document Loader to other nodes in your AnswerAI workflow.
+3. Connect the CSV File Document Loader to other nodes in your AnswerAgentAI workflow.
 
 4. Run your workflow to process the CSV data.
 
@@ -80,4 +80,4 @@ Choose the output that best fits your workflow needs.
 <!-- TODO: Screenshot showing how to select the output option -->
 <figure><img src="/.gitbook/assets/screenshots/csvfile output.png" alt="" /><figcaption><p> CSV File Document Loader Output &#x26; Drop UI</p></figcaption></figure>
 
-By following this guide, you'll be able to effectively use the CSV File Document Loader in AnswerAI to import and process your structured data from CSV files.
+By following this guide, you'll be able to effectively use the CSV File Document Loader in AnswerAgentAI to import and process your structured data from CSV files.

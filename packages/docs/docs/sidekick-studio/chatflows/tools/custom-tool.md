@@ -1,18 +1,18 @@
 ---
-description: Create custom tools to extend AnswerAI's capabilities
+description: Create custom tools to extend AnswerAgentAI's capabilities
 ---
 
 # Custom Tool
 
-Custom Tools allow you to add custom JavaScript functions to interact with APIs that are not natively supported by AnswerAI. This feature enables you to extend the functionality of your workflows and integrate with a wide range of external services.
+Custom Tools allow you to add custom JavaScript functions to interact with APIs that are not natively supported by AnswerAgentAI. This feature enables you to extend the functionality of your workflows and integrate with a wide range of external services.
 
 ## Overview
 
-The Custom Tool node allows you to write JavaScript code that can be executed as part of your workflow. This is particularly useful when you need to interact with APIs or services that don't have a pre-built node in AnswerAI.
+The Custom Tool node allows you to write JavaScript code that can be executed as part of your workflow. This is particularly useful when you need to interact with APIs or services that don't have a pre-built node in AnswerAgentAI.
 
 ## Key Benefits
 
--   Extend AnswerAI's functionality with custom integrations
+-   Extend AnswerAgentAI's functionality with custom integrations
 -   Interact with any API or service using JavaScript
 -   Flexibility to implement complex logic and data processing
 
@@ -54,8 +54,8 @@ This example uses the `node-fetch` library, which is available by default in Cus
 ## Troubleshooting
 
 -   If your Custom Tool is not executing, check that it's properly connected in the workflow.
--   Ensure that any external libraries you're using are supported by AnswerAI. You can find a list of supported libraries in the AnswerAI documentation.
--   If you're getting unexpected results, use `console.log()` statements to debug your code and check the AnswerAI logs for output.
+-   Ensure that any external libraries you're using are supported by AnswerAgentAI. You can find a list of supported libraries in the AnswerAgentAI documentation.
+-   If you're getting unexpected results, use `console.log()` statements to debug your code and check the AnswerAgentAI logs for output.
 
 For more detailed information on building custom tools, including how to work with input schemas and advanced use cases, please refer to the [Interacting with APIs documentation](../../../developers/use-cases/interacting-with-api.md).
 

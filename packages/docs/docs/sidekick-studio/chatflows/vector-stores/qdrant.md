@@ -1,12 +1,12 @@
 ---
-description: Qdrant Vector Store for AnswerAI
+description: Qdrant Vector Store for AnswerAgentAI
 ---
 
 # Qdrant Vector Store
 
 ## Overview
 
-The Qdrant Vector Store node in AnswerAI allows you to upsert embedded data and perform similarity searches using Qdrant, a scalable open-source vector database written in Rust. This node enables efficient storage and retrieval of high-dimensional vectors, making it ideal for various AI and machine learning applications.
+The Qdrant Vector Store node in AnswerAgentAI allows you to upsert embedded data and perform similarity searches using Qdrant, a scalable open-source vector database written in Rust. This node enables efficient storage and retrieval of high-dimensional vectors, making it ideal for various AI and machine learning applications.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Qdrant Vector Store node in AnswerAI allows you to upsert embedded data and 
 
 ## How to Use
 
-1. Add the Qdrant Vector Store node to your AnswerAI canvas.
+1. Add the Qdrant Vector Store node to your AnswerAgentAI canvas.
 2. Connect the required inputs:
     - Document: Connect to a Document Loader node (optional)
     - Embeddings: Connect to an Embeddings node
@@ -87,6 +87,6 @@ This filter will return only documents where the `metadata.source` field matches
 
 4. You can create more complex filters using Qdrant's filter syntax, which supports nested conditions, range queries, and more. Refer to the Qdrant documentation for advanced filtering options.
 
-By leveraging filters, you can create more targeted and relevant search results, improving the overall performance of your AnswerAI workflows.
+By leveraging filters, you can create more targeted and relevant search results, improving the overall performance of your AnswerAgentAI workflows.
 
 Remember to test your filters thoroughly to ensure they're working as expected in your specific use case.

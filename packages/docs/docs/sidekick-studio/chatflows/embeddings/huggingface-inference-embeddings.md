@@ -6,13 +6,13 @@ description: Generate embeddings using HuggingFace Inference API
 
 ## Overview
 
-The HuggingFace Inference Embeddings feature in AnswerAI allows you to generate embeddings for a given text using the HuggingFace Inference API. Embeddings are numerical representations of text that capture semantic meaning, which can be useful for various natural language processing tasks.
+The HuggingFace Inference Embeddings feature in AnswerAgentAI allows you to generate embeddings for a given text using the HuggingFace Inference API. Embeddings are numerical representations of text that capture semantic meaning, which can be useful for various natural language processing tasks.
 
 ## Key Benefits
 
 -   Access to state-of-the-art embedding models from HuggingFace
 -   Flexibility to use pre-defined models or your own custom inference endpoint
--   Easy integration with other AnswerAI components for advanced NLP workflows
+-   Easy integration with other AnswerAgentAI components for advanced NLP workflows
 
 ## How to Use
 
@@ -30,7 +30,7 @@ The HuggingFace Inference Embeddings feature in AnswerAI allows you to generate 
     - Endpoint (Optional): If you're using your own inference endpoint, enter the URL here. Leave this blank if you're using a standard HuggingFace model.
         - Example: `https://xyz.eu-west-1.aws.endpoints.huggingface.cloud/sentence-transformers/all-MiniLM-L6-v2`
 
-3. Connect the HuggingFace Inference Embeddings node to other components in your AnswerAI workflow that require text embeddings.
+3. Connect the HuggingFace Inference Embeddings node to other components in your AnswerAgentAI workflow that require text embeddings.
 
 <!-- TODO: Screenshot of the HuggingFace Inference Embeddings node configuration panel -->
 <figure><img src="/.gitbook/assets/screenshots/huggingface.png" alt="" /><figcaption><p> HuggingFace Embeddings Node  &#x26; Drop UI</p></figcaption></figure>
@@ -66,4 +66,4 @@ The HuggingFace Inference Embeddings feature in AnswerAI allows you to generate 
     - Verify that the input text is in the correct format expected by the model.
     - Try using a different model to see if the issue persists.
 
-For any persistent issues, consult the AnswerAI documentation or reach out to our support team for assistance.
+For any persistent issues, consult the AnswerAgentAI documentation or reach out to our support team for assistance.

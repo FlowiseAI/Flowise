@@ -6,7 +6,7 @@ description: Transform and structure AI-generated output with Output Parser node
 
 ## Overview
 
-Output Parser nodes in AnswerAI are powerful tools designed to transform and structure the raw output from AI models into more useful formats for downstream tasks. These nodes are essential when working with Language Models (LLMs) or chat models to generate structured data or normalize their outputs.
+Output Parser nodes in AnswerAgentAI are powerful tools designed to transform and structure the raw output from AI models into more useful formats for downstream tasks. These nodes are essential when working with Language Models (LLMs) or chat models to generate structured data or normalize their outputs.
 
 ## Key Benefits
 

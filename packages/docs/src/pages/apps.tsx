@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import Layout from '@theme/Layout'
 import ThreeJsScene from '@site/src/components/Annimations/SphereScene'
-import UsingAnswerAISubmenu from '@site/src/components/UsingAnswerAISubmenu'
+import UsingAnswerAgentAISubmenu from '@site/src/components/UsingAnswerAgentAISubmenu'
 
 import styles from './index.module.css'
 
@@ -15,8 +15,8 @@ function AgentsHero() {
             <div className={styles.heroContent}>
                 <h1 className={styles.heroTitle}>AI Agents</h1>
                 <p className={styles.heroSubtitle}>
-                    Intelligent AI agents that understand your needs, connect to your tools, and execute complex workflows
-                    autonomously to supercharge your productivity.
+                    Intelligent AI agents that understand your needs, connect to your tools, and execute complex workflows autonomously to
+                    supercharge your productivity.
                 </p>
                 <div className={styles.heroCTAs}>
                     <a href='https://studio.theanswer.ai' className={clsx(styles.ctaButton, styles.ctaPrimary)}>
@@ -50,8 +50,8 @@ function WhatIsAnAgent() {
                             <div className={styles.stepNumber}>🧠</div>
                             <h3>Intelligent Reasoning</h3>
                             <p>
-                                Agents use advanced AI models to understand context, analyze information, and make intelligent 
-                                decisions based on your specific requirements and goals.
+                                Agents use advanced AI models to understand context, analyze information, and make intelligent decisions
+                                based on your specific requirements and goals.
                             </p>
                         </div>
                     </div>
@@ -60,8 +60,8 @@ function WhatIsAnAgent() {
                             <div className={styles.stepNumber}>🔗</div>
                             <h3>Tool Integration</h3>
                             <p>
-                                Connect to APIs, databases, and services. Agents can interact with your existing tools and 
-                                platforms to gather information and execute actions.
+                                Connect to APIs, databases, and services. Agents can interact with your existing tools and platforms to
+                                gather information and execute actions.
                             </p>
                         </div>
                     </div>
@@ -70,8 +70,8 @@ function WhatIsAnAgent() {
                             <div className={styles.stepNumber}>⚡</div>
                             <h3>Autonomous Execution</h3>
                             <p>
-                                Once configured, agents work independently to complete complex workflows, making decisions 
-                                and taking actions without constant human intervention.
+                                Once configured, agents work independently to complete complex workflows, making decisions and taking
+                                actions without constant human intervention.
                             </p>
                         </div>
                     </div>
@@ -80,8 +80,8 @@ function WhatIsAnAgent() {
                             <div className={styles.stepNumber}>🔄</div>
                             <h3>Continuous Learning</h3>
                             <p>
-                                Agents improve over time by learning from interactions, feedback, and new data to become 
-                                more effective at achieving your objectives.
+                                Agents improve over time by learning from interactions, feedback, and new data to become more effective at
+                                achieving your objectives.
                             </p>
                         </div>
                     </div>
@@ -112,7 +112,7 @@ function AgentToolIntegrations() {
             description: 'Multimodal AI for text, vision, and advanced reasoning capabilities',
             category: 'AI Models'
         },
-        
+
         // Data & Research
         {
             name: 'Exa Search',
@@ -132,7 +132,7 @@ function AgentToolIntegrations() {
             description: 'Privacy-focused search API for real-time web information',
             category: 'Research'
         },
-        
+
         // Business Platforms
         {
             name: 'Salesforce',
@@ -152,7 +152,7 @@ function AgentToolIntegrations() {
             description: 'Email automation and intelligent message processing',
             category: 'Communication'
         },
-        
+
         // Development Tools
         {
             name: 'GitHub',
@@ -172,7 +172,7 @@ function AgentToolIntegrations() {
             description: 'Knowledge management and document automation',
             category: 'Productivity'
         },
-        
+
         // Design & Media
         {
             name: 'Figma',
@@ -186,7 +186,7 @@ function AgentToolIntegrations() {
             description: 'Video content analysis and media workflow integration',
             category: 'Media'
         },
-        
+
         // Infrastructure
         {
             name: 'Amazon S3',
@@ -218,20 +218,20 @@ function AgentToolIntegrations() {
                                     {integration.icon}
                                 </div>
                                 <h3 style={{ marginBottom: '0.5rem' }}>{integration.name}</h3>
-                                <div style={{ 
-                                    fontSize: '0.8rem', 
-                                    background: 'rgba(102, 126, 234, 0.1)', 
-                                    color: '#667eea',
-                                    padding: '0.25rem 0.75rem',
-                                    borderRadius: '1rem',
-                                    display: 'inline-block',
-                                    marginBottom: '1rem'
-                                }}>
+                                <div
+                                    style={{
+                                        fontSize: '0.8rem',
+                                        background: 'rgba(102, 126, 234, 0.1)',
+                                        color: '#667eea',
+                                        padding: '0.25rem 0.75rem',
+                                        borderRadius: '1rem',
+                                        display: 'inline-block',
+                                        marginBottom: '1rem'
+                                    }}
+                                >
                                     {integration.category}
                                 </div>
-                                <p style={{ fontSize: '0.9rem', lineHeight: '1.4' }}>
-                                    {integration.description}
-                                </p>
+                                <p style={{ fontSize: '0.9rem', lineHeight: '1.4' }}>{integration.description}</p>
                             </div>
                         </div>
                     ))}
@@ -559,7 +559,7 @@ export default function Agents(): JSX.Element {
                 description='Build intelligent AI agents that understand your needs, connect to your tools, and execute complex workflows autonomously.'
             >
                 <AgentsHero />
-                <UsingAnswerAISubmenu />
+                <UsingAnswerAgentAISubmenu />
                 <main>
                     <WhatIsAnAgent />
                     <AgentToolIntegrations />

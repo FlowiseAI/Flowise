@@ -1,5 +1,5 @@
 ---
-description: Learn how to manage visibility settings in AnswerAI
+description: Learn how to manage visibility settings in AnswerAgentAI
 ---
 
 # Visibility Settings
@@ -21,7 +21,7 @@ The component offers the following visibility options:
 
 1. **Private**: Only visible to the workflow creator
 2. **Organization**: Visible to all members of the creator's organization
-3. **AnswerAI**: Visible to AnswerAI users
+3. **AnswerAgentAI**: Visible to AnswerAgentAI users
 4. **Marketplace**: Available in the public marketplace
 5. **Browser Extension**: Accessible via browser extension
 

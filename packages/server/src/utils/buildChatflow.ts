@@ -67,6 +67,7 @@ import { OMIT_QUEUE_JOB_DATA } from './constants'
 import PlansService from '../services/plans'
 import { BILLING_CONFIG } from '../aai-utils/billing/config'
 import { Chat } from '../database/entities/Chat'
+import chatflowsService from '../services/chatflows'
 import { User } from '../database/entities/User'
 import checkOwnership from './checkOwnership'
 import { BillingService } from '../aai-utils/billing'
@@ -886,10 +887,8 @@ export const utilBuildChatflow = async (req: Request, isInternal: boolean = fals
     const appServer = getRunningExpressApp()
     const chatflowid = req.params.id
 
-    // Check if chatflow exists
-    const chatflow = await appServer.AppDataSource.getRepository(ChatFlow).findOneBy({
-        id: chatflowid
-    })
+    // Get chatflow with published version for predictions
+    const chatflow = await chatflowsService.getChatflowForPrediction(chatflowid)
     if (!chatflow) {
         throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Chatflow ${chatflowid} not found`)
     }

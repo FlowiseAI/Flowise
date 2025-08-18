@@ -111,7 +111,7 @@ export const ChatDetail = ({
                                 elevation={1}
                             >
                                 <Toolbar sx={{ px: '16px!important', gap: 1 }}>
-                                    <SidekickSelect sidekicks={sidekicks} />
+                                    <SidekickSelect sidekicks={sidekicks} variant='dropdown' />
                                     <Box
                                         sx={{
                                             flexGrow: 1,

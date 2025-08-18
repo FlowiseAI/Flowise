@@ -6,7 +6,7 @@ description: Cache LLM responses in local memory for improved performance
 
 ## Overview
 
-The InMemory Cache feature in AnswerAI allows you to store Language Model (LLM) responses in local memory. This caching mechanism improves performance by reducing the need for repeated API calls for identical prompts.
+The InMemory Cache feature in AnswerAgentAI allows you to store Language Model (LLM) responses in local memory. This caching mechanism improves performance by reducing the need for repeated API calls for identical prompts.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The InMemory Cache feature in AnswerAI allows you to store Language Model (LLM) 
 
 ## How to Use
 
-1. Add the InMemory Cache node to your AnswerAI workflow:
+1. Add the InMemory Cache node to your AnswerAgentAI workflow:
        <!-- TODO: Screenshot of adding InMemory Cache node to the workflow -->
     <figure><img src="/.gitbook/assets/screenshots/inmemorycache.png" alt="" /><figcaption><p>In Memory Cache &#x26; Drop UI</p></figcaption></figure>
 
@@ -54,7 +54,7 @@ The InMemory Cache feature in AnswerAI allows you to store Language Model (LLM) 
 
 1. Cached responses seem outdated:
 
-    - Remember that the InMemory Cache is cleared when the AnswerAI app is restarted.
+    - Remember that the InMemory Cache is cleared when the AnswerAgentAI app is restarted.
     - If you need to update cached responses, restart the application or implement a cache clearing mechanism.
 
 2. No performance improvement observed:
@@ -66,6 +66,6 @@ The InMemory Cache feature in AnswerAI allows you to store Language Model (LLM) 
     - Check if your prompt includes dynamic elements (e.g., timestamps, user-specific data) that might prevent proper caching.
     - Review your workflow to ensure the cache is being used as intended.
 
-Remember that the InMemory Cache is cleared when the AnswerAI app is restarted. For long-term persistence, consider using a database caching solution in addition to or instead of the InMemory Cache.
+Remember that the InMemory Cache is cleared when the AnswerAgentAI app is restarted. For long-term persistence, consider using a database caching solution in addition to or instead of the InMemory Cache.
 
-By leveraging the InMemory Cache feature, you can significantly enhance the performance and efficiency of your AnswerAI workflows, especially for frequently repeated queries or stable information retrieval tasks.
+By leveraging the InMemory Cache feature, you can significantly enhance the performance and efficiency of your AnswerAgentAI workflows, especially for frequently repeated queries or stable information retrieval tasks.

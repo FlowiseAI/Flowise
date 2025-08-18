@@ -6,7 +6,7 @@ description: Generate embeddings for text using MistralAI API
 
 ## Overview
 
-MistralAI Embeddings is a powerful feature in AnswerAI that allows you to generate vector representations (embeddings) of text using the MistralAI API. These embeddings can be used for various natural language processing tasks, such as semantic search, text classification, and more.
+MistralAI Embeddings is a powerful feature in AnswerAgentAI that allows you to generate vector representations (embeddings) of text using the MistralAI API. These embeddings can be used for various natural language processing tasks, such as semantic search, text classification, and more.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ MistralAI Embeddings is a powerful feature in AnswerAI that allows you to genera
 
 ## How to Use
 
-1. Add the MistralAI Embeddings node to your AnswerAI workflow.
+1. Add the MistralAI Embeddings node to your AnswerAgentAI workflow.
 
 <!-- TODO: Screenshot of adding MistralAI Embeddings node to the workflow -->
 <figure><img src="/.gitbook/assets/screenshots/mistralembeddings.png" alt="" /><figcaption><p> MistralAI Embeddings Node  &#x26; Drop UI</p></figcaption></figure>
@@ -62,4 +62,4 @@ MistralAI Embeddings is a powerful feature in AnswerAI that allows you to genera
 4. Embedding Quality:
     - If the embeddings are not producing expected results, experiment with different models or adjust the input text preprocessing (e.g., try with and without stripping new lines).
 
-Remember to respect MistralAI's usage policies and rate limits when using this feature. For any persistent issues, consult the AnswerAI support documentation or contact our support team.
+Remember to respect MistralAI's usage policies and rate limits when using this feature. For any persistent issues, consult the AnswerAgentAI support documentation or contact our support team.

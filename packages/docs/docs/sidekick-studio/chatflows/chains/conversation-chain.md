@@ -1,12 +1,12 @@
 ---
-description: Learn about the Conversation Chain, a fundamental building block for chatbots in AnswerAI
+description: Learn about the Conversation Chain, a fundamental building block for chatbots in AnswerAgentAI
 ---
 
 # Conversation Chain
 
 ## Overview
 
-The Conversation Chain is the most basic and versatile chain type for building chatbots in AnswerAI. It provides a simple yet powerful framework for creating interactive, conversational AI experiences. This chain is designed to maintain context throughout a conversation, making it suitable for a wide range of applications.
+The Conversation Chain is the most basic and versatile chain type for building chatbots in AnswerAgentAI. It provides a simple yet powerful framework for creating interactive, conversational AI experiences. This chain is designed to maintain context throughout a conversation, making it suitable for a wide range of applications.
 
 ## Key Benefits
 
@@ -65,4 +65,4 @@ Helps filter and moderate user inputs to ensure safe and appropriate interaction
 -   **Context Window Limitations**: Be mindful of the chosen model's context window size, as very long conversations may exceed these limits.
 -   **Potential for Inconsistency**: Without careful prompt engineering, the chatbot may sometimes provide inconsistent responses across long conversations.
 
-By leveraging the Conversation Chain, you can quickly develop functional and engaging chatbots for a wide array of applications. Its simplicity and flexibility make it an excellent starting point for many conversational AI projects in AnswerAI.
+By leveraging the Conversation Chain, you can quickly develop functional and engaging chatbots for a wide array of applications. Its simplicity and flexibility make it an excellent starting point for many conversational AI projects in AnswerAgentAI.

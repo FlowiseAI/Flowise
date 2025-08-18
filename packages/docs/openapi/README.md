@@ -1,6 +1,6 @@
 # OpenAPI Documentation
 
-This directory contains OpenAPI specification files for the AnswerAI API documentation.
+This directory contains OpenAPI specification files for the AnswerAgentAI API documentation.
 
 ## Directory Structure
 

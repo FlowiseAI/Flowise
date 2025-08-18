@@ -1,12 +1,12 @@
 ---
-description: Text Splitter Nodes in AnswerAI
+description: Text Splitter Nodes in AnswerAgentAI
 ---
 
 # Text Splitter Nodes
 
 ## Overview
 
-Text Splitter Nodes in AnswerAI are essential tools for processing and managing large volumes of text data. These nodes allow you to break down long pieces of text into smaller, more manageable chunks while preserving semantic relationships. This process is crucial for various natural language processing tasks and for optimizing the performance of language models.
+Text Splitter Nodes in AnswerAgentAI are essential tools for processing and managing large volumes of text data. These nodes allow you to break down long pieces of text into smaller, more manageable chunks while preserving semantic relationships. This process is crucial for various natural language processing tasks and for optimizing the performance of language models.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ Text Splitter Nodes in AnswerAI are essential tools for processing and managing 
 
 ## Available Text Splitter Nodes
 
-AnswerAI offers several Text Splitter Nodes, each designed for specific use cases. Here's a brief explanation of each Text Splitter Node and when to use them:
+AnswerAgentAI offers several Text Splitter Nodes, each designed for specific use cases. Here's a brief explanation of each Text Splitter Node and when to use them:
 
 1. [Character Text Splitter](character-text-splitter.md):
 

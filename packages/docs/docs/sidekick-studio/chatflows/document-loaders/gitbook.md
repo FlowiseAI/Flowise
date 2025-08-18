@@ -6,7 +6,7 @@ description: Load and process documentation from GitBook
 
 ## Overview
 
-The GitBook Document Loader is a powerful feature in AnswerAI that allows you to import and process documentation from GitBook websites. This tool is particularly useful for organizations that use GitBook for their documentation and want to integrate it into their AnswerAI workflows.
+The GitBook Document Loader is a powerful feature in AnswerAgentAI that allows you to import and process documentation from GitBook websites. This tool is particularly useful for organizations that use GitBook for their documentation and want to integrate it into their AnswerAgentAI workflows.
 
 ## Key Benefits
 
@@ -16,9 +16,9 @@ The GitBook Document Loader is a powerful feature in AnswerAI that allows you to
 
 ## How to Use
 
-1. In the AnswerAI interface, locate and select the "GitBook" option from the Document Loaders category.
+1. In the AnswerAgentAI interface, locate and select the "GitBook" option from the Document Loaders category.
 
-<!-- TODO: Screenshot of the GitBook loader in the AnswerAI interface -->
+<!-- TODO: Screenshot of the GitBook loader in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/gitbookloader.png" alt="" /><figcaption><p> Gitbook Loader &#x26; Drop UI</p></figcaption></figure>
 
 2. Configure the GitBook loader with the following settings:
@@ -62,4 +62,4 @@ The GitBook Document Loader is a powerful feature in AnswerAI that allows you to
 3. **Issue**: Imported content is missing expected metadata
    **Solution**: Review your Omit Metadata Keys settings to ensure you haven't accidentally excluded important metadata fields.
 
-By using the GitBook Document Loader, you can easily integrate your existing GitBook documentation into AnswerAI, enhancing your ability to process and analyze your content effectively.
+By using the GitBook Document Loader, you can easily integrate your existing GitBook documentation into AnswerAgentAI, enhancing your ability to process and analyze your content effectively.

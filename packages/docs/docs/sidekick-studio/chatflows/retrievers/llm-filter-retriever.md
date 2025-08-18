@@ -12,11 +12,11 @@ The LLM Filter Retriever is an advanced retrieval node that enhances the documen
 
 -   Improves retrieval accuracy by filtering out irrelevant content
 -   Reduces noise in retrieved documents, focusing on query-relevant information
--   Enhances the quality of input for downstream tasks in your AnswerAI workflow
+-   Enhances the quality of input for downstream tasks in your AnswerAgentAI workflow
 
 ## How to Use
 
-1. Add the LLM Filter Retriever node to your AnswerAI canvas.
+1. Add the LLM Filter Retriever node to your AnswerAgentAI canvas.
 2. Connect a Vector Store Retriever to the "Vector Store Retriever" input.
 3. Connect a Language Model to the "Language Model" input.
 4. (Optional) Provide a specific query in the "Query" input field.

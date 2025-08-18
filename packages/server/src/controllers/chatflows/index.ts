@@ -56,8 +56,29 @@ const getAllChatflows = async (req: Request, res: Response, next: NextFunction) 
         if (!userId) {
             return res.status(401).send('Unauthorized')
         }
+
         const filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter as string)) : undefined
+
         const apiResponse = await chatflowsService.getAllChatflows(req.user, req.query?.type as ChatflowType, {
+            ...res.locals.filter,
+            ...filter
+        })
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getAdminChatflows = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.id
+        if (!userId) {
+            return res.status(401).send('Unauthorized')
+        }
+
+        const filter = req.query.filter ? JSON.parse(decodeURIComponent(req.query.filter as string)) : undefined
+
+        const apiResponse = await chatflowsService.getAdminChatflows(req.user, req.query?.type as ChatflowType, {
             ...res.locals.filter,
             ...filter
         })
@@ -246,6 +267,82 @@ const getSinglePublicChatbotConfig = async (req: Request, res: Response, next: N
     }
 }
 
+const getDefaultChatflowTemplate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const apiResponse = await chatflowsService.getDefaultChatflowTemplate(req.user!)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const bulkUpdateChatflows = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { chatflowIds } = req.body
+        if (!Array.isArray(chatflowIds) || chatflowIds.length === 0) {
+            return res.status(400).json({ error: 'chatflowIds must be a non-empty array' })
+        }
+
+        const apiResponse = await chatflowsService.bulkUpdateChatflows(chatflowIds, req.user!)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getChatflowVersions = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params === 'undefined' || !req.params.id) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.getChatflowVersions - id not provided!`)
+        }
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsRouter.getChatflowVersions - Unauthorized!`)
+        }
+
+        const apiResponse = await chatflowsService.getChatflowVersions(req.params.id, req.user)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const getChatflowVersion = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params === 'undefined' || !req.params.id) {
+            throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: chatflowsRouter.getChatflowVersion - id not provided!`)
+        }
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsRouter.getChatflowVersion - Unauthorized!`)
+        }
+
+        const version = req.params.version ? parseInt(req.params.version) : undefined
+        const apiResponse = await chatflowsService.getChatflowVersion(req.params.id, version, req.user)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
+const rollbackChatflowToVersion = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (typeof req.params === 'undefined' || !req.params.id || !req.params.version) {
+            throw new InternalFlowiseError(
+                StatusCodes.PRECONDITION_FAILED,
+                `Error: chatflowsRouter.rollbackChatflowToVersion - id or version not provided!`
+            )
+        }
+        if (!req.user) {
+            throw new InternalFlowiseError(StatusCodes.UNAUTHORIZED, `Error: chatflowsRouter.rollbackChatflowToVersion - Unauthorized!`)
+        }
+
+        const version = parseInt(req.params.version)
+        const apiResponse = await chatflowsService.rollbackChatflowToVersion(req.params.id, version, req.user)
+        return res.json(apiResponse)
+    } catch (error) {
+        next(error)
+    }
+}
+
 export default {
     checkIfChatflowIsValidForStreaming,
     checkIfChatflowIsValidForUploads,
@@ -257,5 +354,11 @@ export default {
     importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
-    getSinglePublicChatbotConfig
+    getSinglePublicChatbotConfig,
+    getAdminChatflows,
+    getDefaultChatflowTemplate,
+    bulkUpdateChatflows,
+    getChatflowVersions,
+    getChatflowVersion,
+    rollbackChatflowToVersion
 }

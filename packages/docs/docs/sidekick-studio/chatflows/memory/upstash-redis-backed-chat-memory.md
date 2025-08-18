@@ -6,7 +6,7 @@ description: Summarizes the conversation and stores the memory in Upstash Redis 
 
 ## Overview
 
-The Upstash Redis-Backed Chat Memory is a powerful feature in AnswerAI that allows you to store and retrieve conversation history using Upstash Redis. This memory solution provides persistent storage for chat messages, enabling long-term memory capabilities for your AI applications.
+The Upstash Redis-Backed Chat Memory is a powerful feature in AnswerAgentAI that allows you to store and retrieve conversation history using Upstash Redis. This memory solution provides persistent storage for chat messages, enabling long-term memory capabilities for your AI applications.
 
 ## Key Benefits
 
@@ -16,7 +16,7 @@ The Upstash Redis-Backed Chat Memory is a powerful feature in AnswerAI that allo
 
 ## How to Use
 
-1. Add the Upstash Redis-Backed Chat Memory node to your AnswerAI workflow canvas.
+1. Add the Upstash Redis-Backed Chat Memory node to your AnswerAgentAI workflow canvas.
 
 <!-- TODO: Screenshot of adding the Upstash Redis-Backed Chat Memory node to the canvas -->
 <figure><img src="/.gitbook/assets/screenshots/upstashmemorynode.png" alt="" /><figcaption><p> Upstash Redis-Backed Chat Memory Node Configuration &#x26; Drop UI</p></figcaption></figure>

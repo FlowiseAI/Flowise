@@ -1,24 +1,24 @@
 ---
-description: Load and process data from DOCX files in AnswerAI
+description: Load and process data from DOCX files in AnswerAgentAI
 ---
 
 # Docx File Loader
 
 ## Overview
 
-The Docx File Loader is a powerful feature in AnswerAI that allows you to extract and process content from Microsoft Word (.docx) files. This tool is essential for users who need to work with document-based data in their AI workflows.
+The Docx File Loader is a powerful feature in AnswerAgentAI that allows you to extract and process content from Microsoft Word (.docx) files. This tool is essential for users who need to work with document-based data in their AI workflows.
 
 ## Key Benefits
 
--   Easily import content from .docx files into your AnswerAI projects
+-   Easily import content from .docx files into your AnswerAgentAI projects
 -   Process and split large documents for more efficient handling
 -   Add custom metadata to enhance document organization and searchability
 
 ## How to Use
 
-1. In the AnswerAI interface, locate and select the "Docx File" node from the "Document Loaders" category.
+1. In the AnswerAgentAI interface, locate and select the "Docx File" node from the "Document Loaders" category.
 
-<!-- TODO: Screenshot of the Docx File node in the AnswerAI interface -->
+<!-- TODO: Screenshot of the Docx File node in the AnswerAgentAI interface -->
 <figure><img src="/.gitbook/assets/screenshots/docxfileloader.png" alt="" /><figcaption><p> Docx File Loader  &#x26; Drop UI</p></figcaption></figure>
 
 2. Configure the node by setting the following parameters:
@@ -56,4 +56,4 @@ The Docx File Loader is a powerful feature in AnswerAI that allows you to extrac
 <!-- TODO: Screenshot showing a sample workflow with the Docx File Loader connected to other nodes -->
 <figure><img src="/.gitbook/assets/screenshots/docxfileinaworkflow.png" alt="" /><figcaption><p> Docx File Loader In a Workflow &#x26; Drop UI</p></figcaption></figure>
 
-By mastering the Docx File Loader, you can efficiently incorporate document-based data into your AnswerAI projects, opening up new possibilities for document analysis and processing in your AI workflows.
+By mastering the Docx File Loader, you can efficiently incorporate document-based data into your AnswerAgentAI projects, opening up new possibilities for document analysis and processing in your AI workflows.

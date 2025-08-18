@@ -17,3 +17,54 @@ hola:
     label: Hola
     permalink: /hola
     description: Hola tag description
+
+# Custom tags used by our blog posts
+release:
+    label: Release
+    permalink: /release
+    description: Release announcements and notes
+
+alpha:
+    label: Alpha
+    permalink: /alpha
+    description: Alpha program updates
+
+platform:
+    label: Platform
+    permalink: /platform
+    description: Platform-level updates and architecture
+
+development:
+    label: Development
+    permalink: /development
+    description: Engineering updates and dev logs
+
+decentralization:
+    label: Decentralization
+    permalink: /decentralization
+    description: Decentralization principles and technology
+
+local-first:
+    label: Local-first
+    permalink: /local-first
+    description: Local-first computing and privacy
+
+manifesto:
+    label: Manifesto
+    permalink: /manifesto
+    description: Vision and principles
+
+vision:
+    label: Vision
+    permalink: /vision
+    description: Strategic vision
+
+philosophy:
+    label: Philosophy
+    permalink: /philosophy
+    description: Product and ethics philosophy
+
+ai-ethics:
+    label: AI Ethics
+    permalink: /ai-ethics
+    description: AI ethics and responsible AI

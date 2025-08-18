@@ -135,14 +135,29 @@ const SourceDocumentModal: React.FC<ModalProps> = ({ documents, onClose }) => {
                                                     if (node.children[0].tagName === 'img') {
                                                         const image = node.children[0]
                                                         const metastring = image.properties.alt
-                                                        const alt = metastring?.replace(/ *\{[^)]*\} */g, '')
-                                                        const metaWidth = metastring.match(/{([^}]+)x/)
-                                                        const metaHeight = metastring.match(/x([^}]+)}/)
+                                                        // Fix regex vulnerabilities by using string manipulation instead of regex
+                                                        const safeMeta = metastring?.slice(0, 1000) || '' // Limit length to prevent DoS
+                                                        // Remove metadata patterns by finding and removing {...} blocks safely
+                                                        let alt = safeMeta
+                                                        let startIndex = alt.indexOf('{')
+                                                        while (startIndex !== -1) {
+                                                            const endIndex = alt.indexOf('}', startIndex)
+                                                            if (endIndex !== -1) {
+                                                                alt = alt.slice(0, startIndex) + alt.slice(endIndex + 1)
+                                                                startIndex = alt.indexOf('{', startIndex)
+                                                            } else {
+                                                                break
+                                                            }
+                                                        }
+                                                        alt = alt.trim()
+                                                        const metaWidth = safeMeta.match(/\{([^}]{1,10})x/)
+                                                        const metaHeight = safeMeta.match(/x([^}]{1,10})\}/)
                                                         const width = metaWidth ? metaWidth[1] : undefined
                                                         const height = metaHeight ? metaHeight[1] : undefined
-                                                        const isPriority = metastring?.toLowerCase().match('{priority}')
-                                                        const hasCaption = metastring?.toLowerCase().includes('{caption:')
-                                                        const caption = metastring?.match(/{caption: (.*?)}/)?.pop()
+                                                        const isPriority = safeMeta.toLowerCase().includes('{priority}')
+                                                        const hasCaption = safeMeta.toLowerCase().includes('{caption:')
+                                                        const captionMatch = safeMeta.match(/\{caption:\s*([^}]{0,200})\}/)
+                                                        const caption = captionMatch ? captionMatch[1].trim() : undefined
 
                                                         return (
                                                             <Box

@@ -1,10 +1,10 @@
 ---
-description: Prompt Templates in AnswerAI
+description: Prompt Templates in AnswerAgentAI
 ---
 
 # Prompts
 
-Prompt template nodes in AnswerAI help translate user input and parameters into instructions for language models. They guide the model's response, helping it understand the context and generate relevant and coherent language-based output.
+Prompt template nodes in AnswerAgentAI help translate user input and parameters into instructions for language models. They guide the model's response, helping it understand the context and generate relevant and coherent language-based output.
 
 ## Best Practices for Prompt Engineering
 
@@ -25,7 +25,7 @@ Prompt template nodes in AnswerAI help translate user input and parameters into 
 
 ## Using Templates
 
-Templates in AnswerAI allow you to create reusable prompt structures. Here are some tips for effective template use:
+Templates in AnswerAgentAI allow you to create reusable prompt structures. Here are some tips for effective template use:
 
 1. Identify common patterns: Create templates for frequently used prompt structures.
 2. Use variables: Incorporate placeholders for dynamic content in your templates.
@@ -53,7 +53,7 @@ The Prompt Template node is a versatile tool for creating custom prompts with va
 
 [Learn more about Prompt Template](prompt-template.md)
 
-<!-- TODO: Add a screenshot showing the Prompt Nodes in the AnswerAI canvas -->
+<!-- TODO: Add a screenshot showing the Prompt Nodes in the AnswerAgentAI canvas -->
 <figure><img src="/.gitbook/assets/screenshots/promptnodes.png" alt="" /><figcaption><p> Prompt Nodes &#x26; Drop UI</p></figcaption></figure>
 
-By mastering these prompt template nodes and following the best practices for prompt engineering, you can create more effective and efficient workflows in AnswerAI. Remember to iterate and refine your prompts based on the results you achieve, and don't hesitate to experiment with different approaches to find the most suitable solution for your specific use case.
+By mastering these prompt template nodes and following the best practices for prompt engineering, you can create more effective and efficient workflows in AnswerAgentAI. Remember to iterate and refine your prompts based on the results you achieve, and don't hesitate to experiment with different approaches to find the most suitable solution for your specific use case.
