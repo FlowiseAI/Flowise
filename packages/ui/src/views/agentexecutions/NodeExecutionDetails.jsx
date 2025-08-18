@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
+import axios from 'axios'
 
 // MUI
 import {
@@ -24,7 +25,7 @@ import {
 } from '@mui/material'
 import { useTheme, darken } from '@mui/material/styles'
 import { useSnackbar } from 'notistack'
-import { IconCoins, IconClock, IconChevronDown } from '@tabler/icons-react'
+import { IconCoins, IconClock, IconChevronDown, IconDownload, IconTool } from '@tabler/icons-react'
 import toolSVG from '@/assets/images/tool.svg'
 
 // Project imports
@@ -34,6 +35,7 @@ import { AGENTFLOW_ICONS, baseURL } from '@/store/constant'
 import { JSONViewer } from '@/ui-component/json/JsonViewer'
 import ReactJson from 'flowise-react-json-view'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
+import SourceDocDialog from '@/ui-component/dialog/SourceDocDialog'
 
 import predictionApi from '@/api/prediction'
 
@@ -44,6 +46,8 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
     const [feedbackType, setFeedbackType] = useState('')
     const [isLoading, setIsLoading] = useState(false)
     const [loadingMessage, setLoadingMessage] = useState('')
+    const [sourceDialogOpen, setSourceDialogOpen] = useState(false)
+    const [sourceDialogProps, setSourceDialogProps] = useState({})
     const customization = useSelector((state) => state.customization)
     const theme = useTheme()
     const { enqueueSnackbar } = useSnackbar()
@@ -160,11 +164,36 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
         }
     }
 
+    const onUsedToolClick = (data, title) => {
+        setSourceDialogProps({ data, title })
+        setSourceDialogOpen(true)
+    }
+
     const handleSubmitFeedback = () => {
         onSubmitResponse(feedbackType, feedback)
         setOpenFeedbackDialog(false)
         setFeedback('')
         setFeedbackType('')
+    }
+
+    const downloadFile = async (fileAnnotation) => {
+        try {
+            const response = await axios.post(
+                `${baseURL}/api/v1/openai-assistants-file/download`,
+                { fileName: fileAnnotation.fileName, chatflowId: metadata?.agentflowId, chatId: metadata?.sessionId },
+                { responseType: 'blob' }
+            )
+            const blob = new Blob([response.data], { type: response.headers['content-type'] })
+            const downloadUrl = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = downloadUrl
+            link.download = fileAnnotation.fileName
+            document.body.appendChild(link)
+            link.click()
+            link.remove()
+        } catch (error) {
+            console.error('Download failed:', error)
+        }
     }
 
     const renderFullfilledConditions = (conditions) => {
@@ -661,6 +690,35 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                         </Typography>
                                     </Box>
                                 )}
+                                {message.additional_kwargs?.usedTools && message.additional_kwargs.usedTools.length > 0 && (
+                                    <div
+                                        style={{
+                                            display: 'block',
+                                            flexDirection: 'row',
+                                            width: '100%',
+                                            marginTop: '10px'
+                                        }}
+                                    >
+                                        {message.additional_kwargs.usedTools.map((tool, index) => {
+                                            return tool ? (
+                                                <Chip
+                                                    size='small'
+                                                    key={index}
+                                                    label={tool.tool}
+                                                    sx={{
+                                                        mr: 1,
+                                                        mt: 1,
+                                                        borderColor: tool.error ? 'error.main' : undefined,
+                                                        color: tool.error ? 'error.main' : undefined
+                                                    }}
+                                                    variant='outlined'
+                                                    icon={<IconTool size={15} color={tool.error ? theme.palette.error.main : undefined} />}
+                                                    onClick={() => onUsedToolClick(tool, 'Used Tools')}
+                                                />
+                                            ) : null
+                                        })}
+                                    </div>
+                                )}
                                 {message.additional_kwargs?.artifacts && message.additional_kwargs.artifacts.length > 0 && (
                                     <Box sx={{ mt: 2, mb: 1 }}>
                                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -691,7 +749,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                                                           )}`
                                                                         : artifact.data
                                                                 }
-                                                                sx={{ height: 'auto', maxHeight: '500px' }}
+                                                                sx={{ height: 'auto', maxHeight: '500px', objectFit: 'contain' }}
                                                                 alt={`artifact-${artifactIndex}`}
                                                             />
                                                         </Card>
@@ -797,6 +855,36 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                         return <MemoizedReactMarkdown>{`*No data*`}</MemoizedReactMarkdown>
                                     }
                                 })()}
+                                {message.additional_kwargs?.fileAnnotations && message.additional_kwargs.fileAnnotations.length > 0 && (
+                                    <div
+                                        style={{
+                                            display: 'block',
+                                            flexDirection: 'row',
+                                            width: '100%',
+                                            marginTop: '16px',
+                                            marginBottom: '8px'
+                                        }}
+                                    >
+                                        {message.additional_kwargs.fileAnnotations.map((fileAnnotation, index) => {
+                                            return (
+                                                <Button
+                                                    sx={{
+                                                        fontSize: '0.85rem',
+                                                        textTransform: 'none',
+                                                        mb: 1,
+                                                        mr: 1
+                                                    }}
+                                                    key={index}
+                                                    variant='outlined'
+                                                    onClick={() => downloadFile(fileAnnotation)}
+                                                    endIcon={<IconDownload color={theme.palette.primary.main} />}
+                                                >
+                                                    {fileAnnotation.fileName}
+                                                </Button>
+                                            )
+                                        })}
+                                    </div>
+                                )}
                             </Box>
                         ))
                     ) : data?.input?.form || data?.input?.http || data?.input?.conditions ? (
@@ -862,6 +950,106 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                 backgroundColor: theme.palette.background.default
                             }}
                         >
+                            {data.output?.usedTools && data.output.usedTools.length > 0 && (
+                                <div
+                                    style={{
+                                        display: 'block',
+                                        flexDirection: 'row',
+                                        width: '100%'
+                                    }}
+                                >
+                                    {data.output.usedTools.map((tool, index) => {
+                                        return tool ? (
+                                            <Chip
+                                                size='small'
+                                                key={index}
+                                                label={tool.tool}
+                                                sx={{
+                                                    mr: 1,
+                                                    mt: 1,
+                                                    borderColor: tool.error ? 'error.main' : undefined,
+                                                    color: tool.error ? 'error.main' : undefined
+                                                }}
+                                                variant='outlined'
+                                                icon={<IconTool size={15} color={tool.error ? theme.palette.error.main : undefined} />}
+                                                onClick={() => onUsedToolClick(tool, 'Used Tools')}
+                                            />
+                                        ) : null
+                                    })}
+                                </div>
+                            )}
+                            {data.output?.artifacts && data.output.artifacts.length > 0 && (
+                                <Box sx={{ mt: 2, mb: 1 }}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        {data.output.artifacts.map((artifact, artifactIndex) => {
+                                            if (artifact.type === 'png' || artifact.type === 'jpeg' || artifact.type === 'jpg') {
+                                                return (
+                                                    <Card
+                                                        key={`artifact-${artifactIndex}`}
+                                                        sx={{
+                                                            p: 0,
+                                                            m: 0,
+                                                            flex: '0 0 auto',
+                                                            border: 1,
+                                                            borderColor: 'divider',
+                                                            borderRadius: 1,
+                                                            overflow: 'hidden'
+                                                        }}
+                                                    >
+                                                        <CardMedia
+                                                            component='img'
+                                                            image={
+                                                                artifact.data.startsWith('FILE-STORAGE::')
+                                                                    ? `${baseURL}/api/v1/get-upload-file?chatflowId=${
+                                                                          metadata?.agentflowId
+                                                                      }&chatId=${metadata?.sessionId}&fileName=${artifact.data.replace(
+                                                                          'FILE-STORAGE::',
+                                                                          ''
+                                                                      )}`
+                                                                    : artifact.data
+                                                            }
+                                                            sx={{ height: 'auto', maxHeight: '500px', objectFit: 'contain' }}
+                                                            alt={`artifact-${artifactIndex}`}
+                                                        />
+                                                    </Card>
+                                                )
+                                            } else if (artifact.type === 'html') {
+                                                return (
+                                                    <Box
+                                                        key={`artifact-${artifactIndex}`}
+                                                        sx={{
+                                                            mt: 1,
+                                                            border: 1,
+                                                            borderColor: 'divider',
+                                                            borderRadius: 1,
+                                                            p: 2,
+                                                            backgroundColor: theme.palette.background.paper
+                                                        }}
+                                                    >
+                                                        <SafeHTML html={artifact.data} />
+                                                    </Box>
+                                                )
+                                            } else {
+                                                return (
+                                                    <Box
+                                                        key={`artifact-${artifactIndex}`}
+                                                        sx={{
+                                                            mt: 1,
+                                                            border: 1,
+                                                            borderColor: 'divider',
+                                                            borderRadius: 1,
+                                                            p: 2,
+                                                            backgroundColor: theme.palette.background.paper
+                                                        }}
+                                                    >
+                                                        <MemoizedReactMarkdown>{artifact.data}</MemoizedReactMarkdown>
+                                                    </Box>
+                                                )
+                                            }
+                                        })}
+                                    </Box>
+                                </Box>
+                            )}
                             {(() => {
                                 // Check if the content is a stringified JSON or array
                                 if (data?.output?.content) {
@@ -882,6 +1070,36 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                                     return <MemoizedReactMarkdown>{`*No data*`}</MemoizedReactMarkdown>
                                 }
                             })()}
+                            {data.output?.fileAnnotations && data.output.fileAnnotations.length > 0 && (
+                                <div
+                                    style={{
+                                        display: 'block',
+                                        flexDirection: 'row',
+                                        width: '100%',
+                                        marginTop: '16px',
+                                        marginBottom: '8px'
+                                    }}
+                                >
+                                    {data.output.fileAnnotations.map((fileAnnotation, index) => {
+                                        return (
+                                            <Button
+                                                sx={{
+                                                    fontSize: '0.85rem',
+                                                    textTransform: 'none',
+                                                    mb: 1,
+                                                    mr: 1
+                                                }}
+                                                key={index}
+                                                variant='outlined'
+                                                onClick={() => downloadFile(fileAnnotation)}
+                                                endIcon={<IconDownload color={theme.palette.primary.main} />}
+                                            >
+                                                {fileAnnotation.fileName}
+                                            </Button>
+                                        )
+                                    })}
+                                </div>
+                            )}
                         </Box>
                     )}
                     {data.error && (
@@ -1020,6 +1238,7 @@ export const NodeExecutionDetails = ({ data, label, status, metadata, isPublic, 
                     </Dialog>
                 </>
             )}
+            <SourceDocDialog show={sourceDialogOpen} dialogProps={sourceDialogProps} onCancel={() => setSourceDialogOpen(false)} />
         </Box>
     )
 }

@@ -35,7 +35,7 @@ class RequestsGet_Tools implements INode {
         this.icon = 'get.png'
         this.category = 'Tools'
         this.description = 'Execute HTTP GET requests'
-        this.baseClasses = [this.type, ...getBaseClasses(RequestsGetTool)]
+        this.baseClasses = [this.type, ...getBaseClasses(RequestsGetTool), 'Tool']
         this.inputs = [
             {
                 label: 'URL',

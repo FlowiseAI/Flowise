@@ -26,6 +26,7 @@ import marketplacesService from '../marketplaces'
 import toolsService from '../tools'
 import variableService from '../variables'
 import { Platform } from '../../Interface'
+import { sanitizeNullBytes } from '../../utils/sanitize.util'
 
 type ExportInput = {
     agentflow: boolean
@@ -752,6 +753,8 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
                 importData.Variable = insertWorkspaceId(importData.Variable, activeWorkspaceId)
                 importData = await replaceDuplicateIdsForVariable(queryRunner, importData, importData.Variable)
             }
+
+            importData = sanitizeNullBytes(importData)
 
             await queryRunner.startTransaction()
 
