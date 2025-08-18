@@ -38,6 +38,9 @@ import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorTo
 import { FixErrorsColumnInEvaluationRun1746437114935 } from './1746437114935-FixErrorsColumnInEvaluationRun'
 import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-ModifyExecutionDataColumnType'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
+import { AddFlowHistoryEntity1750000000000 } from './1750000000000-AddFlowHistoryEntity'
+import { AddCurrentHistoryVersion1750000000001 } from './1750000000001-AddCurrentHistoryVersion'
+import { AddAssistantHistoryVersion1750000000002 } from './1750000000002-AddAssistantHistoryVersion'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mysql/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/mysql/1720230151484-AddWorkspace'
@@ -102,5 +105,8 @@ export const mysqlMigrations = [
     FixErrorsColumnInEvaluationRun1746437114935,
     ExecutionLinkWorkspaceId1746862866554,
     ModifyExecutionDataColumnType1747902489801,
-    ModifyChatflowType1755066758601
+    ModifyChatflowType1755066758601,
+    AddFlowHistoryEntity1750000000000,
+    AddCurrentHistoryVersion1750000000001,
+    AddAssistantHistoryVersion1750000000002
 ]
