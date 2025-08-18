@@ -1,7 +1,7 @@
 import { Tool } from '@langchain/core/tools'
 import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../../src/Interface'
 import { getNodeModulesPackagePath } from '../../../../src/utils'
-import { MCPToolkit } from '../core'
+import { MCPToolkit, validateArgsForLocalFileAccess } from '../core'
 
 class Supergateway_MCP implements INode {
     label: string
@@ -90,21 +90,28 @@ class Supergateway_MCP implements INode {
         const _args = nodeData.inputs?.arguments as string
         const packagePath = getNodeModulesPackagePath('supergateway/dist/index.js')
 
+        const processedArgs = _args
+            .trim()
+            .split(/\s+/)
+            .map((arg) => {
+                // Remove surrounding double or single quotes if they exist
+                if ((arg.startsWith('"') && arg.endsWith('"')) || (arg.startsWith("'") && arg.endsWith("'"))) {
+                    return arg.slice(1, -1)
+                }
+                return arg
+            })
+
         const serverParams = {
             command: 'node',
-            args: [
-                packagePath,
-                ..._args
-                    .trim()
-                    .split(/\s+/)
-                    .map((arg) => {
-                        // Remove surrounding double or single quotes if they exist
-                        if ((arg.startsWith('"') && arg.endsWith('"')) || (arg.startsWith("'") && arg.endsWith("'"))) {
-                            return arg.slice(1, -1)
-                        }
-                        return arg
-                    })
-            ]
+            args: [packagePath, ...processedArgs]
+        }
+
+        if (process.env.CUSTOM_MCP_SECURITY_CHECK === 'true') {
+            try {
+                validateArgsForLocalFileAccess(processedArgs)
+            } catch (error) {
+                throw new Error(`Security validation failed: ${error.message}`)
+            }
         }
 
         const toolkit = new MCPToolkit(serverParams, 'stdio')

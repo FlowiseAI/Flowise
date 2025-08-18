@@ -1,14 +1,15 @@
-import { omit } from 'lodash'
-import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
 import {
     Browser,
     Page,
     PlaywrightWebBaseLoader,
     PlaywrightWebBaseLoaderOptions
 } from '@langchain/community/document_loaders/web/playwright'
+import { Document } from '@langchain/core/documents'
+import { TextSplitter } from 'langchain/text_splitter'
 import { test } from 'linkifyjs'
+import { omit } from 'lodash'
 import { handleEscapeCharacters, INodeOutputsValue, webCrawl, xmlScrape } from '../../../src'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 
 class Playwright_DocumentLoaders implements INode {
     label: string
@@ -114,6 +115,14 @@ class Playwright_DocumentLoaders implements INode {
                 description: 'CSS selectors like .div or #div'
             },
             {
+                label: 'CSS Selector (Optional)',
+                name: 'cssSelector',
+                type: 'string',
+                description: 'Only content inside this selector will be extracted. Leave empty to use the entire page body.',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -155,8 +164,14 @@ class Playwright_DocumentLoaders implements INode {
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
         const selectedLinks = nodeData.inputs?.selectedLinks as string[]
         let limit = parseInt(nodeData.inputs?.limit as string)
-        let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as 'load' | 'domcontentloaded' | 'networkidle' | 'commit' | undefined
-        let waitForSelector = nodeData.inputs?.waitForSelector as string
+        const waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as
+            | 'load'
+            | 'domcontentloaded'
+            | 'networkidle'
+            | 'commit'
+            | undefined
+        const waitForSelector = nodeData.inputs?.waitForSelector as string
+        const cssSelector = nodeData.inputs?.cssSelector as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
         const orgId = options.orgId
@@ -172,13 +187,14 @@ class Playwright_DocumentLoaders implements INode {
             throw new Error('Invalid URL')
         }
 
-        async function playwrightLoader(url: string): Promise<any> {
+        async function playwrightLoader(url: string): Promise<Document[] | undefined> {
             try {
                 let docs = []
                 const config: PlaywrightWebBaseLoaderOptions = {
                     launchOptions: {
                         args: ['--no-sandbox'],
-                        headless: true
+                        headless: true,
+                        executablePath: process.env.PLAYWRIGHT_EXECUTABLE_FILE_PATH
                     }
                 }
                 if (waitUntilGoToOption) {
@@ -186,12 +202,22 @@ class Playwright_DocumentLoaders implements INode {
                         waitUntil: waitUntilGoToOption
                     }
                 }
-                if (waitForSelector) {
+                if (cssSelector || waitForSelector) {
                     config['evaluate'] = async (page: Page, _: Browser): Promise<string> => {
-                        await page.waitForSelector(waitForSelector)
+                        if (waitForSelector) {
+                            await page.waitForSelector(waitForSelector)
+                        }
 
-                        const result = await page.evaluate(() => document.body.innerHTML)
-                        return result
+                        if (cssSelector) {
+                            const selectorHandle = await page.$(cssSelector)
+                            const result = await page.evaluate(
+                                (htmlSelection) => htmlSelection?.innerHTML ?? document.body.innerHTML,
+                                selectorHandle
+                            )
+                            return result
+                        } else {
+                            return await page.evaluate(() => document.body.innerHTML)
+                        }
                     }
                 }
                 const loader = new PlaywrightWebBaseLoader(url, config)
@@ -208,7 +234,7 @@ class Playwright_DocumentLoaders implements INode {
             }
         }
 
-        let docs: IDocument[] = []
+        let docs: Document[] = []
         if (relativeLinksMethod) {
             if (process.env.DEBUG === 'true') options.logger.info(`[${orgId}]: Start PlaywrightWebBaseLoader ${relativeLinksMethod}`)
             // if limit is 0 we don't want it to default to 10 so we check explicitly for null or undefined
@@ -225,7 +251,10 @@ class Playwright_DocumentLoaders implements INode {
                 options.logger.info(`[${orgId}]: PlaywrightWebBaseLoader pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
-                docs.push(...(await playwrightLoader(page)))
+                const result = await playwrightLoader(page)
+                if (result) {
+                    docs.push(...result)
+                }
             }
             if (process.env.DEBUG === 'true') options.logger.info(`[${orgId}]: Finish PlaywrightWebBaseLoader ${relativeLinksMethod}`)
         } else if (selectedLinks && selectedLinks.length > 0) {
@@ -234,10 +263,16 @@ class Playwright_DocumentLoaders implements INode {
                     `[${orgId}]: PlaywrightWebBaseLoader pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`
                 )
             for (const page of selectedLinks.slice(0, limit)) {
-                docs.push(...(await playwrightLoader(page)))
+                const result = await playwrightLoader(page)
+                if (result) {
+                    docs.push(...result)
+                }
             }
         } else {
-            docs = await playwrightLoader(url)
+            const result = await playwrightLoader(url)
+            if (result) {
+                docs.push(...result)
+            }
         }
 
         if (metadata) {

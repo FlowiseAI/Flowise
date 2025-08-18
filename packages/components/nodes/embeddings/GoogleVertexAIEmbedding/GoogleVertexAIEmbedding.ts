@@ -4,6 +4,25 @@ import { ICommonObject, INode, INodeData, INodeOptionsValue, INodeParams } from 
 import { MODEL_TYPE, getModels, getRegions } from '../../../src/modelLoader'
 import { getBaseClasses } from '../../../src/utils'
 
+class VertexAIEmbeddingsWithStripNewLines extends VertexAIEmbeddings {
+    stripNewLines: boolean
+
+    constructor(params: GoogleVertexAIEmbeddingsInput & { stripNewLines?: boolean }) {
+        super(params)
+        this.stripNewLines = params.stripNewLines ?? false
+    }
+
+    async embedDocuments(texts: string[]): Promise<number[][]> {
+        const processedTexts = this.stripNewLines ? texts.map((text) => text.replace(/\n/g, ' ')) : texts
+        return super.embedDocuments(processedTexts)
+    }
+
+    async embedQuery(text: string): Promise<number[]> {
+        const processedText = this.stripNewLines ? text.replace(/\n/g, ' ') : text
+        return super.embedQuery(processedText)
+    }
+}
+
 class GoogleVertexAIEmbedding_Embeddings implements INode {
     label: string
     name: string
@@ -24,7 +43,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
         this.icon = 'GoogleVertex.svg'
         this.category = 'Embeddings'
         this.description = 'Google vertexAI API to generate embeddings for a given text'
-        this.baseClasses = [this.type, ...getBaseClasses(VertexAIEmbeddings)]
+        this.baseClasses = [this.type, ...getBaseClasses(VertexAIEmbeddingsWithStripNewLines)]
         this.credential = {
             label: 'Connect Credential',
             name: 'credential',
@@ -49,6 +68,14 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
                 type: 'asyncOptions',
                 loadMethod: 'listRegions',
                 optional: true
+            },
+            {
+                label: 'Strip New Lines',
+                name: 'stripNewLines',
+                type: 'boolean',
+                optional: true,
+                additionalParams: true,
+                description: 'Remove new lines from input text before embedding to reduce token count'
             }
         ]
     }
@@ -66,9 +93,11 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
         const modelName = nodeData.inputs?.modelName as string
         const region = nodeData.inputs?.region as string
+        const stripNewLines = nodeData.inputs?.stripNewLines as boolean
 
-        const obj: GoogleVertexAIEmbeddingsInput = {
-            model: modelName
+        const obj: GoogleVertexAIEmbeddingsInput & { stripNewLines?: boolean } = {
+            model: modelName,
+            stripNewLines
         }
 
         const authOptions = await buildGoogleCredentials(nodeData, options)
@@ -76,7 +105,7 @@ class GoogleVertexAIEmbedding_Embeddings implements INode {
 
         if (region) obj.location = region
 
-        const model = new VertexAIEmbeddings(obj)
+        const model = new VertexAIEmbeddingsWithStripNewLines(obj)
         return model
     }
 }
