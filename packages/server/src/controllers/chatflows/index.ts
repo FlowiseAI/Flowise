@@ -144,10 +144,8 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
         await checkUsageLimit('flows', subscriptionId, getRunningExpressApp().usageCacheManager, existingChatflowCount + newChatflowCount)
 
         const newChatFlow = new ChatFlow()
-        console.log(JSON.stringify(body));
         Object.assign(newChatFlow, body)
         newChatFlow.workspaceId = workspaceId
-        console.log(JSON.stringify(newChatFlow));
         const apiResponse = await chatflowsService.saveChatflow(
             newChatFlow,
             orgId,
