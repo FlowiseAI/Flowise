@@ -1,5 +1,5 @@
 import { BaseCache } from '@langchain/core/caches'
-import { ChatOpenAI } from "@langchain/openai"
+import { ChatOpenAI, ChatOpenAIFields } from '@langchain/openai'
 import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 
@@ -18,7 +18,7 @@ class ChatSambanova_ChatModels implements INode {
     constructor() {
         this.label = 'ChatSambanova'
         this.name = 'chatSambanova'
-        this.version = 2.0
+        this.version = 1.0
         this.type = 'ChatSambanova'
         this.icon = 'sambanova.png'
         this.category = 'Chat Models'
@@ -58,6 +58,21 @@ class ChatSambanova_ChatModels implements INode {
                 type: 'boolean',
                 default: true,
                 optional: true
+            },
+            {
+                label: 'BasePath',
+                name: 'basepath',
+                type: 'string',
+                optional: true,
+                default: 'htps://api.sambanova.ai/v1',
+                additionalParams: true
+            },
+            {
+                label: 'BaseOptions',
+                name: 'baseOptions',
+                type: 'json',
+                optional: true,
+                additionalParams: true
             }
         ]
     }
@@ -67,21 +82,38 @@ class ChatSambanova_ChatModels implements INode {
         const temperature = nodeData.inputs?.temperature as string
         const modelName = nodeData.inputs?.modelName as string
         const streaming = nodeData.inputs?.streaming as boolean
+        const basePath = nodeData.inputs?.basepath as string
+        const baseOptions = nodeData.inputs?.baseOptions
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const sambanovaApiKey = getCredentialParam('sambanovaApiKey', credentialData, nodeData)
 
-        const obj: any = {
-            model: modelName,
+        const obj: ChatOpenAIFields = {
             temperature: temperature ? parseFloat(temperature) : undefined,
-            streaming: streaming ?? true,
-            configuration: {
-            baseURL: 'ttps://api.sambanova.ai/v1',
+            model: modelName,
             apiKey: sambanovaApiKey,
-        },
-            sambanovaApiKey,
+            openAIApiKey: sambanovaApiKey,
+            streaming: streaming ?? true
         }
+
         if (cache) obj.cache = cache
+
+        let parsedBaseOptions: any | undefined = undefined
+
+        if (baseOptions) {
+            try {
+                parsedBaseOptions = typeof baseOptions === 'object' ? baseOptions : JSON.parse(baseOptions)
+            } catch (exception) {
+                throw new Error("Invalid JSON in the ChatSambanova's BaseOptions: " + exception)
+            }
+        }
+
+        if (basePath || parsedBaseOptions) {
+            obj.configuration = {
+                baseURL: basePath,
+                defaultHeaders: parsedBaseOptions
+            }
+        }
 
         const model = new ChatOpenAI(obj)
         return model

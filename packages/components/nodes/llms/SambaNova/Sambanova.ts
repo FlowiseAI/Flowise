@@ -1,5 +1,5 @@
 import { getBaseClasses, getCredentialData, getCredentialParam, ICommonObject, INode, INodeData, INodeParams } from '../../../src'
-import {  OpenAI } from '@langchain/openai'
+import { OpenAI } from '@langchain/openai'
 import { BaseCache } from '@langchain/core/caches'
 
 class Sambanova_LLMs implements INode {
@@ -58,7 +58,7 @@ class Sambanova_LLMs implements INode {
             model: modelName,
             configuration: {
                 baseURL: 'https://api.sambanova.ai/v1',
-                apiKey: sambanovaKey,
+                apiKey: sambanovaKey
             }
         }
         if (cache) obj.cache = cache
