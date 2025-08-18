@@ -136,9 +136,10 @@ class File_DocumentLoaders implements INode {
 
         let files: string[] = []
         const fileBlobs: { blob: Blob; ext: string }[] = []
+        const processRaw = options.processRaw
 
         //FILE-STORAGE::["CONTRIBUTING.md","LICENSE.md","README.md"]
-        const totalFiles = getOverrideFileInputs(nodeData) || fileBase64
+        const totalFiles = getOverrideFileInputs(nodeData, processRaw) || fileBase64
         if (totalFiles.startsWith('FILE-STORAGE::')) {
             const fileName = totalFiles.replace('FILE-STORAGE::', '')
             if (fileName.startsWith('[') && fileName.endsWith(']')) {
@@ -298,7 +299,7 @@ class File_DocumentLoaders implements INode {
     }
 }
 
-const getOverrideFileInputs = (nodeData: INodeData) => {
+const getOverrideFileInputs = (nodeData: INodeData, processRaw: boolean) => {
     const txtFileBase64 = nodeData.inputs?.txtFile as string
     const pdfFileBase64 = nodeData.inputs?.pdfFile as string
     const jsonFileBase64 = nodeData.inputs?.jsonFile as string
@@ -345,6 +346,10 @@ const getOverrideFileInputs = (nodeData: INodeData) => {
     }
     if (powerpointFileBase64) {
         files.push(...removePrefix(powerpointFileBase64))
+    }
+
+    if (processRaw) {
+        return files.length ? JSON.stringify(files) : ''
     }
 
     return files.length ? `FILE-STORAGE::${JSON.stringify(files)}` : ''
