@@ -2,18 +2,32 @@ import { createPortal } from 'react-dom'
 import { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { MemoizedReactMarkdown } from '@/ui-component/markdown/MemoizedReactMarkdown'
-import { Typography, Stack, Card, Accordion, AccordionSummary, AccordionDetails, Dialog, DialogContent, DialogTitle } from '@mui/material'
+import {
+    Typography,
+    Stack,
+    Card,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Dialog,
+    DialogContent,
+    DialogTitle,
+    Box
+} from '@mui/material'
 import { TableViewOnly } from '@/ui-component/table/Table'
 import documentstoreApi from '@/api/documentstore'
 import useApi from '@/hooks/useApi'
 import { useTheme } from '@mui/material/styles'
+import { useSelector } from 'react-redux'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { IconInfoCircle } from '@tabler/icons-react'
 import { baseURL } from '@/store/constant'
 
 const DocStoreAPIDialog = ({ show, dialogProps, onCancel }) => {
     const [nodeConfig, setNodeConfig] = useState({})
     const [values, setValues] = useState('')
     const theme = useTheme()
+    const customization = useSelector((state) => state.customization)
     const [nodeConfigExpanded, setNodeConfigExpanded] = useState({})
 
     const getConfigApi = useApi(documentstoreApi.getDocumentStoreConfig)
@@ -38,6 +52,7 @@ body_data = {
     "metadata": {}, # Add additional metadata to the document chunks
     "replaceExisting": True, # Replace existing document with the new upserted chunks
     "createNewDocStore": False, # Create a new document store
+    "loaderName": "Custom Loader Name", # Override the loader name
     "splitter": json.dumps({"config":{"chunkSize":20000}}) # Override existing configuration
     # "loader": "",
     # "vectorStore": "",
@@ -64,6 +79,7 @@ print(output)
 let formData = new FormData();
 formData.append("files", input.files[0]);
 formData.append("docId", "${dialogProps.loaderId}");
+formData.append("loaderName", "Custom Loader Name");
 formData.append("splitter", JSON.stringify({"config":{"chunkSize":20000}}));
 // Add additional metadata to the document chunks
 formData.append("metadata", "{}");
@@ -103,6 +119,7 @@ curl -X POST ${baseURL}/api/v1/document-store/upsert/${dialogProps.storeId} \\
   -H "Authorization: Bearer <your_api_key_here>" \\
   -F "files=@<file-path>" \\
   -F "docId=${dialogProps.loaderId}" \\
+  -F "loaderName=Custom Loader Name" \\
   -F "splitter={"config":{"chunkSize":20000}}" \\
   -F "metadata={}" \\
   -F "replaceExisting=true" \\
@@ -139,6 +156,7 @@ output = query({
     "metadata": "{}", # Add additional metadata to the document chunks
     "replaceExisting": True, # Replace existing document with the new upserted chunks
     "createNewDocStore": False, # Create a new document store
+    "loaderName": "Custom Loader Name", # Override the loader name
     # Override existing configuration
     "loader": {
         "config": {
@@ -176,10 +194,11 @@ async function query(data) {
 }
 
 query({
-    "docId": "${dialogProps.loaderId},
+    "docId": "${dialogProps.loaderId}",
     "metadata": "{}", // Add additional metadata to the document chunks
     "replaceExisting": true, // Replace existing document with the new upserted chunks
     "createNewDocStore": false, // Create a new document store
+    "loaderName": "Custom Loader Name", // Override the loader name
     // Override existing configuration
     "loader": {
         "config": {
@@ -209,6 +228,7 @@ curl -X POST ${baseURL}/api/v1/document-store/upsert/${dialogProps.storeId} \\
         "metadata": "{}",
         "replaceExisting": true,
         "createNewDocStore": false,
+        "loaderName": "Custom Loader Name",
         "loader": {
             "config": {
                 "text": "This is a new text"
@@ -304,6 +324,37 @@ curl -X POST ${baseURL}/api/v1/document-store/upsert/${dialogProps.storeId} \\
                 {dialogProps.title}
             </DialogTitle>
             <DialogContent>
+                {/* Info Box */}
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: 2,
+                        mb: 3,
+                        background: customization.isDarkMode
+                            ? 'linear-gradient(135deg, rgba(33, 150, 243, 0.2) 0%, rgba(33, 150, 243, 0.1) 100%)'
+                            : 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%)',
+                        color: customization.isDarkMode ? 'white' : '#333333',
+                        fontWeight: 400,
+                        borderRadius: 2,
+                        border: `1px solid ${customization.isDarkMode ? 'rgba(33, 150, 243, 0.3)' : 'rgba(33, 150, 243, 0.2)'}`,
+                        gap: 1.5
+                    }}
+                >
+                    <IconInfoCircle
+                        size={20}
+                        style={{
+                            color: customization.isDarkMode ? '#64b5f6' : '#1976d2',
+                            flexShrink: 0
+                        }}
+                    />
+                    <Box sx={{ flex: 1 }}>
+                        <strong>Note:</strong> Upsert API can only be used when the existing document loader has been upserted before.
+                    </Box>
+                </Box>
+
+                {/** info */}
+
                 <MemoizedReactMarkdown>{values}</MemoizedReactMarkdown>
 
                 <Typography sx={{ mt: 3, mb: 1 }}>You can override existing configurations:</Typography>

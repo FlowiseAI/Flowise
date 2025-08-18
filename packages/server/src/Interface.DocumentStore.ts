@@ -81,6 +81,7 @@ export interface IDocumentStoreUpsertData {
     replaceExisting?: boolean
     createNewDocStore?: boolean
     docStore?: IDocumentStore
+    loaderName?: string
     loader?: {
         name: string
         config: ICommonObject
