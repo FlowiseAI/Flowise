@@ -165,8 +165,8 @@ const TextToSpeech = ({ dialogProps }) => {
 
     const setValue = (value, providerName, inputParamName) => {
         let newVal = {}
-        if (!Object.hasOwn(textToSpeech, providerName)) {
-            newVal = { ...textToSpeech, [providerName]: {} }
+        if (!textToSpeech || !Object.hasOwn(textToSpeech, providerName)) {
+            newVal = { ...(textToSpeech || {}), [providerName]: {} }
         } else {
             newVal = { ...textToSpeech }
         }
@@ -177,7 +177,7 @@ const TextToSpeech = ({ dialogProps }) => {
             Object.keys(textToSpeechProviders).forEach((key) => {
                 const provider = textToSpeechProviders[key]
                 if (provider.name !== providerName) {
-                    newVal[provider.name] = { ...textToSpeech[provider.name], status: false }
+                    newVal[provider.name] = { ...(textToSpeech?.[provider.name] || {}), status: false }
                 }
             })
             if (providerName !== 'none' && newVal['none']) {
@@ -192,8 +192,8 @@ const TextToSpeech = ({ dialogProps }) => {
         setSelectedProvider(() => provider)
         setVoices([])
         if (provider !== 'none') {
-            const config = configOverride || textToSpeech[provider]?.config
-            const credentialId = config[provider]?.credentialId
+            const config = configOverride || textToSpeech?.[provider]
+            const credentialId = config?.credentialId
             if (credentialId) {
                 loadVoicesForProvider(provider, credentialId)
             }
@@ -225,7 +225,7 @@ const TextToSpeech = ({ dialogProps }) => {
     }
 
     const testTTS = async () => {
-        if (selectedProvider === 'none' || !textToSpeech[selectedProvider]?.credentialId) {
+        if (selectedProvider === 'none' || !textToSpeech?.[selectedProvider]?.credentialId) {
             enqueueSnackbar({
                 message: 'Please select a provider and configure credentials first',
                 options: { variant: 'warning' }
@@ -234,7 +234,7 @@ const TextToSpeech = ({ dialogProps }) => {
         }
 
         try {
-            const providerConfig = textToSpeech[selectedProvider]
+            const providerConfig = textToSpeech?.[selectedProvider] || {}
             const body = {
                 text: 'Today is a wonderful day to build something with Flowise!',
                 provider: selectedProvider,
@@ -383,10 +383,10 @@ const TextToSpeech = ({ dialogProps }) => {
                             </div>
                             {inputParam.type === 'credential' && (
                                 <CredentialInputHandler
-                                    key={textToSpeech[selectedProvider]?.credentialId}
+                                    key={textToSpeech?.[selectedProvider]?.credentialId}
                                     data={
-                                        textToSpeech[selectedProvider]?.credentialId
-                                            ? { credential: textToSpeech[selectedProvider].credentialId }
+                                        textToSpeech?.[selectedProvider]?.credentialId
+                                            ? { credential: textToSpeech?.[selectedProvider]?.credentialId }
                                             : {}
                                     }
                                     inputParam={inputParam}
@@ -403,7 +403,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                 <SwitchInput
                                     onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
                                     value={
-                                        textToSpeech[selectedProvider]
+                                        textToSpeech?.[selectedProvider]
                                             ? textToSpeech[selectedProvider][inputParam.name]
                                             : inputParam.default ?? false
                                     }
@@ -414,7 +414,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                     inputParam={inputParam}
                                     onChange={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
                                     value={
-                                        textToSpeech[selectedProvider]
+                                        textToSpeech?.[selectedProvider]
                                             ? textToSpeech[selectedProvider][inputParam.name]
                                             : inputParam.default ?? ''
                                     }
@@ -426,7 +426,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                     options={inputParam.options}
                                     onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
                                     value={
-                                        textToSpeech[selectedProvider]
+                                        textToSpeech?.[selectedProvider]
                                             ? textToSpeech[selectedProvider][inputParam.name]
                                             : inputParam.default ?? 'choose an option'
                                     }
@@ -445,7 +445,7 @@ const TextToSpeech = ({ dialogProps }) => {
                                             options={voices.map((voice) => ({ label: voice.name, name: voice.id }))}
                                             onSelect={(newValue) => setValue(newValue, selectedProvider, inputParam.name)}
                                             value={
-                                                textToSpeech[selectedProvider]
+                                                textToSpeech?.[selectedProvider]
                                                     ? textToSpeech[selectedProvider][inputParam.name]
                                                     : inputParam.default ?? 'choose a voice'
                                             }
@@ -469,7 +469,7 @@ const TextToSpeech = ({ dialogProps }) => {
                         </div>
                         <SwitchInput
                             onChange={(newValue) => setValue(newValue, selectedProvider, 'autoPlay')}
-                            value={textToSpeech[selectedProvider] ? textToSpeech[selectedProvider].autoPlay ?? false : false}
+                            value={textToSpeech?.[selectedProvider] ? textToSpeech[selectedProvider].autoPlay ?? false : false}
                         />
                     </Box>
 
@@ -480,7 +480,7 @@ const TextToSpeech = ({ dialogProps }) => {
                             size='small'
                             startIcon={<IconVolume />}
                             onClick={testTTS}
-                            disabled={!textToSpeech[selectedProvider]?.credentialId}
+                            disabled={!textToSpeech?.[selectedProvider]?.credentialId}
                         >
                             Test Voice
                         </StyledButton>
@@ -489,7 +489,7 @@ const TextToSpeech = ({ dialogProps }) => {
             )}
             <StyledButton
                 style={{ marginBottom: 10, marginTop: 10 }}
-                disabled={selectedProvider !== 'none' && !textToSpeech[selectedProvider]?.credentialId}
+                disabled={selectedProvider !== 'none' && !textToSpeech?.[selectedProvider]?.credentialId}
                 variant='contained'
                 onClick={onSave}
             >
