@@ -14,6 +14,14 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const [isReadyToSave, setIsReadyToSave] = useState(false)
 
     useEffect(() => {
+        if (dialogProps?.chatflow) {
+            setChatflowName(dialogProps.chatflow.name ?? '')
+            setTags(dialogProps.chatflow.tags ?? '')
+            setDescription(dialogProps.chatflow.description ?? '')
+        }
+    }, [dialogProps?.chatflow, show])
+
+    useEffect(() => {
         if (chatflowName) setIsReadyToSave(true)
         else setIsReadyToSave(false)
     }, [chatflowName])
@@ -53,7 +61,7 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                         if (isReadyToSave && e.key === 'Enter') handleConfirm()
                     }}
                 />
-                
+
                 {/* Tags */}
                 <OutlinedInput
                     id='chatflow-tags'

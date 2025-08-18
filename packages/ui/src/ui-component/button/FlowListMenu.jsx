@@ -100,7 +100,8 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
     const [exportTemplateDialogOpen, setExportTemplateDialogOpen] = useState(false)
     const [exportTemplateDialogProps, setExportTemplateDialogProps] = useState({})
 
-    const title = isAgentCanvas ? 'Agents' : 'Chatflow'
+    const title = isAgentCanvas ? 'Agents' : 'Chatflow';
+
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget)
@@ -161,7 +162,9 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
 
     const saveFlowRename = async (chatflowName) => {
         const updateBody = {
-            name: chatflowName,
+            name: chatflowName?.name,
+            tags: chatflowName?.tags,
+            description: chatflowName?.description,
             chatflow
         }
         try {
@@ -202,7 +205,7 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
     const saveFlowCategory = async (categories) => {
         setCategoryDialogOpen(false)
         // save categories as string
-        const categoryTags = categories.join(';')
+        const categoryTags = categories.join(';');
         const updateBody = {
             category: categoryTags,
             chatflow
@@ -407,7 +410,8 @@ export default function FlowListMenu({ chatflow, isAgentCanvas, isAgentflowV2, s
                 dialogProps={{
                     title: `Rename ${title}`,
                     confirmButtonName: 'Rename',
-                    cancelButtonName: 'Cancel'
+                    cancelButtonName: 'Cancel',
+                    chatflow: chatflow
                 }}
                 onCancel={() => setFlowDialogOpen(false)}
                 onConfirm={saveFlowRename}

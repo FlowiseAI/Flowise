@@ -106,7 +106,7 @@ const Chatflows = () => {
                 const total = getAllChatflowsApi.data?.total
                 setTotal(total)
                 const images = {}
-                for (let i = 0; i < chatflows.length; i += 1) {
+                for (let i = 0; i < chatflows?.length; i += 1) {
                     const flowDataStr = chatflows[i].flowData
                     const flowData = JSON.parse(flowDataStr)
                     const nodes = flowData.nodes || []
