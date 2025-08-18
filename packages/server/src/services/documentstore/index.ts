@@ -311,13 +311,7 @@ const getDocumentStoreFileChunks = async (
     }
 }
 
-const deleteDocumentStore = async (
-    storeId: string,
-    orgId: string,
-    workspaceId: string,
-    usageCacheManager: UsageCacheManager,
-    isDeleteBoth: boolean = false
-) => {
+const deleteDocumentStore = async (storeId: string, orgId: string, workspaceId: string, usageCacheManager: UsageCacheManager) => {
     try {
         const appServer = getRunningExpressApp()
 
