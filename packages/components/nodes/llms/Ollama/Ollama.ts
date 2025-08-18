@@ -2,7 +2,7 @@ import { Ollama, OllamaInput } from '@langchain/community/llms/ollama'
 import { BaseCache } from '@langchain/core/caches'
 import { BaseLLMParams } from '@langchain/core/language_models/llms'
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getEnvironmentVariable } from '../../../src/utils'
 
 class Ollama_LLMs implements INode {
     label: string
@@ -36,13 +36,14 @@ class Ollama_LLMs implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default: 'http://localhost:11434'
+                default: getEnvironmentVariable('OLLAMA_DEFAULT_BASE_URL') ?? 'http://localhost:11434'
             },
             {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'llama2'
+                placeholder: 'llama2',
+                default: getEnvironmentVariable('OLLAMA_DEFAULT_MODEL') ?? ''
             },
             {
                 label: 'Temperature',

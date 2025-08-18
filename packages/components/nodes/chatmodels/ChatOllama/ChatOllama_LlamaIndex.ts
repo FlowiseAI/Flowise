@@ -1,5 +1,5 @@
 import { INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getEnvironmentVariable } from '../../../src/utils'
 import { OllamaParams, Ollama } from 'llamaindex'
 
 class ChatOllama_LlamaIndex_ChatModels implements INode {
@@ -29,13 +29,14 @@ class ChatOllama_LlamaIndex_ChatModels implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default: 'http://localhost:11434'
+                default: getEnvironmentVariable('OLLAMA_DEFAULT_BASE_URL') ?? 'http://localhost:11434'
             },
             {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'llama3'
+                placeholder: 'llama3',
+                default: getEnvironmentVariable('OLLAMA_DEFAULT_MODEL') ?? ''
             },
             {
                 label: 'Temperature',

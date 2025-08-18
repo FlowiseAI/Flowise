@@ -2,7 +2,7 @@ import { ChatOllamaInput } from '@langchain/ollama'
 import { BaseChatModelParams } from '@langchain/core/language_models/chat_models'
 import { BaseCache } from '@langchain/core/caches'
 import { IMultiModalOption, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { getBaseClasses } from '../../../src/utils'
+import { getBaseClasses, getEnvironmentVariable } from '../../../src/utils'
 import { ChatOllama } from './FlowiseChatOllama'
 
 class ChatOllama_ChatModels implements INode {
@@ -37,13 +37,14 @@ class ChatOllama_ChatModels implements INode {
                 label: 'Base URL',
                 name: 'baseUrl',
                 type: 'string',
-                default: 'http://localhost:11434'
+                default: getEnvironmentVariable('OLLAMA_DEFAULT_BASE_URL') ?? 'http://localhost:11434'
             },
             {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
-                placeholder: 'llama2'
+                placeholder: 'llama2',
+                default: getEnvironmentVariable('OLLAMA_DEFAULT_MODEL') ?? ''
             },
             {
                 label: 'Temperature',
