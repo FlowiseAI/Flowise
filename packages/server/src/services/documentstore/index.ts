@@ -1728,6 +1728,11 @@ const upsertDocStore = async (
         ...newLoader?.config
     }
 
+    // Override loaderName if it's provided directly in data
+    if (data.loaderName) {
+        loaderName = data.loaderName
+    }
+
     splitterName = newSplitter?.name ? getComponentLabelFromName(newSplitter?.name) : splitterName
     splitterId = newSplitter?.name || splitterId
     splitterConfig = {
