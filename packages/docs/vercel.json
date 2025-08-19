@@ -1,0 +1,36 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "buildCommand": "pnpm build",
+    "outputDirectory": "build",
+    "trailingSlash": false,
+    "headers": [
+        {
+            "source": "/sitemap.xml",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/xml; charset=utf-8"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=86400, s-maxage=86400"
+                }
+            ]
+        },
+        {
+            "source": "/(.*\\.xml)",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/xml; charset=utf-8"
+                }
+            ]
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/sitemap.xml",
+            "destination": "/sitemap.xml"
+        }
+    ]
+}
