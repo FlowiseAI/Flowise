@@ -40,7 +40,7 @@
     "name": "docs",
     "private": true,
     "scripts": {
-        "build": "pnpm api-docs && docusaurus build",
+        "build": "pnpm api-docs && docusaurus build && node scripts/fix-sitemap.js",
         "clear": "docusaurus clear",
         "deploy": "docusaurus deploy",
         "docs": "docusaurus start --port 4242",
