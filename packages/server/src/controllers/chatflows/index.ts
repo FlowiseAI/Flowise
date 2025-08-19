@@ -9,6 +9,9 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { checkUsageLimit } from '../../utils/quotaUsage'
 import { RateLimiterManager } from '../../utils/rateLimit'
 import { getPageAndLimitParams } from '../../utils/pagination'
+import { WorkspaceUserErrorMessage, WorkspaceUserService } from '../../enterprise/services/workspace-user.service'
+import { QueryRunner } from 'typeorm'
+import { GeneralErrorMessage } from '../../utils/constants'
 
 const checkIfChatflowIsValidForStreaming = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -157,32 +160,6 @@ const saveChatflow = async (req: Request, res: Response, next: NextFunction) => 
     }
 }
 
-const importChatflows = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const chatflows: Partial<ChatFlow>[] = req.body.Chatflows
-        const orgId = req.user?.activeOrganizationId
-        if (!orgId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.saveChatflow - organization ${orgId} not found!`
-            )
-        }
-        const workspaceId = req.user?.activeWorkspaceId
-        if (!workspaceId) {
-            throw new InternalFlowiseError(
-                StatusCodes.NOT_FOUND,
-                `Error: chatflowsController.saveChatflow - workspace ${workspaceId} not found!`
-            )
-        }
-        const subscriptionId = req.user?.activeOrganizationSubscriptionId || ''
-        req.body.workspaceId = req.user?.activeWorkspaceId
-        const apiResponse = await chatflowsService.importChatflows(chatflows, orgId, workspaceId, subscriptionId)
-        return res.json(apiResponse)
-    } catch (error) {
-        next(error)
-    }
-}
-
 const updateChatflow = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
@@ -223,6 +200,7 @@ const updateChatflow = async (req: Request, res: Response, next: NextFunction) =
 }
 
 const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFunction) => {
+    let queryRunner: QueryRunner | undefined
     try {
         if (typeof req.params === 'undefined' || !req.params.id) {
             throw new InternalFlowiseError(
@@ -230,10 +208,23 @@ const getSinglePublicChatflow = async (req: Request, res: Response, next: NextFu
                 `Error: chatflowsController.getSinglePublicChatflow - id not provided!`
             )
         }
-        const apiResponse = await chatflowsService.getSinglePublicChatflow(req.params.id)
-        return res.json(apiResponse)
+        const chatflow = await chatflowsService.getChatflowById(req.params.id)
+        if (!chatflow) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Chatflow not found' })
+        if (chatflow.isPublic) return res.status(StatusCodes.OK).json(chatflow)
+        if (!req.user) return res.status(StatusCodes.UNAUTHORIZED).json({ message: GeneralErrorMessage.UNAUTHORIZED })
+        queryRunner = getRunningExpressApp().AppDataSource.createQueryRunner()
+        const workspaceUserService = new WorkspaceUserService()
+        const workspaceUser = await workspaceUserService.readWorkspaceUserByUserId(req.user.id, queryRunner)
+        if (workspaceUser.length === 0)
+            return res.status(StatusCodes.NOT_FOUND).json({ message: WorkspaceUserErrorMessage.WORKSPACE_USER_NOT_FOUND })
+        const workspaceIds = workspaceUser.map((user) => user.workspaceId)
+        if (!workspaceIds.includes(chatflow.workspaceId))
+            return res.status(StatusCodes.BAD_REQUEST).json({ message: 'You are not in the workspace that owns this chatflow' })
+        return res.status(StatusCodes.OK).json(chatflow)
     } catch (error) {
         next(error)
+    } finally {
+        if (queryRunner) await queryRunner.release()
     }
 }
 
@@ -281,7 +272,6 @@ export default {
     getChatflowByApiKey,
     getChatflowById,
     saveChatflow,
-    importChatflows,
     updateChatflow,
     getSinglePublicChatflow,
     getSinglePublicChatbotConfig,

@@ -173,3 +173,49 @@ function createSchemaModel(
 
     return z.object(schemaProperties)
 }
+
+export const validateArgsForLocalFileAccess = (args: string[]): void => {
+    const dangerousPatterns = [
+        // Absolute paths
+        /^\/[^/]/, // Unix absolute paths starting with /
+        /^[a-zA-Z]:\\/, // Windows absolute paths like C:\
+
+        // Relative paths that could escape current directory
+        /\.\.\//, // Parent directory traversal with ../
+        /\.\.\\/, // Parent directory traversal with ..\
+        /^\.\./, // Starting with ..
+
+        // Local file access patterns
+        /^\.\//, // Current directory with ./
+        /^~\//, // Home directory with ~/
+        /^file:\/\//, // File protocol
+
+        // Common file extensions that shouldn't be accessed
+        /\.(exe|bat|cmd|sh|ps1|vbs|scr|com|pif|dll|sys)$/i,
+
+        // File flags and options that could access local files
+        /^--?(?:file|input|output|config|load|save|import|export|read|write)=/i,
+        /^--?(?:file|input|output|config|load|save|import|export|read|write)$/i
+    ]
+
+    for (const arg of args) {
+        if (typeof arg !== 'string') continue
+
+        // Check for dangerous patterns
+        for (const pattern of dangerousPatterns) {
+            if (pattern.test(arg)) {
+                throw new Error(`Argument contains potential local file access: "${arg}"`)
+            }
+        }
+
+        // Check for null bytes
+        if (arg.includes('\0')) {
+            throw new Error(`Argument contains null byte: "${arg}"`)
+        }
+
+        // Check for very long paths that might be used for buffer overflow attacks
+        if (arg.length > 1000) {
+            throw new Error(`Argument is suspiciously long (${arg.length} characters): "${arg.substring(0, 100)}..."`)
+        }
+    }
+}

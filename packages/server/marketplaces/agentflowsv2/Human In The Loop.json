@@ -554,7 +554,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "agentModel": "chatOpenAI"
                     }
                 },
@@ -683,7 +683,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "humanInputModel": "chatOpenAI"
                     },
                     "humanInputDescription": "<p>Are you sure you want to proceed?</p>"
@@ -1208,7 +1208,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "llmModel": "chatOpenAI"
                     }
                 },

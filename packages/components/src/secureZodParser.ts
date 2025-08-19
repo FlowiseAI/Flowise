@@ -135,6 +135,28 @@ export class SecureZodSchemaParser {
     }
 
     private static parseZodType(typeStr: string): any {
+        // Check if this is a nested object (not in an array)
+        if (typeStr.startsWith('z.object(') && !typeStr.startsWith('z.array(')) {
+            // Extract object content
+            const objectMatch = typeStr.match(/z\.object\(\s*\{([\s\S]*)\}\s*\)/)
+            if (!objectMatch) {
+                throw new Error('Invalid object syntax')
+            }
+
+            const objectContent = objectMatch[1]
+            const objectProperties = this.parseObjectProperties(objectContent)
+
+            return {
+                isNestedObject: true,
+                objectSchema: objectProperties
+            }
+        }
+
+        // Check if this is any kind of array
+        if (typeStr.startsWith('z.array(')) {
+            return this.parseArray(typeStr)
+        }
+
         const type: { base: string; modifiers: any[]; baseArgs?: any[] } = { base: '', modifiers: [] }
 
         // Handle chained methods like z.string().max(500).optional()
@@ -179,6 +201,74 @@ export class SecureZodSchemaParser {
         }
 
         return type
+    }
+
+    private static parseArray(typeStr: string): any {
+        // Extract the content inside array()
+        const arrayContentMatch = typeStr.match(/z\.array\(\s*([\s\S]*)\s*\)$/)
+        if (!arrayContentMatch) {
+            throw new Error('Invalid array syntax')
+        }
+
+        const arrayContent = arrayContentMatch[1].trim()
+
+        // Parse the object inside the array
+        if (arrayContent.startsWith('z.object(')) {
+            // Extract object content
+            const objectMatch = arrayContent.match(/z\.object\(\s*\{([\s\S]*)\}\s*\)/)
+            if (!objectMatch) {
+                throw new Error('Invalid object syntax inside array')
+            }
+
+            const objectContent = objectMatch[1]
+            const objectProperties = this.parseObjectProperties(objectContent)
+
+            // Validate each property in the nested object
+            for (const propValue of Object.values(objectProperties)) {
+                this.validateTypeInfo(propValue)
+            }
+
+            return {
+                isArrayOfObjects: true,
+                objectSchema: objectProperties
+            }
+        }
+
+        // Handle simple arrays (e.g., z.array(z.string()))
+        const innerType = this.parseZodType(arrayContent)
+
+        return {
+            isSimpleArray: true,
+            innerType: innerType
+        }
+    }
+
+    private static validateTypeInfo(typeInfo: any): void {
+        // If it's a nested object or array of objects, validate each property
+        if (typeInfo.isNestedObject || typeInfo.isArrayOfObjects) {
+            for (const propValue of Object.values(typeInfo.objectSchema)) {
+                this.validateTypeInfo(propValue)
+            }
+            return
+        }
+
+        // If it's a simple array, validate the inner type
+        if (typeInfo.isSimpleArray) {
+            this.validateTypeInfo(typeInfo.innerType)
+            return
+        }
+
+        // Validate base type
+        if (!this.ALLOWED_TYPES.includes(typeInfo.base)) {
+            throw new Error(`Unsupported type: ${typeInfo.base}`)
+        }
+
+        // Validate modifiers
+        for (const modifier of typeInfo.modifiers || []) {
+            if (!this.ALLOWED_TYPES.includes(modifier.name)) {
+                throw new Error(`Unsupported modifier: ${modifier.name}`)
+            }
+        }
     }
 
     private static parseArguments(argsStr: string): any[] {
@@ -250,6 +340,23 @@ export class SecureZodSchemaParser {
     }
 
     private static buildZodType(typeInfo: any): z.ZodTypeAny {
+        // Special case for nested objects
+        if (typeInfo.isNestedObject) {
+            return this.buildZodSchema(typeInfo.objectSchema)
+        }
+
+        // Special case for array of objects
+        if (typeInfo.isArrayOfObjects) {
+            const objectSchema = this.buildZodSchema(typeInfo.objectSchema)
+            return z.array(objectSchema)
+        }
+
+        // Special case for simple arrays
+        if (typeInfo.isSimpleArray) {
+            const innerZodType = this.buildZodType(typeInfo.innerType)
+            return z.array(innerZodType)
+        }
+
         let zodType: z.ZodTypeAny
 
         // Build base type

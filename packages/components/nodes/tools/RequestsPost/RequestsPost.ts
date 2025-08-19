@@ -33,7 +33,7 @@ class RequestsPost_Tools implements INode {
         this.icon = 'post.png'
         this.category = 'Tools'
         this.description = 'Execute HTTP POST requests'
-        this.baseClasses = [this.type, ...getBaseClasses(RequestsPostTool)]
+        this.baseClasses = [this.type, ...getBaseClasses(RequestsPostTool), 'Tool']
         this.inputs = [
             {
                 label: 'URL',

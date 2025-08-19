@@ -351,8 +351,14 @@ export const resolveVariables = async (
                         const formattedValue =
                             Array.isArray(variableValue) || (typeof variableValue === 'object' && variableValue !== null)
                                 ? JSON.stringify(variableValue)
-                                : String(variableValue)
-                        resolvedValue = resolvedValue.replace(match, formattedValue)
+                                : variableValue
+                        // If the resolved value is exactly the match, replace it directly
+                        if (resolvedValue === match) {
+                            resolvedValue = formattedValue
+                        } else {
+                            // Otherwise do a standard string‐replace
+                            resolvedValue = String(resolvedValue).replace(match, String(formattedValue))
+                        }
                         // Skip fallback logic
                         continue
                     }
@@ -1291,7 +1297,7 @@ export const executeAgentFlow = async ({
     const uploads = incomingInput.uploads
     const userMessageDateTime = new Date()
     const chatflowid = chatflow.id
-    const sessionId = incomingInput.sessionId ?? chatId
+    const sessionId = overrideConfig.sessionId || chatId
     const humanInput: IHumanInput | undefined = incomingInput.humanInput
 
     // Validate history schema if provided
@@ -1394,6 +1400,29 @@ export const executeAgentFlow = async ({
                     previousState = execData.data.state
                     break
                 }
+            }
+        }
+
+        // Check if startState has been overridden from overrideConfig.startState and is enabled
+        const startAgentflowNode = nodes.find((node) => node.data.name === 'startAgentflow')
+        const isStartStateEnabled =
+            nodeOverrides && startAgentflowNode
+                ? nodeOverrides[startAgentflowNode.data.label]?.find((param: any) => param.name === 'startState')?.enabled ?? false
+                : false
+
+        if (isStartStateEnabled && overrideConfig?.startState) {
+            if (Array.isArray(overrideConfig.startState)) {
+                // Handle array format: [{"key": "foo", "value": "foo4"}]
+                const overrideStateObj: ICommonObject = {}
+                for (const item of overrideConfig.startState) {
+                    if (item.key && item.value !== undefined) {
+                        overrideStateObj[item.key] = item.value
+                    }
+                }
+                previousState = { ...previousState, ...overrideStateObj }
+            } else if (typeof overrideConfig.startState === 'object') {
+                // Object override: "startState": {...}
+                previousState = { ...previousState, ...overrideConfig.startState }
             }
         }
 
@@ -1565,7 +1594,7 @@ export const executeAgentFlow = async ({
         .find({
             where: {
                 chatflowid,
-                chatId
+                sessionId
             },
             order: {
                 createdDate: 'ASC'
@@ -1578,12 +1607,44 @@ export const executeAgentFlow = async ({
                     role: message.role === 'userMessage' ? 'user' : 'assistant'
                 }
 
-                // Only add additional_kwargs when fileUploads or artifacts exists and is not empty
-                if ((message.fileUploads && message.fileUploads !== '') || (message.artifacts && message.artifacts !== '')) {
+                const hasFileUploads = message.fileUploads && message.fileUploads !== ''
+                const hasArtifacts = message.artifacts && message.artifacts !== ''
+                const hasFileAnnotations = message.fileAnnotations && message.fileAnnotations !== ''
+                const hasUsedTools = message.usedTools && message.usedTools !== ''
+
+                if (hasFileUploads || hasArtifacts || hasFileAnnotations || hasUsedTools) {
                     mappedMessage.additional_kwargs = {}
 
-                    if (message.fileUploads && message.fileUploads !== '') {
-                        mappedMessage.additional_kwargs.fileUploads = message.fileUploads
+                    if (hasFileUploads) {
+                        try {
+                            mappedMessage.additional_kwargs.fileUploads = JSON.parse(message.fileUploads!)
+                        } catch {
+                            mappedMessage.additional_kwargs.fileUploads = message.fileUploads
+                        }
+                    }
+
+                    if (hasArtifacts) {
+                        try {
+                            mappedMessage.additional_kwargs.artifacts = JSON.parse(message.artifacts!)
+                        } catch {
+                            mappedMessage.additional_kwargs.artifacts = message.artifacts
+                        }
+                    }
+
+                    if (hasFileAnnotations) {
+                        try {
+                            mappedMessage.additional_kwargs.fileAnnotations = JSON.parse(message.fileAnnotations!)
+                        } catch {
+                            mappedMessage.additional_kwargs.fileAnnotations = message.fileAnnotations
+                        }
+                    }
+
+                    if (hasUsedTools) {
+                        try {
+                            mappedMessage.additional_kwargs.usedTools = JSON.parse(message.usedTools!)
+                        } catch {
+                            mappedMessage.additional_kwargs.usedTools = message.usedTools
+                        }
                     }
                 }
 

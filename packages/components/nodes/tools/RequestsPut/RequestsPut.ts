@@ -33,7 +33,7 @@ class RequestsPut_Tools implements INode {
         this.icon = 'put.png'
         this.category = 'Tools'
         this.description = 'Execute HTTP PUT requests'
-        this.baseClasses = [this.type, ...getBaseClasses(RequestsPutTool)]
+        this.baseClasses = [this.type, ...getBaseClasses(RequestsPutTool), 'Tool']
         this.inputs = [
             {
                 label: 'URL',
