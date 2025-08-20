@@ -2,9 +2,11 @@ import { Request, Response, NextFunction } from 'express'
 import textToSpeechService from '../../services/text-to-speech'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { convertTextToSpeechStream } from 'flowise-components'
+import { databaseEntities } from '../../utils'
 
-// Generate text-to-speech audio
-const generateTextToSpeech = async (req: Request, res: Response, next: NextFunction) => {
+const generateTextToSpeech = async (req: Request, res: Response) => {
     try {
         const { text, provider, credentialId, voice, model } = req.body
 
@@ -29,25 +31,69 @@ const generateTextToSpeech = async (req: Request, res: Response, next: NextFunct
             )
         }
 
-        const response = await textToSpeechService.generateTextToSpeech({
+        res.setHeader('Content-Type', 'text/event-stream')
+        res.setHeader('Cache-Control', 'no-cache')
+        res.setHeader('Connection', 'keep-alive')
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Access-Control-Allow-Headers', 'Cache-Control')
+
+        const appServer = getRunningExpressApp()
+        const options = {
+            orgId: '',
+            chatflowid: '',
+            chatId: '',
+            appDataSource: appServer.AppDataSource,
+            databaseEntities: databaseEntities
+        }
+
+        const textToSpeechConfig = {
+            name: provider,
+            credentialId: credentialId,
+            voice: voice,
+            model: model
+        }
+
+        await convertTextToSpeechStream(
             text,
-            provider,
-            credentialId,
-            voice,
-            model
-        })
-
-        res.setHeader('Content-Type', response.contentType)
-        res.setHeader('Content-Length', response.audioBuffer.length)
-        res.setHeader('Cache-Control', 'public, max-age=3600')
-
-        return res.send(response.audioBuffer)
+            textToSpeechConfig,
+            options,
+            (chunk: Buffer) => {
+                const audioBase64 = chunk.toString('base64')
+                const clientResponse = {
+                    event: 'tts_data',
+                    data: audioBase64
+                }
+                res.write('event: tts_data\n')
+                res.write(`data: ${JSON.stringify(clientResponse)}\n\n`)
+            },
+            async () => {
+                // Send end event
+                const endResponse = {
+                    event: 'tts_end',
+                    data: {}
+                }
+                res.write('event: tts_end\n')
+                res.write(`data: ${JSON.stringify(endResponse)}\n\n`)
+                res.end()
+            }
+        )
     } catch (error) {
-        next(error)
+        if (!res.headersSent) {
+            res.setHeader('Content-Type', 'text/event-stream')
+            res.setHeader('Cache-Control', 'no-cache')
+            res.setHeader('Connection', 'keep-alive')
+        }
+
+        const errorResponse = {
+            event: 'tts_error',
+            data: { error: error instanceof Error ? error.message : 'TTS generation failed' }
+        }
+        res.write('event: tts_error\n')
+        res.write(`data: ${JSON.stringify(errorResponse)}\n\n`)
+        res.end()
     }
 }
 
-// Get available voices for a provider
 const getVoices = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { provider, credentialId } = req.query

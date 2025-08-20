@@ -9,6 +9,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { v4 as uuidv4 } from 'uuid'
 import { getErrorMessage } from '../../errors/utils'
 import { MODE } from '../../Interface'
+import { generateTTSForResponseStream, shouldAutoPlayTTS } from '../../utils/buildChatflow'
 
 // Send input message and get prediction result (External)
 const createPrediction = async (req: Request, res: Response, next: NextFunction) => {
@@ -76,6 +77,25 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
 
                     const apiResponse = await predictionsServices.buildChatflow(req)
                     sseStreamer.streamMetadataEvent(apiResponse.chatId, apiResponse)
+
+                    const chatflow = await chatflowsService.getChatflowById(req.params.id)
+                    if (chatflow && shouldAutoPlayTTS(chatflow.textToSpeech) && apiResponse.text) {
+                        const options = {
+                            orgId: req.body.orgId || '',
+                            chatflowid: req.params.id,
+                            chatId: apiResponse.chatId,
+                            appDataSource: getRunningExpressApp().AppDataSource,
+                            databaseEntities: getRunningExpressApp().AppDataSource?.entityMetadatas || []
+                        }
+
+                        await generateTTSForResponseStream(
+                            apiResponse.text,
+                            chatflow.textToSpeech,
+                            options,
+                            apiResponse.chatId,
+                            sseStreamer
+                        )
+                    }
                 } catch (error) {
                     if (chatId) {
                         sseStreamer.streamErrorEvent(chatId, getErrorMessage(error))

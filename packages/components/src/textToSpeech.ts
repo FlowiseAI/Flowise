@@ -149,7 +149,6 @@ export const convertTextToSpeech = async (text: string, textToSpeechConfig: ICom
                     modelId: 'eleven_multilingual_v2'
                 })
 
-                // Convert the audio stream to buffer
                 const chunks: Buffer[] = []
                 const reader = audioStream.getReader()
 
