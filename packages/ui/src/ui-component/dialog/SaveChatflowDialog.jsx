@@ -67,7 +67,7 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     id='chatflow-tags'
                     type='text'
                     fullWidth
-                    placeholder='Add tag'
+                    placeholder='Add Category'
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
                 />
@@ -79,7 +79,7 @@ const SaveChatflowDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     fullWidth
                     placeholder='Add description'
                     multiline
-                    minRows={2}
+                    minRows={5}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                 />

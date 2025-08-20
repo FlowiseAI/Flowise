@@ -121,7 +121,7 @@ export const FlowListTable = ({
                                 </TableSortLabel>
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '25%' }} key='1'>
-                                Category
+                                Tags
                             </StyledTableCell>
                             <StyledTableCell style={{ width: '30%' }} key='2'>
                                 Nodes

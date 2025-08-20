@@ -1,9 +1,67 @@
+import React, { useEffect, useState, useRef } from 'react'
 import { Box, Grid, Card, CardContent, Typography, Divider, List, ListItem, ListItemText } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
-// simple color palette
+// small color palette
 const PALETTE = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f472b6']
 
-// --- Bar chart (colorful + hover highlight + native tooltip) ---
+// --- NEW: only add margin-left when collapsed rail would overlap content ---
+function useRailGuardMargin(ref) {
+  const theme = useTheme()
+  const upMd = useMediaQuery(theme.breakpoints.up('md'))
+  const [ml, setMl] = useState(0)
+
+  useEffect(() => {
+    if (!upMd) { setMl(0); return }
+
+    const SAFE_PAD = 8      // small buffer so cards never touch the rail
+    const COLLAPSE_MAX = 120 // treat widths <= this as the mini rail
+
+    const measure = () => {
+      const rail = document.querySelector('nav[aria-label="mailbox folders"]') ||
+                   document.querySelector('.MuiDrawer-paper')
+      const railRect = rail?.getBoundingClientRect()
+      const elRect = ref.current?.getBoundingClientRect()
+      if (!railRect || !elRect) { setMl(0); return }
+
+      const railWidth = railRect.width || 0
+      const isCollapsed = railWidth > 0 && railWidth <= COLLAPSE_MAX
+
+      // If collapsed: shift just enough so our content clears the rail’s right edge.
+      // If open: layout already reserves space -> no extra margin here.
+      const needed = isCollapsed
+        ? Math.max(0, Math.ceil((railRect.right + SAFE_PAD) - elRect.left))
+        : 0
+
+      setMl(needed)
+    }
+
+    measure()
+
+    const mo = new MutationObserver(measure)
+    mo.observe(document.body, { attributes: true, childList: true, subtree: true })
+
+    let ro
+    const target = document.querySelector('nav[aria-label="mailbox folders"]') ||
+                   document.querySelector('.MuiDrawer-paper')
+    if (target && 'ResizeObserver' in window) {
+      ro = new ResizeObserver(measure)
+      ro.observe(target)
+    }
+
+    window.addEventListener('resize', measure)
+    return () => {
+      window.removeEventListener('resize', measure)
+      mo.disconnect()
+      if (ro) ro.disconnect()
+    }
+  }, [upMd, ref])
+
+  return ml
+}
+
+// --- Bar chart ---
 const BarChart = ({
   data = [450, 520, 480, 610, 560, 310, 330],
   labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
@@ -41,7 +99,7 @@ const BarChart = ({
   )
 }
 
-// --- Donut (multi-color + tooltips) ---
+// --- Donut ---
 const Donut = ({ segments = [
   { label: 'Data Processing', value: 45 },
   { label: 'Customer Support', value: 25 },
@@ -81,7 +139,7 @@ const Donut = ({ segments = [
   )
 }
 
-// --- Line chart (two colored series + points + tooltips) ---
+// --- Line chart ---
 const LineChart = ({
   success = [85, 88, 90, 92, 91, 95],
   error = [15, 12, 10, 9, 8, 5],
@@ -91,8 +149,8 @@ const LineChart = ({
   const x = (i) => pad + i*((w-2*pad)/(labels.length-1))
   const y = (v) => (h-pad) - (v/max)*(h-2*pad)
   const toPath = (arr) => arr.map((v,i)=>`${i===0?'M':'L'} ${x(i)} ${y(v)}`).join(' ')
-  const successColor = '#3b82f6'  // blue
-  const errorColor = '#22c55e'    // green
+  const successColor = '#3b82f6'
+  const errorColor = '#22c55e'
 
   return (
     <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet">
@@ -117,8 +175,11 @@ const LineChart = ({
 }
 
 export default function Overview() {
+  const wrapperRef = useRef(null)
+  const leftOffset = useRailGuardMargin(wrapperRef)
+
   return (
-    <Box sx={{ p: { xs: 2, md: 3 } }}>
+    <Box ref={wrapperRef} sx={{ p: { xs: 2, md: 3 } }} style={{ marginLeft: leftOffset }}>
       <Typography variant="h2" sx={{ mb: 1 }}>Workforce Overview</Typography>
       <Typography variant="body2" sx={{ mb: 3 }}>
         Start with a high-level view of your AI workforce.
@@ -183,7 +244,7 @@ export default function Overview() {
         </Grid>
       </Grid>
 
-      {/* Bottom row: line + activity list (gap removed vs middle row) */}
+      {/* Bottom row: line + activity list */}
       <Grid container spacing={2} sx={{ mt: 0 }}>
         <Grid item xs={12} md={7}>
           <Card variant="outlined">
@@ -222,11 +283,6 @@ export default function Overview() {
           </Card>
         </Grid>
       </Grid>
-
-      {/* Footer links bar (static) */}
-      {/* <Box sx={{ display: 'flex', gap: 3, mt: 2, pb: 2, opacity: 0.8, fontSize: 14 }}>
-        <span>Resources</span><span>Legal</span><span>Contact Us</span>
-      </Box> */}
     </Box>
   )
 }
