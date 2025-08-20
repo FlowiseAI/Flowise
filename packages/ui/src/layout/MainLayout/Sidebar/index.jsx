@@ -17,91 +17,122 @@ import CloudMenuList from '@/layout/MainLayout/Sidebar/CloudMenuList'
 // store
 import { drawerWidth, headerHeight } from '@/store/constant'
 
-// ==============================|| SIDEBAR DRAWER ||============================== //
+// ==============================|| SIDEBAR DRAWER (with mini variant) ||============================== //
 
 const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
-    const theme = useTheme()
-    const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
-    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
+  const theme = useTheme()
+  const matchUpMd = useMediaQuery(theme.breakpoints.up('md'))
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
 
-    const drawer = (
-        <>
-            <Box
-                sx={{
-                    display: { xs: 'block', md: 'none' },
-                    height: '80px'
-                }}
-            >
-                <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
-                    <LogoSection />
-                </Box>
-            </Box>
-            <BrowserView>
-                <PerfectScrollbar
-                    component='div'
-                    style={{
-                        height: !matchUpMd ? 'calc(100vh - 56px)' : `calc(100vh - ${headerHeight}px)`,
-                        display: 'flex',
-                        flexDirection: 'column'
-                    }}
-                >
-                    <MenuList />
-                    <CloudMenuList />
-                </PerfectScrollbar>
-            </BrowserView>
-            <MobileView>
-                <Box sx={{ px: 2 }}>
-                    <MenuList />
-                    <CloudMenuList />
-                </Box>
-            </MobileView>
-        </>
-    )
+  // Mini-rail width for collapsed desktop sidebar
+  const miniDrawerWidth = 72
+  const collapsed = matchUpMd && !drawerOpen
 
-    const container = window !== undefined ? () => window.document.body : undefined
-
-    return (
-        <Box
-            component='nav'
-            sx={{
-                flexShrink: { md: 0 },
-                width: matchUpMd ? drawerWidth : 'auto'
-            }}
-            aria-label='mailbox folders'
-        >
-            {isAuthenticated && (
-                <Drawer
-                    container={container}
-                    variant={matchUpMd ? 'persistent' : 'temporary'}
-                    anchor='left'
-                    open={drawerOpen}
-                    onClose={drawerToggle}
-                    sx={{
-                        '& .MuiDrawer-paper': {
-                            width: drawerWidth,
-                            background: theme.palette.background.default,
-                            color: theme.palette.text.primary,
-                            [theme.breakpoints.up('md')]: {
-                                top: `${headerHeight}px`
-                            },
-                            borderRight: drawerOpen ? '1px solid' : 'none',
-                            borderColor: drawerOpen ? theme.palette.grey[900] + 25 : 'transparent'
-                        }
-                    }}
-                    ModalProps={{ keepMounted: true }}
-                    color='inherit'
-                >
-                    {drawer}
-                </Drawer>
-            )}
+  const drawer = (
+    <>
+      <Box
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          height: '80px'
+        }}
+      >
+        <Box sx={{ display: 'flex', p: 2, mx: 'auto' }}>
+          <LogoSection />
         </Box>
-    )
+      </Box>
+      <BrowserView>
+        <PerfectScrollbar
+          component='div'
+          style={{
+            height: !matchUpMd ? 'calc(100vh - 56px)' : `calc(100vh - ${headerHeight}px)`,
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          <MenuList />
+          <CloudMenuList />
+        </PerfectScrollbar>
+      </BrowserView>
+      <MobileView>
+        <Box sx={{ px: 2 }}>
+          <MenuList />
+          <CloudMenuList />
+        </Box>
+      </MobileView>
+    </>
+  )
+
+  const container = window !== undefined ? () => window.document.body : undefined
+
+  return (
+    <Box
+      component='nav'
+      sx={{
+        flexShrink: { md: 0 },
+        // On desktop, keep a visible rail when "closed"
+        width: matchUpMd ? (collapsed ? miniDrawerWidth : drawerWidth) : 'auto'
+      }}
+      aria-label='mailbox folders'
+    >
+      {isAuthenticated && (
+        <Drawer
+          container={container}
+          // Desktop: keep it mounted and switch width instead of hiding
+          // Mobile: behave as temporary drawer
+          variant={matchUpMd ? 'persistent' : 'temporary'}
+          anchor='left'
+          open={matchUpMd ? true : drawerOpen}
+          onClose={drawerToggle}
+          sx={{
+            '& .MuiDrawer-paper': {
+              width: collapsed ? miniDrawerWidth : drawerWidth,
+              background: theme.palette.background.default,
+              color: theme.palette.text.primary,
+              [theme.breakpoints.up('md')]: { top: `${headerHeight}px` },
+              borderRight: drawerOpen ? '1px solid' : 'none',
+              borderColor: drawerOpen ? theme.palette.grey[900] + 25 : 'transparent',
+
+              // --- MINI VARIANT COSMETICS (labels hidden, icons centered) ---
+              ...(collapsed && {
+                overflowX: 'hidden',
+                '& .MuiListSubheader-root': { display: 'none' },
+                '& .MuiDivider-root': { display: 'none' },
+
+                // Hide all text labels (works for NavItem/NavCollapse and CloudMenuList labels)
+                '& .MuiListItemText-root': { display: 'none' },
+                '& .MuiListItemButton-root .MuiTypography-root': { display: 'none' },
+
+                // Center icons and tighten paddings
+                '& .MuiListItemButton-root': {
+                  justifyContent: 'center',
+                  paddingLeft: '12px !important',
+                  paddingRight: '12px !important'
+                },
+                '& .MuiListItemIcon-root': {
+                  minWidth: 36,
+                  marginRight: 0,
+                  justifyContent: 'center'
+                },
+
+                // Hide chips / beta badges in collapsed rail
+                '& .MuiChip-root': { display: 'none' }
+              })
+            }
+          }}
+          ModalProps={{ keepMounted: true }}
+          color='inherit'
+        >
+          {drawer}
+        </Drawer>
+      )}
+    </Box>
+  )
 }
 
 Sidebar.propTypes = {
-    drawerOpen: PropTypes.bool,
-    drawerToggle: PropTypes.func,
-    window: PropTypes.object
+  drawerOpen: PropTypes.bool,
+  drawerToggle: PropTypes.func,
+  window: PropTypes.object
 }
 
 export default Sidebar
