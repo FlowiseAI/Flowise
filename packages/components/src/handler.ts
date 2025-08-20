@@ -1,4 +1,5 @@
 import { Logger } from 'winston'
+import { URL } from 'url'
 import { v4 as uuidv4 } from 'uuid'
 import { Client } from 'langsmith'
 import CallbackHandler from 'langfuse-langchain'
@@ -94,10 +95,14 @@ interface PhoenixTracerOptions {
 function getPhoenixTracer(options: PhoenixTracerOptions): Tracer | undefined {
     const SEMRESATTRS_PROJECT_NAME = 'openinference.project.name'
     try {
+        const parsed = new URL(options.baseUrl)
+        const baseEndpoint = `${parsed.protocol}//${parsed.host}`
+        const path = parsed.pathname.replace(/\/$/, '')
         const traceExporter = new ProtoOTLPTraceExporter({
-            url: `${options.baseUrl}/v1/traces`,
+            url: `${baseEndpoint}${path}/v1/traces`,
             headers: {
-                api_key: options.apiKey
+                api_key: options.apiKey || '',
+                authorization: `Bearer ${options.apiKey || ''}`
             }
         })
         const tracerProvider = new NodeTracerProvider({
