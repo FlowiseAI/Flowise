@@ -268,4 +268,30 @@ export class SSEStreamer implements IServerSideEventStreamer {
             client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
         }
     }
+
+    streamTTSDataEvent(chatId: string, audioChunk: string): void {
+        const client = this.clients[chatId]
+        console.log('clients', this.clients)
+        console.log('client', client)
+        if (client) {
+            const clientResponse = {
+                event: 'tts_data',
+                data: audioChunk
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+
+    streamTTSEndEvent(chatId: string): void {
+        const client = this.clients[chatId]
+        console.log('clients', this.clients)
+        console.log('client', client)
+        if (client) {
+            const clientResponse = {
+                event: 'tts_end',
+                data: {}
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
 }

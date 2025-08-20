@@ -11,8 +11,7 @@ import {
     IMessage,
     IServerSideEventStreamer,
     convertChatHistoryToText,
-    generateFollowUpPrompts,
-    convertTextToSpeech
+    generateFollowUpPrompts
 } from 'flowise-components'
 import {
     IncomingAgentflowInput,
@@ -58,6 +57,7 @@ import { ChatMessage } from '../database/entities/ChatMessage'
 import { Telemetry } from './telemetry'
 import { getWorkspaceSearchOptions } from '../enterprise/utils/ControllerServiceUtils'
 import { UsageCacheManager } from '../UsageCacheManager'
+import { generateTTSForResponseStream, shouldAutoPlayTTS } from './buildChatflow'
 
 interface IWaitingNode {
     nodeId: string
@@ -134,59 +134,6 @@ interface IExecuteNodeParams {
     orgId: string
     workspaceId: string
     subscriptionId: string
-}
-
-// Helper function to check if auto-play TTS is enabled
-const shouldAutoPlayTTS = (textToSpeechConfig: string | undefined | null): boolean => {
-    if (!textToSpeechConfig) return false
-    try {
-        const config = typeof textToSpeechConfig === 'string' ? JSON.parse(textToSpeechConfig) : textToSpeechConfig
-        // Check each provider to see if any has autoPlay enabled and status true
-        for (const providerKey in config) {
-            const provider = config[providerKey]
-            if (provider && provider.status === true && provider.autoPlay === true) {
-                return true
-            }
-        }
-        return false
-    } catch (error) {
-        return false
-    }
-}
-
-// Helper function to generate TTS for response
-const generateTTSForResponse = async (
-    responseText: string,
-    textToSpeechConfig: string | undefined,
-    options: ICommonObject
-): Promise<Buffer | null> => {
-    try {
-        if (!textToSpeechConfig) return null
-        const config = typeof textToSpeechConfig === 'string' ? JSON.parse(textToSpeechConfig) : textToSpeechConfig
-
-        // Find the active provider configuration
-        let activeProviderConfig = null
-        for (const providerKey in config) {
-            const provider = config[providerKey]
-            if (provider && provider.status === true) {
-                activeProviderConfig = {
-                    name: providerKey,
-                    credentialId: provider.credentialId,
-                    voice: provider.voice,
-                    model: provider.model
-                }
-                break
-            }
-        }
-
-        if (!activeProviderConfig) return null
-
-        const audioBuffer = await convertTextToSpeech(responseText, activeProviderConfig, options)
-        return audioBuffer
-    } catch (error) {
-        logger.error(`[server]: TTS generation failed: ${getErrorMessage(error)}`)
-        return null
-    }
 }
 
 interface IExecuteAgentFlowParams extends Omit<IExecuteFlowParams, 'incomingInput'> {
@@ -2092,7 +2039,6 @@ export const executeAgentFlow = async ({
 
     if (sessionId) result.sessionId = sessionId
 
-    /*** Auto-play TTS Logic ***/
     if (shouldAutoPlayTTS(chatflow.textToSpeech) && result.text) {
         const options = {
             orgId,
@@ -2102,14 +2048,8 @@ export const executeAgentFlow = async ({
             databaseEntities
         }
 
-        const audioBuffer = await generateTTSForResponse(result.text, chatflow.textToSpeech, options)
-        if (audioBuffer) {
-            const audioBase64 = audioBuffer.toString('base64')
-
-            // Agent flows are always streamed, so send audio via SSE
-            if (sseStreamer) {
-                sseStreamer.streamAudioEvent(chatId, audioBase64)
-            }
+        if (sseStreamer) {
+            await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, sseStreamer)
         }
     }
 

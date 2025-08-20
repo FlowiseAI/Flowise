@@ -7,6 +7,7 @@ import {
     IFileUpload,
     convertSpeechToText,
     convertTextToSpeech,
+    convertTextToSpeechStream,
     ICommonObject,
     addSingleFileToStorage,
     generateFollowUpPrompts,
@@ -17,7 +18,8 @@ import {
     getFileFromUpload,
     removeSpecificFileFromUpload,
     EvaluationRunner,
-    handleEscapeCharacters
+    handleEscapeCharacters,
+    IServerSideEventStreamer
 } from 'flowise-components'
 import { StatusCodes } from 'http-status-codes'
 import {
@@ -71,12 +73,10 @@ import { executeAgentFlow } from './buildAgentflow'
 import { Workspace } from '../enterprise/database/entities/workspace.entity'
 import { Organization } from '../enterprise/database/entities/organization.entity'
 
-// Helper function to check if auto-play TTS is enabled
 const shouldAutoPlayTTS = (textToSpeechConfig: string | undefined | null): boolean => {
     if (!textToSpeechConfig) return false
     try {
         const config = typeof textToSpeechConfig === 'string' ? JSON.parse(textToSpeechConfig) : textToSpeechConfig
-        // Check each provider to see if any has autoPlay enabled and status true
         for (const providerKey in config) {
             const provider = config[providerKey]
             if (provider && provider.status === true && provider.autoPlay === true) {
@@ -85,21 +85,22 @@ const shouldAutoPlayTTS = (textToSpeechConfig: string | undefined | null): boole
         }
         return false
     } catch (error) {
+        logger.error(`Error parsing textToSpeechConfig: ${getErrorMessage(error)}`)
         return false
     }
 }
 
-// Helper function to generate TTS for response
-const generateTTSForResponse = async (
+const generateTTSForResponseStream = async (
     responseText: string,
     textToSpeechConfig: string | undefined,
-    options: ICommonObject
-): Promise<Buffer | null> => {
+    options: ICommonObject,
+    chatId: string,
+    sseStreamer: IServerSideEventStreamer
+): Promise<void> => {
     try {
-        if (!textToSpeechConfig) return null
+        if (!textToSpeechConfig) return
         const config = typeof textToSpeechConfig === 'string' ? JSON.parse(textToSpeechConfig) : textToSpeechConfig
 
-        // Find the active provider configuration
         let activeProviderConfig = null
         for (const providerKey in config) {
             const provider = config[providerKey]
@@ -114,13 +115,24 @@ const generateTTSForResponse = async (
             }
         }
 
-        if (!activeProviderConfig) return null
+        if (!activeProviderConfig) return
 
-        const audioBuffer = await convertTextToSpeech(responseText, activeProviderConfig, options)
-        return audioBuffer
+        await convertTextToSpeechStream(
+            responseText,
+            activeProviderConfig,
+            options,
+            (chunk: Buffer) => {
+                const audioBase64 = chunk.toString('base64')
+                logger.info(`Received TTS chunk: ${audioBase64}`)
+                sseStreamer.streamTTSDataEvent(chatId, audioBase64)
+            },
+            () => {
+                sseStreamer.streamTTSEndEvent(chatId)
+            }
+        )
     } catch (error) {
-        logger.error(`[server]: TTS generation failed: ${getErrorMessage(error)}`)
-        return null
+        logger.error(`[server]: TTS streaming failed: ${getErrorMessage(error)}`)
+        sseStreamer.streamTTSEndEvent(chatId)
     }
 }
 
@@ -880,8 +892,6 @@ export const executeFlow = async ({
         if (Object.keys(setVariableNodesOutput).length) result.flowVariables = setVariableNodesOutput
 
         if (shouldAutoPlayTTS(chatflow.textToSpeech) && result.text) {
-            logger.info('[server]: Generating TTS for response')
-            logger.info(`[server/executeFlow]: TTS config: ${JSON.stringify(chatflow.textToSpeech)}`)
             const options = {
                 orgId,
                 chatflowid,
@@ -890,15 +900,10 @@ export const executeFlow = async ({
                 databaseEntities
             }
 
-            const audioBuffer = await generateTTSForResponse(result.text, chatflow.textToSpeech, options)
-            if (audioBuffer) {
-                const audioBase64 = audioBuffer.toString('base64')
-
-                if (streaming && sseStreamer) {
-                    sseStreamer.streamAudioEvent(chatId, audioBase64)
-                } else {
-                    result.audioData = audioBase64
-                }
+            if (streaming && sseStreamer) {
+                await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, sseStreamer)
+            } else if (sseStreamer) {
+                await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, sseStreamer)
             }
         }
 
@@ -1129,3 +1134,5 @@ const incrementFailedMetricCounter = (metricsProvider: IMetricsProvider, isInter
         )
     }
 }
+
+export { shouldAutoPlayTTS, generateTTSForResponseStream }
