@@ -1,0 +1,67 @@
+name: Smart Staging Reset
+# Automatically resets staging to match production after staging→production releases
+# Prevents 90+ file change issues in future PRs by keeping staging clean
+
+permissions:
+    contents: write # Needed to push to staging branch
+    pull-requests: read # Needed to read PR information
+
+on:
+    pull_request:
+        types: [closed]
+        branches: [production]
+
+jobs:
+    reset-staging:
+        if: |
+            github.event.pull_request.merged == true &&
+            github.event.pull_request.head.ref == 'staging'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  fetch-depth: 0
+
+            - name: Check if staging has new commits since production
+              id: check-staging
+              run: |
+                  git fetch origin
+
+                  # Get commits that are in staging but not in production
+                  COMMITS_AHEAD=$(git rev-list --count origin/production..origin/staging)
+                  echo "commits_ahead=$COMMITS_AHEAD" >> $GITHUB_OUTPUT
+
+                  # Get the latest staging commit hash
+                  LATEST_STAGING=$(git rev-parse origin/staging)
+                  echo "latest_staging=$LATEST_STAGING" >> $GITHUB_OUTPUT
+
+                  # Get the latest production commit hash  
+                  LATEST_PRODUCTION=$(git rev-parse origin/production)
+                  echo "latest_production=$LATEST_PRODUCTION" >> $GITHUB_OUTPUT
+
+                  echo "Staging commits ahead of production: $COMMITS_AHEAD"
+                  echo "Latest staging: $LATEST_STAGING"
+                  echo "Latest production: $LATEST_PRODUCTION"
+
+            - name: Reset staging to match production
+              if: steps.check-staging.outputs.commits_ahead != '0'
+              run: |
+                  echo "✅ Resetting staging to match production"
+                  git checkout staging
+                  git reset --hard origin/production
+                  git push --force-with-lease origin staging
+                  echo "✅ Staging reset complete"
+
+            - name: Log successful staging reset
+              if: steps.check-staging.outputs.commits_ahead != '0'
+              run: |
+                  echo "🎉 Staging successfully reset to match production"
+                  echo "This ensures clean workflow for future feature branches"
+
+            - name: Log when staging is already clean
+              if: steps.check-staging.outputs.commits_ahead == '0'
+              run: |
+                  echo "ℹ️ Staging is already clean (matches production)"
+                  echo "No reset needed"

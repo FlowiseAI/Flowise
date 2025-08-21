@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes'
 import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { INodeData, IUser, MODE } from '../../Interface'
 import { INodeOptionsValue } from 'flowise-components'
-import { databaseEntities } from '../../utils'
+import { databaseEntities, refreshStoredCredentialTokens } from '../../utils'
 import logger from '../../utils/logger'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
@@ -100,6 +100,19 @@ const getSingleNodeAsyncOptions = async (
             try {
                 const nodeInstance = appServer.nodesPool.componentNodes[nodeName]
                 const methodName = nodeData.loadMethod || ''
+
+                // Check if node requires OAuth refresh and has credentials
+                if (nodeInstance.requiresOAuthRefresh && nodeData.credential) {
+                    const refreshOptions = {
+                        appDataSource: appServer.AppDataSource,
+                        logger
+                    }
+
+                    const refreshSuccess = await refreshStoredCredentialTokens(nodeData.credential, refreshOptions.appDataSource)
+                    if (!refreshSuccess) {
+                        logger.warn(`[OAUTH REFRESH]: Failed to refresh credential for node ${nodeName}, proceeding anyway`)
+                    }
+                }
 
                 const dbResponse: INodeOptionsValue[] = await nodeInstance.loadMethods![methodName]!.call(nodeInstance, nodeData, {
                     appDataSource: appServer.AppDataSource,

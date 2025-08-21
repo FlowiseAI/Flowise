@@ -20,4 +20,7 @@ router.delete(['/', '/:id'], enforceAbility('Credential'), credentialsController
 // UPDATE REFRESH TOKEN
 router.post('/refresh-token', enforceAbility('Credential'), credentialsController.updateAndRefreshToken)
 
+// UPDATE REFRESH ATLASSIAN TOKEN
+router.post('/refresh-atlassian-token', enforceAbility('Credential'), credentialsController.updateAndRefreshAtlassianToken)
+
 export default router

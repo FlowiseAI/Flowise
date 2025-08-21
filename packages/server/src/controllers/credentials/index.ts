@@ -99,11 +99,33 @@ const updateAndRefreshToken = async (req: Request, res: Response, next: NextFunc
     }
 }
 
+const updateAndRefreshAtlassianToken = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        if (!req.body.credentialId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Credential ID is required'
+            })
+        }
+
+        const apiResponse = await credentialsService.updateAndRefreshAtlassianToken(req.body.credentialId, (req.user as any)?.id)
+        return res.json({
+            success: true,
+            message: 'Atlassian token refreshed successfully',
+            data: apiResponse
+        })
+    } catch (error) {
+        console.error('Error refreshing Atlassian token:', error)
+        next(error)
+    }
+}
+
 export default {
     createCredential,
     deleteCredentials,
     getAllCredentials,
     getCredentialById,
     updateCredential,
-    updateAndRefreshToken
+    updateAndRefreshToken,
+    updateAndRefreshAtlassianToken
 }

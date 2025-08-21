@@ -150,6 +150,7 @@ export interface INode extends INodeProperties {
     credential?: INodeParams
     inputs?: INodeParams[]
     output?: INodeOutputsValue[]
+    requiresOAuthRefresh?: boolean
     loadMethods?: {
         [key: string]: (nodeData: INodeData, options?: ICommonObject) => Promise<INodeOptionsValue[]>
     }

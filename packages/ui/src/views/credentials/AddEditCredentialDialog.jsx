@@ -48,6 +48,7 @@ import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import { useFlags } from 'flagsmith/react'
 import { GoogleAuthButton } from '@/ui-component/button/GoogleAuthButton'
 import { SalesforceAuthButton } from '@/ui-component/button/SalesforceAuthButton'
+import { AtlassianAuthButton } from '@/ui-component/button/AtlassianAuthButton'
 import keySVG from '@/assets/images/key.svg'
 
 const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) => {
@@ -374,6 +375,117 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
         window.addEventListener('message', handleMessage)
     }
 
+    const handleAtlassianOAuth = async () => {
+        try {
+            // Step 1: Initialize MCP OAuth flow
+            const mcpResponse = await fetch(`${baseURL}/api/v1/atlassian-auth/mcp-initialize`)
+            if (!mcpResponse.ok) {
+                throw new Error(`MCP initialization failed: ${mcpResponse.status} ${mcpResponse.statusText}`)
+            }
+
+            const mcpData = await mcpResponse.json()
+            console.log('MCP OAuth initialized:', mcpData)
+
+            // Step 2: Open OAuth popup with MCP endpoints
+            const width = 500
+            const height = 600
+            const left = window.screenX + (window.outerWidth - width) / 2
+            const top = window.screenY + (window.outerHeight - height) / 2
+            const features = `
+                width=${width},
+                height=${height},
+                left=${left},
+                top=${top},
+                status=yes,
+                toolbar=no,
+                location=no,
+                menubar=no,
+                resizable=yes,
+                scrollbars=yes
+            `.replace(/\s/g, '')
+
+            // Build MCP OAuth URL
+            const authParams = new URLSearchParams({
+                response_type: 'code',
+                client_id: mcpData.client_id,
+                redirect_uri: mcpData.redirect_uri,
+                scope: mcpData.scope,
+                state: mcpData.sessionId, // Use sessionId as state parameter
+                audience: 'api.atlassian.com',
+                prompt: 'consent'
+            })
+
+            const authUrl = `${mcpData.authorization_endpoint}?${authParams.toString()}`
+            window.open(authUrl, 'Atlassian MCP Auth', features)
+
+            // Listen for messages from the popup
+            const handleMessage = (event) => {
+                if (event.data?.type === 'AUTH_SUCCESS' && event.data.user) {
+                    setCredentialData((prevData) => ({
+                        ...prevData,
+                        access_token: event.data.user.access_token,
+                        refresh_token: event.data.user.refresh_token,
+                        expiration_time: event.data.user.expiration_time,
+                        // Store only essential MCP client credentials (endpoints fetched dynamically)
+                        mcp_client_id: event.data.user.mcp_client_id,
+                        mcp_client_secret: event.data.user.mcp_client_secret
+                    }))
+                    if (!name) {
+                        setName(`Atlassian MCP OAuth (${event.data.user.userInfo?.name || event.data.user.userInfo?.email || 'User'})`)
+                    }
+                    // Show success message
+                    enqueueSnackbar({
+                        message: 'Successfully authenticated with Atlassian MCP',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'success',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                    window.removeEventListener('message', handleMessage)
+                }
+                if (event.data?.type === 'AUTH_ERROR') {
+                    console.error('Atlassian MCP authentication error:', event.data.error)
+
+                    enqueueSnackbar({
+                        message: 'Failed to authenticate with Atlassian MCP',
+                        options: {
+                            key: new Date().getTime() + Math.random(),
+                            variant: 'error',
+                            action: (key) => (
+                                <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                                    <IconX />
+                                </Button>
+                            )
+                        }
+                    })
+                    window.removeEventListener('message', handleMessage)
+                }
+            }
+
+            // Add the event listener
+            window.addEventListener('message', handleMessage)
+        } catch (error) {
+            console.error('MCP initialization error:', error)
+            enqueueSnackbar({
+                message: `Failed to initialize Atlassian MCP OAuth: ${error.message}`,
+                options: {
+                    key: new Date().getTime() + Math.random(),
+                    variant: 'error',
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
+        }
+    }
+
     const component = show ? (
         <Dialog
             fullWidth
@@ -466,6 +578,14 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                         componentCredential={componentCredential}
                         credentialData={credentialData}
                         handleSalesforceOAuth={handleSalesforceOAuth}
+                        baseURL={baseURL}
+                    />
+                )}
+                {componentCredential && (
+                    <AtlassianAuthButton
+                        componentCredential={componentCredential}
+                        credentialData={credentialData}
+                        handleAtlassianOAuth={handleAtlassianOAuth}
                         baseURL={baseURL}
                     />
                 )}

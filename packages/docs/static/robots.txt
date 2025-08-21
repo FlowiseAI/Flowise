@@ -1,0 +1,7 @@
+# robots.txt for https://answeragent.ai
+# Allow all crawlers to access all content
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://answeragent.ai/sitemap.xml

@@ -8,6 +8,7 @@ import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { getErrorMessage } from '../../errors/utils'
 import { FindOptionsWhere, IsNull, Like } from 'typeorm'
 import { GoogleOauth2Client } from '../../utils/refreshGoogleAccessToken'
+import { refreshStoredCredentialTokens } from '../../utils'
 
 const createCredential = async (requestBody: any, userId?: string, organizationId?: string) => {
     try {
@@ -189,8 +190,8 @@ const updateAndRefreshToken = async (credentialId: string, userId?: string): Pro
             credentialName: credential.credentialName,
             plainDataObj: {
                 ...decryptedCredentialData,
-                googleAccessToken: access_token,  // ✅ ACTUALIZA el nuevo access token
-                expiresAt: new Date(expiry_date)  // ✅ ACTUALIZA la fecha de expiración
+                googleAccessToken: access_token, // ✅ ACTUALIZA el nuevo access token
+                expiresAt: new Date(expiry_date) // ✅ ACTUALIZA la fecha de expiración
                 // expiresAt: new Date(Date.now() + 1 * 60 * 1000)
             },
             userId: credential.userId,
@@ -208,11 +209,35 @@ const updateAndRefreshToken = async (credentialId: string, userId?: string): Pro
     }
 }
 
+const updateAndRefreshAtlassianToken = async (credentialId: string, userId?: string): Promise<any> => {
+    try {
+        // Use centralized OAuth utility
+
+        const appServer = getRunningExpressApp()
+
+        const success = await refreshStoredCredentialTokens(credentialId, appServer.AppDataSource)
+
+        if (!success) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'Failed to refresh Atlassian token')
+        }
+
+        // Return the updated credential
+        const credential = await appServer.AppDataSource.getRepository(Credential).findOneBy({ id: credentialId })
+        return credential
+    } catch (error) {
+        throw new InternalFlowiseError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Error: credentialsService.updateAndRefreshAtlassianToken - ${getErrorMessage(error)}`
+        )
+    }
+}
+
 export default {
     createCredential,
     deleteCredentials,
     getAllCredentials,
     getCredentialById,
     updateCredential,
-    updateAndRefreshToken
+    updateAndRefreshToken,
+    updateAndRefreshAtlassianToken
 }
