@@ -79,7 +79,8 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
 
         if (id) queryBuilder.andWhere('execution.id = :id', { id })
         if (agentflowId) queryBuilder.andWhere('execution.agentflowId = :agentflowId', { agentflowId })
-        if (agentflowName) queryBuilder.andWhere('LOWER(agentflow.name) LIKE LOWER(:agentflowName)', { agentflowName: `%${agentflowName}%` })
+        if (agentflowName)
+            queryBuilder.andWhere('LOWER(agentflow.name) LIKE LOWER(:agentflowName)', { agentflowName: `%${agentflowName}%` })
         if (sessionId) queryBuilder.andWhere('execution.sessionId = :sessionId', { sessionId })
         if (state) queryBuilder.andWhere('execution.state = :state', { state })
         if (workspaceId) queryBuilder.andWhere('execution.workspaceId = :workspaceId', { workspaceId })
