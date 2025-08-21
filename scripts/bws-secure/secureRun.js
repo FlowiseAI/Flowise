@@ -97,7 +97,7 @@ function getMachineAccountsUrl() {
 async function readConfigFileWithFallback() {
   const hasToken = process.env.BWS_ACCESS_TOKEN;
   const noOverride = process.env.BWS_NO_OVERRIDE === 'true';
-  const cacheFile = path.join(process.cwd(), '.bwsconfig.cache');
+  const cacheFile = path.join(dirname, '.bwsconfig.cache');
   const cacheTimeout = 5 * 60 * 1000; // 5 minutes cache
 
   // Skip BWS override if BWS_NO_OVERRIDE is set
