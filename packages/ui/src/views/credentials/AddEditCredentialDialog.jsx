@@ -567,6 +567,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                 )}
                 {componentCredential && (
                     <GoogleAuthButton
+                        key='google-auth-button'
                         componentCredential={componentCredential}
                         name={name}
                         handleGoogleOAuth={handleGoogleOAuth}
@@ -575,6 +576,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                 )}
                 {componentCredential && (
                     <SalesforceAuthButton
+                        key='salesforce-auth-button'
                         componentCredential={componentCredential}
                         credentialData={credentialData}
                         handleSalesforceOAuth={handleSalesforceOAuth}
@@ -583,6 +585,7 @@ const AddEditCredentialDialog = ({ show, dialogProps, onCancel, onConfirm, setEr
                 )}
                 {componentCredential && (
                     <AtlassianAuthButton
+                        key='atlassian-auth-button'
                         componentCredential={componentCredential}
                         credentialData={credentialData}
                         handleAtlassianOAuth={handleAtlassianOAuth}
