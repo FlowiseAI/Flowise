@@ -11,6 +11,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 export interface ExecutionFilters {
     id?: string
     agentflowId?: string
+    agentflowName?: string
     sessionId?: string
     state?: ExecutionState
     startDate?: Date
@@ -65,7 +66,7 @@ const getPublicExecutionById = async (executionId: string): Promise<Execution | 
 const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data: Execution[]; total: number }> => {
     try {
         const appServer = getRunningExpressApp()
-        const { id, agentflowId, sessionId, state, startDate, endDate, page = 1, limit = 12, workspaceId } = filters
+        const { id, agentflowId, agentflowName, sessionId, state, startDate, endDate, page = 1, limit = 12, workspaceId } = filters
 
         // Handle UUID fields properly using raw parameters to avoid type conversion issues
         // This uses the query builder instead of direct objects for compatibility with UUID fields
@@ -78,6 +79,8 @@ const getAllExecutions = async (filters: ExecutionFilters = {}): Promise<{ data:
 
         if (id) queryBuilder.andWhere('execution.id = :id', { id })
         if (agentflowId) queryBuilder.andWhere('execution.agentflowId = :agentflowId', { agentflowId })
+        if (agentflowName)
+            queryBuilder.andWhere('LOWER(agentflow.name) LIKE LOWER(:agentflowName)', { agentflowName: `%${agentflowName}%` })
         if (sessionId) queryBuilder.andWhere('execution.sessionId = :sessionId', { sessionId })
         if (state) queryBuilder.andWhere('execution.state = :state', { state })
         if (workspaceId) queryBuilder.andWhere('execution.workspaceId = :workspaceId', { workspaceId })

@@ -68,6 +68,7 @@ const AgentExecutions = () => {
         startDate: null,
         endDate: null,
         agentflowId: '',
+        agentflowName: '',
         sessionId: ''
     })
 
@@ -132,6 +133,7 @@ const AgentExecutions = () => {
         }
 
         if (filters.agentflowId) params.agentflowId = filters.agentflowId
+        if (filters.agentflowName) params.agentflowName = filters.agentflowName
         if (filters.sessionId) params.sessionId = filters.sessionId
 
         getAllExecutions.request(params)
@@ -143,6 +145,7 @@ const AgentExecutions = () => {
             startDate: null,
             endDate: null,
             agentflowId: '',
+            agentflowName: '',
             sessionId: ''
         })
         setCurrentPage(1)
@@ -315,6 +318,20 @@ const AgentExecutions = () => {
                             <Grid sx={{ ml: -1 }} item xs={12} md={2}>
                                 <TextField
                                     fullWidth
+                                    label='Agentflow'
+                                    value={filters.agentflowName}
+                                    onChange={(e) => handleFilterChange('agentflowName', e.target.value)}
+                                    size='small'
+                                    sx={{
+                                        '& .MuiOutlinedInput-notchedOutline': {
+                                            borderColor: borderColor
+                                        }
+                                    }}
+                                />
+                            </Grid>
+                            <Grid sx={{ ml: -1 }} item xs={12} md={2}>
+                                <TextField
+                                    fullWidth
                                     label='Session ID'
                                     value={filters.sessionId}
                                     onChange={(e) => handleFilterChange('sessionId', e.target.value)}
@@ -326,7 +343,7 @@ const AgentExecutions = () => {
                                     }}
                                 />
                             </Grid>
-                            <Grid item xs={12} md={4}>
+                            <Grid item xs={12} md={2}>
                                 <Stack direction='row' spacing={1}>
                                     <Button
                                         variant='contained'

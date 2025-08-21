@@ -47,6 +47,7 @@ const getAllExecutions = async (req: Request, res: Response, next: NextFunction)
 
         // Flow and session filters
         if (req.query.agentflowId) filters.agentflowId = req.query.agentflowId as string
+        if (req.query.agentflowName) filters.agentflowName = req.query.agentflowName as string
         if (req.query.sessionId) filters.sessionId = req.query.sessionId as string
 
         // State filter
