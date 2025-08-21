@@ -1,50 +1,56 @@
+// Overview.jsx
 import React, { useEffect, useState, useRef } from 'react'
 import { Box, Grid, Card, CardContent, Typography, Divider, List, ListItem, ListItemText } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 
-// small color palette
+// simple color palette
 const PALETTE = ['#3b82f6', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f472b6']
 
-// --- NEW: only add margin-left when collapsed rail would overlap content ---
-function useRailGuardMargin(ref) {
+/**
+ * Compute exactly how much the page needs to shift so it clears the
+ * left rail when the sidebar is collapsed. Adds *padding-left* only
+ * when there’s real overlap. No changes when the drawer is open.
+ */
+function useRailGuardPadding(ref) {
   const theme = useTheme()
   const upMd = useMediaQuery(theme.breakpoints.up('md'))
-  const [ml, setMl] = useState(0)
+  const [pad, setPad] = useState(0)
 
   useEffect(() => {
-    if (!upMd) { setMl(0); return }
+    if (!upMd) { setPad(0); return }
 
-    const SAFE_PAD = 8      // small buffer so cards never touch the rail
-    const COLLAPSE_MAX = 120 // treat widths <= this as the mini rail
+    const SAFE_PAD = 8        // tiny gap so cards never touch the rail
+    const COLLAPSE_MAX = 120  // treat widths <= this as the mini-rail
 
     const measure = () => {
-      const rail = document.querySelector('nav[aria-label="mailbox folders"]') ||
-                   document.querySelector('.MuiDrawer-paper')
+      // Prefer the <nav> container (always there), otherwise drawer paper
+      const rail = document.querySelector('nav[aria-label="mailbox folders"]')
+                 || document.querySelector('.MuiDrawer-paper')
       const railRect = rail?.getBoundingClientRect()
       const elRect = ref.current?.getBoundingClientRect()
-      if (!railRect || !elRect) { setMl(0); return }
+      if (!railRect || !elRect) { setPad(0); return }
 
       const railWidth = railRect.width || 0
       const isCollapsed = railWidth > 0 && railWidth <= COLLAPSE_MAX
 
-      // If collapsed: shift just enough so our content clears the rail’s right edge.
-      // If open: layout already reserves space -> no extra margin here.
+      // Only when collapsed: push content just past the rail’s right edge
       const needed = isCollapsed
         ? Math.max(0, Math.ceil((railRect.right + SAFE_PAD) - elRect.left))
         : 0
 
-      setMl(needed)
+      setPad(needed)
     }
 
     measure()
 
+    // React to DOM changes + resizes
     const mo = new MutationObserver(measure)
     mo.observe(document.body, { attributes: true, childList: true, subtree: true })
 
     let ro
-    const target = document.querySelector('nav[aria-label="mailbox folders"]') ||
-                   document.querySelector('.MuiDrawer-paper')
+    const target = document.querySelector('nav[aria-label="mailbox folders"]')
+                || document.querySelector('.MuiDrawer-paper')
     if (target && 'ResizeObserver' in window) {
       ro = new ResizeObserver(measure)
       ro.observe(target)
@@ -58,10 +64,12 @@ function useRailGuardMargin(ref) {
     }
   }, [upMd, ref])
 
-  return ml
+  return pad
 }
 
-// --- Bar chart ---
+/* ---------- Mini charts (unchanged) ---------- */
+
+// Bar chart
 const BarChart = ({
   data = [450, 520, 480, 610, 560, 310, 330],
   labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
@@ -99,7 +107,7 @@ const BarChart = ({
   )
 }
 
-// --- Donut ---
+// Donut
 const Donut = ({ segments = [
   { label: 'Data Processing', value: 45 },
   { label: 'Customer Support', value: 25 },
@@ -113,45 +121,42 @@ const Donut = ({ segments = [
     <svg width="100%" height={size} viewBox={`0 0 ${size} ${size}`} preserveAspectRatio="xMidYMid meet">
       <circle cx={cx} cy={cy} r={r} fill="none" stroke="currentColor" strokeOpacity="0.1" strokeWidth="20" />
       {segments.map((s, i) => {
-        const frac = s.value/total
-        const len = frac*circ
-        const dasharray = `${len} ${circ-len}`
-        const dashoffset = -offset
-        offset += len
-        return (
-          <circle
-            key={i}
-            cx={cx}
-            cy={cy}
-            r={r}
-            fill="none"
-            stroke={PALETTE[i % PALETTE.length]}
-            strokeWidth="20"
-            strokeDasharray={dasharray}
-            strokeDashoffset={dashoffset}
-            transform={`rotate(-90 ${cx} ${cy})`}
-          >
-            <title>{`${s.label}: ${s.value}%`}</title>
-          </circle>
+        const frac = s.value / total
+        const dash = frac * circ
+        const g = (
+          <g key={i}>
+            <circle
+              cx={cx}
+              cy={cy}
+              r={r}
+              fill="none"
+              stroke={PALETTE[i % PALETTE.length]}
+              strokeWidth="20"
+              strokeDasharray={`${dash} ${circ - dash}`}
+              strokeDashoffset={-offset}
+            >
+              <title>{`${s.label}: ${s.value}%`}</title>
+            </circle>
+          </g>
         )
+        offset += dash
+        return g
       })}
     </svg>
   )
 }
 
-// --- Line chart ---
+// Simple line chart
 const LineChart = ({
-  success = [85, 88, 90, 92, 91, 95],
-  error = [15, 12, 10, 9, 8, 5],
-  labels = ['Jan','Feb','Mar','Apr','May','Jun']
+  success = [92, 94, 93, 95, 97, 96, 98],
+  error = [8, 6, 7, 5, 3, 4, 2],
+  labels = ['Jan','Feb','Mar','Apr','May','Jun','Jul']
 }) => {
-  const w = 520, h = 220, pad = 32, max = 100
-  const x = (i) => pad + i*((w-2*pad)/(labels.length-1))
-  const y = (v) => (h-pad) - (v/max)*(h-2*pad)
-  const toPath = (arr) => arr.map((v,i)=>`${i===0?'M':'L'} ${x(i)} ${y(v)}`).join(' ')
-  const successColor = '#3b82f6'
-  const errorColor = '#22c55e'
-
+  const w = 520, h = 220, pad = 32
+  const x = (i) => pad + (i * (w - 2*pad)) / (labels.length - 1)
+  const y = (v) => (h - pad) - (v/100) * (h - 2*pad)
+  const toPath = (arr) => arr.map((v,i) => `${i ? 'L' : 'M'} ${x(i)} ${y(v)}`).join(' ')
+  const successColor = '#22c55e', errorColor = '#ef4444'
   return (
     <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="xMidYMid meet">
       <line x1={pad} y1={h-pad} x2={w-pad} y2={h-pad} stroke="currentColor" strokeOpacity="0.15" />
@@ -176,10 +181,14 @@ const LineChart = ({
 
 export default function Overview() {
   const wrapperRef = useRef(null)
-  const leftOffset = useRailGuardMargin(wrapperRef)
+  const leftPad = useRailGuardPadding(wrapperRef)
 
   return (
-    <Box ref={wrapperRef} sx={{ p: { xs: 2, md: 3 } }} style={{ marginLeft: leftOffset }}>
+    <Box
+      ref={wrapperRef}
+      sx={{ p: { xs: 2, md: 3 } }}
+      style={{ paddingLeft: leftPad, transition: 'padding-left .15s ease' }}
+    >
       <Typography variant="h2" sx={{ mb: 1 }}>Workforce Overview</Typography>
       <Typography variant="body2" sx={{ mb: 3 }}>
         Start with a high-level view of your AI workforce.
@@ -258,24 +267,19 @@ export default function Overview() {
           </Card>
         </Grid>
         <Grid item xs={12} md={5}>
-          <Card variant="outlined" sx={{ height: '100%' }}>
+          <Card variant="outlined">
             <CardContent>
               <Typography variant="h4" sx={{ mb: 1 }}>Recent Worker Activity</Typography>
-              <Typography variant="caption" sx={{ opacity: 0.7, display: 'block', mb: 1 }}>
-                Latest actions across your workforce.
-              </Typography>
-              <List dense>
+              <Typography variant="caption" sx={{ opacity: 0.7 }}>Latest actions across your workforce.</Typography>
+              <List dense sx={{ mt: 1 }}>
                 {[
-                  { who: 'DataBot-007', what: 'Completed report generation', when: '5 min ago' },
-                  { who: 'SupportAgent-001', what: 'Resolved customer inquiry', when: '15 min ago' },
-                  { who: 'ContentGen-Alpha', what: 'Drafted marketing copy', when: '30 min ago' },
-                  { who: 'AnalyticsPro-Beta', what: 'Processed quarterly sales data', when: '1 hour ago' }
-                ].map((r,i)=>(
-                  <ListItem key={i} disableGutters sx={{ py: 0.5 }}>
-                    <ListItemText
-                      primary={<Typography variant="body2" sx={{ fontWeight: 600 }}>{r.who}</Typography>}
-                      secondary={<Typography variant="caption" sx={{ opacity: 0.7 }}>{r.what} • {r.when}</Typography>}
-                    />
+                  'New worker “Summarizer-7” deployed to Project A.',
+                  'Agent “QA-Bot” escalated 12 tickets.',
+                  'Content generator updated templates for Marketing.',
+                  'Analytics pipeline refreshed hourly metrics.'
+                ].map((t,i)=>(
+                  <ListItem key={i} disableGutters>
+                    <ListItemText primary={<Typography variant="body2">{t}</Typography>} />
                   </ListItem>
                 ))}
               </List>
