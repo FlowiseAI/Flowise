@@ -66,6 +66,7 @@ import {
     SecretsManagerClient,
     SecretsManagerClientConfig
 } from '@aws-sdk/client-secrets-manager'
+import { fetchMCPMetadata, MCPOAuthMetadata } from './mcp-metadata'
 
 /**
  * Enhanced error message for MCP connection errors with deep links to credentials
@@ -663,6 +664,19 @@ export const buildFlow = async ({
                 initializedNodes.add(nodeId)
             } else {
                 logger.debug(`[server]: Initializing ${reactFlowNode.data.label} (${reactFlowNode.data.id})`)
+
+                // Check and refresh credentials before node initialization if needed
+                await checkAndRefreshCredentialsBeforeInit(reactFlowNode, {
+                    chatId,
+                    sessionId,
+                    chatflowid,
+                    appDataSource,
+                    databaseEntities,
+                    logger,
+                    userId: user?.id,
+                    organizationId: user?.organizationId
+                })
+
                 const finalQuestion = uploadedFilesContent ? `${uploadedFilesContent}\n\n${question}` : question
                 let outputResult = await newNodeInstance.init(reactFlowNodeData, finalQuestion, {
                     chatId,
@@ -1992,4 +2006,398 @@ export const getAllNodesInPath = (startNode: string, graph: INodeDirectedGraph):
     }
 
     return Array.from(nodes)
+}
+
+/**
+ * Check if a credential needs OAuth token refresh
+ * @param credentialId - The ID of the credential to check
+ * @param options - Database access options
+ * @returns Promise<boolean> - true if refresh is needed, false otherwise
+ */
+export const needsCredentialRefresh = async (credentialId: string, options: { appDataSource: DataSource }): Promise<boolean> => {
+    try {
+        const credential = await options.appDataSource.getRepository(Credential).findOneBy({ id: credentialId })
+        if (!credential) {
+            return false
+        }
+
+        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+
+        // Check if this is an OAuth credential with expiration time
+        if (!decryptedCredentialData.expiration_time) {
+            return false
+        }
+
+        // Check if token needs refresh (5 minute buffer)
+        const currentTime = Date.now()
+        const expirationTime = parseInt(decryptedCredentialData.expiration_time || '0')
+        const bufferTime = 5 * 60 * 1000 // 5 minutes buffer
+
+        return currentTime + bufferTime >= expirationTime
+    } catch (error) {
+        logger.error(`[CREDENTIAL REFRESH]: Error checking credential refresh need: ${getErrorMessage(error)}`)
+        return false
+    }
+}
+
+/**
+ * Check and refresh credentials before node initialization if needed
+ * This ensures tokens are fresh before the node tries to use them
+ */
+export const checkAndRefreshCredentialsBeforeInit = async (reactFlowNode: IReactFlowNode, options: ICommonObject): Promise<void> => {
+    try {
+        // Check if this node requires OAuth refresh and has credentials
+        if (!reactFlowNode.data.credential) {
+            return
+        }
+
+        // Get the node instance to check if it requires OAuth refresh
+        const appServer = require('./getRunningExpressApp').getRunningExpressApp()
+        const nodeInstance = appServer.nodesPool.componentNodes[reactFlowNode.data.name]
+
+        if (!nodeInstance || !nodeInstance.requiresOAuthRefresh) {
+            return
+        }
+
+        const credentialId = reactFlowNode.data.credential
+
+        // Use the core refresh function
+        const refreshOptions = {
+            appDataSource: options.appDataSource,
+            logger: options.logger || logger
+        }
+
+        const refreshSuccess = await refreshStoredCredentialTokens(credentialId, refreshOptions.appDataSource)
+        if (!refreshSuccess) {
+            logger.warn(`[CREDENTIAL REFRESH]: Failed to refresh credential for node ${reactFlowNode.data.id}`)
+        }
+    } catch (error) {
+        // Log the error but don't fail the entire flow
+        logger.error(`[CREDENTIAL REFRESH]: Failed to refresh credentials for node ${reactFlowNode.data.id}: ${getErrorMessage(error)}`)
+    }
+}
+
+// =============================================================================
+// ATLASSIAN OAUTH UTILITIES
+// =============================================================================
+
+/**
+ * Temporary storage for OAuth client registrations during credential creation flow
+ * This stores client credentials until the full OAuth flow is complete and credential is saved
+ */
+interface PendingRegistration {
+    client_id: string
+    client_secret: string
+    metadata: MCPOAuthMetadata
+    expires: number
+}
+
+const pendingRegistrations = new Map<string, PendingRegistration>()
+
+// Registration expires after 30 minutes
+const REGISTRATION_EXPIRY = 30 * 60 * 1000
+
+/**
+ * Registers a new OAuth client with Atlassian MCP for a credential
+ * Returns a session ID to track the registration temporarily
+ */
+export async function registerOAuthClient(redirectUri: string): Promise<{
+    sessionId: string
+    client_id: string
+    authorization_endpoint: string
+    scope: string
+}> {
+    try {
+        logger.info('[ATLASSIAN OAUTH]: Starting OAuth client registration')
+
+        // Step 1: Get MCP metadata
+        const metadata = await fetchMCPMetadata()
+        logger.debug('[ATLASSIAN OAUTH]: Retrieved MCP metadata')
+
+        // Step 2: Register dynamic client
+        const registrationPayload = {
+            redirect_uris: [redirectUri],
+            client_name: 'AAI Atlassian Integration',
+            client_uri: process.env.API_HOST,
+            grant_types: ['authorization_code', 'refresh_token'],
+            response_types: ['code'],
+            scope: [
+                'offline_access',
+                'read:account',
+                'read:confluence-content.all',
+                'read:confluence-content.summary',
+                'read:confluence-groups',
+                'read:confluence-props',
+                'read:confluence-space.summary',
+                'read:confluence-user',
+                'read:jira-user',
+                'read:jira-work',
+                'read:me',
+                'readonly:content.attachment:confluence',
+                'search:confluence',
+                'write:confluence-content',
+                'write:confluence-file',
+                'write:confluence-props',
+                'write:jira-work'
+            ].join(' ')
+        }
+
+        logger.debug('[ATLASSIAN OAUTH]: Registering client with MCP server')
+        const registrationResponse = await fetch(metadata.registration_endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json'
+            },
+            body: JSON.stringify(registrationPayload)
+        })
+
+        if (!registrationResponse.ok) {
+            const errorText = await registrationResponse.text()
+            throw new Error(`Client registration failed: ${registrationResponse.status} ${registrationResponse.statusText}: ${errorText}`)
+        }
+
+        const clientInfo = await registrationResponse.json()
+        logger.info('[ATLASSIAN OAUTH]: Successfully registered OAuth client')
+
+        // Step 3: Store temporarily with session ID
+        const sessionId = randomBytes(32).toString('hex')
+        const expires = Date.now() + REGISTRATION_EXPIRY
+
+        pendingRegistrations.set(sessionId, {
+            client_id: clientInfo.client_id,
+            client_secret: clientInfo.client_secret,
+            metadata,
+            expires
+        })
+
+        // Clean up expired registrations
+        cleanupExpiredRegistrations()
+
+        logger.debug(`[ATLASSIAN OAUTH]: Stored registration with session ID: ${sessionId}`)
+
+        return {
+            sessionId,
+            client_id: clientInfo.client_id,
+            authorization_endpoint: metadata.authorization_endpoint,
+            scope: registrationPayload.scope
+        }
+    } catch (error) {
+        logger.error(`[ATLASSIAN OAUTH]: Registration failed: ${getErrorMessage(error)}`)
+        throw error
+    }
+}
+
+/**
+ * Retrieves stored client credentials for a session ID
+ */
+export function getPendingRegistration(sessionId: string): PendingRegistration | null {
+    const registration = pendingRegistrations.get(sessionId)
+
+    if (!registration) {
+        logger.warn(`[ATLASSIAN OAUTH]: No registration found for session ID: ${sessionId}`)
+        return null
+    }
+
+    if (registration.expires < Date.now()) {
+        logger.warn(`[ATLASSIAN OAUTH]: Registration expired for session ID: ${sessionId}`)
+        pendingRegistrations.delete(sessionId)
+        return null
+    }
+
+    return registration
+}
+
+/**
+ * Removes a pending registration (called after credential is successfully created)
+ */
+export function clearPendingRegistration(sessionId: string): void {
+    pendingRegistrations.delete(sessionId)
+}
+
+/**
+ * Exchanges authorization code for access tokens using stored client credentials
+ */
+export async function exchangeCodeForTokens(
+    sessionId: string,
+    authorizationCode: string,
+    redirectUri: string
+): Promise<{
+    access_token: string
+    refresh_token: string
+    expires_in: number
+}> {
+    const registration = getPendingRegistration(sessionId)
+    if (!registration) {
+        throw new Error('Invalid or expired session ID')
+    }
+
+    try {
+        logger.info(`[ATLASSIAN OAUTH]: Exchanging authorization code for tokens`)
+
+        const tokenResponse = await fetch(registration.metadata.token_endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json'
+            },
+            body: new URLSearchParams({
+                grant_type: 'authorization_code',
+                client_id: registration.client_id,
+                client_secret: registration.client_secret,
+                code: authorizationCode,
+                redirect_uri: redirectUri
+            })
+        })
+
+        if (!tokenResponse.ok) {
+            const errorText = await tokenResponse.text()
+            throw new Error(`Token exchange failed: ${tokenResponse.status} ${tokenResponse.statusText}: ${errorText}`)
+        }
+
+        const tokenData = await tokenResponse.json()
+        logger.info(`[ATLASSIAN OAUTH]: Successfully exchanged code for tokens`)
+
+        return {
+            access_token: tokenData.access_token,
+            refresh_token: tokenData.refresh_token,
+            expires_in: tokenData.expires_in || 3600
+        }
+    } catch (error) {
+        logger.error(`[ATLASSIAN OAUTH]: Token exchange failed: ${getErrorMessage(error)}`)
+        throw error
+    }
+}
+
+/**
+ * Refreshes OAuth tokens using stored client credentials from a saved credential
+ */
+export async function refreshStoredCredentialTokens(credentialId: string, appDataSource: DataSource): Promise<boolean> {
+    try {
+        logger.info(`[ATLASSIAN OAUTH]: Refreshing tokens for credential ${credentialId}`)
+
+        // Get credential from database
+        const credential = await appDataSource.getRepository(Credential).findOneBy({ id: credentialId })
+        if (!credential) {
+            logger.warn(`[ATLASSIAN OAUTH]: Credential ${credentialId} not found`)
+            return false
+        }
+
+        // Decrypt and validate credential data
+        const decryptedCredentialData = await decryptCredentialData(credential.encryptedData)
+
+        if (
+            !decryptedCredentialData.mcp_client_id ||
+            !decryptedCredentialData.mcp_client_secret ||
+            !decryptedCredentialData.refresh_token
+        ) {
+            logger.warn(`[ATLASSIAN OAUTH]: Invalid credential data for ${credentialId}`)
+            return false
+        }
+
+        // Check if refresh is needed
+        const currentTime = Date.now()
+        const expirationTime = parseInt(decryptedCredentialData.expiration_time || '0')
+        const bufferTime = 5 * 60 * 1000 // 5 minutes buffer
+
+        if (currentTime + bufferTime < expirationTime) {
+            logger.debug(`[ATLASSIAN OAUTH]: Token still valid for credential ${credentialId}`)
+            return true // Token is still valid
+        }
+
+        // Get MCP metadata
+        const metadata = await fetchMCPMetadata()
+
+        // Refresh tokens
+        const tokenResponse = await fetch(metadata.token_endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json'
+            },
+            body: new URLSearchParams({
+                grant_type: 'refresh_token',
+                client_id: decryptedCredentialData.mcp_client_id,
+                client_secret: decryptedCredentialData.mcp_client_secret,
+                refresh_token: decryptedCredentialData.refresh_token
+            })
+        })
+
+        if (!tokenResponse.ok) {
+            const errorText = await tokenResponse.text()
+            throw new Error(`Token refresh failed: ${tokenResponse.status} - ${errorText}`)
+        }
+
+        const tokenData = await tokenResponse.json()
+        const newExpirationTime = Date.now() + (tokenData.expires_in || 3600) * 1000
+
+        // Update credential with new tokens
+        const updateBody = {
+            name: credential.name,
+            credentialName: credential.credentialName,
+            plainDataObj: {
+                ...decryptedCredentialData,
+                access_token: tokenData.access_token,
+                refresh_token: tokenData.refresh_token || decryptedCredentialData.refresh_token,
+                expiration_time: newExpirationTime.toString()
+            },
+            userId: credential.userId,
+            organizationId: credential.organizationId
+        }
+
+        const updateCredentialEntity = await transformToCredentialEntity(updateBody)
+        await appDataSource.getRepository(Credential).merge(credential, updateCredentialEntity)
+        await appDataSource.getRepository(Credential).save(credential)
+
+        logger.info(`[ATLASSIAN OAUTH]: Successfully refreshed tokens for credential ${credentialId}`)
+        return true
+    } catch (error) {
+        logger.error(`[ATLASSIAN OAUTH]: Failed to refresh tokens for credential ${credentialId}: ${getErrorMessage(error)}`)
+        return false
+    }
+}
+
+/**
+ * Creates complete credential data including client credentials and tokens
+ * This is called after successful OAuth flow completion
+ */
+export function createCompleteCredentialData(
+    sessionId: string,
+    tokens: { access_token: string; refresh_token: string; expires_in: number },
+    baseCredentialData: any
+) {
+    const registration = getPendingRegistration(sessionId)
+    if (!registration) {
+        throw new Error('Invalid or expired session ID')
+    }
+
+    const expirationTime = Date.now() + (tokens.expires_in || 3600) * 1000
+
+    return {
+        ...baseCredentialData,
+        mcp_client_id: registration.client_id,
+        mcp_client_secret: registration.client_secret,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expiration_time: expirationTime.toString()
+    }
+}
+
+/**
+ * Clean up expired registrations from memory
+ */
+function cleanupExpiredRegistrations(): void {
+    const now = Date.now()
+    let cleanedCount = 0
+
+    for (const [sessionId, registration] of pendingRegistrations.entries()) {
+        if (registration.expires < now) {
+            pendingRegistrations.delete(sessionId)
+            cleanedCount++
+        }
+    }
+
+    if (cleanedCount > 0) {
+        logger.debug(`[ATLASSIAN OAUTH]: Cleaned up ${cleanedCount} expired registrations`)
+    }
 }

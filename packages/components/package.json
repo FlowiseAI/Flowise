@@ -131,6 +131,7 @@
         "lodash": "^4.17.21",
         "lunary": "^0.7.15",
         "mammoth": "^1.10.0",
+        "mcp-remote": "^0.1.18",
         "meilisearch": "^0.41.0",
         "moment": "^2.30.1",
         "mongodb": "6.3.0",

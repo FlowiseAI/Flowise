@@ -65,6 +65,7 @@
     "dependencies": {
         "@aws-sdk/client-secrets-manager": "^3.859.0",
         "@aws-sdk/s3-request-presigner": "^3.859.0",
+        "@braintree/sanitize-url": "^7.1.1",
         "@contentful/rich-text-from-markdown": "^15.18.10",
         "@google-cloud/logging-winston": "^6.0.1",
         "@oclif/core": "4.0.7",
@@ -120,6 +121,7 @@
         "nim-container-manager": "^1.0.5",
         "openai": "4.96.0",
         "passport": "^0.7.0",
+        "passport-custom": "^1.1.1",
         "passport-google-oauth20": "^2.0.0",
         "passport-oauth2": "^1.8.0",
         "pg": "^8.16.3",

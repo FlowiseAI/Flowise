@@ -14,10 +14,12 @@ export class MCPToolkit extends BaseToolkit {
     client: Client | null = null
     serverParams: StdioServerParameters | any
     transportType: 'stdio' | 'sse'
-    constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse') {
+    accessToken: string | null = null
+    constructor(serverParams: StdioServerParameters | any, transportType: 'stdio' | 'sse', accessToken: string | null = null) {
         super()
         this.serverParams = serverParams
         this.transportType = transportType
+        this.accessToken = accessToken
     }
 
     // Method to create a new client with transport
@@ -52,12 +54,31 @@ export class MCPToolkit extends BaseToolkit {
             }
 
             const baseUrl = new URL(this.serverParams.url)
+
             try {
-                transport = new StreamableHTTPClientTransport(baseUrl)
+                console.log('Attempting StreamableHTTP connection to:', baseUrl.href)
+                console.log('Using token length:', this.accessToken?.length)
+                transport = new StreamableHTTPClientTransport(baseUrl, {
+                    requestInit: {
+                        headers: {
+                            Authorization: `Bearer ${this.accessToken}`
+                        }
+                    }
+                })
                 await client.connect(transport)
+                console.log('StreamableHTTP connection successful')
             } catch (error) {
-                transport = new SSEClientTransport(baseUrl)
+                console.log('StreamableHTTP failed, trying SSE. Error:', error.message)
+
+                transport = new SSEClientTransport(baseUrl, {
+                    requestInit: {
+                        headers: {
+                            Authorization: `Bearer ${this.accessToken}`
+                        }
+                    }
+                })
                 await client.connect(transport)
+                console.log('SSE connection successful')
             }
         }
 
