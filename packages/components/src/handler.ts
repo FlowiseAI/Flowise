@@ -92,18 +92,27 @@ interface PhoenixTracerOptions {
     enableCallback?: boolean
 }
 
-function getPhoenixTracer(options: PhoenixTracerOptions): Tracer | undefined {
+export function getPhoenixTracer(options: PhoenixTracerOptions): Tracer | undefined {
     const SEMRESATTRS_PROJECT_NAME = 'openinference.project.name'
     try {
-        const parsed = new URL(options.baseUrl)
-        const baseEndpoint = `${parsed.protocol}//${parsed.host}`
-        const path = parsed.pathname.replace(/\/$/, '')
+        const parsedURL = new URL(options.baseUrl)
+        const baseEndpoint = `${parsedURL.protocol}//${parsedURL.host}`
+
+        // Remove trailing slashes
+        let path = parsedURL.pathname.replace(/\/$/, '')
+
+        // Remove any existing /v1/traces suffix
+        path = path.replace(/\/v1\/traces$/, '')
+
+        const exporterUrl = `${baseEndpoint}${path}/v1/traces`
+        const exporterHeaders = {
+            api_key: options.apiKey || '',
+            authorization: `Bearer ${options.apiKey || ''}`
+        }
+
         const traceExporter = new ProtoOTLPTraceExporter({
-            url: `${baseEndpoint}${path}/v1/traces`,
-            headers: {
-                api_key: options.apiKey || '',
-                authorization: `Bearer ${options.apiKey || ''}`
-            }
+            url: exporterUrl,
+            headers: exporterHeaders
         })
         const tracerProvider = new NodeTracerProvider({
             resource: new Resource({
