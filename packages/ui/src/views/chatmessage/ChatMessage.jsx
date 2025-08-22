@@ -257,6 +257,16 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     const [ttsAudio, setTtsAudio] = useState({})
     const [isTTSEnabled, setIsTTSEnabled] = useState(false)
 
+    // TTS streaming state
+    const [ttsStreamingState, setTtsStreamingState] = useState({
+        mediaSource: null,
+        sourceBuffer: null,
+        audio: null,
+        chunkQueue: [],
+        isBuffering: false,
+        audioFormat: null
+    })
+
     const isFileAllowedForUpload = (file) => {
         const constraints = getAllowChatFlowUploads.data
         /**
@@ -1042,6 +1052,15 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     case 'audio':
                         handleAutoPlayAudio(payload.data)
                         break
+                    case 'tts_start':
+                        handleTTSStart(payload.data.format)
+                        break
+                    case 'tts_data':
+                        handleTTSDataChunk(payload.data)
+                        break
+                    case 'tts_end':
+                        handleTTSEnd()
+                        break
                     case 'end':
                         setLocalStorageChatflow(chatflowid, chatId)
                         closeResponse()
@@ -1588,6 +1607,19 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 return
             }
 
+            // Use existing streaming infrastructure for manual TTS
+            handleTTSStart('mp3', (audio) => {
+                setTtsAudio((prev) => ({ ...prev, [messageId]: audio }))
+
+                audio.addEventListener('ended', () => {
+                    setTtsAudio((prev) => {
+                        const newState = { ...prev }
+                        delete newState[messageId]
+                        return newState
+                    })
+                })
+            })
+
             const response = await fetch('/api/v1/text-to-speech/generate', {
                 method: 'POST',
                 headers: {
@@ -1608,23 +1640,48 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 throw new Error(`TTS request failed: ${response.status}`)
             }
 
-            const audioBuffer = await response.arrayBuffer()
-            const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' })
-            const audioUrl = URL.createObjectURL(audioBlob)
-            const audio = new Audio(audioUrl)
+            const reader = response.body.getReader()
+            const decoder = new TextDecoder()
+            let buffer = ''
 
-            setTtsAudio((prev) => ({ ...prev, [messageId]: audio }))
+            let done = false
+            while (!done) {
+                const result = await reader.read()
+                done = result.done
+                if (done) {
+                    break
+                }
+                const value = result.value
 
-            audio.addEventListener('ended', () => {
-                setTtsAudio((prev) => {
-                    const newState = { ...prev }
-                    delete newState[messageId]
-                    return newState
-                })
-                URL.revokeObjectURL(audioUrl)
-            })
+                // Decode the chunk as text and add to buffer
+                const chunk = decoder.decode(value, { stream: true })
+                buffer += chunk
 
-            await audio.play()
+                // Process complete SSE events
+                const lines = buffer.split('\n\n')
+                buffer = lines.pop() || '' // Keep incomplete event in buffer
+
+                for (const eventBlock of lines) {
+                    if (eventBlock.trim()) {
+                        const event = parseSSEEvent(eventBlock)
+                        if (event) {
+                            // Handle the event just like the SSE handler does
+                            switch (event.event) {
+                                case 'tts_start':
+                                    break
+                                case 'tts_data':
+                                    handleTTSDataChunk(event.data)
+                                    break
+                                case 'tts_end':
+                                    handleTTSEnd()
+                                    break
+                                default:
+                                    break
+                            }
+                        }
+                    }
+                }
+            }
         } catch (error) {
             console.error('Error with TTS:', error)
             enqueueSnackbar({
@@ -1670,6 +1727,268 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             }
         }
     }
+
+    const parseSSEEvent = (eventBlock) => {
+        const lines = eventBlock.split('\n')
+        const event = {}
+
+        for (const line of lines) {
+            if (line.startsWith('event:')) {
+                event.event = line.substring(6).trim()
+            } else if (line.startsWith('data:')) {
+                const dataStr = line.substring(5).trim()
+                try {
+                    const parsed = JSON.parse(dataStr)
+                    if (parsed.data) {
+                        event.data = parsed.data
+                    }
+                } catch (e) {
+                    console.error('Error parsing SSE data:', e, 'Raw data:', dataStr)
+                }
+            }
+        }
+
+        return event.event ? event : null
+    }
+
+    const initializeTTSStreaming = (format, onAudioReady = null) => {
+        try {
+            const mediaSource = new MediaSource()
+            const audio = new Audio()
+            audio.src = URL.createObjectURL(mediaSource)
+
+            mediaSource.addEventListener('sourceopen', () => {
+                try {
+                    // Use the provided format, default to MP3 if not set
+                    const mimeType = format === 'mp3' ? 'audio/mpeg' : 'audio/mpeg'
+
+                    const sourceBuffer = mediaSource.addSourceBuffer(mimeType)
+
+                    setTtsStreamingState((prevState) => ({
+                        ...prevState,
+                        mediaSource,
+                        sourceBuffer,
+                        audio
+                    }))
+
+                    // Start playback
+
+                    audio.play().catch((playError) => {
+                        console.error('Error starting audio playback:', playError)
+                    })
+
+                    // Notify callback if provided
+                    if (onAudioReady) {
+                        onAudioReady(audio)
+                    }
+                } catch (error) {
+                    console.error('Error setting up source buffer:', error)
+                    console.error('MediaSource readyState:', mediaSource.readyState)
+                    console.error('Requested MIME type:', mimeType)
+                }
+            })
+
+            audio.addEventListener('ended', () => {
+                cleanupTTSStreaming()
+            })
+        } catch (error) {
+            console.error('Error initializing TTS streaming:', error)
+        }
+    }
+
+    const cleanupTTSStreaming = () => {
+        setTtsStreamingState((prevState) => {
+            if (prevState.audio) {
+                prevState.audio.pause()
+                prevState.audio.removeAttribute('src')
+                if (prevState.audio.src) {
+                    URL.revokeObjectURL(prevState.audio.src)
+                }
+            }
+
+            if (prevState.mediaSource) {
+                if (prevState.mediaSource.readyState === 'open') {
+                    try {
+                        prevState.mediaSource.endOfStream()
+                    } catch (e) {
+                        // Ignore errors during cleanup
+                    }
+                }
+                prevState.mediaSource.removeEventListener('sourceopen', () => {})
+            }
+
+            return {
+                mediaSource: null,
+                sourceBuffer: null,
+                audio: null,
+                chunkQueue: [],
+                isBuffering: false,
+                audioFormat: null
+            }
+        })
+    }
+
+    const processChunkQueue = () => {
+        setTtsStreamingState((prevState) => {
+            if (!prevState.sourceBuffer || prevState.sourceBuffer.updating || prevState.chunkQueue.length === 0) {
+                return prevState
+            }
+
+            const chunk = prevState.chunkQueue.shift()
+
+            try {
+                prevState.sourceBuffer.appendBuffer(chunk)
+                return {
+                    ...prevState,
+                    chunkQueue: [...prevState.chunkQueue],
+                    isBuffering: true
+                }
+            } catch (error) {
+                console.error('Error appending chunk to buffer:', error)
+                return prevState
+            }
+        })
+    }
+
+    const handleTTSStart = (format, onAudioReady = null) => {
+        // Store the audio format for this TTS session and initialize
+        setTtsStreamingState((prevState) => {
+            // Cleanup any existing streaming first
+            if (prevState.audio) {
+                prevState.audio.pause()
+                if (prevState.audio.src) {
+                    URL.revokeObjectURL(prevState.audio.src)
+                }
+            }
+
+            if (prevState.mediaSource && prevState.mediaSource.readyState === 'open') {
+                try {
+                    prevState.mediaSource.endOfStream()
+                } catch (e) {
+                    // Ignore errors during cleanup
+                }
+            }
+
+            return {
+                mediaSource: null,
+                sourceBuffer: null,
+                audio: null,
+                chunkQueue: [],
+                isBuffering: false,
+                audioFormat: format
+            }
+        })
+
+        // Initialize TTS streaming with the correct format
+        setTimeout(() => initializeTTSStreaming(format, onAudioReady), 0)
+    }
+
+    const handleTTSDataChunk = (base64Data) => {
+        try {
+            const audioBuffer = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0))
+
+            setTtsStreamingState((prevState) => {
+                // Add chunk to queue
+                const newState = {
+                    ...prevState,
+                    chunkQueue: [...prevState.chunkQueue, audioBuffer]
+                }
+
+                // Process queue if sourceBuffer is ready
+                if (prevState.sourceBuffer && !prevState.sourceBuffer.updating) {
+                    setTimeout(() => processChunkQueue(), 0)
+                }
+
+                return newState
+            })
+        } catch (error) {
+            console.error('Error handling TTS data chunk:', error)
+        }
+    }
+
+    const handleTTSEnd = () => {
+        setTtsStreamingState((prevState) => {
+            if (prevState.mediaSource && prevState.mediaSource.readyState === 'open') {
+                try {
+                    // Process any remaining chunks first
+                    if (prevState.sourceBuffer && prevState.chunkQueue.length > 0 && !prevState.sourceBuffer.updating) {
+                        const remainingChunks = [...prevState.chunkQueue]
+                        remainingChunks.forEach((chunk, index) => {
+                            setTimeout(() => {
+                                if (prevState.sourceBuffer && !prevState.sourceBuffer.updating) {
+                                    try {
+                                        prevState.sourceBuffer.appendBuffer(chunk)
+                                        if (index === remainingChunks.length - 1) {
+                                            // End stream after last chunk
+                                            setTimeout(() => {
+                                                if (prevState.mediaSource && prevState.mediaSource.readyState === 'open') {
+                                                    prevState.mediaSource.endOfStream()
+                                                }
+                                            }, 100)
+                                        }
+                                    } catch (error) {
+                                        console.error('Error appending remaining chunk:', error)
+                                    }
+                                }
+                            }, index * 50)
+                        })
+                        return {
+                            ...prevState,
+                            chunkQueue: []
+                        }
+                    }
+
+                    // Wait for any pending buffer operations to complete
+                    if (prevState.sourceBuffer && !prevState.sourceBuffer.updating) {
+                        prevState.mediaSource.endOfStream()
+                    } else if (prevState.sourceBuffer) {
+                        // Wait for buffer to finish updating
+                        prevState.sourceBuffer.addEventListener(
+                            'updateend',
+                            () => {
+                                if (prevState.mediaSource && prevState.mediaSource.readyState === 'open') {
+                                    prevState.mediaSource.endOfStream()
+                                }
+                            },
+                            { once: true }
+                        )
+                    }
+                } catch (error) {
+                    console.error('Error ending TTS stream:', error)
+                }
+            }
+            return prevState
+        })
+    }
+
+    // Set up sourceBuffer event listeners when it changes
+    useEffect(() => {
+        if (ttsStreamingState.sourceBuffer) {
+            const sourceBuffer = ttsStreamingState.sourceBuffer
+
+            const handleUpdateEnd = () => {
+                setTtsStreamingState((prevState) => ({
+                    ...prevState,
+                    isBuffering: false
+                }))
+                // Process next chunk in queue
+                setTimeout(() => processChunkQueue(), 0)
+            }
+
+            sourceBuffer.addEventListener('updateend', handleUpdateEnd)
+
+            return () => {
+                sourceBuffer.removeEventListener('updateend', handleUpdateEnd)
+            }
+        }
+    }, [ttsStreamingState.sourceBuffer])
+
+    // Cleanup TTS streaming on component unmount
+    useEffect(() => {
+        return () => {
+            cleanupTTSStreaming()
+        }
+    }, [])
 
     const getInputDisabled = () => {
         return (

@@ -15,163 +15,136 @@ export const convertTextToSpeechStream = async (
     textToSpeechConfig: ICommonObject,
     options: ICommonObject,
     onChunk: (chunk: Buffer) => void,
-    onEnd: () => void
+    onEnd: () => void,
+    onStart?: (format: string) => void
 ): Promise<void> => {
-    return new Promise<void>(async (resolve, reject) => {
-        try {
-            if (textToSpeechConfig) {
-                const credentialId = textToSpeechConfig.credentialId as string
-                const credentialData = await getCredentialData(credentialId ?? '', options)
+    return new Promise<void>((resolve, reject) => {
+        const processStream = async () => {
+            try {
+                if (textToSpeechConfig) {
+                    const credentialId = textToSpeechConfig.credentialId as string
+                    const credentialData = await getCredentialData(credentialId ?? '', options)
 
-                switch (textToSpeechConfig.name) {
-                    case TextToSpeechType.OPENAI_TTS: {
-                        const openai = new OpenAI({
-                            apiKey: credentialData.openAIApiKey
-                        })
+                    switch (textToSpeechConfig.name) {
+                        case TextToSpeechType.OPENAI_TTS: {
+                            if (onStart) onStart('mp3')
 
-                        const response = await openai.audio.speech.create({
-                            model: 'gpt-4o-mini-tts',
-                            voice: (textToSpeechConfig.voice || 'alloy') as
-                                | 'alloy'
-                                | 'ash'
-                                | 'ballad'
-                                | 'coral'
-                                | 'echo'
-                                | 'fable'
-                                | 'nova'
-                                | 'onyx'
-                                | 'sage'
-                                | 'shimmer',
-                            input: text,
-                            response_format: 'wav'
-                        })
+                            const openai = new OpenAI({
+                                apiKey: credentialData.openAIApiKey
+                            })
 
-                        const stream = Readable.fromWeb(response as unknown as ReadableStream)
-                        if (!stream) {
-                            throw new Error('Failed to get response stream')
+                            const response = await openai.audio.speech.create({
+                                model: 'gpt-4o-mini-tts',
+                                voice: (textToSpeechConfig.voice || 'alloy') as
+                                    | 'alloy'
+                                    | 'ash'
+                                    | 'ballad'
+                                    | 'coral'
+                                    | 'echo'
+                                    | 'fable'
+                                    | 'nova'
+                                    | 'onyx'
+                                    | 'sage'
+                                    | 'shimmer',
+                                input: text,
+                                response_format: 'mp3'
+                            })
+
+                            const stream = response.body as unknown as Readable
+                            if (!stream) {
+                                throw new Error('Failed to get response stream')
+                            }
+
+                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 20)
+                            break
                         }
 
-                        stream.on('data', (chunk) => {
-                            onChunk(Buffer.from(chunk))
-                        })
+                        case TextToSpeechType.ELEVEN_LABS_TTS: {
+                            if (onStart) onStart('mp3')
 
-                        stream.on('end', () => {
-                            onEnd()
-                            resolve()
-                        })
+                            const client = new ElevenLabsClient({
+                                apiKey: credentialData.elevenLabsApiKey
+                            })
 
-                        stream.on('error', (error) => {
-                            reject(error)
-                        })
+                            const response = await client.textToSpeech.stream(textToSpeechConfig.voice || '21m00Tcm4TlvDq8ikWAM', {
+                                text: text,
+                                modelId: 'eleven_multilingual_v2'
+                            })
 
-                        break
-                    }
+                            const stream = Readable.fromWeb(response as unknown as ReadableStream)
+                            if (!stream) {
+                                throw new Error('Failed to get response stream')
+                            }
 
-                    case TextToSpeechType.ELEVEN_LABS_TTS: {
-                        const client = new ElevenLabsClient({
-                            apiKey: credentialData.elevenLabsApiKey
-                        })
-
-                        const response = await client.textToSpeech.stream(textToSpeechConfig.voice || '21m00Tcm4TlvDq8ikWAM', {
-                            text: text,
-                            modelId: 'eleven_multilingual_v2'
-                        })
-
-                        const stream = Readable.fromWeb(response as unknown as ReadableStream)
-                        if (!stream) {
-                            throw new Error('Failed to get response stream')
+                            await processStreamWithRateLimit(stream, onChunk, onEnd, resolve, reject, 640, 40)
+                            break
                         }
-
-                        stream.on('data', (chunk) => {
-                            onChunk(Buffer.from(chunk))
-                        })
-
-                        stream.on('end', () => {
-                            onEnd()
-                            resolve()
-                        })
-
-                        stream.on('error', (error) => {
-                            reject(error)
-                        })
-
-                        break
                     }
+                } else {
+                    reject(new Error('Text to speech is not selected. Please configure TTS in the chatflow.'))
                 }
-            } else {
-                reject(new Error('Text to speech is not selected. Please configure TTS in the chatflow.'))
+            } catch (error) {
+                reject(error)
             }
-        } catch (error) {
-            reject(error)
         }
+
+        processStream()
     })
 }
 
-export const convertTextToSpeech = async (text: string, textToSpeechConfig: ICommonObject, options: ICommonObject): Promise<Buffer> => {
-    if (textToSpeechConfig) {
-        const credentialId = textToSpeechConfig.credentialId as string
-        const credentialData = await getCredentialData(credentialId ?? '', options)
+const processStreamWithRateLimit = async (
+    stream: Readable,
+    onChunk: (chunk: Buffer) => void,
+    onEnd: () => void,
+    resolve: () => void,
+    reject: (error: any) => void,
+    targetChunkSize: number = 640,
+    rateLimitMs: number = 20
+) => {
+    const TARGET_CHUNK_SIZE = targetChunkSize
+    const RATE_LIMIT_MS = rateLimitMs
 
-        switch (textToSpeechConfig.name) {
-            case TextToSpeechType.OPENAI_TTS: {
-                const openai = new OpenAI({
-                    apiKey: credentialData.openAIApiKey
-                })
+    let buffer: Buffer = Buffer.alloc(0)
+    let isEnded = false
 
-                const response = await openai.audio.speech.create({
-                    model: 'gpt-4o-mini-tts',
-                    voice: (textToSpeechConfig.voice || 'alloy') as
-                        | 'alloy'
-                        | 'ash'
-                        | 'ballad'
-                        | 'coral'
-                        | 'echo'
-                        | 'fable'
-                        | 'nova'
-                        | 'onyx'
-                        | 'sage'
-                        | 'shimmer',
-                    input: text,
-                    response_format: 'wav'
-                })
-
-                const audioBuffer = Buffer.from(await response.arrayBuffer())
-                return audioBuffer
-            }
-
-            case TextToSpeechType.ELEVEN_LABS_TTS: {
-                const client = new ElevenLabsClient({
-                    apiKey: credentialData.elevenLabsApiKey
-                })
-
-                const audioStream = await client.textToSpeech.stream(textToSpeechConfig.voice || '21m00Tcm4TlvDq8ikWAM', {
-                    text: text,
-                    modelId: 'eleven_multilingual_v2'
-                })
-
-                const chunks: Buffer[] = []
-                const reader = audioStream.getReader()
-
-                try {
-                    let result = await reader.read()
-                    while (!result.done) {
-                        if (result.value) {
-                            chunks.push(Buffer.from(result.value))
-                        }
-                        result = await reader.read()
-                    }
-                } finally {
-                    reader.releaseLock()
-                }
-
-                const audioBuffer = Buffer.concat(chunks)
-                return audioBuffer
+    const processChunks = async () => {
+        while (!isEnded || buffer.length > 0) {
+            if (buffer.length >= TARGET_CHUNK_SIZE) {
+                const chunk = buffer.subarray(0, TARGET_CHUNK_SIZE)
+                buffer = buffer.subarray(TARGET_CHUNK_SIZE)
+                onChunk(chunk)
+                await sleep(RATE_LIMIT_MS)
+            } else if (isEnded && buffer.length > 0) {
+                onChunk(buffer)
+                buffer = Buffer.alloc(0)
+            } else if (!isEnded) {
+                await sleep(RATE_LIMIT_MS)
+            } else {
+                break
             }
         }
-    } else {
-        throw new Error('Text to speech is not selected. Please configure TTS in the chatflow.')
+
+        onEnd()
+        resolve()
     }
-    return Buffer.alloc(0)
+
+    stream.on('data', (chunk) => {
+        buffer = Buffer.concat([buffer, Buffer.from(chunk)])
+    })
+
+    stream.on('end', () => {
+        isEnded = true
+    })
+
+    stream.on('error', (error) => {
+        reject(error)
+    })
+
+    processChunks().catch(reject)
+}
+
+const sleep = (ms: number): Promise<void> => {
+    return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 export const getVoices = async (provider: string, credentialId: string, options: ICommonObject) => {

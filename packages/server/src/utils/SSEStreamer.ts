@@ -269,10 +269,19 @@ export class SSEStreamer implements IServerSideEventStreamer {
         }
     }
 
+    streamTTSStartEvent(chatId: string, format: string): void {
+        const client = this.clients[chatId]
+        if (client) {
+            const clientResponse = {
+                event: 'tts_start',
+                data: { format }
+            }
+            client.response.write('message:\ndata:' + JSON.stringify(clientResponse) + '\n\n')
+        }
+    }
+
     streamTTSDataEvent(chatId: string, audioChunk: string): void {
         const client = this.clients[chatId]
-        console.log('clients', this.clients)
-        console.log('client', client)
         if (client) {
             const clientResponse = {
                 event: 'tts_data',
@@ -284,8 +293,6 @@ export class SSEStreamer implements IServerSideEventStreamer {
 
     streamTTSEndEvent(chatId: string): void {
         const client = this.clients[chatId]
-        console.log('clients', this.clients)
-        console.log('client', client)
         if (client) {
             const clientResponse = {
                 event: 'tts_end',

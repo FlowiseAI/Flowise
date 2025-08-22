@@ -67,7 +67,6 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
                 res.write(`data: ${JSON.stringify(clientResponse)}\n\n`)
             },
             async () => {
-                // Send end event
                 const endResponse = {
                     event: 'tts_end',
                     data: {}
@@ -75,6 +74,14 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
                 res.write('event: tts_end\n')
                 res.write(`data: ${JSON.stringify(endResponse)}\n\n`)
                 res.end()
+            },
+            (format: string) => {
+                const startResponse = {
+                    event: 'tts_start',
+                    data: { format }
+                }
+                res.write('event: tts_start\n')
+                res.write(`data: ${JSON.stringify(startResponse)}\n\n`)
             }
         )
     } catch (error) {

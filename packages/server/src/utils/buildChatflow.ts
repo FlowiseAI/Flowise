@@ -6,7 +6,6 @@ import { omit } from 'lodash'
 import {
     IFileUpload,
     convertSpeechToText,
-    convertTextToSpeech,
     convertTextToSpeechStream,
     ICommonObject,
     addSingleFileToStorage,
@@ -123,11 +122,13 @@ const generateTTSForResponseStream = async (
             options,
             (chunk: Buffer) => {
                 const audioBase64 = chunk.toString('base64')
-                logger.info(`Received TTS chunk: ${audioBase64}`)
                 sseStreamer.streamTTSDataEvent(chatId, audioBase64)
             },
             () => {
                 sseStreamer.streamTTSEndEvent(chatId)
+            },
+            (format: string) => {
+                sseStreamer.streamTTSStartEvent(chatId, format)
             }
         )
     } catch (error) {

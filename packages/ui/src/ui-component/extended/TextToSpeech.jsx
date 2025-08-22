@@ -58,29 +58,9 @@ const textToSpeechProviders = {
             {
                 label: 'Voice',
                 name: 'voice',
-                type: 'options',
+                type: 'voice_select',
                 description: 'The voice to use when generating the audio',
-                options: [
-                    { label: 'Alloy', name: 'alloy' },
-                    { label: 'Echo', name: 'echo' },
-                    { label: 'Fable', name: 'fable' },
-                    { label: 'Onyx', name: 'onyx' },
-                    { label: 'Nova', name: 'nova' },
-                    { label: 'Shimmer', name: 'shimmer' }
-                ],
                 default: 'alloy',
-                optional: true
-            },
-            {
-                label: 'Model',
-                name: 'model',
-                type: 'options',
-                description: 'The TTS model to use',
-                options: [
-                    { label: 'TTS-1', name: 'tts-1' },
-                    { label: 'TTS-1 HD', name: 'tts-1-hd' }
-                ],
-                default: 'tts-1',
                 optional: true
             }
         ]
