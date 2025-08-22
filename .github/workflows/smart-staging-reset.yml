@@ -22,8 +22,8 @@ jobs:
               id: generate-token
               uses: tibdex/github-app-token@v1
               with:
-                  app-id: ${{ secrets.STAGING_RESET_APP_ID }}
-                  private-key: ${{ secrets.STAGING_RESET_APP_PRIVATE_KEY }}
+                  app_id: ${{ secrets.STAGING_RESET_APP_ID }}
+                  private_key: ${{ secrets.STAGING_RESET_APP_PRIVATE_KEY }}
 
             - name: Checkout repository
               uses: actions/checkout@v4
