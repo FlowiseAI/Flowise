@@ -120,15 +120,15 @@ const generateTTSForResponseStream = async (
             responseText,
             activeProviderConfig,
             options,
+            (format: string) => {
+                sseStreamer.streamTTSStartEvent(chatId, format)
+            },
             (chunk: Buffer) => {
                 const audioBase64 = chunk.toString('base64')
                 sseStreamer.streamTTSDataEvent(chatId, audioBase64)
             },
             () => {
                 sseStreamer.streamTTSEndEvent(chatId)
-            },
-            (format: string) => {
-                sseStreamer.streamTTSStartEvent(chatId, format)
             }
         )
     } catch (error) {

@@ -14,9 +14,9 @@ export const convertTextToSpeechStream = async (
     text: string,
     textToSpeechConfig: ICommonObject,
     options: ICommonObject,
+    onStart: (format: string) => void,
     onChunk: (chunk: Buffer) => void,
-    onEnd: () => void,
-    onStart?: (format: string) => void
+    onEnd: () => void
 ): Promise<void> => {
     return new Promise<void>((resolve, reject) => {
         const processStream = async () => {
@@ -27,7 +27,7 @@ export const convertTextToSpeechStream = async (
 
                     switch (textToSpeechConfig.name) {
                         case TextToSpeechType.OPENAI_TTS: {
-                            if (onStart) onStart('mp3')
+                            onStart('mp3')
 
                             const openai = new OpenAI({
                                 apiKey: credentialData.openAIApiKey
@@ -60,7 +60,7 @@ export const convertTextToSpeechStream = async (
                         }
 
                         case TextToSpeechType.ELEVEN_LABS_TTS: {
-                            if (onStart) onStart('mp3')
+                            onStart('mp3')
 
                             const client = new ElevenLabsClient({
                                 apiKey: credentialData.elevenLabsApiKey

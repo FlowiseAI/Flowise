@@ -57,6 +57,14 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             text,
             textToSpeechConfig,
             options,
+            (format: string) => {
+                const startResponse = {
+                    event: 'tts_start',
+                    data: { format }
+                }
+                res.write('event: tts_start\n')
+                res.write(`data: ${JSON.stringify(startResponse)}\n\n`)
+            },
             (chunk: Buffer) => {
                 const audioBase64 = chunk.toString('base64')
                 const clientResponse = {
@@ -74,14 +82,6 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
                 res.write('event: tts_end\n')
                 res.write(`data: ${JSON.stringify(endResponse)}\n\n`)
                 res.end()
-            },
-            (format: string) => {
-                const startResponse = {
-                    event: 'tts_start',
-                    data: { format }
-                }
-                res.write('event: tts_start\n')
-                res.write(`data: ${JSON.stringify(startResponse)}\n\n`)
             }
         )
     } catch (error) {
