@@ -18,11 +18,26 @@ jobs:
             github.event.pull_request.head.ref == 'staging'
         runs-on: ubuntu-latest
         steps:
+            - name: Generate GitHub App Token
+              id: generate-token
+              uses: tibdex/github-app-token@v1
+              with:
+                  app-id: ${{ secrets.STAGING_RESET_APP_ID }}
+                  private-key: ${{ secrets.STAGING_RESET_APP_PRIVATE_KEY }}
+
             - name: Checkout repository
               uses: actions/checkout@v4
               with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
+                  token: ${{ steps.generate-token.outputs.token }}
                   fetch-depth: 0
+
+            - name: Verify token is available
+              run: |
+                  if [ -z "${{ steps.generate-token.outputs.token }}" ]; then
+                      echo "❌ GitHub App token generation failed"
+                      exit 1
+                  fi
+                  echo "✅ GitHub App token generated successfully"
 
             - name: Check if staging has new commits since production
               id: check-staging
