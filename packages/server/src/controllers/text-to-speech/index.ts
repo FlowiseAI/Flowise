@@ -8,7 +8,7 @@ import { databaseEntities } from '../../utils'
 
 const generateTextToSpeech = async (req: Request, res: Response) => {
     try {
-        const { text, provider, credentialId, voice, model } = req.body
+        const { chatMessageId, text, provider, credentialId, voice, model } = req.body
 
         if (!text) {
             throw new InternalFlowiseError(
@@ -60,7 +60,7 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             (format: string) => {
                 const startResponse = {
                     event: 'tts_start',
-                    data: { format }
+                    data: { chatMessageId, format }
                 }
                 res.write('event: tts_start\n')
                 res.write(`data: ${JSON.stringify(startResponse)}\n\n`)
@@ -69,7 +69,7 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
                 const audioBase64 = chunk.toString('base64')
                 const clientResponse = {
                     event: 'tts_data',
-                    data: audioBase64
+                    data: { chatMessageId, audioChunk: audioBase64 }
                 }
                 res.write('event: tts_data\n')
                 res.write(`data: ${JSON.stringify(clientResponse)}\n\n`)
@@ -77,7 +77,7 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
             async () => {
                 const endResponse = {
                     event: 'tts_end',
-                    data: {}
+                    data: { chatMessageId }
                 }
                 res.write('event: tts_end\n')
                 res.write(`data: ${JSON.stringify(endResponse)}\n\n`)

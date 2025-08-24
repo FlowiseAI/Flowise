@@ -50,7 +50,14 @@ const createAndStreamInternalPrediction = async (req: Request, res: Response, ne
                 databaseEntities: getRunningExpressApp().AppDataSource?.entityMetadatas || []
             }
 
-            await generateTTSForResponseStream(apiResponse.text, chatflow.textToSpeech, options, apiResponse.chatId, sseStreamer)
+            await generateTTSForResponseStream(
+                apiResponse.text,
+                chatflow.textToSpeech,
+                options,
+                apiResponse.chatId,
+                apiResponse.chatMessageId,
+                sseStreamer
+            )
         }
     } catch (error) {
         if (chatId) {

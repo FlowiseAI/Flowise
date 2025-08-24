@@ -94,6 +94,7 @@ const generateTTSForResponseStream = async (
     textToSpeechConfig: string | undefined,
     options: ICommonObject,
     chatId: string,
+    chatMessageId: string,
     sseStreamer: IServerSideEventStreamer
 ): Promise<void> => {
     try {
@@ -121,19 +122,19 @@ const generateTTSForResponseStream = async (
             activeProviderConfig,
             options,
             (format: string) => {
-                sseStreamer.streamTTSStartEvent(chatId, format)
+                sseStreamer.streamTTSStartEvent(chatId, chatMessageId, format)
             },
             (chunk: Buffer) => {
                 const audioBase64 = chunk.toString('base64')
-                sseStreamer.streamTTSDataEvent(chatId, audioBase64)
+                sseStreamer.streamTTSDataEvent(chatId, chatMessageId, audioBase64)
             },
             () => {
-                sseStreamer.streamTTSEndEvent(chatId)
+                sseStreamer.streamTTSEndEvent(chatId, chatMessageId)
             }
         )
     } catch (error) {
         logger.error(`[server]: TTS streaming failed: ${getErrorMessage(error)}`)
-        sseStreamer.streamTTSEndEvent(chatId)
+        sseStreamer.streamTTSEndEvent(chatId, chatMessageId)
     }
 }
 
@@ -902,9 +903,9 @@ export const executeFlow = async ({
             }
 
             if (streaming && sseStreamer) {
-                await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, sseStreamer)
+                await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, chatMessage?.id, sseStreamer)
             } else if (sseStreamer) {
-                await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, sseStreamer)
+                await generateTTSForResponseStream(result.text, chatflow.textToSpeech, options, chatId, chatMessage?.id, sseStreamer)
             }
         }
 

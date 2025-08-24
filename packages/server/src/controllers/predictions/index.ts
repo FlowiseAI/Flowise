@@ -93,6 +93,7 @@ const createPrediction = async (req: Request, res: Response, next: NextFunction)
                             chatflow.textToSpeech,
                             options,
                             apiResponse.chatId,
+                            apiResponse.chatMessageId,
                             sseStreamer
                         )
                     }
