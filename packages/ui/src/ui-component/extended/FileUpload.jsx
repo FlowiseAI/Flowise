@@ -231,36 +231,66 @@ const FileUpload = ({ dialogProps }) => {
             </div>
 
             {allowedFileTypes.includes('application/pdf') && fullFileUpload && (
-                <Box
-                    sx={{
-                        borderRadius: 2,
-                        border: '1px solid #e0e0e0',
-                        backgroundColor: '#fafafa',
-                        padding: 3,
-                        marginBottom: 3,
-                        marginTop: 2
-                    }}
+               <Box
+                sx={(theme) => ({
+                    borderRadius: 2,
+                    border: `1px solid ${theme.palette.divider}`,
+                    backgroundColor: theme.palette.background.paper,
+                    padding: 3,
+                    marginBottom: 3,
+                    marginTop: 2,
+                })}
                 >
-                    <Typography sx={{ fontSize: 16, fontWeight: 600, marginBottom: 2, color: '#424242' }}>PDF Configuration</Typography>
+                <Typography
+                    sx={(theme) => ({
+                    fontSize: 16,
+                    fontWeight: 600,
+                    marginBottom: 2,
+                    color: theme.palette.text.primary,
+                    })}
+                >
+                    PDF Configuration
+                </Typography>
 
-                    <Box>
-                        <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>PDF Usage</Typography>
-                        <FormControl disabled={!fullFileUpload}>
-                            <RadioGroup name='pdf-usage' value={pdfUsage} onChange={handlePdfUsageChange}>
-                                <FormControlLabel value='perPage' control={<Radio />} label='One document per page' />
-                                <FormControlLabel value='perFile' control={<Radio />} label='One document per file' />
-                            </RadioGroup>
-                        </FormControl>
-                    </Box>
-
-                    <Box>
-                        <SwitchInput
-                            label='Use Legacy Build (for PDF compatibility issues)'
-                            onChange={handleLegacyBuildChange}
-                            value={pdfLegacyBuild}
-                            disabled={!fullFileUpload}
+                <Box>
+                    <Typography
+                    sx={(theme) => ({
+                        fontSize: 14,
+                        fontWeight: 500,
+                        marginBottom: 1,
+                        color: theme.palette.text.secondary,
+                    })}
+                    >
+                    PDF Usage
+                    </Typography>
+                    <FormControl disabled={!fullFileUpload}>
+                    <RadioGroup
+                        name="pdf-usage"
+                        value={pdfUsage}
+                        onChange={handlePdfUsageChange}
+                    >
+                        <FormControlLabel
+                        value="perPage"
+                        control={<Radio />}
+                        label="One document per page"
                         />
-                    </Box>
+                        <FormControlLabel
+                        value="perFile"
+                        control={<Radio />}
+                        label="One document per file"
+                        />
+                    </RadioGroup>
+                    </FormControl>
+                </Box>
+
+                <Box>
+                    <SwitchInput
+                    label="Use Legacy Build (for PDF compatibility issues)"
+                    onChange={handleLegacyBuildChange}
+                    value={pdfLegacyBuild}
+                    disabled={!fullFileUpload}
+                    />
+                </Box>
                 </Box>
             )}
 
