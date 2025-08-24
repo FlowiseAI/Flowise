@@ -266,7 +266,8 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         audio: null,
         chunkQueue: [],
         isBuffering: false,
-        audioFormat: null
+        audioFormat: null,
+        abortController: null
     })
 
     const isFileAllowedForUpload = (file) => {
@@ -1590,6 +1591,28 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
         })
     }
 
+    const stopAllTTS = () => {
+        Object.keys(ttsAudio).forEach((messageId) => {
+            if (ttsAudio[messageId]) {
+                ttsAudio[messageId].pause()
+                ttsAudio[messageId].currentTime = 0
+            }
+        })
+        setTtsAudio({})
+
+        if (ttsStreamingState.abortController) {
+            ttsStreamingState.abortController.abort()
+        }
+
+        if (ttsStreamingState.audio) {
+            ttsStreamingState.audio.pause()
+            cleanupTTSStreaming()
+        }
+
+        setIsTTSPlaying({})
+        setIsTTSLoading({})
+    }
+
     const handleTTSClick = async (messageId, messageText) => {
         if (isTTSLoading[messageId]) return
 
@@ -1597,6 +1620,8 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             handleTTSStop(messageId)
             return
         }
+
+        stopAllTTS()
 
         handleTTSStart({ chatMessageId: messageId, format: 'mp3' })
         try {
@@ -1631,6 +1656,9 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 return
             }
 
+            const abortController = new AbortController()
+            setTtsStreamingState((prev) => ({ ...prev, abortController }))
+
             const response = await fetch('/api/v1/text-to-speech/generate', {
                 method: 'POST',
                 headers: {
@@ -1638,6 +1666,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                     'x-request-from': 'internal'
                 },
                 credentials: 'include',
+                signal: abortController.signal,
                 body: JSON.stringify({
                     chatId: chatId,
                     chatMessageId: messageId,
@@ -1659,6 +1688,10 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
             let done = false
             while (!done) {
+                if (abortController.signal.aborted) {
+                    break
+                }
+
                 const result = await reader.read()
                 done = result.done
                 if (done) {
@@ -1679,12 +1712,14 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                                 case 'tts_start':
                                     break
                                 case 'tts_data':
-                                    handleTTSDataChunk(event.data.audioChunk)
+                                    if (!abortController.signal.aborted) {
+                                        handleTTSDataChunk(event.data.audioChunk)
+                                    }
                                     break
                                 case 'tts_end':
-                                    handleTTSEnd()
-                                    break
-                                default:
+                                    if (!abortController.signal.aborted) {
+                                        handleTTSEnd()
+                                    }
                                     break
                             }
                         }
@@ -1692,11 +1727,15 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 }
             }
         } catch (error) {
-            console.error('Error with TTS:', error)
-            enqueueSnackbar({
-                message: `TTS failed: ${error.message}`,
-                options: { variant: 'error' }
-            })
+            if (error.name === 'AbortError') {
+                console.error('TTS request was aborted')
+            } else {
+                console.error('Error with TTS:', error)
+                enqueueSnackbar({
+                    message: `TTS failed: ${error.message}`,
+                    options: { variant: 'error' }
+                })
+            }
         } finally {
             setIsTTSLoading((prev) => {
                 const newState = { ...prev }
@@ -1805,6 +1844,10 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
     const cleanupTTSStreaming = () => {
         setTtsStreamingState((prevState) => {
+            if (prevState.abortController) {
+                prevState.abortController.abort()
+            }
+
             if (prevState.audio) {
                 prevState.audio.pause()
                 prevState.audio.removeAttribute('src')
@@ -1830,7 +1873,8 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 audio: null,
                 chunkQueue: [],
                 isBuffering: false,
-                audioFormat: null
+                audioFormat: null,
+                abortController: null
             }
         })
     }
@@ -1870,30 +1914,14 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
             allMessages[allMessages.length - 1].id = data.chatMessageId
             return allMessages
         })
-        setTtsStreamingState((prevState) => {
-            if (prevState.audio) {
-                prevState.audio.pause()
-                if (prevState.audio.src) {
-                    URL.revokeObjectURL(prevState.audio.src)
-                }
-            }
-
-            if (prevState.mediaSource && prevState.mediaSource.readyState === 'open') {
-                try {
-                    prevState.mediaSource.endOfStream()
-                } catch (error) {
-                    console.error('Error stopping previous media source:', error)
-                }
-            }
-
-            return {
-                mediaSource: null,
-                sourceBuffer: null,
-                audio: null,
-                chunkQueue: [],
-                isBuffering: false,
-                audioFormat: data.format
-            }
+        setTtsStreamingState({
+            mediaSource: null,
+            sourceBuffer: null,
+            audio: null,
+            chunkQueue: [],
+            isBuffering: false,
+            audioFormat: data.format,
+            abortController: null
         })
 
         setTimeout(() => initializeTTSStreaming(data), 0)
