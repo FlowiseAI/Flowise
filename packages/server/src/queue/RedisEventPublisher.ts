@@ -393,27 +393,29 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
         }
     }
 
-    streamAudioEvent(chatId: string, audioData: string): void {
+    streamTTSStartEvent(chatId: string, chatMessageId: string, format: string): void {
         try {
             this.redisPublisher.publish(
                 chatId,
                 JSON.stringify({
                     chatId,
-                    eventType: 'audio',
-                    data: audioData
+                    chatMessageId,
+                    eventType: 'tts_start',
+                    data: { format }
                 })
             )
         } catch (error) {
-            console.error('Error streaming audio event:', error)
+            console.error('Error streaming TTS start event:', error)
         }
     }
 
-    streamTTSDataEvent(chatId: string, audioChunk: string): void {
+    streamTTSDataEvent(chatId: string, chatMessageId: string, audioChunk: string): void {
         try {
             this.redisPublisher.publish(
                 chatId,
                 JSON.stringify({
                     chatId,
+                    chatMessageId,
                     eventType: 'tts_data',
                     data: audioChunk
                 })
@@ -423,12 +425,13 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
         }
     }
 
-    streamTTSEndEvent(chatId: string): void {
+    streamTTSEndEvent(chatId: string, chatMessageId: string): void {
         try {
             this.redisPublisher.publish(
                 chatId,
                 JSON.stringify({
                     chatId,
+                    chatMessageId,
                     eventType: 'tts_end',
                     data: {}
                 })

@@ -115,7 +115,7 @@ export class RedisEventSubscriber {
     private handleEvent(message: string) {
         // Parse the message from Redis
         const event = JSON.parse(message)
-        const { eventType, chatId, data } = event
+        const { eventType, chatId, chatMessageId, data } = event
 
         // Stream the event to the client
         switch (eventType) {
@@ -133,6 +133,9 @@ export class RedisEventSubscriber {
                 break
             case 'usedTools':
                 this.sseStreamer.streamUsedToolsEvent(chatId, data)
+                break
+            case 'calledTools':
+                this.sseStreamer.streamCalledToolsEvent(chatId, data)
                 break
             case 'fileAnnotations':
                 this.sseStreamer.streamFileAnnotationsEvent(chatId, data)
@@ -166,6 +169,18 @@ export class RedisEventSubscriber {
                 break
             case 'metadata':
                 this.sseStreamer.streamMetadataEvent(chatId, data)
+                break
+            case 'usageMetadata':
+                this.sseStreamer.streamUsageMetadataEvent(chatId, data)
+                break
+            case 'tts_start':
+                this.sseStreamer.streamTTSStartEvent(chatId, chatMessageId, data.format)
+                break
+            case 'tts_data':
+                this.sseStreamer.streamTTSDataEvent(chatId, chatMessageId, data)
+                break
+            case 'tts_end':
+                this.sseStreamer.streamTTSEndEvent(chatId, chatMessageId)
                 break
         }
     }
