@@ -12,11 +12,11 @@ import {
 import { AIMessage, AIMessageChunk, BaseMessage, ToolMessage } from '@langchain/core/messages'
 import { StructuredTool } from '@langchain/core/tools'
 import { RunnableConfig } from '@langchain/core/runnables'
-import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX } from '../../../src/agents'
+import { ARTIFACTS_PREFIX, SOURCE_DOCUMENTS_PREFIX, TOOL_ARGS_PREFIX } from '../../../src/agents'
 import { Document } from '@langchain/core/documents'
 import { DataSource } from 'typeorm'
-import { MessagesState, RunnableCallable, customGet, getVM } from '../commonUtils'
-import { getVars, prepareSandboxVars } from '../../../src/utils'
+import { MessagesState, RunnableCallable, customGet } from '../commonUtils'
+import { getVars, prepareSandboxVars, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 
 const defaultApprovalPrompt = `You are about to execute tool: {tools}. Ask if user want to proceed`
@@ -448,6 +448,17 @@ class ToolNode<T extends IStateWithMessages | BaseMessage[] | MessagesState> ext
                     }
                 }
 
+                let toolInput
+                if (typeof output === 'string' && output.includes(TOOL_ARGS_PREFIX)) {
+                    const outputArray = output.split(TOOL_ARGS_PREFIX)
+                    output = outputArray[0]
+                    try {
+                        toolInput = JSON.parse(outputArray[1])
+                    } catch (e) {
+                        console.error('Error parsing tool input from tool')
+                    }
+                }
+
                 return new ToolMessage({
                     name: tool.name,
                     content: typeof output === 'string' ? output : JSON.stringify(output),
@@ -455,11 +466,11 @@ class ToolNode<T extends IStateWithMessages | BaseMessage[] | MessagesState> ext
                     additional_kwargs: {
                         sourceDocuments,
                         artifacts,
-                        args: call.args,
+                        args: toolInput ?? call.args,
                         usedTools: [
                             {
                                 tool: tool.name ?? '',
-                                toolInput: call.args,
+                                toolInput: toolInput ?? call.args,
                                 toolOutput: output
                             }
                         ]
@@ -498,7 +509,7 @@ const getReturnOutput = async (
     const updateStateMemory = nodeData.inputs?.updateStateMemory as string
 
     const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'updateStateMemoryUI'
-    const variables = await getVars(appDataSource, databaseEntities, nodeData)
+    const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
 
     const reformattedOutput = outputs.map((output) => {
         return {
@@ -561,9 +572,13 @@ const getReturnOutput = async (
             throw new Error(e)
         }
     } else if (selectedTab === 'updateStateMemoryCode' && updateStateMemoryCode) {
-        const vm = await getVM(appDataSource, databaseEntities, nodeData, flow)
+        const sandbox = createCodeExecutionSandbox(input, variables, flow)
+
         try {
-            const response = await vm.run(`module.exports = async function() {${updateStateMemoryCode}}()`, __dirname)
+            const response = await executeJavaScriptCode(updateStateMemoryCode, sandbox, {
+                timeout: 10000
+            })
+
             if (typeof response !== 'object') throw new Error('Return output must be an object')
             return response
         } catch (e) {

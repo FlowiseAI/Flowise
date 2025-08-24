@@ -14,9 +14,13 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import ConfirmDialog from '@/ui-component/dialog/ConfirmDialog'
 import { CodeEditor } from '@/ui-component/editor/CodeEditor'
 import HowToUseFunctionDialog from './HowToUseFunctionDialog'
+import { PermissionButton, StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import { Available } from '@/ui-component/rbac/available'
+import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
+import PasteJSONDialog from './PasteJSONDialog'
 
 // Icons
-import { IconX, IconFileDownload, IconPlus, IconTemplate } from '@tabler/icons-react'
+import { IconX, IconFileDownload, IconPlus, IconTemplate, IconCode } from '@tabler/icons-react'
 
 // API
 import toolsApi from '@/api/tools'
@@ -29,7 +33,6 @@ import useApi from '@/hooks/useApi'
 import useNotifier from '@/utils/useNotifier'
 import { generateRandomGradient, formatDataGridRows } from '@/utils/genericHelper'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
-import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
 
 const exampleAPIFunc = `/*
 * You can use any libraries imported in Flowise
@@ -82,6 +85,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
 
     const [exportAsTemplateDialogOpen, setExportAsTemplateDialogOpen] = useState(false)
     const [exportAsTemplateDialogProps, setExportAsTemplateDialogProps] = useState({})
+
+    const [showPasteJSONDialog, setShowPasteJSONDialog] = useState(false)
 
     const deleteItem = useCallback(
         (id) => () => {
@@ -409,6 +414,11 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
         }
     }
 
+    const handlePastedJSON = (formattedData) => {
+        setToolSchema(formattedData)
+        setShowPasteJSONDialog(false)
+    }
+
     const component = show ? (
         <Dialog
             fullWidth
@@ -424,7 +434,8 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                     <Box>
                         {dialogProps.type === 'EDIT' && (
                             <>
-                                <Button
+                                <PermissionButton
+                                    permissionId={'templates:toolexport'}
                                     style={{ marginRight: '10px' }}
                                     variant='outlined'
                                     onClick={() => onSaveAsTemplate()}
@@ -432,10 +443,15 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                                     color='secondary'
                                 >
                                     Save As Template
-                                </Button>
-                                <Button variant='outlined' onClick={() => exportTool()} startIcon={<IconFileDownload />}>
+                                </PermissionButton>
+                                <PermissionButton
+                                    permissionId={'tools:export'}
+                                    variant='outlined'
+                                    onClick={() => exportTool()}
+                                    startIcon={<IconFileDownload />}
+                                >
                                     Export
-                                </Button>
+                                </PermissionButton>
                             </>
                         )}
                     </Box>
@@ -507,9 +523,14 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
                                 <TooltipWithParser title={'What is the input format in JSON?'} />
                             </Stack>
                             {dialogProps.type !== 'TEMPLATE' && (
-                                <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
-                                    Add Item
-                                </Button>
+                                <Stack direction='row' spacing={1}>
+                                    <Button variant='outlined' onClick={() => setShowPasteJSONDialog(true)} startIcon={<IconCode />}>
+                                        Paste JSON
+                                    </Button>
+                                    <Button variant='outlined' onClick={addNewRow} startIcon={<IconPlus />}>
+                                        Add Item
+                                    </Button>
+                                </Stack>
                             )}
                         </Stack>
                         <Grid columns={columns} rows={toolSchema} disabled={dialogProps.type === 'TEMPLATE'} onRowUpdate={onRowUpdate} />
@@ -548,23 +569,26 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             </DialogContent>
             <DialogActions sx={{ p: 3 }}>
                 {dialogProps.type === 'EDIT' && (
-                    <StyledButton color='error' variant='contained' onClick={() => deleteTool()}>
+                    <StyledPermissionButton permissionId={'tools:delete'} color='error' variant='contained' onClick={() => deleteTool()}>
                         Delete
-                    </StyledButton>
+                    </StyledPermissionButton>
                 )}
                 {dialogProps.type === 'TEMPLATE' && (
-                    <StyledButton color='secondary' variant='contained' onClick={useToolTemplate}>
-                        Use Template
-                    </StyledButton>
+                    <Available permission={'tools:view,tools:create'}>
+                        <StyledButton color='secondary' variant='contained' onClick={useToolTemplate}>
+                            Use Template
+                        </StyledButton>
+                    </Available>
                 )}
                 {dialogProps.type !== 'TEMPLATE' && (
-                    <StyledButton
+                    <StyledPermissionButton
+                        permissionId={'tools:update,tools:create'}
                         disabled={!(toolName && toolDesc)}
                         variant='contained'
                         onClick={() => (dialogProps.type === 'ADD' || dialogProps.type === 'IMPORT' ? addNewTool() : saveTool())}
                     >
                         {dialogProps.confirmButtonName}
-                    </StyledButton>
+                    </StyledPermissionButton>
                 )}
             </DialogActions>
             <ConfirmDialog />
@@ -577,6 +601,15 @@ const ToolDialog = ({ show, dialogProps, onUseTemplate, onCancel, onConfirm, set
             )}
 
             <HowToUseFunctionDialog show={showHowToDialog} onCancel={() => setShowHowToDialog(false)} />
+
+            {showPasteJSONDialog && (
+                <PasteJSONDialog
+                    show={showPasteJSONDialog}
+                    onCancel={() => setShowPasteJSONDialog(false)}
+                    onConfirm={handlePastedJSON}
+                    customization={customization}
+                />
+            )}
         </Dialog>
     ) : null
 

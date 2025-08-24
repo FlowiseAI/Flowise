@@ -2,7 +2,7 @@ import { HarmBlockThreshold, HarmCategory } from '@google/generative-ai'
 import type { SafetySetting } from '@google/generative-ai'
 import { BaseCache } from '@langchain/core/caches'
 import { ICommonObject, IMultiModalOption, INode, INodeData, INodeOptionsValue, INodeParams } from '../../../src/Interface'
-import { convertMultiOptionsToStringArray, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
 import { getModels, MODEL_TYPE } from '../../../src/modelLoader'
 import { ChatGoogleGenerativeAI, GoogleGenerativeAIChatInput } from './FlowiseChatGoogleGenerativeAI'
 
@@ -21,7 +21,7 @@ class GoogleGenerativeAI_ChatModels implements INode {
     constructor() {
         this.label = 'ChatGoogleGenerativeAI'
         this.name = 'chatGoogleGenerativeAI'
-        this.version = 3.0
+        this.version = 3.1
         this.type = 'ChatGoogleGenerativeAI'
         this.icon = 'GoogleGemini.svg'
         this.category = 'Chat Models'
@@ -55,7 +55,8 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 type: 'string',
                 placeholder: 'gemini-1.5-pro-exp-0801',
                 description: 'Custom model name to use. If provided, it will override the model selected',
-                additionalParams: true
+                additionalParams: true,
+                optional: true
             },
             {
                 label: 'Temperature',
@@ -99,60 +100,85 @@ class GoogleGenerativeAI_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'Harm Category',
-                name: 'harmCategory',
-                type: 'multiOptions',
+                label: 'Safety Settings',
+                name: 'safetySettings',
+                type: 'array',
                 description:
-                    'Refer to <a target="_blank" href="https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/configure-safety-attributes#safety_attribute_definitions">official guide</a> on how to use Harm Category',
-                options: [
+                    'Safety settings for the model. Refer to the <a href="https://ai.google.dev/gemini-api/docs/safety-settings">official guide</a> on how to use Safety Settings',
+                array: [
                     {
-                        label: 'Dangerous',
-                        name: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT
+                        label: 'Harm Category',
+                        name: 'harmCategory',
+                        type: 'options',
+                        options: [
+                            {
+                                label: 'Dangerous',
+                                name: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+                                description: 'Promotes, facilitates, or encourages harmful acts.'
+                            },
+                            {
+                                label: 'Harassment',
+                                name: HarmCategory.HARM_CATEGORY_HARASSMENT,
+                                description: 'Negative or harmful comments targeting identity and/or protected attributes.'
+                            },
+                            {
+                                label: 'Hate Speech',
+                                name: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+                                description: 'Content that is rude, disrespectful, or profane.'
+                            },
+                            {
+                                label: 'Sexually Explicit',
+                                name: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+                                description: 'Contains references to sexual acts or other lewd content.'
+                            },
+                            {
+                                label: 'Civic Integrity',
+                                name: HarmCategory.HARM_CATEGORY_CIVIC_INTEGRITY,
+                                description: 'Election-related queries.'
+                            }
+                        ]
                     },
                     {
-                        label: 'Harassment',
-                        name: HarmCategory.HARM_CATEGORY_HARASSMENT
-                    },
-                    {
-                        label: 'Hate Speech',
-                        name: HarmCategory.HARM_CATEGORY_HATE_SPEECH
-                    },
-                    {
-                        label: 'Sexually Explicit',
-                        name: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT
+                        label: 'Harm Block Threshold',
+                        name: 'harmBlockThreshold',
+                        type: 'options',
+                        options: [
+                            {
+                                label: 'None',
+                                name: HarmBlockThreshold.BLOCK_NONE,
+                                description: 'Always show regardless of probability of unsafe content'
+                            },
+                            {
+                                label: 'Only High',
+                                name: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                                description: 'Block when high probability of unsafe content'
+                            },
+                            {
+                                label: 'Medium and Above',
+                                name: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                                description: 'Block when medium or high probability of unsafe content'
+                            },
+                            {
+                                label: 'Low and Above',
+                                name: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+                                description: 'Block when low, medium or high probability of unsafe content'
+                            },
+                            {
+                                label: 'Threshold Unspecified (Default Threshold)',
+                                name: HarmBlockThreshold.HARM_BLOCK_THRESHOLD_UNSPECIFIED,
+                                description: 'Threshold is unspecified, block using default threshold'
+                            }
+                        ]
                     }
                 ],
                 optional: true,
                 additionalParams: true
             },
             {
-                label: 'Harm Block Threshold',
-                name: 'harmBlockThreshold',
-                type: 'multiOptions',
-                description:
-                    'Refer to <a target="_blank" href="https://cloud.google.com/vertex-ai/docs/generative-ai/multimodal/configure-safety-attributes#safety_setting_thresholds">official guide</a> on how to use Harm Block Threshold',
-                options: [
-                    {
-                        label: 'Low and Above',
-                        name: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE
-                    },
-                    {
-                        label: 'Medium and Above',
-                        name: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
-                    },
-                    {
-                        label: 'None',
-                        name: HarmBlockThreshold.BLOCK_NONE
-                    },
-                    {
-                        label: 'Only High',
-                        name: HarmBlockThreshold.BLOCK_ONLY_HIGH
-                    },
-                    {
-                        label: 'Threshold Unspecified',
-                        name: HarmBlockThreshold.HARM_BLOCK_THRESHOLD_UNSPECIFIED
-                    }
-                ],
+                label: 'Base URL',
+                name: 'baseUrl',
+                type: 'string',
+                description: 'Base URL for the API. Leave empty to use the default.',
                 optional: true,
                 additionalParams: true
             },
@@ -185,36 +211,57 @@ class GoogleGenerativeAI_ChatModels implements INode {
         const maxOutputTokens = nodeData.inputs?.maxOutputTokens as string
         const topP = nodeData.inputs?.topP as string
         const topK = nodeData.inputs?.topK as string
-        const harmCategory = nodeData.inputs?.harmCategory as string
-        const harmBlockThreshold = nodeData.inputs?.harmBlockThreshold as string
+        const _safetySettings = nodeData.inputs?.safetySettings as string
+
         const cache = nodeData.inputs?.cache as BaseCache
         const streaming = nodeData.inputs?.streaming as boolean
+        const baseUrl = nodeData.inputs?.baseUrl as string | undefined
 
         const allowImageUploads = nodeData.inputs?.allowImageUploads as boolean
 
-        const obj: Partial<GoogleGenerativeAIChatInput> = {
+        const obj: GoogleGenerativeAIChatInput = {
             apiKey: apiKey,
-            modelName: customModelName || modelName,
+            model: customModelName || modelName,
             streaming: streaming ?? true
         }
 
+        // this extra metadata is needed, as langchain does not show the model name in the callbacks.
+        obj.metadata = {
+            fw_model_name: customModelName || modelName
+        }
         if (maxOutputTokens) obj.maxOutputTokens = parseInt(maxOutputTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (topK) obj.topK = parseFloat(topK)
         if (cache) obj.cache = cache
         if (temperature) obj.temperature = parseFloat(temperature)
+        if (baseUrl) obj.baseUrl = baseUrl
 
-        // Safety Settings
-        let harmCategories: string[] = convertMultiOptionsToStringArray(harmCategory)
-        let harmBlockThresholds: string[] = convertMultiOptionsToStringArray(harmBlockThreshold)
-        if (harmCategories.length != harmBlockThresholds.length)
-            throw new Error(`Harm Category & Harm Block Threshold are not the same length`)
-        const safetySettings: SafetySetting[] = harmCategories.map((harmCategory, index) => {
-            return {
-                category: harmCategory as HarmCategory,
-                threshold: harmBlockThresholds[index] as HarmBlockThreshold
+        let safetySettings: SafetySetting[] = []
+        if (_safetySettings) {
+            try {
+                const parsedSafetySettings = typeof _safetySettings === 'string' ? JSON.parse(_safetySettings) : _safetySettings
+                if (Array.isArray(parsedSafetySettings)) {
+                    const validSettings = parsedSafetySettings
+                        .filter((setting: any) => setting.harmCategory && setting.harmBlockThreshold)
+                        .map((setting: any) => ({
+                            category: setting.harmCategory as HarmCategory,
+                            threshold: setting.harmBlockThreshold as HarmBlockThreshold
+                        }))
+
+                    // Remove duplicates by keeping only the first occurrence of each harm category
+                    const seenCategories = new Set<HarmCategory>()
+                    safetySettings = validSettings.filter((setting) => {
+                        if (seenCategories.has(setting.category)) {
+                            return false
+                        }
+                        seenCategories.add(setting.category)
+                        return true
+                    })
+                }
+            } catch (error) {
+                console.warn('Failed to parse safety settings:', error)
             }
-        })
+        }
         if (safetySettings.length > 0) obj.safetySettings = safetySettings
 
         const multiModalOption: IMultiModalOption = {

@@ -1,8 +1,9 @@
 <!-- markdownlint-disable MD030 -->
 
-<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
-
-# Flowise - LLM アプリを簡単に構築
+<p align="center">
+<img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_white.svg#gh-light-mode-only">
+<img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_dark.svg#gh-dark-mode-only">
+</p>
 
 [![Release Notes](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/FlowiseAI/Flowise/releases)
 [![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
@@ -10,11 +11,11 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](../README.md) | [中文](./README-ZH.md) | 日本語 | [한국어](./README-KR.md)
+[English](../README.md) | [繁體中文](./README-TW.md) | [简体中文](./README-ZH.md) | 日本語 | [한국어](./README-KR.md)
 
-<h3>ドラッグ＆ドロップでカスタマイズした LLM フローを構築できる UI</h3>
+<h3>AIエージェントをビジュアルに構築</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
-<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
+<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true"></a>
 
 ## ⚡ クイックスタート
 
@@ -28,12 +29,6 @@
 
     ```bash
     npx flowise start
-    ```
-
-    ユーザー名とパスワードを入力
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
     ```
 
 3. [http://localhost:3000](http://localhost:3000) を開く
@@ -126,15 +121,6 @@ Flowise には、3 つの異なるモジュールが 1 つの mono リポジト�
 
     コードの変更は [http://localhost:8080](http://localhost:8080) に自動的にアプリをリロードします
 
-## 🔒 認証
-
-アプリレベルの認証を有効にするには、 `FLOWISE_USERNAME` と `FLOWISE_PASSWORD` を `packages/server` の `.env` ファイルに追加します:
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
-
 ## 🌱 環境変数
 
 Flowise は、インスタンスを設定するためのさまざまな環境変数をサポートしています。`packages/server` フォルダ内の `.env` ファイルで以下の変数を指定することができる。[続き](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)を読む
@@ -196,9 +182,9 @@ Flowise は、インスタンスを設定するためのさまざまな環境変
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-[コントリビューティングガイド](CONTRIBUTING.md)を参照してください。質問や問題があれば、[Discord](https://discord.gg/jbaHfsRVBW) までご連絡ください。
+[コントリビューティングガイド](../CONTRIBUTING.md)を参照してください。質問や問題があれば、[Discord](https://discord.gg/jbaHfsRVBW) までご連絡ください。
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 ライセンス
 
-このリポジトリのソースコードは、[Apache License Version 2.0](LICENSE.md)の下で利用可能です。
+このリポジトリのソースコードは、[Apache License Version 2.0](../LICENSE.md)の下で利用可能です。

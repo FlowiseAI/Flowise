@@ -1,10 +1,11 @@
-import { omit } from 'lodash'
-import { ICommonObject, IDocument, INode, INodeData, INodeParams } from '../../../src/Interface'
-import { TextSplitter } from 'langchain/text_splitter'
 import { Browser, Page, PuppeteerWebBaseLoader, PuppeteerWebBaseLoaderOptions } from '@langchain/community/document_loaders/web/puppeteer'
+import { Document } from '@langchain/core/documents'
+import { TextSplitter } from 'langchain/text_splitter'
 import { test } from 'linkifyjs'
-import { handleEscapeCharacters, INodeOutputsValue, webCrawl, xmlScrape } from '../../../src'
+import { omit } from 'lodash'
 import { PuppeteerLifeCycleEvent } from 'puppeteer'
+import { handleEscapeCharacters, INodeOutputsValue, webCrawl, xmlScrape } from '../../../src'
+import { ICommonObject, INode, INodeData, INodeParams } from '../../../src/Interface'
 
 class Puppeteer_DocumentLoaders implements INode {
     label: string
@@ -110,6 +111,14 @@ class Puppeteer_DocumentLoaders implements INode {
                 description: 'CSS selectors like .div or #div'
             },
             {
+                label: 'CSS Selector (Optional)',
+                name: 'cssSelector',
+                type: 'string',
+                description: 'Only content inside this selector will be extracted. Leave empty to use the entire page body.',
+                optional: true,
+                additionalParams: true
+            },
+            {
                 label: 'Additional Metadata',
                 name: 'metadata',
                 type: 'json',
@@ -151,10 +160,12 @@ class Puppeteer_DocumentLoaders implements INode {
         const relativeLinksMethod = nodeData.inputs?.relativeLinksMethod as string
         const selectedLinks = nodeData.inputs?.selectedLinks as string[]
         let limit = parseInt(nodeData.inputs?.limit as string)
-        let waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as PuppeteerLifeCycleEvent
-        let waitForSelector = nodeData.inputs?.waitForSelector as string
+        const waitUntilGoToOption = nodeData.inputs?.waitUntilGoToOption as PuppeteerLifeCycleEvent
+        const waitForSelector = nodeData.inputs?.waitForSelector as string
+        const cssSelector = nodeData.inputs?.cssSelector as string
         const _omitMetadataKeys = nodeData.inputs?.omitMetadataKeys as string
         const output = nodeData.outputs?.output as string
+        const orgId = options.orgId
 
         let omitMetadataKeys: string[] = []
         if (_omitMetadataKeys) {
@@ -167,13 +178,14 @@ class Puppeteer_DocumentLoaders implements INode {
             throw new Error('Invalid URL')
         }
 
-        async function puppeteerLoader(url: string): Promise<any> {
+        async function puppeteerLoader(url: string): Promise<Document[] | undefined> {
             try {
-                let docs = []
+                let docs: Document[] = []
                 const config: PuppeteerWebBaseLoaderOptions = {
                     launchOptions: {
                         args: ['--no-sandbox'],
-                        headless: 'new'
+                        headless: 'new',
+                        executablePath: process.env.PUPPETEER_EXECUTABLE_FILE_PATH
                     }
                 }
                 if (waitUntilGoToOption) {
@@ -181,12 +193,22 @@ class Puppeteer_DocumentLoaders implements INode {
                         waitUntil: waitUntilGoToOption
                     }
                 }
-                if (waitForSelector) {
+                if (cssSelector || waitForSelector) {
                     config['evaluate'] = async (page: Page, _: Browser): Promise<string> => {
-                        await page.waitForSelector(waitForSelector)
+                        if (waitForSelector) {
+                            await page.waitForSelector(waitForSelector)
+                        }
 
-                        const result = await page.evaluate(() => document.body.innerHTML)
-                        return result
+                        if (cssSelector) {
+                            const selectorHandle = await page.$(cssSelector)
+                            const result = await page.evaluate(
+                                (htmlSelection) => htmlSelection?.innerHTML ?? document.body.innerHTML,
+                                selectorHandle
+                            )
+                            return result
+                        } else {
+                            return await page.evaluate(() => document.body.innerHTML)
+                        }
                     }
                 }
                 const loader = new PuppeteerWebBaseLoader(url, config)
@@ -198,13 +220,14 @@ class Puppeteer_DocumentLoaders implements INode {
                 }
                 return docs
             } catch (err) {
-                if (process.env.DEBUG === 'true') options.logger.error(`error in PuppeteerWebBaseLoader: ${err.message}, on page: ${url}`)
+                if (process.env.DEBUG === 'true')
+                    options.logger.error(`[${orgId}]: Error in PuppeteerWebBaseLoader: ${err.message}, on page: ${url}`)
             }
         }
 
-        let docs: IDocument[] = []
+        let docs: Document[] = []
         if (relativeLinksMethod) {
-            if (process.env.DEBUG === 'true') options.logger.info(`Start ${relativeLinksMethod}`)
+            if (process.env.DEBUG === 'true') options.logger.info(`[${orgId}]: Start PuppeteerWebBaseLoader ${relativeLinksMethod}`)
             // if limit is 0 we don't want it to default to 10 so we check explicitly for null or undefined
             // so when limit is 0 we can fetch all the links
             if (limit === null || limit === undefined) limit = 10
@@ -215,20 +238,32 @@ class Puppeteer_DocumentLoaders implements INode {
                     : relativeLinksMethod === 'webCrawl'
                     ? await webCrawl(url, limit)
                     : await xmlScrape(url, limit)
-            if (process.env.DEBUG === 'true') options.logger.info(`pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
+            if (process.env.DEBUG === 'true')
+                options.logger.info(`[${orgId}]: PuppeteerWebBaseLoader pages: ${JSON.stringify(pages)}, length: ${pages.length}`)
             if (!pages || pages.length === 0) throw new Error('No relative links found')
             for (const page of pages) {
-                docs.push(...(await puppeteerLoader(page)))
+                const result = await puppeteerLoader(page)
+                if (result) {
+                    docs.push(...result)
+                }
             }
-            if (process.env.DEBUG === 'true') options.logger.info(`Finish ${relativeLinksMethod}`)
+            if (process.env.DEBUG === 'true') options.logger.info(`[${orgId}]: Finish PuppeteerWebBaseLoader ${relativeLinksMethod}`)
         } else if (selectedLinks && selectedLinks.length > 0) {
             if (process.env.DEBUG === 'true')
-                options.logger.info(`pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`)
+                options.logger.info(
+                    `[${orgId}]: PuppeteerWebBaseLoader pages: ${JSON.stringify(selectedLinks)}, length: ${selectedLinks.length}`
+                )
             for (const page of selectedLinks.slice(0, limit)) {
-                docs.push(...(await puppeteerLoader(page)))
+                const result = await puppeteerLoader(page)
+                if (result) {
+                    docs.push(...result)
+                }
             }
         } else {
-            docs = await puppeteerLoader(url)
+            const result = await puppeteerLoader(url)
+            if (result) {
+                docs.push(...result)
+            }
         }
 
         if (metadata) {

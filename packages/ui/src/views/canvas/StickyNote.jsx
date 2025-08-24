@@ -1,9 +1,9 @@
 import PropTypes from 'prop-types'
-import { useContext, useState } from 'react'
+import { useContext, useState, memo } from 'react'
 import { useSelector } from 'react-redux'
 
 // material-ui
-import { useTheme } from '@mui/material/styles'
+import { useTheme, darken, lighten } from '@mui/material/styles'
 
 // project imports
 import NodeCardWrapper from '@/ui-component/cards/NodeCardWrapper'
@@ -18,6 +18,7 @@ import { flowContext } from '@/store/context/ReactFlowContext'
 const StickyNote = ({ data }) => {
     const theme = useTheme()
     const canvas = useSelector((state) => state.canvas)
+    const customization = useSelector((state) => state.customization)
     const { deleteNode, duplicateNode } = useContext(flowContext)
     const [inputParam] = data.inputParams
 
@@ -31,14 +32,31 @@ const StickyNote = ({ data }) => {
         setOpen(true)
     }
 
+    const defaultColor = '#FFE770' // fallback color if data.color is not present
+    const nodeColor = data.color || defaultColor
+
+    const getBorderColor = () => {
+        if (data.selected) return theme.palette.primary.main
+        else if (customization?.isDarkMode) return theme.palette.grey[700]
+        else return theme.palette.grey[900] + 50
+    }
+
+    const getBackgroundColor = () => {
+        if (customization?.isDarkMode) {
+            return data.selected ? darken(nodeColor, 0.7) : darken(nodeColor, 0.8)
+        } else {
+            return data.selected ? lighten(nodeColor, 0.1) : lighten(nodeColor, 0.2)
+        }
+    }
+
     return (
         <>
             <NodeCardWrapper
                 content={false}
                 sx={{
                     padding: 0,
-                    borderColor: data.selected ? theme.palette.primary.main : theme.palette.text.secondary,
-                    backgroundColor: data.selected ? '#FFDC00' : '#FFE770'
+                    borderColor: getBorderColor(),
+                    backgroundColor: getBackgroundColor()
                 }}
                 border={false}
             >
@@ -60,8 +78,12 @@ const StickyNote = ({ data }) => {
                                 onClick={() => {
                                     duplicateNode(data.id)
                                 }}
-                                sx={{ height: '35px', width: '35px', '&:hover': { color: theme?.palette.primary.main } }}
-                                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                                sx={{
+                                    height: '35px',
+                                    width: '35px',
+                                    color: customization?.isDarkMode ? 'white' : 'inherit',
+                                    '&:hover': { color: theme?.palette.primary.main }
+                                }}
                             >
                                 <IconCopy />
                             </IconButton>
@@ -70,8 +92,12 @@ const StickyNote = ({ data }) => {
                                 onClick={() => {
                                     deleteNode(data.id)
                                 }}
-                                sx={{ height: '35px', width: '35px', '&:hover': { color: 'red' } }}
-                                color={theme?.customization?.isDarkMode ? theme.colors?.paper : 'inherit'}
+                                sx={{
+                                    height: '35px',
+                                    width: '35px',
+                                    color: customization?.isDarkMode ? 'white' : 'inherit',
+                                    '&:hover': { color: theme?.palette.error.main }
+                                }}
                             >
                                 <IconTrash />
                             </IconButton>
@@ -100,4 +126,4 @@ StickyNote.propTypes = {
     data: PropTypes.object
 }
 
-export default StickyNote
+export default memo(StickyNote)

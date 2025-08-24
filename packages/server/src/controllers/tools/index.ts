@@ -1,14 +1,26 @@
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import toolsService from '../../services/tools'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
+import { getPageAndLimitParams } from '../../utils/pagination'
 
 const createTool = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (!req.body) {
             throw new InternalFlowiseError(StatusCodes.PRECONDITION_FAILED, `Error: toolsController.createTool - body not provided!`)
         }
-        const apiResponse = await toolsService.createTool(req.body)
+        const orgId = req.user?.activeOrganizationId
+        if (!orgId) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: toolsController.createTool - organization ${orgId} not found!`)
+        }
+        const workspaceId = req.user?.activeWorkspaceId
+        if (!workspaceId) {
+            throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `Error: toolsController.createTool - workspace ${workspaceId} not found!`)
+        }
+        const body = req.body
+        body.workspaceId = workspaceId
+
+        const apiResponse = await toolsService.createTool(body, orgId)
         return res.json(apiResponse)
     } catch (error) {
         next(error)
@@ -29,7 +41,8 @@ const deleteTool = async (req: Request, res: Response, next: NextFunction) => {
 
 const getAllTools = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const apiResponse = await toolsService.getAllTools()
+        const { page, limit } = getPageAndLimitParams(req)
+        const apiResponse = await toolsService.getAllTools(req.user?.activeWorkspaceId, page, limit)
         return res.json(apiResponse)
     } catch (error) {
         next(error)

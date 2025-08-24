@@ -57,11 +57,43 @@ const sanitizeAssistant = (Assistant) => {
                 id: assistant.id,
                 details: assistant.details,
                 credential: assistant.credential,
-                iconSrc: assistant.iconSrc
+                iconSrc: assistant.iconSrc,
+                type: assistant.type
             }
         })
     } catch (error) {
         throw new Error(`exportImport.sanitizeAssistant ${getErrorMessage(error)}`)
+    }
+}
+
+const sanitizeCustomTemplate = (CustomTemplate) => {
+    try {
+        return CustomTemplate.map((customTemplate) => {
+            return { ...customTemplate, usecases: JSON.stringify(customTemplate.usecases), workspaceId: undefined }
+        })
+    } catch (error) {
+        throw new Error(`exportImport.sanitizeCustomTemplate ${getErrorMessage(error)}`)
+    }
+}
+
+const sanitizeDocumentStore = (DocumentStore) => {
+    try {
+        return DocumentStore.map((documentStore) => {
+            return { ...documentStore, workspaceId: undefined }
+        })
+    } catch (error) {
+        throw new Error(`exportImport.sanitizeDocumentStore ${getErrorMessage(error)}`)
+    }
+}
+
+const sanitizeExecution = (Execution) => {
+    try {
+        return Execution.map((execution) => {
+            if (execution.agentflow) execution.agentflow.workspaceId = undefined
+            return { ...execution, workspaceId: undefined }
+        })
+    } catch (error) {
+        throw new Error(`exportImport.sanitizeExecution ${getErrorMessage(error)}`)
     }
 }
 
@@ -76,11 +108,21 @@ export const stringify = (object) => {
 export const exportData = (exportAllData) => {
     try {
         return {
-            Tool: sanitizeTool(exportAllData.Tool),
-            ChatFlow: sanitizeChatflow(exportAllData.ChatFlow),
             AgentFlow: sanitizeChatflow(exportAllData.AgentFlow),
-            Variable: sanitizeVariable(exportAllData.Variable),
-            Assistant: sanitizeAssistant(exportAllData.Assistant)
+            AgentFlowV2: sanitizeChatflow(exportAllData.AgentFlowV2),
+            AssistantFlow: sanitizeChatflow(exportAllData.AssistantFlow),
+            AssistantCustom: sanitizeAssistant(exportAllData.AssistantCustom),
+            AssistantOpenAI: sanitizeAssistant(exportAllData.AssistantOpenAI),
+            AssistantAzure: sanitizeAssistant(exportAllData.AssistantAzure),
+            ChatFlow: sanitizeChatflow(exportAllData.ChatFlow),
+            ChatMessage: exportAllData.ChatMessage,
+            ChatMessageFeedback: exportAllData.ChatMessageFeedback,
+            CustomTemplate: sanitizeCustomTemplate(exportAllData.CustomTemplate),
+            DocumentStore: sanitizeDocumentStore(exportAllData.DocumentStore),
+            DocumentStoreFileChunk: exportAllData.DocumentStoreFileChunk,
+            Execution: sanitizeExecution(exportAllData.Execution),
+            Tool: sanitizeTool(exportAllData.Tool),
+            Variable: sanitizeVariable(exportAllData.Variable)
         }
     } catch (error) {
         throw new Error(`exportImport.exportData ${getErrorMessage(error)}`)

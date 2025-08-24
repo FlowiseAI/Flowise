@@ -19,6 +19,7 @@ import ChatflowConfigurationDialog from '@/ui-component/dialog/ChatflowConfigura
 import UpsertHistoryDialog from '@/views/vectorstore/UpsertHistoryDialog'
 import ViewLeadsDialog from '@/ui-component/dialog/ViewLeadsDialog'
 import ExportAsTemplateDialog from '@/ui-component/dialog/ExportAsTemplateDialog'
+import { Available } from '@/ui-component/rbac/available'
 
 // API
 import chatflowsApi from '@/api/chatflows'
@@ -33,7 +34,7 @@ import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackba
 
 // ==============================|| CANVAS HEADER ||============================== //
 
-const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
+const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, handleDeleteFlow, handleLoadFlow }) => {
     const theme = useTheme()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -60,6 +61,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
+    const [savePermission, setSavePermission] = useState(isAgentCanvas ? 'agentflows:create' : 'chatflows:create')
+
     const title = isAgentCanvas ? 'Agents' : 'Chatflow'
 
     const updateChatflowApi = useApi(chatflowsApi.updateChatflow)
@@ -73,7 +76,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
         } else if (setting === 'viewMessages') {
             setViewMessagesDialogProps({
                 title: 'View Messages',
-                chatflow: chatflow
+                chatflow: chatflow,
+                isChatflow: isAgentflowV2 ? false : true
             })
             setViewMessagesDialogOpen(true)
         } else if (setting === 'viewLeads') {
@@ -122,7 +126,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 const parsedFlowData = JSON.parse(flowData)
                 flowData = JSON.stringify(parsedFlowData)
                 localStorage.setItem('duplicatedFlowData', flowData)
-                window.open(`${uiBaseURL}/${isAgentCanvas ? 'agentcanvas' : 'canvas'}`, '_blank')
+                if (isAgentflowV2) {
+                    window.open(`${uiBaseURL}/v2/agentcanvas`, '_blank')
+                } else if (isAgentCanvas) {
+                    window.open(`${uiBaseURL}/agentcanvas`, '_blank')
+                } else {
+                    window.open(`${uiBaseURL}/canvas`, '_blank')
+                }
             } catch (e) {
                 console.error(e)
             }
@@ -197,7 +207,8 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
             chatflowApiKeyId: chatflow.apikeyid,
             isFormDataRequired,
             isSessionMemory,
-            isAgentCanvas
+            isAgentCanvas,
+            isAgentflowV2
         })
         setAPIDialogOpen(true)
     }
@@ -209,12 +220,14 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
 
     const onConfirmSaveName = (flowName) => {
         setFlowDialogOpen(false)
+        setSavePermission(isAgentCanvas ? 'agentflows:update' : 'chatflows:update')
         handleSaveFlow(flowName)
     }
 
     useEffect(() => {
         if (updateChatflowApi.data) {
             setFlowName(updateChatflowApi.data.name)
+            setSavePermission(isAgentCanvas ? 'agentflows:update' : 'chatflows:update')
             dispatch({ type: SET_CHATFLOW, chatflow: updateChatflowApi.data })
         }
         setEditingFlowName(false)
@@ -255,9 +268,13 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                     }
                                 }}
                                 color='inherit'
-                                onClick={() =>
-                                    window.history.state && window.history.state.idx > 0 ? navigate(-1) : navigate('/', { replace: true })
-                                }
+                                onClick={() => {
+                                    if (window.history.state && window.history.state.idx > 0) {
+                                        navigate(-1)
+                                    } else {
+                                        navigate('/', { replace: true })
+                                    }
+                                }}
                             >
                                 <IconChevronLeft stroke={1.5} size='1.3rem' />
                             </Avatar>
@@ -279,27 +296,29 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                                     {canvas.isDirty && <strong style={{ color: theme.palette.orange.main }}>*</strong>} {flowName}
                                 </Typography>
                                 {chatflow?.id && (
-                                    <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
-                                        <Avatar
-                                            variant='rounded'
-                                            sx={{
-                                                ...theme.typography.commonAvatar,
-                                                ...theme.typography.mediumAvatar,
-                                                transition: 'all .2s ease-in-out',
-                                                ml: 1,
-                                                background: theme.palette.secondary.light,
-                                                color: theme.palette.secondary.dark,
-                                                '&:hover': {
-                                                    background: theme.palette.secondary.dark,
-                                                    color: theme.palette.secondary.light
-                                                }
-                                            }}
-                                            color='inherit'
-                                            onClick={() => setEditingFlowName(true)}
-                                        >
-                                            <IconPencil stroke={1.5} size='1.3rem' />
-                                        </Avatar>
-                                    </ButtonBase>
+                                    <Available permission={savePermission}>
+                                        <ButtonBase title='Edit Name' sx={{ borderRadius: '50%' }}>
+                                            <Avatar
+                                                variant='rounded'
+                                                sx={{
+                                                    ...theme.typography.commonAvatar,
+                                                    ...theme.typography.mediumAvatar,
+                                                    transition: 'all .2s ease-in-out',
+                                                    ml: 1,
+                                                    background: theme.palette.secondary.light,
+                                                    color: theme.palette.secondary.dark,
+                                                    '&:hover': {
+                                                        background: theme.palette.secondary.dark,
+                                                        color: theme.palette.secondary.light
+                                                    }
+                                                }}
+                                                color='inherit'
+                                                onClick={() => setEditingFlowName(true)}
+                                            >
+                                                <IconPencil stroke={1.5} size='1.3rem' />
+                                            </Avatar>
+                                        </ButtonBase>
+                                    </Available>
                                 )}
                             </Stack>
                         ) : (
@@ -391,26 +410,28 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                             </Avatar>
                         </ButtonBase>
                     )}
-                    <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
-                        <Avatar
-                            variant='rounded'
-                            sx={{
-                                ...theme.typography.commonAvatar,
-                                ...theme.typography.mediumAvatar,
-                                transition: 'all .2s ease-in-out',
-                                background: theme.palette.canvasHeader.saveLight,
-                                color: theme.palette.canvasHeader.saveDark,
-                                '&:hover': {
-                                    background: theme.palette.canvasHeader.saveDark,
-                                    color: theme.palette.canvasHeader.saveLight
-                                }
-                            }}
-                            color='inherit'
-                            onClick={onSaveChatflowClick}
-                        >
-                            <IconDeviceFloppy stroke={1.5} size='1.3rem' />
-                        </Avatar>
-                    </ButtonBase>
+                    <Available permission={savePermission}>
+                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+                            <Avatar
+                                variant='rounded'
+                                sx={{
+                                    ...theme.typography.commonAvatar,
+                                    ...theme.typography.mediumAvatar,
+                                    transition: 'all .2s ease-in-out',
+                                    background: theme.palette.canvasHeader.saveLight,
+                                    color: theme.palette.canvasHeader.saveDark,
+                                    '&:hover': {
+                                        background: theme.palette.canvasHeader.saveDark,
+                                        color: theme.palette.canvasHeader.saveLight
+                                    }
+                                }}
+                                color='inherit'
+                                onClick={onSaveChatflowClick}
+                            >
+                                <IconDeviceFloppy stroke={1.5} size='1.3rem' />
+                            </Avatar>
+                        </ButtonBase>
+                    </Available>
                     <ButtonBase ref={settingsRef} title='Settings' sx={{ borderRadius: '50%' }}>
                         <Avatar
                             variant='rounded'
@@ -475,6 +496,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, handleSaveFlow, handleDeleteFlo
                 show={chatflowConfigurationDialogOpen}
                 dialogProps={chatflowConfigurationDialogProps}
                 onCancel={() => setChatflowConfigurationDialogOpen(false)}
+                isAgentCanvas={isAgentCanvas}
             />
         </>
     )
@@ -485,7 +507,8 @@ CanvasHeader.propTypes = {
     handleSaveFlow: PropTypes.func,
     handleDeleteFlow: PropTypes.func,
     handleLoadFlow: PropTypes.func,
-    isAgentCanvas: PropTypes.bool
+    isAgentCanvas: PropTypes.bool,
+    isAgentflowV2: PropTypes.bool
 }
 
 export default CanvasHeader

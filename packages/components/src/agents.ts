@@ -24,9 +24,11 @@ import {
 } from 'langchain/agents'
 import { formatLogToString } from 'langchain/agents/format_scratchpad/log'
 import { IUsedTool } from './Interface'
+import { getErrorMessage } from './error'
 
 export const SOURCE_DOCUMENTS_PREFIX = '\n\n----FLOWISE_SOURCE_DOCUMENTS----\n\n'
 export const ARTIFACTS_PREFIX = '\n\n----FLOWISE_ARTIFACTS----\n\n'
+export const TOOL_ARGS_PREFIX = '\n\n----FLOWISE_TOOL_ARGS----\n\n'
 
 export type AgentFinish = {
     returnValues: Record<string, any>
@@ -443,9 +445,19 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                             if (typeof toolOutput === 'string' && toolOutput.includes(ARTIFACTS_PREFIX)) {
                                 toolOutput = toolOutput.split(ARTIFACTS_PREFIX)[0]
                             }
+                            let toolInput
+                            if (typeof toolOutput === 'string' && toolOutput.includes(TOOL_ARGS_PREFIX)) {
+                                const splitArray = toolOutput.split(TOOL_ARGS_PREFIX)
+                                toolOutput = splitArray[0]
+                                try {
+                                    toolInput = JSON.parse(splitArray[1])
+                                } catch (e) {
+                                    console.error('Error parsing tool input from tool')
+                                }
+                            }
                             usedTools.push({
                                 tool: tool.name,
-                                toolInput: action.toolInput as any,
+                                toolInput: toolInput ?? (action.toolInput as any),
                                 toolOutput
                             })
                         } else {
@@ -463,7 +475,21 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                                 throw e
                             }
                             observation = await new ExceptionTool().call(observation, runManager?.getChild())
+                            usedTools.push({
+                                tool: tool.name,
+                                toolInput: action.toolInput as any,
+                                toolOutput: '',
+                                error: getErrorMessage(e)
+                            })
                             return { action, observation: observation ?? '' }
+                        } else {
+                            usedTools.push({
+                                tool: tool.name,
+                                toolInput: action.toolInput as any,
+                                toolOutput: '',
+                                error: getErrorMessage(e)
+                            })
+                            return { action, observation: getErrorMessage(e) }
                         }
                     }
                     if (typeof observation === 'string' && observation.includes(SOURCE_DOCUMENTS_PREFIX)) {
@@ -486,6 +512,10 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                         } catch (e) {
                             console.error('Error parsing source documents from tool')
                         }
+                    }
+                    if (typeof observation === 'string' && observation.includes(TOOL_ARGS_PREFIX)) {
+                        const observationArray = observation.split(TOOL_ARGS_PREFIX)
+                        observation = observationArray[0]
                     }
                     return { action, observation: observation ?? '' }
                 })
@@ -593,6 +623,10 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                     }
                     if (typeof observation === 'string' && observation.includes(ARTIFACTS_PREFIX)) {
                         const observationArray = observation.split(ARTIFACTS_PREFIX)
+                        observation = observationArray[0]
+                    }
+                    if (typeof observation === 'string' && observation.includes(TOOL_ARGS_PREFIX)) {
+                        const observationArray = observation.split(TOOL_ARGS_PREFIX)
                         observation = observationArray[0]
                     }
                 } catch (e) {

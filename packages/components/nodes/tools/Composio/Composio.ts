@@ -41,7 +41,7 @@ class Composio_Tools implements INode {
     constructor() {
         this.label = 'Composio'
         this.name = 'composio'
-        this.version = 1.0
+        this.version = 2.0
         this.type = 'Composio'
         this.icon = 'composio.svg'
         this.category = 'Tools'
@@ -73,7 +73,7 @@ class Composio_Tools implements INode {
             {
                 label: 'Actions to Use',
                 name: 'actions',
-                type: 'asyncOptions',
+                type: 'asyncMultiOptions',
                 loadMethod: 'listActions',
                 description: 'Select the actions you want to use',
                 refresh: true
@@ -216,8 +216,18 @@ class Composio_Tools implements INode {
             throw new Error('API Key Required')
         }
 
+        const _actions = nodeData.inputs?.actions
+        let actions = []
+        if (_actions) {
+            try {
+                actions = typeof _actions === 'string' ? JSON.parse(_actions) : _actions
+            } catch (error) {
+                console.error('Error parsing actions:', error)
+            }
+        }
+
         const toolset = new LangchainToolSet({ apiKey: composioApiKey })
-        const tools = await toolset.getTools({ actions: [nodeData.inputs?.actions as string] })
+        const tools = await toolset.getTools({ actions })
         return tools
     }
 }

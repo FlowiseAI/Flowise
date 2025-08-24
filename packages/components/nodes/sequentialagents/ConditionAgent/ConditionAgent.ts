@@ -16,18 +16,23 @@ import {
     ISeqAgentNode,
     ISeqAgentsState
 } from '../../../src/Interface'
-import { getInputVariables, getVars, handleEscapeCharacters, prepareSandboxVars, transformBracesWithColon } from '../../../src/utils'
 import {
-    ExtractTool,
+    getInputVariables,
+    getVars,
+    handleEscapeCharacters,
+    prepareSandboxVars,
+    transformBracesWithColon,
+    executeJavaScriptCode,
+    createCodeExecutionSandbox
+} from '../../../src/utils'
+import {
     checkCondition,
     convertStructuredSchemaToZod,
     customGet,
-    getVM,
     transformObjectPropertyToFunction,
     filterConversationHistory,
     restructureMessages
 } from '../commonUtils'
-import { ChatGoogleGenerativeAI } from '../../chatmodels/ChatGoogleGenerativeAI/FlowiseChatGoogleGenerativeAI'
 
 interface IConditionGridItem {
     variable: string
@@ -485,20 +490,8 @@ const runCondition = async (
         try {
             const structuredOutput = z.object(convertStructuredSchemaToZod(conditionAgentStructuredOutput))
 
-            if (llm instanceof ChatGoogleGenerativeAI) {
-                const tool = new ExtractTool({
-                    schema: structuredOutput
-                })
-                // @ts-ignore
-                const modelWithTool = llm.bind({
-                    tools: [tool],
-                    signal: abortControllerSignal ? abortControllerSignal.signal : undefined
-                })
-                model = modelWithTool
-            } else {
-                // @ts-ignore
-                model = llm.withStructuredOutput(structuredOutput)
-            }
+            // @ts-ignore
+            model = llm.withStructuredOutput(structuredOutput)
         } catch (exception) {
             console.error('Invalid JSON in Condition Agent Structured Output: ' + exception)
             model = llm
@@ -540,7 +533,7 @@ const runCondition = async (
         result = { ...jsonResult, additional_kwargs: { nodeId: nodeData.id } }
     }
 
-    const variables = await getVars(appDataSource, databaseEntities, nodeData)
+    const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
 
     const flow = {
         chatflowId: options.chatflowid,
@@ -553,9 +546,13 @@ const runCondition = async (
     }
 
     if (selectedTab === 'conditionFunction' && conditionFunction) {
-        const vm = await getVM(appDataSource, databaseEntities, nodeData, flow)
+        const sandbox = createCodeExecutionSandbox(input, variables, flow)
+
         try {
-            const response = await vm.run(`module.exports = async function() {${conditionFunction}}()`, __dirname)
+            const response = await executeJavaScriptCode(conditionFunction, sandbox, {
+                timeout: 10000
+            })
+
             if (typeof response !== 'string') throw new Error('Condition function must return a string')
             return response
         } catch (e) {

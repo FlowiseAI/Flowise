@@ -4,7 +4,7 @@ import { WeaviateLibArgs, WeaviateStore } from '@langchain/weaviate'
 import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { getBaseClasses, getCredentialData, getCredentialParam, normalizeKeysRecursively } from '../../../src/utils'
 import { addMMRInputParams, resolveVectorStoreOrRetriever } from '../VectorStoreUtils'
 import { index } from '../../../src/indexing'
 import { VectorStore } from '@langchain/core/vectorstores'
@@ -26,7 +26,7 @@ class Weaviate_VectorStores implements INode {
     constructor() {
         this.label = 'Weaviate'
         this.name = 'weaviate'
-        this.version = 3.0
+        this.version = 4.0
         this.type = 'Weaviate'
         this.icon = 'weaviate.png'
         this.category = 'Vector Stores'
@@ -124,6 +124,16 @@ class Weaviate_VectorStores implements INode {
             }
         ]
         addMMRInputParams(this.inputs)
+        this.inputs.push({
+            label: 'Alpha (for Hybrid Search)',
+            name: 'alpha',
+            description:
+                'Number between 0 and 1 that determines the weighting of keyword (BM25) portion of the hybrid search. A value of 1 is a pure vector search, while 0 is a pure keyword search.',
+            placeholder: '1',
+            type: 'number',
+            additionalParams: true,
+            optional: true
+        })
         this.outputs = [
             {
                 label: 'Weaviate Retriever',
@@ -165,7 +175,11 @@ class Weaviate_VectorStores implements INode {
             const finalDocs = []
             for (let i = 0; i < flattenDocs.length; i += 1) {
                 if (flattenDocs[i] && flattenDocs[i].pageContent) {
-                    finalDocs.push(new Document(flattenDocs[i]))
+                    const doc = { ...flattenDocs[i] }
+                    if (doc.metadata) {
+                        doc.metadata = normalizeKeysRecursively(doc.metadata)
+                    }
+                    finalDocs.push(new Document(doc))
                 }
             }
 

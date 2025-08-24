@@ -1,8 +1,9 @@
 <!-- markdownlint-disable MD030 -->
 
-<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.png?raw=true"></a>
-
-# Flowise - 간편한 LLM 애플리케이션 제작
+<p align="center">
+<img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_white.svg#gh-light-mode-only">
+<img src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_dark.svg#gh-dark-mode-only">
+</p>
 
 [![Release Notes](https://img.shields.io/github/release/FlowiseAI/Flowise)](https://github.com/FlowiseAI/Flowise/releases)
 [![Discord](https://img.shields.io/discord/1087698854775881778?label=Discord&logo=discord)](https://discord.gg/jbaHfsRVBW)
@@ -10,11 +11,11 @@
 [![GitHub star chart](https://img.shields.io/github/stars/FlowiseAI/Flowise?style=social)](https://star-history.com/#FlowiseAI/Flowise)
 [![GitHub fork](https://img.shields.io/github/forks/FlowiseAI/Flowise?style=social)](https://github.com/FlowiseAI/Flowise/fork)
 
-[English](../README.md) | [中文](./README-ZH.md) | [日本語](./README-JA.md) | 한국어
+[English](../README.md) | [繁體中文](./README-TW.md) | [简体中文](./README-ZH.md) | [日本語](./README-JA.md) | 한국어
 
-<h3>드래그 앤 드롭 UI로 맞춤형 LLM 플로우 구축하기</h3>
+<h3>AI 에이전트를 시각적으로 구축하세요</h3>
 <a href="https://github.com/FlowiseAI/Flowise">
-<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true"></a>
+<img width="100%" src="https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true"></a>
 
 ## ⚡빠른 시작 가이드
 
@@ -28,12 +29,6 @@
 
     ```bash
     npx flowise start
-    ```
-
-    사용자 이름과 비밀번호로 시작하기
-
-    ```bash
-    npx flowise start --FLOWISE_USERNAME=user --FLOWISE_PASSWORD=1234
     ```
 
 3. [http://localhost:3000](http://localhost:3000) URL 열기
@@ -126,15 +121,6 @@ Flowise는 단일 리포지토리에 3개의 서로 다른 모듈이 있습니�
 
     코드가 변경되면 [http://localhost:8080](http://localhost:8080)에서 자동으로 애플리케이션을 새로고침 합니다.
 
-## 🔒 인증
-
-애플리케이션 수준의 인증을 사용하려면 `packages/server`의 `.env` 파일에 `FLOWISE_USERNAME` 및 `FLOWISE_PASSWORD`를 추가합니다:
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
-
 ## 🌱 환경 변수
 
 Flowise는 인스턴스 구성을 위한 다양한 환경 변수를 지원합니다. `packages/server` 폴더 내 `.env` 파일에 다양한 환경 변수를 지정할 수 있습니다. [자세히 보기](https://github.com/FlowiseAI/Flowise/blob/main/CONTRIBUTING.md#-env-variables)
@@ -196,9 +182,9 @@ Flowise는 인스턴스 구성을 위한 다양한 환경 변수를 지원합니
 <img src="https://contrib.rocks/image?repo=FlowiseAI/Flowise" />
 </a>
 
-[contributing guide](CONTRIBUTING.md)를 살펴보세요. 디스코드 [Discord](https://discord.gg/jbaHfsRVBW) 채널에서도 이슈나 질의응답을 진행하실 수 있습니다.
+[contributing guide](../CONTRIBUTING.md)를 살펴보세요. 디스코드 [Discord](https://discord.gg/jbaHfsRVBW) 채널에서도 이슈나 질의응답을 진행하실 수 있습니다.
 [![Star History Chart](https://api.star-history.com/svg?repos=FlowiseAI/Flowise&type=Timeline)](https://star-history.com/#FlowiseAI/Flowise&Date)
 
 ## 📄 라이센스
 
-본 리포지토리의 소스코드는 [Apache License Version 2.0](LICENSE.md) 라이센스가 적용됩니다.
+본 리포지토리의 소스코드는 [Apache License Version 2.0](../LICENSE.md) 라이센스가 적용됩니다.

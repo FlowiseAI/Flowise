@@ -9,6 +9,7 @@ import { IconSearch, IconX } from '@tabler/icons-react'
 // const
 import { baseURL } from '@/store/constant'
 import { HIDE_CANVAS_DIALOG, SHOW_CANVAS_DIALOG } from '@/store/actions'
+import keySVG from '@/assets/images/key.svg'
 
 const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelected }) => {
     const portalElement = document.getElementById('portal')
@@ -139,7 +140,11 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                                     width: 50,
                                     height: 50,
                                     borderRadius: '50%',
-                                    backgroundColor: 'white'
+                                    backgroundColor: 'white',
+                                    flexShrink: 0,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
                                 }}
                             >
                                 <img
@@ -152,6 +157,11 @@ const CredentialListDialog = ({ show, dialogProps, onCancel, onCredentialSelecte
                                     }}
                                     alt={componentCredential.name}
                                     src={`${baseURL}/api/v1/components-credentials-icon/${componentCredential.name}`}
+                                    onError={(e) => {
+                                        e.target.onerror = null
+                                        e.target.style.padding = '5px'
+                                        e.target.src = keySVG
+                                    }}
                                 />
                             </div>
                             <Typography>{componentCredential.label}</Typography>

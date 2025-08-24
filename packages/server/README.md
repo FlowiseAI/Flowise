@@ -1,12 +1,12 @@
 <!-- markdownlint-disable MD030 -->
 
-# Flowise - Low-Code LLM apps builder
+# Flowise
 
 English | [中文](./README-ZH.md)
 
-![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise.gif?raw=true)
+<h3>Build AI Agents, Visually</h3>
 
-Drag & drop UI to build your customized LLM flow
+![Flowise](https://github.com/FlowiseAI/Flowise/blob/main/images/flowise_agentflow.gif?raw=true)
 
 ## ⚡Quick Start
 
@@ -21,15 +21,6 @@ Drag & drop UI to build your customized LLM flow
     ```
 
 3. Open [http://localhost:3000](http://localhost:3000)
-
-## 🔒 Authentication
-
-To enable app level authentication, add `FLOWISE_USERNAME` and `FLOWISE_PASSWORD` to the `.env` file:
-
-```
-FLOWISE_USERNAME=user
-FLOWISE_PASSWORD=1234
-```
 
 ## 🌱 Env Variables
 

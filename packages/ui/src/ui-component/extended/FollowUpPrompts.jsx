@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 import { Box, Button, FormControl, ListItem, ListItemAvatar, ListItemText, MenuItem, Select, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
+import { useTheme } from '@mui/material/styles'
 
 // Project Imports
 import { StyledButton } from '@/ui-component/button/StyledButton'
@@ -14,6 +15,7 @@ import azureOpenAiIcon from '@/assets/images/azure_openai.svg'
 import mistralAiIcon from '@/assets/images/mistralai.svg'
 import openAiIcon from '@/assets/images/openai.svg'
 import groqIcon from '@/assets/images/groq.png'
+import geminiIcon from '@/assets/images/gemini.png'
 import ollamaIcon from '@/assets/images/ollama.svg'
 import { TooltipWithParser } from '@/ui-component/tooltip/TooltipWithParser'
 import CredentialInputHandler from '@/views/canvas/CredentialInputHandler'
@@ -116,7 +118,7 @@ const followUpPromptsOptions = {
     [FollowUpPromptProviders.GOOGLE_GENAI]: {
         label: 'Google Gemini',
         name: FollowUpPromptProviders.GOOGLE_GENAI,
-        icon: azureOpenAiIcon,
+        icon: geminiIcon,
         inputs: [
             {
                 label: 'Connect Credential',
@@ -127,12 +129,8 @@ const followUpPromptsOptions = {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                default: 'gemini-1.5-pro-latest',
-                options: [
-                    { label: 'gemini-1.5-flash-latest', name: 'gemini-1.5-flash-latest' },
-                    { label: 'gemini-1.5-pro-latest', name: 'gemini-1.5-pro-latest' }
-                ]
+                type: 'asyncOptions',
+                loadMethod: 'listModels'
             },
             {
                 label: 'Prompt',
@@ -203,11 +201,8 @@ const followUpPromptsOptions = {
             {
                 label: 'Model Name',
                 name: 'modelName',
-                type: 'options',
-                options: [
-                    { label: 'mistral-large-latest', name: 'mistral-large-latest' },
-                    { label: 'mistral-large-2402', name: 'mistral-large-2402' }
-                ]
+                type: 'asyncOptions',
+                loadMethod: 'listModels'
             },
             {
                 label: 'Prompt',
@@ -270,6 +265,14 @@ const followUpPromptsOptions = {
         icon: ollamaIcon,
         inputs: [
             {
+                label: 'Base URL',
+                name: 'baseUrl',
+                type: 'string',
+                placeholder: 'http://127.0.0.1:11434',
+                description: 'Base URL of your Ollama instance',
+                default: 'http://127.0.0.1:11434'
+            },
+            {
                 label: 'Model Name',
                 name: 'modelName',
                 type: 'string',
@@ -302,6 +305,7 @@ const FollowUpPrompts = ({ dialogProps }) => {
     const dispatch = useDispatch()
 
     useNotifier()
+    const theme = useTheme()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
@@ -465,7 +469,16 @@ const FollowUpPrompts = ({ dialogProps }) => {
                     <>
                         <Typography variant='h5'>Providers</Typography>
                         <FormControl fullWidth>
-                            <Select size='small' value={selectedProvider} onChange={handleSelectedProviderChange}>
+                            <Select
+                                size='small'
+                                value={selectedProvider}
+                                onChange={handleSelectedProviderChange}
+                                sx={{
+                                    '& .MuiSvgIcon-root': {
+                                        color: theme?.customization?.isDarkMode ? '#fff' : 'inherit'
+                                    }
+                                }}
+                            >
                                 {Object.values(followUpPromptsOptions).map((provider) => (
                                     <MenuItem key={provider.name} value={provider.name}>
                                         {provider.label}

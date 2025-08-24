@@ -1,6 +1,6 @@
 import { Command, Flags } from '@oclif/core'
-import path from 'path'
 import dotenv from 'dotenv'
+import path from 'path'
 import logger from '../utils/logger'
 
 dotenv.config({ path: path.join(__dirname, '..', '..', '.env'), override: true })
@@ -12,16 +12,12 @@ enum EXIT_CODE {
 
 export abstract class BaseCommand extends Command {
     static flags = {
-        FLOWISE_USERNAME: Flags.string(),
-        FLOWISE_PASSWORD: Flags.string(),
         FLOWISE_FILE_SIZE_LIMIT: Flags.string(),
         PORT: Flags.string(),
         CORS_ORIGINS: Flags.string(),
         IFRAME_ORIGINS: Flags.string(),
         DEBUG: Flags.string(),
         BLOB_STORAGE_PATH: Flags.string(),
-        APIKEY_STORAGE_TYPE: Flags.string(),
-        APIKEY_PATH: Flags.string(),
         LOG_PATH: Flags.string(),
         LOG_LEVEL: Flags.string(),
         TOOL_FUNCTION_BUILTIN_DEP: Flags.string(),
@@ -40,7 +36,6 @@ export abstract class BaseCommand extends Command {
         LANGCHAIN_ENDPOINT: Flags.string(),
         LANGCHAIN_API_KEY: Flags.string(),
         LANGCHAIN_PROJECT: Flags.string(),
-        DISABLE_FLOWISE_TELEMETRY: Flags.string(),
         MODEL_LIST_CONFIG_JSON: Flags.string(),
         STORAGE_TYPE: Flags.string(),
         S3_STORAGE_BUCKET_NAME: Flags.string(),
@@ -49,6 +44,10 @@ export abstract class BaseCommand extends Command {
         S3_STORAGE_REGION: Flags.string(),
         S3_ENDPOINT_URL: Flags.string(),
         S3_FORCE_PATH_STYLE: Flags.string(),
+        GOOGLE_CLOUD_STORAGE_CREDENTIAL: Flags.string(),
+        GOOGLE_CLOUD_STORAGE_PROJ_ID: Flags.string(),
+        GOOGLE_CLOUD_STORAGE_BUCKET_NAME: Flags.string(),
+        GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS: Flags.string(),
         SHOW_COMMUNITY_NODES: Flags.string(),
         SECRETKEY_STORAGE_TYPE: Flags.string(),
         SECRETKEY_PATH: Flags.string(),
@@ -56,11 +55,14 @@ export abstract class BaseCommand extends Command {
         SECRETKEY_AWS_ACCESS_KEY: Flags.string(),
         SECRETKEY_AWS_SECRET_KEY: Flags.string(),
         SECRETKEY_AWS_REGION: Flags.string(),
+        SECRETKEY_AWS_NAME: Flags.string(),
         DISABLED_NODES: Flags.string(),
         MODE: Flags.string(),
         WORKER_CONCURRENCY: Flags.string(),
         QUEUE_NAME: Flags.string(),
         QUEUE_REDIS_EVENT_STREAM_MAX_LEN: Flags.string(),
+        REMOVE_ON_AGE: Flags.string(),
+        REMOVE_ON_COUNT: Flags.string(),
         REDIS_URL: Flags.string(),
         REDIS_HOST: Flags.string(),
         REDIS_PORT: Flags.string(),
@@ -69,7 +71,9 @@ export abstract class BaseCommand extends Command {
         REDIS_TLS: Flags.string(),
         REDIS_CERT: Flags.string(),
         REDIS_KEY: Flags.string(),
-        REDIS_CA: Flags.string()
+        REDIS_CA: Flags.string(),
+        REDIS_KEEP_ALIVE: Flags.string(),
+        ENABLE_BULLMQ_DASHBOARD: Flags.string()
     }
 
     protected async stopProcess() {
@@ -116,7 +120,7 @@ export abstract class BaseCommand extends Command {
             logger.error('unhandledRejection: ', err)
         })
 
-        const { flags } = await this.parse(BaseCommand)
+        const { flags } = await this.parse(this.constructor as any)
         if (flags.PORT) process.env.PORT = flags.PORT
         if (flags.CORS_ORIGINS) process.env.CORS_ORIGINS = flags.CORS_ORIGINS
         if (flags.IFRAME_ORIGINS) process.env.IFRAME_ORIGINS = flags.IFRAME_ORIGINS
@@ -124,14 +128,6 @@ export abstract class BaseCommand extends Command {
         if (flags.NUMBER_OF_PROXIES) process.env.NUMBER_OF_PROXIES = flags.NUMBER_OF_PROXIES
         if (flags.SHOW_COMMUNITY_NODES) process.env.SHOW_COMMUNITY_NODES = flags.SHOW_COMMUNITY_NODES
         if (flags.DISABLED_NODES) process.env.DISABLED_NODES = flags.DISABLED_NODES
-
-        // Authorization
-        if (flags.FLOWISE_USERNAME) process.env.FLOWISE_USERNAME = flags.FLOWISE_USERNAME
-        if (flags.FLOWISE_PASSWORD) process.env.FLOWISE_PASSWORD = flags.FLOWISE_PASSWORD
-        if (flags.APIKEY_STORAGE_TYPE) process.env.APIKEY_STORAGE_TYPE = flags.APIKEY_STORAGE_TYPE
-        if (flags.APIKEY_PATH) process.env.APIKEY_PATH = flags.APIKEY_PATH
-
-        // API Configuration
         if (flags.FLOWISE_FILE_SIZE_LIMIT) process.env.FLOWISE_FILE_SIZE_LIMIT = flags.FLOWISE_FILE_SIZE_LIMIT
 
         // Credentials
@@ -141,6 +137,7 @@ export abstract class BaseCommand extends Command {
         if (flags.SECRETKEY_AWS_ACCESS_KEY) process.env.SECRETKEY_AWS_ACCESS_KEY = flags.SECRETKEY_AWS_ACCESS_KEY
         if (flags.SECRETKEY_AWS_SECRET_KEY) process.env.SECRETKEY_AWS_SECRET_KEY = flags.SECRETKEY_AWS_SECRET_KEY
         if (flags.SECRETKEY_AWS_REGION) process.env.SECRETKEY_AWS_REGION = flags.SECRETKEY_AWS_REGION
+        if (flags.SECRETKEY_AWS_NAME) process.env.SECRETKEY_AWS_NAME = flags.SECRETKEY_AWS_NAME
 
         // Logs
         if (flags.LOG_PATH) process.env.LOG_PATH = flags.LOG_PATH
@@ -167,9 +164,6 @@ export abstract class BaseCommand extends Command {
         if (flags.LANGCHAIN_API_KEY) process.env.LANGCHAIN_API_KEY = flags.LANGCHAIN_API_KEY
         if (flags.LANGCHAIN_PROJECT) process.env.LANGCHAIN_PROJECT = flags.LANGCHAIN_PROJECT
 
-        // Telemetry
-        if (flags.DISABLE_FLOWISE_TELEMETRY) process.env.DISABLE_FLOWISE_TELEMETRY = flags.DISABLE_FLOWISE_TELEMETRY
-
         // Model list config
         if (flags.MODEL_LIST_CONFIG_JSON) process.env.MODEL_LIST_CONFIG_JSON = flags.MODEL_LIST_CONFIG_JSON
 
@@ -182,6 +176,11 @@ export abstract class BaseCommand extends Command {
         if (flags.S3_STORAGE_REGION) process.env.S3_STORAGE_REGION = flags.S3_STORAGE_REGION
         if (flags.S3_ENDPOINT_URL) process.env.S3_ENDPOINT_URL = flags.S3_ENDPOINT_URL
         if (flags.S3_FORCE_PATH_STYLE) process.env.S3_FORCE_PATH_STYLE = flags.S3_FORCE_PATH_STYLE
+        if (flags.GOOGLE_CLOUD_STORAGE_CREDENTIAL) process.env.GOOGLE_CLOUD_STORAGE_CREDENTIAL = flags.GOOGLE_CLOUD_STORAGE_CREDENTIAL
+        if (flags.GOOGLE_CLOUD_STORAGE_PROJ_ID) process.env.GOOGLE_CLOUD_STORAGE_PROJ_ID = flags.GOOGLE_CLOUD_STORAGE_PROJ_ID
+        if (flags.GOOGLE_CLOUD_STORAGE_BUCKET_NAME) process.env.GOOGLE_CLOUD_STORAGE_BUCKET_NAME = flags.GOOGLE_CLOUD_STORAGE_BUCKET_NAME
+        if (flags.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS)
+            process.env.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS = flags.GOOGLE_CLOUD_UNIFORM_BUCKET_ACCESS
 
         // Queue
         if (flags.MODE) process.env.MODE = flags.MODE
@@ -196,6 +195,10 @@ export abstract class BaseCommand extends Command {
         if (flags.REDIS_CA) process.env.REDIS_CA = flags.REDIS_CA
         if (flags.WORKER_CONCURRENCY) process.env.WORKER_CONCURRENCY = flags.WORKER_CONCURRENCY
         if (flags.QUEUE_NAME) process.env.QUEUE_NAME = flags.QUEUE_NAME
-        if (flags.QUEUE_REDIS_EVENT_STREAM_MAX_LEN) process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN = flags.QUEUE_REDIS_EVENT_STREAM
+        if (flags.QUEUE_REDIS_EVENT_STREAM_MAX_LEN) process.env.QUEUE_REDIS_EVENT_STREAM_MAX_LEN = flags.QUEUE_REDIS_EVENT_STREAM_MAX_LEN
+        if (flags.REMOVE_ON_AGE) process.env.REMOVE_ON_AGE = flags.REMOVE_ON_AGE
+        if (flags.REMOVE_ON_COUNT) process.env.REMOVE_ON_COUNT = flags.REMOVE_ON_COUNT
+        if (flags.REDIS_KEEP_ALIVE) process.env.REDIS_KEEP_ALIVE = flags.REDIS_KEEP_ALIVE
+        if (flags.ENABLE_BULLMQ_DASHBOARD) process.env.ENABLE_BULLMQ_DASHBOARD = flags.ENABLE_BULLMQ_DASHBOARD
     }
 }

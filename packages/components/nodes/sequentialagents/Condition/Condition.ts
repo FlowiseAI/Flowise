@@ -10,8 +10,8 @@ import {
     ISeqAgentNode,
     ISeqAgentsState
 } from '../../../src/Interface'
-import { checkCondition, customGet, getVM } from '../commonUtils'
-import { getVars, prepareSandboxVars } from '../../../src/utils'
+import { checkCondition, customGet } from '../commonUtils'
+import { getVars, prepareSandboxVars, executeJavaScriptCode, createCodeExecutionSandbox } from '../../../src/utils'
 
 const howToUseCode = `
 1. Must return a string value at the end of function. For example:
@@ -267,7 +267,7 @@ const runCondition = async (nodeData: INodeData, input: string, options: ICommon
     const tabIdentifier = nodeData.inputs?.[`${TAB_IDENTIFIER}_${nodeData.id}`] as string
 
     const selectedTab = tabIdentifier ? tabIdentifier.split(`_${nodeData.id}`)[0] : 'conditionUI'
-    const variables = await getVars(appDataSource, databaseEntities, nodeData)
+    const variables = await getVars(appDataSource, databaseEntities, nodeData, options)
 
     const flow = {
         chatflowId: options.chatflowid,
@@ -279,9 +279,13 @@ const runCondition = async (nodeData: INodeData, input: string, options: ICommon
     }
 
     if (selectedTab === 'conditionFunction' && conditionFunction) {
-        const vm = await getVM(appDataSource, databaseEntities, nodeData, flow)
+        const sandbox = createCodeExecutionSandbox(input, variables, flow)
+
         try {
-            const response = await vm.run(`module.exports = async function() {${conditionFunction}}()`, __dirname)
+            const response = await executeJavaScriptCode(conditionFunction, sandbox, {
+                timeout: 10000
+            })
+
             if (typeof response !== 'string') throw new Error('Condition function must return a string')
             return response
         } catch (e) {

@@ -1,5 +1,6 @@
 import { createClient } from 'redis'
 import { SSEStreamer } from '../utils/SSEStreamer'
+import logger from '../utils/logger'
 
 export class RedisEventSubscriber {
     private redisSubscriber: ReturnType<typeof createClient>
@@ -9,7 +10,17 @@ export class RedisEventSubscriber {
     constructor(sseStreamer: SSEStreamer) {
         if (process.env.REDIS_URL) {
             this.redisSubscriber = createClient({
-                url: process.env.REDIS_URL
+                url: process.env.REDIS_URL,
+                socket: {
+                    keepAlive:
+                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                            : undefined
+                },
+                pingInterval:
+                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                        : undefined
             })
         } else {
             this.redisSubscriber = createClient({
@@ -21,11 +32,48 @@ export class RedisEventSubscriber {
                     tls: process.env.REDIS_TLS === 'true',
                     cert: process.env.REDIS_CERT ? Buffer.from(process.env.REDIS_CERT, 'base64') : undefined,
                     key: process.env.REDIS_KEY ? Buffer.from(process.env.REDIS_KEY, 'base64') : undefined,
-                    ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined
-                }
+                    ca: process.env.REDIS_CA ? Buffer.from(process.env.REDIS_CA, 'base64') : undefined,
+                    keepAlive:
+                        process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                            ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                            : undefined
+                },
+                pingInterval:
+                    process.env.REDIS_KEEP_ALIVE && !isNaN(parseInt(process.env.REDIS_KEEP_ALIVE, 10))
+                        ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
+                        : undefined
             })
         }
         this.sseStreamer = sseStreamer
+
+        this.setupEventListeners()
+    }
+
+    private setupEventListeners() {
+        this.redisSubscriber.on('connect', () => {
+            logger.info(`[RedisEventSubscriber] Redis client connecting...`)
+        })
+
+        this.redisSubscriber.on('ready', () => {
+            logger.info(`[RedisEventSubscriber] Redis client ready and connected`)
+        })
+
+        this.redisSubscriber.on('error', (err) => {
+            logger.error(`[RedisEventSubscriber] Redis client error:`, {
+                error: err,
+                isReady: this.redisSubscriber.isReady,
+                isOpen: this.redisSubscriber.isOpen,
+                subscribedChannelsCount: this.subscribedChannels.size
+            })
+        })
+
+        this.redisSubscriber.on('end', () => {
+            logger.warn(`[RedisEventSubscriber] Redis client connection ended`)
+        })
+
+        this.redisSubscriber.on('reconnecting', () => {
+            logger.info(`[RedisEventSubscriber] Redis client reconnecting...`)
+        })
     }
 
     async connect() {
@@ -84,6 +132,15 @@ export class RedisEventSubscriber {
                 break
             case 'nextAgent':
                 this.sseStreamer.streamNextAgentEvent(chatId, data)
+                break
+            case 'agentFlowEvent':
+                this.sseStreamer.streamAgentFlowEvent(chatId, data)
+                break
+            case 'agentFlowExecutedData':
+                this.sseStreamer.streamAgentFlowExecutedDataEvent(chatId, data)
+                break
+            case 'nextAgentFlow':
+                this.sseStreamer.streamNextAgentFlowEvent(chatId, data)
                 break
             case 'action':
                 this.sseStreamer.streamActionEvent(chatId, data)
