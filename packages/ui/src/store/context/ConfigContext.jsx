@@ -29,7 +29,7 @@ export const ConfigProvider = ({ children }) => {
                         setEnterpriseLicensed(false)
                         setOpenSource(false)
                     } else {
-                        setOpenSource(true)
+                        setOpenSource(false)
                         setEnterpriseLicensed(false)
                         setCloudLicensed(false)
                     }
