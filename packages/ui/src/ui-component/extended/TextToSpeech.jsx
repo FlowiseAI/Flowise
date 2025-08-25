@@ -222,34 +222,150 @@ const TextToSpeech = ({ dialogProps }) => {
                 voice: providerConfig.voice,
                 model: providerConfig.model
             }
-            const response = await ttsApi.generateVoice(body)
-            if (response.data) {
-                const audioBlob = new Blob([response.data], { type: 'audio/mpeg' })
-                const audioUrl = URL.createObjectURL(audioBlob)
-                const audio = new Audio(audioUrl)
 
-                audio
-                    .play()
-                    .then(() => {
-                        enqueueSnackbar({
-                            message: 'Test audio played successfully',
-                            options: { variant: 'success' }
-                        })
-                    })
-                    .catch((error) => {
-                        console.error('Error playing audio:', error)
-                        enqueueSnackbar({
-                            message: 'Error playing test audio',
-                            options: { variant: 'error' }
-                        })
+            // Use streaming approach like in ChatMessage.jsx
+            const mediaSource = new MediaSource()
+            const audio = new Audio()
+            audio.src = URL.createObjectURL(mediaSource)
+
+            const streamingState = {
+                mediaSource,
+                sourceBuffer: null,
+                audio,
+                chunkQueue: [],
+                isBuffering: false,
+                abortController: new AbortController(),
+                streamEnded: false
+            }
+
+            mediaSource.addEventListener('sourceopen', () => {
+                try {
+                    const mimeType = 'audio/mpeg'
+                    streamingState.sourceBuffer = mediaSource.addSourceBuffer(mimeType)
+
+                    streamingState.sourceBuffer.addEventListener('updateend', () => {
+                        streamingState.isBuffering = false
+                        if (streamingState.chunkQueue.length > 0 && !streamingState.sourceBuffer.updating) {
+                            const chunk = streamingState.chunkQueue.shift()
+                            try {
+                                streamingState.sourceBuffer.appendBuffer(chunk)
+                                streamingState.isBuffering = true
+                            } catch (error) {
+                                console.error('Error appending chunk:', error)
+                            }
+                        } else if (streamingState.streamEnded && streamingState.chunkQueue.length === 0) {
+                            // All chunks processed and stream ended, now we can safely end the stream
+                            try {
+                                if (streamingState.mediaSource.readyState === 'open') {
+                                    streamingState.mediaSource.endOfStream()
+                                }
+                            } catch (error) {
+                                console.error('Error ending MediaSource stream:', error)
+                            }
+                        }
                     })
 
-                // Clean up URL after audio finishes
-                audio.addEventListener('ended', () => {
-                    URL.revokeObjectURL(audioUrl)
+                    audio.play().catch((playError) => {
+                        console.error('Error starting audio playback:', playError)
+                    })
+                } catch (error) {
+                    console.error('Error setting up source buffer:', error)
+                }
+            })
+
+            audio.addEventListener('playing', () => {
+                enqueueSnackbar({
+                    message: 'Test audio playing...',
+                    options: { variant: 'info' }
                 })
-            } else {
-                throw new Error(`TTS request failed: ${response.status}`)
+            })
+
+            audio.addEventListener('ended', () => {
+                enqueueSnackbar({
+                    message: 'Test audio completed successfully',
+                    options: { variant: 'success' }
+                })
+                // Cleanup
+                if (streamingState.audio.src) {
+                    URL.revokeObjectURL(streamingState.audio.src)
+                }
+            })
+
+            const response = await fetch('/api/v1/text-to-speech/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-request-from': 'internal'
+                },
+                credentials: 'include',
+                body: JSON.stringify(body),
+                signal: streamingState.abortController.signal
+            })
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`)
+            }
+
+            const reader = response.body.getReader()
+            let buffer = ''
+
+            let done = false
+            while (!done) {
+                if (streamingState.abortController.signal.aborted) {
+                    reader.cancel()
+                    break
+                }
+
+                const result = await reader.read()
+                done = result.done
+                if (done) break
+
+                const chunk = new TextDecoder().decode(result.value, { stream: true })
+                buffer += chunk
+                const lines = buffer.split('\n\n')
+                buffer = lines.pop() || ''
+
+                for (const eventBlock of lines) {
+                    if (eventBlock.trim()) {
+                        const event = parseSSEEvent(eventBlock)
+                        if (event) {
+                            switch (event.event) {
+                                case 'tts_data':
+                                    if (event.data?.audioChunk) {
+                                        const audioBuffer = Uint8Array.from(atob(event.data.audioChunk), (c) => c.charCodeAt(0))
+                                        streamingState.chunkQueue.push(audioBuffer)
+
+                                        if (streamingState.sourceBuffer && !streamingState.sourceBuffer.updating) {
+                                            const chunk = streamingState.chunkQueue.shift()
+                                            try {
+                                                streamingState.sourceBuffer.appendBuffer(chunk)
+                                                streamingState.isBuffering = true
+                                            } catch (error) {
+                                                console.error('Error appending initial chunk:', error)
+                                            }
+                                        }
+                                    }
+                                    break
+                                case 'tts_end':
+                                    streamingState.streamEnded = true
+                                    // Check if we can end the stream immediately (no chunks queued and not updating)
+                                    if (
+                                        streamingState.sourceBuffer &&
+                                        streamingState.chunkQueue.length === 0 &&
+                                        !streamingState.sourceBuffer.updating &&
+                                        streamingState.mediaSource.readyState === 'open'
+                                    ) {
+                                        try {
+                                            streamingState.mediaSource.endOfStream()
+                                        } catch (error) {
+                                            console.error('Error ending MediaSource stream:', error)
+                                        }
+                                    }
+                                    break
+                            }
+                        }
+                    }
+                }
             }
         } catch (error) {
             console.error('Error testing TTS:', error)
@@ -258,6 +374,28 @@ const TextToSpeech = ({ dialogProps }) => {
                 options: { variant: 'error' }
             })
         }
+    }
+
+    const parseSSEEvent = (eventBlock) => {
+        const lines = eventBlock.trim().split('\n')
+        const event = { event: null, data: null }
+
+        for (const line of lines) {
+            if (line.startsWith('event:')) {
+                event.event = line.substring(6).trim()
+            } else if (line.startsWith('data:')) {
+                const dataStr = line.substring(5).trim()
+                try {
+                    const parsed = JSON.parse(dataStr)
+                    if (parsed.data) {
+                        event.data = parsed.data
+                    }
+                } catch (e) {
+                    console.error('Error parsing SSE data:', e)
+                }
+            }
+        }
+        return event.event ? event : null
     }
 
     useEffect(() => {
