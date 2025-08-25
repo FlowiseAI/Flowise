@@ -77,20 +77,7 @@ export class RedisEventSubscriber {
     }
 
     async connect() {
-        logger.info(`[RedisEventSubscriber] Connecting to Redis...`)
         await this.redisSubscriber.connect()
-
-        // Log connection details after successful connection
-        const connInfo = this.redisSubscriber.options?.socket
-        const connInfoString = JSON.stringify(connInfo)
-            .replace(/"username":"[^"]*"/g, '"username":"[REDACTED]"')
-            .replace(/"password":"[^"]*"/g, '"password":"[REDACTED]"')
-        logger.info(`[RedisEventSubscriber] Connected to Redis: ${connInfoString}`)
-
-        // Add error event listener
-        this.redisSubscriber.on('error', (err) => {
-            logger.error(`[RedisEventSubscriber] Redis connection error`, { error: err })
-        })
     }
 
     subscribe(channel: string) {

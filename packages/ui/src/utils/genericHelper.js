@@ -244,6 +244,63 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
             }
         }
     }
+
+    // Handle loadConfig parameters - preserve configuration objects
+    if (existingComponentNodeData.inputs && initNewComponentNodeData.inputParams) {
+        // Find parameters with loadConfig: true
+        const loadConfigParams = initNewComponentNodeData.inputParams.filter((param) => param.loadConfig === true)
+
+        for (const param of loadConfigParams) {
+            const configKey = `${param.name}Config`
+
+            // Preserve top-level config objects (e.g., agentModelConfig)
+            if (existingComponentNodeData.inputs[configKey]) {
+                initNewComponentNodeData.inputs[configKey] = existingComponentNodeData.inputs[configKey]
+            }
+        }
+
+        // Handle array parameters that might contain loadConfig items
+        const arrayParams = initNewComponentNodeData.inputParams.filter((param) => param.type === 'array' && param.array)
+
+        for (const arrayParam of arrayParams) {
+            if (existingComponentNodeData.inputs[arrayParam.name] && Array.isArray(existingComponentNodeData.inputs[arrayParam.name])) {
+                const existingArray = existingComponentNodeData.inputs[arrayParam.name]
+
+                // Find loadConfig parameters within the array definition
+                const arrayLoadConfigParams = arrayParam.array.filter((subParam) => subParam.loadConfig === true)
+
+                if (arrayLoadConfigParams.length > 0) {
+                    // Process each array item to preserve config objects
+                    const updatedArray = existingArray.map((existingItem) => {
+                        if (typeof existingItem === 'object' && existingItem !== null) {
+                            const updatedItem = { ...existingItem }
+
+                            // Preserve config objects for each loadConfig parameter in the array
+                            for (const loadConfigParam of arrayLoadConfigParams) {
+                                const configKey = `${loadConfigParam.name}Config`
+                                if (existingItem[configKey]) {
+                                    updatedItem[configKey] = existingItem[configKey]
+                                }
+                            }
+
+                            return updatedItem
+                        }
+                        return existingItem
+                    })
+
+                    initNewComponentNodeData.inputs[arrayParam.name] = updatedArray
+                }
+            }
+        }
+
+        // Also preserve any config keys that exist in the existing data but might not be explicitly handled above
+        // This catches edge cases where config keys exist but don't follow the expected pattern
+        for (const key in existingComponentNodeData.inputs) {
+            if (key.endsWith('Config') && !initNewComponentNodeData.inputs[key]) {
+                initNewComponentNodeData.inputs[key] = existingComponentNodeData.inputs[key]
+            }
+        }
+    }
     // Check for tabs
     const inputParamsWithTabIdentifiers = initNewComponentNodeData.inputParams.filter((param) => param.tabIdentifier) || []
 
@@ -268,7 +325,7 @@ export const updateOutdatedNodeData = (newComponentNodeData, existingComponentNo
         initNewComponentNodeData.label = existingComponentNodeData.label
     }
 
-    // Special case for Condition node to update outputAnchors
+    // Special case for Sequential Condition node to update outputAnchors
     if (initNewComponentNodeData.name.includes('seqCondition')) {
         const options = existingComponentNodeData.outputAnchors[0].options || []
 

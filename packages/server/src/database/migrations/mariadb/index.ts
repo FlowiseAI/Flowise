@@ -37,6 +37,7 @@ import { FixOpenSourceAssistantTable1743758056188 } from './1743758056188-FixOpe
 import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorToEvaluationRun'
 import { ModifyExecutionDataColumnType1747902489801 } from './1747902489801-ModifyExecutionDataColumnType'
 import { AddTextToSpeechToChatFlow1754986457485 } from './1754986457485-AddTextToSpeechToChatFlow'
+import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/mariadb/1720230151482-AddAuthTables'
 import { AddWorkspace1725437498242 } from '../../../enterprise/database/migrations/mariadb/1725437498242-AddWorkspace'
@@ -100,5 +101,6 @@ export const mariadbMigrations = [
     AddErrorToEvaluationRun1744964560174,
     ExecutionLinkWorkspaceId1746862866554,
     ModifyExecutionDataColumnType1747902489801,
-    AddTextToSpeechToChatFlow1754986457485
+    AddTextToSpeechToChatFlow1754986457485,
+    ModifyChatflowType1755066758601
 ]

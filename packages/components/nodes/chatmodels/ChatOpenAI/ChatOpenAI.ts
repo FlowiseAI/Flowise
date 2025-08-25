@@ -280,19 +280,6 @@ class ChatOpenAI_ChatModels implements INode {
             streaming: streaming ?? true
         }
 
-        if (modelName.includes('o3') || modelName.includes('o1')) {
-            delete obj.temperature
-        }
-        if (modelName.includes('o1') || modelName.includes('o3')) {
-            const reasoning: OpenAIClient.Reasoning = {}
-            if (reasoningEffort) {
-                reasoning.effort = reasoningEffort
-            }
-            if (reasoningSummary) {
-                reasoning.summary = reasoningSummary
-            }
-            obj.reasoning = reasoning
-        }
         if (maxTokens) obj.maxTokens = parseInt(maxTokens, 10)
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
@@ -304,6 +291,19 @@ class ChatOpenAI_ChatModels implements INode {
             obj.stop = stopSequenceArray
         }
         if (strictToolCalling) obj.supportsStrictToolCalling = strictToolCalling
+
+        if (modelName.includes('o1') || modelName.includes('o3') || modelName.includes('gpt-5')) {
+            delete obj.temperature
+            delete obj.stop
+            const reasoning: OpenAIClient.Reasoning = {}
+            if (reasoningEffort) {
+                reasoning.effort = reasoningEffort
+            }
+            if (reasoningSummary) {
+                reasoning.summary = reasoningSummary
+            }
+            obj.reasoning = reasoning
+        }
 
         let parsedBaseOptions: any | undefined = undefined
 
