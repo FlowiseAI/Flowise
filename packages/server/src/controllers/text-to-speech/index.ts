@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import chatflowsService from '../../services/chatflows'
 import textToSpeechService from '../../services/text-to-speech'
 import { InternalFlowiseError } from '../../errors/internalFlowiseError'
 import { StatusCodes } from 'http-status-codes'
@@ -8,13 +9,51 @@ import { databaseEntities } from '../../utils'
 
 const generateTextToSpeech = async (req: Request, res: Response) => {
     try {
-        const { chatMessageId, text, provider, credentialId, voice, model } = req.body
+        const {
+            chatId,
+            chatflowId,
+            chatMessageId,
+            text,
+            provider: bodyProvider,
+            credentialId: bodyCredentialId,
+            voice: bodyVoice,
+            model: bodyModel
+        } = req.body
 
         if (!text) {
             throw new InternalFlowiseError(
                 StatusCodes.BAD_REQUEST,
                 `Error: textToSpeechController.generateTextToSpeech - text not provided!`
             )
+        }
+
+        let provider: string, credentialId: string, voice: string, model: string
+
+        if (chatflowId) {
+            // Get TTS config from chatflow
+            const chatflow = await chatflowsService.getChatflowById(chatflowId)
+            const ttsConfig = JSON.parse(chatflow.textToSpeech)
+
+            // Extract the first provider config (assuming single provider per chatflow)
+            const providerKey = Object.keys(ttsConfig)[0]
+            if (!providerKey) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    `Error: textToSpeechController.generateTextToSpeech - no TTS provider configured in chatflow!`
+                )
+            }
+
+            const providerConfig = ttsConfig[providerKey]
+            provider = providerKey
+            credentialId = providerConfig.credentialId
+            voice = providerConfig.voice
+            model = providerConfig.model
+        } else {
+            // Use TTS config from request body
+            provider = bodyProvider
+            credentialId = bodyCredentialId
+            voice = bodyVoice
+            model = bodyModel
         }
 
         if (!provider) {
@@ -40,8 +79,8 @@ const generateTextToSpeech = async (req: Request, res: Response) => {
         const appServer = getRunningExpressApp()
         const options = {
             orgId: '',
-            chatflowid: '',
-            chatId: '',
+            chatflowid: chatflowId || '',
+            chatId: chatId || '',
             appDataSource: appServer.AppDataSource,
             databaseEntities: databaseEntities
         }

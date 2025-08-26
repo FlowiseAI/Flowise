@@ -1342,7 +1342,7 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 let isEnabled = false
                 if (ttsConfig) {
                     Object.keys(ttsConfig).forEach((provider) => {
-                        if (ttsConfig[provider] && ttsConfig[provider].status && ttsConfig[provider].credentialId) {
+                        if (ttsConfig?.[provider]?.status) {
                             isEnabled = true
                         }
                     })
@@ -1625,37 +1625,6 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
         handleTTSStart({ chatMessageId: messageId, format: 'mp3' })
         try {
-            let ttsConfig = null
-            if (getChatflowConfig?.data?.textToSpeech) {
-                try {
-                    ttsConfig =
-                        typeof getChatflowConfig.data.textToSpeech === 'string'
-                            ? JSON.parse(getChatflowConfig.data.textToSpeech)
-                            : getChatflowConfig.data.textToSpeech
-                } catch (error) {
-                    console.error('Error parsing TTS config:', error)
-                }
-            }
-
-            let activeProvider = null
-            let providerConfig = null
-            if (ttsConfig) {
-                Object.keys(ttsConfig).forEach((provider) => {
-                    if (ttsConfig?.[provider]?.status) {
-                        activeProvider = provider
-                        providerConfig = ttsConfig[provider]
-                    }
-                })
-            }
-
-            if (!activeProvider || !providerConfig || !providerConfig.credentialId) {
-                enqueueSnackbar({
-                    message: 'Text-to-speech is not configured for this chatflow',
-                    options: { variant: 'warning' }
-                })
-                return
-            }
-
             const abortController = new AbortController()
             setTtsStreamingState((prev) => ({ ...prev, abortController }))
 
@@ -1668,13 +1637,10 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 credentials: 'include',
                 signal: abortController.signal,
                 body: JSON.stringify({
+                    chatflowId: chatflowid,
                     chatId: chatId,
                     chatMessageId: messageId,
-                    text: messageText,
-                    provider: activeProvider,
-                    credentialId: providerConfig.credentialId,
-                    voice: providerConfig.voice,
-                    model: providerConfig.model
+                    text: messageText
                 })
             })
 
