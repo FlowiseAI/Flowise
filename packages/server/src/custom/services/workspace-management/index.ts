@@ -1,17 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
-import { CustomWorkspace, CustomWorkspaceStatus } from '../../database/entities/CustomWorkspace'
+import { CustomWorkspace } from '../../database/entities/CustomWorkspace'
 import { DataSource, QueryRunner } from 'typeorm'
 import { generateId } from '../../../utils'
 
 export const enum CustomWorkspaceErrorMessage {
     INVALID_WORKSPACE_ID = 'Invalid Workspace Id',
     INVALID_WORKSPACE_NAME = 'Invalid Workspace Name',
-    INVALID_WORKSPACE_STATUS = 'Invalid Workspace Status',
     WORKSPACE_NAME_ALREADY_EXISTS = 'Workspace Name Already Exists',
     WORKSPACE_NOT_FOUND = 'Workspace Not Found',
-    WORKSPACE_FOUND_MULTIPLE = 'Workspace Found Multiple',
     WORKSPACE_CANNOT_DELETE_DEFAULT = 'Cannot Delete Default Workspace'
 }
 
@@ -45,24 +43,9 @@ export class CustomWorkspaceService {
         return await queryRunner.manager.findOneBy(CustomWorkspace, { name })
     }
 
-    public validateWorkspaceStatus(status: string | undefined) {
-        if (status && !Object.values(CustomWorkspaceStatus).includes(status as CustomWorkspaceStatus)) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, CustomWorkspaceErrorMessage.INVALID_WORKSPACE_STATUS)
-        }
-    }
-
     public async getAllWorkspaces(queryRunner: QueryRunner) {
         return await queryRunner.manager.find(CustomWorkspace, {
-            select: ['id', 'name', 'description', 'status', 'organizationId', 'createdDate', 'updatedDate'],
-            order: { createdDate: 'DESC' }
-        })
-    }
-
-    public async getWorkspacesByStatus(status: CustomWorkspaceStatus, queryRunner: QueryRunner) {
-        this.validateWorkspaceStatus(status)
-        return await queryRunner.manager.find(CustomWorkspace, {
-            where: { status },
-            select: ['id', 'name', 'description', 'status', 'organizationId', 'createdDate', 'updatedDate'],
+            select: ['id', 'name', 'description', 'organizationId', 'createdDate', 'updatedDate'],
             order: { createdDate: 'DESC' }
         })
     }
@@ -77,9 +60,6 @@ export class CustomWorkspaceService {
         }
 
         this.validateWorkspaceName(data.name)
-
-        if (data.status) this.validateWorkspaceStatus(data.status)
-        else data.status = CustomWorkspaceStatus.ACTIVE
 
         data.id = generateId()
         data.createdBy = data.createdBy || data.id
@@ -132,10 +112,6 @@ export class CustomWorkspaceService {
                 }
             }
 
-            if (workspaceData.status) {
-                this.validateWorkspaceStatus(workspaceData.status)
-            }
-
             workspaceData.updatedBy = workspaceData.updatedBy || existingWorkspace.id
 
             updatedWorkspace = queryRunner.manager.merge(CustomWorkspace, existingWorkspace, workspaceData)
@@ -173,15 +149,7 @@ export class CustomWorkspaceService {
             }
 
             await queryRunner.startTransaction()
-
-            // Soft delete by updating status instead of hard delete
-            workspace.status = CustomWorkspaceStatus.DELETED
-            workspace.updatedBy = workspace.id
-            await this.saveWorkspace(workspace, queryRunner)
-
-            // Or use hard delete if preferred:
-            // await queryRunner.manager.remove(CustomWorkspace, workspace)
-
+            await queryRunner.manager.remove(CustomWorkspace, workspace)
             await queryRunner.commitTransaction()
 
             return { message: 'Workspace deleted successfully' }
@@ -203,20 +171,12 @@ export class CustomWorkspaceService {
             // This would require a WorkspaceUser entity/table to track user-workspace relationships
             // For now, return workspaces created by the user
             return await queryRunner.manager.find(CustomWorkspace, {
-                where: { createdBy: userId, status: CustomWorkspaceStatus.ACTIVE },
-                select: ['id', 'name', 'description', 'status', 'organizationId', 'createdDate', 'updatedDate'],
+                where: { createdBy: userId },
+                select: ['id', 'name', 'description', 'organizationId', 'createdDate', 'updatedDate'],
                 order: { createdDate: 'DESC' }
             })
         } finally {
             await queryRunner.release()
         }
-    }
-
-    public async activateWorkspace(id: string) {
-        return await this.updateWorkspace({ id, status: CustomWorkspaceStatus.ACTIVE })
-    }
-
-    public async deactivateWorkspace(id: string) {
-        return await this.updateWorkspace({ id, status: CustomWorkspaceStatus.INACTIVE })
     }
 }

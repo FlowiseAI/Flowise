@@ -1,17 +1,15 @@
 import { StatusCodes } from 'http-status-codes'
 import { InternalFlowiseError } from '../../../errors/internalFlowiseError'
 import { getRunningExpressApp } from '../../../utils/getRunningExpressApp'
-import { CustomOrganization, CustomOrganizationStatus } from '../../database/entities/CustomOrganization'
+import { CustomOrganization } from '../../database/entities/CustomOrganization'
 import { DataSource, QueryRunner } from 'typeorm'
 import { generateId } from '../../../utils'
 
 export const enum CustomOrganizationErrorMessage {
     INVALID_ORGANIZATION_ID = 'Invalid Organization Id',
     INVALID_ORGANIZATION_NAME = 'Invalid Organization Name',
-    INVALID_ORGANIZATION_STATUS = 'Invalid Organization Status',
     ORGANIZATION_NAME_ALREADY_EXISTS = 'Organization Name Already Exists',
     ORGANIZATION_NOT_FOUND = 'Organization Not Found',
-    ORGANIZATION_FOUND_MULTIPLE = 'Organization Found Multiple',
     ORGANIZATION_CANNOT_DELETE_DEFAULT = 'Cannot Delete Default Organization'
 }
 
@@ -45,46 +43,9 @@ export class CustomOrganizationService {
         return await queryRunner.manager.findOneBy(CustomOrganization, { name })
     }
 
-    public validateOrganizationStatus(status: string | undefined) {
-        if (status && !Object.values(CustomOrganizationStatus).includes(status as CustomOrganizationStatus)) {
-            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, CustomOrganizationErrorMessage.INVALID_ORGANIZATION_STATUS)
-        }
-    }
-
     public async getAllOrganizations(queryRunner: QueryRunner) {
         return await queryRunner.manager.find(CustomOrganization, {
-            select: [
-                'id',
-                'name',
-                'description',
-                'status',
-                'customerId',
-                'subscriptionId',
-                'website',
-                'industry',
-                'createdDate',
-                'updatedDate'
-            ],
-            order: { createdDate: 'DESC' }
-        })
-    }
-
-    public async getOrganizationsByStatus(status: CustomOrganizationStatus, queryRunner: QueryRunner) {
-        this.validateOrganizationStatus(status)
-        return await queryRunner.manager.find(CustomOrganization, {
-            where: { status },
-            select: [
-                'id',
-                'name',
-                'description',
-                'status',
-                'customerId',
-                'subscriptionId',
-                'website',
-                'industry',
-                'createdDate',
-                'updatedDate'
-            ],
+            select: ['id', 'name', 'createdDate', 'updatedDate'],
             order: { createdDate: 'DESC' }
         })
     }
@@ -99,9 +60,6 @@ export class CustomOrganizationService {
         }
 
         this.validateOrganizationName(data.name)
-
-        if (data.status) this.validateOrganizationStatus(data.status)
-        else data.status = CustomOrganizationStatus.ACTIVE
 
         data.id = generateId()
         data.createdBy = data.createdBy || data.id
@@ -154,10 +112,6 @@ export class CustomOrganizationService {
                 }
             }
 
-            if (organizationData.status) {
-                this.validateOrganizationStatus(organizationData.status)
-            }
-
             organizationData.updatedBy = organizationData.updatedBy || existingOrganization.id
 
             updatedOrganization = queryRunner.manager.merge(CustomOrganization, existingOrganization, organizationData)
@@ -195,15 +149,7 @@ export class CustomOrganizationService {
             }
 
             await queryRunner.startTransaction()
-
-            // Soft delete by updating status instead of hard delete
-            organization.status = CustomOrganizationStatus.DELETED
-            organization.updatedBy = organization.id
-            await this.saveOrganization(organization, queryRunner)
-
-            // Or use hard delete if preferred:
-            // await queryRunner.manager.remove(CustomOrganization, organization)
-
+            await queryRunner.manager.remove(CustomOrganization, organization)
             await queryRunner.commitTransaction()
 
             return { message: 'Organization deleted successfully' }
@@ -215,45 +161,5 @@ export class CustomOrganizationService {
         } finally {
             await queryRunner.release()
         }
-    }
-
-    public async getOrganizationsByUser(userId: string) {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            // This would require a OrganizationUser entity/table to track user-organization relationships
-            // For now, return organizations created by the user
-            return await queryRunner.manager.find(CustomOrganization, {
-                where: { createdBy: userId, status: CustomOrganizationStatus.ACTIVE },
-                select: [
-                    'id',
-                    'name',
-                    'description',
-                    'status',
-                    'customerId',
-                    'subscriptionId',
-                    'website',
-                    'industry',
-                    'createdDate',
-                    'updatedDate'
-                ],
-                order: { createdDate: 'DESC' }
-            })
-        } finally {
-            await queryRunner.release()
-        }
-    }
-
-    public async activateOrganization(id: string) {
-        return await this.updateOrganization({ id, status: CustomOrganizationStatus.ACTIVE })
-    }
-
-    public async deactivateOrganization(id: string) {
-        return await this.updateOrganization({ id, status: CustomOrganizationStatus.INACTIVE })
-    }
-
-    public async suspendOrganization(id: string) {
-        return await this.updateOrganization({ id, status: CustomOrganizationStatus.SUSPENDED })
     }
 }

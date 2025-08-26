@@ -17,18 +17,11 @@ export class CustomWorkspace {
     @PrimaryGeneratedColumn('uuid')
     id: string
 
-    @Column({ type: 'varchar', length: 100, default: CustomWorkspaceName.DEFAULT_PERSONAL_WORKSPACE })
+    @Column({ type: 'varchar', length: 100 })
     name: string
 
     @Column({ type: 'text', nullable: true })
     description?: string | null
-
-    @Column({ 
-        type: 'varchar', 
-        length: 20,
-        default: CustomWorkspaceStatus.ACTIVE 
-    })
-    status: CustomWorkspaceStatus
 
     @Column({ nullable: false })
     organizationId: string

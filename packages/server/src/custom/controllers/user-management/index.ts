@@ -84,8 +84,6 @@ export class CustomUserController {
                 defaultOrganization = queryRunner.manager.create(CustomOrganization, {
                     id: generateId(),
                     name: 'Default Organization',
-                    description: 'Default organization for all users',
-                    status: CustomOrganizationStatus.ACTIVE,
                     createdBy: newUser.id,
                     updatedBy: newUser.id
                 })
@@ -102,7 +100,6 @@ export class CustomUserController {
                     id: generateId(),
                     name: 'Default Workspace',
                     description: 'Default workspace for all users',
-                    status: CustomWorkspaceStatus.ACTIVE,
                     organizationId: defaultOrganization.id,
                     createdBy: newUser.id,
                     updatedBy: newUser.id
