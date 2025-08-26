@@ -12,7 +12,6 @@ import { BullMQAdapter } from '@bull-board/api/bullMQAdapter'
 import { Express } from 'express'
 import { UsageCacheManager } from '../UsageCacheManager'
 import { ExpressAdapter } from '@bull-board/express'
-import logger from '../utils/logger'
 
 const QUEUE_NAME = process.env.QUEUE_NAME || 'flowise-queue'
 
@@ -48,9 +47,6 @@ export class QueueManager {
                         ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
                         : undefined
             }
-            logger.info(
-                `[QueueManager] Connecting to Redis using URL: ${process.env.REDIS_URL.replace(/\/\/[^:]+:[^@]+@/, '//[CREDENTIALS]@')}`
-            )
         } else {
             let tlsOpts = undefined
             if (process.env.REDIS_TLS === 'true') {
@@ -72,11 +68,6 @@ export class QueueManager {
                         ? parseInt(process.env.REDIS_KEEP_ALIVE, 10)
                         : undefined
             }
-            logger.info(
-                `[QueueManager] Connecting to Redis using host:port: ${process.env.REDIS_HOST || 'localhost'}:${
-                    process.env.REDIS_PORT || '6379'
-                }`
-            )
         }
     }
 
@@ -149,15 +140,6 @@ export class QueueManager {
         })
         this.registerQueue('prediction', predictionQueue)
 
-        // Add connection event logging for prediction queue
-        if (predictionQueue.getQueue().opts.connection) {
-            const connInfo = predictionQueue.getQueue().opts.connection || {}
-            const connInfoString = JSON.stringify(connInfo)
-                .replace(/"username":"[^"]*"/g, '"username":"[REDACTED]"')
-                .replace(/"password":"[^"]*"/g, '"password":"[REDACTED]"')
-            logger.info(`[QueueManager] Prediction queue connected to Redis: ${connInfoString}`)
-        }
-
         this.predictionQueueEventsProducer = new QueueEventsProducer(predictionQueue.getQueueName(), {
             connection: this.connection
         })
@@ -171,15 +153,6 @@ export class QueueManager {
             usageCacheManager
         })
         this.registerQueue('upsert', upsertionQueue)
-
-        // Add connection event logging for upsert queue
-        if (upsertionQueue.getQueue().opts.connection) {
-            const connInfo = upsertionQueue.getQueue().opts.connection || {}
-            const connInfoString = JSON.stringify(connInfo)
-                .replace(/"username":"[^"]*"/g, '"username":"[REDACTED]"')
-                .replace(/"password":"[^"]*"/g, '"password":"[REDACTED]"')
-            logger.info(`[QueueManager] Upsert queue connected to Redis: ${connInfoString}`)
-        }
 
         if (serverAdapter) {
             createBullBoard({
