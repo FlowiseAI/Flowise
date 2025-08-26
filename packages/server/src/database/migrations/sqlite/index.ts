@@ -35,6 +35,7 @@ import { AddExecutionEntity1738090872625 } from './1738090872625-AddExecutionEnt
 import { FixOpenSourceAssistantTable1743758056188 } from './1743758056188-FixOpenSourceAssistantTable'
 import { AddErrorToEvaluationRun1744964560174 } from './1744964560174-AddErrorToEvaluationRun'
 import { ModifyChatflowType1755066758601 } from './1755066758601-ModifyChatflowType'
+// import { LoginActivity1756175430111 } from './1756175430111-LoginActivity'
 
 import { AddAuthTables1720230151482 } from '../../../enterprise/database/migrations/sqlite/1720230151482-AddAuthTables'
 import { AddWorkspace1720230151484 } from '../../../enterprise/database/migrations/sqlite/1720230151484-AddWorkspace'
@@ -97,4 +98,5 @@ export const sqliteMigrations = [
     AddErrorToEvaluationRun1744964560174,
     ExecutionLinkWorkspaceId1746862866554,
     ModifyChatflowType1755066758601
+    // LoginActivity1756175430111  // Commented out - table already exists
 ]

@@ -23,6 +23,7 @@ import { decryptToken, encryptToken, generateSafeCopy } from '../../utils/tempTo
 import { getAuthStrategy } from './AuthStrategy'
 import { initializeDBClientAndStore, initializeRedisClientAndStore } from './SessionPersistance'
 import { v4 as uuidv4 } from 'uuid'
+import { LoginActivityService, LoginActivityCode } from '../../../custom/services/LoginActivityService'
 
 const localStrategy = require('passport-local').Strategy
 
@@ -49,7 +50,8 @@ const _initializePassportMiddleware = async (app: express.Application) => {
         cookie: {
             secure: secureCookie,
             httpOnly: true,
-            sameSite: 'lax' // Add sameSite attribute
+            sameSite: 'lax', // Add sameSite attribute
+            maxAge: 10 * 60 * 1000 // 10 minutes in milliseconds (600,000 ms)
         }
     }
 
@@ -169,8 +171,36 @@ export const initializeJwtCookieMiddleware = async (app: express.Application, id
                         permissions: [...JSON.parse(role.permissions)],
                         features
                     }
+
+                    try {
+                        console.log('🎯 Attempting to log login success for:', email)
+                        const loginActivityService = new LoginActivityService(queryRunner)
+                        const result = await loginActivityService.logActivity({
+                            username: email,
+                            activityCode: LoginActivityCode.LOGIN_SUCCESS,
+                            message: '로그인 성공',
+                            loginMode: 'local'
+                        })
+                        console.log('✅ Login activity logged successfully:', result.id)
+                    } catch (logError) {
+                        console.error('❌ Failed to log login activity:', logError)
+                    }
+
                     return done(null, loggedInUser, { message: 'Logged in Successfully' })
                 } catch (error) {
+                    try {
+                        console.log('🎯 Attempting to log login failure for:', email)
+                        const loginActivityService = new LoginActivityService(queryRunner)
+                        await loginActivityService.logActivity({
+                            username: email,
+                            activityCode: LoginActivityCode.LOGIN_FAILED,
+                            message: `로그인 실패: ${(error as any)?.message || '알 수 없는 오류'}`,
+                            loginMode: 'local'
+                        })
+                        console.log('✅ Login failure logged successfully')
+                    } catch (logError) {
+                        console.error('❌ Failed to log failed login activity:', logError)
+                    }
                     return done(error)
                 } finally {
                     if (queryRunner) await queryRunner.release()

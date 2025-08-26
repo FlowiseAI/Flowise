@@ -196,59 +196,17 @@ const dashboard = {
             ]
         },
         {
-            id: 'management',
-            title: 'User & Workspace Management',
+            id: 'user-management-group',
+            title: '사용자 관리',
             type: 'group',
             children: [
                 {
-                    id: 'sso',
-                    title: 'SSO Config',
+                    id: 'user-management',
+                    title: '사용자 관리',
                     type: 'item',
-                    url: '/sso-config',
-                    icon: icons.IconShieldLock,
-                    breadcrumbs: true,
-                    display: 'feat:sso-config',
-                    permission: 'sso:manage'
-                },
-                {
-                    id: 'roles',
-                    title: 'Roles',
-                    type: 'item',
-                    url: '/roles',
-                    icon: icons.IconLockCheck,
-                    breadcrumbs: true,
-                    display: 'feat:roles',
-                    permission: 'roles:manage'
-                },
-                {
-                    id: 'users',
-                    title: 'Users',
-                    type: 'item',
-                    url: '/users',
-                    icon: icons.IconUsers,
-                    breadcrumbs: true,
-                    display: 'feat:users',
-                    permission: 'users:manage'
-                },
-                {
-                    id: 'workspaces',
-                    title: 'Workspaces',
-                    type: 'item',
-                    url: '/workspaces',
-                    icon: icons.IconStack2,
-                    breadcrumbs: true,
-                    display: 'feat:workspaces',
-                    permission: 'workspace:view'
-                },
-                {
-                    id: 'login-activity',
-                    title: 'Login Activity',
-                    type: 'item',
-                    url: '/login-activity',
-                    icon: icons.IconClipboardList,
-                    breadcrumbs: true,
-                    display: 'feat:login-activity',
-                    permission: 'loginActivity:view'
+                    url: '/user-management',
+                    icon: icons.IconUserEdit,
+                    breadcrumbs: true
                 }
             ]
         },
@@ -257,25 +215,6 @@ const dashboard = {
             title: 'Others',
             type: 'group',
             children: [
-                {
-                    id: 'logs',
-                    title: 'Logs',
-                    type: 'item',
-                    url: '/logs',
-                    icon: icons.IconList,
-                    breadcrumbs: true,
-                    display: 'feat:logs',
-                    permission: 'logs:view'
-                },
-                // {
-                //     id: 'files',
-                //     title: 'Files',
-                //     type: 'item',
-                //     url: '/files',
-                //     icon: icons.IconFileDatabase,
-                //     breadcrumbs: true,
-                //     display: 'feat:files',
-                // },
                 {
                     id: 'account',
                     title: 'Account Settings',

@@ -56,6 +56,9 @@ import executionsRouter from './executions'
 import validationRouter from './validation'
 import agentflowv2GeneratorRouter from './agentflowv2-generator'
 
+// Custom routes
+import customRouter from '../custom/routes'
+
 import authRouter from '../enterprise/routes/auth'
 import auditRouter from '../enterprise/routes/audit'
 import userRouter from '../enterprise/routes/user.route'
@@ -124,6 +127,21 @@ router.use('/nvidia-nim', nvidiaNimRouter)
 router.use('/executions', executionsRouter)
 router.use('/validation', validationRouter)
 router.use('/agentflowv2-generator', agentflowv2GeneratorRouter)
+
+// Custom routes
+router.get('/custom-test', (req, res) => {
+    res.json({ message: 'Custom test endpoint working' })
+})
+
+router.use(
+    '/custom',
+    (req, res, next) => {
+        const logger = require('../utils/logger').default
+        logger.info('🔥 Custom router middleware called:', req.method, req.path)
+        next()
+    },
+    customRouter
+)
 
 router.use('/auth', authRouter)
 router.use('/audit', IdentityManager.checkFeatureByPlan('feat:login-activity'), auditRouter)

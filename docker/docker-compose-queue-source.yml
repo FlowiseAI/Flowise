@@ -32,6 +32,7 @@ services:
             - MODE=queue
             - QUEUE_NAME=flowise-queue # Ensure this matches worker
             - REDIS_URL=redis://redis:6379 # Use service name 'redis'
+            - JWT_TOKEN_EXPIRY_IN_MINUTES=10
         depends_on:
             - redis
         networks:

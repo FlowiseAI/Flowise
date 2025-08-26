@@ -25,6 +25,12 @@ import { OrganizationUser } from '../../enterprise/database/entities/organizatio
 import { Workspace } from '../../enterprise/database/entities/workspace.entity'
 import { WorkspaceUser } from '../../enterprise/database/entities/workspace-user.entity'
 import { LoginMethod } from '../../enterprise/database/entities/login-method.entity'
+import { CustomUser } from '../../custom/database/entities/CustomUser'
+import { CustomOrganization } from '../../custom/database/entities/CustomOrganization'
+import { CustomWorkspace } from '../../custom/database/entities/CustomWorkspace'
+import { CustomOrganizationUser } from '../../custom/database/entities/CustomOrganizationUser'
+import { CustomWorkspaceUser } from '../../custom/database/entities/CustomWorkspaceUser'
+import { LoginActivity as CustomLoginActivity } from '../../custom/database/entities/LoginActivity'
 
 export const entities = {
     ChatFlow,
@@ -55,5 +61,11 @@ export const entities = {
     OrganizationUser,
     Workspace,
     WorkspaceUser,
-    LoginMethod
+    LoginMethod,
+    CustomUser,
+    CustomOrganization,
+    CustomWorkspace,
+    CustomOrganizationUser,
+    CustomWorkspaceUser,
+    CustomLoginActivity
 }
