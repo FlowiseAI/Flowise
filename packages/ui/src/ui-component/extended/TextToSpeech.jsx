@@ -172,8 +172,8 @@ const TextToSpeech = ({ dialogProps }) => {
         setSelectedProvider(() => provider)
         setVoices([])
         if (provider !== 'none') {
-            const config = configOverride || textToSpeech?.[provider]
-            const credentialId = config?.credentialId
+            const config = configOverride || textToSpeech
+            const credentialId = config[provider]?.credentialId
             if (credentialId) {
                 loadVoicesForProvider(provider, credentialId)
             }
