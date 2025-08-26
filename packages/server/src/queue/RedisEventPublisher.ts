@@ -380,6 +380,54 @@ export class RedisEventPublisher implements IServerSideEventStreamer {
         }
     }
 
+    streamTTSStartEvent(chatId: string, chatMessageId: string, format: string): void {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    chatMessageId,
+                    eventType: 'tts_start',
+                    data: { format }
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming TTS start event:', error)
+        }
+    }
+
+    streamTTSDataEvent(chatId: string, chatMessageId: string, audioChunk: string): void {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    chatMessageId,
+                    eventType: 'tts_data',
+                    data: audioChunk
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming TTS data event:', error)
+        }
+    }
+
+    streamTTSEndEvent(chatId: string, chatMessageId: string): void {
+        try {
+            this.redisPublisher.publish(
+                chatId,
+                JSON.stringify({
+                    chatId,
+                    chatMessageId,
+                    eventType: 'tts_end',
+                    data: {}
+                })
+            )
+        } catch (error) {
+            console.error('Error streaming TTS end event:', error)
+        }
+    }
+
     async disconnect() {
         if (this.redisPublisher) {
             await this.redisPublisher.quit()
