@@ -642,6 +642,7 @@ export const executeFlow = async ({
             result.question = incomingInput.question
             result.chatId = chatId
             result.chatMessageId = chatMessage?.id
+            result.timestamp = new Date().toISOString()
             if (sessionId) result.sessionId = sessionId
             if (memoryType) result.memoryType = memoryType
             if (agentReasoning?.length) result.agentReasoning = agentReasoning
@@ -823,6 +824,7 @@ export const executeFlow = async ({
         result.chatMessageId = chatMessage?.id
         result.followUpPrompts = JSON.stringify(apiMessage.followUpPrompts)
         result.isStreamValid = isStreamValid
+        result.timestamp = new Date().toISOString()
 
         if (sessionId) result.sessionId = sessionId
         if (memoryType) result.memoryType = memoryType
