@@ -16,6 +16,7 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
         const chatflowId = req.query.chatflowId as string
         const chatId = req.query.chatId as string
         const fileName = req.query.fileName as string
+        const download = req.query.download === 'true' // Check if download parameter is set
 
         const appServer = getRunningExpressApp()
 
@@ -35,7 +36,12 @@ const streamUploadedFile = async (req: Request, res: Response, next: NextFunctio
         }
         const orgId = workspace.organizationId as string
 
-        res.setHeader('Content-Disposition', contentDisposition(fileName))
+        // Set Content-Disposition header - force attachment for download
+        if (download) {
+            res.setHeader('Content-Disposition', contentDisposition(fileName, { type: 'attachment' }))
+        } else {
+            res.setHeader('Content-Disposition', contentDisposition(fileName))
+        }
         const fileStream = await streamStorageFile(chatflowId, chatId, fileName, orgId)
 
         if (!fileStream) throw new InternalFlowiseError(StatusCodes.INTERNAL_SERVER_ERROR, `Error: streamStorageFile`)

@@ -25,6 +25,8 @@ import executionService, { ExecutionFilters } from '../executions'
 import marketplacesService from '../marketplaces'
 import toolsService from '../tools'
 import variableService from '../variables'
+import { Platform } from '../../Interface'
+import { sanitizeNullBytes } from '../../utils/sanitize.util'
 
 type ExportInput = {
     agentflow: boolean
@@ -547,6 +549,8 @@ async function replaceDuplicateIdsForVariable(queryRunner: QueryRunner, original
         const records = await queryRunner.manager.find(Variable, {
             where: { id: In(ids) }
         })
+        if (getRunningExpressApp().identityManager.getPlatformType() === Platform.CLOUD)
+            originalData.Variable = originalData.Variable.filter((variable) => variable.type !== 'runtime')
         if (records.length < 0) return originalData
         for (let record of records) {
             const oldId = record.id
@@ -749,6 +753,8 @@ const importData = async (importData: ExportData, orgId: string, activeWorkspace
                 importData.Variable = insertWorkspaceId(importData.Variable, activeWorkspaceId)
                 importData = await replaceDuplicateIdsForVariable(queryRunner, importData, importData.Variable)
             }
+
+            importData = sanitizeNullBytes(importData)
 
             await queryRunner.startTransaction()
 

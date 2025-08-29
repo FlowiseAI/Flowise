@@ -17,5 +17,5 @@
         "module": "commonjs"
     },
     "include": ["src", "nodes", "credentials"],
-    "exclude": ["gulpfile.ts", "node_modules", "dist"]
+    "exclude": ["gulpfile.ts", "node_modules", "dist", "**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "**/*.spec.js"]
 }

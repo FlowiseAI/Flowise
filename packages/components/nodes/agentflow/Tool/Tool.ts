@@ -274,6 +274,7 @@ class Tool_Agentflow implements INode {
         }
 
         const flowConfig = {
+            chatflowId: options.chatflowid,
             sessionId: options.sessionId,
             chatId: options.chatId,
             input: input,
@@ -333,7 +334,7 @@ class Tool_Agentflow implements INode {
             if (newState && Object.keys(newState).length > 0) {
                 for (const key in newState) {
                     if (newState[key].toString().includes('{{ output }}')) {
-                        newState[key] = toolOutput
+                        newState[key] = newState[key].replaceAll('{{ output }}', toolOutput)
                     }
                 }
             }

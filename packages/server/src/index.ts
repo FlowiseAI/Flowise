@@ -197,7 +197,8 @@ export class App {
             if (next) next()
         })
 
-        const whitelistURLs = WHITELIST_URLS
+        const denylistURLs = process.env.DENYLIST_URLS ? process.env.DENYLIST_URLS.split(',') : []
+        const whitelistURLs = WHITELIST_URLS.filter((url) => !denylistURLs.includes(url))
         const URL_CASE_INSENSITIVE_REGEX: RegExp = /\/api\/v1\//i
         const URL_CASE_SENSITIVE_REGEX: RegExp = /\/api\/v1\//
 

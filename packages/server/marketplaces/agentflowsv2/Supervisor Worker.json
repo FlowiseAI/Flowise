@@ -818,7 +818,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "agentModel": "chatOpenAI"
                     }
                 },
@@ -1168,7 +1168,7 @@
                         "baseOptions": "",
                         "allowImageUploads": "",
                         "imageResolution": "low",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "agentModel": "chatOpenAI"
                     }
                 },
@@ -1975,7 +1975,7 @@
                         "proxyUrl": "",
                         "baseOptions": "",
                         "allowImageUploads": "",
-                        "reasoningEffort": "medium",
+                        "reasoningEffort": "",
                         "llmModel": "chatOpenAI"
                     }
                 },

@@ -399,7 +399,11 @@ class LLM_Agentflow implements INode {
                 const role = msg.role
                 const content = msg.content
                 if (role && content) {
-                    messages.push({ role, content })
+                    if (role === 'system') {
+                        messages.unshift({ role, content })
+                    } else {
+                        messages.push({ role, content })
+                    }
                 }
             }
 
@@ -474,11 +478,15 @@ class LLM_Agentflow implements INode {
                 // Stream whole response back to UI if this is the last node
                 if (isLastNode && options.sseStreamer) {
                     const sseStreamer: IServerSideEventStreamer = options.sseStreamer as IServerSideEventStreamer
-                    let responseContent = JSON.stringify(response, null, 2)
-                    if (typeof response.content === 'string') {
-                        responseContent = response.content
+                    let finalResponse = ''
+                    if (response.content && Array.isArray(response.content)) {
+                        finalResponse = response.content.map((item: any) => item.text).join('\n')
+                    } else if (response.content && typeof response.content === 'string') {
+                        finalResponse = response.content
+                    } else {
+                        finalResponse = JSON.stringify(response, null, 2)
                     }
-                    sseStreamer.streamTokenEvent(chatId, responseContent)
+                    sseStreamer.streamTokenEvent(chatId, finalResponse)
                 }
             }
 
@@ -897,7 +905,7 @@ class LLM_Agentflow implements INode {
         if (isStructuredOutput && typeof response === 'object') {
             const structuredOutput = response as Record<string, any>
             for (const key in structuredOutput) {
-                if (structuredOutput[key]) {
+                if (structuredOutput[key] !== undefined && structuredOutput[key] !== null) {
                     output[key] = structuredOutput[key]
                 }
             }

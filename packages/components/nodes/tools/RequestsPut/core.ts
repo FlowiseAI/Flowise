@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import fetch from 'node-fetch'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
+import { secureFetch } from '../../../src/httpSecurity'
 
 export const desc = `Use this when you want to execute a PUT request to update or replace a resource.`
 
@@ -126,7 +126,7 @@ export class RequestsPutTool extends DynamicStructuredTool {
                 ...this.headers
             }
 
-            const res = await fetch(inputUrl, {
+            const res = await secureFetch(inputUrl, {
                 method: 'PUT',
                 headers: requestHeaders,
                 body: JSON.stringify(inputBody)
