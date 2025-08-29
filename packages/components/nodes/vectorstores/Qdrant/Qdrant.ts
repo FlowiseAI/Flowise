@@ -415,7 +415,6 @@ class Qdrant_VectorStores implements INode {
         if (queryFilter) {
             try {
                 const variablesArray = await getVars(options.appDataSource, options.databaseEntities, nodeData, options)
-                // Convert variables array to object for easier access
                 const variables: Record<string, any> = {}
                 if (Array.isArray(variablesArray)) {
                     variablesArray.forEach((variable: any) => {
