@@ -1,4 +1,4 @@
-import { flatten } from 'lodash'
+import { flatten, get } from 'lodash'
 import { v4 as uuid } from 'uuid'
 import { QdrantClient } from '@qdrant/js-client-rest'
 import { VectorStoreRetrieverInput } from '@langchain/core/vectorstores'
@@ -6,7 +6,7 @@ import { Document } from '@langchain/core/documents'
 import { QdrantVectorStore, QdrantLibArgs } from '@langchain/qdrant'
 import { Embeddings } from '@langchain/core/embeddings'
 import { ICommonObject, INode, INodeData, INodeOutputsValue, INodeParams, IndexingResult } from '../../../src/Interface'
-import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam } from '../../../src/utils'
+import { FLOWISE_CHATID, getBaseClasses, getCredentialData, getCredentialParam, getVars } from '../../../src/utils'
 import { index } from '../../../src/indexing'
 import { howToUseFileUpload } from '../VectorStoreUtils'
 
@@ -168,7 +168,7 @@ class Qdrant_VectorStores implements INode {
             {
                 label: 'Qdrant Search Filter',
                 name: 'qdrantFilter',
-                description: 'Only return points which satisfy the conditions',
+                description: 'Only return points which satisfy the conditions. Supports dynamic variables with $vars.variableName',
                 type: 'json',
                 additionalParams: true,
                 optional: true
@@ -411,6 +411,55 @@ class Qdrant_VectorStores implements INode {
         const isFileUploadEnabled = nodeData.inputs?.fileUpload as boolean
 
         const k = topK ? parseFloat(topK) : 4
+
+        if (queryFilter) {
+            try {
+                const variablesArray = await getVars(options.appDataSource, options.databaseEntities, nodeData, options)
+                // Convert variables array to object for easier access
+                const variables: Record<string, any> = {}
+                if (Array.isArray(variablesArray)) {
+                    variablesArray.forEach((variable: any) => {
+                        if (variable.name && variable.value !== undefined) {
+                            variables[variable.name] = variable.value
+                        }
+                    })
+                }
+
+                if (typeof queryFilter === 'string') {
+                    let processedFilter = queryFilter
+
+                    const varMatches = processedFilter.match(/"\$vars\.[\w\.]+"/g)
+
+                    if (varMatches) {
+                        for (const varMatch of varMatches) {
+                            const varPath = varMatch.replace('"$vars.', '').replace('"', '')
+                            const varValue = variables[varPath]
+
+                            if (varValue !== undefined) {
+                                let valueStr: string
+                                if (typeof varValue === 'string') {
+                                    valueStr = `"${varValue}"`
+                                } else if (typeof varValue === 'number') {
+                                    valueStr = varValue.toString()
+                                } else if (typeof varValue === 'boolean') {
+                                    valueStr = varValue ? 'true' : 'false'
+                                } else if (varValue === null) {
+                                    valueStr = 'null'
+                                } else {
+                                    valueStr = JSON.stringify(varValue)
+                                }
+                                processedFilter = processedFilter.replace(new RegExp(varMatch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), valueStr)
+                            } else {
+                                console.log(`  → Variable not found: $vars.${varPath}`)
+                            }
+                        }
+                    }
+                    queryFilter = processedFilter
+                }
+            } catch (error) {
+                console.error('Error processing variables in queryFilter:', error)
+            }
+        }
 
         const credentialData = await getCredentialData(nodeData.credential ?? '', options)
         const qdrantApiKey = getCredentialParam('qdrantApiKey', credentialData, nodeData)
