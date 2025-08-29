@@ -144,7 +144,7 @@ class RequestsPut_Tools implements INode {
             obj.headers = parsedHeaders
         }
         if (body) {
-            const parsedBody = typeof body === 'object' ? body : JSON.parse(body)
+            const parsedBody = typeof body === 'object' ? body : JSON.parse(stripHTMLFromToolInput(body))
             obj.body = parsedBody
         }
 
