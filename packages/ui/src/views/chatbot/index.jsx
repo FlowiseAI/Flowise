@@ -72,7 +72,7 @@ const ChatbotFull = () => {
     useEffect(() => {
         setLoading(getSpecificChatflowFromPublicApi.loading || getSpecificChatflowApi.loading)
     }, [getSpecificChatflowFromPublicApi.loading, getSpecificChatflowApi.loading])
-
+    
     return (
         <>
             {!isLoading ? (
@@ -106,8 +106,18 @@ const ChatbotFull = () => {
                             chatflowid={chatflow.id}
                             apiHost={baseURL}
                             chatflowConfig={chatbotOverrideConfig}
-                            theme={{ chatWindow: chatbotTheme }}
+                            theme={{
+                                chatWindow: {
+                                    ...chatbotTheme,
+                                    footer: {
+                                        text: 'Powered by',
+                                        company: 'Digiworks',
+                                        companyLink: 'https://www.digiworks.ai'
+                                    }
+                                }
+                            }}
                         />
+
                     )}
                 </>
             ) : null}
