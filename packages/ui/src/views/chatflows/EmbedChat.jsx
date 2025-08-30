@@ -9,6 +9,7 @@ import { CheckboxInput } from '@/ui-component/checkbox/Checkbox'
 
 // Const
 import { baseURL } from '@/store/constant'
+import { FOOTER_INFO } from './constants'
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props
@@ -167,12 +168,7 @@ export const defaultThemeConfig = {
             date: true,
             time: true
         },
-        footer: {
-            textColor: '#303235',
-            text: 'Powered by',
-            company: 'Flowise',
-            companyLink: 'https://flowiseai.com'
-        }
+        footer: FOOTER_INFO
     }
 }
 
