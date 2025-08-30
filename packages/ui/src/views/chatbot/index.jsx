@@ -14,6 +14,7 @@ import { alpha } from '@mui/material/styles'
 
 //Const
 import { baseURL } from '@/store/constant'
+import { FOOTER_INFO } from '../chatflows/constants'
 
 // ==============================|| Chatbot ||============================== //
 
@@ -109,11 +110,7 @@ const ChatbotFull = () => {
                             theme={{
                                 chatWindow: {
                                     ...chatbotTheme,
-                                    footer: {
-                                        text: 'Powered by',
-                                        company: 'Digiworks',
-                                        companyLink: 'https://www.digiworks.ai'
-                                    }
+                                    footer: FOOTER_INFO
                                 }
                             }}
                         />
