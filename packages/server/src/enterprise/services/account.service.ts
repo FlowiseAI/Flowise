@@ -25,6 +25,7 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
+import logger from '../../utils/logger'
 
 type AccountDTO = {
     user: Partial<User>
@@ -291,6 +292,8 @@ export class AccountService {
             const role = await this.roleService.readRoleByRoleIdOrganizationId(data.role.id, data.workspace.organizationId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
             data.role = role
+            const randomPassword = await this.generateValidPassword();
+            logger.info(`randomPassword ${randomPassword}`);
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) {
                 await checkUsageLimit('users', subscriptionId, getRunningExpressApp().usageCacheManager, totalOrgUsers + 1)
@@ -303,7 +306,7 @@ export class AccountService {
                 tokenExpiry.setHours(tokenExpiry.getHours() + expiryInHours)
                 data.user.tokenExpiry = tokenExpiry
                 data.user.status = UserStatus.INVITED
-                data.user.credential = 'Digiworks123!';
+                data.user.credential = randomPassword;
                 // send invite
                 const registerLink =
                     this.identityManager.getPlatformType() === Platform.ENTERPRISE
@@ -341,6 +344,13 @@ export class AccountService {
                 delete data.user.tokenExpiry
 
                 return data
+            } else {
+                logger.info(`updating randomPassword ${randomPassword}`);
+                await this.userService.updateUser({
+                    id: user.id,
+                    password: randomPassword,
+                    updatedBy: data.user.createdBy
+                });
             }
             const { organizationUser } = await this.organizationUserService.readOrganizationUserByOrganizationIdUserId(
                 data.workspace.organizationId,
@@ -441,6 +451,38 @@ export class AccountService {
     public async invite(data: AccountDTO, user?: Express.User) {
         return await this.saveInviteAccount(data, user)
     }
+
+    public async generateValidPassword(length: number = 12): Promise<string> {
+        if (length < 8) {
+            throw new Error("Password length must be at least 8 characters.");
+        }
+
+        const lowercase = "abcdefghijklmnopqrstuvwxyz";
+        const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const digits = "0123456789";
+        const specials = "!@#$%^&*()-_=+[]{};:,.<>?";
+
+        const requiredChars = [
+            lowercase[Math.floor(Math.random() * lowercase.length)],
+            uppercase[Math.floor(Math.random() * uppercase.length)],
+            digits[Math.floor(Math.random() * digits.length)],
+            specials[Math.floor(Math.random() * specials.length)]
+        ];
+
+        const allChars = lowercase + uppercase + digits + specials;
+
+        for (let i = requiredChars.length; i < length; i++) {
+            requiredChars.push(allChars[Math.floor(Math.random() * allChars.length)]);
+        }
+
+        for (let i = requiredChars.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [requiredChars[i], requiredChars[j]] = [requiredChars[j], requiredChars[i]];
+        }
+
+        return Promise.resolve(requiredChars.join(""));
+    }
+
 
     public async login(data: AccountDTO) {
         data = this.initializeAccountDTO(data)
