@@ -16,7 +16,7 @@ import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspa
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
 import { compareHash } from '../utils/encryption.util'
-import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
+import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite, sendWorkspaceInviteWithPassword } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
 import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
@@ -311,8 +311,8 @@ export class AccountService {
                 const registerLink =
                     this.identityManager.getPlatformType() === Platform.ENTERPRISE
                         ? `${process.env.APP_URL}/register?token=${data.user.tempToken}`
-                        : `${process.env.APP_URL}/register`
-                await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
+                        : `${process.env.APP_URL}/signin`
+                await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
                 data.user = await this.userService.createNewUser(data.user, queryRunner)
 
                 data.organizationUser.organizationId = data.workspace.organizationId
@@ -388,28 +388,17 @@ export class AccountService {
                     await this.userService.saveUser(data.user, queryRunner)
                     registerLink = `${process.env.APP_URL}/register?token=${data.user.tempToken}`
                 } else {
-                    registerLink = `${process.env.APP_URL}/register`
+                    registerLink = `${process.env.APP_URL}/signin`
                 }
                 if (workspaceUser.length === 1) {
                     oldWorkspaceUser = workspaceUser[0]
                     if (oldWorkspaceUser.workspace.name === WorkspaceName.DEFAULT_PERSONAL_WORKSPACE) {
-                        await sendWorkspaceInvite(
-                            data.user.email!,
-                            data.workspace.name!,
-                            registerLink,
-                            this.identityManager.getPlatformType()
-                        )
+                        await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
                     } else {
-                        await sendWorkspaceInvite(
-                            data.user.email!,
-                            data.workspace.name!,
-                            registerLink,
-                            this.identityManager.getPlatformType(),
-                            'update'
-                        )
+                        sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
                     }
                 } else {
-                    await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
+                    await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
                 }
             } else {
                 data.organizationUser.updatedBy = data.user.createdBy
