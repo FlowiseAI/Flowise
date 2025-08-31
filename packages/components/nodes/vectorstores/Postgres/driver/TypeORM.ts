@@ -33,7 +33,8 @@ export class TypeORMDriver extends VectorStoreDriver {
                 username: user, // Required by TypeORMVectorStore
                 user: user, // Required by Pool in similaritySearchVectorWithScore
                 password: password,
-                database: this.getDatabase()
+                database: this.getDatabase(),
+                schema: this.getSchema()
             } as DataSourceOptions
 
             // Prevent using default MySQL port, otherwise will throw uncaught error and crashing the app
@@ -138,7 +139,7 @@ export class TypeORMDriver extends VectorStoreDriver {
 
         const _filter = JSON.stringify(restFilters || {})
         const parameters: any[] = [embeddingString, _filter, k]
-
+        const schema = postgresConnectionOptions.schema || 'public'
         // Match chatflow uploaded file and keep filtering on other files:
         // https://github.com/FlowiseAI/Flowise/pull/3367#discussion_r1804229295
         if (chatId) {
@@ -148,7 +149,7 @@ export class TypeORMDriver extends VectorStoreDriver {
 
         const queryString = `
             SELECT *, embedding ${distanceOperator} $1 as "_distance"
-            FROM ${tableName}
+            FROM "${schema}"."${tableName}"
             WHERE ((metadata @> $2) AND NOT (metadata ? '${FLOWISE_CHATID}')) ${chatflowOr}
             ORDER BY "_distance" ASC
             LIMIT $3;`
