@@ -226,6 +226,7 @@ async function callMCPTool(client: Client, name: string, input: any): Promise<st
     }
 
     const res = await client.request(req, CallToolResultSchema)
+    console.log(`🟢 [FLOWISE MCP] Tool ${name} response:`, JSON.stringify(res, null, 2))
     return JSON.stringify(res.content)
 }
 
@@ -237,6 +238,22 @@ async function handleToolResponse(
     name: string,
     notifications: string[]
 ): Promise<string> {
+    // Check if response is an error - always return immediately for errors
+    try {
+        const parsedContent = JSON.parse(contentString)
+        if (Array.isArray(parsedContent) && parsedContent.length > 0 && 
+            parsedContent[0].type === 'text' && 
+            parsedContent[0].text.includes('validation error')) {
+            console.log(`⚠️ [FLOWISE MCP] Error response detected, returning immediately: ${parsedContent[0].text}`)
+            if (sseStreamer && chatId) {
+                sseStreamer.removeMcpConnection(chatId, name)
+            }
+            return contentString
+        }
+    } catch (e) {
+        // If parsing fails, continue with normal flow
+    }
+
     // Non-streaming tools return immediately
     if (!hasStreaming || !sseStreamer || !chatId) {
         if (sseStreamer && chatId) {
