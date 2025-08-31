@@ -239,19 +239,12 @@ async function handleToolResponse(
     notifications: string[]
 ): Promise<string> {
     // Check if response is an error - always return immediately for errors
-    try {
-        const parsedContent = JSON.parse(contentString)
-        if (Array.isArray(parsedContent) && parsedContent.length > 0 && 
-            parsedContent[0].type === 'text' && 
-            parsedContent[0].text.includes('validation error')) {
-            console.log(`⚠️ [FLOWISE MCP] Error response detected, returning immediately: ${parsedContent[0].text}`)
-            if (sseStreamer && chatId) {
-                sseStreamer.removeMcpConnection(chatId, name)
-            }
-            return contentString
+    if (isErrorResponse(contentString)) {
+        console.log(`⚠️ [FLOWISE MCP] Error response detected, stopping streaming and returning immediately`)
+        if (sseStreamer && chatId) {
+            sseStreamer.removeMcpConnection(chatId, name)
         }
-    } catch (e) {
-        // If parsing fails, continue with normal flow
+        return contentString
     }
 
     // Non-streaming tools return immediately
@@ -303,6 +296,81 @@ function waitForStreamingCompletion(
 
 function buildFullResponse(contentString: string, notifications: string[]): string {
     return notifications.length > 0 ? `${contentString}\n\n--- Execution Log ---\n${notifications.join('\n')}` : contentString
+}
+
+function isErrorResponse(contentString: string): boolean {
+    try {
+        const parsedContent = JSON.parse(contentString)
+        
+        // Case 1: Array format with text content containing errors
+        if (Array.isArray(parsedContent) && parsedContent.length > 0) {
+            const firstItem = parsedContent[0]
+            if (firstItem?.type === 'text' && typeof firstItem.text === 'string') {
+                const text = firstItem.text
+                // Check for validation errors or other error patterns
+                if (text.includes('validation error') || 
+                    text.includes('error') || 
+                    text.includes('Error') || 
+                    text.includes('exception') ||
+                    text.includes('Exception')) {
+                    return true
+                }
+                
+                // Check for structured error responses in text
+                try {
+                    const innerParsed = JSON.parse(text)
+                    if (isStructuredError(innerParsed)) {
+                        return true
+                    }
+                } catch (e) {
+                    // Not a JSON string within the text, continue checking
+                }
+            }
+        }
+        
+        // Case 2: Direct structured error response
+        if (isStructuredError(parsedContent)) {
+            return true
+        }
+        
+        // Case 3: MCP error responses with isError flag
+        if (parsedContent.isError === true) {
+            return true
+        }
+        
+    } catch (e) {
+        // If parsing fails, check for error strings in raw content
+        const content = contentString.toLowerCase()
+        if (content.includes('error') || 
+            content.includes('exception') || 
+            content.includes('failed')) {
+            return true
+        }
+    }
+    
+    return false
+}
+
+function isStructuredError(obj: any): boolean {
+    if (typeof obj !== 'object' || obj === null) {
+        return false
+    }
+    
+    // Check for common error indicators
+    if (obj.success === false || 
+        obj.success === 'false' || 
+        obj.error !== undefined || 
+        obj.Error !== undefined) {
+        return true
+    }
+    
+    // Check for exception patterns
+    if (obj.exception !== undefined || 
+        obj.Exception !== undefined) {
+        return true
+    }
+    
+    return false
 }
 
 function setupNotificationHandlers(
