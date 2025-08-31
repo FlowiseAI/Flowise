@@ -149,10 +149,8 @@ const OrganizationSetupPage = () => {
                     credential: password
                 }
             }
-            if (isEnterpriseLicensed) {
-                body.organization = {
-                    name: orgName
-                }
+            body.organization = {
+                name: orgName
             }
             await registerAccountApi.request(body)
         } else {
@@ -325,7 +323,6 @@ const OrganizationSetupPage = () => {
                                     </Divider>
                                 </>
                             )}
-                            {isEnterpriseLicensed && (
                                 <>
                                     <Box>
                                         <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -348,7 +345,6 @@ const OrganizationSetupPage = () => {
                                         </Divider>
                                     </Box>
                                 </>
-                            )}
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>

@@ -143,7 +143,7 @@ const RegisterPage = () => {
                 const errorMessages = result.error.errors.map((err) => err.message)
                 setAuthError(errorMessages.join(', '))
             }
-        } else if (isCloud) {
+        } else {
             const formData = new FormData(event.target)
             const referral = formData.get('referral')
             const result = RegisterCloudUserSchema.safeParse({

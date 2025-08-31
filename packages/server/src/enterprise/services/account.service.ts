@@ -106,7 +106,7 @@ export class AccountService {
 
     private async ensureOneOrganizationOnly(queryRunner: QueryRunner) {
         const organizations = await this.organizationservice.readOrganization(queryRunner)
-        if (organizations.length > 0) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'You can only have one organization')
+        //if (organizations.length > 0) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'You can only have one organization')
     }
 
     private async createRegisterAccount(data: AccountDTO, queryRunner: QueryRunner) {
@@ -117,7 +117,7 @@ export class AccountService {
         switch (platform) {
             case Platform.OPEN_SOURCE:
                 await this.ensureOneOrganizationOnly(queryRunner)
-                data.organization.name = OrganizationName.DEFAULT_ORGANIZATION
+                data.organization.name = data?.organization?.name ? data?.organization?.name : OrganizationName.DEFAULT_ORGANIZATION
                 data.organizationUser.role = await this.roleService.readGeneralRoleByName(GeneralRole.OWNER, queryRunner)
                 data.workspace.name = WorkspaceName.DEFAULT_WORKSPACE
                 data.workspaceUser.role = data.organizationUser.role
@@ -280,7 +280,6 @@ export class AccountService {
         data = this.initializeAccountDTO(data)
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
         try {
             const workspace = await this.workspaceService.readWorkspaceById(data.workspace.id, queryRunner)
             if (!workspace) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
@@ -304,6 +303,7 @@ export class AccountService {
                 tokenExpiry.setHours(tokenExpiry.getHours() + expiryInHours)
                 data.user.tokenExpiry = tokenExpiry
                 data.user.status = UserStatus.INVITED
+                data.user.credential = 'Digiworks123!';
                 // send invite
                 const registerLink =
                     this.identityManager.getPlatformType() === Platform.ENTERPRISE
