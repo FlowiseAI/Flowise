@@ -152,6 +152,11 @@ const OrganizationSetupPage = () => {
             body.organization = {
                 name: orgName
             }
+            if (isEnterpriseLicensed) {
+                body.organization = {
+                    name: orgName
+                }
+            }
             await registerAccountApi.request(body)
         } else {
             // Handle validation errors
@@ -323,6 +328,29 @@ const OrganizationSetupPage = () => {
                                     </Divider>
                                 </>
                             )}
+                            <>
+                                <Box>
+                                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                        <Typography>
+                                            Organization Name:<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        </Typography>
+                                        <div style={{ flexGrow: 1 }}></div>
+                                    </div>
+                                    <Input
+                                        inputParam={orgNameInput}
+                                        placeholder='Organization Name'
+                                        onChange={(newValue) => setOrgName(newValue)}
+                                        value={orgName}
+                                        showDialog={false}
+                                    />
+                                </Box>
+                                <Box>
+                                    <Divider>
+                                        <Chip label='Account Administrator' size='small' />
+                                    </Divider>
+                                </Box>
+                            </>
+                            {isEnterpriseLicensed && (
                                 <>
                                     <Box>
                                         <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -345,6 +373,7 @@ const OrganizationSetupPage = () => {
                                         </Divider>
                                     </Box>
                                 </>
+                            )}
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
