@@ -301,21 +301,23 @@ function buildFullResponse(contentString: string, notifications: string[]): stri
 function isErrorResponse(contentString: string): boolean {
     try {
         const parsedContent = JSON.parse(contentString)
-        
+
         // Case 1: Array format with text content containing errors
         if (Array.isArray(parsedContent) && parsedContent.length > 0) {
             const firstItem = parsedContent[0]
             if (firstItem?.type === 'text' && typeof firstItem.text === 'string') {
                 const text = firstItem.text
                 // Check for validation errors or other error patterns
-                if (text.includes('validation error') || 
-                    text.includes('error') || 
-                    text.includes('Error') || 
+                if (
+                    text.includes('validation error') ||
+                    text.includes('error') ||
+                    text.includes('Error') ||
                     text.includes('exception') ||
-                    text.includes('Exception')) {
+                    text.includes('Exception')
+                ) {
                     return true
                 }
-                
+
                 // Check for structured error responses in text
                 try {
                     const innerParsed = JSON.parse(text)
@@ -327,27 +329,24 @@ function isErrorResponse(contentString: string): boolean {
                 }
             }
         }
-        
+
         // Case 2: Direct structured error response
         if (isStructuredError(parsedContent)) {
             return true
         }
-        
+
         // Case 3: MCP error responses with isError flag
         if (parsedContent.isError === true) {
             return true
         }
-        
     } catch (e) {
         // If parsing fails, check for error strings in raw content
         const content = contentString.toLowerCase()
-        if (content.includes('error') || 
-            content.includes('exception') || 
-            content.includes('failed')) {
+        if (content.includes('error') || content.includes('exception') || content.includes('failed')) {
             return true
         }
     }
-    
+
     return false
 }
 
@@ -355,21 +354,17 @@ function isStructuredError(obj: any): boolean {
     if (typeof obj !== 'object' || obj === null) {
         return false
     }
-    
+
     // Check for common error indicators
-    if (obj.success === false || 
-        obj.success === 'false' || 
-        obj.error !== undefined || 
-        obj.Error !== undefined) {
+    if (obj.success === false || obj.success === 'false' || obj.error !== undefined || obj.Error !== undefined) {
         return true
     }
-    
+
     // Check for exception patterns
-    if (obj.exception !== undefined || 
-        obj.Exception !== undefined) {
+    if (obj.exception !== undefined || obj.Exception !== undefined) {
         return true
     }
-    
+
     return false
 }
 
@@ -389,15 +384,57 @@ function setupNotificationHandlers(
     // Get completion signals from annotations, fallback to default
     const completionSignals = annotations.notification_types || ['task_completion']
 
+    /**
+     * Handles MCP notification messages by parsing the data, extracting message/icon/tool name,
+     * and streaming clean user-friendly notifications instead of raw JSON objects.
+     *
+     * Supports multiple message formats:
+     * - { message: "text", icon: "🔍", tool_name: "Tool Name" }
+     * - { msg: "text", extra: { tool: "Tool Name" } }
+     * - Plain string messages
+     */
     client.setNotificationHandler(LoggingMessageNotificationSchema, (notification) => {
-        const message = String(notification.params.data)
+        const data = notification.params.data
+        let parsedData = data
+
+        // Try to parse if it's a JSON string
+        if (typeof data === 'string') {
+            try {
+                parsedData = JSON.parse(data)
+            } catch {
+                parsedData = data
+            }
+        }
+
+        const baseMessage =
+            typeof parsedData === 'object' && parsedData !== null && ('message' in parsedData || 'msg' in parsedData)
+                ? String((parsedData as any).message || (parsedData as any).msg)
+                : typeof data === 'string'
+                ? data
+                : JSON.stringify(data, null, 2)
+
+        const icon = typeof parsedData === 'object' && parsedData !== null && 'icon' in parsedData ? (parsedData as any).icon + ' ' : ''
+
+        const message = icon + baseMessage
+        const notificationToolName =
+            typeof parsedData === 'object' && parsedData !== null && 'tool_name' in parsedData
+                ? (parsedData as any).tool_name
+                : typeof parsedData === 'object' &&
+                  parsedData !== null &&
+                  'extra' in parsedData &&
+                  parsedData.extra &&
+                  typeof parsedData.extra === 'object' &&
+                  'tool' in parsedData.extra
+                ? (parsedData.extra as any).tool
+                : toolName
 
         // Stream to UI
-        sseStreamer.streamTokenEvent(chatId, `\n🔔 ${toolName}: ${message}\n`)
+        sseStreamer.streamTokenEvent(chatId, `\n🔔 ${notificationToolName}: ${message}\n`)
 
         // Collect for final response
         if (notifications) {
-            notifications.push(message)
+            const fullData = typeof data === 'string' ? data : JSON.stringify(data, null, 2)
+            notifications.push(fullData)
         }
 
         const { logger } = notification.params
