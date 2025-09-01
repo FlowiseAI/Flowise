@@ -861,8 +861,10 @@ export const convertSchemaToZod = (schema: string | object): ICommonObject => {
             }
         }
         return zodObj
-    } catch (e) {
-        throw new Error(e)
+    } catch (error) {
+        console.error('Schema conversion failed:', error)
+        console.error('Input schema:', schema)
+        throw new Error(`Schema conversion failed: ${error instanceof Error ? error.message : String(error)}`)
     }
 }
 

@@ -29,6 +29,7 @@ import { File } from '@/ui-component/file/File'
 import { BackdropLoader } from '@/ui-component/loading/BackdropLoader'
 import DeleteConfirmDialog from './DeleteConfirmDialog'
 import AssistantVectorStoreDialog from './AssistantVectorStoreDialog'
+import HistoryButton from '@/ui-component/button/HistoryButton'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
 
 // Icons
@@ -1035,6 +1036,28 @@ const AssistantDialog = ({ show, dialogProps, onCancel, onConfirm, setError }) =
                 </Box>
             </DialogContent>
             <DialogActions sx={{ p: 3, pt: 0 }}>
+                {dialogProps.type === 'EDIT' && assistantId && (
+                    <HistoryButton
+                        entityType='ASSISTANT'
+                        entityId={assistantId}
+                        entityName={assistantName}
+                        size='small'
+                        onRestore={(historyItem) => {
+                            enqueueSnackbar({
+                                message: `Successfully restored to version ${historyItem.version}. Please reload the assistant to see changes.`,
+                                options: {
+                                    key: new Date().getTime() + Math.random(),
+                                    variant: 'success',
+                                    action: (key) => (
+                                        <Button color='inherit' onClick={() => closeSnackbar(key)}>
+                                            <IconX />
+                                        </Button>
+                                    )
+                                }
+                            })
+                        }}
+                    />
+                )}
                 {dialogProps.type === 'EDIT' && (
                     <StyledPermissionButton
                         permissionId={'assistants:create,assistants:update'}

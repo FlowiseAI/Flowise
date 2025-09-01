@@ -1,10 +1,17 @@
-import { CallToolRequest, CallToolResultSchema, ListToolsResult, ListToolsResultSchema } from '@modelcontextprotocol/sdk/types.js'
+import {
+    CallToolRequest,
+    CallToolResultSchema,
+    ListToolsResult,
+    ListToolsResultSchema,
+    LoggingMessageNotificationSchema
+} from '@modelcontextprotocol/sdk/types.js'
 import { Client } from '@modelcontextprotocol/sdk/client/index.js'
 import { StdioClientTransport, StdioServerParameters } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { BaseToolkit, tool, Tool } from '@langchain/core/tools'
 import { z } from 'zod'
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js'
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js'
+import { MCP_STREAMING_CONFIG } from './config.js'
 
 export class MCPToolkit extends BaseToolkit {
     tools: Tool[] = []
@@ -20,8 +27,8 @@ export class MCPToolkit extends BaseToolkit {
         this.transportType = transportType
     }
 
-    // Method to create a new client with transport
-    async createClient(): Promise<Client> {
+    // Method to create a new client with transport and detect streaming capabilities
+    async createClient(): Promise<{ client: Client; hasStreaming: boolean }> {
         const client = new Client(
             {
                 name: 'flowise-client',
@@ -80,12 +87,25 @@ export class MCPToolkit extends BaseToolkit {
             }
         }
 
-        return client
+        // Check server capabilities for streaming support
+        let hasStreaming = false
+        try {
+            const capabilities = client.getServerCapabilities()
+            // Check for streaming capability in experimental or notifications section
+            hasStreaming =
+                (capabilities as any)?.notifications?.streaming === true ||
+                (capabilities as any)?.experimental?.notifications?.streaming === true
+        } catch (error) {
+            console.error(`⚠️ [MCP Core] Could not detect streaming capabilities, falling back to non-streaming:`, error.message)
+        }
+
+        return { client, hasStreaming }
     }
 
     async initialize() {
         if (this._tools === null) {
-            this.client = await this.createClient()
+            const { client } = await this.createClient()
+            this.client = client
 
             this._tools = await this.client.request({ method: 'tools/list' }, ListToolsResultSchema)
 
@@ -104,11 +124,13 @@ export class MCPToolkit extends BaseToolkit {
             if (this.client === null) {
                 throw new Error('Client is not initialized')
             }
+
             return await MCPTool({
                 toolkit: this,
                 name: tool.name,
                 description: tool.description || '',
-                argsSchema: createSchemaModel(tool.inputSchema)
+                argsSchema: createSchemaModel(tool.inputSchema),
+                annotations: tool.annotations || {}
             })
         })
         const res = await Promise.allSettled(toolsPromises)
@@ -125,35 +147,309 @@ export async function MCPTool({
     toolkit,
     name,
     description,
-    argsSchema
+    argsSchema,
+    annotations = {}
 }: {
     toolkit: MCPToolkit
     name: string
     description: string
     argsSchema: any
+    annotations?: any
 }): Promise<Tool> {
-    return tool(
-        async (input): Promise<string> => {
-            // Create a new client for this request
-            const client = await toolkit.createClient()
+    const { client, hasStreaming } = await toolkit.createClient()
+    await client.close()
 
-            try {
-                const req: CallToolRequest = { method: 'tools/call', params: { name: name, arguments: input as any } }
-                const res = await client.request(req, CallToolResultSchema)
-                const content = res.content
-                const contentString = JSON.stringify(content)
-                return contentString
-            } finally {
-                // Always close the client after the request completes
-                await client.close()
-            }
+    const toolHasStreaming = annotations.streaming_enabled === true
+    const shouldUseStreaming = hasStreaming && toolHasStreaming
+
+    return tool(
+        async (input, config): Promise<string> => {
+            return await executeMCPTool(toolkit, name, input, config, annotations)
         },
         {
             name: name,
-            description: description,
+            description: shouldUseStreaming ? `${description} ${MCP_STREAMING_CONFIG.STREAMING_MARKER}` : description,
             schema: argsSchema
         }
     )
+}
+
+async function executeMCPTool(toolkit: MCPToolkit, name: string, input: any, config: any, annotations: any = {}): Promise<string> {
+    const { chatId, sseStreamer } = extractConfig(config, input)
+    const { client, hasStreaming } = await toolkit.createClient()
+    const notifications: string[] = []
+
+    // Only use streaming if both server and tool support it
+    const toolHasStreaming = annotations.streaming_enabled === true
+    const shouldUseStreaming = hasStreaming && toolHasStreaming
+
+    try {
+        setupStreamingIfSupported(shouldUseStreaming, sseStreamer, chatId, name)
+        setupNotificationHandlers(client, sseStreamer, chatId, name, shouldUseStreaming, notifications, annotations)
+
+        const toolResponse = await callMCPTool(client, name, input)
+
+        return await handleToolResponse(toolResponse, shouldUseStreaming, sseStreamer, chatId, name, notifications)
+    } finally {
+        if (!shouldUseStreaming) {
+            await client.close()
+        }
+    }
+}
+
+function extractConfig(config: any, input?: any): { chatId: string; sseStreamer: any } {
+    const configChatId = config?.configurable?.flowise_chatId
+    const configSseStreamer = config?.configurable?.sseStreamer
+    const inputChatId = input?.flowise_chatId
+
+    return {
+        chatId: configChatId || inputChatId,
+        sseStreamer: configSseStreamer
+    }
+}
+
+function setupStreamingIfSupported(hasStreaming: boolean, sseStreamer: any, chatId: string, name: string): void {
+    if (hasStreaming && sseStreamer && chatId) {
+        sseStreamer.addMcpConnection(chatId, name)
+    }
+}
+
+async function callMCPTool(client: Client, name: string, input: any): Promise<string> {
+    const progressToken = `${name}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const req: CallToolRequest = {
+        method: 'tools/call',
+        params: {
+            name: name,
+            arguments: input as any,
+            _meta: { progressToken }
+        }
+    }
+
+    const res = await client.request(req, CallToolResultSchema)
+    console.log(`🟢 [FLOWISE MCP] Tool ${name} response:`, JSON.stringify(res, null, 2))
+    return JSON.stringify(res.content)
+}
+
+async function handleToolResponse(
+    contentString: string,
+    hasStreaming: boolean,
+    sseStreamer: any,
+    chatId: string,
+    name: string,
+    notifications: string[]
+): Promise<string> {
+    // Check if response is an error - always return immediately for errors
+    if (isErrorResponse(contentString)) {
+        console.log(`⚠️ [FLOWISE MCP] Error response detected, stopping streaming and returning immediately`)
+        if (sseStreamer && chatId) {
+            sseStreamer.removeMcpConnection(chatId, name)
+        }
+        return contentString
+    }
+
+    // Non-streaming tools return immediately
+    if (!hasStreaming || !sseStreamer || !chatId) {
+        if (sseStreamer && chatId) {
+            sseStreamer.removeMcpConnection(chatId, name)
+        }
+        return contentString
+    }
+
+    // Streaming tools wait for completion
+    return waitForStreamingCompletion(contentString, sseStreamer, chatId, name, notifications)
+}
+
+function waitForStreamingCompletion(
+    contentString: string,
+    sseStreamer: any,
+    chatId: string,
+    name: string,
+    notifications: string[]
+): Promise<string> {
+    return new Promise<string>((resolve) => {
+        let completed = false
+
+        const completeExecution = (_reason: string) => {
+            if (completed) return
+            completed = true
+
+            const fullResponse = buildFullResponse(contentString, notifications)
+            resolve(fullResponse)
+        }
+
+        // Poll for completion
+        const pollInterval = setInterval(() => {
+            if (!sseStreamer.hasMcpConnections(chatId)) {
+                clearInterval(pollInterval)
+                completeExecution('✅')
+            }
+        }, 500)
+
+        // Fallback timeout
+        setTimeout(() => {
+            clearInterval(pollInterval)
+            sseStreamer.removeMcpConnection(chatId, name)
+            completeExecution('⏰')
+        }, MCP_STREAMING_CONFIG.DEFAULT_COMPLETION_TIMEOUT)
+    })
+}
+
+function buildFullResponse(contentString: string, notifications: string[]): string {
+    return notifications.length > 0 ? `${contentString}\n\n--- Execution Log ---\n${notifications.join('\n')}` : contentString
+}
+
+function isErrorResponse(contentString: string): boolean {
+    try {
+        const parsedContent = JSON.parse(contentString)
+
+        // Case 1: Array format with text content containing errors
+        if (Array.isArray(parsedContent) && parsedContent.length > 0) {
+            const firstItem = parsedContent[0]
+            if (firstItem?.type === 'text' && typeof firstItem.text === 'string') {
+                const text = firstItem.text
+                // Check for validation errors or other error patterns
+                if (
+                    text.includes('validation error') ||
+                    text.includes('error') ||
+                    text.includes('Error') ||
+                    text.includes('exception') ||
+                    text.includes('Exception')
+                ) {
+                    return true
+                }
+
+                // Check for structured error responses in text
+                try {
+                    const innerParsed = JSON.parse(text)
+                    if (isStructuredError(innerParsed)) {
+                        return true
+                    }
+                } catch (e) {
+                    // Not a JSON string within the text, continue checking
+                }
+            }
+        }
+
+        // Case 2: Direct structured error response
+        if (isStructuredError(parsedContent)) {
+            return true
+        }
+
+        // Case 3: MCP error responses with isError flag
+        if (parsedContent.isError === true) {
+            return true
+        }
+    } catch (e) {
+        // If parsing fails, check for error strings in raw content
+        const content = contentString.toLowerCase()
+        if (content.includes('error') || content.includes('exception') || content.includes('failed')) {
+            return true
+        }
+    }
+
+    return false
+}
+
+function isStructuredError(obj: any): boolean {
+    if (typeof obj !== 'object' || obj === null) {
+        return false
+    }
+
+    // Check for common error indicators
+    if (obj.success === false || obj.success === 'false' || obj.error !== undefined || obj.Error !== undefined) {
+        return true
+    }
+
+    // Check for exception patterns
+    if (obj.exception !== undefined || obj.Exception !== undefined) {
+        return true
+    }
+
+    return false
+}
+
+function setupNotificationHandlers(
+    client: Client,
+    sseStreamer: any,
+    chatId: string,
+    toolName: string,
+    shouldUseStreaming: boolean,
+    notifications?: string[],
+    annotations: any = {}
+) {
+    if (!shouldUseStreaming || !sseStreamer || !chatId) {
+        return
+    }
+
+    // Get completion signals from annotations, fallback to default
+    const completionSignals = annotations.notification_types || ['task_completion']
+
+    /**
+     * Handles MCP notification messages by parsing the data, extracting message/icon/tool name,
+     * and streaming clean user-friendly notifications instead of raw JSON objects.
+     *
+     * Supports multiple message formats:
+     * - { message: "text", icon: "🔍", tool_name: "Tool Name" }
+     * - { msg: "text", extra: { tool: "Tool Name" } }
+     * - Plain string messages
+     */
+    client.setNotificationHandler(LoggingMessageNotificationSchema, (notification) => {
+        const data = notification.params.data
+        let parsedData = data
+
+        // Try to parse if it's a JSON string
+        if (typeof data === 'string') {
+            try {
+                parsedData = JSON.parse(data)
+            } catch {
+                parsedData = data
+            }
+        }
+
+        const baseMessage =
+            typeof parsedData === 'object' && parsedData !== null && ('message' in parsedData || 'msg' in parsedData)
+                ? String((parsedData as any).message || (parsedData as any).msg)
+                : typeof data === 'string'
+                ? data
+                : JSON.stringify(data, null, 2)
+
+        const icon = typeof parsedData === 'object' && parsedData !== null && 'icon' in parsedData ? (parsedData as any).icon + ' ' : ''
+
+        const message = icon + baseMessage
+        const notificationToolName =
+            typeof parsedData === 'object' && parsedData !== null && 'tool_name' in parsedData
+                ? (parsedData as any).tool_name
+                : typeof parsedData === 'object' &&
+                  parsedData !== null &&
+                  'extra' in parsedData &&
+                  parsedData.extra &&
+                  typeof parsedData.extra === 'object' &&
+                  'tool' in parsedData.extra
+                ? (parsedData.extra as any).tool
+                : toolName
+
+        // Stream to UI
+        sseStreamer.streamTokenEvent(chatId, `\n🔔 ${notificationToolName}: ${message}\n`)
+
+        // Collect for final response
+        if (notifications) {
+            const fullData = typeof data === 'string' ? data : JSON.stringify(data, null, 2)
+            notifications.push(fullData)
+        }
+
+        const { logger } = notification.params
+
+        // Detect completion based on tool's annotation signals
+        if (completionSignals.includes(logger)) {
+            // Add visual separation before LLM response
+            sseStreamer.streamTokenEvent(chatId, '\n\n')
+
+            // Trigger cleanup after brief delay
+            setTimeout(() => {
+                sseStreamer.removeMcpConnection(chatId, toolName)
+            }, MCP_STREAMING_CONFIG.NOTIFICATION_DELAY)
+        }
+    })
 }
 
 function createSchemaModel(
@@ -170,6 +466,9 @@ function createSchemaModel(
         acc[key] = z.any()
         return acc
     }, {} as Record<string, import('zod').ZodTypeAny>)
+
+    // Add Flowise context fields to allow them through schema validation
+    schemaProperties['flowise_chatId'] = z.string().optional()
 
     return z.object(schemaProperties)
 }
