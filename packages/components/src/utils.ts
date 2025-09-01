@@ -1400,7 +1400,7 @@ export const executeJavaScriptCode = async (
         nodeVMOptions?: ICommonObject
     } = {}
 ): Promise<any> => {
-    const { timeout = 10000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
+    const { timeout = 300000, useSandbox = true, streamOutput, libraries = [], nodeVMOptions = {} } = options
     const shouldUseSandbox = useSandbox && process.env.E2B_APIKEY
 
     if (shouldUseSandbox) {
@@ -1458,7 +1458,7 @@ export const executeJavaScriptCode = async (
                 }
             }
 
-            const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY })
+            const sbx = await Sandbox.create({ apiKey: process.env.E2B_APIKEY, timeoutMs: timeout })
 
             // Install libraries
             for (const library of libraries) {

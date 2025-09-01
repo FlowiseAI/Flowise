@@ -25,6 +25,7 @@
         "@arizeai/openinference-instrumentation-langchain": "^2.0.0",
         "@aws-sdk/client-bedrock-runtime": "3.422.0",
         "@aws-sdk/client-dynamodb": "^3.360.0",
+        "@aws-sdk/client-kendra": "^3.750.0",
         "@aws-sdk/client-s3": "^3.844.0",
         "@aws-sdk/client-secrets-manager": "^3.699.0",
         "@aws-sdk/client-sns": "^3.699.0",
