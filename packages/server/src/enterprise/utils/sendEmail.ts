@@ -85,6 +85,40 @@ const sendWorkspaceInvite = async (
     })
 }
 
+const sendWorkspaceInviteWithPassword = async (
+    email: string,
+    workspaceName: string,
+    loginLink: string,
+    password: string,
+    platform: Platform = Platform.ENTERPRISE,
+    inviteType: 'new' | 'update' = 'new'
+) => {
+    const htmlToSend = `
+        <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+            <p>You have been invited to join <strong>${workspaceName}</strong>.</p>
+            <p>Your account has been created and your password is: <strong>${password}</strong></p>
+            <p>Please login using your email and the above password:</p>
+            <p><a href="${loginLink}" target="_blank" style="color:#1a73e8; text-decoration:none; font-weight:bold;">
+                Login Here
+            </a></p>
+        </div>
+    `
+
+    const textContent = `You have been invited to join ${workspaceName}.
+
+Your account has been created and your password is: ${password}.
+
+Please login using your email and the above password: ${loginLink}`
+
+    await transporter.sendMail({
+        from: SENDER_EMAIL || '"DigiworksAI Team" <team@mail.flowiseai.com>',
+        to: email,
+        subject: `You have been invited to join ${workspaceName}`,
+        text: textContent,
+        html: htmlToSend
+    })
+}
+
 const sendPasswordResetEmail = async (email: string, resetLink: string) => {
     const passwordResetTemplateSource = fs.readFileSync(path.join(__dirname, '../', 'emails', 'workspace_user_reset_password.hbs'), 'utf8')
     const compiledPasswordResetTemplateSource = handlebars.compile(passwordResetTemplateSource)
@@ -117,4 +151,4 @@ const sendVerificationEmailForCloud = async (email: string, verificationLink: st
     })
 }
 
-export { sendWorkspaceAdd, sendWorkspaceInvite, sendPasswordResetEmail, sendVerificationEmailForCloud }
+export { sendWorkspaceAdd, sendWorkspaceInvite, sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceInviteWithPassword }

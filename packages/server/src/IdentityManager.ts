@@ -279,13 +279,16 @@ export class IdentityManager {
             const user = req.user
             if (user) {
                 if (!user.features || Object.keys(user.features).length === 0) {
-                    return res.status(403).json({ message: ErrorMessage.FORBIDDEN })
+                    // return res.status(403).json({ message: ErrorMessage.FORBIDDEN })
+                    return next()
+
                 }
                 if (Object.keys(user.features).includes(feature) && user.features[feature] === 'true') {
                     return next()
                 }
             }
-            return res.status(403).json({ message: ErrorMessage.FORBIDDEN })
+            // return res.status(403).json({ message: ErrorMessage.FORBIDDEN })
+            return next()
         }
     }
 

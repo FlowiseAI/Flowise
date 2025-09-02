@@ -505,6 +505,34 @@ const ProfileSection = ({ handleLogout }) => {
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                         onClick={() => {
                                                             setOpen(false)
+                                                            navigate('/users')
+                                                        }}
+                                                    >
+                                                        <ListItemIcon>
+                                                            <IconUserEdit stroke={1.5} size='1.3rem' />
+                                                        </ListItemIcon>
+                                                        <ListItemText primary={<Typography variant='body2'>Users</Typography>} />
+                                                    </ListItemButton>
+                                                )}
+                                                {isAuthenticated && !currentUser.isSSO && !isCloud && (
+                                                    <ListItemButton
+                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                        onClick={() => {
+                                                            setOpen(false)
+                                                            navigate('/roles')
+                                                        }}
+                                                    >
+                                                        <ListItemIcon>
+                                                            <IconUserEdit stroke={1.5} size='1.3rem' />
+                                                        </ListItemIcon>
+                                                        <ListItemText primary={<Typography variant='body2'>Roles</Typography>} />
+                                                    </ListItemButton>
+                                                )}
+                                                {isAuthenticated && !currentUser.isSSO && !isCloud && (
+                                                    <ListItemButton
+                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                        onClick={() => {
+                                                            setOpen(false)
                                                             navigate('/user-profile')
                                                         }}
                                                     >

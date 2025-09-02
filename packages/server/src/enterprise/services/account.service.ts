@@ -16,7 +16,7 @@ import { WorkspaceUser, WorkspaceUserStatus } from '../database/entities/workspa
 import { Workspace, WorkspaceName } from '../database/entities/workspace.entity'
 import { LoggedInUser, LoginActivityCode } from '../Interface.Enterprise'
 import { compareHash } from '../utils/encryption.util'
-import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite } from '../utils/sendEmail'
+import { sendPasswordResetEmail, sendVerificationEmailForCloud, sendWorkspaceAdd, sendWorkspaceInvite, sendWorkspaceInviteWithPassword } from '../utils/sendEmail'
 import { generateTempToken } from '../utils/tempTokenUtils'
 import auditService from './audit'
 import { OrganizationUserErrorMessage, OrganizationUserService } from './organization-user.service'
@@ -25,6 +25,7 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
+import logger from '../../utils/logger'
 
 type AccountDTO = {
     user: Partial<User>
@@ -106,7 +107,7 @@ export class AccountService {
 
     private async ensureOneOrganizationOnly(queryRunner: QueryRunner) {
         const organizations = await this.organizationservice.readOrganization(queryRunner)
-        if (organizations.length > 0) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'You can only have one organization')
+        //if (organizations.length > 0) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, 'You can only have one organization')
     }
 
     private async createRegisterAccount(data: AccountDTO, queryRunner: QueryRunner) {
@@ -117,7 +118,7 @@ export class AccountService {
         switch (platform) {
             case Platform.OPEN_SOURCE:
                 await this.ensureOneOrganizationOnly(queryRunner)
-                data.organization.name = OrganizationName.DEFAULT_ORGANIZATION
+                data.organization.name = data?.organization?.name ? data?.organization?.name : OrganizationName.DEFAULT_ORGANIZATION
                 data.organizationUser.role = await this.roleService.readGeneralRoleByName(GeneralRole.OWNER, queryRunner)
                 data.workspace.name = WorkspaceName.DEFAULT_WORKSPACE
                 data.workspaceUser.role = data.organizationUser.role
@@ -280,7 +281,6 @@ export class AccountService {
         data = this.initializeAccountDTO(data)
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
         try {
             const workspace = await this.workspaceService.readWorkspaceById(data.workspace.id, queryRunner)
             if (!workspace) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, WorkspaceErrorMessage.WORKSPACE_NOT_FOUND)
@@ -292,6 +292,8 @@ export class AccountService {
             const role = await this.roleService.readRoleByRoleIdOrganizationId(data.role.id, data.workspace.organizationId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
             data.role = role
+            const randomPassword = await this.generateValidPassword();
+            logger.info(`randomPassword ${randomPassword}`);
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) {
                 await checkUsageLimit('users', subscriptionId, getRunningExpressApp().usageCacheManager, totalOrgUsers + 1)
@@ -304,12 +306,13 @@ export class AccountService {
                 tokenExpiry.setHours(tokenExpiry.getHours() + expiryInHours)
                 data.user.tokenExpiry = tokenExpiry
                 data.user.status = UserStatus.INVITED
+                data.user.credential = randomPassword;
                 // send invite
                 const registerLink =
                     this.identityManager.getPlatformType() === Platform.ENTERPRISE
                         ? `${process.env.APP_URL}/register?token=${data.user.tempToken}`
-                        : `${process.env.APP_URL}/register`
-                await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
+                        : `${process.env.APP_URL}/signin`
+                await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
                 data.user = await this.userService.createNewUser(data.user, queryRunner)
 
                 data.organizationUser.organizationId = data.workspace.organizationId
@@ -341,6 +344,13 @@ export class AccountService {
                 delete data.user.tokenExpiry
 
                 return data
+            } else {
+                logger.info(`updating randomPassword ${randomPassword}`);
+                await this.userService.updateUser({
+                    id: user.id,
+                    password: randomPassword,
+                    updatedBy: data.user.createdBy
+                });
             }
             const { organizationUser } = await this.organizationUserService.readOrganizationUserByOrganizationIdUserId(
                 data.workspace.organizationId,
@@ -378,28 +388,17 @@ export class AccountService {
                     await this.userService.saveUser(data.user, queryRunner)
                     registerLink = `${process.env.APP_URL}/register?token=${data.user.tempToken}`
                 } else {
-                    registerLink = `${process.env.APP_URL}/register`
+                    registerLink = `${process.env.APP_URL}/signin`
                 }
                 if (workspaceUser.length === 1) {
                     oldWorkspaceUser = workspaceUser[0]
                     if (oldWorkspaceUser.workspace.name === WorkspaceName.DEFAULT_PERSONAL_WORKSPACE) {
-                        await sendWorkspaceInvite(
-                            data.user.email!,
-                            data.workspace.name!,
-                            registerLink,
-                            this.identityManager.getPlatformType()
-                        )
+                        await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
                     } else {
-                        await sendWorkspaceInvite(
-                            data.user.email!,
-                            data.workspace.name!,
-                            registerLink,
-                            this.identityManager.getPlatformType(),
-                            'update'
-                        )
+                        sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
                     }
                 } else {
-                    await sendWorkspaceInvite(data.user.email!, data.workspace.name!, registerLink, this.identityManager.getPlatformType())
+                    await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
                 }
             } else {
                 data.organizationUser.updatedBy = data.user.createdBy
@@ -441,6 +440,38 @@ export class AccountService {
     public async invite(data: AccountDTO, user?: Express.User) {
         return await this.saveInviteAccount(data, user)
     }
+
+    public async generateValidPassword(length: number = 12): Promise<string> {
+        if (length < 8) {
+            throw new Error("Password length must be at least 8 characters.");
+        }
+
+        const lowercase = "abcdefghijklmnopqrstuvwxyz";
+        const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const digits = "0123456789";
+        const specials = "!@#$%^&*()-_=+[]{};:,.<>?";
+
+        const requiredChars = [
+            lowercase[Math.floor(Math.random() * lowercase.length)],
+            uppercase[Math.floor(Math.random() * uppercase.length)],
+            digits[Math.floor(Math.random() * digits.length)],
+            specials[Math.floor(Math.random() * specials.length)]
+        ];
+
+        const allChars = lowercase + uppercase + digits + specials;
+
+        for (let i = requiredChars.length; i < length; i++) {
+            requiredChars.push(allChars[Math.floor(Math.random() * allChars.length)]);
+        }
+
+        for (let i = requiredChars.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [requiredChars[i], requiredChars[j]] = [requiredChars[j], requiredChars[i]];
+        }
+
+        return Promise.resolve(requiredChars.join(""));
+    }
+
 
     public async login(data: AccountDTO) {
         data = this.initializeAccountDTO(data)

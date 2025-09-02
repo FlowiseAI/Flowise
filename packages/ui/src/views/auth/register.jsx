@@ -169,6 +169,32 @@ const RegisterPage = () => {
                 const errorMessages = result.error.errors.map((err) => err.message)
                 setAuthError(errorMessages.join(', '))
             }
+        } else {
+            const formData = new FormData(event.target)
+            const referral = formData.get('referral')
+            const result = RegisterCloudUserSchema.safeParse({
+                username,
+                email,
+                password,
+                confirmPassword
+            })
+            if (result.success) {
+                setLoading(true)
+                const body = {
+                    user: {
+                        name: username,
+                        email,
+                        credential: password
+                    }
+                }
+                if (referral) {
+                    body.user.referral = referral
+                }
+                await registerApi.request(body)
+            } else {
+                const errorMessages = result.error.errors.map((err) => err.message)
+                setAuthError(errorMessages.join(', '))
+            }
         }
     }
 

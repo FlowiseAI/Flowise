@@ -149,6 +149,9 @@ const OrganizationSetupPage = () => {
                     credential: password
                 }
             }
+            body.organization = {
+                name: orgName
+            }
             if (isEnterpriseLicensed) {
                 body.organization = {
                     name: orgName
@@ -325,6 +328,28 @@ const OrganizationSetupPage = () => {
                                     </Divider>
                                 </>
                             )}
+                            <>
+                                <Box>
+                                    <div style={{ display: 'flex', flexDirection: 'row' }}>
+                                        <Typography>
+                                            Organization Name:<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        </Typography>
+                                        <div style={{ flexGrow: 1 }}></div>
+                                    </div>
+                                    <Input
+                                        inputParam={orgNameInput}
+                                        placeholder='Organization Name'
+                                        onChange={(newValue) => setOrgName(newValue)}
+                                        value={orgName}
+                                        showDialog={false}
+                                    />
+                                </Box>
+                                <Box>
+                                    <Divider>
+                                        <Chip label='Account Administrator' size='small' />
+                                    </Divider>
+                                </Box>
+                            </>
                             {isEnterpriseLicensed && (
                                 <>
                                     <Box>
