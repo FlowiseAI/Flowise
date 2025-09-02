@@ -9,14 +9,14 @@ import { Not, IsNull } from 'typeorm'
 import { getWorkspaceSearchOptions } from '../../enterprise/utils/ControllerServiceUtils'
 import { v4 as uuidv4 } from 'uuid'
 
-const getAllApiKeysFromDB = async (workspaceId?: string, page: number = -1, limit: number = -1) => {
+const getAllApiKeysFromDB = async (workspaceId: string, page: number = -1, limit: number = -1) => {
     const appServer = getRunningExpressApp()
     const queryBuilder = appServer.AppDataSource.getRepository(ApiKey).createQueryBuilder('api_key').orderBy('api_key.updatedDate', 'DESC')
     if (page > 0 && limit > 0) {
         queryBuilder.skip((page - 1) * limit)
         queryBuilder.take(limit)
     }
-    if (workspaceId) queryBuilder.andWhere('api_key.workspaceId = :workspaceId', { workspaceId })
+    queryBuilder.andWhere('api_key.workspaceId = :workspaceId', { workspaceId })
     const [data, total] = await queryBuilder.getManyAndCount()
     const keysWithChatflows = await addChatflowsCount(data)
 
@@ -27,7 +27,7 @@ const getAllApiKeysFromDB = async (workspaceId?: string, page: number = -1, limi
     }
 }
 
-const getAllApiKeys = async (workspaceId?: string, autoCreateNewKey?: boolean, page: number = -1, limit: number = -1) => {
+const getAllApiKeys = async (workspaceId: string, autoCreateNewKey?: boolean, page: number = -1, limit: number = -1) => {
     try {
         let keys = await getAllApiKeysFromDB(workspaceId, page, limit)
         const isEmpty = keys?.total === 0 || (Array.isArray(keys) && keys?.length === 0)
@@ -71,7 +71,7 @@ const getApiKeyById = async (apiKeyId: string) => {
     }
 }
 
-const createApiKey = async (keyName: string, workspaceId?: string) => {
+const createApiKey = async (keyName: string, workspaceId: string) => {
     try {
         const apiKey = generateAPIKey()
         const apiSecret = generateSecretHash(apiKey)
@@ -91,11 +91,12 @@ const createApiKey = async (keyName: string, workspaceId?: string) => {
 }
 
 // Update api key
-const updateApiKey = async (id: string, keyName: string, workspaceId?: string) => {
+const updateApiKey = async (id: string, keyName: string, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const currentKey = await appServer.AppDataSource.getRepository(ApiKey).findOneBy({
-            id: id
+            id: id,
+            workspaceId: workspaceId
         })
         if (!currentKey) {
             throw new InternalFlowiseError(StatusCodes.NOT_FOUND, `ApiKey ${currentKey} not found`)
@@ -108,7 +109,7 @@ const updateApiKey = async (id: string, keyName: string, workspaceId?: string) =
     }
 }
 
-const deleteApiKey = async (id: string, workspaceId?: string) => {
+const deleteApiKey = async (id: string, workspaceId: string) => {
     try {
         const appServer = getRunningExpressApp()
         const dbResponse = await appServer.AppDataSource.getRepository(ApiKey).delete({ id, workspaceId })
