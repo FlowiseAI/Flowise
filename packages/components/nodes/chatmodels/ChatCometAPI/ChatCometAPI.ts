@@ -94,23 +94,6 @@ class ChatCometAPI_ChatModels implements INode {
                 additionalParams: true
             },
             {
-                label: 'Timeout',
-                name: 'timeout',
-                type: 'number',
-                step: 1,
-                optional: true,
-                additionalParams: true
-            },
-            {
-                label: 'Stop Sequence',
-                name: 'stopSequence',
-                type: 'string',
-                rows: 4,
-                optional: true,
-                description: 'List of stop words to use when generating. Use comma to separate multiple stop words.',
-                additionalParams: true
-            },
-            {
                 label: 'Base Options',
                 name: 'baseOptions',
                 type: 'json',
@@ -128,8 +111,6 @@ class ChatCometAPI_ChatModels implements INode {
         const topP = nodeData.inputs?.topP as string
         const frequencyPenalty = nodeData.inputs?.frequencyPenalty as string
         const presencePenalty = nodeData.inputs?.presencePenalty as string
-        const timeout = nodeData.inputs?.timeout as string
-        const stopSequence = nodeData.inputs?.stopSequence as string
         const streaming = nodeData.inputs?.streaming as boolean
         const baseOptions = nodeData.inputs?.baseOptions
 
@@ -165,12 +146,7 @@ class ChatCometAPI_ChatModels implements INode {
         if (topP) obj.topP = parseFloat(topP)
         if (frequencyPenalty) obj.frequencyPenalty = parseFloat(frequencyPenalty)
         if (presencePenalty) obj.presencePenalty = parseFloat(presencePenalty)
-        if (timeout) obj.timeout = parseInt(timeout, 10)
         if (cache) obj.cache = cache
-        if (stopSequence) {
-            const stopSequenceArray = stopSequence.split(',').map((item) => item.trim())
-            obj.stop = stopSequenceArray
-        }
 
         let parsedBaseOptions: any | undefined = undefined
 
