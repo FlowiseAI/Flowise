@@ -533,6 +533,20 @@ const ProfileSection = ({ handleLogout }) => {
                                                         sx={{ borderRadius: `${customization.borderRadius}px` }}
                                                         onClick={() => {
                                                             setOpen(false)
+                                                            navigate('/workspaces')
+                                                        }}
+                                                    >
+                                                        <ListItemIcon>
+                                                            <IconUserEdit stroke={1.5} size='1.3rem' />
+                                                        </ListItemIcon>
+                                                        <ListItemText primary={<Typography variant='body2'>Workspaces</Typography>} />
+                                                    </ListItemButton>
+                                                )}
+                                                {isAuthenticated && !currentUser.isSSO && !isCloud && (
+                                                    <ListItemButton
+                                                        sx={{ borderRadius: `${customization.borderRadius}px` }}
+                                                        onClick={() => {
+                                                            setOpen(false)
                                                             navigate('/user-profile')
                                                         }}
                                                     >

@@ -292,8 +292,7 @@ export class AccountService {
             const role = await this.roleService.readRoleByRoleIdOrganizationId(data.role.id, data.workspace.organizationId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
             data.role = role
-            const randomPassword = await this.generateValidPassword();
-            logger.info(`randomPassword ${randomPassword}`);
+            let randomPassword = await this.generateValidPassword();
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) {
                 await checkUsageLimit('users', subscriptionId, getRunningExpressApp().usageCacheManager, totalOrgUsers + 1)
@@ -345,12 +344,15 @@ export class AccountService {
 
                 return data
             } else {
-                logger.info(`updating randomPassword ${randomPassword}`);
-                await this.userService.updateUser({
-                    id: user.id,
-                    password: randomPassword,
-                    updatedBy: data.user.createdBy
-                });
+                if (!user?.credential || user.credential.trim() === "") { 
+                    await this.userService.updateUser({
+                        id: user.id,
+                        password: randomPassword,
+                        updatedBy: data.user.createdBy
+                    });
+                } else {
+                    randomPassword = user.credential;
+                }
             }
             const { organizationUser } = await this.organizationUserService.readOrganizationUserByOrganizationIdUserId(
                 data.workspace.organizationId,
