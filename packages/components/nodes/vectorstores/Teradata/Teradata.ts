@@ -23,7 +23,7 @@ class Teradata_VectorStores implements INode {
         this.name = 'teradata'
         this.version = 1.0
         this.type = 'teradata'
-        this.icon = 'teradata.jpg'
+        this.icon = 'teradata.svg'
         this.category = 'Vector Stores'
         this.description = 'Upsert embedded data and perform similarity search upon query using Teradata Enterprise Vector Store'
         this.baseClasses = [this.type, 'BaseRetriever']
