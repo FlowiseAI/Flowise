@@ -141,7 +141,7 @@ class Teradata_VectorStores implements INode {
             {
                 label: 'Top_K',
                 name: 'topK',
-                description: 'Number of top results to fetch. Default to 4',
+                description: 'Number of top results to fetch. Default to 10',
                 placeholder: 'Top_K',
                 type: 'string',
                 optional: true
