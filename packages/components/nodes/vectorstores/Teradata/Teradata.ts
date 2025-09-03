@@ -601,7 +601,7 @@ class Teradata_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const log_level = 1;
+        const log_level = 0;
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const embeddingsTableName = nodeData.inputs?.embeddingsTableName as string
@@ -618,7 +618,7 @@ class Teradata_VectorStores implements INode {
         const stopThreshold = parseFloat(nodeData.inputs?.stopThreshold as string) || null
         const seed = parseInt(nodeData.inputs?.seed as string) || null
         const numInit = parseInt(nodeData.inputs?.numInit as string) || null
-        const topK = parseInt(nodeData.inputs?.topK as string) || 4
+        const topK = parseInt(nodeData.inputs?.topK as string) || 10
         const searchThreshold = parseFloat(nodeData.inputs?.searchThreshold as string) || null
         const searchNumCluster = parseInt(nodeData.inputs?.searchNumCluster as string) || null
         const efSearch = parseInt(nodeData.inputs?.efSearch as string) || null
