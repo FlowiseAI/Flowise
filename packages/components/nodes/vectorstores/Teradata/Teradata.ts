@@ -458,7 +458,7 @@ class Teradata_VectorStores implements INode {
                     };
                 }
 
-                const sessionUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'session';
+                const sessionUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'data-insights/api/v1/session';
                 const response = await fetch(sessionUrl, {
                     method: 'POST',
                     headers: authHeaders,
@@ -527,7 +527,7 @@ class Teradata_VectorStores implements INode {
                 formData.append('vs_parameters', JSON.stringify(vsParameters));
                 formData.append('vs_index', JSON.stringify(vsIndex));
                 
-                const vectorstoresUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'vectorstores/' + vectorStoreName;
+                const vectorstoresUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'data-insights/api/v1/vectorstores/' + vectorStoreName;
                 
                 // Prepare headers for vectorstores API call
                 let vectorstoreHeaders: Record<string, string> = {};
@@ -667,7 +667,7 @@ class Teradata_VectorStores implements INode {
             database_name: database,
         }
 
-        const sessionUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'session'
+        const sessionUrl = baseURL + (baseURL.endsWith('/') ? '' : '/') + 'data-insights/api/v1/session'
         const sessionResponse = await fetch(sessionUrl, {
             method: 'POST',
             headers: authHeaders,
@@ -720,7 +720,7 @@ class Teradata_VectorStores implements INode {
                     };
                 }
 
-                const searchUrl = `${baseURL}${baseURL.endsWith('/') ? '' : '/'}vectorstores/${vectorStoreName}/similarity-search?log_level=${log_level}`
+                const searchUrl = `${baseURL}${baseURL.endsWith('/') ? '' : '/'}data-insights/api/v1/vectorstores/${vectorStoreName}/similarity-search?log_level=${log_level}`
                 const searchResponse = await fetch(searchUrl, {
                     method: 'POST',
                     headers: searchHeaders,
