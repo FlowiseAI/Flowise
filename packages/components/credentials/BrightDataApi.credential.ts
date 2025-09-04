@@ -11,7 +11,7 @@ class BrightDataApi implements INodeCredential {
         this.label = 'BrightData API'
         this.name = 'brightDataApi'
         this.version = 1.0
-        this.description = 'BrightData API credentials for web scraping and data collection'
+        this.description = 'Go to https://brightdata.com/, navigate to settings, and create an API key or copy your existing one.'
         this.inputs = [
             {
                 label: 'BrightData API Key',
@@ -26,7 +26,7 @@ class BrightDataApi implements INodeCredential {
                 type: 'string',
                 default: 'web_unlocker1',
                 placeholder: 'web_unlocker1',
-                description: 'Zone identifier for BrightData requests',
+                description: 'Proxy Zone - Place your unlocker zone name here',
                 optional: true
             }
         ]
