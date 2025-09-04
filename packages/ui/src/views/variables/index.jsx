@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
+import { useTranslation } from 'react-i18next'
 import moment from 'moment'
 
 // material-ui
@@ -74,6 +75,7 @@ const StyledTableRow = styled(TableRow)(() => ({
 // ==============================|| Credentials ||============================== //
 
 const Variables = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -222,12 +224,12 @@ const Variables = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Variables'
-                            title='Variables'
-                            description='Create and manage global variables'
+                            searchPlaceholder={t('variables.searchPlaceholder')}
+                            title={t('variables.title')}
+                            description={t('variables.description')}
                         >
                             <Button variant='outlined' sx={{ borderRadius: 2, height: '100%' }} onClick={() => setShowHowToDialog(true)}>
-                                How To Use
+                                {t('variables.howToUse')}
                             </Button>
                             <StyledPermissionButton
                                 permissionId={'variables:create'}
@@ -237,7 +239,7 @@ const Variables = () => {
                                 startIcon={<IconPlus />}
                                 id='btn_createVariable'
                             >
-                                Add Variable
+                                {t('variables.addVariable')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && variables.length === 0 ? (
@@ -249,7 +251,7 @@ const Variables = () => {
                                         alt='VariablesEmptySVG'
                                     />
                                 </Box>
-                                <div>No Variables Yet</div>
+                                <div>{t('variables.noVariables')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -267,11 +269,11 @@ const Variables = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <StyledTableCell>Name</StyledTableCell>
-                                                <StyledTableCell>Value</StyledTableCell>
-                                                <StyledTableCell>Type</StyledTableCell>
-                                                <StyledTableCell>Last Updated</StyledTableCell>
-                                                <StyledTableCell>Created</StyledTableCell>
+                                                <StyledTableCell>{t('variables.name')}</StyledTableCell>
+                                                <StyledTableCell>{t('variables.value')}</StyledTableCell>
+                                                <StyledTableCell>{t('variables.type')}</StyledTableCell>
+                                                <StyledTableCell>{t('variables.lastUpdated')}</StyledTableCell>
+                                                <StyledTableCell>{t('variables.created')}</StyledTableCell>
                                                 <Available permissionId={'variables:update'}>
                                                     <StyledTableCell> </StyledTableCell>
                                                 </Available>
@@ -389,7 +391,7 @@ const Variables = () => {
                                                             </StyledTableCell>
                                                             <Available permission={'variables:create,variables:update'}>
                                                                 <StyledTableCell>
-                                                                    <IconButton title='Edit' color='primary' onClick={() => edit(variable)}>
+                                                                    <IconButton title={t('variables.edit')} color='primary' onClick={() => edit(variable)}>
                                                                         <IconEdit />
                                                                     </IconButton>
                                                                 </StyledTableCell>
@@ -397,7 +399,7 @@ const Variables = () => {
                                                             <Available permission={'variables:delete'}>
                                                                 <StyledTableCell>
                                                                     <IconButton
-                                                                        title='Delete'
+                                                                        title={t('variables.delete')}
                                                                         color='error'
                                                                         onClick={() => deleteVariable(variable)}
                                                                     >

@@ -1,5 +1,6 @@
 import { useState, useEffect, forwardRef } from 'react'
 import PropTypes from 'prop-types'
+import { useTranslation } from 'react-i18next'
 
 // project imports
 import MainCard from '@/ui-component/cards/MainCard'
@@ -38,18 +39,7 @@ DatePickerCustomInput.propTypes = {
     onClick: PropTypes.func
 }
 
-const searchTimeRanges = [
-    'Last hour',
-    'Last 4 hours',
-    'Last 24 hours',
-    'Last 2 days',
-    'Last 7 days',
-    'Last 14 days',
-    'Last 1 month',
-    'Last 2 months',
-    'Last 3 months',
-    'Custom'
-]
+// Time ranges will be defined inside component to use translation
 
 const getDateBefore = (unit, value) => {
     const now = new Date()
@@ -99,7 +89,21 @@ const subtractTime = (months, days, hours) => {
 }
 
 const Logs = () => {
+    const { t } = useTranslation()
     const colorTheme = useTheme()
+
+    const searchTimeRanges = [
+        { value: 'Last hour', label: t('serverLogs.timeRanges.lastHour') },
+        { value: 'Last 4 hours', label: t('serverLogs.timeRanges.last4Hours') },
+        { value: 'Last 24 hours', label: t('serverLogs.timeRanges.last24Hours') },
+        { value: 'Last 2 days', label: t('serverLogs.timeRanges.last2Days') },
+        { value: 'Last 7 days', label: t('serverLogs.timeRanges.last7Days') },
+        { value: 'Last 14 days', label: t('serverLogs.timeRanges.last14Days') },
+        { value: 'Last 1 month', label: t('serverLogs.timeRanges.last1Month') },
+        { value: 'Last 2 months', label: t('serverLogs.timeRanges.last2Months') },
+        { value: 'Last 3 months', label: t('serverLogs.timeRanges.last3Months') },
+        { value: 'Custom', label: t('serverLogs.timeRanges.custom') }
+    ]
 
     const customStyle = EditorView.baseTheme({
         '&': {
@@ -207,7 +211,7 @@ const Logs = () => {
                 <ErrorBoundary error={error} />
             ) : (
                 <Stack flexDirection='column' sx={{ gap: 2 }}>
-                    <ViewHeader title='Logs' />
+                    <ViewHeader title={t('serverLogs.title')} />
                     {isLoading ? (
                         <Box display='flex' flexDirection='column' gap={gridSpacing}>
                             <Skeleton width='25%' height={32} />
@@ -234,15 +238,15 @@ const Logs = () => {
                                     onChange={handleTimeSelectionChange}
                                 >
                                     {searchTimeRanges.map((range) => (
-                                        <MenuItem key={range} value={range}>
-                                            {range}
+                                        <MenuItem key={range.value} value={range.value}>
+                                            {range.label}
                                         </MenuItem>
                                     ))}
                                 </Select>
                                 {selectedTimeSearch === 'Custom' && (
                                     <>
                                         <Stack sx={{ alignItems: 'center', justifyContent: 'flex-start', gap: 2 }} flexDirection='row'>
-                                            <b>From</b>
+                                            <b>{t('serverLogs.dateLabels.from')}</b>
                                             <DatePicker
                                                 selected={startDate}
                                                 onChange={(date) => onStartDateSelected(date)}
@@ -258,7 +262,7 @@ const Logs = () => {
                                             />
                                         </Stack>
                                         <Stack sx={{ alignItems: 'center', justifyContent: 'flex-start', gap: 2 }} flexDirection='row'>
-                                            <b>To</b>
+                                            <b>{t('serverLogs.dateLabels.to')}</b>
                                             <DatePicker
                                                 selected={endDate}
                                                 onChange={(date) => onEndDateSelected(date)}
@@ -301,7 +305,7 @@ const Logs = () => {
                                             alt='LogsEmptySVG'
                                         />
                                     </Box>
-                                    <div>No Logs Yet</div>
+                                    <div>{t('serverLogs.emptyState')}</div>
                                 </Stack>
                             )}
                         </>

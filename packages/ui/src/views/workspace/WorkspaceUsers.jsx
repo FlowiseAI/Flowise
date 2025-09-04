@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import moment from 'moment'
 import { useNavigate } from 'react-router-dom'
 
@@ -49,6 +50,7 @@ import { useError } from '@/store/context/ErrorContext'
 import { closeSnackbar as closeSnackbarAction, enqueueSnackbar as enqueueSnackbarAction } from '@/store/actions'
 
 const WorkspaceDetails = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const currentUser = useSelector((state) => state.auth.user)
@@ -121,7 +123,7 @@ const WorkspaceDetails = () => {
         const dialogProp = {
             type: 'ADD',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Send Invite',
+            confirmButtonName: t('workspaceUsers.sendInvite'),
             data: workspace
         }
         setDialogProps(dialogProp)
@@ -140,7 +142,7 @@ const WorkspaceDetails = () => {
         const dialogProp = {
             type: 'EDIT',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Update Invite',
+            confirmButtonName: t('workspaceUsers.updateInvite'),
             data: {
                 ...user,
                 isWorkspaceUser: true
@@ -165,7 +167,7 @@ const WorkspaceDetails = () => {
         const dialogProp = {
             type: 'EDIT',
             cancelButtonName: 'Cancel',
-            confirmButtonName: 'Update Role',
+            confirmButtonName: t('workspaceUsers.updateRole'),
             data: userObj
         }
         setWorkspaceUserRoleDialogProps(dialogProp)
@@ -178,7 +180,7 @@ const WorkspaceDetails = () => {
         const confirmPayload = {
             title: `Remove Users`,
             description: `Remove the following users from the workspace?\n${userList}`,
-            confirmButtonName: 'Remove',
+            confirmButtonName: t('workspaceUsers.removeUsers'),
             cancelButtonName: 'Cancel'
         }
 
@@ -187,7 +189,7 @@ const WorkspaceDetails = () => {
         )
         if (orgOwner) {
             enqueueSnackbar({
-                message: `Organization owner cannot be removed from workspace.`,
+                message: t('workspaceUsers.organizationOwnerCannotRemove'),
                 options: {
                     key: new Date().getTime() + Math.random(),
                     variant: 'error',
@@ -209,7 +211,7 @@ const WorkspaceDetails = () => {
                 await Promise.all(deletePromises)
 
                 enqueueSnackbar({
-                    message: `${usersSelected.length} User(s) removed from workspace.`,
+                    message: t('workspaceUsers.usersRemovedFromWorkspace'),
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -231,7 +233,7 @@ const WorkspaceDetails = () => {
                 onConfirm()
             } catch (error) {
                 enqueueSnackbar({
-                    message: `Failed to unlink users: ${
+                    message: `${t('workspaceUsers.failedToUnlinkUsers')} ${
                         typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                     }`,
                     options: {
@@ -316,7 +318,7 @@ const WorkspaceDetails = () => {
                             onBack={() => window.history.back()}
                             search={workspaceUsers.length > 0}
                             onSearchChange={onSearchChange}
-                            searchPlaceholder={'Search Users'}
+                            searchPlaceholder={t('workspaceUsers.searchPlaceholder')}
                             title={(workspace?.name || '') + ': Workspace Users'}
                             description={'Manage workspace users and permissions.'}
                         >
@@ -331,7 +333,7 @@ const WorkspaceDetails = () => {
                                         color='error'
                                         startIcon={<IconUnlink />}
                                     >
-                                        Remove Users
+                                        {t('workspaceUsers.removeUsers')}
                                     </PermissionButton>
                                     <StyledPermissionButton
                                         permissionId={'workspace:add-user'}
@@ -340,7 +342,7 @@ const WorkspaceDetails = () => {
                                         onClick={addUser}
                                         startIcon={<IconUserPlus />}
                                     >
-                                        Add User
+                                        {t('workspaceUsers.addUser')}
                                     </StyledPermissionButton>
                                 </>
                             )}
@@ -354,7 +356,7 @@ const WorkspaceDetails = () => {
                                         alt='empty_datasetSVG'
                                     />
                                 </Box>
-                                <div>No Assigned Users Yet</div>
+                                <div>{t('workspaceUsers.noAssignedUsers')}</div>
                                 <StyledPermissionButton
                                     permissionId={'workspace:add-user'}
                                     variant='contained'
@@ -362,7 +364,7 @@ const WorkspaceDetails = () => {
                                     startIcon={<IconUserPlus />}
                                     onClick={addUser}
                                 >
-                                    Add User
+                                    {t('workspaceUsers.addUser')}
                                 </StyledPermissionButton>
                             </Stack>
                         ) : (
@@ -391,10 +393,10 @@ const WorkspaceDetails = () => {
                                                         }}
                                                     />
                                                 </StyledTableCell>
-                                                <StyledTableCell>Email/Name</StyledTableCell>
-                                                <StyledTableCell>Role</StyledTableCell>
-                                                <StyledTableCell>Status</StyledTableCell>
-                                                <StyledTableCell>Last Login</StyledTableCell>
+                                                <StyledTableCell>{t('workspaceUsers.emailName')}</StyledTableCell>
+                                                <StyledTableCell>{t('workspaceUsers.role')}</StyledTableCell>
+                                                <StyledTableCell>{t('workspaceUsers.status')}</StyledTableCell>
+                                                <StyledTableCell>{t('workspaceUsers.lastLogin')}</StyledTableCell>
                                                 <StyledTableCell> </StyledTableCell>
                                             </TableRow>
                                         </TableHead>
@@ -473,7 +475,7 @@ const WorkspaceDetails = () => {
                                                             </StyledTableCell>
                                                             <StyledTableCell>
                                                                 {item.isOrgOwner ? (
-                                                                    <Chip size='small' label={'ORGANIZATION OWNER'} />
+                                                                    <Chip size='small' label={t('workspaceUsers.organizationOwner')} />
                                                                 ) : (
                                                                     item.role.name
                                                                 )}
@@ -484,26 +486,26 @@ const WorkspaceDetails = () => {
                                                                 ) : (
                                                                     <>
                                                                         {'ACTIVE' === item.status.toUpperCase() && (
-                                                                            <Chip color={'success'} label={item.status.toUpperCase()} />
+                                                                            <Chip color={'success'} label={t('workspaceUsers.active')} />
                                                                         )}
                                                                         {'INVITED' === item.status.toUpperCase() && (
-                                                                            <Chip color={'warning'} label={item.status.toUpperCase()} />
+                                                                            <Chip color={'warning'} label={t('workspaceUsers.invited')} />
                                                                         )}
                                                                         {'INACTIVE' === item.status.toUpperCase() && (
-                                                                            <Chip color={'error'} label={item.status.toUpperCase()} />
+                                                                            <Chip color={'error'} label={t('workspaceUsers.inactive')} />
                                                                         )}
                                                                     </>
                                                                 )}
                                                             </StyledTableCell>
                                                             <StyledTableCell>
                                                                 {!item.lastLogin
-                                                                    ? 'Never'
+                                                                    ? t('workspaceUsers.never')
                                                                     : moment(item.lastLogin).format('DD/MM/YYYY HH:mm')}
                                                             </StyledTableCell>
                                                             <StyledTableCell>
                                                                 {!item.isOrgOwner && item.status.toUpperCase() === 'INVITED' && (
                                                                     <IconButton
-                                                                        title='Edit'
+                                                                        title={t('workspaceUsers.edit')}
                                                                         color='primary'
                                                                         onClick={() => onEditClick(item)}
                                                                     >
@@ -512,7 +514,7 @@ const WorkspaceDetails = () => {
                                                                 )}
                                                                 {!item.isOrgOwner && item.status.toUpperCase() === 'ACTIVE' && (
                                                                     <IconButton
-                                                                        title='Change Role'
+                                                                        title={t('workspaceUsers.changeRole')}
                                                                         color='primary'
                                                                         onClick={() => onEditClick(item)}
                                                                     >

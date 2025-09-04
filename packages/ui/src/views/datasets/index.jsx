@@ -326,7 +326,7 @@ const EvalDatasets = () => {
                                                             </TableCell>
                                                             <Available permission={'datasets:update,datasets:create'}>
                                                                 <TableCell>
-                                                                    <IconButton title='Edit' color='primary' onClick={() => edit(ds)}>
+                                                                    <IconButton title={t('datasets.edit')} color='primary' onClick={() => edit(ds)}>
                                                                         <IconEdit />
                                                                     </IconButton>
                                                                 </TableCell>
@@ -334,7 +334,7 @@ const EvalDatasets = () => {
                                                             <Available permission={'datasets:delete'}>
                                                                 <TableCell>
                                                                     <IconButton
-                                                                        title='Delete'
+                                                                        title={t('datasets.delete')}
                                                                         color='error'
                                                                         onClick={() => deleteDataset(ds)}
                                                                     >

@@ -91,6 +91,13 @@ export const ReactFlowContext = ({ children }) => {
     }
 
     const deleteNode = (nodeid) => {
+        // Check if the node is locked
+        const nodeToDelete = reactFlowInstance.getNodes().find(node => node.id === nodeid)
+        if (nodeToDelete && nodeToDelete.data.locked) {
+            console.warn('Cannot delete locked node:', nodeid)
+            return
+        }
+
         deleteConnectedInput(nodeid, 'node')
 
         // Gather all nodes to be deleted (parent and all descendants)
@@ -178,6 +185,13 @@ export const ReactFlowContext = ({ children }) => {
     const duplicateNode = (id, distance = 50) => {
         const nodes = reactFlowInstance.getNodes()
         const originalNode = nodes.find((n) => n.id === id)
+        
+        // Check if the node is locked
+        if (originalNode && originalNode.data.locked) {
+            console.warn('Cannot duplicate locked node:', id)
+            return
+        }
+        
         if (originalNode) {
             const newNodeId = getUniqueNodeId(originalNode.data, nodes)
             const clonedNode = cloneDeep(originalNode)

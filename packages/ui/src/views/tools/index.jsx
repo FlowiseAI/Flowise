@@ -262,7 +262,7 @@ const Tools = () => {
                                         alt='ToolEmptySVG'
                                     />
                                 </Box>
-                                <div>No Tools Created Yet</div>
+                                <div>{t('tools.noToolsYet')}</div>
                                 <div>{t('tools.empty')}</div>
                             </Stack>
                         )}

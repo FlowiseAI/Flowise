@@ -3,6 +3,7 @@ import * as PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 
 // material-ui
 import {
@@ -62,6 +63,7 @@ import {
 import empty_evalSVG from '@/assets/images/empty_evals.svg'
 
 const EvalsEvaluation = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const { confirm } = useConfirm()
@@ -154,7 +156,7 @@ const EvalsEvaluation = () => {
                 const deleteResp = await evaluationApi.deleteEvaluations(selected, isDeleteAllVersion)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: `${selected.length} ${selected.length > 1 ? 'evaluations' : 'evaluation'} deleted`,
+                        message: `${selected.length} ${selected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')} ${t('evaluations.messages.deleted')}`,
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -169,7 +171,7 @@ const EvalsEvaluation = () => {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: `Failed to delete ${selected.length > 1 ? 'evaluations' : 'evaluation'}: ${
+                    message: `${t('evaluations.messages.deleteFailed')} ${selected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')}: ${
                         typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                     }`,
                     options: {
@@ -298,7 +300,7 @@ const EvalsEvaluation = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader isBackButton={false} isEditButton={false} search={false} title={'Evaluations'} description=''>
+                        <ViewHeader isBackButton={false} isEditButton={false} search={false} title={t('evaluations.title')} description=''>
                             <ToggleButton
                                 value='auto-refresh'
                                 selected={autoRefresh}
@@ -326,7 +328,7 @@ const EvalsEvaluation = () => {
                                         }
                                     }
                                 }}
-                                title={autoRefresh ? 'Disable auto-refresh' : 'Enable auto-refresh (every 5s)'}
+                                title={autoRefresh ? t('evaluations.autoRefresh.disable') : t('evaluations.autoRefresh.enable')}
                             >
                                 {autoRefresh ? <IconPlayerPause /> : <IconPlayerPlay />}
                             </ToggleButton>
@@ -341,7 +343,7 @@ const EvalsEvaluation = () => {
                                     }
                                 }}
                                 onClick={onRefresh}
-                                title='Refresh'
+                                title={t('evaluations.buttons.refresh')}
                             >
                                 <IconRefresh />
                             </IconButton>
@@ -351,7 +353,7 @@ const EvalsEvaluation = () => {
                                 onClick={createEvaluation}
                                 startIcon={<IconPlus />}
                             >
-                                New Evaluation
+                                {t('evaluations.buttons.newEvaluation')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {selected.length > 0 && (
@@ -363,7 +365,7 @@ const EvalsEvaluation = () => {
                                 color='error'
                                 startIcon={<IconTrash />}
                             >
-                                Delete {selected.length} {selected.length === 1 ? 'evaluation' : 'evaluations'}
+                                {t('evaluations.buttons.delete')} {selected.length} {selected.length === 1 ? t('evaluations.singular') : t('evaluations.plural')}
                             </StyledPermissionButton>
                         )}
                         {!isTableLoading && rows.length <= 0 ? (
@@ -375,7 +377,7 @@ const EvalsEvaluation = () => {
                                         alt='empty_evalSVG'
                                     />
                                 </Box>
-                                <div>No Evaluations Yet</div>
+                                <div>{t('evaluations.emptyState')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -404,12 +406,12 @@ const EvalsEvaluation = () => {
                                                     />
                                                 </TableCell>
                                                 <TableCell width={10}> </TableCell>
-                                                <TableCell>Name</TableCell>
-                                                <TableCell>Latest Version</TableCell>
-                                                <TableCell>Average Metrics</TableCell>
-                                                <TableCell>Last Evaluated</TableCell>
-                                                <TableCell>Flow(s)</TableCell>
-                                                <TableCell>Dataset</TableCell>
+                                                <TableCell>{t('evaluations.tableHeaders.name')}</TableCell>
+                                                <TableCell>{t('evaluations.tableHeaders.latestVersion')}</TableCell>
+                                                <TableCell>{t('evaluations.tableHeaders.averageMetrics')}</TableCell>
+                                                <TableCell>{t('evaluations.tableHeaders.lastEvaluated')}</TableCell>
+                                                <TableCell>{t('evaluations.tableHeaders.flows')}</TableCell>
+                                                <TableCell>{t('evaluations.tableHeaders.dataset')}</TableCell>
                                                 <TableCell> </TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -552,10 +554,10 @@ function EvaluationRunRow(props) {
 
     const deleteChildEvaluations = async () => {
         const confirmPayload = {
-            title: `Delete`,
-            description: `Delete ${childSelected.length} ${childSelected.length > 1 ? 'evaluations' : 'evaluation'}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
+            title: t('evaluations.confirmDialog.delete'),
+            description: `${t('evaluations.confirmDialog.deleteDescription')} ${childSelected.length} ${childSelected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')}?`,
+            confirmButtonName: t('evaluations.confirmDialog.confirmButton'),
+            cancelButtonName: t('evaluations.confirmDialog.cancelButton')
         }
         const isConfirmed = await confirm(confirmPayload)
 
@@ -564,7 +566,7 @@ function EvaluationRunRow(props) {
                 const deleteResp = await evaluationApi.deleteEvaluations(childSelected)
                 if (deleteResp.data) {
                     enqueueSnackbar({
-                        message: `${childSelected.length} evaluations deleted.`,
+                        message: `${childSelected.length} ${childSelected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')} ${t('evaluations.messages.deleted')}`,
                         options: {
                             key: new Date().getTime() + Math.random(),
                             variant: 'success',
@@ -579,7 +581,7 @@ function EvaluationRunRow(props) {
                 }
             } catch (error) {
                 enqueueSnackbar({
-                    message: `Failed to delete Evaluation: ${
+                    message: `${t('evaluations.messages.deleteFailed')} ${childSelected.length > 1 ? t('evaluations.plural') : t('evaluations.singular')}: ${
                         typeof error.response.data === 'object' ? error.response.data.message : error.response.data
                     }`,
                     options: {
@@ -659,8 +661,8 @@ function EvaluationRunRow(props) {
                             color='info'
                             label={
                                 props.item.average_metrics?.totalRuns
-                                    ? 'Total Runs: ' + props.item.average_metrics?.totalRuns
-                                    : 'Total Runs: N/A'
+                                    ? t('evaluations.metrics.totalRuns') + ': ' + props.item.average_metrics?.totalRuns
+                                    : t('evaluations.metrics.totalRuns') + ': N/A'
                             }
                         />
                         {props.item.average_metrics?.averageCost && (
@@ -672,8 +674,8 @@ function EvaluationRunRow(props) {
                             color='info'
                             label={
                                 props.item.average_metrics?.averageLatency
-                                    ? 'Avg Latency: ' + props.item.average_metrics?.averageLatency + 'ms'
-                                    : 'Avg Latency: N/A'
+                                    ? t('evaluations.metrics.avgLatency') + ': ' + props.item.average_metrics?.averageLatency + 'ms'
+                                    : t('evaluations.metrics.avgLatency') + ': N/A'
                             }
                         />
                         {props.item.average_metrics?.passPcnt >= 0 && (
@@ -686,8 +688,8 @@ function EvaluationRunRow(props) {
                                 }}
                                 label={
                                     props.item.average_metrics?.passPcnt
-                                        ? 'Pass Rate: ' + props.item.average_metrics.passPcnt + '%'
-                                        : 'Pass Rate: N/A'
+                                        ? t('evaluations.metrics.passRate') + ': ' + props.item.average_metrics.passPcnt + '%'
+                                        : t('evaluations.metrics.passRate') + ': N/A'
                                 }
                             />
                         )}
@@ -726,7 +728,7 @@ function EvaluationRunRow(props) {
                 </StyledTableCell>
                 <TableCell>
                     <IconButton
-                        title='View Results'
+                        title={t('evaluations.buttons.viewResults')}
                         color='primary'
                         disabled={props.item.status === 'pending'}
                         onClick={() => showResults(props.item)}
@@ -745,7 +747,7 @@ function EvaluationRunRow(props) {
                             color='error'
                             startIcon={<IconTrash />}
                         >
-                            Delete {childSelected.length} {childSelected.length === 1 ? 'evaluation' : 'evaluations'}
+                            {t('evaluations.buttons.delete')} {childSelected.length} {childSelected.length === 1 ? t('evaluations.singular') : t('evaluations.plural')}
                         </Button>
                     </StyledTableCell>
                 </TableRow>
@@ -766,10 +768,10 @@ function EvaluationRunRow(props) {
                                                         onChange={onSelectAllChildClick}
                                                     />
                                                 </TableCell>
-                                                <TableCell>Version</TableCell>
-                                                <TableCell>Last Run</TableCell>
-                                                <TableCell>Average Metrics</TableCell>
-                                                <TableCell>Status</TableCell>
+                                                <TableCell>{t('evaluations.childTableHeaders.version')}</TableCell>
+                                                <TableCell>{t('evaluations.childTableHeaders.lastRun')}</TableCell>
+                                                <TableCell>{t('evaluations.childTableHeaders.averageMetrics')}</TableCell>
+                                                <TableCell>{t('evaluations.childTableHeaders.status')}</TableCell>
                                                 <TableCell> </TableCell>
                                             </TableRow>
                                         </TableHead>
@@ -800,8 +802,8 @@ function EvaluationRunRow(props) {
                                                                         color='info'
                                                                         label={
                                                                             childItem.average_metrics?.totalRuns
-                                                                                ? 'Total Runs: ' + childItem.average_metrics?.totalRuns
-                                                                                : 'Total Runs: N/A'
+                                                                                ? t('evaluations.metrics.totalRuns') + ': ' + childItem.average_metrics?.totalRuns
+                                                                                : t('evaluations.metrics.totalRuns') + ': N/A'
                                                                         }
                                                                     />
                                                                     {childItem.average_metrics?.averageCost && (
@@ -818,10 +820,10 @@ function EvaluationRunRow(props) {
                                                                         color='info'
                                                                         label={
                                                                             childItem.average_metrics?.averageLatency
-                                                                                ? 'Avg Latency: ' +
+                                                                                ? t('evaluations.metrics.avgLatency') + ': ' +
                                                                                   childItem.average_metrics?.averageLatency +
                                                                                   'ms'
-                                                                                : 'Avg Latency: N/A'
+                                                                                : t('evaluations.metrics.avgLatency') + ': N/A'
                                                                         }
                                                                     />
                                                                     {childItem.average_metrics?.passPcnt >= 0 && (
@@ -836,10 +838,10 @@ function EvaluationRunRow(props) {
                                                                             }}
                                                                             label={
                                                                                 childItem.average_metrics?.passPcnt
-                                                                                    ? 'Pass rate: ' +
+                                                                                    ? t('evaluations.metrics.passRate') + ': ' +
                                                                                       childItem.average_metrics.passPcnt +
                                                                                       '%'
-                                                                                    : 'Pass rate: N/A'
+                                                                                    : t('evaluations.metrics.passRate') + ': N/A'
                                                                             }
                                                                         />
                                                                     )}
@@ -861,7 +863,7 @@ function EvaluationRunRow(props) {
                                                             </StyledTableCell>
                                                             <StyledTableCell>
                                                                 <IconButton
-                                                                    title='View Results'
+                                                                    title={t('evaluations.buttons.viewResults')}
                                                                     color='primary'
                                                                     disabled={childItem.status === 'pending'}
                                                                     onClick={() => showResults(childItem)}

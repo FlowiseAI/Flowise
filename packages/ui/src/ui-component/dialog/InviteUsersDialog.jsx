@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 
 // Material
 import {
@@ -92,7 +93,7 @@ const StyledPopper = styled(Popper)({
 
 const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
-
+    const { t } = useTranslation()
     const dispatch = useDispatch()
 
     // ==============================|| Snackbar ||============================== //
@@ -634,13 +635,13 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
             <DialogTitle sx={{ fontSize: '1rem' }} id='alert-dialog-title'>
                 <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                     <IconUser style={{ marginRight: '10px' }} />
-                    Invite Users
+                    {t('users.inviteUsers')}
                 </div>
             </DialogTitle>
             <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <Box>
                     <Typography>
-                        Select Users<span style={{ color: 'red' }}>&nbsp;*</span>
+                        {t('users.selectUsers')}<span style={{ color: 'red' }}>&nbsp;*</span>
                     </Typography>
                     <Autocomplete
                         multiple
@@ -671,14 +672,14 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
                     <Box sx={{ gridColumn: 'span 1' }}>
                         <Typography>
-                            Workspace<span style={{ color: 'red' }}>&nbsp;*</span>
+                            {t('users.workspace')}<span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <Autocomplete
                             disabled={checkWorkspaceDisabled()}
                             getOptionLabel={(option) => option.label || ''}
                             onChange={handleWorkspaceChange}
                             options={workspaces}
-                            renderInput={(params) => <TextField {...params} variant='outlined' placeholder='Select Workspace' />}
+                            renderInput={(params) => <TextField {...params} variant='outlined' placeholder={t('users.selectWorkspace')} />}
                             sx={{ mt: 0.5 }}
                             value={getWorkspaceValue()}
                             PopperComponent={StyledPopper}
@@ -686,13 +687,13 @@ const InviteUsersDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
                     </Box>
                     <Box sx={{ gridColumn: 'span 1' }}>
                         <Typography>
-                            Role to Assign<span style={{ color: 'red' }}>&nbsp;*</span>
+                            {t('users.roleToAssign')}<span style={{ color: 'red' }}>&nbsp;*</span>
                         </Typography>
                         <Autocomplete
                             getOptionLabel={(option) => option.label || ''}
                             onChange={handleRoleChange}
                             options={availableRoles}
-                            renderInput={(params) => <TextField {...params} variant='outlined' placeholder='Select Role' />}
+                            renderInput={(params) => <TextField {...params} variant='outlined' placeholder={t('users.selectRole')} />}
                             sx={{ mt: 0.5 }}
                             value={getRoleValue()}
                             PopperComponent={StyledPopper}

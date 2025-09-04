@@ -24,7 +24,9 @@ import {
     IconAlertCircleFilled,
     IconCode,
     IconWorldWww,
-    IconPhoto
+    IconPhoto,
+    IconLock,
+    IconLockOpen
 } from '@tabler/icons-react'
 import StopCircleIcon from '@mui/icons-material/StopCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -62,9 +64,29 @@ const AgentFlowNode = ({ data }) => {
     const [position, setPosition] = useState(0)
     const [isHovered, setIsHovered] = useState(false)
     const [warningMessage, setWarningMessage] = useState('')
-    const { deleteNode, duplicateNode } = useContext(flowContext)
+    const { deleteNode, duplicateNode, reactFlowInstance } = useContext(flowContext)
     const [showInfoDialog, setShowInfoDialog] = useState(false)
     const [infoDialogProps, setInfoDialogProps] = useState({})
+
+    // Lock functionality
+    const toggleNodeLock = () => {
+        if (reactFlowInstance) {
+            reactFlowInstance.setNodes((nds) =>
+                nds.map((node) => {
+                    if (node.id === data.id) {
+                        return {
+                            ...node,
+                            data: {
+                                ...node.data,
+                                locked: !node.data.locked
+                            }
+                        }
+                    }
+                    return node
+                })
+            )
+        }
+    }
 
     const defaultColor = '#666666' // fallback color if data.color is not present
     const nodeColor = data.color || defaultColor
@@ -177,17 +199,32 @@ const AgentFlowNode = ({ data }) => {
         <div ref={ref} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
             <StyledNodeToolbar>
                 <ButtonGroup sx={{ gap: 1 }} variant='outlined' aria-label='Basic button group'>
+                    <IconButton
+                        size={'small'}
+                        title={data.locked ? 'Unlock node' : 'Lock node'}
+                        onClick={toggleNodeLock}
+                        sx={{
+                            color: customization.isDarkMode ? 'white' : 'inherit',
+                            '&:hover': {
+                                color: theme.palette.primary.main
+                            }
+                        }}
+                    >
+                        {data.locked ? <IconLockOpen size={20} /> : <IconLock size={20} />}
+                    </IconButton>
                     {data.name !== 'startAgentflow' && (
                         <IconButton
                             size={'small'}
                             title='Duplicate'
                             onClick={() => {
-                                duplicateNode(data.id)
+                                !data.locked && duplicateNode(data.id)
                             }}
+                            disabled={data.locked}
                             sx={{
-                                color: customization.isDarkMode ? 'white' : 'inherit',
+                                color: data.locked ? 'gray' : (customization.isDarkMode ? 'white' : 'inherit'),
+                                opacity: data.locked ? 0.5 : 1,
                                 '&:hover': {
-                                    color: theme.palette.primary.main
+                                    color: data.locked ? 'gray' : theme.palette.primary.main
                                 }
                             }}
                         >
@@ -198,12 +235,14 @@ const AgentFlowNode = ({ data }) => {
                         size={'small'}
                         title='Delete'
                         onClick={() => {
-                            deleteNode(data.id)
+                            !data.locked && deleteNode(data.id)
                         }}
+                        disabled={data.locked}
                         sx={{
-                            color: customization.isDarkMode ? 'white' : 'inherit',
+                            color: data.locked ? 'gray' : (customization.isDarkMode ? 'white' : 'inherit'),
+                            opacity: data.locked ? 0.5 : 1,
                             '&:hover': {
-                                color: theme.palette.error.main
+                                color: data.locked ? 'gray' : theme.palette.error.main
                             }
                         }}
                     >
@@ -228,6 +267,7 @@ const AgentFlowNode = ({ data }) => {
                 </ButtonGroup>
             </StyledNodeToolbar>
             <CardWrapper
+                className={`${data.selected ? 'selected' : ''} ${data.locked ? 'locked' : ''}`}
                 content={false}
                 sx={{
                     borderColor: getStateColor(),
@@ -238,6 +278,8 @@ const AgentFlowNode = ({ data }) => {
                     backgroundColor: getBackgroundColor(),
                     display: 'flex',
                     alignItems: 'center',
+                    opacity: data.locked ? 0.8 : 1,
+                    border: data.locked ? `2px dashed ${nodeColor}` : `1px solid ${getStateColor()}`,
                     '&:hover': {
                         boxShadow: data.selected ? `0 0 0 1px ${getStateColor()} !important` : 'none'
                     }

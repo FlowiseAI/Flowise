@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import moment from 'moment'
 import * as PropTypes from 'prop-types'
 
@@ -236,6 +237,7 @@ ShowUserRow.propTypes = {
 // ==============================|| Users ||============================== //
 
 const Users = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
@@ -291,8 +293,8 @@ const Users = () => {
     const editInvite = (user) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Update Invite',
+            cancelButtonName: t('users.cancel'),
+            confirmButtonName: t('users.updateInvite'),
             data: user
         }
         setInviteDialogProps(dialogProp)
@@ -302,8 +304,8 @@ const Users = () => {
     const editUser = (user) => {
         const dialogProp = {
             type: 'EDIT',
-            cancelButtonName: 'Cancel',
-            confirmButtonName: 'Save',
+            cancelButtonName: t('users.cancel'),
+            confirmButtonName: t('users.save'),
             data: user
         }
         setInviteDialogProps(dialogProp)
@@ -400,7 +402,7 @@ const Users = () => {
                     <ErrorBoundary error={error} />
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
-                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder='Search Users' title='User Management'>
+                        <ViewHeader onSearchChange={onSearchChange} search={true} searchPlaceholder={t('users.searchPlaceholder')} title={t('users.title')}>
                             <StyledPermissionButton
                                 permissionId={'workspace:add-user,users:manage'}
                                 variant='contained'
@@ -409,7 +411,7 @@ const Users = () => {
                                 startIcon={<IconPlus />}
                                 id='btn_createUser'
                             >
-                                Invite User
+                                {t('users.inviteUser')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && users.length === 0 ? (
@@ -421,7 +423,7 @@ const Users = () => {
                                         alt='users_emptySVG'
                                     />
                                 </Box>
-                                <div>No Users Yet</div>
+                                <div>{t('users.noUsersYet')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -443,10 +445,10 @@ const Users = () => {
                                                 >
                                                     <TableRow>
                                                         <StyledTableCell>&nbsp;</StyledTableCell>
-                                                        <StyledTableCell>Email/Name</StyledTableCell>
-                                                        <StyledTableCell>Assigned Roles</StyledTableCell>
-                                                        <StyledTableCell>Status</StyledTableCell>
-                                                        <StyledTableCell>Last Login</StyledTableCell>
+                                                        <StyledTableCell>{t('users.emailName')}</StyledTableCell>
+                                                    <StyledTableCell>{t('users.assignedRoles')}</StyledTableCell>
+                                                    <StyledTableCell>{t('users.status')}</StyledTableCell>
+                                                    <StyledTableCell>{t('users.lastLogin')}</StyledTableCell>
                                                         <StyledTableCell> </StyledTableCell>
                                                     </TableRow>
                                                 </TableHead>

@@ -2,6 +2,7 @@ import * as PropTypes from 'prop-types'
 import moment from 'moment/moment'
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import { enqueueSnackbar as enqueueSnackbarAction, closeSnackbar as closeSnackbarAction } from '@/store/actions'
 
 // material-ui
@@ -85,6 +86,7 @@ const StyledTableRow = styled(TableRow)(() => ({
 }))
 
 function APIKeyRow(props) {
+    const { t } = useTranslation()
     const [open, setOpen] = useState(false)
     const theme = useTheme()
 
@@ -100,10 +102,10 @@ function APIKeyRow(props) {
                         : `${props.apiKey.apiKey.substring(0, 2)}${'•'.repeat(18)}${props.apiKey.apiKey.substring(
                               props.apiKey.apiKey.length - 5
                           )}`}
-                    <IconButton title='Copy' color='success' onClick={props.onCopyClick}>
+                    <IconButton title={t('apiKeys.copy')} color='success' onClick={props.onCopyClick}>
                         <IconCopy />
                     </IconButton>
-                    <IconButton title='Show' color='inherit' onClick={props.onShowAPIClick}>
+                    <IconButton title={t('apiKeys.show')} color='inherit' onClick={props.onShowAPIClick}>
                         {props.showApiKeys.includes(props.apiKey.apiKey) ? <IconEyeOff /> : <IconEye />}
                     </IconButton>
                     <Popover
@@ -120,7 +122,7 @@ function APIKeyRow(props) {
                         }}
                     >
                         <Typography variant='h6' sx={{ pl: 1, pr: 1, color: 'white', background: props.theme.palette.success.dark }}>
-                            Copied!
+                            {t('apiKeys.copied')}
                         </Typography>
                     </Popover>
                 </StyledTableCell>
@@ -135,14 +137,14 @@ function APIKeyRow(props) {
                 <StyledTableCell>{moment(props.apiKey.createdAt).format('MMMM Do, YYYY')}</StyledTableCell>
                 <Available permission={'apikeys:update,apikeys:create'}>
                     <StyledTableCell>
-                        <IconButton title='Edit' color='primary' onClick={props.onEditClick}>
+                        <IconButton title={t('apiKeys.edit')} color='primary' onClick={props.onEditClick}>
                             <IconEdit />
                         </IconButton>
                     </StyledTableCell>
                 </Available>
                 <Available permission={'apikeys:delete'}>
                     <StyledTableCell>
-                        <IconButton title='Delete' color='error' onClick={props.onDeleteClick}>
+                        <IconButton title={t('apiKeys.delete')} color='error' onClick={props.onDeleteClick}>
                             <IconTrash />
                         </IconButton>
                     </StyledTableCell>
@@ -156,9 +158,9 @@ function APIKeyRow(props) {
                                 <Table aria-label='chatflow table'>
                                     <TableHead sx={{ height: 48 }}>
                                         <TableRow>
-                                            <StyledTableCell sx={{ width: '30%' }}>Chatflow Name</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '20%' }}>Modified On</StyledTableCell>
-                                            <StyledTableCell sx={{ width: '50%' }}>Category</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '30%' }}>{t('apiKeys.chatflowName')}</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '20%' }}>{t('apiKeys.modifiedOn')}</StyledTableCell>
+                                            <StyledTableCell sx={{ width: '50%' }}>{t('apiKeys.category')}</StyledTableCell>
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -201,6 +203,7 @@ APIKeyRow.propTypes = {
     onDeleteClick: PropTypes.func
 }
 const APIKey = () => {
+    const { t } = useTranslation()
     const theme = useTheme()
     const customization = useSelector((state) => state.customization)
 
@@ -391,9 +394,9 @@ const APIKey = () => {
                         <ViewHeader
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search API Keys'
-                            title='API Keys'
-                            description='Flowise API & SDK authentication keys'
+                            searchPlaceholder={t('apiKeys.searchPlaceholder')}
+                            title={t('apiKeys.title')}
+                            description={t('apiKeys.description')}
                         >
                             <PermissionButton
                                 permissionId={'apikeys:import'}
@@ -403,7 +406,7 @@ const APIKey = () => {
                                 startIcon={<IconFileUpload />}
                                 id='btn_importApiKeys'
                             >
-                                Import
+                                {t('apiKeys.import')}
                             </PermissionButton>
                             <StyledPermissionButton
                                 permissionId={'apikeys:create'}
@@ -413,7 +416,7 @@ const APIKey = () => {
                                 startIcon={<IconPlus />}
                                 id='btn_createApiKey'
                             >
-                                Create Key
+                                {t('apiKeys.createKey')}
                             </StyledPermissionButton>
                         </ViewHeader>
                         {!isLoading && apiKeys?.length <= 0 ? (
@@ -425,7 +428,7 @@ const APIKey = () => {
                                         alt='APIEmptySVG'
                                     />
                                 </Box>
-                                <div>No API Keys Yet</div>
+                                <div>{t('apiKeys.noApiKeys')}</div>
                             </Stack>
                         ) : (
                             <>
@@ -443,10 +446,10 @@ const APIKey = () => {
                                             }}
                                         >
                                             <TableRow>
-                                                <StyledTableCell>Key Name</StyledTableCell>
-                                                <StyledTableCell>API Key</StyledTableCell>
-                                                <StyledTableCell>Usage</StyledTableCell>
-                                                <StyledTableCell>Updated</StyledTableCell>
+                                                <StyledTableCell>{t('apiKeys.keyName')}</StyledTableCell>
+                                                <StyledTableCell>{t('apiKeys.apiKey')}</StyledTableCell>
+                                                <StyledTableCell>{t('apiKeys.usage')}</StyledTableCell>
+                                                <StyledTableCell>{t('apiKeys.updated')}</StyledTableCell>
                                                 <Available permission={'apikeys:update,apikeys:create'}>
                                                     <StyledTableCell> </StyledTableCell>
                                                 </Available>

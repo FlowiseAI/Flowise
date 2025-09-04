@@ -2,6 +2,7 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 
 // material-ui
 import {
@@ -74,6 +75,7 @@ const MenuProps = {
 // ==============================|| Marketplace ||============================== //
 
 const Marketplace = () => {
+    const { t } = useTranslation()
     const navigate = useNavigate()
     const dispatch = useDispatch()
     useNotifier()
@@ -485,7 +487,7 @@ const Marketplace = () => {
                                         }}
                                     >
                                         <InputLabel size='small' id='filter-badge-label'>
-                                            Tag
+                                            {t('marketplaces.filters.tag')}
                                         </InputLabel>
                                         <Select
                                             labelId='filter-badge-label'
@@ -494,7 +496,7 @@ const Marketplace = () => {
                                             multiple
                                             value={badgeFilter}
                                             onChange={handleBadgeFilterChange}
-                                            input={<OutlinedInput label='Tag' />}
+                                            input={<OutlinedInput label={t('marketplaces.filters.tag')} />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
                                             sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
@@ -520,8 +522,8 @@ const Marketplace = () => {
                                             minWidth: 120
                                         }}
                                     >
-                                        <InputLabel size='small' id='type-badge-label'>
-                                            Type
+                                        <InputLabel size='small' id='filter-type-label'>
+                                            {t('marketplaces.filters.type')}
                                         </InputLabel>
                                         <Select
                                             size='small'
@@ -530,7 +532,7 @@ const Marketplace = () => {
                                             multiple
                                             value={typeFilter}
                                             onChange={handleTypeFilterChange}
-                                            input={<OutlinedInput label='Type' />}
+                                            input={<OutlinedInput label={t('marketplaces.filters.type')} />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
                                             sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
@@ -557,7 +559,7 @@ const Marketplace = () => {
                                         }}
                                     >
                                         <InputLabel size='small' id='type-fw-label'>
-                                            Framework
+                                            {t('marketplaces.filters.framework')}
                                         </InputLabel>
                                         <Select
                                             size='small'
@@ -566,7 +568,7 @@ const Marketplace = () => {
                                             multiple
                                             value={frameworkFilter}
                                             onChange={handleFrameworkFilterChange}
-                                            input={<OutlinedInput label='Framework' />}
+                                            input={<OutlinedInput label={t('marketplaces.filters.framework')} />}
                                             renderValue={(selected) => selected.join(', ')}
                                             MenuProps={MenuProps}
                                             sx={getSelectStyles(theme.palette.grey[900] + 25, theme?.customization?.isDarkMode)}
@@ -587,9 +589,9 @@ const Marketplace = () => {
                             }
                             onSearchChange={onSearchChange}
                             search={true}
-                            searchPlaceholder='Search Name/Description/Node'
-                            title='Marketplace'
-                            description='Explore and use pre-built templates'
+                            searchPlaceholder={t('marketplaces.searchPlaceholder')}
+                            title={t('marketplaces.title')}
+                            description={t('marketplaces.description')}
                         >
                             <ToggleButtonGroup
                                 sx={{ borderRadius: 2, height: '100%' }}
@@ -606,7 +608,7 @@ const Marketplace = () => {
                                     }}
                                     variant='contained'
                                     value='card'
-                                    title='Card View'
+                                    title={t('marketplaces.views.cardView')}
                                 >
                                     <IconLayoutGrid />
                                 </ToggleButton>
@@ -618,7 +620,7 @@ const Marketplace = () => {
                                     }}
                                     variant='contained'
                                     value='list'
-                                    title='List View'
+                                    title={t('marketplaces.views.listView')}
                                 >
                                     <IconList />
                                 </ToggleButton>
@@ -627,8 +629,8 @@ const Marketplace = () => {
                         {hasPermission('templates:marketplace') && hasPermission('templates:custom') && (
                             <Stack direction='row' justifyContent='space-between' sx={{ mb: 2 }}>
                                 <Tabs value={activeTabValue} onChange={handleTabChange} textColor='primary' aria-label='tabs'>
-                                    <PermissionTab permissionId='templates:marketplace' value={0} label='Community Templates' />
-                                    <PermissionTab permissionId='templates:custom' value={1} label='My Templates' />
+                                    <PermissionTab permissionId='templates:marketplace' value={0} label={t('marketplaces.tabs.communityTemplates')} />
+                                    <PermissionTab permissionId='templates:custom' value={1} label={t('marketplaces.tabs.myTemplates')} />
                                 </Tabs>
                                 <Autocomplete
                                     id='useCases'
@@ -794,7 +796,7 @@ const Marketplace = () => {
                                                     alt='WorkflowEmptySVG'
                                                 />
                                             </Box>
-                                            <div>No Marketplace Yet</div>
+                                            <div>{t('marketplaces.messages.noMarketplace')}</div>
                                         </Stack>
                                     )}
                             </TabPanel>
@@ -927,7 +929,7 @@ const Marketplace = () => {
                                                 alt='WorkflowEmptySVG'
                                             />
                                         </Box>
-                                        <div>No Saved Custom Templates</div>
+                                        <div>{t('marketplaces.messages.noCustomTemplates')}</div>
                                     </Stack>
                                 )}
                             </TabPanel>
