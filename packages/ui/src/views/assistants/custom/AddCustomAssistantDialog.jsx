@@ -28,10 +28,7 @@ import useNotifier from '@/utils/useNotifier'
 
 const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
-
     const dispatch = useDispatch()
-
-    // ==============================|| Snackbar ||============================== //
 
     useNotifier()
 
@@ -39,6 +36,9 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
     const closeSnackbar = (...args) => dispatch(closeSnackbarAction(...args))
 
     const [customAssistantName, setCustomAssistantName] = useState('')
+    const [category, setCategory] = useState('')
+    const [description, setDescription] = useState('')
+    const [isReadyToSave, setIsReadyToSave] = useState(false)
 
     useEffect(() => {
         if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
@@ -46,15 +46,22 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
     }, [show, dispatch])
 
+    useEffect(() => {
+        setIsReadyToSave(customAssistantName.trim().length > 0)
+    }, [customAssistantName])
+
     const createCustomAssistant = async () => {
         try {
             const obj = {
                 details: JSON.stringify({
-                    name: customAssistantName
+                    name: customAssistantName,
+                    category,
+                    description
                 }),
                 credential: uuidv4(),
                 type: 'CUSTOM'
             }
+
             const createResp = await assistantsApi.createNewAssistant(obj)
             if (createResp.data) {
                 enqueueSnackbar({
@@ -74,7 +81,9 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
         } catch (err) {
             enqueueSnackbar({
                 message: `Failed to add new Custom Assistant: ${
-                    typeof err.response.data === 'object' ? err.response.data.message : err.response.data
+                    typeof err.response?.data === 'object'
+                        ? err.response.data.message
+                        : err.response?.data || err.message
                 }`,
                 options: {
                     key: new Date().getTime() + Math.random(),
@@ -107,28 +116,52 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                 </div>
             </DialogTitle>
             <DialogContent>
-                <Box sx={{ p: 2 }}>
-                    <div style={{ display: 'flex', flexDirection: 'row' }}>
-                        <Typography>
-                            Name<span style={{ color: 'red' }}>&nbsp;*</span>
-                        </Typography>
-
-                        <div style={{ flexGrow: 1 }}></div>
+                <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    {/* Name */}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography>Name<span style={{ color: 'red' }}>&nbsp;*</span></Typography>
                     </div>
                     <OutlinedInput
                         size='small'
-                        sx={{ mt: 1 }}
-                        type='string'
+                        type='text'
                         fullWidth
-                        key='customAssistantName'
+                        value={customAssistantName}
                         onChange={(e) => setCustomAssistantName(e.target.value)}
-                        value={customAssistantName ?? ''}
+                        autoFocus
+                    />
+
+                    {/* Category */}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography>Category</Typography>
+                    </div>
+                    <OutlinedInput
+                        size='small'
+                        type='text'
+                        fullWidth
+                        value={category}
+                        placeholder='Add Category'
+                        onChange={(e) => setCategory(e.target.value)}
+                    />
+
+                    {/* Description */}
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography>Description</Typography>
+                    </div>
+                    <OutlinedInput
+                        size='small'
+                        type='text'
+                        fullWidth
+                        placeholder='Add description'
+                        multiline
+                        minRows={4}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
                     />
                 </Box>
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => onCancel()}>Cancel</Button>
-                <StyledButton disabled={!customAssistantName} variant='contained' onClick={() => createCustomAssistant()}>
+                <Button onClick={onCancel}>Cancel</Button>
+                <StyledButton disabled={!isReadyToSave} variant='contained' onClick={createCustomAssistant}>
                     {dialogProps.confirmButtonName}
                 </StyledButton>
             </DialogActions>
