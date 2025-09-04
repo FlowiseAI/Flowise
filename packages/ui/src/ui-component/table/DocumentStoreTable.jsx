@@ -227,7 +227,7 @@ export const DocumentStoreTable = ({ data, isLoading, onRowClick, images }) => {
                                                                     fontWeight: 200
                                                                 }}
                                                             >
-                                                                + {images.length - 3} More
+                                                                {images.length - 3} More
                                                             </Typography>
                                                         )}
                                                     </Box>

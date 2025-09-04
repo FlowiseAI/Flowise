@@ -22,6 +22,7 @@ import chatflowsApi from '@/api/chatflows'
 
 // Hooks
 import useApi from '@/hooks/useApi'
+import { useTranslation } from 'react-i18next'
 
 // const
 import { baseURL } from '@/store/constant'
@@ -35,6 +36,7 @@ import { IconPlus, IconLayoutGrid, IconList } from '@tabler/icons-react'
 const Chatflows = () => {
     const navigate = useNavigate()
     const theme = useTheme()
+    const { t } = useTranslation()
 
     const [isLoading, setLoading] = useState(true)
     const [images, setImages] = useState({})
@@ -129,7 +131,15 @@ const Chatflows = () => {
     }, [getAllChatflowsApi.data])
 
     return (
-        <MainCard>
+        <MainCard 
+            sx={{
+                background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(80, 200, 120, 0.1) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '20px',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}
+        >
             {error ? (
                 <ErrorBoundary error={error} />
             ) : (
@@ -137,12 +147,28 @@ const Chatflows = () => {
                     <ViewHeader
                         onSearchChange={onSearchChange}
                         search={true}
-                        searchPlaceholder='Search Name or Category'
-                        title='Chatflows'
-                        description='Build single-agent systems, chatbots and simple LLM flows'
+                        searchPlaceholder={t('chatflows.searchPlaceholder')}
+                        title={t('chatflows.title')}
+                        description={t('chatflows.description')}
+                        sx={{
+                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                            backdropFilter: 'blur(15px)',
+                            borderRadius: '16px',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            padding: '20px',
+                            marginBottom: '20px'
+                        }}
                     >
                         <ToggleButtonGroup
-                            sx={{ borderRadius: 2, maxHeight: 40 }}
+                            sx={{ 
+                                borderRadius: '12px', 
+                                maxHeight: 40,
+                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                                backdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                                mr: 1.5
+                            }}
                             value={view}
                             color='primary'
                             disabled={total === 0}
@@ -151,25 +177,49 @@ const Chatflows = () => {
                         >
                             <ToggleButton
                                 sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '10px',
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    backdropFilter: 'blur(5px)',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        background: 'rgba(255, 255, 255, 0.2)',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                                    },
+                                    '&.Mui-selected': {
+                                        background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.3) 0%, rgba(80, 200, 120, 0.3) 100%)',
+                                        color: 'white'
+                                    }
                                 }}
                                 variant='contained'
                                 value='card'
-                                title='Card View'
+                                title={t('chatflows.cardView')}
                             >
                                 <IconLayoutGrid />
                             </ToggleButton>
                             <ToggleButton
                                 sx={{
-                                    borderColor: theme.palette.grey[900] + 25,
-                                    borderRadius: 2,
-                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit'
+                                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '10px',
+                                    color: theme?.customization?.isDarkMode ? 'white' : 'inherit',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    backdropFilter: 'blur(5px)',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                        background: 'rgba(255, 255, 255, 0.2)',
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                                    },
+                                    '&.Mui-selected': {
+                                        background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.3) 0%, rgba(80, 200, 120, 0.3) 100%)',
+                                        color: 'white'
+                                    }
                                 }}
                                 variant='contained'
                                 value='list'
-                                title='List View'
+                                title={t('chatflows.listView')}
                             >
                                 <IconList />
                             </ToggleButton>
@@ -179,9 +229,24 @@ const Chatflows = () => {
                             variant='contained'
                             onClick={addNew}
                             startIcon={<IconPlus />}
-                            sx={{ borderRadius: 2, height: 40 }}
+                            sx={{ 
+                                borderRadius: '12px', 
+                                height: 40,
+                                ml: 0.5,
+                                background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.8) 0%, rgba(80, 200, 120, 0.8) 100%)',
+                                backdropFilter: 'blur(10px)',
+                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                                color: 'white',
+                                fontWeight: 600,
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)'
+                                }
+                            }}
                         >
-                            Add New
+                            {t('chatflows.addNew')}
                         </StyledPermissionButton>
                     </ViewHeader>
 
@@ -195,7 +260,26 @@ const Chatflows = () => {
                     {!isLoading && total > 0 && (
                         <>
                             {!view || view === 'card' ? (
-                                <Box display='grid' gridTemplateColumns='repeat(3, 1fr)' gap={gridSpacing}>
+                                <Box 
+                                    display='grid' 
+                                    gridTemplateColumns='repeat(auto-fit, minmax(320px, 1fr))' 
+                                    gap={gridSpacing}
+                                    sx={{
+                                        padding: '10px',
+                                        '& > *': {
+                                            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                                            backdropFilter: 'blur(10px)',
+                                            borderRadius: '16px',
+                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                transform: 'translateY(-4px)',
+                                                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)'
+                                            }
+                                        }
+                                    }}
+                                >
                                     {getAllChatflowsApi.data?.data?.filter(filterFlows).map((data, index) => (
                                         <ItemCard key={index} onClick={() => goToCanvas(data)} data={data} images={images[data.id]} />
                                     ))}
@@ -215,15 +299,38 @@ const Chatflows = () => {
                         </>
                     )}
                     {!isLoading && (!getAllChatflowsApi.data?.data || getAllChatflowsApi.data?.data.length === 0) && (
-                        <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
+                        <Stack 
+                            sx={{ 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                                backdropFilter: 'blur(10px)',
+                                borderRadius: '20px',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                padding: '40px',
+                                margin: '20px 0',
+                                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+                            }} 
+                            flexDirection='column'
+                        >
                             <Box sx={{ p: 2, height: 'auto' }}>
                                 <img
-                                    style={{ objectFit: 'cover', height: '25vh', width: 'auto' }}
+                                    style={{ 
+                                        objectFit: 'cover', 
+                                        height: '25vh', 
+                                        width: 'auto',
+                                        filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))'
+                                    }}
                                     src={WorkflowEmptySVG}
                                     alt='WorkflowEmptySVG'
                                 />
                             </Box>
-                            <div>No Chatflows Yet</div>
+                            <div style={{
+                                fontSize: '18px',
+                                fontWeight: 500,
+                                color: theme?.customization?.isDarkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+                                textAlign: 'center'
+                            }}>{t('chatflows.empty')}</div>
                         </Stack>
                     )}
                 </Stack>

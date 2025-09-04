@@ -15,6 +15,10 @@ import { ReactFlowContext } from '@/store/context/ReactFlowContext'
 import { ConfigProvider } from '@/store/context/ConfigContext'
 import { ErrorProvider } from '@/store/context/ErrorContext'
 
+// i18n
+import i18n from '@/i18n'
+import { I18nextProvider } from 'react-i18next'
+
 const container = document.getElementById('root')
 const root = createRoot(container)
 
@@ -27,7 +31,9 @@ root.render(
                         <ErrorProvider>
                             <ConfirmContextProvider>
                                 <ReactFlowContext>
-                                    <App />
+                                    <I18nextProvider i18n={i18n}>
+                                        <App />
+                                    </I18nextProvider>
                                 </ReactFlowContext>
                             </ConfirmContextProvider>
                         </ErrorProvider>

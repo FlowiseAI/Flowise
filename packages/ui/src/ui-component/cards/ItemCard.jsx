@@ -171,7 +171,7 @@ const ItemCard = ({ data, images, icons, onClick }) => {
                                             fontWeight: 200
                                         }}
                                     >
-                                        + {(images?.length || 0) + (icons?.length || 0) - 3} More
+                                        {(images?.length || 0) + (icons?.length || 0) - 3} More
                                     </Typography>
                                 </MoreItemsTooltip>
                             )}

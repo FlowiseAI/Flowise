@@ -93,7 +93,7 @@ const ViewHeader = ({
                         </IconButton>
                     )}
                 </Box>
-                <Box sx={{ height: 40, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Box sx={{ height: 40, display: 'flex', alignItems: 'center', gap: 1.5 }}>
                     {search && (
                         <OutlinedInput
                             inputRef={searchInputRef}

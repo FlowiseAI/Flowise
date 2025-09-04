@@ -77,7 +77,7 @@ const MainRoutes = {
     element: <MainLayout />,
     children: [
         {
-            path: '/',
+            path: '/home',
             element: (
                 <RequireAuth permission={'chatflows:view'}>
                     <Chatflows />

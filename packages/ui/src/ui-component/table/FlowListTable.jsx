@@ -307,7 +307,7 @@ export const FlowListTable = ({
                                                                     fontWeight: 200
                                                                 }}
                                                             >
-                                                                + {(images[row.id]?.length || 0) + (icons[row.id]?.length || 0) - 5} More
+                                                                {(images[row.id]?.length || 0) + (icons[row.id]?.length || 0) - 5} More
                                                             </Typography>
                                                         </MoreItemsTooltip>
                                                     )}

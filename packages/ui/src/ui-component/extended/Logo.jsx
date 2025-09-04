@@ -1,6 +1,3 @@
-import logo from '@/assets/images/flowise_white.svg'
-import logoDark from '@/assets/images/flowise_dark.svg'
-
 import { useSelector } from 'react-redux'
 
 // ==============================|| LOGO ||============================== //
@@ -10,11 +7,16 @@ const Logo = () => {
 
     return (
         <div style={{ alignItems: 'center', display: 'flex', flexDirection: 'row', marginLeft: '10px' }}>
-            <img
-                style={{ objectFit: 'contain', height: 'auto', width: 150 }}
-                src={customization.isDarkMode ? logoDark : logo}
-                alt='Flowise'
-            />
+            <h1 style={{
+                fontSize: '28px',
+                fontWeight: 'bold',
+                color: customization.isDarkMode ? '#ffffff' : '#1976d2',
+                margin: 0,
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                letterSpacing: '0.5px'
+            }}>
+                Freia
+            </h1>
         </div>
     )
 }

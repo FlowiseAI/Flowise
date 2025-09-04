@@ -31,6 +31,7 @@ import AzureSSOLoginIcon from '@/assets/images/microsoft-azure.svg'
 import { store } from '@/store'
 import { loginSuccess } from '@/store/reducers/authSlice'
 import { IconCircleCheck, IconExclamationCircle } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 
 // ==============================|| Register ||============================== //
 
@@ -65,37 +66,38 @@ const RegisterPage = () => {
     const theme = useTheme()
     useNotifier()
     const { isEnterpriseLicensed, isCloud, isOpenSource } = useConfig()
+    const { t } = useTranslation()
 
     const usernameInput = {
-        label: 'Username',
+        label: t('auth.register.displayName'),
         name: 'username',
         type: 'text',
         placeholder: 'John Doe'
     }
 
     const passwordInput = {
-        label: 'Password',
+        label: t('auth.register.password'),
         name: 'password',
         type: 'password',
         placeholder: '********'
     }
 
     const confirmPasswordInput = {
-        label: 'Confirm Password',
+        label: t('auth.register.confirmPassword'),
         name: 'confirmPassword',
         type: 'password',
         placeholder: '********'
     }
 
     const emailInput = {
-        label: 'EMail',
+        label: t('auth.register.email'),
         name: 'email',
         type: 'email',
         placeholder: 'user@company.com'
     }
 
     const inviteCodeInput = {
-        label: 'Invite Code',
+        label: t('auth.register.inviteCode'),
         name: 'inviteCode',
         type: 'text'
     }
@@ -280,39 +282,40 @@ const RegisterPage = () => {
                         </Alert>
                     )}
                     <Stack sx={{ gap: 1 }}>
-                        <Typography variant='h1'>Sign Up</Typography>
-                        <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
-                            Already have an account?{' '}
-                            <Link style={{ color: theme.palette.primary.main }} to='/signin'>
-                                Sign In
-                            </Link>
-                            .
-                        </Typography>
+                       <Typography variant='h1'>{t('auth.register.title')}</Typography>
+                       <Typography variant='body2' sx={{ color: theme.palette.grey[600] }}>
+                           {t('auth.register.alreadyHaveAccount')}{' '}
+                           <Link style={{ color: theme.palette.primary.main }} to='/signin'>
+                               {t('auth.signin.title')}
+                           </Link>
+                           .
+                       </Typography>
                     </Stack>
                     <form onSubmit={register} data-rewardful>
                         <Stack sx={{ width: '100%', flexDirection: 'column', alignItems: 'left', justifyContent: 'center', gap: 2 }}>
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Full Name<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        {t('auth.register.displayName')}<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
                                 <Input
                                     inputParam={usernameInput}
-                                    placeholder='Display Name'
+                                    placeholder={t('auth.register.displayName')}
                                     onChange={(newValue) => setUsername(newValue)}
                                     value={username}
                                     showDialog={false}
                                 />
                                 <Typography variant='caption'>
-                                    <i>Is used for display purposes only.</i>
+                                    <i>{t('auth.register.displayNameHint')}</i>
                                 </Typography>
                             </Box>
                             <Box>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
                                         Email<span style={{ color: 'red' }}>&nbsp;*</span>
+                                       {t('auth.register.email')}<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                     <div style={{ flexGrow: 1 }}></div>
                                 </div>
@@ -331,6 +334,7 @@ const RegisterPage = () => {
                                     <div style={{ display: 'flex', flexDirection: 'row' }}>
                                         <Typography>
                                             Invite Code<span style={{ color: 'red' }}>&nbsp;*</span>
+                                           {t('auth.register.inviteCode')}<span style={{ color: 'red' }}>&nbsp;*</span>
                                         </Typography>
                                         <div style={{ flexGrow: 1 }}></div>
                                     </div>
@@ -382,7 +386,7 @@ const RegisterPage = () => {
                             <StyledButton variant='contained' style={{ borderRadius: 12, height: 40, marginRight: 5 }} type='submit'>
                                 Create Account
                             </StyledButton>
-                            {configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>OR</Divider>}
+                            {configuredSsoProviders.length > 0 && <Divider sx={{ width: '100%' }}>{t('auth.register.or')}</Divider>}
                             {configuredSsoProviders &&
                                 configuredSsoProviders.map(
                                     (ssoProvider) =>

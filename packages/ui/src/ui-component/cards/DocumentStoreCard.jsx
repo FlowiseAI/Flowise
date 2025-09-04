@@ -172,7 +172,7 @@ const DocumentStoreCard = ({ data, images, onClick }) => {
                             ))}
                             {images.length > 3 && (
                                 <Typography sx={{ alignItems: 'center', display: 'flex', fontSize: '.9rem', fontWeight: 200 }}>
-                                    + {images.length - 3} More
+                                    {images.length - 3} More
                                 </Typography>
                             )}
                         </Box>

@@ -5,6 +5,7 @@ import PropTypes from 'prop-types'
 import { List, ListItemButton, Dialog, DialogContent, DialogTitle, Box, OutlinedInput, InputAdornment, Typography } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import { IconSearch, IconX } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 
 // API
 
@@ -18,6 +19,7 @@ const ComponentsListDialog = ({ show, dialogProps, onCancel, apiCall, onSelected
     const customization = useSelector((state) => state.customization)
     const dispatch = useDispatch()
     const theme = useTheme()
+    const { t } = useTranslation()
     const [searchValue, setSearchValue] = useState('')
     const [provider, setProvider] = useState([])
 
@@ -83,7 +85,7 @@ const ComponentsListDialog = ({ show, dialogProps, onCancel, apiCall, onSelected
                         id='input-search-credential'
                         value={searchValue}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        placeholder='Search'
+                        placeholder={t('common.search')}
                         startAdornment={
                             <InputAdornment position='start'>
                                 <IconSearch stroke={1.5} size='1rem' color={theme.palette.grey[500]} />
@@ -99,7 +101,7 @@ const ComponentsListDialog = ({ show, dialogProps, onCancel, apiCall, onSelected
                                         color: theme.palette.grey[900]
                                     }
                                 }}
-                                title='Clear Search'
+                                title={t('common.clearSearch')}
                             >
                                 <IconX
                                     stroke={1.5}

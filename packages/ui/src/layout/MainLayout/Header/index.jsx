@@ -2,9 +2,10 @@ import PropTypes from 'prop-types'
 import { useSelector, useDispatch } from 'react-redux'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 // material-ui
-import { Button, Avatar, Box, ButtonBase, Switch, Typography, Link } from '@mui/material'
+import { Button, Avatar, Box, ButtonBase, Switch, Typography, Link, ToggleButton, ToggleButtonGroup } from '@mui/material'
 import { useTheme, styled, darken } from '@mui/material/styles'
 
 // project imports
@@ -15,7 +16,7 @@ import OrgWorkspaceBreadcrumbs from '@/layout/MainLayout/Header/OrgWorkspaceBrea
 import PricingDialog from '@/ui-component/subscription/PricingDialog'
 
 // assets
-import { IconMenu2, IconX, IconSparkles } from '@tabler/icons-react'
+import { IconMenu2, IconX, IconSparkles, IconBrandGithub } from '@tabler/icons-react'
 
 // store
 import { store } from '@/store'
@@ -80,71 +81,12 @@ const MaterialUISwitch = styled(Switch)(({ theme }) => ({
     }
 }))
 
-const GitHubStarButton = ({ starCount, isDark }) => {
-    const theme = useTheme()
 
-    const formattedStarCount = starCount.toLocaleString()
-
-    return (
-        <Link href='https://github.com/FlowiseAI/Flowise' target='_blank' underline='none' sx={{ display: 'inline-flex' }}>
-            <Box
-                sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderRadius: '3px',
-                    overflow: 'hidden',
-                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`,
-                    fontSize: '12px',
-                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
-                    fontWeight: 600,
-                    lineHeight: 1
-                }}
-            >
-                <Box
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '3px 10px',
-                        backgroundColor: isDark ? darken(theme.palette.background.paper, 0.2) : '#f6f8fa',
-                        color: isDark ? '#c9d1d9' : '#24292e',
-                        borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}`
-                    }}
-                >
-                    <svg height='16' width='16' viewBox='0 0 16 16' style={{ marginRight: '4px', fill: isDark ? '#c9d1d9' : '#24292e' }}>
-                        <path
-                            fillRule='evenodd'
-                            d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z'
-                        ></path>
-                    </svg>
-                    <Typography variant='caption' sx={{ fontWeight: 600, color: isDark ? 'white' : theme.palette.text.primary }}>
-                        Star
-                    </Typography>
-                </Box>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '3px 10px',
-                        backgroundColor: isDark ? theme.palette.background.paper : 'white'
-                    }}
-                >
-                    <Typography variant='caption' sx={{ fontWeight: 600, color: isDark ? 'white' : theme.palette.text.primary }}>
-                        {formattedStarCount}
-                    </Typography>
-                </Box>
-            </Box>
-        </Link>
-    )
-}
-
-GitHubStarButton.propTypes = {
-    starCount: PropTypes.number.isRequired,
-    isDark: PropTypes.bool.isRequired
-}
 
 const Header = ({ handleLeftDrawerToggle }) => {
     const theme = useTheme()
     const navigate = useNavigate()
+    const { t, i18n } = useTranslation()
 
     const customization = useSelector((state) => state.customization)
     const logoutApi = useApi(accountApi.logout)
@@ -155,7 +97,9 @@ const Header = ({ handleLeftDrawerToggle }) => {
     const currentUser = useSelector((state) => state.auth.user)
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated)
     const [isPricingOpen, setIsPricingOpen] = useState(false)
-    const [starCount, setStarCount] = useState(0)
+
+    // GitHub stars
+    const [stars, setStars] = useState(null)
 
     useNotifier()
 
@@ -166,6 +110,12 @@ const Header = ({ handleLeftDrawerToggle }) => {
         dispatch({ type: SET_DARKMODE, isDarkMode: !isDark })
         setIsDark((isDark) => !isDark)
         localStorage.setItem('isDarkMode', !isDark)
+    }
+
+    const handleLangToggle = (event, nextLang) => {
+        if (!nextLang) return
+        i18n.changeLanguage(nextLang)
+        if (typeof window !== 'undefined') localStorage.setItem('app_lang', nextLang)
     }
 
     const signOutClicked = () => {
@@ -195,23 +145,29 @@ const Header = ({ handleLeftDrawerToggle }) => {
         }
     }, [logoutApi.data])
 
+    // Fetch GitHub stars for OSS build only
     useEffect(() => {
-        if (isCloud || isOpenSource) {
-            const fetchStarCount = async () => {
-                try {
-                    const response = await fetch('https://api.github.com/repos/FlowiseAI/Flowise')
-                    const data = await response.json()
-                    if (data.stargazers_count) {
-                        setStarCount(data.stargazers_count)
-                    }
-                } catch (error) {
-                    setStarCount(0)
-                }
+        let cancelled = false
+        async function fetchStars() {
+            try {
+                // if (!isOpenSource) return
+                // const resp = await fetch('https://api.github.com/repos/FlowiseAI/Flowise')
+                // if (!resp.ok) return
+                // const json = await resp.json()
+                // if (!cancelled) setStars(json?.stargazers_count ?? null)
+            } catch (err) {
+                console.error('Failed to fetch GitHub stars', err)
             }
-
-            fetchStarCount()
         }
-    }, [isCloud, isOpenSource])
+        fetchStars()
+        // refresh occasionally (once per hour)
+        const id = setInterval(fetchStars, 60 * 60 * 1000)
+        return () => {
+            cancelled = true
+            clearInterval(id)
+        }
+    }, [isOpenSource])
+
 
     return (
         <>
@@ -250,24 +206,57 @@ const Header = ({ handleLeftDrawerToggle }) => {
                     </ButtonBase>
                 )}
             </Box>
-            {isCloud || isOpenSource ? (
-                <Box
-                    sx={{
-                        flexGrow: 1,
-                        px: 4,
-                        display: 'flex',
-                        alignItems: 'center',
-                        '& span': {
-                            display: 'flex',
-                            alignItems: 'center'
-                        }
-                    }}
-                >
-                    <GitHubStarButton starCount={starCount} isDark={isDark} />
+            {/* GitHub Star (OSS only) */}
+            {false && isOpenSource && (
+                <Box sx={{ ml: 1.5, display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1 }}>
+                    <Link
+                        href='https://github.com/FlowiseAI/Flowise'
+                        target='_blank'
+                        rel='noreferrer'
+                        underline='none'
+                        sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.5,
+                            px: 1.25,
+                            py: 0.5,
+                            borderRadius: 999,
+                            border: (theme) => `1px solid ${theme.palette.divider}`,
+                            color: 'text.primary',
+                            backgroundColor: (theme) => theme.palette.background.paper,
+                            '&:hover': { backgroundColor: (theme) => theme.palette.action.hover }
+                        }}
+                        title='Star FlowiseAI/Flowise on GitHub'
+                    >
+                        <IconBrandGithub size={16} />
+                        <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                            Star
+                        </Typography>
+                    </Link>
+                    <Link
+                        href='https://github.com/FlowiseAI/Flowise/stargazers'
+                        target='_blank'
+                        rel='noreferrer'
+                        underline='none'
+                        sx={{
+                            px: 1,
+                            py: 0.5,
+                            borderRadius: 999,
+                            border: (theme) => `1px solid ${theme.palette.divider}`,
+                            color: 'text.secondary',
+                            backgroundColor: (theme) => theme.palette.background.paper,
+                            minWidth: 56,
+                            textAlign: 'center'
+                        }}
+                        title='View stargazers'
+                    >
+                        <Typography variant='body2' sx={{ fontWeight: 600 }}>
+                            {stars != null ? Number(stars).toLocaleString() : '—'}
+                        </Typography>
+                    </Link>
                 </Box>
-            ) : (
-                <Box sx={{ flexGrow: 1 }} />
             )}
+            <Box sx={{ flexGrow: 1 }} />
             {isEnterpriseLicensed && isAuthenticated && <WorkspaceSwitcher />}
             {isCloud && isAuthenticated && <OrgWorkspaceBreadcrumbs />}
             {isCloud && currentUser?.isOrganizationAdmin && (
@@ -309,8 +298,71 @@ const Header = ({ handleLeftDrawerToggle }) => {
                     }}
                 />
             )}
-            <MaterialUISwitch checked={isDark} onChange={changeDarkMode} />
-            <Box sx={{ ml: 2 }}></Box>
+            <ToggleButtonGroup
+                sx={{
+                    borderRadius: '12px',
+                    maxHeight: 40,
+                    background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                    mr: 2.5
+                }}
+                value={(i18n.language && i18n.language.split('-')[0]) || 'en'}
+                color='primary'
+                exclusive
+                onChange={handleLangToggle}
+            >
+                <ToggleButton
+                    sx={{
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderRadius: '10px',
+                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(5px)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            background: 'rgba(255, 255, 255, 0.2)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                        },
+                        '&.Mui-selected': {
+                            background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.3) 0%, rgba(80, 200, 120, 0.3) 100%)',
+                            color: 'white'
+                        }
+                    }}
+                    variant='contained'
+                    value='en'
+                    title={t('common.english')}
+                >
+                    EN
+                </ToggleButton>
+                <ToggleButton
+                    sx={{
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderRadius: '10px',
+                        color: theme?.customization?.isDarkMode ? 'white' : 'inherit',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(5px)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                            background: 'rgba(255, 255, 255, 0.2)',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                        },
+                        '&.Mui-selected': {
+                            background: 'linear-gradient(135deg, rgba(74, 144, 226, 0.3) 0%, rgba(80, 200, 120, 0.3) 100%)',
+                            color: 'white'
+                        }
+                    }}
+                    variant='contained'
+                    value='es'
+                    title={t('common.spanish')}
+                >
+                    ES
+                </ToggleButton>
+            </ToggleButtonGroup>
+            <MaterialUISwitch checked={isDark} onChange={changeDarkMode} sx={{ mr: 3 }} />
             <ProfileSection handleLogout={signOutClicked} />
         </>
     )

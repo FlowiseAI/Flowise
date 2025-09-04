@@ -387,20 +387,30 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         )}
                     </Box>
                 </Stack>
-                <Box>
+                <Stack flexDirection='row' sx={{ 
+                    alignItems: 'center',
+                    gap: 1,
+                    '& > *': {
+                        transition: 'all 0.2s ease'
+                    }
+                }}>
                     {chatflow?.id && (
-                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%', mr: 2 }}>
+                        <ButtonBase title='API Endpoint' sx={{ borderRadius: '50%' }}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
                                     ...theme.typography.commonAvatar,
                                     ...theme.typography.mediumAvatar,
-                                    transition: 'all .2s ease-in-out',
-                                    background: theme.palette.canvasHeader.deployLight,
-                                    color: theme.palette.canvasHeader.deployDark,
+                                    transition: 'all .3s ease',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white',
+                                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    backdropFilter: 'blur(10px)',
                                     '&:hover': {
-                                        background: theme.palette.canvasHeader.deployDark,
-                                        color: theme.palette.canvasHeader.deployLight
+                                        background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                                        boxShadow: '0 6px 16px rgba(102, 126, 234, 0.4)',
+                                        transform: 'translateY(-2px)'
                                     }
                                 }}
                                 color='inherit'
@@ -411,18 +421,22 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                         </ButtonBase>
                     )}
                     <Available permission={savePermission}>
-                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%', mr: 2 }}>
+                        <ButtonBase title={`Save ${title}`} sx={{ borderRadius: '50%' }}>
                             <Avatar
                                 variant='rounded'
                                 sx={{
                                     ...theme.typography.commonAvatar,
                                     ...theme.typography.mediumAvatar,
-                                    transition: 'all .2s ease-in-out',
-                                    background: theme.palette.canvasHeader.saveLight,
-                                    color: theme.palette.canvasHeader.saveDark,
+                                    transition: 'all .3s ease',
+                                    background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)',
+                                    color: 'white',
+                                    boxShadow: '0 4px 12px rgba(17, 153, 142, 0.3)',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    backdropFilter: 'blur(10px)',
                                     '&:hover': {
-                                        background: theme.palette.canvasHeader.saveDark,
-                                        color: theme.palette.canvasHeader.saveLight
+                                        background: 'linear-gradient(135deg, #0f8a7e 0%, #32d96b 100%)',
+                                        boxShadow: '0 6px 16px rgba(17, 153, 142, 0.4)',
+                                        transform: 'translateY(-2px)'
                                     }
                                 }}
                                 color='inherit'
@@ -438,12 +452,16 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                             sx={{
                                 ...theme.typography.commonAvatar,
                                 ...theme.typography.mediumAvatar,
-                                transition: 'all .2s ease-in-out',
-                                background: theme.palette.canvasHeader.settingsLight,
-                                color: theme.palette.canvasHeader.settingsDark,
+                                transition: 'all .3s ease',
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                color: 'white',
+                                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                backdropFilter: 'blur(10px)',
                                 '&:hover': {
-                                    background: theme.palette.canvasHeader.settingsDark,
-                                    color: theme.palette.canvasHeader.settingsLight
+                                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                                    boxShadow: '0 6px 16px rgba(102, 126, 234, 0.4)',
+                                    transform: 'translateY(-2px)'
                                 }
                             }}
                             onClick={() => setSettingsOpen(!isSettingsOpen)}
@@ -451,7 +469,7 @@ const CanvasHeader = ({ chatflow, isAgentCanvas, isAgentflowV2, handleSaveFlow, 
                             <IconSettings stroke={1.5} size='1.3rem' />
                         </Avatar>
                     </ButtonBase>
-                </Box>
+                </Stack>
             </Stack>
             <Settings
                 chatflow={chatflow}

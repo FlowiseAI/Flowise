@@ -57,7 +57,7 @@ export class IdentityManager {
     public async initialize() {
         await this._validateLicenseKey()
         this.permissions = new Permissions()
-        if (process.env.STRIPE_SECRET_KEY) {
+        if (process.env.STRIPE_SECRET_KEY && process.env.FORCE_OSS !== 'true') {
             this.stripeManager = await StripeManager.getInstance()
         }
     }
@@ -100,6 +100,13 @@ export class IdentityManager {
     }
 
     private _validateLicenseKey = async () => {
+        // Always-OSS short-circuit: when FORCE_OSS is true, ignore any license and force Open Source platform
+        if (process.env.FORCE_OSS === 'true') {
+            this.licenseValid = false
+            this.currentInstancePlatform = Platform.OPEN_SOURCE
+            return
+        }
+
         const LICENSE_URL = process.env.LICENSE_URL
         const FLOWISE_EE_LICENSE_KEY = process.env.FLOWISE_EE_LICENSE_KEY
 

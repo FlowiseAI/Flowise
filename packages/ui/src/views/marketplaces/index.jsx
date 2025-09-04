@@ -687,7 +687,7 @@ const Marketplace = () => {
                                                         }
                                                         placement='top'
                                                     >
-                                                        +{totalTags - limitTags}
+                                                        {totalTags - limitTags}
                                                     </Tooltip>
                                                 )}
                                             </>

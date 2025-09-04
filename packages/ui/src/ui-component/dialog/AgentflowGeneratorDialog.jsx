@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom'
 import { cloneDeep } from 'lodash'
 import { useState, useEffect, useContext } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useTranslation } from 'react-i18next'
 import PropTypes from 'prop-types'
 import { Box, Typography, OutlinedInput, DialogActions, Button, Dialog, DialogContent, DialogTitle, LinearProgress } from '@mui/material'
 import chatflowsApi from '@/api/chatflows'
@@ -19,22 +20,23 @@ import { initNode, showHideInputParams } from '@/utils/genericHelper'
 import DocStoreInputHandler from '@/views/docstore/DocStoreInputHandler'
 import useApi from '@/hooks/useApi'
 
-const defaultInstructions = [
+const getDefaultInstructions = (t) => [
     {
-        text: 'An agent that can autonomously search the web and generate report'
+        text: t('agentflowGenerator.examples.webSearchReport')
     },
     {
-        text: 'Summarize a document'
+        text: t('agentflowGenerator.examples.summarizeDocument')
     },
     {
-        text: 'Generate response to user queries and send it to Slack'
+        text: t('agentflowGenerator.examples.slackResponse')
     },
     {
-        text: 'A team of agents that can handle all customer queries'
+        text: t('agentflowGenerator.examples.customerQueries')
     }
 ]
 
 const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
+    const { t } = useTranslation()
     const portalElement = document.getElementById('portal')
     const [customAssistantInstruction, setCustomAssistantInstruction] = useState('')
     const [generatedInstruction, setGeneratedInstruction] = useState('')
@@ -190,7 +192,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
                             <img src={generatorGIF} alt='Generating Agentflow' style={{ maxWidth: '100%', height: 'auto' }} />
                             <Typography variant='h5' sx={{ mt: 2 }}>
-                                Generating your Agentflow...
+                                {t('agentflowGenerator.generating')}
                             </Typography>
                             <Box sx={{ width: '100%', mt: 2 }}>
                                 <LinearProgress
@@ -221,7 +223,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                     marginTop: '25px'
                                 }}
                             >
-                                {defaultInstructions.map((instruction, index) => {
+                                {getDefaultInstructions(t).map((instruction, index) => {
                                     return (
                                         <Button
                                             size='small'
@@ -261,7 +263,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                     rows={12}
                                     disabled={loading}
                                     value={customAssistantInstruction}
-                                    placeholder={'Describe your agent here'}
+                                    placeholder={t('agentflowGenerator.placeholder')}
                                     onChange={(event) => setCustomAssistantInstruction(event.target.value)}
                                 />
                             )}
@@ -278,7 +280,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                             <Box sx={{ mt: 2 }}>
                                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                                     <Typography>
-                                        Select model to generate agentflow<span style={{ color: 'red' }}>&nbsp;*</span>
+                                        {t('agentflowGenerator.selectModel')}<span style={{ color: 'red' }}>&nbsp;*</span>
                                     </Typography>
                                 </div>
                                 <Dropdown
@@ -349,7 +351,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         !Object.keys(selectedChatModel).length
                                     }
                                 >
-                                    Generate
+                                    {t('agentflowGenerator.generate')}
                                 </LoadingButton>
                             )}
                             {generatedInstruction && (
@@ -360,7 +362,7 @@ const AgentflowGeneratorDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                                         setGeneratedInstruction('')
                                     }}
                                 >
-                                    Back
+                                    {t('common.back')}
                                 </Button>
                             )}
                         </>
