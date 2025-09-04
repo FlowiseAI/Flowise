@@ -756,14 +756,20 @@ function LoaderRow(props) {
         setAnchorEl(null)
     }
 
-    const formatSources = (source) => {
+    const formatSources = (files, source) => {
+        // Prefer files.name when files array exists and has items
+        if (files && Array.isArray(files) && files.length > 0) {
+            return files.map((file) => file.name).join(', ')
+        }
+
+        // Fallback to original source logic
         if (source && typeof source === 'string' && source.includes('base64')) {
             return getFileName(source)
         }
         if (source && typeof source === 'string' && source.startsWith('[') && source.endsWith(']')) {
             return JSON.parse(source).join(', ')
         }
-        return source
+        return source || 'No source'
     }
 
     return (
@@ -784,7 +790,9 @@ function LoaderRow(props) {
                     {props.loader.loaderName}
                 </StyledTableCell>
                 <StyledTableCell onClick={props.onViewChunksClick}>{props.loader.splitterName ?? 'None'}</StyledTableCell>
-                <StyledTableCell onClick={props.onViewChunksClick}>{formatSources(props.loader.source)}</StyledTableCell>
+                <StyledTableCell onClick={props.onViewChunksClick}>
+                    {formatSources(props.loader.files, props.loader.source)}
+                </StyledTableCell>
                 <StyledTableCell onClick={props.onViewChunksClick}>
                     {props.loader.totalChunks && <Chip variant='outlined' size='small' label={props.loader.totalChunks.toLocaleString()} />}
                 </StyledTableCell>
