@@ -29,7 +29,6 @@ import useNotifier from '@/utils/useNotifier'
 const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) => {
     const portalElement = document.getElementById('portal')
     const dispatch = useDispatch()
-
     useNotifier()
 
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -40,12 +39,20 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
     const [description, setDescription] = useState('')
     const [isReadyToSave, setIsReadyToSave] = useState(false)
 
+    // Prefill fields whenever dialog opens or dialogProps changes
     useEffect(() => {
-        if (show) dispatch({ type: SHOW_CANVAS_DIALOG })
-        else dispatch({ type: HIDE_CANVAS_DIALOG })
+        if (show) {
+            dispatch({ type: SHOW_CANVAS_DIALOG })
+            setCustomAssistantName(dialogProps.name ?? '')
+            setCategory(dialogProps.tags ?? '')
+            setDescription(dialogProps.description ?? '')
+        } else {
+            dispatch({ type: HIDE_CANVAS_DIALOG })
+        }
         return () => dispatch({ type: HIDE_CANVAS_DIALOG })
-    }, [show, dispatch])
+    }, [show, dialogProps, dispatch])
 
+    // Enable save button only if Name is not empty
     useEffect(() => {
         setIsReadyToSave(customAssistantName.trim().length > 0)
     }, [customAssistantName])
@@ -65,7 +72,7 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             const createResp = await assistantsApi.createNewAssistant(obj)
             if (createResp.data) {
                 enqueueSnackbar({
-                    message: 'New Custom Assistant created.',
+                    message: dialogProps.confirmButtonName === 'Rename' ? 'Custom Assistant renamed.' : 'New Custom Assistant created.',
                     options: {
                         key: new Date().getTime() + Math.random(),
                         variant: 'success',
@@ -76,11 +83,11 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                         )
                     }
                 })
-                onConfirm(createResp.data.id)
+                onConfirm?.(createResp.data.id)
             }
         } catch (err) {
             enqueueSnackbar({
-                message: `Failed to add new Custom Assistant: ${
+                message: `Failed: ${
                     typeof err.response?.data === 'object'
                         ? err.response.data.message
                         : err.response?.data || err.message
@@ -96,7 +103,7 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
                     )
                 }
             })
-            onCancel()
+            onCancel?.()
         }
     }
 
@@ -162,7 +169,7 @@ const AddCustomAssistantDialog = ({ show, dialogProps, onCancel, onConfirm }) =>
             <DialogActions>
                 <Button onClick={onCancel}>Cancel</Button>
                 <StyledButton disabled={!isReadyToSave} variant='contained' onClick={createCustomAssistant}>
-                    {dialogProps.confirmButtonName}
+                    {dialogProps.confirmButtonName || 'Create'}
                 </StyledButton>
             </DialogActions>
             <ConfirmDialog />

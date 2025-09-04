@@ -13,6 +13,7 @@ import AssistantEmptySVG from '@/assets/images/assistant_empty.svg'
 import AddCustomAssistantDialog from './AddCustomAssistantDialog'
 import ErrorBoundary from '@/ErrorBoundary'
 import { StyledPermissionButton } from '@/ui-component/button/RBACButtons'
+import CustomAssistantTable from './CustomAssistantTable'
 
 // API
 import assistantsApi from '@/api/assistants'
@@ -37,7 +38,7 @@ const CustomAssistantLayout = () => {
     const [dialogProps, setDialogProps] = useState({})
 
     const [search, setSearch] = useState('')
-    const [view, setView] = useState('card')
+    const [view, setView] = useState(localStorage.getItem('assistantDisplayStyle') || 'card')
 
     const onSearchChange = (event) => {
         setSearch(event.target.value)
@@ -59,15 +60,22 @@ const CustomAssistantLayout = () => {
     }
 
     const handleChange = (event, nextView) => {
-        if (nextView !== null) setView(nextView)
+        if (nextView !== null) {
+            localStorage.setItem('assistantDisplayStyle', nextView)
+            setView(nextView)
+        }
     }
 
     const filterAssistants = (data) => {
-        const parsedData = JSON.parse(data.details)
-        return (
-            parsedData?.name?.toLowerCase().includes(search.toLowerCase()) ||
-            parsedData?.category?.toLowerCase().includes(search.toLowerCase())
-        )
+        try {
+            const parsedData = JSON.parse(data.details)
+            return (
+                parsedData?.name?.toLowerCase().includes(search.toLowerCase()) ||
+                parsedData?.category?.toLowerCase().includes(search.toLowerCase())
+            )
+        } catch {
+            return false
+        }
     }
 
     const getImages = (details) => {
@@ -95,10 +103,14 @@ const CustomAssistantLayout = () => {
         }
     }, [getAllAssistantsApi.error])
 
-    const groupedAssistants = getAllAssistantsApi.data
-        ?.filter(filterAssistants)
+    // Group assistants by category
+    const groupedAssistants = (getAllAssistantsApi.data || [])
+        .filter(filterAssistants)
         .reduce((acc, item) => {
-            const parsed = JSON.parse(item.details)
+            let parsed = {}
+            try {
+                parsed = JSON.parse(item.details)
+            } catch {}
             const category = parsed?.category || 'Uncategorized'
             if (!acc[category]) acc[category] = []
             acc[category].push({ ...item, parsedDetails: parsed })
@@ -125,7 +137,7 @@ const CustomAssistantLayout = () => {
                                 sx={{ borderRadius: 2, maxHeight: 40 }}
                                 value={view}
                                 color='primary'
-                                disabled={getAllAssistantsApi.data?.length === 0}
+                                disabled={!getAllAssistantsApi.data || getAllAssistantsApi.data.length === 0}
                                 exclusive
                                 onChange={handleChange}
                             >
@@ -172,8 +184,9 @@ const CustomAssistantLayout = () => {
                                 <Skeleton variant='rounded' height={160} />
                                 <Skeleton variant='rounded' height={160} />
                             </Box>
-                        ) : groupedAssistants && Object.keys(groupedAssistants).length > 0 ? (
-                            Object.entries(groupedAssistants).map(([category, items]) => (
+                        ) : view === 'card' ? (
+                            // Card view
+                            Object.entries(groupedAssistants || {}).map(([category, items]) => (
                                 <Box key={category}>
                                     <Box
                                         sx={{
@@ -207,6 +220,21 @@ const CustomAssistantLayout = () => {
                                 </Box>
                             ))
                         ) : (
+                            // List view using CustomAssistantTable
+                            <CustomAssistantTable
+                                data={getAllAssistantsApi.data || []}
+                                images={{}}
+                                icons={{}}
+                                isLoading={isLoading}
+                                filterFunction={filterAssistants}
+                                updateFlowsApi={getAllAssistantsApi}
+                                setError={setError}
+                                isAgentCanvas={false}
+                                isAssistant={true} 
+                            />
+                        )}
+
+                        {!isLoading && (!getAllAssistantsApi.data?.length || getAllAssistantsApi.data.length === 0) && (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
                                     <img
