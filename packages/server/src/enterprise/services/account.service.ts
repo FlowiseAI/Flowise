@@ -25,6 +25,7 @@ import { RoleErrorMessage, RoleService } from './role.service'
 import { UserErrorMessage, UserService } from './user.service'
 import { WorkspaceUserErrorMessage, WorkspaceUserService } from './workspace-user.service'
 import { WorkspaceErrorMessage, WorkspaceService } from './workspace.service'
+import { sanitizeUser } from '../../utils/sanitize.util'
 
 type AccountDTO = {
     user: Partial<User>
@@ -540,7 +541,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return data
+        return sanitizeUser(data.user)
     }
 
     public async resetPassword(data: AccountDTO) {
@@ -582,7 +583,7 @@ export class AccountService {
             await queryRunner.release()
         }
 
-        return data
+        return sanitizeUser(data.user)
     }
 
     public async logout(user: LoggedInUser) {
