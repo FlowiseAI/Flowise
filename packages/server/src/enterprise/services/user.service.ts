@@ -9,6 +9,7 @@ import { DataSource, QueryRunner } from 'typeorm'
 import { generateId } from '../../utils'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getHash } from '../utils/encryption.util'
+import { sanitizeUser } from '../../utils/sanitize.util'
 
 export const enum UserErrorMessage {
     EXPIRED_TEMP_TOKEN = 'Expired Temporary Token',
@@ -174,6 +175,6 @@ export class UserService {
             if (queryRunner && !queryRunner.isReleased) await queryRunner.release()
         }
 
-        return updatedUser
+        return sanitizeUser(updatedUser)
     }
 }
