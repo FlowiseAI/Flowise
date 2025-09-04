@@ -1,0 +1,162 @@
+import { Request, Response, NextFunction } from 'express'
+import chatflowsService from '../../services/chatflows'
+import textToSpeechService from '../../services/text-to-speech'
+import { InternalFlowiseError } from '../../errors/internalFlowiseError'
+import { StatusCodes } from 'http-status-codes'
+import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
+import { convertTextToSpeechStream } from 'flowise-components'
+import { databaseEntities } from '../../utils'
+
+const generateTextToSpeech = async (req: Request, res: Response) => {
+    try {
+        const {
+            chatId,
+            chatflowId,
+            chatMessageId,
+            text,
+            provider: bodyProvider,
+            credentialId: bodyCredentialId,
+            voice: bodyVoice,
+            model: bodyModel
+        } = req.body
+
+        if (!text) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `Error: textToSpeechController.generateTextToSpeech - text not provided!`
+            )
+        }
+
+        let provider: string, credentialId: string, voice: string, model: string
+
+        if (chatflowId) {
+            // Get TTS config from chatflow
+            const chatflow = await chatflowsService.getChatflowById(chatflowId)
+            const ttsConfig = JSON.parse(chatflow.textToSpeech)
+
+            // Extract the first provider config (assuming single provider per chatflow)
+            const providerKey = Object.keys(ttsConfig)[0]
+            if (!providerKey) {
+                throw new InternalFlowiseError(
+                    StatusCodes.BAD_REQUEST,
+                    `Error: textToSpeechController.generateTextToSpeech - no TTS provider configured in chatflow!`
+                )
+            }
+
+            const providerConfig = ttsConfig[providerKey]
+            provider = providerKey
+            credentialId = providerConfig.credentialId
+            voice = providerConfig.voice
+            model = providerConfig.model
+        } else {
+            // Use TTS config from request body
+            provider = bodyProvider
+            credentialId = bodyCredentialId
+            voice = bodyVoice
+            model = bodyModel
+        }
+
+        if (!provider) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `Error: textToSpeechController.generateTextToSpeech - provider not provided!`
+            )
+        }
+
+        if (!credentialId) {
+            throw new InternalFlowiseError(
+                StatusCodes.BAD_REQUEST,
+                `Error: textToSpeechController.generateTextToSpeech - credentialId not provided!`
+            )
+        }
+
+        res.setHeader('Content-Type', 'text/event-stream')
+        res.setHeader('Cache-Control', 'no-cache')
+        res.setHeader('Connection', 'keep-alive')
+        res.setHeader('Access-Control-Allow-Origin', '*')
+        res.setHeader('Access-Control-Allow-Headers', 'Cache-Control')
+
+        const appServer = getRunningExpressApp()
+        const options = {
+            orgId: '',
+            chatflowid: chatflowId || '',
+            chatId: chatId || '',
+            appDataSource: appServer.AppDataSource,
+            databaseEntities: databaseEntities
+        }
+
+        const textToSpeechConfig = {
+            name: provider,
+            credentialId: credentialId,
+            voice: voice,
+            model: model
+        }
+
+        await convertTextToSpeechStream(
+            text,
+            textToSpeechConfig,
+            options,
+            (format: string) => {
+                const startResponse = {
+                    event: 'tts_start',
+                    data: { chatMessageId, format }
+                }
+                res.write('event: tts_start\n')
+                res.write(`data: ${JSON.stringify(startResponse)}\n\n`)
+            },
+            (chunk: Buffer) => {
+                const audioBase64 = chunk.toString('base64')
+                const clientResponse = {
+                    event: 'tts_data',
+                    data: { chatMessageId, audioChunk: audioBase64 }
+                }
+                res.write('event: tts_data\n')
+                res.write(`data: ${JSON.stringify(clientResponse)}\n\n`)
+            },
+            async () => {
+                const endResponse = {
+                    event: 'tts_end',
+                    data: { chatMessageId }
+                }
+                res.write('event: tts_end\n')
+                res.write(`data: ${JSON.stringify(endResponse)}\n\n`)
+                res.end()
+            }
+        )
+    } catch (error) {
+        if (!res.headersSent) {
+            res.setHeader('Content-Type', 'text/event-stream')
+            res.setHeader('Cache-Control', 'no-cache')
+            res.setHeader('Connection', 'keep-alive')
+        }
+
+        const errorResponse = {
+            event: 'tts_error',
+            data: { error: error instanceof Error ? error.message : 'TTS generation failed' }
+        }
+        res.write('event: tts_error\n')
+        res.write(`data: ${JSON.stringify(errorResponse)}\n\n`)
+        res.end()
+    }
+}
+
+const getVoices = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { provider, credentialId } = req.query
+
+        if (!provider) {
+            throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, `Error: textToSpeechController.getVoices - provider not provided!`)
+        }
+
+        const voices = await textToSpeechService.getVoices(provider as any, credentialId as string)
+
+        return res.json(voices)
+    } catch (error) {
+        next(error)
+    }
+}
+
+export default {
+    generateTextToSpeech,
+    getVoices
+}
