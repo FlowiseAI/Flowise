@@ -591,6 +591,15 @@ export const additionalCallbacks = async (nodeData: INodeData, options: ICommonO
                     })
 
                     const trace = langwatch.getTrace()
+
+                    if (nodeData?.inputs?.analytics?.langWatch) {
+                        trace.update({
+                            metadata: {
+                                ...nodeData?.inputs?.analytics?.langWatch
+                            }
+                        })
+                    }
+
                     callbacks.push(trace.getLangChainCallback())
                 } else if (provider === 'arize') {
                     const arizeApiKey = getCredentialParam('arizeApiKey', credentialData, nodeData)
