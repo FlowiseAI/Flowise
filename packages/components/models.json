@@ -4,6 +4,20 @@
             "name": "awsChatBedrock",
             "models": [
                 {
+                    "label": "openai.gpt-oss-20b-1:0",
+                    "name": "openai.gpt-oss-20b-1:0",
+                    "description": "21B parameters model optimized for lower latency, local, and specialized use cases",
+                    "input_cost": 0.00007,
+                    "output_cost": 0.0003
+                },
+                {
+                    "label": "openai.gpt-oss-120b-1:0",
+                    "name": "openai.gpt-oss-120b-1:0",
+                    "description": "120B parameters model optimized for production, general purpose, and high-reasoning use cases",
+                    "input_cost": 0.00015,
+                    "output_cost": 0.0006
+                },
+                {
                     "label": "anthropic.claude-opus-4-1-20250805-v1:0",
                     "name": "anthropic.claude-opus-4-1-20250805-v1:0",
                     "description": "Claude 4.1 Opus",
