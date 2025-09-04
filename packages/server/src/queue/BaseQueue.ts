@@ -57,8 +57,6 @@ export abstract class BaseQueue {
     }
 
     public createWorker(concurrency: number = WORKER_CONCURRENCY): Worker {
-        logger.info(`[BaseQueue] Creating worker for queue "${this.queue.name}" with concurrency: ${concurrency}`)
-
         try {
             this.worker = new Worker(
                 this.queue.name,
@@ -90,14 +88,6 @@ export abstract class BaseQueue {
             // Add error listeners to the worker
             this.worker.on('error', (err) => {
                 logger.error(`[BaseQueue] Worker error for queue "${this.queue.name}":`, { error: err })
-            })
-
-            this.worker.on('ready', () => {
-                logger.info(`[BaseQueue] Worker ready for queue "${this.queue.name}"`)
-            })
-
-            this.worker.on('closing', () => {
-                logger.info(`[BaseQueue] Worker closing for queue "${this.queue.name}"`)
             })
 
             this.worker.on('closed', () => {

@@ -10,7 +10,7 @@ import executionsApi from '@/api/executions'
 import useApi from '@/hooks/useApi'
 
 // MUI
-import { Box, Card, Stack, Typography, useTheme } from '@mui/material'
+import { Box, Card, Stack, Typography, useTheme, CircularProgress } from '@mui/material'
 import { IconCircleXFilled } from '@tabler/icons-react'
 import { alpha } from '@mui/material/styles'
 
@@ -56,9 +56,13 @@ const PublicExecutionDetails = () => {
 
     return (
         <>
-            {!isLoading ? (
+            {isLoading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
+                    <CircularProgress size={60} />
+                </Box>
+            ) : (
                 <>
-                    {!execution || getExecutionByIdPublicApi.error ? (
+                    {getExecutionByIdPublicApi.error ? (
                         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
                             <Box sx={{ maxWidth: '500px', width: '100%' }}>
                                 <Card
@@ -96,7 +100,7 @@ const PublicExecutionDetails = () => {
                         />
                     )}
                 </>
-            ) : null}
+            )}
         </>
     )
 }

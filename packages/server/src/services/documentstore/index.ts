@@ -573,7 +573,8 @@ const _splitIntoChunks = async (appDataSource: DataSource, componentNodes: IComp
             chatflowid: uuidv4(),
             appDataSource,
             databaseEntities,
-            logger
+            logger,
+            processRaw: true
         }
         const docNodeInstance = new nodeModule.nodeClass()
         let docs: IDocument[] = await docNodeInstance.init(nodeData, '', options)
@@ -1725,6 +1726,11 @@ const upsertDocStore = async (
     loaderConfig = {
         ...loaderConfig,
         ...newLoader?.config
+    }
+
+    // Override loaderName if it's provided directly in data
+    if (data.loaderName) {
+        loaderName = data.loaderName
     }
 
     splitterName = newSplitter?.name ? getComponentLabelFromName(newSplitter?.name) : splitterName

@@ -35,7 +35,7 @@ class RequestsDelete_Tools implements INode {
         this.icon = 'del.png'
         this.category = 'Tools'
         this.description = 'Execute HTTP DELETE requests'
-        this.baseClasses = [this.type, ...getBaseClasses(RequestsDeleteTool)]
+        this.baseClasses = [this.type, ...getBaseClasses(RequestsDeleteTool), 'Tool']
         this.inputs = [
             {
                 label: 'URL',
