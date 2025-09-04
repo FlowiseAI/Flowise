@@ -361,6 +361,16 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
         if ('windows' === getOS()) {
             fileSeparator = '\\'
         }
+
+        const resp = await chatmessageApi.getAllChatmessageFromChatflow(dialogProps.chatflow.id, {
+            chatType: chatTypeFilter.length ? chatTypeFilter : undefined,
+            feedbackType: feedbackTypeFilter.length ? feedbackTypeFilter : undefined,
+            startDate: startDate,
+            endDate: endDate,
+            order: 'DESC'
+        })
+
+        const allChatlogs = resp.data ?? []
         for (let i = 0; i < allChatlogs.length; i += 1) {
             const chatmsg = allChatlogs[i]
             const chatPK = getChatPK(chatmsg)
