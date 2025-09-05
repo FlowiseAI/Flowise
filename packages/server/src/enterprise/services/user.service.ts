@@ -5,7 +5,7 @@ import { getRunningExpressApp } from '../../utils/getRunningExpressApp'
 import { Telemetry, TelemetryEventType } from '../../utils/telemetry'
 import { User, UserStatus } from '../database/entities/user.entity'
 import { isInvalidEmail, isInvalidName, isInvalidPassword, isInvalidUUID } from '../utils/validation.util'
-import { DataSource, QueryRunner } from 'typeorm'
+import { DataSource, ILike, QueryRunner } from 'typeorm'
 import { generateId } from '../../utils'
 import { GeneralErrorMessage } from '../../utils/constants'
 import { getHash } from '../utils/encryption.util'
@@ -54,8 +54,9 @@ export class UserService {
     }
 
     public async readUserByEmail(email: string | undefined, queryRunner: QueryRunner) {
+        if (!email) throw new InternalFlowiseError(StatusCodes.BAD_REQUEST, UserErrorMessage.INVALID_USER_EMAIL)
         this.validateUserEmail(email)
-        return await queryRunner.manager.findOneBy(User, { email })
+        return await queryRunner.manager.findOneBy(User, { email: ILike(email) })
     }
 
     public async readUserByToken(token: string | undefined, queryRunner: QueryRunner) {
