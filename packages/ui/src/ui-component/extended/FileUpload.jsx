@@ -242,7 +242,11 @@ const FileUpload = ({ dialogProps }) => {
                         marginTop: 2
                     }}
                 >
-                    <Typography sx={{ fontSize: 16, fontWeight: 600, marginBottom: 2, color: customization.isDarkMode ? '#ffffff' : '#424242' }}>PDF Configuration</Typography>
+                    <Typography
+                        sx={{ fontSize: 16, fontWeight: 600, marginBottom: 2, color: customization.isDarkMode ? '#ffffff' : '#424242' }}
+                    >
+                        PDF Configuration
+                    </Typography>
 
                     <Box>
                         <Typography sx={{ fontSize: 14, fontWeight: 500, marginBottom: 1 }}>PDF Usage</Typography>
