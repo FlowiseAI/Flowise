@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { DynamicStructuredTool } from '../OpenAPIToolkit/core'
 import { secureFetch } from '../../../src/httpSecurity'
+import { stripHTMLFromToolInput } from '../../../src/utils'
 
 export const desc = `Use this when you need to execute a DELETE request to remove data from a website.`
 
@@ -22,7 +23,7 @@ const createRequestsDeleteSchema = (queryParamsSchema?: string) => {
     // If queryParamsSchema is provided, parse it and add dynamic query params
     if (queryParamsSchema) {
         try {
-            const parsedSchema = JSON.parse(queryParamsSchema)
+            const parsedSchema = JSON.parse(stripHTMLFromToolInput(queryParamsSchema))
             const queryParamsObject: Record<string, z.ZodTypeAny> = {}
 
             Object.entries(parsedSchema).forEach(([key, config]: [string, any]) => {
@@ -108,7 +109,7 @@ export class RequestsDeleteTool extends DynamicStructuredTool {
 
         if (this.queryParamsSchema && params.queryParams && Object.keys(params.queryParams).length > 0) {
             try {
-                const parsedSchema = JSON.parse(this.queryParamsSchema)
+                const parsedSchema = JSON.parse(stripHTMLFromToolInput(this.queryParamsSchema))
                 const pathParams: Array<{ key: string; value: string }> = []
 
                 Object.entries(params.queryParams).forEach(([key, value]) => {
