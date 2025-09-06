@@ -17,7 +17,15 @@ export const JsonEditorInput = ({
     isDarkMode = false,
     isSequentialAgent = false
 }) => {
-    const [myValue, setMyValue] = useState(value ? JSON.parse(value) : {})
+    const [myValue, setMyValue] = useState(() => {
+        if (!value || value === '') return {}
+        try {
+            return JSON.parse(value)
+        } catch (error) {
+            console.warn('Invalid JSON value provided to JsonEditorInput:', error)
+            return {}
+        }
+    })
     const [availableNodesForVariable, setAvailableNodesForVariable] = useState([])
     const [mouseUpKey, setMouseUpKey] = useState('')
 
@@ -39,11 +47,21 @@ export const JsonEditorInput = ({
     }
 
     const onClipboardCopy = (e) => {
-        const src = e.src
-        if (Array.isArray(src) || typeof src === 'object') {
-            navigator.clipboard.writeText(JSON.stringify(src, null, '  '))
-        } else {
-            navigator.clipboard.writeText(src)
+        // Check if clipboard API is available
+        if (!navigator.clipboard || !navigator.clipboard.writeText) {
+            console.warn('Clipboard API not available')
+            return
+        }
+
+        try {
+            const src = e.src
+            if (Array.isArray(src) || typeof src === 'object') {
+                navigator.clipboard.writeText(JSON.stringify(src, null, '  '))
+            } else {
+                navigator.clipboard.writeText(src || '')
+            }
+        } catch (error) {
+            console.error('Error copying to clipboard:', error)
         }
     }
 
@@ -53,6 +71,23 @@ export const JsonEditorInput = ({
             setAvailableNodesForVariable(nodesForVariable)
         }
     }, [disabled, inputParam, nodes, edges, nodeId])
+
+    // Handle value changes safely
+    useEffect(() => {
+        if (value !== undefined) {
+            try {
+                if (!value || value === '') {
+                    setMyValue({})
+                } else {
+                    const parsedValue = JSON.parse(value)
+                    setMyValue(parsedValue)
+                }
+            } catch (error) {
+                console.warn('Invalid JSON value provided to JsonEditorInput:', error)
+                setMyValue({})
+            }
+        }
+    }, [value])
 
     return (
         <>
