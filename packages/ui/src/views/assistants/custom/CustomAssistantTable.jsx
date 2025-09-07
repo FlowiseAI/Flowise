@@ -44,7 +44,7 @@ function CustomAssistantTable({
     icons = {},
     isLoading,
     filterFunction = (row) => true,
-    updateFlowsApi,
+    updateAssistantsApi,
     setError
 }) {
     const { hasPermission } = useAuth()
@@ -108,7 +108,7 @@ function CustomAssistantTable({
                             </TableSortLabel>
                         </StyledTableCell>
                         <StyledTableCell>Tags</StyledTableCell>
-                        <StyledTableCell>Icons</StyledTableCell>
+                        <StyledTableCell>Description</StyledTableCell>
                         <StyledTableCell>
                             <TableSortLabel
                                 active={orderBy === 'updatedDate'}
@@ -202,7 +202,7 @@ function CustomAssistantTable({
                                             <CustomAssitantListMenu
                                                 assistant={row}
                                                 setError={setError}
-                                                updateFlowsApi={updateFlowsApi}
+                                                updateAssistantsApi={updateAssistantsApi} // ✅ fixed prop name
                                             />
                                         </Stack>
                                     </StyledTableCell>
@@ -222,7 +222,7 @@ CustomAssistantTable.propTypes = {
     icons: PropTypes.object,
     isLoading: PropTypes.bool,
     filterFunction: PropTypes.func,
-    updateFlowsApi: PropTypes.object,
+    updateAssistantsApi: PropTypes.object,
     setError: PropTypes.func
 }
 

@@ -40,9 +40,7 @@ const CustomAssistantLayout = () => {
     const [search, setSearch] = useState('')
     const [view, setView] = useState(localStorage.getItem('assistantDisplayStyle') || 'card')
 
-    const onSearchChange = (event) => {
-        setSearch(event.target.value)
-    }
+    const onSearchChange = (event) => setSearch(event.target.value)
 
     const addNew = () => {
         setDialogProps({
@@ -88,29 +86,28 @@ const CustomAssistantLayout = () => {
         return images
     }
 
+    // refresh function for rename/delete
+    const refreshAssistants = async () => {
+        try {
+            await getAllAssistantsApi.request('CUSTOM')
+        } catch (err) {
+            setError(err)
+        }
+    }
+
     useEffect(() => {
-        getAllAssistantsApi.request('CUSTOM')
+        refreshAssistants()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    useEffect(() => {
-        setLoading(getAllAssistantsApi.loading)
-    }, [getAllAssistantsApi.loading])
+    useEffect(() => setLoading(getAllAssistantsApi.loading), [getAllAssistantsApi.loading])
+    useEffect(() => { if (getAllAssistantsApi.error) setError(getAllAssistantsApi.error) }, [getAllAssistantsApi.error])
 
-    useEffect(() => {
-        if (getAllAssistantsApi.error) {
-            setError(getAllAssistantsApi.error)
-        }
-    }, [getAllAssistantsApi.error])
-
-    // Group assistants by category
     const groupedAssistants = (getAllAssistantsApi.data || [])
         .filter(filterAssistants)
         .reduce((acc, item) => {
             let parsed = {}
-            try {
-                parsed = JSON.parse(item.details)
-            } catch {}
+            try { parsed = JSON.parse(item.details) } catch {}
             const category = parsed?.category || 'Uncategorized'
             if (!acc[category]) acc[category] = []
             acc[category].push({ ...item, parsedDetails: parsed })
@@ -125,9 +122,9 @@ const CustomAssistantLayout = () => {
                 ) : (
                     <Stack flexDirection='column' sx={{ gap: 3 }}>
                         <ViewHeader
-                            isBackButton={true}
+                            isBackButton
                             onSearchChange={onSearchChange}
-                            search={true}
+                            search
                             searchPlaceholder='Search Assistants'
                             title='Custom Assistant'
                             description='Create custom assistants with your choice of LLMs'
@@ -185,22 +182,19 @@ const CustomAssistantLayout = () => {
                                 <Skeleton variant='rounded' height={160} />
                             </Box>
                         ) : view === 'card' ? (
-                            // Card view
                             Object.entries(groupedAssistants || {}).map(([category, items]) => (
                                 <Box key={category}>
-                                    <Box
-                                        sx={{
-                                            mb: 2,
-                                            px: 2,
-                                            py: 1,
-                                            display: 'inline-block',
-                                            borderRadius: 2,
-                                            backgroundColor: theme.palette.primary.light,
-                                            color: theme.palette.primary.contrastText,
-                                            fontWeight: 600,
-                                            boxShadow: 1
-                                        }}
-                                    >
+                                    <Box sx={{
+                                        mb: 2,
+                                        px: 2,
+                                        py: 1,
+                                        display: 'inline-block',
+                                        borderRadius: 2,
+                                        backgroundColor: theme.palette.primary.light,
+                                        color: theme.palette.primary.contrastText,
+                                        fontWeight: 600,
+                                        boxShadow: 1
+                                    }}>
                                         <Typography variant='subtitle1'>{category}</Typography>
                                     </Box>
 
@@ -220,28 +214,21 @@ const CustomAssistantLayout = () => {
                                 </Box>
                             ))
                         ) : (
-                            // List view using CustomAssistantTable
                             <CustomAssistantTable
                                 data={getAllAssistantsApi.data || []}
                                 images={{}}
                                 icons={{}}
                                 isLoading={isLoading}
                                 filterFunction={filterAssistants}
-                                updateFlowsApi={getAllAssistantsApi}
+                                updateAssistantsApi={{ request: refreshAssistants }} // ✅ pass refresh function
                                 setError={setError}
-                                isAgentCanvas={false}
-                                isAssistant={true} 
                             />
                         )}
 
                         {!isLoading && (!getAllAssistantsApi.data?.length || getAllAssistantsApi.data.length === 0) && (
                             <Stack sx={{ alignItems: 'center', justifyContent: 'center' }} flexDirection='column'>
                                 <Box sx={{ p: 2, height: 'auto' }}>
-                                    <img
-                                        style={{ objectFit: 'cover', height: '20vh', width: 'auto' }}
-                                        src={AssistantEmptySVG}
-                                        alt='AssistantEmptySVG'
-                                    />
+                                    <img style={{ objectFit: 'cover', height: '20vh', width: 'auto' }} src={AssistantEmptySVG} alt='AssistantEmptySVG' />
                                 </Box>
                                 <div>No Custom Assistants Added Yet</div>
                             </Stack>
@@ -255,6 +242,7 @@ const CustomAssistantLayout = () => {
                 dialogProps={dialogProps}
                 onCancel={() => setShowDialog(false)}
                 onConfirm={onConfirm}
+                updateAssistantsApi={{ request: refreshAssistants }}
                 setError={setError}
             />
         </>

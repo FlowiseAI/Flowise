@@ -1,28 +1,20 @@
 import { useState, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
-import { styled, alpha } from '@mui/material/styles'
-import Menu from '@mui/material/Menu'
-import { PermissionMenuItem } from '@/ui-component/button/RBACButtons'
+import { Button, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Typography } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit'
-import Divider from '@mui/material/Divider'
 import FileCopyIcon from '@mui/icons-material/FileCopy'
 import FileDownloadIcon from '@mui/icons-material/Downloading'
 import FileDeleteIcon from '@mui/icons-material/Delete'
-import Button from '@mui/material/Button'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { IconX } from '@tabler/icons-react'
-
-import useConfirm from '@/hooks/useConfirm'
+import { styled } from '@mui/material/styles'
+import Menu from '@mui/material/Menu'
+import { PermissionMenuItem } from '@/ui-component/button/RBACButtons'
+import AddCustomAssistantDialog from './AddCustomAssistantDialog'
 import useNotifier from '@/utils/useNotifier'
-
-// API
 import assistantsApi from '@/api/assistants'
 
-// Dialogs
-import AddCustomAssistantDialog from './AddCustomAssistantDialog'
-
-// ====================== Styled Menu ======================
 const StyledMenu = styled((props) => (
     <Menu
         elevation={0}
@@ -37,23 +29,11 @@ const StyledMenu = styled((props) => (
         minWidth: 180,
         boxShadow:
             'rgb(255, 255, 255) 0px 0px 0px 0px, rgba(0, 0, 0, 0.05) 0px 0px 0px 1px, rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px',
-        '& .MuiMenu-list': { padding: '4px 0' },
-        '& .MuiMenuItem-root': {
-            '& .MuiSvgIcon-root': {
-                fontSize: 18,
-                color: theme.palette.text.secondary,
-                marginRight: theme.spacing(1.5)
-            },
-            '&:active': {
-                backgroundColor: alpha(theme.palette.primary.main, theme.palette.action.selectedOpacity)
-            }
-        }
+        '& .MuiMenu-list': { padding: '4px 0' }
     }
 }))
 
-// ====================== Component ======================
 export default function CustomAssitantListMenu({ assistant, setError, updateAssistantsApi }) {
-    const { confirm } = useConfirm()
     const dispatch = useDispatch()
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch({ type: 'ENQUEUE_SNACKBAR', ...args })
@@ -69,16 +49,16 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
     const [renameTags, setRenameTags] = useState('')
     const [renameDescription, setRenameDescription] = useState('')
 
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false) // NEW: delete confirmation
+
     useEffect(() => {
-        if (assistant && assistant.details) {
+        if (assistant?.details) {
             try {
                 const details = JSON.parse(assistant.details)
                 setRenameName(details.name || '')
                 setRenameTags(details.category || '')
                 setRenameDescription(details.description || '')
-            } catch (err) {
-                console.error('Failed to parse assistant details:', err)
-            }
+            } catch {}
         }
     }, [assistant])
 
@@ -90,46 +70,49 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
         setAddAssistantDialogProps({
             title: 'Rename Assistant',
             confirmButtonName: 'Rename',
+            id: assistant.id,
             name: renameName,
             tags: renameTags,
             description: renameDescription,
-            onConfirm: async (updatedId) => {
-                if (updateAssistantsApi?.request) await updateAssistantsApi.request('CUSTOM')
-                setAddAssistantDialogOpen(false)
-            }
+            credential: assistant.credential
         })
         setAddAssistantDialogOpen(true)
     }
 
-    const handleDelete = async () => {
+    const handleDelete = () => {
         setAnchorEl(null)
-        const isConfirmed = await confirm({
-            title: `Delete`,
-            description: `Delete Assistant ${renameName}?`,
-            confirmButtonName: 'Delete',
-            cancelButtonName: 'Cancel'
-        })
+        setDeleteDialogOpen(true)
+    }
 
-        if (isConfirmed) {
-            try {
-                await assistantsApi.deleteAssistant(assistant.id, false)
+    const confirmDelete = async () => {
+        setDeleteDialogOpen(false)
+        try {
+            await assistantsApi.deleteAssistant(assistant.id, false)
+            if (updateAssistantsApi && typeof updateAssistantsApi.request === 'function') {
                 await updateAssistantsApi.request('CUSTOM')
-            } catch (error) {
-                if (setError) setError(error)
-                enqueueSnackbar({
-                    message: typeof error.response?.data === 'object' ? error.response.data.message : error.response?.data,
-                    options: {
-                        key: new Date().getTime() + Math.random(),
-                        variant: 'error',
-                        persist: true,
-                        action: (key) => (
-                            <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
-                                <IconX />
-                            </Button>
-                        )
-                    }
-                })
             }
+            enqueueSnackbar({
+                message: 'Assistant deleted successfully.',
+                options: { key: new Date().getTime(), variant: 'success' }
+            })
+        } catch (error) {
+            if (setError) setError(error)
+            enqueueSnackbar({
+                message:
+                    typeof error.response?.data === 'object'
+                        ? error.response.data.message
+                        : error.response?.data || 'Delete failed',
+                options: {
+                    key: new Date().getTime(),
+                    variant: 'error',
+                    persist: true,
+                    action: (key) => (
+                        <Button style={{ color: 'white' }} onClick={() => closeSnackbar(key)}>
+                            <IconX />
+                        </Button>
+                    )
+                }
+            })
         }
     }
 
@@ -137,7 +120,7 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
         setAnchorEl(null)
         enqueueSnackbar({
             message: 'Duplicate Assistant - Coming soon!',
-            options: { key: new Date().getTime() + Math.random(), variant: 'info' }
+            options: { key: new Date().getTime(), variant: 'info' }
         })
     }
 
@@ -151,10 +134,10 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
             link.href = URL.createObjectURL(blob)
             link.download = `${details.name || 'assistant'}.json`
             link.click()
-        } catch (err) {
+        } catch {
             enqueueSnackbar({
                 message: 'Export failed',
-                options: { key: new Date().getTime() + Math.random(), variant: 'error' }
+                options: { key: new Date().getTime(), variant: 'error' }
             })
         }
     }
@@ -167,18 +150,12 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
                 variant='outlined'
                 size='small'
             >
-                Actions
+                Options
             </Button>
+
             <StyledMenu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 <PermissionMenuItem onClick={handleAssistantRename} icon={<EditIcon />}>
                     Rename
-                </PermissionMenuItem>
-                <Divider />
-                <PermissionMenuItem onClick={handleDuplicate} icon={<FileCopyIcon />}>
-                    Duplicate
-                </PermissionMenuItem>
-                <PermissionMenuItem onClick={handleExport} icon={<FileDownloadIcon />}>
-                    Export
                 </PermissionMenuItem>
                 <Divider />
                 <PermissionMenuItem onClick={handleDelete} icon={<FileDeleteIcon />}>
@@ -190,11 +167,30 @@ export default function CustomAssitantListMenu({ assistant, setError, updateAssi
                 show={addAssistantDialogOpen}
                 dialogProps={addAssistantDialogProps}
                 onCancel={() => setAddAssistantDialogOpen(false)}
-                onConfirm={(updatedId) => {
-                    addAssistantDialogProps.onConfirm?.(updatedId)
+                onConfirm={async () => {
                     setAddAssistantDialogOpen(false)
+                    if (updateAssistantsApi && typeof updateAssistantsApi.request === 'function') {
+                        await updateAssistantsApi.request('CUSTOM')
+                    }
+                    enqueueSnackbar({
+                        message: 'Assistant renamed successfully.',
+                        options: { key: new Date().getTime(), variant: 'success' }
+                    })
                 }}
+                updateAssistantsApi={updateAssistantsApi}
             />
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+                <DialogTitle>Delete Assistant</DialogTitle>
+                <DialogContent>
+                    <Typography>Are you sure you want to delete "{renameName}"?</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                    <Button variant="contained" color="error" onClick={confirmDelete}>Delete</Button>
+                </DialogActions>
+            </Dialog>
         </>
     )
 }
