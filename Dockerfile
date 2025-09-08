@@ -6,6 +6,11 @@
 
 FROM --platform=linux/amd64 node:20-alpine as base
 
+# Add metadata labels
+LABEL maintainer="AnswerAI Team"
+LABEL version="1.0.0"
+LABEL description="AnswerAI Flowise Application"
+
 WORKDIR /app
 
 RUN apk add --update libc6-compat python3 make g++ bash
@@ -20,7 +25,7 @@ RUN apk add --no-cache curl
 
 #install PNPM globaly
 RUN npm install -g pnpm turbo@1
-RUN pnpm config set store-dir ~/.pnpm-store
+RUN pnpm config set store-dir /root/.pnpm-store
 
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
@@ -46,7 +51,7 @@ COPY --from=pruner /app/out/json/ .
 COPY scripts/ ./scripts/
 
 # First install the dependencies (as they change less often)
-RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm install 
+RUN --mount=type=cache,id=pnpm,target=/root/.pnpm-store pnpm install 
 
 # Copy the rest of the source files into the image.
 COPY --from=pruner /app/out/full/ .
@@ -55,7 +60,7 @@ COPY --from=pruner /app/out/full/ .
 RUN --mount=type=cache,target=/app/node_modules/.cache pnpm run build --filter flowise
 
 # Prune the dev dependencies
-#RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm prune --prod --no-optional
+#RUN --mount=type=cache,id=pnpm,target=/root/.pnpm-store pnpm prune --prod --no-optional
 
 ################################################################################
 
@@ -63,11 +68,19 @@ FROM base AS runner
 
 ENV NODE_ENV=production
 
+# Build arguments for port configuration
+ARG PORT=4000
+ENV PORT=$PORT
+
+# Set default proxy configuration for reverse-proxied deployments (Render, AWS, etc.)
+# Can be overridden at runtime if needed
+ENV NUMBER_OF_PROXIES=1
+
 COPY --from=build /app .
 
 WORKDIR /app/packages/server
 
 # Expose the port that the application listens on.
-EXPOSE 4000
+EXPOSE $PORT
 
 CMD ["pnpm", "start"]

@@ -113,7 +113,7 @@ function validateEnvironment() {
   if (missingVars.length > 0) {
     if (!SUPPRESS_MISSING) {
       log('warn', 'The following environment variables are missing:');
-      missingVars.forEach((varName) => {
+      missingVars.sort().forEach((varName) => {
         const inTurbo = turboVars.includes(varName);
         const inRuntime = runtimeVars.includes(varName);
         const source =

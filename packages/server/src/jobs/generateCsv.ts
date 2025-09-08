@@ -7,6 +7,7 @@ import { AppCsvParseRunsStatus } from '../Interface'
 import { AppCsvParseRuns } from '../database/entities/AppCsvParseRuns'
 import { AppCsvParseRows } from '../database/entities/AppCsvParseRows'
 import { getS3Config } from 'flowise-components'
+import { generateColumnName } from '../utils/csvUtils'
 
 /**
  * Cron job schedule for generating csv
@@ -74,22 +75,83 @@ const generateCsv = async (csvParseRun: AppCsvParseRuns) => {
 
         // if includeOriginalColumns is set to true, download original csv from S3
         if (csvParseRun.includeOriginalColumns) {
-            const originalCsv = await s3Client.send(
-                new GetObjectCommand({
-                    Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
-                    Key: csvParseRun.originalCsvUrl.replace(`s3://${process.env.S3_STORAGE_BUCKET_NAME ?? ''}/`, '')
-                })
-            )
-            // Get the CSV content as string
-            const originalCsvText = (await originalCsv.Body?.transformToString()) ?? ''
+            try {
+                logger.info(`Downloading original CSV for run ${csvParseRun.id} to include original columns`)
+                const originalCsv = await s3Client.send(
+                    new GetObjectCommand({
+                        Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
+                        Key: csvParseRun.originalCsvUrl.replace(`s3://${process.env.S3_STORAGE_BUCKET_NAME ?? ''}/`, '')
+                    })
+                )
+                // Get the CSV content as string
+                const originalCsvText = (await originalCsv.Body?.transformToString()) ?? ''
+                logger.info(`Original CSV downloaded, size: ${originalCsvText.length} characters`)
 
-            // Parse the CSV content into records
-            records = parse(originalCsvText, {
-                columns: true,
-                skip_empty_lines: true,
-                comment: '#',
-                comment_no_infix: true
-            })
+                // Use user's explicit decision about headers
+                const userSpecifiedHeaders = (csvParseRun.configuration as any)?.firstRowIsHeaders || false
+                logger.info(`Parsing original CSV with headers=${userSpecifiedHeaders}`)
+
+                // Parse CSV using native csv-parse capability with more robust error handling
+                let rawRecords: any
+                try {
+                    rawRecords = parse(originalCsvText, {
+                        columns: userSpecifiedHeaders, // ✅ Use user decision directly
+                        skip_empty_lines: true,
+                        comment: '#',
+                        comment_no_infix: true,
+                        // Add more robust parsing options
+                        quote: '"',
+                        escape: '"',
+                        relax_quotes: true,
+                        relax_column_count: true
+                    })
+                    logger.info(
+                        `CSV parsed successfully with ${
+                            Array.isArray(rawRecords) ? rawRecords.length : Object.keys(rawRecords).length
+                        } records`
+                    )
+                } catch (parseError) {
+                    logger.warn(`Initial CSV parse failed, trying with more lenient options: ${parseError}`)
+                    // Fallback to more lenient parsing
+                    rawRecords = parse(originalCsvText, {
+                        columns: userSpecifiedHeaders,
+                        skip_empty_lines: true,
+                        comment: '#',
+                        comment_no_infix: true,
+                        quote: '"',
+                        escape: '"',
+                        relax_quotes: true,
+                        relax_column_count: true,
+                        relax_column_count_more: true,
+                        relax_column_count_less: true
+                    })
+                    logger.info(
+                        `CSV parsed successfully with lenient options, ${
+                            Array.isArray(rawRecords) ? rawRecords.length : Object.keys(rawRecords).length
+                        } records`
+                    )
+                }
+
+                if (userSpecifiedHeaders) {
+                    // csv-parse already created objects with real headers
+                    records = rawRecords as Record<string, string>[]
+                } else {
+                    // csv-parse returned arrays, create objects with generic column names
+                    records = (rawRecords as string[][]).map((row: string[]) => {
+                        const obj: Record<string, string> = {}
+                        row.forEach((value, colIndex) => {
+                            obj[generateColumnName(colIndex)] = value || ''
+                        })
+                        return obj
+                    })
+                }
+                logger.info(`Processed ${records.length} records from original CSV`)
+            } catch (originalCsvError) {
+                logger.error(`Failed to process original CSV for run ${csvParseRun.id}:`, originalCsvError)
+                // Continue without original columns rather than failing completely
+                logger.info(`Continuing CSV generation without original columns due to parsing error`)
+                records = []
+            }
         }
 
         if (csvParseRun.rowsRequested > 0) {
@@ -97,33 +159,55 @@ const generateCsv = async (csvParseRun: AppCsvParseRuns) => {
         }
 
         // generate csv from rows
+        logger.info(`Merging AI-generated data from ${rows.length} processed rows`)
         rows.forEach((row, index: number) => {
+            // Ensure we have a record to merge into
+            if (!records[index]) {
+                records[index] = {}
+            }
             records[index] = {
                 ...records[index],
                 ...(row.generatedData ?? {})
             }
         })
 
+        // If we don't have any original records but have generated data, create records from generated data only
+        if (records.length === 0 && rows.length > 0) {
+            logger.info('No original columns, creating CSV from AI-generated data only')
+            records = rows.map((row) => row.generatedData ?? {})
+        }
+
+        logger.info(`Creating CSV from ${records.length} records`)
+
         // create csv from records
         const csv = convertToCSV(records)
+        logger.info(`Generated CSV with ${csv.split('\n').length} lines`)
 
         // save csv to S3
-        const key = `s3://${process.env.S3_STORAGE_BUCKET_NAME ?? ''}/csv-parse-runs/${csvParseRun.organizationId}/${csvParseRun.id}.csv`
+        const s3Key = `csv-parse-runs/${csvParseRun.organizationId}/${csvParseRun.id}.csv`
+        const fullS3Url = `s3://${process.env.S3_STORAGE_BUCKET_NAME ?? ''}/${s3Key}`
+
+        logger.info(`Uploading generated CSV to S3: ${fullS3Url}`)
         await s3Client.send(
             new PutObjectCommand({
                 Bucket: process.env.S3_STORAGE_BUCKET_NAME ?? '',
-                Key: key,
-                Body: csv
+                Key: s3Key,
+                Body: csv,
+                ContentType: 'text/csv'
             })
         )
+        logger.info(`CSV successfully uploaded to S3`)
 
         // update csvParseRun with generatedCsvUrl
+        logger.info(`Updating CSV parse run ${csvParseRun.id} status to READY`)
         await appServer.AppDataSource.getRepository(AppCsvParseRuns)
             .createQueryBuilder()
             .update()
-            .set({ processedCsvUrl: key, status: AppCsvParseRunsStatus.READY, completedAt: new Date() })
+            .set({ processedCsvUrl: s3Key, status: AppCsvParseRunsStatus.READY, completedAt: new Date() })
             .where('id = :id', { id: csvParseRun.id })
             .execute()
+
+        logger.info(`CSV generation completed successfully for run ${csvParseRun.id}`)
     } catch (error) {
         logger.error('Error generating csv', error)
         await appServer.AppDataSource.getRepository(AppCsvParseRuns)

@@ -1,9 +1,13 @@
 Parameters:
     App:
         Type: String
-
+        Description: Your application's name.
     Env:
         Type: String
+        Description: The environment name your service, job, or workflow is being deployed to.
+    Name:
+        Type: String
+        Description: Your workload's name.
 
 Resources:
     # Allow frontend service to access S3 storage bucket
@@ -22,16 +26,16 @@ Resources:
                           - s3:DeleteObject
                           - s3:ListBucket
                       Resource:
-                          - !Sub 'arn:aws:s3:::${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorage/*'
-                          - !Sub 'arn:aws:s3:::${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorage'
+                          - !Sub 'arn:aws:s3:::${App}-${Env}-theansweraiserverstorage/*'
+                          - !Sub 'arn:aws:s3:::${App}-${Env}-theansweraiserverstorage'
 
     # Output the backend service endpoint for frontend to use
     BackendServiceEndpoint:
         Type: AWS::SSM::Parameter
         Properties:
-            Name: !Sub /${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/flowise-endpoint
+            Name: !Sub /${App}/${Env}/flowise-endpoint
             Type: String
-            Value: !Sub 'http://flowise.${COPILOT_ENVIRONMENT_NAME}.${COPILOT_APPLICATION_NAME}.local:4000'
+            Value: !Sub 'http://flowise.${Env}.${App}.local:4000'
             Description: Internal endpoint for the flowise backend service
 
 Outputs:

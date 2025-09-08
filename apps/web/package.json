@@ -6,7 +6,17 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
-        "lint": "next lint"
+        "lint": "next lint",
+        "test:e2e:setup": "npx playwright install --with-deps",
+        "test:e2e:check": "node scripts/check-playwright.js",
+        "test:e2e": "pnpm test:e2e:check && npx playwright test",
+        "test:e2e:dev": "pnpm test:e2e:check && npx playwright test --ui",
+        "test:e2e:headed": "pnpm test:e2e:check && npx playwright test --headed",
+        "test:e2e:debug": "pnpm test:e2e:check && npx playwright test --debug",
+        "test:e2e:auth": "pnpm test:e2e:check && npx playwright test auth.spec.ts",
+        "test:e2e:auth:headed": "pnpm test:e2e:check && npx playwright test auth.spec.ts --headed",
+        "test:e2e:auth:debug": "pnpm test:e2e:check && npx playwright test auth.spec.ts --debug",
+        "test:e2e:report": "npx playwright show-report e2e/playwright-report"
     },
     "dependencies": {
         "@auth0/auth0-react": "2.3.0",
@@ -22,8 +32,6 @@
         "@mui/icons-material": "5.0.3",
         "@mui/material": "5.15.0",
         "@pinecone-database/pinecone": "4.0.0",
-        "@sentry/nextjs": "^7.120.4",
-        "@sentry/node": "^7.120.4",
         "@svgr/webpack": "^8.1.0",
         "@textea/json-viewer": "2.14.1",
         "aai-embed": "workspace:*",
@@ -60,6 +68,7 @@
     "devDependencies": {
         "@babel/core": "^7.28.0",
         "@next/bundle-analyzer": "^13.5.11",
+        "@playwright/test": "^1.54.2",
         "@prisma/nextjs-monorepo-workaround-plugin": "^5.22.0",
         "@types/cors": "^2.8.19",
         "@types/js-cookie": "^3.0.6",
@@ -68,6 +77,7 @@
         "@types/react-dom": "^18.3.7",
         "@types/uuid": "^9.0.8",
         "copy-webpack-plugin": "^11.0.0",
+        "dotenv": "^16.6.1",
         "eslint": "7.32.0",
         "eslint-config-custom": "workspace:*",
         "file-loader": "^6.2.0",

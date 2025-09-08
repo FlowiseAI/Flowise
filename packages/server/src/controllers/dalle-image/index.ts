@@ -20,20 +20,33 @@ const getStoragePath = (): string => {
 
 const getS3Config = () => {
     const s3Config: any = {
-        credentials: {
-            accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID || '',
-            secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY || ''
-        },
         region: process.env.S3_STORAGE_REGION || 'us-east-1'
+    }
+
+    // Only set credentials if they actually exist (don't pass empty strings)
+    if (process.env.S3_STORAGE_ACCESS_KEY_ID && process.env.S3_STORAGE_SECRET_ACCESS_KEY) {
+        s3Config.credentials = {
+            accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY
+        }
+        // eslint-disable-next-line no-console
+        console.log('S3 Config: Using explicit credentials')
+    } else {
+        // eslint-disable-next-line no-console
+        console.log('S3 Config: Using AWS SDK default credential chain (IAM roles, etc.)')
     }
 
     if (process.env.S3_ENDPOINT_URL) {
         s3Config.endpoint = process.env.S3_ENDPOINT_URL
         s3Config.forcePathStyle = true
+        // eslint-disable-next-line no-console
+        console.log('S3 Config: Using custom endpoint:', process.env.S3_ENDPOINT_URL)
     }
 
     const s3Client = new S3Client(s3Config)
     const Bucket = process.env.S3_STORAGE_BUCKET_NAME || 'default-bucket'
+    // eslint-disable-next-line no-console
+    console.log('S3 Config: Using bucket:', Bucket, 'in region:', s3Config.region)
 
     return { s3Client, Bucket }
 }

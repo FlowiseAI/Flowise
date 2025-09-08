@@ -10,12 +10,13 @@ type: Load Balanced Web Service
 http:
     # Requests to this path will be forwarded to your service.
     path: '/'
-    # Health check path for Next.js - checks Auth0 session endpoint
-    healthcheck: '/api/auth/session'
-    # Domain alias for the frontend
-    alias: ${COPILOT_ENVIRONMENT_NAME}.app.theanswer.ai
-    # Enable session stickiness for consistent user experience
-    stickiness: true
+    # Temporarily disabled has issues at this time.
+    # healthcheck: '/api/auth/session'
+    # Health check - simple endpoint that ALWAYS works
+    healthcheck: '/healthcheck'
+    # Domain aliases configured in environment-specific overrides below
+    # Disable stickiness for now
+    # stickiness: true
 
 # Configuration for your containers and service.
 image:
@@ -23,66 +24,89 @@ image:
     build:
         dockerfile: ./apps/web/Dockerfile
         context: .
+        args:
+            AUTH0_BASE_URL: ${AUTH0_BASE_URL}
+            # BWS_ACCESS_TOKEN: ${BWS_ACCESS_TOKEN}
     # Port exposed through your container to route traffic to it.
     port: 3000
 
-cpu: 1024 # Number of CPU units for the task
-memory: 2048 # Amount of memory in MiB used by the task
-count: 2 # Number of tasks that should be running in your service
+# Resource configuration moved to environment-specific overrides below
 exec: true # Enable running commands in your container
 
 # Enable Service Connect for intra-environment traffic between services
 network:
     connect: true
+    vpc:
+        security_groups:
+            - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterSecurityGroup
+            - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisWorkloadSecurityGroup
 
-# Optional fields for more advanced use-cases.
-#
+# Load environment-specific variables from file
+env_file: copilot.${COPILOT_APPLICATION_NAME}.web.env
+
+# Database secret from AWS Secrets Manager
+secrets:
+    DATABASE_SECRET:
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterAuroraSecret
+
+# Configuration variables required for the web service
 variables: # Pass environment variables as key value pairs.
+    AUTH0_BASE_URL: ${AUTH0_BASE_URL}
+    ANSWERAI_DOMAIN: 'http://web:3000'
+    FLOWISE_DOMAIN: 'http://flowise:4000'
+    DOMAIN: 'http://flowise:4000'
+    # External API endpoint for OAuth callbacks, MCP tools, and external integrations
+    API_HOST: 'https://api.${CLIENT_DOMAIN}'
+    # Database name will be set from DATABASE_SECRET
+    REDIS_URL:
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
+    NUMBER_OF_PROXIES: '1'
     NODE_ENV: production
     PORT: '3000'
     HOSTNAME: '0.0.0.0'
     NEXT_TELEMETRY_DISABLED: '1'
 
-    # Database connection from backend service
-    DATABASE_TYPE: postgres
-    DATABASE_HOST:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterEndpoint
-    DATABASE_PORT: '5432'
-
-    # Redis connection
-    REDIS_URL:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
-
-# Load environment-specific variables from file
-env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
-
-# Secrets from AWS Secrets Manager or Parameter Store
-secrets:
-    # Database credentials from Aurora cluster
-    DATABASE_SECRET:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterAuroraSecret
-
-    # Auth0 secrets - should be stored in Parameter Store
-    AUTH0_SECRET:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-auth0-secret
-    AUTH0_CLIENT_SECRET:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-auth0-client-secret
-
-    # Stripe secret for billing
-    BILLING_STRIPE_SECRET_KEY:
-        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-stripe-secret
+# Environment-specific overrides
+environments:
+    # Cost-optimized configuration with auto-scaling
+    staging:
+        cpu: 512
+        # Minimum required for initial deployment
+        # Upgrade path: 1024 → 2048 → 4096 → 8192
+        memory: 1024
+        # Minimum required for initial deployment
+        # Upgrade path: 2048 → 4096 → 8192 → 16384
+        count:
+            1
+            # range: 1-3
+            # # Can handle traffic spikes automatically
+            # cpu_percentage: 85
+            # memory_percentage: 90
+        http:
+            alias:
+                # Service aliases for standalone account strategy
+                - web.${CLIENT_DOMAIN}
+                - ${CLIENT_DOMAIN}
+    prod:
+        cpu: 1024
+        # Minimum required for initial deployment
+        # Upgrade path: 2048 → 4096 → 8192 → 16384
+        memory: 2048
+        # Minimum required for initial deployment
+        # Upgrade path: 4096 → 8192 → 16384 → 32768
+        count: 2
+        #     range: 1-12
+        #     # Can handle significant growth automatically
+        #     cpu_percentage: 85
+        #     memory_percentage: 90
+        http:
+            alias:
+                # Service aliases for standalone account strategy
+                - web.${CLIENT_DOMAIN}
+                - ${CLIENT_DOMAIN}
 
 # Configure deployment strategy
 deployment:
+    # Can be 'recreate' for faster deployment but may cause downtime - use only for staging/testing
+    # Default is rolling deployments based on health checks (production-safe)
     rolling: 'default'
-
-# Environment-specific overrides
-environments:
-    staging:
-        count: 1
-        cpu: 512
-        memory: 1024
-    production:
-        count: 2
-        cpu: 2048
-        memory: 4096

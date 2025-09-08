@@ -1,0 +1,107 @@
+# Dependencies and package managers
+**/node_modules
+.pnpm-store
+.pnpm-cache
+.npm
+jspm_packages/
+.yarn-integrity
+
+# Build outputs and caches
+**/.next
+**/build
+**/dist
+**/.turbo
+**/.cache
+.parcel-cache
+.nuxt
+.out
+.storybook-out
+**/.sst
+
+# Environment and configuration files
+**/.env
+**/*.env
+env.*
+packages/server/.env
+packages/ui/.env
+
+# Development and tooling files
+.devcontainer/
+.github/
+**/copilot
+copilot/**
+docker/
+**/charts
+**/secrets.dev.yaml
+**/values.dev.yaml
+.eslintcache
+
+# Test files and coverage
+**/*.test.*
+**/*.spec.*
+test/
+tests/
+__tests__/
+coverage/
+*.lcov
+.nyc_output
+e2e/
+
+# Documentation
+*.md
+LICENSE
+
+# Editor and IDE files
+**/.vscode
+**/.idea
+.project
+.settings
+.toolstarget
+.vs
+.classpath
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Version control and Docker
+**/.git
+**/.gitignore
+**/.dockerignore
+**/Dockerfile*
+**/docker-compose*
+**/compose*
+
+# Logs and runtime files
+*.log
+**/npm-debug.log
+pids
+*.pid
+*.seed
+*.pid.lock
+.node_repl_history
+*.tgz
+
+# Build tool caches
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Temporary folders
+tmp/
+temp/
+
+# Other build artifacts
+**/obj
+**/*.*proj.user
+**/*.dbmdl
+**/*.jfm

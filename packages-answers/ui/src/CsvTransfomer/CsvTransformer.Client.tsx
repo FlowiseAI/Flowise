@@ -1,9 +1,17 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@auth0/nextjs-auth0/client'
-// @ts-ignore
+// Type declaration for the chatflows API module
+declare module '@/api/chatflows' {
+    interface ChatflowsApi {
+        getAllChatflows: () => Promise<{ data: any[] }>
+    }
+    const chatflowsApi: ChatflowsApi
+    export default chatflowsApi
+}
+
 import chatflowsApi from '@/api/chatflows'
 // material-ui
 import { Container, Box, Stack, Tabs, Tab, Typography } from '@mui/material'
@@ -38,13 +46,36 @@ const CsvTransformer = () => {
         router.push('/sidekick-studio/csv-transformer?tab=history')
     }
 
-    useEffect(() => {
-        const fetchChatflows = async () => {
+    const fetchChatflows = useCallback(async () => {
+        try {
             const { data } = await chatflowsApi.getAllChatflows()
-            setChatflows((data ?? []).filter((chatflow: any) => chatflow.category?.toLowerCase()?.split(';')?.includes('csv')))
+            const filteredChatflows = (data ?? []).filter((chatflow: any) => chatflow.category?.toLowerCase()?.split(';')?.includes('csv'))
+            setChatflows(filteredChatflows)
+        } catch (error) {
+            console.error('Failed to fetch chatflows:', error)
+            setChatflows([])
         }
-        fetchChatflows()
     }, [])
+
+    useEffect(() => {
+        fetchChatflows()
+    }, [fetchChatflows])
+
+    // Auto-refresh when user returns from marketplace (only if no CSV chatflows currently)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden && chatflows.length === 0) {
+                fetchChatflows()
+            }
+        }
+
+        // Listen for visibility changes (user switching tabs/windows)
+        document.addEventListener('visibilitychange', handleVisibilityChange)
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange)
+        }
+    }, [chatflows.length, fetchChatflows])
 
     if (isLoading) {
         return (
@@ -58,8 +89,6 @@ const CsvTransformer = () => {
             </Container>
         )
     }
-
-    // console.log('CSV Transformer user:', user)
 
     return (
         <Container>
@@ -79,7 +108,12 @@ const CsvTransformer = () => {
                     </Tabs>
                 </Box>
                 <TabPanel currentValue={tab} value='process'>
-                    <ProcessCsv chatflows={chatflows} user={user} onNavigateToHistory={navigateToHistory} />
+                    <ProcessCsv
+                        chatflows={chatflows}
+                        user={user}
+                        onNavigateToHistory={navigateToHistory}
+                        onRefreshChatflows={fetchChatflows}
+                    />
                 </TabPanel>
                 <TabPanel currentValue={tab} value='history'>
                     <ProcessingHistory user={user} />

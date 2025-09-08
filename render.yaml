@@ -1,59 +1,74 @@
 # Exported from Render on 2024-11-07T15:50:51Z
 services:
+    # =========================================
+    # Web Application Configuration (Frontend)
+    # =========================================
     - type: web
-      name: theanswer
+      name: aai-unified1-web
       runtime: docker
       repo: https://github.com/the-answerai/theanswer
-      plan: standard
+      plan: starter
       envVars:
           # =========================================
-          # Core Application Configuration
+          # Web Application Configuration
           # =========================================
           - key: NODE_ENV
             value: production
           - key: PORT
-            value: '4000'
+            value: '3000'
+          - key: HOSTNAME
+            value: '0.0.0.0'
+          - key: NEXT_TELEMETRY_DISABLED
+            value: '1'
           - key: DEBUG
-            value: 'false'
+            value: 'true'
           - key: LOG_LEVEL
-            value: 'info'
-          - key: LOG_PATH
-            sync: false
-          - key: DISABLE_FLOWISE_TELEMETRY
+            value: 'debug'
+          - key: ANALYZE
+            value: 'false'
+          - key: AUTH0_DEBUG
+            value: 'true'
+          - key: VERBOSE
             value: 'true'
 
           # =========================================
-          # Database Configuration
+          # Web Database Configuration
           # =========================================
           - key: DATABASE_TYPE
             value: postgres
+          - key: DATABASE_NAME
+            fromDatabase:
+                name: aai-unified3-database
+                property: database
           - key: DATABASE_HOST
             fromDatabase:
-                name: theanswer
+                name: aai-unified3-database
                 property: host
           - key: DATABASE_PORT
             fromDatabase:
-                name: theanswer
+                name: aai-unified3-database
                 property: port
-          - key: DATABASE_NAME
-            sync: false
+          # Database name will be set from DATABASE_SECRET
           - key: DATABASE_USER
             fromDatabase:
-                name: theanswer
+                name: aai-unified3-database
                 property: user
           - key: DATABASE_PASSWORD
             fromDatabase:
-                name: theanswer
+                name: aai-unified3-database
                 property: password
+          # DATABASE_URL will be constructed by entrypoint.sh from DATABASE_SECRET
+          - key: DATABASE_SECRET
+            value: '{"engine":"postgres","host":"${DATABASE_HOST}","port":"${DATABASE_PORT}","dbname":"${DATABASE_NAME}","username":"${DATABASE_USER}","password":"${DATABASE_PASSWORD}"}'
 
           # =========================================
-          # Auth0 Configuration (Must Match Frontend)
+          # Web Auth0 Configuration (Must Match Backend)
           # =========================================
+          - key: AUTH0_DOMAIN
+            sync: false
           - key: AUTH0_BASE_URL
             sync: false
           - key: AUTH0_SECRET
-            sync: false
-          - key: AUTH0_DOMAIN
             sync: false
           - key: AUTH0_CLIENT_ID
             sync: false
@@ -73,152 +88,122 @@ services:
             sync: false
 
           # =========================================
-          # Domain Configuration
+          # Web Domain Configurations
           # =========================================
-          - key: DOMAIN
-            sync: false
           - key: ANSWERAI_DOMAIN
+            fromService:
+                name: aai-unified1-web
+                type: web
+                property: hostport
+          - key: FLOWISE_DOMAIN
+            fromService:
+                name: aai-unified2-flowise
+                type: web
+                property: hostport
+          - key: DOMAIN
+            fromService:
+                name: aai-unified2-flowise
+                type: web
+                property: hostport
+          - key: API_HOST
+            fromService:
+                name: aai-unified2-flowise
+                type: web
+                property: hostport
+          - key: FLAGSMITH_ENVIRONMENT_ID
             sync: false
 
           # =========================================
-          # Security & API Keys
-          # =========================================
-          - key: FLOWISE_SECRETKEY_OVERWRITE
-            sync: false
-          - key: SECRETKEY_PATH
-            sync: false
-          - key: APIKEY_STORAGE_TYPE
-            value: 'db'
-          - key: APIKEY_PATH
-            sync: false
-
-          # =========================================
-          # CORS & Iframe Settings
-          # =========================================
-          - key: CORS_ORIGINS
-            value: '*'
-          - key: IFRAME_ORIGINS
-            sync: false
-
-          # =========================================
-          # Redis Configuration
+          # Web External Services
           # =========================================
           - key: REDIS_URL
             fromService:
-                name: theanswer
+                name: aai-unified4-redis
                 type: redis
                 property: connectionString
-
-          # =========================================
-          # Storage Configuration
-          # =========================================
-          - key: STORAGE_TYPE
-            value: s3
-          - key: S3_STORAGE_BUCKET_NAME
+          - key: BILLING_STRIPE_SECRET_KEY
             sync: false
-          - key: S3_STORAGE_ACCESS_KEY_ID
-            sync: false
-          - key: S3_STORAGE_SECRET_ACCESS_KEY
-            sync: false
-          - key: S3_STORAGE_REGION
-            sync: false
-          - key: S3_ENDPOINT_URL
-            sync: false
-          - key: S3_FORCE_PATH_STYLE
-            sync: false
-
-          # =========================================
-          # Langfuse Tracing
-          # =========================================
-          - key: LANGFUSE_HOST
-            sync: false
-          - key: LANGFUSE_PUBLIC_KEY
-            sync: false
-          - key: LANGFUSE_SECRET_KEY
-            sync: false
-
-          # =========================================
-          # External Services
-          # =========================================
-          - key: OPENAI_API_KEY
-            sync: false
-
-          # =========================================
-          # Legacy/Migration Variables (To Remove)
-          # =========================================
-          - key: MY_APP_VITE_AUTH_ORGANIZATION_ID
-            sync: false
-          - key: MY_APP_VITE_AUTH_DOMAIN
-            sync: false
-          - key: MY_APP_VITE_AUTH_AUDIENCE
-            sync: false
-          - key: MY_APP_VITE_AUTH_CLIENT_ID
-            sync: false
-          - key: TRIAL_PLAN_EXECUTIONS
-            sync: false
-          - key: PUBLIC_ORG_ID
-            sync: false
-          - key: DEBUG_LEVEL
-            sync: false
-          - key: NODE_VERSION
-            sync: false
-      region: oregon
+      region: virginia
       dockerContext: .
-      dockerfilePath: ./Dockerfile
-      # domains:
-      #     - prod.studio.theanswer.ai
+      dockerfilePath: ./apps/web/Dockerfile
+      healthCheckPath: /healthcheck
+      domains:
+          - subdomain.theanswer.ai
+          - web.subdomain.theanswer.ai
+
+    # =========================================
+    # Flowise Application Configuration (Backend)
+    # =========================================
     - type: web
-      name: theanswer-web
+      name: aai-unified2-flowise
       runtime: docker
       repo: https://github.com/the-answerai/theanswer
-      plan: starter
+      plan: standard
       envVars:
           # =========================================
-          # Application Configuration
+          # Flowise Application Configuration
           # =========================================
           - key: NODE_ENV
             value: production
           - key: PORT
-            value: '3000'
-          - key: HOSTNAME
-            value: '0.0.0.0'
-          - key: NEXT_TELEMETRY_DISABLED
+            value: '4000'
+          - key: DEBUG
+            value: 'true'
+          - key: LOG_LEVEL
+            value: 'warn'
+          - key: LOG_PATH
+            value: '/var/data'
+          - key: DISABLE_FLOWISE_TELEMETRY
+            value: 'true'
+          - key: AUTH0_DEBUG
+            value: 'true'
+          - key: VERBOSE
+            value: 'true'
+          - key: NUMBER_OF_PROXIES
             value: '1'
+          - key: FLOWISE_API_KEY
+            generateValue: true
+          - key: SESSION_SECRET
+            generateValue: true
 
           # =========================================
-          # Database Configuration (Shared)
+          # Flowise Database Configuration
           # =========================================
-          - key: DATABASE_URL
-            fromDatabase:
-                name: theanswer
-                property: connectionString
+          # DATABASE_URL will be constructed from DATABASE_SECRET
           - key: DATABASE_TYPE
             value: postgres
+          - key: DATABASE_NAME
+            fromDatabase:
+                name: aai-unified3-database
+                property: database
           - key: DATABASE_HOST
             fromDatabase:
-                name: theanswer
+                name: aai-unified3-database
                 property: host
           - key: DATABASE_PORT
             fromDatabase:
-                name: theanswer
+                name: aai-unified3-database
                 property: port
-          - key: DATABASE_NAME
-            sync: false
+          # Database name will be set from DATABASE_SECRET
           - key: DATABASE_USER
             fromDatabase:
-                name: theanswer
+                name: aai-unified3-database
                 property: user
           - key: DATABASE_PASSWORD
             fromDatabase:
-                name: theanswer
+                name: aai-unified3-database
                 property: password
+          - key: DATABASE_SECRET
+            value: '{"engine":"postgres","host":"${DATABASE_HOST}","port":"${DATABASE_PORT}","dbname":"${DATABASE_NAME}","username":"${DATABASE_USER}","password":"${DATABASE_PASSWORD}"}'
 
           # =========================================
-          # Auth0 Configuration (Must Match Backend)
+          # Flowise Auth0 Configuration (Must Match Frontend)
           # =========================================
+          - key: AUTH0_DOMAIN
+            sync: false
           - key: AUTH0_BASE_URL
             sync: false
-          - key: AUTH0_DOMAIN
+          - key: AUTH0_SECRET
             sync: false
           - key: AUTH0_CLIENT_ID
             sync: false
@@ -231,72 +216,153 @@ services:
           - key: AUTH0_ORGANIZATION_ID
             sync: false
           - key: AUTH0_TOKEN_SIGN_ALG
-            sync: false
+            value: 'RS256'
           - key: AUTH0_SCOPE
-            sync: false
+            value: 'openid profile email'
           - key: AUTH0_JWKS_URI
             sync: false
 
           # =========================================
-          # Backend Connection
+          # Flowise Domain Configuration
           # =========================================
-          - key: CHATFLOW_DOMAIN_OVERRIDE
-            sync: false
+          - key: CHATFLOW_DOMAIN
+            fromService:
+                name: aai-unified2-flowise
+                type: web
+                property: hostport
           - key: DOMAIN
+            fromService:
+                name: aai-unified2-flowise
+                type: web
+                property: hostport
+          - key: FLOWISE_DOMAIN
+            fromService:
+                name: aai-unified2-flowise
+                type: web
+                property: hostport
+          - key: ANSWERAI_DOMAIN
+            fromService:
+                name: aai-unified1-web
+                type: web
+                property: hostport
+
+          # =========================================
+          # Flowise Security & API Keys
+          # =========================================
+          # Flowise Encryption Key Override
+          # - key: FLOWISE_SECRETKEY_OVERWRITE
+          #   sync: false
+          - key: SECRETKEY_PATH
+            value: '/var/data'
+          - key: APIKEY_STORAGE_TYPE
+            value: 'db'
+          - key: APIKEY_PATH
+            value: '/var/data'
+
+          # =========================================
+          # Flowise CORS & Iframe Settings
+          # =========================================
+          - key: CORS_ORIGINS
+            value: '*'
+          - key: IFRAME_ORIGINS
+            value: '*'
+
+          # =========================================
+          # Flowise Redis Configuration
+          # =========================================
+          - key: REDIS_URL
+            fromService:
+                name: aai-unified4-redis
+                type: redis
+                property: connectionString
+          - key: AAI_DEFAULT_REDIS_URL
+            fromService:
+                name: aai-unified4-redis
+                type: redis
+                property: connectionString
+
+          # =========================================
+          # Flowise Storage Configuration
+          # =========================================
+          - key: STORAGE_TYPE
+            sync: false
+          - key: S3_STORAGE_BUCKET_NAME
+            sync: false
+          - key: S3_STORAGE_ACCESS_KEY_ID
+            sync: false
+          - key: S3_STORAGE_SECRET_ACCESS_KEY
+            sync: false
+          - key: S3_STORAGE_REGION
+            sync: false
+          # S3_FORCE_PATH_STYLE: false for AWS S3, true for S3-compatible services (MinIO, DigitalOcean, etc.)
+          - key: S3_FORCE_PATH_STYLE
+            value: 'false'
+
+          # =========================================
+          # Flowise Langfuse Tracing
+          # =========================================
+          - key: LANGFUSE_HOST
+            sync: false
+          - key: LANGFUSE_PUBLIC_KEY
+            sync: false
+          - key: LANGFUSE_SECRET_KEY
             sync: false
 
           # =========================================
-          # Frontend-Specific Services
+          # Flowise Feature Flags
           # =========================================
           - key: FLAGSMITH_ENVIRONMENT_ID
             sync: false
-          - key: DISABLE_SENTRY
-            value: 'false'
-          - key: ANALYZE
-            value: 'false'
 
           # =========================================
-          # React App Variables (Client-Side)
+          # Flowise External Services
           # =========================================
-          - key: REACT_APP_AUTH0_ORGANIZATION_ID
+          - key: AAI_DEFAULT_OPENAI_API_KEY
             sync: false
-          - key: REACT_APP_AUTH0_AUDIENCE
-            sync: false
-          - key: REACT_APP_AUTH0_DOMAIN
-            sync: false
-          - key: REACT_APP_AUTH0_CLIENT_ID
-            sync: false
-
-          # =========================================
-          # External Services
-          # =========================================
-          - key: OPENAI_API_KEY
-            sync: false
-          - key: REDIS_URL
-            sync: false
-          - key: BILLING_STRIPE_SECRET_KEY
-            sync: false
-      region: oregon
+      region: virginia
       dockerContext: .
-      dockerfilePath: ./apps/web/Dockerfile
-      # domains:
-      #     - app.theanswer.ai
-      # healthCheckPath: /api/auth/session
-    - type: redis
-      name: theanswer
+      dockerfilePath: ./Dockerfile
+      healthCheckPath: /api/v1/ping
+      domains:
+          - api.subdomain.theanswer.ai
+          - flowise.subdomain.theanswer.ai
+
+    # ================================================================
+    # Redis Application Configuration (Cache)
+    # ================================================================
+    - type: keyvalue
+      name: aai-unified4-redis
       plan: standard
-      region: oregon
+      region: virginia
       maxmemoryPolicy: allkeys-lru
       ipAllowList: []
+# ================================================================
+# Database Application Configuration (Postgres)
+# ================================================================
 databases:
-    - name: theanswer
-      databaseName: theanswer
+    - name: aai-unified3-database
+      databaseName: aai_unified_database
       user: admin
       plan: basic-256mb
-      region: oregon
-      ipAllowList:
-          - source: 0.0.0.0/0
-            description: everywhere
+      region: virginia
       postgresMajorVersion: '16'
-# Exported from Render on 2024-11-07T15:56:31Z
-
+      # CURRENT SETTING: Internal-Renderonly access (most secure for Database services)
+      ipAllowList: []
+      # =========================================
+      # SECURITY WARNING - DATABASE ACCESS CONTROL
+      # =========================================
+      # ⚠️  CRITICAL: Never use 0.0.0.0/0 for database access - this opens your database to the entire internet!
+      # ⚠️  ALWAYS use specific IP addresses or internal-only access for production databases
+      #
+      # SECURE CONFIGURATION GUIDELINES:
+      # • Use /32 CIDR notation for single IP addresses (most secure)
+      # • Use /24 CIDR notation only for trusted corporate VPN subnets
+      # • Never use broader ranges like /16 or /8 for database access
+      # • Check your current IP at https://ipchicken.com before adding home office access
+      #
+      # Examples:
+      # ipAllowList:
+      #   - source: 203.0.113.4/32
+      #     description: home-office-single-ip (check ipchicken.com for current IP)
+      #   - source: 198.51.100.0/24
+      #     description: corporate-vpn-subnet (only for trusted VPN ranges)

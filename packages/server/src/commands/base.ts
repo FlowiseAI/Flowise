@@ -176,6 +176,92 @@ export abstract class BaseCommand extends Command {
             process.env.DATABASE_USER = username
             process.env.DATABASE_PASSWORD = password
             process.env.DATABASE_TYPE = engine
+
+            // Set AAI PostgreSQL variables from the shared secret (fallback for individual variables)
+            // Precedence order: Individual AAI secrets > Individual AAI variables > Shared DATABASE_SECRET
+            // If you want to manage AAI services individually, set AAI_DEFAULT_POSTGRES_*_SECRET variables
+            if (!process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_HOST) {
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_HOST = host
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PORT = port
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_DATABASE = dbname
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_USER = username
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PASSWORD = password
+            }
+
+            if (!process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_HOST) {
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_HOST = host
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PORT = port
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_DATABASE = dbname
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_USER = username
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PASSWORD = password
+            }
+
+            if (!process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_HOST) {
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_HOST = host
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_PORT = port
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_DATABASE = dbname
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_USER = username
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_PASSWORD = password
+            }
+        }
+
+        // Parse individual AAI secrets if they exist (highest precedence)
+        // This allows managing each AAI service with its own database/credentials
+        if (process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_SECRET) {
+            try {
+                const secret = JSON.parse(process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_SECRET)
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_HOST = secret.host
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PORT = secret.port
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_DATABASE = secret.dbname
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_USER = secret.username
+                process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_PASSWORD = secret.password
+            } catch (error) {
+                console.error('Error parsing AAI_DEFAULT_POSTGRES_RECORDMANAGER_SECRET:', (error as Error).message)
+            }
+        }
+
+        if (process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_SECRET) {
+            try {
+                const secret = JSON.parse(process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_SECRET)
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_HOST = secret.host
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PORT = secret.port
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_DATABASE = secret.dbname
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_USER = secret.username
+                process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_PASSWORD = secret.password
+            } catch (error) {
+                console.error('Error parsing AAI_DEFAULT_POSTGRES_AGENTMEMORY_SECRET:', (error as Error).message)
+            }
+        }
+
+        if (process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_SECRET) {
+            try {
+                const secret = JSON.parse(process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_SECRET)
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_HOST = secret.host
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_PORT = secret.port
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_DATABASE = secret.dbname
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_USER = secret.username
+                process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_PASSWORD = secret.password
+            } catch (error) {
+                console.error('Error parsing AAI_DEFAULT_POSTGRES_VECTORSTORE_SECRET:', (error as Error).message)
+            }
+        }
+
+        // Set AAI PostgreSQL table configuration defaults if not already set
+        // These provide sensible fallbacks for table names and configuration
+        if (!process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_TABLE_NAME) {
+            process.env.AAI_DEFAULT_POSTGRES_RECORDMANAGER_TABLE_NAME = 'upsertion_records'
+        }
+        if (!process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_TABLE_NAME) {
+            process.env.AAI_DEFAULT_POSTGRES_AGENTMEMORY_TABLE_NAME = 'aai_agent_memory'
+        }
+        if (!process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_TABLE_NAME) {
+            process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_TABLE_NAME = 'documents'
+        }
+        if (!process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_CONTENT_COLUMN_NAME) {
+            process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_CONTENT_COLUMN_NAME = 'pageContent'
+        }
+        if (!process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_SSL) {
+            process.env.AAI_DEFAULT_POSTGRES_VECTORSTORE_SSL = 'false'
         }
 
         // Langsmith tracing

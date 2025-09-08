@@ -22,13 +22,49 @@ let gcsServerReqStream: any
 if (process.env.STORAGE_TYPE === 's3') {
     const accessKeyId = process.env.S3_STORAGE_ACCESS_KEY_ID
     const secretAccessKey = process.env.S3_STORAGE_SECRET_ACCESS_KEY
-    const region = process.env.S3_STORAGE_REGION
+    const region = process.env.S3_STORAGE_REGION || 'us-east-1'
     const s3Bucket = process.env.S3_STORAGE_BUCKET_NAME
     const customURL = process.env.S3_ENDPOINT_URL
     const forcePathStyle = process.env.S3_FORCE_PATH_STYLE === 'true'
 
-    if (!region || !s3Bucket) {
-        throw new Error('S3 storage configuration is missing')
+    if (!s3Bucket) {
+        // Enhanced error message with troubleshooting information
+        const errorMsg = [
+            '❌ S3 STORAGE CONFIGURATION ERROR',
+            '',
+            'STORAGE_TYPE is set to "s3" but S3_STORAGE_BUCKET_NAME is not defined.',
+            '',
+            'REQUIRED VARIABLES FOR S3 STORAGE:',
+            '  S3_STORAGE_BUCKET_NAME - The name of your S3 bucket (REQUIRED)',
+            '  S3_STORAGE_REGION - AWS region (optional, defaults to us-east-1)',
+            '  S3_STORAGE_ACCESS_KEY_ID - AWS access key (optional, uses IAM role if not set)',
+            '  S3_STORAGE_SECRET_ACCESS_KEY - AWS secret key (optional, uses IAM role if not set)',
+            '',
+            'TO FIX THIS ISSUE:',
+            '1. If using Copilot/CloudFormation:',
+            '   - Check that S3_STORAGE_BUCKET_NAME is set from CloudFormation outputs',
+            '   - Verify the CloudFormation export name matches your manifest.yml',
+            '',
+            '2. If using .env file:',
+            '   - Add S3_STORAGE_BUCKET_NAME=your-actual-bucket-name',
+            '   - Ensure STORAGE_TYPE=s3 is set',
+            '',
+            '3. If not using S3 storage:',
+            '   - Change STORAGE_TYPE to "local" or remove it entirely',
+            '   - Remove any S3_* environment variables',
+            '',
+            'CURRENT CONFIGURATION:',
+            `  STORAGE_TYPE: ${process.env.STORAGE_TYPE}`,
+            `  S3_STORAGE_BUCKET_NAME: ${s3Bucket || 'NOT SET (CRITICAL)'}`,
+            `  S3_STORAGE_REGION: ${region || 'NOT SET (defaults to us-east-1)'}`,
+            `  S3_STORAGE_ACCESS_KEY_ID: ${process.env.S3_STORAGE_ACCESS_KEY_ID ? 'SET' : 'NOT SET (will use IAM role)'}`,
+            `  S3_STORAGE_SECRET_ACCESS_KEY: ${process.env.S3_STORAGE_SECRET_ACCESS_KEY ? 'SET' : 'NOT SET (will use IAM role)'}`,
+            '',
+            'For detailed debugging, set DEBUG=true or VERBOSE=true to see S3 configuration logs.'
+        ].join('\n')
+
+        console.error(errorMsg) // Use console.error since logger might not be initialized yet
+        throw new Error('S3 storage bucket configuration is missing - see console output for details')
     }
 
     const s3Config: S3ClientConfig = {

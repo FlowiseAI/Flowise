@@ -5,4 +5,7 @@ const router = express.Router()
 // GET
 router.get('/', pingController.getPing)
 
+// HEAD
+router.head('/', pingController.headPing)
+
 export default router

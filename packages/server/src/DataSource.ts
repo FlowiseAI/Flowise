@@ -8,10 +8,18 @@ import { sqliteMigrations } from './database/migrations/sqlite'
 import { mysqlMigrations } from './database/migrations/mysql'
 import { mariadbMigrations } from './database/migrations/mariadb'
 import { postgresMigrations } from './database/migrations/postgres'
+import logger from './utils/logger'
 
 let appDataSource: DataSource
 
 export const init = async (): Promise<void> => {
+    // Always log storage configuration at DataSource init (before logger tries to use S3)
+    logger.info('DataSource initialization - Storage Configuration:')
+    logger.info(`  STORAGE_TYPE: ${process.env.STORAGE_TYPE || 'not set (defaults to local)'}`)
+    if (process.env.STORAGE_TYPE === 's3') {
+        logger.info(`  S3_STORAGE_BUCKET_NAME: ${process.env.S3_STORAGE_BUCKET_NAME || 'NOT SET - CRITICAL!'}`)
+        logger.info(`  S3_STORAGE_REGION: ${process.env.S3_STORAGE_REGION || 'not set (defaults to us-east-1)'}`)
+    }
     let homePath
     let flowisePath = path.join(getUserHome(), '.flowise')
     if (!fs.existsSync(flowisePath)) {

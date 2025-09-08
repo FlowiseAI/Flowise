@@ -491,7 +491,7 @@ export const getS3Config = () => {
     const forcePathStyle = process.env.S3_FORCE_PATH_STYLE === 'true' ? true : false
 
     if (!region || !Bucket) {
-        throw new Error('S3 storage configuration is missing')
+        throw new Error('S3 storage bucket configuration is missing')
     }
 
     const s3Config: S3ClientConfig = {

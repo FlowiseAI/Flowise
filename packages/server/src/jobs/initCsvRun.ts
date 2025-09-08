@@ -7,6 +7,8 @@ import { AppCsvParseRunsStatus, AppCsvParseRowStatus, IAppCsvParseRuns } from '.
 import { AppCsvParseRuns } from '../database/entities/AppCsvParseRuns'
 import { AppCsvParseRows } from '../database/entities/AppCsvParseRows'
 import { getS3Config } from 'flowise-components'
+import { generateColumnName } from '../utils/csvUtils'
+
 /**
  * Cron job schedule for initiliasing csv run
  * Default: Every 15 minutes ('0/15 * * * *')
@@ -37,16 +39,35 @@ const initCsvRun = async (csvParseRun: IAppCsvParseRuns) => {
         // Get the CSV content as string
         const originalCsvText = (await originalCsv.Body?.transformToString()) ?? ''
 
-        // parse csv
+        // Use user's explicit decision about headers
+        const userSpecifiedHeaders = (csvParseRun.configuration as any)?.firstRowIsHeaders || false
+
+        // Parse CSV using native csv-parse capability
         const records = parse(originalCsvText, {
-            columns: true,
+            columns: userSpecifiedHeaders, // ✅ Use user decision directly
             skip_empty_lines: true,
             comment: '#',
             comment_no_infix: true
         })
 
+        let processedRecords: Record<string, string>[] = []
+
+        if (userSpecifiedHeaders) {
+            // csv-parse already created objects with real headers
+            processedRecords = records as Record<string, string>[]
+        } else {
+            // csv-parse returned arrays, create objects with generic column names
+            processedRecords = (records as string[][]).map((row: string[]) => {
+                const obj: Record<string, string> = {}
+                row.forEach((value, colIndex) => {
+                    obj[generateColumnName(colIndex)] = value || ''
+                })
+                return obj
+            })
+        }
+
         // create csv parse rows
-        const csvParseRows = records.map((row: any, index: number) => {
+        const csvParseRows = processedRecords.map((row: any, index: number) => {
             return {
                 csvParseRunId: csvParseRun.id,
                 rowNumber: index,

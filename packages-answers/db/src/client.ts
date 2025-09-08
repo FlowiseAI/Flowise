@@ -1,13 +1,13 @@
 import { PrismaClient } from '../generated/prisma-client'
 
-const DEBUG_LEVEL = process.env.DEBUG_LEVEL
+const LOG_LEVEL = process.env.LOG_LEVEL
 
 declare global {
     var prisma: PrismaClient | undefined
 }
 
 let prismaDebug = ['warn', 'error']
-if (DEBUG_LEVEL === 'debug') prismaDebug = [...prismaDebug, ...['query', 'info']]
+if (LOG_LEVEL === 'debug') prismaDebug = [...prismaDebug, ...['query', 'info']]
 
 // @ts-ignore
 export const prisma = global.prisma || new PrismaClient({ log: [] })

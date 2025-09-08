@@ -61,17 +61,6 @@ interface App {
 const apps: App[] = [
     // Available Apps
     {
-        id: 'csv-transformer',
-        name: 'CSV Transformer',
-        icon: '📊',
-        description:
-            'Effortlessly clean, reformat, and analyze your CSV data using intelligent AI algorithms. Perfect for data preparation, reporting, and ensuring data quality.',
-        category: 'Data Processing',
-        features: ['Smart Data Cleaning', 'Format Conversion', 'Analysis Tools', 'Secure Processing'],
-        available: true,
-        href: '/sidekick-studio/csv-transformer'
-    },
-    {
         id: 'image-creator',
         name: 'Image Creator',
         icon: '🎨',
@@ -81,6 +70,17 @@ const apps: App[] = [
         features: ['Text-to-Image', 'Image Enhancement', 'Style Transfer', 'High Quality'],
         available: true,
         href: '/sidekick-studio/media-creator'
+    },
+    {
+        id: 'csv-transformer',
+        name: 'CSV Transformer',
+        icon: '📊',
+        description:
+            'Effortlessly clean, reformat, and analyze your CSV data using intelligent AI algorithms. Perfect for data preparation, reporting, and ensuring data quality.',
+        category: 'Data Processing',
+        features: ['Smart Data Cleaning', 'Format Conversion', 'Analysis Tools', 'Secure Processing'],
+        available: true,
+        href: '/sidekick-studio/csv-transformer'
     },
     // Coming Soon Apps
     {

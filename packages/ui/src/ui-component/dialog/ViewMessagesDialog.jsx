@@ -23,7 +23,8 @@ import {
     CardContent,
     FormControlLabel,
     Checkbox,
-    DialogActions
+    DialogActions,
+    CircularProgress
 } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import DatePicker from 'react-datepicker'
@@ -311,6 +312,11 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
     }
 
     const exportMessages = async () => {
+        // Prevent export if messages are still loading
+        if (getChatmessageApi.loading || getChatmessageFromPKApi.loading || !allChatlogs.length) {
+            return
+        }
+
         if (!storagePath && getStoragePathFromServer.data) {
             storagePath = getStoragePathFromServer.data.storagePath
         }
@@ -823,8 +829,30 @@ const ViewMessagesDialog = ({ show, dialogProps, onCancel }) => {
                 <div style={{ display: 'flex', flexDirection: 'row' }}>
                     {dialogProps.title}
                     <div style={{ flex: 1 }} />
-                    <Button variant='outlined' onClick={() => exportMessages()} startIcon={<IconFileExport />}>
-                        Export
+                    <Button
+                        variant='outlined'
+                        onClick={() => exportMessages()}
+                        startIcon={
+                            getChatmessageApi.loading || getChatmessageFromPKApi.loading ? (
+                                <CircularProgress size={16} color='inherit' />
+                            ) : (
+                                <IconFileExport />
+                            )
+                        }
+                        disabled={getChatmessageApi.loading || getChatmessageFromPKApi.loading || !allChatlogs.length}
+                        title={
+                            getChatmessageApi.loading || getChatmessageFromPKApi.loading
+                                ? 'Loading messages...'
+                                : allChatlogs.length
+                                ? 'Export messages'
+                                : 'No messages to export'
+                        }
+                        sx={{
+                            opacity: !allChatlogs.length ? 0.6 : 1,
+                            cursor: !allChatlogs.length ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        {getChatmessageApi.loading || getChatmessageFromPKApi.loading ? 'Loading...' : 'Export'}
                     </Button>
                 </div>
             </DialogTitle>

@@ -471,7 +471,7 @@ class DallePost_Tool implements INode {
             baseURL = 'http://localhost:4000'
         } else {
             // In production, use the current domain (Flowise server)
-            baseURL = process.env.FLOWISE_DOMAIN || process.env.DOMAIN || 'http://localhost:4000'
+            baseURL = process.env.DOMAIN || process.env.FLOWISE_DOMAIN || 'http://localhost:4000'
         }
 
         const obj: RequestParameters = {}

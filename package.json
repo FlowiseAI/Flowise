@@ -43,7 +43,12 @@
         "db:studio": "pnpm secure-run \"pnpm db studio\"",
         "db:seed": "pnpm secure-run \"pnpm db db seed\"",
         "test": "pnpm turbo run test:auth",
-        "test:e2e": "pnpm cypress run",
+        "test:e2e:setup": "pnpm --filter web test:e2e:setup",
+        "test:e2e:check": "pnpm --filter web test:e2e:check",
+        "test:e2e": "pnpm --filter web test:e2e:dev",
+        "test:e2e:dev": "pnpm --filter web test:e2e:dev",
+        "test:e2e:debug": "pnpm --filter web test:e2e:debug",
+        "test:e2e:cypress": "pnpm cypress run",
         "test:cmp": "pnpm cypress run --component",
         "test:chatflows": "pnpm secure-run \"node ./scripts/testing-chatflows/testingChatflows.js\"",
         "logs": "docker compose logs -f",
@@ -56,8 +61,12 @@
         "bws-update": "rm -rf scripts/bws-secure && git clone git@github.com:last-rev-llc/bws-secure.git scripts/bws-secure && rm -rf scripts/bws-secure/.git && bash scripts/bws-secure/install.sh",
         "seed-credentials": "pnpm secure-run \"node ./scripts/seed-credentials/seed-credentials.js --test --auto-detect\"",
         "seed-credentials:write": "pnpm secure-run \"node ./scripts/seed-credentials/seed-credentials.js --auto-detect\"",
+        "export-auth0-users": "pnpm secure-run \"node ./scripts/export-auth0-users.js\"",
         "submodule:init": "git submodule update --init --recursive --force",
-        "submodule:reset": "git submodule deinit -f --all && git submodule update --init --recursive"
+        "submodule:reset": "git submodule deinit -f --all && git submodule update --init --recursive",
+        "precopilot": "BWS_SUPPRESS_ALL=true pnpm secure-run sh copilot/scripts/copilot-switch-app.sh && sleep 1",
+        "copilot": "BWS_SUPPRESS_ALL=true pnpm secure-run copilot",
+        "copilot:auto": "bash ./copilot/scripts/copilot-auto-deploy.sh"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx}": "eslint --fix"

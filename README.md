@@ -88,10 +88,10 @@ There are two main ways to get started with TheAnswer: local development setup a
     - Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
     - Ensure Docker is running before proceeding
 
-6. **Set up database:**
+6. **Set up database and redis locally:**
 
     ```bash
-    pnpm dev-docker && sleep 10 && docker exec -it theanswer-postgres-1 psql -U example_user -d example_db -c "CREATE DATABASE flowise;"
+    pnpm dev-docker
     ```
 
 7. **Optional: Install database tool**
@@ -273,6 +273,69 @@ FLOWISE_PASSWORD=1234
 ## 🌱 Env Variables
 
 TheAnswer supports different environment variables to configure your instance. You can specify the following variables in the `.env` file inside `packages/server` folder. Read [more](https://github.com/the-answerai/theanswer/blob/main/CONTRIBUTING.md#-env-variables)
+
+## 🧪 Testing
+
+TheAnswer includes comprehensive end-to-end testing with Playwright for critical user journeys including role-based authentication and menu permissions.
+
+### Quick Start Testing
+
+```bash
+# Install Playwright browsers (required first time)
+pnpm test:e2e:setup
+
+# Run tests with visual UI interface (recommended)
+pnpm test:e2e
+
+# Debug mode with step-by-step inspection
+pnpm test:e2e:debug
+```
+
+### Testing Features
+
+-   **🎨 Playwright UI Mode**: Visual test execution with real-time screenshots
+-   **🔐 Auth0 Integration**: Automated authentication flow testing with organization selection
+-   **👥 Role-Based Testing**: Tests for Admin, Builder, and Member user permissions with menu visibility verification
+-   **🎯 Precise Organization Selection**: Uses Auth0 organization ID for accurate organization matching
+-   **📊 Organized Output**: Test results, reports, and artifacts in organized folders
+-   **🚀 Auto Dev Server**: Tests automatically start/stop the development server
+-   **🔍 Debug Tools**: Step-by-step debugging with browser inspection
+-   **🤖 Auto Browser Setup**: Automatic browser installation when needed
+
+### Test Setup
+
+1. **Install Playwright browsers:**
+
+    ```bash
+    pnpm test:e2e:setup
+    ```
+
+2. **Copy test environment file:**
+
+    ```bash
+    cp apps/web/e2e/env.example apps/web/.env.test
+    ```
+
+3. **Configure test credentials in `.env.test`:**
+
+    - `TEST_USER_ENTERPRISE_ADMIN_EMAIL`: Your Auth0 admin test user email (e.g., `alpha+enterprise-admin@domain.ai`)
+    - `TEST_USER_ENTERPRISE_BUILDER_EMAIL`: Your Auth0 builder test user email (e.g., `alpha+enterprise-builder@domain.ai`)
+    - `TEST_USER_ENTERPRISE_MEMBER_EMAIL`: Your Auth0 member test user email (e.g., `alpha+enterprise-member@domain.ai`)
+    - `TEST_USER_PASSWORD`: Shared password for all test users
+    - `TEST_ENTERPRISE_AUTH0_ORG_ID`: Auth0 organization ID for precise selection (e.g., `org_unQ8OLmTNsxVTJCT`)
+    - `TEST_ENTERPRISE_ORG_NAME`: Organization display name (e.g., "Local Dev")
+    - Auth0 configuration (matching your dev environment)
+
+4. **Run tests:**
+    ```bash
+    pnpm test:e2e:dev  # Visual UI mode
+    pnpm test:e2e:debug  # Step-by-step debugging
+    ```
+
+For detailed testing documentation, see:
+
+-   [E2E Testing Guide](apps/web/e2e/README.md)
+-   [Testing Strategy](TESTING_STRATEGY.md)
 
 ## 📖 Documentation
 

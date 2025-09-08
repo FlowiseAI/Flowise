@@ -41,10 +41,13 @@ const glob = globModule.glob;
 
 /**
  * ---------------------------------------------
- * CHANGE: Use DEBUG=true instead of VAR_SCANNER_VERBOSE
+ * CHANGE: Separate DEBUG and detailed scan logging levels
+ * - DEBUG=true: Basic debug info (config, directories, summary)
+ * - SCANNER_DEEP_LOG=true: Extensive detailed logging (every file, every path)
  * ---------------------------------------------
  */
-const VERBOSE = process.env.DEBUG === 'true';
+const DEBUG = process.env.DEBUG === 'true';
+const VERBOSE = process.env.SCANNER_DEEP_LOG === 'true';
 
 /**
  * The root of the repository is determined by going up two levels ("../../..")
@@ -565,7 +568,7 @@ const cleanupExistingReport = async () => {
   const reportPath = path.join(__dirname, '../requiredVars.env');
   try {
     await fsPromises.unlink(reportPath);
-    if (VERBOSE) {
+    if (DEBUG || VERBOSE) {
       logger.debug(`Removed old report file at ${reportPath}`);
     }
   } catch (error) {
@@ -585,7 +588,7 @@ function getTurboVars() {
 
     // If no turbo.json exists, return empty set silently
     if (!fs.existsSync(turboConfigPath)) {
-      if (VERBOSE) {
+      if (DEBUG || VERBOSE) {
         logger.debug('No turbo.json found - skipping turbo variable scanning');
       }
       return new Set();
@@ -608,7 +611,7 @@ function getTurboVars() {
 
     const turboVars = new Set([...buildEnv, ...globalEnv]);
 
-    if (VERBOSE) {
+    if (DEBUG || VERBOSE) {
       if (turboVars.size > 0) {
         logger.debug('Found variables in turbo.json:', Array.from(turboVars));
       } else {
@@ -763,7 +766,16 @@ async function main() {
 
   for (const file of pathsToScan) {
     processedFiles++;
-    if (processedFiles % 100 === 0 || VERBOSE) {
+
+    // Show progress updates based on logging level
+    if (VERBOSE) {
+      // Verbose mode: show progress every 50 files
+      if (processedFiles % 50 === 0) {
+        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+        logger.info(`Progress: ${processedFiles}/${pathsToScan.length} files (${elapsed}s)`);
+      }
+    } else if (DEBUG || processedFiles % 100 === 0) {
+      // Debug mode or regular intervals: show progress every 100 files
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
       logger.info(`Progress: ${processedFiles}/${pathsToScan.length} files (${elapsed}s)`);
     }

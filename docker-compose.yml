@@ -32,7 +32,7 @@ services:
             # - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
             # - AUTH0_ORGANIZATION_ID=${AUTH0_ORGANIZATION_ID}
             # - FLOWISE_DOMAIN=${FLOWISE_DOMAIN:-http://localhost:4000}
-            - DATABASE_URL=postgresql://example_user:example_password@postgres:5432/example_db?schema=public
+            - DATABASE_URL=postgresql://example_user:example_password@postgres:5432/example_db?schema=web&connection_limit=1
             - REDIS_URL="redis://redis:6379"
         depends_on:
             - postgres

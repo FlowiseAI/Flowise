@@ -1,0 +1,554 @@
+{
+    "name": "AnswerAgent CSV Analyzer",
+    "description": "Basic CSV analysis workflow that will analyze a CSV row and give the analysis and the reasoning behind its analysis. Used in the CSV Transformer App",
+    "flowData": "{\"nodes\":[{\"id\":\"llmChain_0\",\"position\":{\"x\":1072.7390744962727,\"y\":539.5523789450416},\"type\":\"customNode\",\"data\":{\"id\":\"llmChain_0\",\"label\":\"LLM Chain\",\"version\":3,\"name\":\"llmChain\",\"type\":\"LLMChain\",\"baseClasses\":[\"LLMChain\",\"BaseChain\",\"Runnable\"],\"category\":\"Chains\",\"description\":\"Chain to run queries against LLMs\",\"inputParams\":[{\"label\":\"Chain Name\",\"name\":\"chainName\",\"type\":\"string\",\"placeholder\":\"Name Your Chain\",\"optional\":true,\"id\":\"llmChain_0-input-chainName-string\"}],\"inputAnchors\":[{\"label\":\"Language Model\",\"name\":\"model\",\"type\":\"BaseLanguageModel\",\"id\":\"llmChain_0-input-model-BaseLanguageModel\"},{\"label\":\"Prompt\",\"name\":\"prompt\",\"type\":\"BasePromptTemplate\",\"id\":\"llmChain_0-input-prompt-BasePromptTemplate\"},{\"label\":\"Output Parser\",\"name\":\"outputParser\",\"type\":\"BaseLLMOutputParser\",\"optional\":true,\"id\":\"llmChain_0-input-outputParser-BaseLLMOutputParser\"},{\"label\":\"Input Moderation\",\"description\":\"Detect text that could generate harmful output and prevent it from being sent to the language model\",\"name\":\"inputModeration\",\"type\":\"Moderation\",\"optional\":true,\"list\":true,\"id\":\"llmChain_0-input-inputModeration-Moderation\"}],\"inputs\":{\"model\":\"{{aaiChatOpenAI_0.data.instance}}\",\"prompt\":\"{{chatPromptTemplate_0.data.instance}}\",\"outputParser\":\"{{advancedStructuredOutputParser_0.data.instance}}\",\"inputModeration\":\"\",\"chainName\":\"\"},\"outputAnchors\":[{\"name\":\"output\",\"label\":\"Output\",\"type\":\"options\",\"description\":\"\",\"options\":[{\"id\":\"llmChain_0-output-llmChain-LLMChain|BaseChain|Runnable\",\"name\":\"llmChain\",\"label\":\"LLM Chain\",\"description\":\"\",\"type\":\"LLMChain | BaseChain | Runnable\"},{\"id\":\"llmChain_0-output-outputPrediction-string|json\",\"name\":\"outputPrediction\",\"label\":\"Output Prediction\",\"description\":\"\",\"type\":\"string | json\"}],\"default\":\"llmChain\"}],\"outputs\":{\"output\":\"llmChain\"},\"selected\":false},\"width\":300,\"height\":514,\"selected\":false,\"positionAbsolute\":{\"x\":1072.7390744962727,\"y\":539.5523789450416},\"dragging\":false},{\"id\":\"chatPromptTemplate_0\",\"position\":{\"x\":343.6649930078479,\"y\":22.47954685671459},\"type\":\"customNode\",\"data\":{\"id\":\"chatPromptTemplate_0\",\"label\":\"Chat Prompt Template\",\"version\":2,\"name\":\"chatPromptTemplate\",\"type\":\"ChatPromptTemplate\",\"baseClasses\":[\"ChatPromptTemplate\",\"BaseChatPromptTemplate\",\"BasePromptTemplate\",\"Runnable\"],\"category\":\"Prompts\",\"description\":\"Schema to represent a chat prompt\",\"inputParams\":[{\"label\":\"System Message\",\"name\":\"systemMessagePrompt\",\"type\":\"string\",\"rows\":4,\"placeholder\":\"You are a helpful assistant that translates {input_language} to {output_language}.\",\"id\":\"chatPromptTemplate_0-input-systemMessagePrompt-string\"},{\"label\":\"Human Message\",\"name\":\"humanMessagePrompt\",\"description\":\"This prompt will be added at the end of the messages as human message\",\"type\":\"string\",\"rows\":4,\"placeholder\":\"{text}\",\"id\":\"chatPromptTemplate_0-input-humanMessagePrompt-string\"},{\"label\":\"Format Prompt Values\",\"name\":\"promptValues\",\"type\":\"json\",\"optional\":true,\"acceptVariable\":true,\"list\":true,\"id\":\"chatPromptTemplate_0-input-promptValues-json\"},{\"label\":\"Messages History\",\"name\":\"messageHistory\",\"description\":\"Add messages after System Message. This is useful when you want to provide few shot examples\",\"type\":\"tabs\",\"tabIdentifier\":\"selectedMessagesTab\",\"additionalParams\":true,\"default\":\"messageHistoryCode\",\"tabs\":[{\"label\":\"Add Messages (Code)\",\"name\":\"messageHistoryCode\",\"type\":\"code\",\"hideCodeExecute\":true,\"codeExample\":\"const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');\\n\\nreturn [\\n    new HumanMessage(\\\"What is 333382 🦜 1932?\\\"),\\n    new AIMessage({\\n        content: \\\"\\\",\\n        tool_calls: [\\n        {\\n            id: \\\"12345\\\",\\n            name: \\\"calulator\\\",\\n            args: {\\n                number1: 333382,\\n                number2: 1932,\\n                operation: \\\"divide\\\",\\n            },\\n        },\\n        ],\\n    }),\\n    new ToolMessage({\\n        tool_call_id: \\\"12345\\\",\\n        content: \\\"The answer is 172.558.\\\",\\n    }),\\n    new AIMessage(\\\"The answer is 172.558.\\\"),\\n]\",\"optional\":true,\"additionalParams\":true}],\"id\":\"chatPromptTemplate_0-input-messageHistory-tabs\"}],\"inputAnchors\":[],\"inputs\":{\"systemMessagePrompt\":\"1. IDENTITY & PURPOSE\\nYou are Data Analyzer, an LLM-based agent designed to process and analyze provided data inputs. Your objective is to examine datasets presented in natural language or structured form and produce a JSON output containing exactly two fields:\\n• analysis – a concise interpretation of the data trends or anomalies\\n• reasoning – a detailed explanation of how the analysis was derived\\nYour mission is to deliver clear, data-driven insights strictly following this JSON schema.\\n\\n2. AVAILABLE TOOLS\\nNo external tools will be used. All analysis is performed using the LLM's internal capabilities based solely on the provided inputs.\\n\\n3. MODES & BEHAVIOR\\n• Default Mode: Analyze incoming data and generate the final JSON output.\\n• Extended Reasoning Mode: If explicit feedback requests more detail, provide additional depth in the \\\"reasoning\\\" field while keeping the same JSON structure.\\n• Clarification Mode: If provided data is ambiguous or incomplete, ask a targeted follow-up question to ensure accuracy before finalizing the analysis.\\n\\n4. STYLE & TONE\\n• Professional, clear, and methodical\\n• Concise language with technical precision\\n• Avoid unnecessary jargon while ensuring thorough and accessible explanations\\n\\n5. CITATIONS & SOURCING\\n• Only use data explicitly supplied in the input; do not assume additional external context\\n• If additional details or methodologies are referenced, note that they are based solely on the input provided\\n• When uncertain, state “I’m not certain” and ask for clarification\\n\\n6. SAFETY & PERMISSIONS\\n• Do not attempt to access private or external data beyond what is provided by the user\\n• Respect all data privacy guidelines by processing only the given inputs\\n• Confirm with the user if any data may be confidential before providing detailed analyses\\n\\n7. ERROR HANDLING\\n• When the input data is ambiguous or insufficient, request clarification from the user before proceeding\\n• If any internal errors occur during analysis, clearly communicate the issue and suggest actionable steps (e.g., “Please provide a more detailed dataset”)\\n\\n8. EXAMPLES (DO NOT OUTPUT VERBATIM)\\n• Input: “Analyze the quarterly sales figures for Q1.”\\nExpected JSON output:\\n{\\n\\\"analysis\\\": \\\"The data indicates consistent growth with minor fluctuations during mid-quarter.\\\",\\n\\\"reasoning\\\": \\\"The analysis is based on comparing month-by-month trends and noting seasonal variations as described in the dataset.\\\"\\n}\\n• Input: “What anomalies can you find in the sensor data?”\\nExpected JSON output:\\n{\\n\\\"analysis\\\": \\\"Several inconsistent readings were detected, suggesting potential sensor errors.\\\",\\n\\\"reasoning\\\": \\\"Outlier values were identified through comparing typical ranges with the provided measurements.\\\"\\n}\\n\\n9. NON-NEGOTIABLE RULES\\n• Always output the final result strictly as a JSON object containing only two keys: “analysis” and “reasoning”\\n• Do not introduce additional keys or extraneous information in the output\\n• Only provide conclusions that are directly supported by the input data\\n• If data details are unclear or incomplete, confirm intent with the user before proceeding\",\"humanMessagePrompt\":\"{keyword}\",\"promptValues\":\"{\\\"keyword\\\":\\\"{{question}}\\\"}\",\"messageHistory\":\"messageHistoryCode\",\"selectedMessagesTab_chatPromptTemplate_0\":\"messageHistoryCode\"},\"outputAnchors\":[{\"id\":\"chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable\",\"name\":\"chatPromptTemplate\",\"label\":\"ChatPromptTemplate\",\"description\":\"Schema to represent a chat prompt\",\"type\":\"ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable\"}],\"outputs\":{},\"selected\":false},\"width\":300,\"height\":748,\"selected\":true,\"positionAbsolute\":{\"x\":343.6649930078479,\"y\":22.47954685671459},\"dragging\":false},{\"id\":\"advancedStructuredOutputParser_0\",\"position\":{\"x\":450.47781119338265,\"y\":808.0550815562741},\"type\":\"customNode\",\"data\":{\"id\":\"advancedStructuredOutputParser_0\",\"label\":\"Advanced Structured Output Parser\",\"version\":1,\"name\":\"advancedStructuredOutputParser\",\"type\":\"AdvancedStructuredOutputParser\",\"baseClasses\":[\"AdvancedStructuredOutputParser\",\"BaseLLMOutputParser\",\"Runnable\"],\"category\":\"Output Parsers\",\"description\":\"Parse the output of an LLM call into a given structure by providing a Zod schema.\",\"inputParams\":[{\"label\":\"Autofix\",\"name\":\"autofixParser\",\"type\":\"boolean\",\"optional\":true,\"description\":\"In the event that the first call fails, will make another call to the model to fix any errors.\",\"id\":\"advancedStructuredOutputParser_0-input-autofixParser-boolean\"},{\"label\":\"Example JSON\",\"name\":\"exampleJson\",\"type\":\"string\",\"description\":\"Zod schema for the output of the model\",\"rows\":10,\"default\":\"z.object({\\n    title: z.string(), // Title of the movie as a string\\n    yearOfRelease: z.number().int(), // Release year as an integer number,\\n    genres: z.enum([\\n        \\\"Action\\\", \\\"Comedy\\\", \\\"Drama\\\", \\\"Fantasy\\\", \\\"Horror\\\",\\n        \\\"Mystery\\\", \\\"Romance\\\", \\\"Science Fiction\\\", \\\"Thriller\\\", \\\"Documentary\\\"\\n    ]).array().max(2), // Array of genres, max of 2 from the defined enum\\n    shortDescription: z.string().max(500) // Short description, max 500 characters\\n})\",\"id\":\"advancedStructuredOutputParser_0-input-exampleJson-string\"}],\"inputAnchors\":[],\"inputs\":{\"autofixParser\":true,\"exampleJson\":\"z.object({\\n    analysis: z.string(),\\n    reasoning: z.string()\\n})\"},\"outputAnchors\":[{\"id\":\"advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable\",\"name\":\"advancedStructuredOutputParser\",\"label\":\"AdvancedStructuredOutputParser\",\"description\":\"Parse the output of an LLM call into a given structure by providing a Zod schema.\",\"type\":\"AdvancedStructuredOutputParser | BaseLLMOutputParser | Runnable\"}],\"outputs\":{},\"selected\":false},\"width\":300,\"height\":460,\"selected\":false,\"dragging\":false,\"positionAbsolute\":{\"x\":450.47781119338265,\"y\":808.0550815562741}},{\"id\":\"aaiChatOpenAI_0\",\"position\":{\"x\":717.3626705657941,\"y\":-18.02454767463898},\"type\":\"customNode\",\"data\":{\"id\":\"aaiChatOpenAI_0\",\"label\":\"Answer ChatOpenAI\",\"version\":1,\"name\":\"aaiChatOpenAI\",\"type\":\"AAIChatOpenAI\",\"baseClasses\":[\"AAIChatOpenAI\",\"BaseChatModel\",\"BaseLanguageModel\",\"Runnable\"],\"tags\":[\"AAI\"],\"category\":\"Chat Models\",\"description\":\"OpenAI GPT models • Zero configuration required\",\"inputParams\":[{\"label\":\"Model Name\",\"name\":\"modelName\",\"type\":\"asyncOptions\",\"loadMethod\":\"listModels\",\"default\":\"gpt-4o-mini\",\"id\":\"aaiChatOpenAI_0-input-modelName-asyncOptions\",\"display\":true},{\"label\":\"Temperature\",\"name\":\"temperature\",\"type\":\"number\",\"step\":0.1,\"default\":0.9,\"optional\":true,\"id\":\"aaiChatOpenAI_0-input-temperature-number\",\"display\":true},{\"label\":\"Streaming\",\"name\":\"streaming\",\"type\":\"boolean\",\"default\":true,\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-streaming-boolean\",\"display\":true},{\"label\":\"Max Tokens\",\"name\":\"maxTokens\",\"type\":\"number\",\"step\":1,\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-maxTokens-number\",\"display\":true},{\"label\":\"Top Probability\",\"name\":\"topP\",\"type\":\"number\",\"step\":0.1,\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-topP-number\",\"display\":true},{\"label\":\"Frequency Penalty\",\"name\":\"frequencyPenalty\",\"type\":\"number\",\"step\":0.1,\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-frequencyPenalty-number\",\"display\":true},{\"label\":\"Presence Penalty\",\"name\":\"presencePenalty\",\"type\":\"number\",\"step\":0.1,\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-presencePenalty-number\",\"display\":true},{\"label\":\"Timeout\",\"name\":\"timeout\",\"type\":\"number\",\"step\":1,\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-timeout-number\",\"display\":true},{\"label\":\"Strict Tool Calling\",\"name\":\"strictToolCalling\",\"type\":\"boolean\",\"description\":\"Whether the model supports the `strict` argument when passing in tools. If not specified, the `strict` argument will not be passed to OpenAI.\",\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-strictToolCalling-boolean\",\"display\":true},{\"label\":\"Stop Sequence\",\"name\":\"stopSequence\",\"type\":\"string\",\"rows\":4,\"optional\":true,\"description\":\"List of stop words to use when generating. Use comma to separate multiple stop words.\",\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-stopSequence-string\",\"display\":true},{\"label\":\"BasePath\",\"name\":\"basepath\",\"type\":\"string\",\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-basepath-string\",\"display\":true},{\"label\":\"Proxy Url\",\"name\":\"proxyUrl\",\"type\":\"string\",\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-proxyUrl-string\",\"display\":true},{\"label\":\"BaseOptions\",\"name\":\"baseOptions\",\"type\":\"json\",\"optional\":true,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-baseOptions-json\",\"display\":true},{\"label\":\"Allow Image Uploads\",\"name\":\"allowImageUploads\",\"type\":\"boolean\",\"description\":\"Allow image input. Refer to the <a href=\\\"https://docs.flowiseai.com/using-flowise/uploads#image\\\" target=\\\"_blank\\\">docs</a> for more details.\",\"default\":false,\"optional\":true,\"id\":\"aaiChatOpenAI_0-input-allowImageUploads-boolean\",\"display\":true},{\"label\":\"Image Resolution\",\"description\":\"This parameter controls the resolution in which the model views the image.\",\"name\":\"imageResolution\",\"type\":\"options\",\"options\":[{\"label\":\"Low\",\"name\":\"low\"},{\"label\":\"High\",\"name\":\"high\"},{\"label\":\"Auto\",\"name\":\"auto\"}],\"default\":\"low\",\"optional\":false,\"show\":{\"allowImageUploads\":true},\"id\":\"aaiChatOpenAI_0-input-imageResolution-options\",\"display\":false},{\"label\":\"Reasoning Effort\",\"description\":\"Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.\",\"name\":\"reasoningEffort\",\"type\":\"options\",\"options\":[{\"label\":\"Low\",\"name\":\"low\"},{\"label\":\"Medium\",\"name\":\"medium\"},{\"label\":\"High\",\"name\":\"high\"}],\"default\":\"medium\",\"optional\":false,\"additionalParams\":true,\"id\":\"aaiChatOpenAI_0-input-reasoningEffort-options\",\"display\":true}],\"inputAnchors\":[{\"label\":\"Cache\",\"name\":\"cache\",\"type\":\"BaseCache\",\"optional\":true,\"id\":\"aaiChatOpenAI_0-input-cache-BaseCache\",\"display\":true}],\"inputs\":{\"cache\":\"\",\"modelName\":\"gpt-4.1\",\"temperature\":0.9,\"streaming\":true,\"maxTokens\":\"\",\"topP\":\"\",\"frequencyPenalty\":\"\",\"presencePenalty\":\"\",\"timeout\":\"\",\"strictToolCalling\":\"\",\"stopSequence\":\"\",\"basepath\":\"\",\"proxyUrl\":\"\",\"baseOptions\":\"\",\"allowImageUploads\":\"\",\"imageResolution\":\"low\",\"reasoningEffort\":\"medium\"},\"outputAnchors\":[{\"id\":\"aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable\",\"name\":\"aaiChatOpenAI\",\"label\":\"AAIChatOpenAI\",\"description\":\"OpenAI GPT models • Zero configuration required\",\"type\":\"AAIChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable\"}],\"outputs\":{},\"selected\":false},\"width\":300,\"height\":580,\"positionAbsolute\":{\"x\":717.3626705657941,\"y\":-18.02454767463898},\"selected\":false,\"dragging\":false}],\"edges\":[{\"source\":\"chatPromptTemplate_0\",\"sourceHandle\":\"chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable\",\"target\":\"llmChain_0\",\"targetHandle\":\"llmChain_0-input-prompt-BasePromptTemplate\",\"type\":\"buttonedge\",\"id\":\"chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate\"},{\"source\":\"advancedStructuredOutputParser_0\",\"sourceHandle\":\"advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable\",\"target\":\"llmChain_0\",\"targetHandle\":\"llmChain_0-input-outputParser-BaseLLMOutputParser\",\"type\":\"buttonedge\",\"id\":\"advancedStructuredOutputParser_0-advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable-llmChain_0-llmChain_0-input-outputParser-BaseLLMOutputParser\"},{\"source\":\"aaiChatOpenAI_0\",\"sourceHandle\":\"aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable\",\"target\":\"llmChain_0\",\"targetHandle\":\"llmChain_0-input-model-BaseLanguageModel\",\"type\":\"buttonedge\",\"id\":\"aaiChatOpenAI_0-aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_0-llmChain_0-input-model-BaseLanguageModel\"}],\"viewport\":{\"x\":32.52348742992433,\"y\":72.569856696422,\"zoom\":0.8814666976058767}}",
+    "isPublic": false,
+    "visibility": ["Private"],
+    "framework": ["Answer Agent"],
+    "usecases": ["CSV"],
+    "category": "CSV",
+    "type": "CHATFLOW",
+    "nodes": [
+        {
+            "id": "llmChain_0",
+            "position": {
+                "x": 1072.7390744962727,
+                "y": 539.5523789450416
+            },
+            "type": "customNode",
+            "data": {
+                "id": "llmChain_0",
+                "label": "LLM Chain",
+                "version": 3,
+                "name": "llmChain",
+                "type": "LLMChain",
+                "baseClasses": ["LLMChain", "BaseChain", "Runnable"],
+                "category": "Chains",
+                "description": "Chain to run queries against LLMs",
+                "inputParams": [
+                    {
+                        "label": "Chain Name",
+                        "name": "chainName",
+                        "type": "string",
+                        "placeholder": "Name Your Chain",
+                        "optional": true,
+                        "id": "llmChain_0-input-chainName-string"
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Language Model",
+                        "name": "model",
+                        "type": "BaseLanguageModel",
+                        "id": "llmChain_0-input-model-BaseLanguageModel"
+                    },
+                    {
+                        "label": "Prompt",
+                        "name": "prompt",
+                        "type": "BasePromptTemplate",
+                        "id": "llmChain_0-input-prompt-BasePromptTemplate"
+                    },
+                    {
+                        "label": "Output Parser",
+                        "name": "outputParser",
+                        "type": "BaseLLMOutputParser",
+                        "optional": true,
+                        "id": "llmChain_0-input-outputParser-BaseLLMOutputParser"
+                    },
+                    {
+                        "label": "Input Moderation",
+                        "description": "Detect text that could generate harmful output and prevent it from being sent to the language model",
+                        "name": "inputModeration",
+                        "type": "Moderation",
+                        "optional": true,
+                        "list": true,
+                        "id": "llmChain_0-input-inputModeration-Moderation"
+                    }
+                ],
+                "inputs": {
+                    "model": "{{aaiChatOpenAI_0.data.instance}}",
+                    "prompt": "{{chatPromptTemplate_0.data.instance}}",
+                    "outputParser": "{{advancedStructuredOutputParser_0.data.instance}}",
+                    "inputModeration": "",
+                    "chainName": ""
+                },
+                "outputAnchors": [
+                    {
+                        "name": "output",
+                        "label": "Output",
+                        "type": "options",
+                        "description": "",
+                        "options": [
+                            {
+                                "id": "llmChain_0-output-llmChain-LLMChain|BaseChain|Runnable",
+                                "name": "llmChain",
+                                "label": "LLM Chain",
+                                "description": "",
+                                "type": "LLMChain | BaseChain | Runnable"
+                            },
+                            {
+                                "id": "llmChain_0-output-outputPrediction-string|json",
+                                "name": "outputPrediction",
+                                "label": "Output Prediction",
+                                "description": "",
+                                "type": "string | json"
+                            }
+                        ],
+                        "default": "llmChain"
+                    }
+                ],
+                "outputs": {
+                    "output": "llmChain"
+                },
+                "selected": false
+            },
+            "width": 300,
+            "height": 514,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 1072.7390744962727,
+                "y": 539.5523789450416
+            },
+            "dragging": false
+        },
+        {
+            "id": "chatPromptTemplate_0",
+            "position": {
+                "x": 343.6649930078479,
+                "y": 22.47954685671459
+            },
+            "type": "customNode",
+            "data": {
+                "id": "chatPromptTemplate_0",
+                "label": "Chat Prompt Template",
+                "version": 2,
+                "name": "chatPromptTemplate",
+                "type": "ChatPromptTemplate",
+                "baseClasses": ["ChatPromptTemplate", "BaseChatPromptTemplate", "BasePromptTemplate", "Runnable"],
+                "category": "Prompts",
+                "description": "Schema to represent a chat prompt",
+                "inputParams": [
+                    {
+                        "label": "System Message",
+                        "name": "systemMessagePrompt",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "You are a helpful assistant that translates {input_language} to {output_language}.",
+                        "id": "chatPromptTemplate_0-input-systemMessagePrompt-string"
+                    },
+                    {
+                        "label": "Human Message",
+                        "name": "humanMessagePrompt",
+                        "description": "This prompt will be added at the end of the messages as human message",
+                        "type": "string",
+                        "rows": 4,
+                        "placeholder": "{text}",
+                        "id": "chatPromptTemplate_0-input-humanMessagePrompt-string"
+                    },
+                    {
+                        "label": "Format Prompt Values",
+                        "name": "promptValues",
+                        "type": "json",
+                        "optional": true,
+                        "acceptVariable": true,
+                        "list": true,
+                        "id": "chatPromptTemplate_0-input-promptValues-json"
+                    },
+                    {
+                        "label": "Messages History",
+                        "name": "messageHistory",
+                        "description": "Add messages after System Message. This is useful when you want to provide few shot examples",
+                        "type": "tabs",
+                        "tabIdentifier": "selectedMessagesTab",
+                        "additionalParams": true,
+                        "default": "messageHistoryCode",
+                        "tabs": [
+                            {
+                                "label": "Add Messages (Code)",
+                                "name": "messageHistoryCode",
+                                "type": "code",
+                                "hideCodeExecute": true,
+                                "codeExample": "const { AIMessage, HumanMessage, ToolMessage } = require('@langchain/core/messages');\n\nreturn [\n    new HumanMessage(\"What is 333382 🦜 1932?\"),\n    new AIMessage({\n        content: \"\",\n        tool_calls: [\n        {\n            id: \"12345\",\n            name: \"calulator\",\n            args: {\n                number1: 333382,\n                number2: 1932,\n                operation: \"divide\",\n            },\n        },\n        ],\n    }),\n    new ToolMessage({\n        tool_call_id: \"12345\",\n        content: \"The answer is 172.558.\",\n    }),\n    new AIMessage(\"The answer is 172.558.\"),\n]",
+                                "optional": true,
+                                "additionalParams": true
+                            }
+                        ],
+                        "id": "chatPromptTemplate_0-input-messageHistory-tabs"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "systemMessagePrompt": "1. IDENTITY & PURPOSE\nYou are Data Analyzer, an LLM-based agent designed to process and analyze provided data inputs. Your objective is to examine datasets presented in natural language or structured form and produce a JSON output containing exactly two fields:\n• analysis – a concise interpretation of the data trends or anomalies\n• reasoning – a detailed explanation of how the analysis was derived\nYour mission is to deliver clear, data-driven insights strictly following this JSON schema.\n\n2. AVAILABLE TOOLS\nNo external tools will be used. All analysis is performed using the LLM's internal capabilities based solely on the provided inputs.\n\n3. MODES & BEHAVIOR\n• Default Mode: Analyze incoming data and generate the final JSON output.\n• Extended Reasoning Mode: If explicit feedback requests more detail, provide additional depth in the \"reasoning\" field while keeping the same JSON structure.\n• Clarification Mode: If provided data is ambiguous or incomplete, ask a targeted follow-up question to ensure accuracy before finalizing the analysis.\n\n4. STYLE & TONE\n• Professional, clear, and methodical\n• Concise language with technical precision\n• Avoid unnecessary jargon while ensuring thorough and accessible explanations\n\n5. CITATIONS & SOURCING\n• Only use data explicitly supplied in the input; do not assume additional external context\n• If additional details or methodologies are referenced, note that they are based solely on the input provided\n• When uncertain, state “I’m not certain” and ask for clarification\n\n6. SAFETY & PERMISSIONS\n• Do not attempt to access private or external data beyond what is provided by the user\n• Respect all data privacy guidelines by processing only the given inputs\n• Confirm with the user if any data may be confidential before providing detailed analyses\n\n7. ERROR HANDLING\n• When the input data is ambiguous or insufficient, request clarification from the user before proceeding\n• If any internal errors occur during analysis, clearly communicate the issue and suggest actionable steps (e.g., “Please provide a more detailed dataset”)\n\n8. EXAMPLES (DO NOT OUTPUT VERBATIM)\n• Input: “Analyze the quarterly sales figures for Q1.”\nExpected JSON output:\n{\n\"analysis\": \"The data indicates consistent growth with minor fluctuations during mid-quarter.\",\n\"reasoning\": \"The analysis is based on comparing month-by-month trends and noting seasonal variations as described in the dataset.\"\n}\n• Input: “What anomalies can you find in the sensor data?”\nExpected JSON output:\n{\n\"analysis\": \"Several inconsistent readings were detected, suggesting potential sensor errors.\",\n\"reasoning\": \"Outlier values were identified through comparing typical ranges with the provided measurements.\"\n}\n\n9. NON-NEGOTIABLE RULES\n• Always output the final result strictly as a JSON object containing only two keys: “analysis” and “reasoning”\n• Do not introduce additional keys or extraneous information in the output\n• Only provide conclusions that are directly supported by the input data\n• If data details are unclear or incomplete, confirm intent with the user before proceeding",
+                    "humanMessagePrompt": "{keyword}",
+                    "promptValues": "{\"keyword\":\"{{question}}\"}",
+                    "messageHistory": "messageHistoryCode",
+                    "selectedMessagesTab_chatPromptTemplate_0": "messageHistoryCode"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+                        "name": "chatPromptTemplate",
+                        "label": "ChatPromptTemplate",
+                        "description": "Schema to represent a chat prompt",
+                        "type": "ChatPromptTemplate | BaseChatPromptTemplate | BasePromptTemplate | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 748,
+            "selected": false,
+            "positionAbsolute": {
+                "x": 343.6649930078479,
+                "y": 22.47954685671459
+            },
+            "dragging": false
+        },
+        {
+            "id": "advancedStructuredOutputParser_0",
+            "position": {
+                "x": 450.47781119338265,
+                "y": 808.0550815562741
+            },
+            "type": "customNode",
+            "data": {
+                "id": "advancedStructuredOutputParser_0",
+                "label": "Advanced Structured Output Parser",
+                "version": 1,
+                "name": "advancedStructuredOutputParser",
+                "type": "AdvancedStructuredOutputParser",
+                "baseClasses": ["AdvancedStructuredOutputParser", "BaseLLMOutputParser", "Runnable"],
+                "category": "Output Parsers",
+                "description": "Parse the output of an LLM call into a given structure by providing a Zod schema.",
+                "inputParams": [
+                    {
+                        "label": "Autofix",
+                        "name": "autofixParser",
+                        "type": "boolean",
+                        "optional": true,
+                        "description": "In the event that the first call fails, will make another call to the model to fix any errors.",
+                        "id": "advancedStructuredOutputParser_0-input-autofixParser-boolean"
+                    },
+                    {
+                        "label": "Example JSON",
+                        "name": "exampleJson",
+                        "type": "string",
+                        "description": "Zod schema for the output of the model",
+                        "rows": 10,
+                        "default": "z.object({\n    title: z.string(), // Title of the movie as a string\n    yearOfRelease: z.number().int(), // Release year as an integer number,\n    genres: z.enum([\n        \"Action\", \"Comedy\", \"Drama\", \"Fantasy\", \"Horror\",\n        \"Mystery\", \"Romance\", \"Science Fiction\", \"Thriller\", \"Documentary\"\n    ]).array().max(2), // Array of genres, max of 2 from the defined enum\n    shortDescription: z.string().max(500) // Short description, max 500 characters\n})",
+                        "id": "advancedStructuredOutputParser_0-input-exampleJson-string"
+                    }
+                ],
+                "inputAnchors": [],
+                "inputs": {
+                    "autofixParser": true,
+                    "exampleJson": "z.object({\n    analysis: z.string(),\n    reasoning: z.string()\n})"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable",
+                        "name": "advancedStructuredOutputParser",
+                        "label": "AdvancedStructuredOutputParser",
+                        "description": "Parse the output of an LLM call into a given structure by providing a Zod schema.",
+                        "type": "AdvancedStructuredOutputParser | BaseLLMOutputParser | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 460,
+            "selected": false,
+            "dragging": false,
+            "positionAbsolute": {
+                "x": 450.47781119338265,
+                "y": 808.0550815562741
+            }
+        },
+        {
+            "id": "aaiChatOpenAI_0",
+            "position": {
+                "x": 717.3626705657941,
+                "y": -18.02454767463898
+            },
+            "type": "customNode",
+            "data": {
+                "id": "aaiChatOpenAI_0",
+                "label": "Answer ChatOpenAI",
+                "version": 1,
+                "name": "aaiChatOpenAI",
+                "type": "AAIChatOpenAI",
+                "baseClasses": ["AAIChatOpenAI", "BaseChatModel", "BaseLanguageModel", "Runnable"],
+                "tags": ["AAI"],
+                "category": "Chat Models",
+                "description": "OpenAI GPT models • Zero configuration required",
+                "inputParams": [
+                    {
+                        "label": "Model Name",
+                        "name": "modelName",
+                        "type": "asyncOptions",
+                        "loadMethod": "listModels",
+                        "default": "gpt-4o-mini",
+                        "id": "aaiChatOpenAI_0-input-modelName-asyncOptions",
+                        "display": true
+                    },
+                    {
+                        "label": "Temperature",
+                        "name": "temperature",
+                        "type": "number",
+                        "step": 0.1,
+                        "default": 0.9,
+                        "optional": true,
+                        "id": "aaiChatOpenAI_0-input-temperature-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Streaming",
+                        "name": "streaming",
+                        "type": "boolean",
+                        "default": true,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-streaming-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Max Tokens",
+                        "name": "maxTokens",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-maxTokens-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Top Probability",
+                        "name": "topP",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-topP-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Frequency Penalty",
+                        "name": "frequencyPenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-frequencyPenalty-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Presence Penalty",
+                        "name": "presencePenalty",
+                        "type": "number",
+                        "step": 0.1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-presencePenalty-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Timeout",
+                        "name": "timeout",
+                        "type": "number",
+                        "step": 1,
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-timeout-number",
+                        "display": true
+                    },
+                    {
+                        "label": "Strict Tool Calling",
+                        "name": "strictToolCalling",
+                        "type": "boolean",
+                        "description": "Whether the model supports the `strict` argument when passing in tools. If not specified, the `strict` argument will not be passed to OpenAI.",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-strictToolCalling-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Stop Sequence",
+                        "name": "stopSequence",
+                        "type": "string",
+                        "rows": 4,
+                        "optional": true,
+                        "description": "List of stop words to use when generating. Use comma to separate multiple stop words.",
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-stopSequence-string",
+                        "display": true
+                    },
+                    {
+                        "label": "BasePath",
+                        "name": "basepath",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-basepath-string",
+                        "display": true
+                    },
+                    {
+                        "label": "Proxy Url",
+                        "name": "proxyUrl",
+                        "type": "string",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-proxyUrl-string",
+                        "display": true
+                    },
+                    {
+                        "label": "BaseOptions",
+                        "name": "baseOptions",
+                        "type": "json",
+                        "optional": true,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-baseOptions-json",
+                        "display": true
+                    },
+                    {
+                        "label": "Allow Image Uploads",
+                        "name": "allowImageUploads",
+                        "type": "boolean",
+                        "description": "Allow image input. Refer to the <a href=\"https://docs.flowiseai.com/using-flowise/uploads#image\" target=\"_blank\">docs</a> for more details.",
+                        "default": false,
+                        "optional": true,
+                        "id": "aaiChatOpenAI_0-input-allowImageUploads-boolean",
+                        "display": true
+                    },
+                    {
+                        "label": "Image Resolution",
+                        "description": "This parameter controls the resolution in which the model views the image.",
+                        "name": "imageResolution",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            },
+                            {
+                                "label": "Auto",
+                                "name": "auto"
+                            }
+                        ],
+                        "default": "low",
+                        "optional": false,
+                        "show": {
+                            "allowImageUploads": true
+                        },
+                        "id": "aaiChatOpenAI_0-input-imageResolution-options",
+                        "display": false
+                    },
+                    {
+                        "label": "Reasoning Effort",
+                        "description": "Constrains effort on reasoning for reasoning models. Only applicable for o1 and o3 models.",
+                        "name": "reasoningEffort",
+                        "type": "options",
+                        "options": [
+                            {
+                                "label": "Low",
+                                "name": "low"
+                            },
+                            {
+                                "label": "Medium",
+                                "name": "medium"
+                            },
+                            {
+                                "label": "High",
+                                "name": "high"
+                            }
+                        ],
+                        "default": "medium",
+                        "optional": false,
+                        "additionalParams": true,
+                        "id": "aaiChatOpenAI_0-input-reasoningEffort-options",
+                        "display": true
+                    }
+                ],
+                "inputAnchors": [
+                    {
+                        "label": "Cache",
+                        "name": "cache",
+                        "type": "BaseCache",
+                        "optional": true,
+                        "id": "aaiChatOpenAI_0-input-cache-BaseCache",
+                        "display": true
+                    }
+                ],
+                "inputs": {
+                    "cache": "",
+                    "modelName": "gpt-4.1",
+                    "temperature": 0.9,
+                    "streaming": true,
+                    "maxTokens": "",
+                    "topP": "",
+                    "frequencyPenalty": "",
+                    "presencePenalty": "",
+                    "timeout": "",
+                    "strictToolCalling": "",
+                    "stopSequence": "",
+                    "basepath": "",
+                    "proxyUrl": "",
+                    "baseOptions": "",
+                    "allowImageUploads": "",
+                    "imageResolution": "low",
+                    "reasoningEffort": "medium"
+                },
+                "outputAnchors": [
+                    {
+                        "id": "aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+                        "name": "aaiChatOpenAI",
+                        "label": "AAIChatOpenAI",
+                        "description": "OpenAI GPT models • Zero configuration required",
+                        "type": "AAIChatOpenAI | BaseChatModel | BaseLanguageModel | Runnable"
+                    }
+                ],
+                "outputs": {},
+                "selected": false
+            },
+            "width": 300,
+            "height": 580,
+            "positionAbsolute": {
+                "x": 717.3626705657941,
+                "y": -18.02454767463898
+            },
+            "selected": false,
+            "dragging": false
+        }
+    ],
+    "edges": [
+        {
+            "source": "chatPromptTemplate_0",
+            "sourceHandle": "chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-prompt-BasePromptTemplate",
+            "type": "buttonedge",
+            "id": "chatPromptTemplate_0-chatPromptTemplate_0-output-chatPromptTemplate-ChatPromptTemplate|BaseChatPromptTemplate|BasePromptTemplate|Runnable-llmChain_0-llmChain_0-input-prompt-BasePromptTemplate"
+        },
+        {
+            "source": "advancedStructuredOutputParser_0",
+            "sourceHandle": "advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-outputParser-BaseLLMOutputParser",
+            "type": "buttonedge",
+            "id": "advancedStructuredOutputParser_0-advancedStructuredOutputParser_0-output-advancedStructuredOutputParser-AdvancedStructuredOutputParser|BaseLLMOutputParser|Runnable-llmChain_0-llmChain_0-input-outputParser-BaseLLMOutputParser"
+        },
+        {
+            "source": "aaiChatOpenAI_0",
+            "sourceHandle": "aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable",
+            "target": "llmChain_0",
+            "targetHandle": "llmChain_0-input-model-BaseLanguageModel",
+            "type": "buttonedge",
+            "id": "aaiChatOpenAI_0-aaiChatOpenAI_0-output-aaiChatOpenAI-AAIChatOpenAI|BaseChatModel|BaseLanguageModel|Runnable-llmChain_0-llmChain_0-input-model-BaseLanguageModel"
+        }
+    ]
+}

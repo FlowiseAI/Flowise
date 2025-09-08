@@ -4,10 +4,13 @@
     "description": "Utility scripts for TheAnswer project",
     "private": true,
     "scripts": {
-        "sync-openapi": "node sync-openapi-docs.js"
+        "sync-openapi": "node sync-openapi-docs.js",
+        "export-auth0-users": "node export-auth0-users.js"
     },
     "dependencies": {
+        "axios": "^1.8.2",
         "chalk": "^4.1.2",
+        "dotenv": "^16.6.1",
         "js-yaml": "^4.1.0"
     }
 }

@@ -41,7 +41,11 @@ export async function POST(req: Request) {
 
         // Use the same domain resolution as chat flow - user's chatflowDomain or fallback
         const flowiseDomain =
-            session.user.chatflowDomain || process.env.CHATFLOW_DOMAIN_OVERRIDE || process.env.DOMAIN || 'http://localhost:4000'
+            session.user.chatflowDomain ||
+            process.env.CHATFLOW_DOMAIN_OVERRIDE ||
+            process.env.DOMAIN ||
+            process.env.FLOWISE_DOMAIN ||
+            'http://localhost:4000'
         // console.log('Using Flowise domain:', flowiseDomain)
 
         const response = await fetch(`${flowiseDomain}/api/v1/dalle-image/generate`, {

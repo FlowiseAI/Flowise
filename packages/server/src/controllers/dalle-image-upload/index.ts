@@ -19,20 +19,33 @@ const getStoragePath = (): string => {
 
 const getS3Config = () => {
     const s3Config: any = {
-        credentials: {
-            accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID || '',
-            secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY || ''
-        },
         region: process.env.S3_STORAGE_REGION || 'us-east-1'
+    }
+
+    // Only set credentials if they actually exist (don't pass empty strings)
+    if (process.env.S3_STORAGE_ACCESS_KEY_ID && process.env.S3_STORAGE_SECRET_ACCESS_KEY) {
+        s3Config.credentials = {
+            accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY
+        }
+        // eslint-disable-next-line no-console
+        console.log('S3 Config: Using explicit credentials')
+    } else {
+        // eslint-disable-next-line no-console
+        console.log('S3 Config: Using AWS SDK default credential chain (IAM roles, etc.)')
     }
 
     if (process.env.S3_ENDPOINT_URL) {
         s3Config.endpoint = process.env.S3_ENDPOINT_URL
         s3Config.forcePathStyle = true
+        // eslint-disable-next-line no-console
+        console.log('S3 Config: Using custom endpoint:', process.env.S3_ENDPOINT_URL)
     }
 
     const s3Client = new S3Client(s3Config)
     const Bucket = process.env.S3_STORAGE_BUCKET_NAME || 'default-bucket'
+    // eslint-disable-next-line no-console
+    console.log('S3 Config: Using bucket:', Bucket, 'in region:', s3Config.region)
 
     return { s3Client, Bucket }
 }
@@ -191,11 +204,11 @@ const listArchivedImages = async (req: Request, res: Response, next: NextFunctio
             })
         } else {
             // Local storage
-            const rootPath = getStoragePath();
-            const folderPath = path.resolve(rootPath, 'dalle-images', organizationId as string, userId as string);
+            const rootPath = getStoragePath()
+            const folderPath = path.resolve(rootPath, 'dalle-images', organizationId as string, userId as string)
 
             if (!folderPath.startsWith(rootPath)) {
-                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Invalid folder path');
+                throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Invalid folder path')
             }
 
             if (!fs.existsSync(folderPath)) {
@@ -215,13 +228,13 @@ const listArchivedImages = async (req: Request, res: Response, next: NextFunctio
             const imageSessions = new Map()
 
             files.forEach((fileName) => {
-                const filePath = path.resolve(folderPath, fileName);
+                const filePath = path.resolve(folderPath, fileName)
 
                 if (!filePath.startsWith(folderPath)) {
-                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Invalid file path');
+                    throw new InternalFlowiseError(StatusCodes.FORBIDDEN, 'Invalid file path')
                 }
 
-                const stats = fs.statSync(filePath);
+                const stats = fs.statSync(filePath)
 
                 const isImage = fileName.match(/\.(png|jpg|jpeg|webp)$/i)
                 const isJson = fileName.endsWith('_response.json')

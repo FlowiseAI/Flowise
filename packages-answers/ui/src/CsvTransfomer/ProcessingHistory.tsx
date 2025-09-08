@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { User } from 'types'
 import { Stack, Button, Chip, CircularProgress } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import SnackMessage from '../SnackMessage'
 
 async function fetchCsvParseRuns() {
     const token = sessionStorage.getItem('access_token')
@@ -47,6 +49,7 @@ async function downloadProcessedCsv(csvParseRunId: string) {
 const ProcessingHistory = ({ user }: { user: User }) => {
     const [csvParseRuns, setCsvParseRuns] = useState<any[]>([])
     const [loading, setLoading] = useState<boolean>(true)
+    const [historySnack, setHistorySnack] = useState('')
 
     const getData = useCallback(async () => {
         setLoading(true)
@@ -55,14 +58,39 @@ const ProcessingHistory = ({ user }: { user: User }) => {
             setCsvParseRuns(csvParseRuns)
         } catch (error) {
             console.error('Error fetching CSV parse runs:', error)
+            throw error
         } finally {
             setLoading(false)
         }
-    }, [user])
+    }, [])
+
+    const handleRefresh = async () => {
+        try {
+            await getData()
+            setHistorySnack('Run statuses updated.')
+        } catch (error) {
+            console.error('Error refreshing CSV parse runs:', error)
+            setHistorySnack('Failed to refresh run statuses. Please try again.')
+        }
+    }
 
     useEffect(() => {
-        getData()
+        getData().catch((error) => {
+            console.error('Error in initial data fetch:', error)
+            // Handle error gracefully without rethrowing
+        })
     }, [getData])
+
+    useEffect(() => {
+        const hasInProgress = csvParseRuns.some((r) => r.status !== 'READY' && r.status !== 'COMPLETE_WITH_ERRORS')
+        const onVis = () => {
+            if (!document.hidden && hasInProgress) {
+                getData()
+            }
+        }
+        document.addEventListener('visibilitychange', onVis)
+        return () => document.removeEventListener('visibilitychange', onVis)
+    }, [csvParseRuns, getData])
 
     const handleDownloadProcessedCsv = async (csvParseRunId: string) => {
         try {
@@ -179,6 +207,11 @@ const ProcessingHistory = ({ user }: { user: User }) => {
                 const rowsRequested = params.row.rowsRequested
                 const rowsProcessed = params.row.rowsProcessed
                 const totalRows = params.row.configuration?.rowsCount
+
+                if (rowsRequested === totalRows) {
+                    return `${rowsProcessed ?? 0} of ${totalRows ?? 0}`
+                }
+
                 return `${rowsProcessed ?? 0}/${rowsRequested ?? 0} of ${totalRows ?? 0}`
             }
         },
@@ -218,46 +251,67 @@ const ProcessingHistory = ({ user }: { user: User }) => {
     ]
 
     return (
-        <div style={{ height: 400, width: '100%' }}>
-            <DataGrid
-                rows={csvParseRuns}
-                columns={columns}
-                initialState={{
-                    pagination: {
-                        paginationModel: {
-                            pageSize: 10
+        <div style={{ width: '100%' }}>
+            {/* Header with refresh button */}
+            <Stack direction='row' justifyContent='space-between' alignItems='center' sx={{ mb: 2 }}>
+                <div />
+                <Button
+                    variant='outlined'
+                    startIcon={loading ? <CircularProgress size={16} /> : <RefreshIcon />}
+                    onClick={handleRefresh}
+                    disabled={loading}
+                    sx={{
+                        fontWeight: 500,
+                        textTransform: 'none'
+                    }}
+                >
+                    {loading ? 'Refreshing…' : 'Refresh'}
+                </Button>
+            </Stack>
+
+            <div style={{ height: 400, width: '100%' }}>
+                <DataGrid
+                    rows={csvParseRuns}
+                    columns={columns}
+                    initialState={{
+                        pagination: {
+                            paginationModel: {
+                                pageSize: 10
+                            }
                         }
-                    }
-                }}
-                pageSizeOptions={[10]}
-                disableRowSelectionOnClick
-                autoHeight
-                loading={loading}
-                components={{
-                    LoadingOverlay: () => (
-                        <Stack height='100%' alignItems='center' justifyContent='center'>
-                            <CircularProgress />
-                        </Stack>
-                    )
-                }}
-                sx={{
-                    '& .super-app-theme--header': {
-                        fontWeight: 'bold',
-                        fontSize: '0.875rem',
-                        color: 'white'
-                    },
-                    '& .MuiDataGrid-cell': {
-                        fontSize: '0.825rem',
-                        color: 'white'
-                    },
-                    '& .MuiDataGrid-columnHeaders': {
-                        fontWeight: 'bold'
-                    },
-                    '& .MuiTablePagination-root': {
-                        color: 'white'
-                    }
-                }}
-            />
+                    }}
+                    pageSizeOptions={[10]}
+                    disableRowSelectionOnClick
+                    autoHeight
+                    loading={loading}
+                    components={{
+                        LoadingOverlay: () => (
+                            <Stack height='100%' alignItems='center' justifyContent='center'>
+                                <CircularProgress />
+                            </Stack>
+                        )
+                    }}
+                    sx={{
+                        '& .super-app-theme--header': {
+                            fontWeight: 'bold',
+                            fontSize: '0.875rem',
+                            color: 'white'
+                        },
+                        '& .MuiDataGrid-cell': {
+                            fontSize: '0.825rem',
+                            color: 'white'
+                        },
+                        '& .MuiDataGrid-columnHeaders': {
+                            fontWeight: 'bold'
+                        },
+                        '& .MuiTablePagination-root': {
+                            color: 'white'
+                        }
+                    }}
+                />
+            </div>
+
+            <SnackMessage message={historySnack} />
         </div>
     )
 }

@@ -1,11 +1,31 @@
 const { PrismaPlugin } = require('experimental-prisma-webpack-plugin')
 
 const webpack = require('webpack')
-// const { withSentryConfig } = require('@sentry/nextjs');
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
     enabled: process.env.ANALYZE === 'true'
 })
+// SECURITY: Parse DATABASE_SECRET at runtime if available (fallback mechanism)
+// This ensures DATABASE_URL is available even if shell environment inheritance fails
+if (process.env.DATABASE_SECRET && !process.env.DATABASE_URL) {
+    try {
+        const { engine, host, port, dbname, username, password } = JSON.parse(process.env.DATABASE_SECRET)
+        process.env.DATABASE_HOST = host
+        process.env.DATABASE_PORT = port
+        process.env.DATABASE_NAME = dbname
+        process.env.DATABASE_USER = username
+        process.env.DATABASE_PASSWORD = password
+        process.env.DATABASE_TYPE = engine
 
+        // Construct DATABASE_URL for Prisma
+        process.env.DATABASE_URL = `postgresql://${username}:${password}@${host}:${port}/${dbname}?schema=web&connection_limit=1`
+
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('DATABASE_URL parsed from DATABASE_SECRET in next.config.js')
+        }
+    } catch (error) {
+        console.error('Failed to parse DATABASE_SECRET in next.config.js:', error.message)
+    }
+}
 /**
  * @type {import('next').NextConfig}
  */
@@ -67,18 +87,6 @@ let nextConfig = withBundleAnalyzer({
             }
         ]
     },
-    env: {
-        // Use explicit AUTH0_BASE_URL from environment, fallback to VERCEL_BRANCH_URL if on Vercel
-        AUTH0_BASE_URL:
-            process.env.AUTH0_BASE_URL ?? (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : undefined),
-        REACT_APP_AUTH0_ORGANIZATION_ID: process.env.AUTH0_ORGANIZATION_ID,
-        REACT_APP_AUTH0_AUDIENCE: process.env.AUTH0_AUDIENCE,
-        REACT_APP_AUTH0_DOMAIN: process.env.AUTH0_DOMAIN,
-        REACT_APP_AUTH0_CLIENT_ID: process.env.AUTH0_CLIENT_ID,
-        FLAGSMITH_ENVIRONMENT_ID: process.env.FLAGSMITH_ENVIRONMENT_ID,
-        AUTH0_SECRET: process.env.AUTH0_SECRET ?? process.env.WEB_AUTH0_SECRET,
-        CHATFLOW_DOMAIN_OVERRIDE: process.env.CHATFLOW_DOMAIN_OVERRIDE
-    },
     webpack: (config, { isServer }) => {
         config.externals = [...config.externals, 'db', 'puppeteer', 'handlebars']
         config.plugins = [
@@ -125,12 +133,6 @@ let nextConfig = withBundleAnalyzer({
     }
 })
 
-const disableSentry = process.env.DISABLE_SENTRY
-if (!disableSentry) {
-    // nextConfig = withSentryConfig(nextConfig);
-    console.warn('Sentry is NOT enabled.')
-} else {
-    console.warn('Sentry is disabled.  Please check your environment variables.')
-}
+// Sentry removed completely
 
 module.exports = nextConfig

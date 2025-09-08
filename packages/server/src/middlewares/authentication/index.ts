@@ -12,18 +12,16 @@ import { findOrCreateDefaultChatflowsForUser } from './findOrCreateDefaultChatfl
 
 const jwtCheck = auth({
     authRequired: true,
-    secret: process.env.AUTH0_SECRET,
     audience: process.env.AUTH0_AUDIENCE,
     issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG ?? 'HS256'
+    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG ?? 'RS256'
 })
 
 const jwtCheckPublic = auth({
     authRequired: false,
-    secret: process.env.AUTH0_SECRET,
     audience: process.env.AUTH0_AUDIENCE,
     issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG ?? 'HS256'
+    tokenSigningAlg: process.env.AUTH0_TOKEN_SIGN_ALG ?? 'RS256'
 })
 
 const tryApiKeyAuth = async (req: Request, AppDataSource: DataSource): Promise<User | null> => {

@@ -16,14 +16,12 @@ Parameters:
 
 Mappings:
     RedisEnvConfigurationMap:
+        # Default environments
         staging:
             'NodeType': 'cache.t3.micro'
             'NumCacheNodes': 1
-        production:
+        prod:
             'NodeType': 'cache.r6g.large'
-            'NumCacheNodes': 2
-        All:
-            'NodeType': 'cache.t3.micro'
             'NumCacheNodes': 1
 
 Resources:
@@ -64,7 +62,7 @@ Resources:
     RedisParameterGroup:
         Type: 'AWS::ElastiCache::ParameterGroup'
         Properties:
-            CacheParameterGroupFamily: 'redis7.x'
+            CacheParameterGroupFamily: 'redis7'
             Description: !Sub 'Parameter group for ${App}-${Env} Redis cluster'
             Properties:
                 maxmemory-policy: 'allkeys-lru'

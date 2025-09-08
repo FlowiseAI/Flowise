@@ -1,10 +1,9 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import { Controller, useForm } from 'react-hook-form'
 import { InputLabel, Select, MenuItem } from '@mui/material'
 
-// material-ui
 import {
     Stack,
     Box,
@@ -18,19 +17,37 @@ import {
     FormControl,
     Switch,
     IconButton,
-    Snackbar,
     Backdrop,
     CircularProgress,
     FormHelperText,
     Stepper,
     Step,
-    StepLabel
+    StepLabel,
+    Alert,
+    AlertTitle
 } from '@mui/material'
 import { User } from 'types'
 import DownloadOutlined from '@mui/icons-material/DownloadOutlined'
 import CloseOutlined from '@mui/icons-material/CloseOutlined'
 import FilePresentOutlined from '@mui/icons-material/FilePresentOutlined'
 
+import CsvNoticeCard from './CsvNoticeCard'
+import SnackMessage from '../SnackMessage'
+import { parseCsvWithHeaders, parseCsvWithoutHeaders } from './parseCsv'
+
+interface ChatFlow {
+    id: string
+    name: string
+    [key: string]: any
+}
+
+interface CsvConfiguration {
+    context: string
+    sourceColumns: Record<string, string>
+    headers: string[]
+    rowsCount: number
+    firstRowIsHeaders: boolean
+}
 async function createCsvParseRun({
     name,
     configuration,
@@ -41,7 +58,7 @@ async function createCsvParseRun({
     csvParseRunId
 }: {
     name: string
-    configuration: any
+    configuration: CsvConfiguration
     chatflowChatId: string
     rowsRequested: number
     file?: string | null
@@ -90,7 +107,7 @@ async function fetchCsvParseRun({ csvParseRunId }: { csvParseRunId: string }) {
     return csvParseRun
 }
 
-const baseStyle = {
+const baseStyle: React.CSSProperties = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
@@ -109,21 +126,35 @@ interface IFormInput {
     context: string
     sourceColumns: string[]
     includeOriginalColumns: boolean
+    firstRowIsHeaders: boolean
 }
 
-const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]; user: User; onNavigateToHistory?: () => void }) => {
+const ProcessCsv = ({
+    chatflows,
+    user,
+    onNavigateToHistory,
+    onRefreshChatflows
+}: {
+    chatflows: ChatFlow[]
+    user: User
+    onNavigateToHistory?: () => void
+    onRefreshChatflows?: () => Promise<void>
+}) => {
     const theme = useTheme()
     const [headers, setHeaders] = useState<string[]>([])
     const [rows, setRows] = useState<string[][]>([])
     const [file, setFile] = useState<string | null>(null)
     const [fileName, setFileName] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
-    const [snackbarOpen, setSnackbarOpen] = useState(false)
-    const [snackbarMessage, setSnackbarMessage] = useState('')
+    const [csvErrors, setCsvErrors] = useState<string[]>([])
+    const [toastMessage, setToastMessage] = useState('')
     const [activeStep, setActiveStep] = useState(0)
     const [isCloning, setIsCloning] = useState(false)
+    const [csvContent, setCsvContent] = useState<string>('')
     const searchParams = useSearchParams()
     const cloneFrom = searchParams.get('cloneFrom')
+    const hasAutoSelected = useRef(false)
+    const fileReadersRef = useRef<{ mainReader?: FileReader; dataUrlReader?: FileReader }>({})
 
     const {
         control,
@@ -138,54 +169,206 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
             processorId: '',
             rowsRequested: rows?.length || 0,
             context: '',
-            sourceColumns: [],
-            includeOriginalColumns: true
+            sourceColumns: headers,
+            includeOriginalColumns: true,
+            firstRowIsHeaders: true
         }
     })
 
-    // Watch form values to enable/disable next button
     const watchedValues = watch()
 
-    // drag & drop and file input
+    // Utility function to format file sizes for better UX
+    const formatFileSize = useCallback((bytes: number): string => {
+        if (bytes === 0) return '0 Bytes'
+        const k = 1024
+        const sizes = ['Bytes', 'KB', 'MB', 'GB']
+        const i = Math.floor(Math.log(bytes) / Math.log(k))
+        const size = parseFloat((bytes / Math.pow(k, i)).toFixed(i > 1 ? 2 : 1))
+        return `${size} ${sizes[i]}`
+    }, [])
+
+    // Enhanced file size validation with progressive feedback
+    const validateFileSize = useCallback(
+        (fileSize: number, fileName: string) => {
+            const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+            const WARNING_SIZE = 25 * 1024 * 1024 // 25MB (50% of limit)
+
+            if (fileSize > MAX_FILE_SIZE) {
+                setToastMessage(
+                    `File "${fileName}" is too large (${formatFileSize(fileSize)}). ` +
+                        `Maximum allowed: ${formatFileSize(MAX_FILE_SIZE)}. ` +
+                        `Consider splitting large files or processing a sample of your data.`
+                )
+                return { valid: false, isWarning: false }
+            }
+
+            if (fileSize > WARNING_SIZE) {
+                setToastMessage(
+                    `Large file detected (${formatFileSize(fileSize)}). ` +
+                        `Processing may take longer than usual. Files larger than ${formatFileSize(MAX_FILE_SIZE)} are not supported.`
+                )
+                return { valid: true, isWarning: true }
+            }
+
+            return { valid: true, isWarning: false }
+        },
+        [formatFileSize]
+    )
+
+    // FileReader cleanup function
+    const cleanupFileReaders = useCallback(() => {
+        const readers = fileReadersRef.current
+        if (readers.mainReader) {
+            readers.mainReader.onload = null
+            readers.mainReader.onerror = null
+            readers.mainReader.abort()
+            readers.mainReader = undefined
+        }
+        if (readers.dataUrlReader) {
+            readers.dataUrlReader.onload = null
+            readers.dataUrlReader.onerror = null
+            readers.dataUrlReader.abort()
+            readers.dataUrlReader = undefined
+        }
+    }, [])
+
+    // Cleanup FileReaders on component unmount
+    useEffect(() => {
+        return cleanupFileReaders
+    }, [cleanupFileReaders])
+
+    // Auto-select first processor when chatflows appear (only once)
+    useEffect(() => {
+        if (!watchedValues.processorId && chatflows.length > 0 && !hasAutoSelected.current) {
+            setValue('processorId', chatflows[0].id, { shouldValidate: true })
+            setToastMessage(`Selected processor: ${chatflows[0].name}`)
+            hasAutoSelected.current = true
+        }
+    }, [chatflows, watchedValues.processorId, setValue])
+
+    // Function to convert technical errors to user-friendly messages
+    const getDetailedCsvError = (error: string): string => {
+        if (error.includes('Number of columns')) {
+            return 'CSV structure error: The number of columns in your header row does not match the number of columns in your data rows. This usually happens when fields contain commas that are not properly enclosed in quotes. The system will automatically fix this for you.'
+        }
+
+        if (error.includes('no header row')) {
+            return 'CSV format error: Your CSV appears to have no header row. The system will automatically create a default structure for single-column CSVs.'
+        }
+
+        if (error.includes('no data rows')) {
+            return 'CSV content error: Your CSV file appears to have no data rows after the header, or the header could not be determined.'
+        }
+
+        if (error.includes('Unmatched quotes')) {
+            return 'CSV format error: Your CSV contains unclosed quotes. Make sure all quoted fields start and end with double quotes ("").'
+        }
+
+        if (error.includes('Fields containing commas must be enclosed')) {
+            return 'CSV format error: Fields containing commas must be enclosed in quotes for proper parsing. The system will automatically fix this for you.'
+        }
+
+        if (error.includes('Row') && error.includes('columns but expected')) {
+            return 'CSV structure error: Some rows have a different number of columns than expected. This usually happens when fields contain commas that are not properly enclosed in quotes. The system will automatically fix this for you.'
+        }
+
+        return error
+    }
+
     const onDrop = useCallback(
-        (acceptedFiles: any) => {
-            // Do something with the files
+        (acceptedFiles: File[]) => {
             const file = acceptedFiles[0]
-            setFile(file)
+
+            // Enhanced file size validation with progressive feedback
+            const sizeValidation = validateFileSize(file.size, file.name)
+            if (!sizeValidation.valid) {
+                return
+            }
             setFileName(file.name)
+            setCsvErrors([]) // Clear any previous CSV errors
+
+            // Cleanup any existing readers before starting new ones
+            cleanupFileReaders()
+
             const reader = new FileReader()
+            fileReadersRef.current.mainReader = reader
+
+            // Add error handler for main reader
+            reader.onerror = () => {
+                setToastMessage('Failed to read CSV file. Please ensure the file is not corrupted.')
+                setCsvErrors(['File reading failed: Unable to read file content'])
+                setFileName(null)
+                // Cleanup reader reference
+                if (fileReadersRef.current.mainReader === reader) {
+                    fileReadersRef.current.mainReader = undefined
+                }
+            }
 
             reader.onload = (event) => {
-                if (reader.result?.toString().startsWith('data')) {
-                    setFile(reader.result?.toString())
-                } else {
-                    const content = event.target?.result as string
-                    // Parse CSV content
-                    const lines = content
-                        .split('\n')
-                        .map((line) => line.trim())
-                        .filter((line) => !line.startsWith('#'))
-                        .filter((line) => line.length > 0)
-                        .map((line) => line.split(',').map((cell) => cell.trim()))
-                    const [headers, ...rows] = lines
-                    // check if number of columns in header is the same as the number of columns in the rows
-                    if (headers.length !== rows[0].length) {
-                        setSnackbarMessage(
-                            'The number of columns in the header and rows are not the same. Please remove the comments from the CSV file.'
-                        )
-                        setSnackbarOpen(true)
-                        return
+                const result = event.target?.result
+                if (typeof result !== 'string') {
+                    setToastMessage('Failed to read CSV file. Please ensure the file is a valid CSV format.')
+                    setCsvErrors(['File reading failed: Unable to process file content'])
+                    return
+                }
+
+                try {
+                    // Store CSV content for re-parsing when user changes header settings
+                    setCsvContent(result)
+
+                    // Parse CSV with user-controlled header interpretation
+                    const { headers: H, rows: R } = watchedValues.firstRowIsHeaders
+                        ? parseCsvWithHeaders(result)
+                        : parseCsvWithoutHeaders(result)
+                    setCsvErrors([])
+                    setHeaders(H)
+                    setRows(R)
+
+                    // Set sourceColumns - H is already correct based on user decision
+                    setValue('sourceColumns', H, { shouldValidate: true })
+
+                    // Set rowsRequested - R.length is data rows based on user decision
+                    setValue('rowsRequested', R.length, { shouldValidate: true })
+                    // Convert file to data URL for storage
+                    const dataUrlReader = new FileReader()
+                    fileReadersRef.current.dataUrlReader = dataUrlReader
+
+                    dataUrlReader.onload = () => {
+                        if (dataUrlReader?.result && typeof dataUrlReader.result === 'string') {
+                            setFile(dataUrlReader.result)
+                        } else {
+                            setToastMessage('Failed to process file for upload. Please try again.')
+                            setFile(null)
+                        }
+                        // Cleanup reader reference
+                        if (fileReadersRef.current.dataUrlReader === dataUrlReader) {
+                            fileReadersRef.current.dataUrlReader = undefined
+                        }
                     }
-                    setHeaders(headers)
-                    setRows(rows)
-                    // Set the rowsRequested value to the number of rows in the CSV
-                    setValue('rowsRequested', rows.length)
-                    reader.readAsDataURL(file)
+                    dataUrlReader.onerror = () => {
+                        setToastMessage('Failed to process file for upload. Please try again.')
+                        setFile(null)
+                        // Cleanup reader reference
+                        if (fileReadersRef.current.dataUrlReader === dataUrlReader) {
+                            fileReadersRef.current.dataUrlReader = undefined
+                        }
+                    }
+                    dataUrlReader.readAsDataURL(file)
+                } catch (e: unknown) {
+                    const errorMessage = getDetailedCsvError(e instanceof Error ? e.message : 'CSV parsing failed.')
+                    setCsvErrors([errorMessage])
+                    setHeaders([])
+                    setRows([])
+                    setValue('rowsRequested', 0)
+                    setToastMessage('CSV validation failed. Please fix the file format.')
+                    setFile(null)
+                    // Cleanup any active readers
+                    cleanupFileReaders()
                 }
             }
             reader.readAsText(file)
         },
-        [setValue]
+        [setValue, watchedValues.firstRowIsHeaders, cleanupFileReaders, validateFileSize]
     )
 
     const { getRootProps, getInputProps, isFocused, isDragAccept, isDragReject } = useDropzone({
@@ -242,7 +425,8 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                         context: data.context,
                         sourceColumns: Object.fromEntries(indexToCol.entries()),
                         headers,
-                        rowsCount: rows.length
+                        rowsCount: rows.length,
+                        firstRowIsHeaders: data.firstRowIsHeaders
                     },
                     chatflowChatId: data.processorId,
                     rowsRequested: Number(data.rowsRequested),
@@ -256,7 +440,8 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                         context: data.context,
                         sourceColumns: Object.fromEntries(indexToCol.entries()),
                         headers,
-                        rowsCount: rows.length
+                        rowsCount: rows.length,
+                        firstRowIsHeaders: data.firstRowIsHeaders
                     },
                     chatflowChatId: data.processorId,
                     rowsRequested: Number(data.rowsRequested),
@@ -265,8 +450,7 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                 })
             }
 
-            setSnackbarMessage('Your CSV is being processed.')
-            setSnackbarOpen(true)
+            setToastMessage('Your CSV is being processed.')
 
             // Reset form and state
             reset()
@@ -284,19 +468,11 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                 }, 1500)
             }
         } catch (err) {
-            console.error(err)
-            setSnackbarMessage('There was an error processing your CSV.')
-            setSnackbarOpen(true)
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred'
+            setToastMessage(`Error processing CSV: ${errorMessage}`)
         } finally {
             setLoading(false)
         }
-    }
-
-    const handleSnackbarClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
-        if (reason === 'clickaway') {
-            return
-        }
-        setSnackbarOpen(false)
     }
 
     const handleNext = () => {
@@ -309,18 +485,20 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
 
     const isStepValid = (step: number) => {
         switch (step) {
-            case 0: // Upload step
-                return !!fileName
-            case 1: // Configuration step
+            case 0:
+                return !!fileName && csvErrors.length === 0 && headers.length > 0 && rows.length > 0
+            case 1:
                 return (
                     !!watchedValues.name &&
                     !!watchedValues.processorId &&
-                    (watchedValues.rowsRequested > 0 || (watchedValues.rowsRequested === rows?.length && rows?.length > 0))
+                    chatflows.length > 0 &&
+                    watchedValues.rowsRequested > 0 &&
+                    watchedValues.rowsRequested <= (rows?.length || 0)
                 )
-            case 2: // Column selection step
-                return true // Always valid as it's optional which columns to select
-            case 3: // Context step
-                return true // Context is optional
+            case 2:
+                return true
+            case 3:
+                return true
             default:
                 return false
         }
@@ -335,9 +513,9 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                             Step 1: Upload CSV File
                         </Typography>
                         <Typography variant='body1' gutterBottom>
-                            Upload the CSV file you want to process with AI
+                            Upload the CSV file you want to process with AI. Ensure the first row contains headers. Lines starting with '#'
+                            are treated as comments.
                         </Typography>
-                        {/* @ts-ignore */}
                         <Box {...getRootProps({ style })}>
                             <input {...getInputProps()} />
                             {fileName ? (
@@ -406,23 +584,87 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                                                     label='AI Processor'
                                                     required
                                                     error={!!errors.processorId}
+                                                    disabled={chatflows.length === 0}
                                                     fullWidth
                                                 >
-                                                    {chatflows.map((chatflow) => (
-                                                        <MenuItem key={chatflow.id} value={chatflow.id}>
-                                                            {chatflow.name}
+                                                    {chatflows.length === 0 ? (
+                                                        <MenuItem disabled value=''>
+                                                            No CSV processors available
                                                         </MenuItem>
-                                                    ))}
+                                                    ) : (
+                                                        chatflows.map((chatflow) => (
+                                                            <MenuItem key={chatflow.id} value={chatflow.id}>
+                                                                {chatflow.name}
+                                                            </MenuItem>
+                                                        ))
+                                                    )}
                                                 </Select>
                                                 <FormHelperText>
-                                                    {errors.processorId?.message || 'Select the AI model to process your CSV'}
+                                                    {errors.processorId?.message ||
+                                                        (chatflows.length === 0
+                                                            ? 'Install a CSV processor from the marketplace below to continue'
+                                                            : 'Select the AI model to process your CSV')}
                                                 </FormHelperText>
                                             </>
                                         )}
                                     />
                                 </FormControl>
 
-                                <FormControl required error={!!errors.rowsRequested}>
+                                {/* Show CSV notice card when no CSV chatflows are available */}
+                                {chatflows.length === 0 && <CsvNoticeCard onRefresh={onRefreshChatflows} />}
+
+                                {/* CSV Header Detection Toggle */}
+                                <FormControl fullWidth sx={{ mb: 2 }}>
+                                    <Controller
+                                        name='firstRowIsHeaders'
+                                        control={control}
+                                        render={({ field: { value, onChange } }) => (
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        checked={value}
+                                                        onChange={(e) => {
+                                                            const newHeaderSetting = e.target.checked
+                                                            onChange(newHeaderSetting)
+
+                                                            // Re-parse CSV with new header interpretation
+                                                            if (csvContent) {
+                                                                try {
+                                                                    const { headers: newH, rows: newR } = newHeaderSetting
+                                                                        ? parseCsvWithHeaders(csvContent)
+                                                                        : parseCsvWithoutHeaders(csvContent)
+                                                                    setHeaders(newH)
+                                                                    setRows(newR)
+                                                                    setValue('sourceColumns', newH, { shouldValidate: true })
+
+                                                                    // Set rowsRequested to new maximum available when toggle changes
+                                                                    setValue('rowsRequested', newR.length)
+                                                                } catch (error) {
+                                                                    console.error('CSV re-parsing error:', error)
+                                                                    setCsvErrors(['Error re-parsing CSV with new header setting'])
+                                                                }
+                                                            }
+                                                        }}
+                                                        color='primary'
+                                                    />
+                                                }
+                                                label='First row contains column headers'
+                                                sx={{
+                                                    '& .MuiFormControlLabel-label': {
+                                                        fontSize: '0.875rem',
+                                                        color: 'text.secondary'
+                                                    }
+                                                }}
+                                            />
+                                        )}
+                                    />
+                                    <FormHelperText>
+                                        {watchedValues.firstRowIsHeaders
+                                            ? 'First row will be used as column names, remaining rows will be processed as data'
+                                            : 'All rows will be treated as data, generic column names (Column 1, Column 2, etc.) will be used'}
+                                    </FormHelperText>
+                                </FormControl>
+                                <FormControl required error={!!errors.rowsRequested || watchedValues.rowsRequested > (rows?.length || 0)}>
                                     <Controller
                                         name='rowsRequested'
                                         control={control}
@@ -430,7 +672,10 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                                         rules={{
                                             required: 'Number of rows is required',
                                             min: { value: 1, message: 'Must process at least 1 row' },
-                                            max: { value: rows?.length ?? 0, message: `Maximum ${rows?.length} rows` }
+                                            max: {
+                                                value: rows?.length ?? 0,
+                                                message: `Maximum ${rows?.length ?? 0} rows`
+                                            }
                                         }}
                                         render={({ field: { value, ...field } }) => (
                                             <>
@@ -440,13 +685,19 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                                                     required
                                                     label='Number of rows'
                                                     type='number'
-                                                    inputProps={{ min: 1, max: rows?.length ?? 0 }}
+                                                    inputProps={{
+                                                        min: 1,
+                                                        max: rows?.length ?? 0
+                                                    }}
                                                     variant='outlined'
-                                                    error={!!errors.rowsRequested}
+                                                    error={!!errors.rowsRequested || watchedValues.rowsRequested > (rows?.length || 0)}
                                                     fullWidth
                                                 />
                                                 <FormHelperText>
-                                                    {errors.rowsRequested?.message || `How many rows to process (max: ${rows?.length})`}
+                                                    {errors.rowsRequested?.message ||
+                                                        (watchedValues.rowsRequested > (rows?.length || 0)
+                                                            ? `Cannot process more rows than available (max: ${rows?.length || 0})`
+                                                            : `How many rows to process (max: ${rows?.length || 0})`)}
                                                 </FormHelperText>
                                             </>
                                         )}
@@ -543,8 +794,9 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                                     render={({ field }) => (
                                         <TextField
                                             {...field}
+                                            value={typeof field.value === 'string' ? field.value : ''}
                                             label='Additional context'
-                                            placeholder='Enter any additional context or instructions for the AI processor...'
+                                            placeholder='Add custom prompt, analysis instructions, or specific AI behavior...'
                                             minRows={3}
                                             multiline
                                             fullWidth
@@ -563,20 +815,17 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
         }
     }
 
-    // Get the selected processor name for display in the overview
     const getSelectedProcessorName = () => {
         const selectedProcessor = chatflows.find((cf) => cf.id === watchedValues.processorId)
         return selectedProcessor ? selectedProcessor.name : ''
     }
 
-    // Function to handle clicking on a step in the overview to navigate back
     const handleStepClick = (step: number) => {
         if (step <= activeStep) {
             setActiveStep(step)
         }
     }
 
-    // Overview panel component
     const renderOverview = () => {
         return (
             <Card variant='outlined' sx={{ p: 2, height: '100%' }}>
@@ -634,8 +883,11 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                                     </Typography>
                                 )}
                                 {watchedValues.rowsRequested > 0 && (
-                                    <Typography variant='body2'>
+                                    <Typography variant='body2' color={watchedValues.rowsRequested > rows.length ? 'error' : 'inherit'}>
                                         <strong>Rows:</strong> {watchedValues.rowsRequested} of {rows.length}
+                                        {watchedValues.rowsRequested > rows.length && (
+                                            <span style={{ color: '#F44336', fontWeight: 'light' }}> Exceeds limit</span>
+                                        )}
                                     </Typography>
                                 )}
                             </Stack>
@@ -667,7 +919,13 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                                         </Typography>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                             {watchedValues.sourceColumns.slice(0, 3).map((col) => (
-                                                <Chip key={col} label={col} size='small' />
+                                                <Chip
+                                                    key={col}
+                                                    label={col.length > 20 ? `${col.substring(0, 20)}...` : col}
+                                                    title={col} // Full text on hover
+                                                    size='small'
+                                                    sx={{ maxWidth: '150px' }}
+                                                />
                                             ))}
                                             {watchedValues.sourceColumns.length > 3 && (
                                                 <Chip
@@ -721,6 +979,9 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
         setFileName(null)
         setHeaders([])
         setRows([])
+        setCsvErrors([])
+        setToastMessage('')
+        setCsvContent('')
         setActiveStep(0)
     }
 
@@ -746,7 +1007,7 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                     processorId: chatflowChatId,
                     name,
                     rowsRequested,
-                    context,
+                    context: typeof context === 'string' ? context : '',
                     sourceColumns: Object.values(sourceColumns),
                     includeOriginalColumns
                 })
@@ -764,6 +1025,49 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                 <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open>
                     <CircularProgress color='inherit' />
                 </Backdrop>
+            )}
+
+            {/* CSV validation errors */}
+            {csvErrors.length > 0 && (
+                <Alert
+                    severity='error'
+                    sx={{
+                        mb: 3,
+                        border: '2px solid',
+                        borderColor: 'error.main',
+                        '& .MuiAlert-message': { width: '100%' }
+                    }}
+                >
+                    <AlertTitle sx={{ fontSize: '1.1rem', fontWeight: 'bold', mb: 1 }}>⚠️ CSV File Error - Cannot Continue</AlertTitle>
+
+                    <Typography variant='body2' sx={{ mb: 2, fontWeight: 500 }}>
+                        Your CSV file has the following issues that must be fixed:
+                    </Typography>
+
+                    <ul style={{ margin: 0, paddingLeft: 16, marginBottom: 2 }}>
+                        {csvErrors.map((error, i) => (
+                            <li key={`csv-error-${i}-${error.substring(0, 20)}`}>
+                                <Typography variant='body2' sx={{ mb: 1 }}>
+                                    {error}
+                                </Typography>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <Typography
+                        variant='body2'
+                        sx={{
+                            mt: 2,
+                            fontWeight: 'bold',
+                            color: 'error.dark',
+                            p: 1,
+                            bgcolor: 'error.light',
+                            borderRadius: 1
+                        }}
+                    >
+                        Please fix these issues and upload a valid CSV file to continue.
+                    </Typography>
+                </Alert>
             )}
 
             {/* Stepper Header */}
@@ -870,13 +1174,7 @@ const ProcessCsv = ({ chatflows, user, onNavigateToHistory }: { chatflows: any[]
                 )}
             </Box>
 
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={3000}
-                onClose={handleSnackbarClose}
-                message={snackbarMessage}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            />
+            <SnackMessage message={toastMessage} />
         </Stack>
     )
 }

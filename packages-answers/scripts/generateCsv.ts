@@ -4,7 +4,7 @@ import { AppCsvParseRuns } from '../db/generated/prisma-client'
 import { prisma } from '../db/src/client'
 
 const s3 = new S3({
-    region: process.env.S3_STORAGE_REGION ?? '',
+    region: process.env.S3_STORAGE_REGION ?? 'us-east-1',
     credentials: {
         accessKeyId: process.env.S3_STORAGE_ACCESS_KEY_ID ?? '',
         secretAccessKey: process.env.S3_STORAGE_SECRET_ACCESS_KEY ?? ''

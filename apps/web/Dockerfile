@@ -1,144 +1,152 @@
-FROM --platform=linux/amd64 node:20-alpine AS base
+FROM node:20-slim AS base
 
 # This Dockerfile is optimized for Next.js standalone mode deployment
 # Make sure you update both files if copying to documentation!
 
+# Add metadata labels
+LABEL maintainer="AnswerAI Team"
+LABEL version="1.0.0"
+LABEL description="AnswerAI Web Application"
+
 WORKDIR /app
 
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-# Install dependencies required by Prisma ORM for Alpine Linux
-# Ref: https://www.prisma.io/docs/orm/reference/system-requirements#linux-runtime-dependencies
-RUN apk add --no-cache \
-    libc6-compat \
-    openssl \
+# Install essential tools for build process, pnpm, turbo, and configure pnpm store
+RUN apt-get update && apt-get install -y \
     ca-certificates \
-    zlib \
-    libgcc
-RUN apk update
-
-# Install PNPM globally
-RUN npm install -g pnpm turbo@1
-RUN pnpm config set store-dir ~/.pnpm-store
-
-################################################################################
-
-# Prune projects
-FROM base AS pruner
-
-COPY . .
-RUN turbo prune web --docker
+    curl \
+    git \
+    openssl \
+    unzip \
+    wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && npm install -g pnpm turbo@1 \
+    && pnpm config set store-dir /root/.pnpm-store
 
 ################################################################################
 
-# Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
 WORKDIR /app
 
-# Accept build arguments for Auth0 configuration
+# Build arguments and environment variables
+# BWS (Bitwarden Secrets) - commented for future use
+# ARG BWS_ACCESS_TOKEN
+# ENV BWS_ACCESS_TOKEN=$BWS_ACCESS_TOKEN
+
+# Active build arguments and environment variables  
 ARG AUTH0_BASE_URL
-ARG AUTH0_SECRET
-ARG AUTH0_ISSUER_BASE_URL
-ARG AUTH0_CLIENT_ID
-ARG AUTH0_CLIENT_SECRET
-ARG AUTH0_AUDIENCE
-ARG AUTH0_ORGANIZATION_ID
-ARG AUTH0_DOMAIN
-ARG FLAGSMITH_ENVIRONMENT_ID
-ARG WEB_AUTH0_SECRET
+ENV AUTH0_BASE_URL=${AUTH0_BASE_URL:-http://localhost:3000}
 
-# Set them as environment variables for the build
-ENV AUTH0_BASE_URL=$AUTH0_BASE_URL
-ENV AUTH0_SECRET=$AUTH0_SECRET
-ENV AUTH0_ISSUER_BASE_URL=$AUTH0_ISSUER_BASE_URL
-ENV AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
-ENV AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET
-ENV AUTH0_AUDIENCE=$AUTH0_AUDIENCE
-ENV AUTH0_ORGANIZATION_ID=$AUTH0_ORGANIZATION_ID
-ENV AUTH0_DOMAIN=$AUTH0_DOMAIN
-ENV FLAGSMITH_ENVIRONMENT_ID=$FLAGSMITH_ENVIRONMENT_ID
-ENV WEB_AUTH0_SECRET=$WEB_AUTH0_SECRET
+# Use dummy DATABASE_URL for Prisma client generation during build
+# This is only needed for prisma generate, the real DATABASE_URL comes from runtime secrets
+ENV DATABASE_URL=postgresql://example_user:example_password@postgres:5432/example_db?schema=web&connection_limit=1
 
-# Copy package.json files first
-COPY --from=pruner /app/out/json/ .
+# Copy package files first for better layer caching
+# Root workspace configuration
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Copy scripts directory before pnpm install since postinstall script needs it
-COPY scripts/ ./scripts/
+# Main web application
+COPY apps/web/package.json ./apps/web/
 
-# First install the dependencies with cache mount (as they change less often)
-RUN --mount=type=cache,id=pnpm,target=~/.pnpm-store pnpm install
+# TheAnswer-specific packages
+COPY packages-answers/db/package.json ./packages-answers/db/
+COPY packages-answers/ui/package.json ./packages-answers/ui/
+COPY packages-answers/utils/package.json ./packages-answers/utils/
+COPY packages-answers/types/package.json ./packages-answers/types/
+COPY packages-answers/experimental-prisma-webpack-plugin/package.json ./packages-answers/experimental-prisma-webpack-plugin/
+COPY packages-answers/eslint-config-custom/package.json ./packages-answers/eslint-config-custom/
+COPY packages-answers/tsconfig/package.json ./packages-answers/tsconfig/
 
-# Build the project
-COPY --from=pruner /app/out/full/ .
+# Flowise packages
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/components/package.json ./packages/components/
+COPY packages/embed/package.json ./packages/embed/
 
-# Uncomment and use build args to enable remote caching
-# ARG TURBO_TEAM
-# ENV TURBO_TEAM=$TURBO_TEAM
+# Install dependencies (skip postinstall scripts for Docker build)
+RUN --mount=type=cache,id=pnpm,target=/root/.pnpm-store pnpm install --ignore-scripts
 
-# ARG TURBO_TOKEN
-# ENV TURBO_TOKEN=$TURBO_TOKEN
+# Copy source code (excluding unnecessary files via .dockerignore)
+COPY . .
 
-# Set build-time environment variables for standalone mode
-ENV NEXT_TELEMETRY_DISABLED=1
+# Build the application
+RUN --mount=type=cache,target=/app/node_modules/.cache turbo build --filter=web
 
-# Run the build script with cache mount
-RUN --mount=type=cache,target=/app/node_modules/.cache pnpm turbo build --filter=web
-
+# Cleanup build artifacts and unnecessary files
+RUN find /app -name "*.map" -delete 2>/dev/null || true && \
+    find /app -name "*.ts" -not -path "*/node_modules/*" -not -path "*/prisma/*" -delete 2>/dev/null || true && \
+    find /app -name "*.tsx" -not -path "*/node_modules/*" -delete 2>/dev/null || true && \
+    find /app -name "__tests__" -type d -exec rm -rf {} + 2>/dev/null || true && \
+    find /app -name "*.test.*" -delete 2>/dev/null || true && \
+    find /app -name "*.spec.*" -delete 2>/dev/null || true && \
+    find /app -name "*.stories.*" -delete 2>/dev/null || true && \
+    rm -rf /app/.next/cache /app/.turbo /app/docs /app/.git /app/scripts /app/copilot 2>/dev/null || true && \
+    rm -rf /app/packages/docs /app/packages/api-documentation 2>/dev/null || true && \
+    rm -rf /app/packages/components/nodes/*/test 2>/dev/null || true && \
+    rm -rf /app/packages/components/nodes/*/tests 2>/dev/null || true && \
+    find /app -name "README.md" -not -path "*/node_modules/*" -delete 2>/dev/null || true && \
+    find /app -name "CHANGELOG.md" -not -path "*/node_modules/*" -delete 2>/dev/null || true && \
+    find /app -name "LICENSE" -not -path "*/node_modules/*" -delete 2>/dev/null || true && \
+    find /app -name ".eslintrc*" -delete 2>/dev/null || true && \
+    find /app -name ".prettierrc*" -delete 2>/dev/null || true && \
+    find /app -name "tsconfig.json" -not -path "*/node_modules/*" -delete 2>/dev/null || true && \
+    find /app -name "webpack.config.*" -delete 2>/dev/null || true && \
+    find /app -name "gulpfile.*" -delete 2>/dev/null || true && \
+    find /app -name "rollup.config.*" -delete 2>/dev/null || true && \
+    find /app -name "vite.config.*" -delete 2>/dev/null || true && \
+    find /app -name "jest.config.*" -delete 2>/dev/null || true && \
+    find /app -name "cypress.config.*" -delete 2>/dev/null || true && \
+    find /app -name ".babelrc*" -delete 2>/dev/null || true && \
+    find /app -name "babel.config.*" -delete 2>/dev/null || true
 
 ################################################################################
 
-FROM base AS runner
+FROM node:20-slim AS runner
 WORKDIR /app
 
-# Install runtime dependencies for Prisma ORM in production stage
-RUN apk add --no-cache \
-    openssl \
+# Install only runtime dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
     ca-certificates \
-    zlib \
-    libgcc
+    && rm -rf /var/lib/apt/lists/*
 
 # Set production environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Don't run production as root
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 nextjs
 
-# Copy next.config.js for reference (not strictly needed for standalone)
-#COPY --from=installer --chown=nextjs:nodejs /app/apps/web/next.config.js ./
-
-# Copy package.json for reference
-#COPY --from=installer --chown=nextjs:nodejs /app/apps/web/package.json ./
-
-# Automatically leverage output traces to reduce image size 
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-# Log contents of .next directory to verify build output
-
+# Copy built application
 COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
-
-# Copy static folder
 COPY --from=installer --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
-
-# Copy public folder if it exists 
 COPY --from=installer --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 
-# Add debug commands to verify .next directory contents
-RUN set -x && \
-    echo "Listing app directory contents:" && \
-    ls -la /app && \
-    echo "Checking static directory:" && \
-    ls -la /app/apps/web/.next/static/ && \
-    echo "Checking public directory:" && \
-    ls -la /app/apps/web/public
-# Switch to nextjs user
+# Copy Prisma schema and generated client for runtime migrations
+COPY --from=installer --chown=nextjs:nodejs /app/packages-answers/db/prisma ./packages-answers/db/prisma
+COPY --from=installer --chown=nextjs:nodejs /app/packages-answers/db/generated ./packages-answers/db/generated
+
+# Install Prisma CLI globally for runtime migrations
+RUN npm install -g prisma
+
+# Copy minimal package.json for workspace resolution
+COPY --from=installer --chown=nextjs:nodejs /app/package.json ./package.json
+
+# Copy entrypoint.sh script
+COPY --from=installer --chown=nextjs:nodejs /app/apps/web/entrypoint.sh ./entrypoint.sh
+
+# Update permissions for entrypoint.sh
+RUN chmod +x entrypoint.sh
+
 USER nextjs
 
-# Expose port 3000
-EXPOSE 3000
+# Build arguments for port configuration
+ARG PORT=3000
+ENV PORT=$PORT
 
-# Set hostname to 0.0.0.0 to allow connections from outside the container
-ENV HOSTNAME=0.0.0.0
-ENV PORT=3000
+EXPOSE $PORT
 
-# Start the Next.js server using the standalone server
-CMD ["node", "apps/web/server.js"]
+ENV NUMBER_OF_PROXIES="1"
+ENV HOSTNAME="0.0.0.0"
+
+# Use Node.js entrypoint to parse DATABASE_SECRET, run migration, and start server
+CMD ["sh", "entrypoint.sh"]

@@ -27,12 +27,12 @@ Parameters:
 
 Mappings:
     flowiseclusterEnvScalingConfigurationMap:
+        # Default environments (same account)
         staging:
             'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
             'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
-
-        All:
-            'DBMinCapacity': 0.5 # AllowedValues: from 0.5 through 128
+        prod:
+            'DBMinCapacity': 1 # AllowedValues: from 0.5 through 128
             'DBMaxCapacity': 8 # AllowedValues: from 0.5 through 128
 
 Resources:
@@ -112,9 +112,9 @@ Resources:
             VpcSecurityGroupIds:
                 - !Ref flowiseclusterDBClusterSecurityGroup
             ServerlessV2ScalingConfiguration:
-                # Replace "All" below with "!Ref Env" to set different autoscaling limits per environment.
-                MinCapacity: !FindInMap [flowiseclusterEnvScalingConfigurationMap, All, DBMinCapacity]
-                MaxCapacity: !FindInMap [flowiseclusterEnvScalingConfigurationMap, All, DBMaxCapacity]
+                # Environment-specific autoscaling limits
+                MinCapacity: !FindInMap [flowiseclusterEnvScalingConfigurationMap, !Ref Env, DBMinCapacity]
+                MaxCapacity: !FindInMap [flowiseclusterEnvScalingConfigurationMap, !Ref Env, DBMaxCapacity]
 
     flowiseclusterDBWriterInstance:
         Metadata:

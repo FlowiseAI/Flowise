@@ -1,0 +1,15 @@
+# Playwright test artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Authentication state files (contain sensitive session data)
+.auth/
+
+# Test videos and screenshots
+videos/
+screenshots/
+
+# Test environment files
+.env.test
+.env.local.test

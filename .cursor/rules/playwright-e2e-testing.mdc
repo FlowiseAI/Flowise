@@ -1,0 +1,890 @@
+---
+globs: apps/web/e2e/**
+alwaysApply: false
+---
+# Playwright E2E Testing Rules for AI Agents
+
+This rule set provides comprehensive guidance for AI agents working with the Playwright end-to-end testing framework in TheAnswer.ai project.
+
+## Overview
+
+AnswerAgent.ai uses Playwright for robust E2E testing with a focus on Auth0 authentication flows and critical user journeys. The testing setup is designed to be maintainable, reliable, and developer-friendly.
+
+## Project Structure
+
+### Directory Organization
+```
+apps/web/
+├── e2e/
+│   ├── .auth/                  # Authentication state storage (gitignored)
+│   ├── .gitignore             # E2E-specific gitignore
+│   ├── tests/                 # All test files go here
+│   │   └── auth.spec.ts       # Authentication flow tests
+│   ├── auth.setup.ts          # Authentication setup with state persistence
+│   ├── playwright-report/     # Test reports (auto-generated, gitignored)
+│   ├── test-results/          # Screenshots, videos, traces (gitignored)
+│   ├── README.md              # E2E testing documentation
+│   └── env.example            # Environment variables template
+├── playwright.config.ts       # Playwright configuration
+├── .env.test                  # Test environment variables (gitignored)
+└── package.json               # Test scripts
+```
+
+### Key Files and Their Purpose
+
+1. **`playwright.config.ts`**: Main configuration with organized output directories
+2. **`e2e/auth.setup.ts`**: Handles Auth0 authentication and state persistence
+3. **`e2e/tests/*.spec.ts`**: Test files following naming convention
+4. **`.env.test`**: Test environment variables (must be in apps/web/ root)
+
+## Development Commands
+
+### Root Level Commands (Preferred)
+```bash
+pnpm test:e2e          # Run tests with Playwright UI (recommended)
+pnpm test:e2e:dev      # Same as above (explicit)
+pnpm test:e2e:debug    # Debug mode with inspector
+```
+
+### Web App Level Commands
+```bash
+# From apps/web/ directory
+pnpm test:e2e:dev      # Playwright UI mode (best for development)
+pnpm test:e2e          # Headless run (CI-friendly)
+pnpm test:e2e:headed   # Browser visible mode
+pnpm test:e2e:debug    # Step-by-step debugging
+pnpm test:e2e:auth     # Only authentication tests
+pnpm test:e2e:report   # View last test report
+```
+
+## Authentication Strategy
+
+### Auth0 Integration
+- **State Persistence**: Login once, reuse across test runs via `storageState`
+- **Flexible Selectors**: Handles Auth0's dynamic UI with robust selectors
+- **Environment Isolation**: Dedicated test credentials in `.env.test`
+
+### Auth Setup Process
+1. `auth.setup.ts` runs before all tests
+2. Attempts login with test credentials
+3. Saves authentication state to `e2e/.auth/user.json`
+4. Subsequent tests use saved state (no re-login needed)
+
+### Required Environment Variables
+```bash
+# In apps/web/.env.test
+TEST_USER_ENTERPRISE_ADMIN_EMAIL=alpha+enterprise-admin@domain.ai
+TEST_USER_ENTERPRISE_BUILDER_EMAIL=alpha+enterprise-builder@domain.ai  
+TEST_USER_ENTERPRISE_MEMBER_EMAIL=alpha+enterprise-member@domain.ai
+TEST_USER_PASSWORD=your-secure-test-password
+TEST_ENTERPRISE_AUTH0_ORG_ID=org_unQ8OLmTNsxVTJCT
+TEST_ENTERPRISE_ORG_NAME=Local Dev
+AUTH0_SECRET=your-auth0-secret
+AUTH0_ISSUER_BASE_URL=https://your-domain.auth0.com
+AUTH0_BASE_URL=http://localhost:3000
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+```
+
+## Writing Tests
+
+### File Naming Convention
+- Test files: `*.spec.ts` in `e2e/tests/` directory
+- Setup files: `*.setup.ts` in `e2e/` directory
+- Page objects: `*.page.ts` in `e2e/pages/` (if using page object pattern)
+
+### Test Structure
+```typescript
+import { test, expect } from '@playwright/test'
+
+test.describe('Feature Name', () => {
+    test('should do something specific', async ({ page }) => {
+        // Test implementation
+        await page.goto('/')
+        await expect(page.getByText('Expected Content')).toBeVisible()
+    })
+})
+```
+
+### Authentication in Tests
+```typescript
+// For authenticated tests, use the stored state (automatic via config)
+test.describe('Authenticated User Experience', () => {
+    // These tests automatically use the auth state from auth.setup.ts
+    
+    test('should access protected content', async ({ page }) => {
+        await page.goto('/dashboard')
+        await expect(page.getByText('Welcome')).toBeVisible()
+    })
+})
+
+// For unauthenticated tests, clear state explicitly
+test('should redirect to login when not authenticated', async ({ page }) => {
+    await page.context().clearCookies()
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/auth0\.com/)
+})
+```
+
+### Selector Best Practices
+1. **Prefer semantic selectors**: `getByRole`, `getByLabel`, `getByText`
+2. **Avoid brittle CSS selectors**: Don't rely on class names or complex CSS
+3. **Use data-testid sparingly**: Only when semantic selectors aren't possible
+4. **Handle multiple elements**: Use `.first()` or be more specific
+
+```typescript
+// Good selectors
+await page.getByRole('button', { name: 'Sign In' }).click()
+await page.getByLabel('Email address').fill('test@example.com')
+await page.getByText('Welcome to Dashboard').waitFor()
+
+// Avoid these
+await page.click('.btn-primary')  // Brittle CSS class
+await page.click('button >> nth=2')  // Position-dependent
+```
+
+## Auth0-Specific Patterns
+
+### Login Flow Handling
+```typescript
+// Use flexible selectors for Auth0 elements
+const emailInput = page.locator([
+    'input[name="username"]',
+    'input[type="email"]', 
+    'input[name="email"]',
+    'input[placeholder*="email" i]'
+].join(', ')).first()
+
+const passwordInput = page.locator([
+    'input[name="password"]',
+    'input[type="password"]'
+].join(', ')).first()
+
+// Handle primary submit button (avoiding Google/social login buttons)
+const submitButton = page.locator([
+    'button[type="submit"][data-action-button-primary="true"]',
+    'button[type="submit"]:not([data-provider])',
+    'button:has-text("Log In")',
+    'button:has-text("Sign In")'
+].join(', ')).first()
+```
+
+### Waiting for Redirects
+```typescript
+// Wait for redirect from Auth0 back to application
+await page.waitForURL(/localhost:3000/, { timeout: 20000 })
+
+// Verify authentication success
+await expect(page.locator('body')).toContainText([
+    'Dashboard', 'Welcome', 'Chat', 'Settings'
+], { timeout: 15000 })
+
+// Ensure we're not on Auth0 anymore
+await expect(page).not.toHaveURL(/auth0\.com|\.auth0\.com/)
+```
+
+## Debugging Guidelines
+
+### Playwright UI Mode (Recommended)
+```bash
+pnpm test:e2e:dev
+```
+**Features:**
+- Visual timeline with screenshots
+- Click any step to pause and inspect
+- Live DOM inspection and network monitoring
+- Error analysis with detailed context
+
+### Debug Mode (Step-by-Step)
+```bash
+pnpm test:e2e:debug
+```
+**Features:**
+- Playwright Inspector with step-through capability
+- Live selector testing and modification
+- Browser console access
+- Detailed action logging
+
+### Common Debugging Scenarios
+
+1. **Auth0 Selector Issues**:
+   - Use Playwright UI to inspect Auth0 page elements
+   - Check for dynamic class names or ID changes
+   - Update selectors to be more flexible
+
+2. **Timing Issues**:
+   - Increase timeouts for slow operations
+   - Use `waitFor` methods instead of `sleep`
+   - Check network tab for slow API calls
+
+3. **State Issues**:
+   - Clear auth state when testing unauthenticated flows
+   - Verify `.env.test` variables are loaded correctly
+   - Check that test user exists in Auth0
+
+## Error Handling
+
+### Common Error Patterns
+```typescript
+// Handle elements that might not exist
+const optionalElement = page.getByText('Optional Content')
+if (await optionalElement.isVisible()) {
+    await optionalElement.click()
+}
+
+// Robust waiting with error context
+try {
+    await page.waitForURL(/dashboard/, { timeout: 10000 })
+} catch (error) {
+    console.log('Current URL:', page.url())
+    console.log('Page title:', await page.title())
+    throw error
+}
+
+// Conditional logic based on page state
+const loginButton = page.getByRole('button', { name: 'Log In' })
+if (await loginButton.isVisible()) {
+    await loginButton.click()
+} else {
+    console.log('Already logged in')
+}
+```
+
+### Error Recovery
+```typescript
+// Retry pattern for flaky operations
+await test.step('Login with retry', async () => {
+    for (let i = 0; i < 3; i++) {
+        try {
+            await performLogin(page)
+            return // Success
+        } catch (error) {
+            if (i === 2) throw error // Last attempt
+            console.log(`Login attempt ${i + 1} failed, retrying...`)
+            await page.reload()
+        }
+    }
+})
+```
+
+## Configuration Management
+
+### Environment Setup
+- **`.env.test` Location**: Must be in `apps/web/` directory (not in `e2e/`)
+- **dotenv Loading**: Automatically loaded via `playwright.config.ts`
+- **Variable Validation**: `auth.setup.ts` validates required variables
+
+### Output Organization
+```typescript
+// playwright.config.ts key settings
+export default defineConfig({
+    testDir: './e2e',
+    outputDir: './e2e/test-results',           // Organized test artifacts
+    reporter: [['html', { outputFolder: './e2e/playwright-report' }]],
+    
+    use: {
+        baseURL: 'http://localhost:3000',
+        trace: 'on-first-retry',               // Debugging traces
+        screenshot: 'only-on-failure'          // Failure screenshots
+    },
+    
+    webServer: {
+        command: 'pnpm dev',                   // Auto-start dev server
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI  // Reuse in development
+    }
+})
+```
+
+## Best Practices for AI Agents
+
+### When Adding New Tests
+1. **Follow existing patterns** in `auth.spec.ts`
+2. **Use descriptive test names** that explain the expected behavior
+3. **Group related tests** in `describe` blocks
+4. **Add appropriate timeouts** for async operations
+5. **Include error context** in assertions
+
+### When Debugging Test Failures
+1. **Start with Playwright UI mode** (`pnpm test:e2e:dev`)
+2. **Check the authentication setup** first
+3. **Verify environment variables** are correctly loaded
+4. **Look at network tab** for failed API calls
+5. **Use console logs** strategically for debugging
+
+### When Modifying Existing Tests
+1. **Understand the test purpose** before making changes
+2. **Preserve authentication state logic** unless specifically changing it
+3. **Test both positive and negative cases**
+4. **Update documentation** if changing test structure
+5. **Run tests locally** before suggesting changes
+
+### Code Quality Standards
+```typescript
+// Good: Descriptive, specific, maintainable
+test('should redirect unauthenticated user to Auth0 login page', async ({ page }) => {
+    await page.context().clearCookies()
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/auth0\.com/, { timeout: 10000 })
+})
+
+// Bad: Vague, unclear purpose
+test('test login', async ({ page }) => {
+    await page.goto('/')
+    // Unclear what this is testing
+})
+```
+
+## Integration with CI/CD
+
+### GitHub Actions Configuration
+```yaml
+- name: Install Playwright
+  run: npx playwright install --with-deps
+
+- name: Run E2E tests
+  run: pnpm test:e2e:headless  # Use headless mode in CI
+  env:
+    TEST_USER_ENTERPRISE_ADMIN_EMAIL: ${{ secrets.TEST_USER_ENTERPRISE_ADMIN_EMAIL }}
+    TEST_USER_ENTERPRISE_BUILDER_EMAIL: ${{ secrets.TEST_USER_ENTERPRISE_BUILDER_EMAIL }}
+    TEST_USER_ENTERPRISE_MEMBER_EMAIL: ${{ secrets.TEST_USER_ENTERPRISE_MEMBER_EMAIL }}
+    TEST_ENTERPRISE_AUTH0_ORG_ID: ${{ secrets.TEST_ENTERPRISE_AUTH0_ORG_ID }}
+    TEST_ENTERPRISE_ORG_NAME: ${{ secrets.TEST_ENTERPRISE_ORG_NAME }}
+    TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+```
+
+### Test Artifacts
+- **Screenshots**: Automatically captured on failure
+- **Videos**: Full test execution recordings
+- **Traces**: Detailed timeline for debugging
+- **Reports**: HTML reports with test results
+
+## Security Considerations
+
+### Test Credentials
+- **Use dedicated test users**: Never use production credentials
+- **Limit permissions**: Test users should have minimal required permissions
+- **Rotate regularly**: Change test passwords periodically
+- **Environment isolation**: Keep test and production Auth0 tenants separate
+
+### Sensitive Data
+- **Never commit**: `.env.test` files should be gitignored
+- **Mask in logs**: Avoid logging passwords or tokens
+- **Secure CI secrets**: Use GitHub secrets for CI/CD credentials
+
+## Extending the Test Suite
+
+### Adding New Test Categories
+1. Create new spec files in `e2e/tests/`
+2. Follow naming convention: `feature-name.spec.ts`
+3. Add appropriate `describe` blocks for organization
+4. Include both positive and negative test cases
+
+### Page Object Pattern (Optional)
+```typescript
+// e2e/pages/LoginPage.ts
+export class LoginPage {
+    constructor(private page: Page) {}
+    
+    async login(email: string, password: string) {
+        await this.page.getByLabel('Email').fill(email)
+        await this.page.getByLabel('Password').fill(password)
+        await this.page.getByRole('button', { name: 'Sign In' }).click()
+    }
+    
+    async waitForRedirect() {
+        await this.page.waitForURL(/localhost:3000/)
+    }
+}
+```
+
+### Custom Test Utilities
+```typescript
+// e2e/utils/auth-helpers.ts
+export async function loginAs(page: Page, userType: 'admin' | 'user') {
+    const credentials = getCredentials(userType)
+    await performLogin(page, credentials)
+}
+
+export async function clearAuthState(page: Page) {
+    await page.context().clearCookies()
+    await page.context().clearPermissions()
+}
+```
+
+## Troubleshooting Common Issues
+
+### Auth0 Integration Issues
+- **Selectors not found**: Auth0 UI might have changed - inspect and update selectors
+- **Multiple elements**: Use more specific selectors to avoid ambiguity
+- **Timeouts**: Auth0 redirects can be slow - increase timeout values
+
+### Environment Issues
+- **Variables not loaded**: Check `.env.test` location and format
+- **Wrong Auth0 tenant**: Verify `AUTH0_ISSUER_BASE_URL` matches your test tenant
+- **Network issues**: Ensure development server is accessible
+
+### Test Stability Issues
+- **Flaky tests**: Add proper waits instead of fixed delays
+- **State pollution**: Ensure tests clean up after themselves
+- **Timing issues**: Use Playwright's built-in waiting mechanisms
+
+## Resources and References
+
+- [Playwright Documentation](https://playwright.dev/)
+- [TheAnswer.ai E2E Guide](apps/web/e2e/README.md)
+- [Testing Strategy Document](TESTING_STRATEGY.md)
+- [Auth0 Testing Best Practices](https://auth0.com/docs/test)
+
+## Summary
+
+This testing framework is designed to be:
+- **Reliable**: Robust selectors and proper state management
+- **Maintainable**: Clear patterns and organized structure
+- **Developer-friendly**: Visual debugging tools and comprehensive documentation
+- **CI-ready**: Automated setup and artifact collection
+
+When working with these tests, always prioritize clarity, reliability, and maintainability over quick fixes or shortcuts.
+# Playwright E2E Testing Rules for AI Agents
+
+This rule set provides comprehensive guidance for AI agents working with the Playwright end-to-end testing framework in TheAnswer.ai project.
+
+## Overview
+
+AnswerAgent.ai uses Playwright for robust E2E testing with a focus on Auth0 authentication flows and critical user journeys. The testing setup is designed to be maintainable, reliable, and developer-friendly.
+
+## Project Structure
+
+### Directory Organization
+```
+apps/web/
+├── e2e/
+│   ├── .auth/                  # Authentication state storage (gitignored)
+│   ├── .gitignore             # E2E-specific gitignore
+│   ├── tests/                 # All test files go here
+│   │   └── auth.spec.ts       # Authentication flow tests
+│   ├── auth.setup.ts          # Authentication setup with state persistence
+│   ├── playwright-report/     # Test reports (auto-generated, gitignored)
+│   ├── test-results/          # Screenshots, videos, traces (gitignored)
+│   ├── README.md              # E2E testing documentation
+│   └── env.example            # Environment variables template
+├── playwright.config.ts       # Playwright configuration
+├── .env.test                  # Test environment variables (gitignored)
+└── package.json               # Test scripts
+```
+
+### Key Files and Their Purpose
+
+1. **`playwright.config.ts`**: Main configuration with organized output directories
+2. **`e2e/auth.setup.ts`**: Handles Auth0 authentication and state persistence
+3. **`e2e/tests/*.spec.ts`**: Test files following naming convention
+4. **`.env.test`**: Test environment variables (must be in apps/web/ root)
+
+## Development Commands
+
+### Root Level Commands (Preferred)
+```bash
+pnpm test:e2e          # Run tests with Playwright UI (recommended)
+pnpm test:e2e:dev      # Same as above (explicit)
+pnpm test:e2e:debug    # Debug mode with inspector
+```
+
+### Web App Level Commands
+```bash
+# From apps/web/ directory
+pnpm test:e2e:dev      # Playwright UI mode (best for development)
+pnpm test:e2e          # Headless run (CI-friendly)
+pnpm test:e2e:headed   # Browser visible mode
+pnpm test:e2e:debug    # Step-by-step debugging
+pnpm test:e2e:auth     # Only authentication tests
+pnpm test:e2e:report   # View last test report
+```
+
+## Authentication Strategy
+
+### Auth0 Integration
+- **State Persistence**: Login once, reuse across test runs via `storageState`
+- **Flexible Selectors**: Handles Auth0's dynamic UI with robust selectors
+- **Environment Isolation**: Dedicated test credentials in `.env.test`
+
+### Auth Setup Process
+1. `auth.setup.ts` runs before all tests
+2. Attempts login with test credentials
+3. Saves authentication state to `e2e/.auth/user.json`
+4. Subsequent tests use saved state (no re-login needed)
+
+### Required Environment Variables
+```bash
+# In apps/web/.env.test
+TEST_USER_ENTERPRISE_ADMIN_EMAIL=alpha+enterprise-admin@domain.ai
+TEST_USER_ENTERPRISE_BUILDER_EMAIL=alpha+enterprise-builder@domain.ai  
+TEST_USER_ENTERPRISE_MEMBER_EMAIL=alpha+enterprise-member@domain.ai
+TEST_USER_PASSWORD=your-secure-test-password
+TEST_ENTERPRISE_AUTH0_ORG_ID=org_unQ8OLmTNsxVTJCT
+TEST_ENTERPRISE_ORG_NAME=Local Dev
+AUTH0_SECRET=your-auth0-secret
+AUTH0_ISSUER_BASE_URL=https://your-domain.auth0.com
+AUTH0_BASE_URL=http://localhost:3000
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+```
+
+## Writing Tests
+
+### File Naming Convention
+- Test files: `*.spec.ts` in `e2e/tests/` directory
+- Setup files: `*.setup.ts` in `e2e/` directory
+- Page objects: `*.page.ts` in `e2e/pages/` (if using page object pattern)
+
+### Test Structure
+```typescript
+import { test, expect } from '@playwright/test'
+
+test.describe('Feature Name', () => {
+    test('should do something specific', async ({ page }) => {
+        // Test implementation
+        await page.goto('/')
+        await expect(page.getByText('Expected Content')).toBeVisible()
+    })
+})
+```
+
+### Authentication in Tests
+```typescript
+// For authenticated tests, use the stored state (automatic via config)
+test.describe('Authenticated User Experience', () => {
+    // These tests automatically use the auth state from auth.setup.ts
+    
+    test('should access protected content', async ({ page }) => {
+        await page.goto('/dashboard')
+        await expect(page.getByText('Welcome')).toBeVisible()
+    })
+})
+
+// For unauthenticated tests, clear state explicitly
+test('should redirect to login when not authenticated', async ({ page }) => {
+    await page.context().clearCookies()
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/auth0\.com/)
+})
+```
+
+### Selector Best Practices
+1. **Prefer semantic selectors**: `getByRole`, `getByLabel`, `getByText`
+2. **Avoid brittle CSS selectors**: Don't rely on class names or complex CSS
+3. **Use data-testid sparingly**: Only when semantic selectors aren't possible
+4. **Handle multiple elements**: Use `.first()` or be more specific
+
+```typescript
+// Good selectors
+await page.getByRole('button', { name: 'Sign In' }).click()
+await page.getByLabel('Email address').fill('test@example.com')
+await page.getByText('Welcome to Dashboard').waitFor()
+
+// Avoid these
+await page.click('.btn-primary')  // Brittle CSS class
+await page.click('button >> nth=2')  // Position-dependent
+```
+
+## Auth0-Specific Patterns
+
+### Login Flow Handling
+```typescript
+// Use flexible selectors for Auth0 elements
+const emailInput = page.locator([
+    'input[name="username"]',
+    'input[type="email"]', 
+    'input[name="email"]',
+    'input[placeholder*="email" i]'
+].join(', ')).first()
+
+const passwordInput = page.locator([
+    'input[name="password"]',
+    'input[type="password"]'
+].join(', ')).first()
+
+// Handle primary submit button (avoiding Google/social login buttons)
+const submitButton = page.locator([
+    'button[type="submit"][data-action-button-primary="true"]',
+    'button[type="submit"]:not([data-provider])',
+    'button:has-text("Log In")',
+    'button:has-text("Sign In")'
+].join(', ')).first()
+```
+
+### Waiting for Redirects
+```typescript
+// Wait for redirect from Auth0 back to application
+await page.waitForURL(/localhost:3000/, { timeout: 20000 })
+
+// Verify authentication success
+await expect(page.locator('body')).toContainText([
+    'Dashboard', 'Welcome', 'Chat', 'Settings'
+], { timeout: 15000 })
+
+// Ensure we're not on Auth0 anymore
+await expect(page).not.toHaveURL(/auth0\.com|\.auth0\.com/)
+```
+
+## Debugging Guidelines
+
+### Playwright UI Mode (Recommended)
+```bash
+pnpm test:e2e:dev
+```
+**Features:**
+- Visual timeline with screenshots
+- Click any step to pause and inspect
+- Live DOM inspection and network monitoring
+- Error analysis with detailed context
+
+### Debug Mode (Step-by-Step)
+```bash
+pnpm test:e2e:debug
+```
+**Features:**
+- Playwright Inspector with step-through capability
+- Live selector testing and modification
+- Browser console access
+- Detailed action logging
+
+### Common Debugging Scenarios
+
+1. **Auth0 Selector Issues**:
+   - Use Playwright UI to inspect Auth0 page elements
+   - Check for dynamic class names or ID changes
+   - Update selectors to be more flexible
+
+2. **Timing Issues**:
+   - Increase timeouts for slow operations
+   - Use `waitFor` methods instead of `sleep`
+   - Check network tab for slow API calls
+
+3. **State Issues**:
+   - Clear auth state when testing unauthenticated flows
+   - Verify `.env.test` variables are loaded correctly
+   - Check that test user exists in Auth0
+
+## Error Handling
+
+### Common Error Patterns
+```typescript
+// Handle elements that might not exist
+const optionalElement = page.getByText('Optional Content')
+if (await optionalElement.isVisible()) {
+    await optionalElement.click()
+}
+
+// Robust waiting with error context
+try {
+    await page.waitForURL(/dashboard/, { timeout: 10000 })
+} catch (error) {
+    console.log('Current URL:', page.url())
+    console.log('Page title:', await page.title())
+    throw error
+}
+
+// Conditional logic based on page state
+const loginButton = page.getByRole('button', { name: 'Log In' })
+if (await loginButton.isVisible()) {
+    await loginButton.click()
+} else {
+    console.log('Already logged in')
+}
+```
+
+### Error Recovery
+```typescript
+// Retry pattern for flaky operations
+await test.step('Login with retry', async () => {
+    for (let i = 0; i < 3; i++) {
+        try {
+            await performLogin(page)
+            return // Success
+        } catch (error) {
+            if (i === 2) throw error // Last attempt
+            console.log(`Login attempt ${i + 1} failed, retrying...`)
+            await page.reload()
+        }
+    }
+})
+```
+
+## Configuration Management
+
+### Environment Setup
+- **`.env.test` Location**: Must be in `apps/web/` directory (not in `e2e/`)
+- **dotenv Loading**: Automatically loaded via `playwright.config.ts`
+- **Variable Validation**: `auth.setup.ts` validates required variables
+
+### Output Organization
+```typescript
+// playwright.config.ts key settings
+export default defineConfig({
+    testDir: './e2e',
+    outputDir: './e2e/test-results',           // Organized test artifacts
+    reporter: [['html', { outputFolder: './e2e/playwright-report' }]],
+    
+    use: {
+        baseURL: 'http://localhost:3000',
+        trace: 'on-first-retry',               // Debugging traces
+        screenshot: 'only-on-failure'          // Failure screenshots
+    },
+    
+    webServer: {
+        command: 'pnpm dev',                   // Auto-start dev server
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI  // Reuse in development
+    }
+})
+```
+
+## Best Practices for AI Agents
+
+### When Adding New Tests
+1. **Follow existing patterns** in `auth.spec.ts`
+2. **Use descriptive test names** that explain the expected behavior
+3. **Group related tests** in `describe` blocks
+4. **Add appropriate timeouts** for async operations
+5. **Include error context** in assertions
+
+### When Debugging Test Failures
+1. **Start with Playwright UI mode** (`pnpm test:e2e:dev`)
+2. **Check the authentication setup** first
+3. **Verify environment variables** are correctly loaded
+4. **Look at network tab** for failed API calls
+5. **Use console logs** strategically for debugging
+
+### When Modifying Existing Tests
+1. **Understand the test purpose** before making changes
+2. **Preserve authentication state logic** unless specifically changing it
+3. **Test both positive and negative cases**
+4. **Update documentation** if changing test structure
+5. **Run tests locally** before suggesting changes
+
+### Code Quality Standards
+```typescript
+// Good: Descriptive, specific, maintainable
+test('should redirect unauthenticated user to Auth0 login page', async ({ page }) => {
+    await page.context().clearCookies()
+    await page.goto('/dashboard')
+    await expect(page).toHaveURL(/auth0\.com/, { timeout: 10000 })
+})
+
+// Bad: Vague, unclear purpose
+test('test login', async ({ page }) => {
+    await page.goto('/')
+    // Unclear what this is testing
+})
+```
+
+## Integration with CI/CD
+
+### GitHub Actions Configuration
+```yaml
+- name: Install Playwright
+  run: npx playwright install --with-deps
+
+- name: Run E2E tests
+  run: pnpm test:e2e:headless  # Use headless mode in CI
+  env:
+    TEST_USER_ENTERPRISE_ADMIN_EMAIL: ${{ secrets.TEST_USER_ENTERPRISE_ADMIN_EMAIL }}
+    TEST_USER_ENTERPRISE_BUILDER_EMAIL: ${{ secrets.TEST_USER_ENTERPRISE_BUILDER_EMAIL }}
+    TEST_USER_ENTERPRISE_MEMBER_EMAIL: ${{ secrets.TEST_USER_ENTERPRISE_MEMBER_EMAIL }}
+    TEST_ENTERPRISE_AUTH0_ORG_ID: ${{ secrets.TEST_ENTERPRISE_AUTH0_ORG_ID }}
+    TEST_ENTERPRISE_ORG_NAME: ${{ secrets.TEST_ENTERPRISE_ORG_NAME }}
+    TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+```
+
+### Test Artifacts
+- **Screenshots**: Automatically captured on failure
+- **Videos**: Full test execution recordings
+- **Traces**: Detailed timeline for debugging
+- **Reports**: HTML reports with test results
+
+## Security Considerations
+
+### Test Credentials
+- **Use dedicated test users**: Never use production credentials
+- **Limit permissions**: Test users should have minimal required permissions
+- **Rotate regularly**: Change test passwords periodically
+- **Environment isolation**: Keep test and production Auth0 tenants separate
+
+### Sensitive Data
+- **Never commit**: `.env.test` files should be gitignored
+- **Mask in logs**: Avoid logging passwords or tokens
+- **Secure CI secrets**: Use GitHub secrets for CI/CD credentials
+
+## Extending the Test Suite
+
+### Adding New Test Categories
+1. Create new spec files in `e2e/tests/`
+2. Follow naming convention: `feature-name.spec.ts`
+3. Add appropriate `describe` blocks for organization
+4. Include both positive and negative test cases
+
+### Page Object Pattern (Optional)
+```typescript
+// e2e/pages/LoginPage.ts
+export class LoginPage {
+    constructor(private page: Page) {}
+    
+    async login(email: string, password: string) {
+        await this.page.getByLabel('Email').fill(email)
+        await this.page.getByLabel('Password').fill(password)
+        await this.page.getByRole('button', { name: 'Sign In' }).click()
+    }
+    
+    async waitForRedirect() {
+        await this.page.waitForURL(/localhost:3000/)
+    }
+}
+```
+
+### Custom Test Utilities
+```typescript
+// e2e/utils/auth-helpers.ts
+export async function loginAs(page: Page, userType: 'admin' | 'user') {
+    const credentials = getCredentials(userType)
+    await performLogin(page, credentials)
+}
+
+export async function clearAuthState(page: Page) {
+    await page.context().clearCookies()
+    await page.context().clearPermissions()
+}
+```
+
+## Troubleshooting Common Issues
+
+### Auth0 Integration Issues
+- **Selectors not found**: Auth0 UI might have changed - inspect and update selectors
+- **Multiple elements**: Use more specific selectors to avoid ambiguity
+- **Timeouts**: Auth0 redirects can be slow - increase timeout values
+
+### Environment Issues
+- **Variables not loaded**: Check `.env.test` location and format
+- **Wrong Auth0 tenant**: Verify `AUTH0_ISSUER_BASE_URL` matches your test tenant
+- **Network issues**: Ensure development server is accessible
+
+### Test Stability Issues
+- **Flaky tests**: Add proper waits instead of fixed delays
+- **State pollution**: Ensure tests clean up after themselves
+- **Timing issues**: Use Playwright's built-in waiting mechanisms
+
+## Resources and References
+
+- [Playwright Documentation](https://playwright.dev/)
+- [TheAnswer.ai E2E Guide](apps/web/e2e/README.md)
+- [Testing Strategy Document](TESTING_STRATEGY.md)
+- [Auth0 Testing Best Practices](https://auth0.com/docs/test)
+
+## Summary
+
+This testing framework is designed to be:
+- **Reliable**: Robust selectors and proper state management
+- **Maintainable**: Clear patterns and organized structure
+- **Developer-friendly**: Visual debugging tools and comprehensive documentation
+- **CI-ready**: Automated setup and artifact collection
+
+When working with these tests, always prioritize clarity, reliability, and maintainability over quick fixes or shortcuts.

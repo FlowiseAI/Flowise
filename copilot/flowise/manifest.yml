@@ -13,7 +13,7 @@ http:
     path: '/'
     # You can specify a custom health check path. The default is "/".
     healthcheck: '/api/v1/ping'
-    alias: ${COPILOT_ENVIRONMENT_NAME}.flowise.theanswer.ai
+    # Domain aliases configured in environment-specific overrides below
     stickiness: true
 
 # Configuration for your containers and service.
@@ -24,19 +24,14 @@ image:
     # Port exposed through your container to route traffic to it.
     port: 4000
 
-    # Container dependencies - Lacework sidecar is optional
-    depends_on:
-        datacollector-sidecar: start
-
-cpu: 2048 # Number of CPU units for the task.
-memory: 4096 # Amount of memory in MiB used by the task.
-count: 1 # Number of tasks that should be running in your service.
+# Resource configuration moved to environment-specific overrides below
 exec: true # Enable running commands in your container.
 network:
     connect: true # Enable Service Connect for intra-environment traffic between services.
     vpc:
         security_groups:
             - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterSecurityGroup
+            - from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisWorkloadSecurityGroup
 
 storage:
     volumes:
@@ -44,9 +39,8 @@ storage:
             efs: true
             path: /var/efs
             read_only: false
-# readonly_fs: true       # Limit to read-only access to mounted root filesystems.
 
-# Lacework sidecar configuration
+# Lacework sidecar configuration for security monitoring, won't be used unless LaceworkAccessToken is set
 sidecars:
     datacollector-sidecar:
         image: lacework/datacollector:latest-sidecar
@@ -56,7 +50,7 @@ sidecars:
 taskdef_overrides:
     # Override main container entrypoint to use Lacework sidecar script and then start the app
     - path: ContainerDefinitions[0].EntryPoint
-      value: ['/bin/sh', '-c', '/var/lib/lacework-backup/lacework-sidecar.sh && cd /app/packages/server && exec pnpm start']
+      value: ['/bin/sh', '-c', '(/var/lib/lacework-backup/lacework-sidecar.sh || true); cd /app/packages/server && exec pnpm start']
 
     # Add volume mount from sidecar to main container
     - path: ContainerDefinitions[0].VolumesFrom
@@ -65,26 +59,71 @@ taskdef_overrides:
             readOnly: true
 
 # Optional fields for more advanced use-cases.
-#
 variables: # Pass environment variables as key value pairs.
+    ANSWERAI_DOMAIN: 'http://web:3000'
+    CHATFLOW_DOMAIN: 'http://flowise:4000'
+    DOMAIN: 'http://flowise:4000'
+    FLOWISE_DOMAIN: 'http://flowise:4000'
+    NODE_ENV: 'production'
+    PORT: '4000'
     NUMBER_OF_PROXIES: '1'
+    STORAGE_TYPE: 's3'
     S3_STORAGE_BUCKET_NAME:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorageBucketName
     AAI_DEFAULT_REDIS_URL:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
     REDIS_URL:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-RedisURL
-    # Lacework configuration variables - will be loaded from env file
+    # Database type (required for DataSource initialization)
+    DATABASE_TYPE: 'postgres'
+    # Optional: S3 region (defaults to us-east-1 if not provided)
+    S3_STORAGE_REGION:
+        from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-theansweraiserverstorageBucketRegion
+    # Lacework configuration variables - will be loaded from env file (COMMENTED OUT FOR NOW)
     LaceworkVerbose: 'true'
-env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
+
+env_file: copilot.${COPILOT_APPLICATION_NAME}.env
+
 secrets:
     DATABASE_SECRET:
         from_cfn: ${COPILOT_APPLICATION_NAME}-${COPILOT_ENVIRONMENT_NAME}-flowiseclusterAuroraSecret
 
-# You can override any of the values defined above by environment.flowiseSecurityGroup
+# Environment-specific overrides
 environments:
-    ${COPILOT_ENVIRONMENT_NAME}:
-        env_file: copilot.${COPILOT_ENVIRONMENT_NAME}.env
-#    count: 2               # Number of tasks to run for the "test" environment.
-#    deployment:            # The deployment strategy for the "test" environment.
-#       rolling: 'recreate' # Stops existing tasks before new ones are started for faster deployments.
+    # Cost-optimized configuration with auto-scaling
+    staging:
+        cpu: 2048
+        # Upgrade path: 4096 → 8192 → 16384
+        memory: 4096
+        # Upgrade path: 8192 → 16384 → 32768
+        # count:
+        #     range: 1-3
+        #     # Can handle processing spikes automatically
+        #     cpu_percentage: 85
+        #     memory_percentage: 90
+        http:
+            alias:
+                # Service aliases for standalone account strategy
+                - flowise.${CLIENT_DOMAIN}
+                - api.${CLIENT_DOMAIN}
+    prod:
+        cpu: 2048
+        # Upgrade path: 4096 → 8192 → 16384
+        memory: 4096
+        # Upgrade path: 8192 → 16384 → 32768
+        # count:
+        #     range: 1-12
+        #     # Can handle significant load automatically
+        #     cpu_percentage: 85
+        #     memory_percentage: 90
+        http:
+            alias:
+                # Service aliases for standalone account strategy
+                - flowise.${CLIENT_DOMAIN}
+                - api.${CLIENT_DOMAIN}
+
+# Configure deployment strategy
+deployment:
+    # Can be 'recreate' for faster deployment but may cause downtime - use only for staging/testing
+    # Default is rolling deployments based on health checks (production-safe)
+    rolling: 'default'
