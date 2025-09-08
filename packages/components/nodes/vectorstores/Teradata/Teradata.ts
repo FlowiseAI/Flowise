@@ -72,6 +72,7 @@ class Teradata_VectorStores implements INode {
                 description: 'Teradata Vector Store Description',
                 placeholder: `Vector_Store_Description`,
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -80,6 +81,7 @@ class Teradata_VectorStores implements INode {
                 description: 'Search Algorithm for Vector Store',
                 placeholder: 'Search_Algorithm',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -88,62 +90,70 @@ class Teradata_VectorStores implements INode {
                 description: 'Distance Metric to be used for distance calculation between vectors',
                 placeholder: 'Distance_Metric',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Initial_Centroids_Method',
                 name: 'initialCentroidsMethod',
-                description: 'Algorithm to be used for initializing the cluster centroids',
+                description: 'Algorithm to be used for initializing the cluster centroids for Search Algorithm KMEANS',
                 placeholder: 'Initial_Centroids_Method',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Train_NumCluster',
                 name: 'trainNumCluster',
-                description: 'Number of clusters to be trained',
+                description: 'Number of clusters to be trained for Search Algorithm KMEANS',
                 placeholder: 'Train_NumCluster',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'MaxIterNum',
                 name: 'maxIterNum',
-                description: 'Maximum number of iterations to be run during training',
+                description: 'Maximum number of iterations to be run during training for Search Algorithm KMEANS',
                 placeholder: 'MaxIterNum',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Stop_Threshold',
                 name: 'stopThreshold',
-                description: 'Threshold value at which training should be stopped',
+                description: 'Threshold value at which training should be stopped for Search Algorithm KMEANS',
                 placeholder: 'Stop_Threshold',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Seed',
                 name: 'seed',
-                description: 'Seed value to be used for random number generation',
+                description: 'Seed value to be used for random number generation for Search Algorithm KMEANS',
                 placeholder: 'Seed',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Num_Init',
                 name: 'numInit',
-                description: 'number of times the k-means algorithm should run with different initial centroid seeds',
+                description: 'number of times the k-means algorithm should run with different initial centroid seeds for Search Algorithm KMEANS',
                 placeholder: 'Num_Init',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Top_K',
                 name: 'topK',
-                description: 'Number of top results to fetch. Default to 4',
+                description: 'Number of top results to fetch. Default to 10',
                 placeholder: 'Top_K',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -152,62 +162,70 @@ class Teradata_VectorStores implements INode {
                 description: 'Threshold value to consider for matching tables/views while searching',
                 placeholder: 'Search_Threshold',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Search_NumCluster',
                 name: 'searchNumCluster',
-                description: 'Number of clusters to be considered while searching',
+                description: 'Number of clusters to be considered while searching for Search Algorithm KMEANS',
                 placeholder: 'Search_NumCluster',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Ef_Search',
                 name: 'efSearch',
-                description: 'Number of neighbors to be considered during search in HNSW graph',
+                description: 'Number of neighbors to be considered during search in HNSW graph for Search Algorithm HNSW',
                 placeholder: 'Ef_Search',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Num_Layer',
                 name: 'numLayer',
-                description: 'Number of neighbors to be considered during search in HNSW graph',
+                description: 'Number of layers in the HNSW graph for Search Algorithm HNSW',
                 placeholder: 'Num_Layer',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Ef_Construction',
                 name: 'efConstruction',
-                description: 'Number of neighbors to be considered during construction of the HNSW graph',
+                description: 'Number of neighbors to be considered during construction of the HNSW graph for Search Algorithm HNSW',
                 placeholder: 'Ef_Construction',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Num_ConnPerNode',
                 name: 'numConnPerNode',
-                description: 'Number of connections per node in the HNSW graph during construction',
+                description: 'Number of connections per node in the HNSW graph during construction for Search Algorithm HNSW',
                 placeholder: 'Num_ConnPerNode',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'MaxNum_ConnPerNode',
                 name: 'maxNumConnPerNode',
-                description: 'Maximum number of connections per node in the HNSW graph during construction',
+                description: 'Maximum number of connections per node in the HNSW graph during construction for Search Algorithm HNSW',
                 placeholder: 'MaxNum_ConnPerNode',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
                 label: 'Apply_Heuristics',
                 name: 'applyHeuristics',
-                description: 'Specifies whether to apply heuristics optimizations during construction of the HNSW graph',
+                description: 'Specifies whether to apply heuristics optimizations during construction of the HNSW graph for Search Algorithm HNSW',
                 placeholder: 'Apply_Heuristics',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -216,6 +234,7 @@ class Teradata_VectorStores implements INode {
                 description: 'Weight to be used for reranking the search results',
                 placeholder: 'Rerank_Weight',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -224,6 +243,7 @@ class Teradata_VectorStores implements INode {
                 description: 'Number of top similarity matches to be considered for reranking',
                 placeholder: 'Relevance_Top_K',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             },
             {
@@ -232,6 +252,7 @@ class Teradata_VectorStores implements INode {
                 description: 'Threshold value to consider for matching tables/views while reranking',
                 placeholder: 'Relevance_Search_Threshold',
                 type: 'string',
+                additionalParams: true,
                 optional: true
             }          
         ]
@@ -601,7 +622,7 @@ class Teradata_VectorStores implements INode {
     }
 
     async init(nodeData: INodeData, _: string, options: ICommonObject): Promise<any> {
-        const log_level = 1;
+        const log_level = 0;
         const docs = nodeData.inputs?.document as Document[]
         const embeddings = nodeData.inputs?.embeddings as Embeddings
         const embeddingsTableName = nodeData.inputs?.embeddingsTableName as string
@@ -618,7 +639,7 @@ class Teradata_VectorStores implements INode {
         const stopThreshold = parseFloat(nodeData.inputs?.stopThreshold as string) || null
         const seed = parseInt(nodeData.inputs?.seed as string) || null
         const numInit = parseInt(nodeData.inputs?.numInit as string) || null
-        const topK = parseInt(nodeData.inputs?.topK as string) || 4
+        const topK = parseInt(nodeData.inputs?.topK as string) || 10
         const searchThreshold = parseFloat(nodeData.inputs?.searchThreshold as string) || null
         const searchNumCluster = parseInt(nodeData.inputs?.searchNumCluster as string) || null
         const efSearch = parseInt(nodeData.inputs?.efSearch as string) || null
