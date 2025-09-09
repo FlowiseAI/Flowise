@@ -45,7 +45,47 @@ Ensure your AWS CLI is configured with the correct credentials:
 aws configure
 ```
 
-### 3. Clone the AnswerAgentAI Repository
+Verify your AWS credentials are working:
+
+```bash
+aws sts get-caller-identity
+```
+
+### 3. Set Up AWS Secrets Manager for Flowise Encryption Key
+
+TheAnswer uses AWS Secrets Manager to securely store the Flowise encryption key. This provides better security and key rotation capabilities compared to storing the key in environment variables.
+
+#### Create the Flowise Encryption Key Secret
+
+If the secret doesn't exist, create it:
+
+```bash
+aws secretsmanager create-secret \
+  --name FlowiseEncryptionKey \
+  --secret-string 'your-secure-encryption-key-here'
+```
+
+**Note:** Replace `'your-secure-encryption-key-here'` with a strong, randomly generated encryption key (at least 32 characters).
+
+#### Update an Existing Secret
+
+If the secret already exists, update it:
+
+```bash
+aws secretsmanager put-secret-value \
+  --secret-id FlowiseEncryptionKey \
+  --secret-string 'your-new-encryption-key-here'
+```
+
+#### Verify the Secret
+
+You can verify the secret was created/updated successfully:
+
+```bash
+aws secretsmanager describe-secret --secret-id FlowiseEncryptionKey
+```
+
+### 4. Clone the AnswerAgentAI Repository
 
 Clone the AnswerAgentAI repository to your local machine:
 
@@ -64,7 +104,7 @@ Ensure yo uhave setup a hosted zone in AWS.
 copilot app init --domain <your-domain>
 ```
 
-Replace `<your-domain>` with your desired domain name, e.g., `myapp.flowise.theanswer.ai`.
+Replace `<your-domain>` with your desired domain name, e.g., `myapp.theanswer.ai`.
 
 ### 5. Create a New Environment
 
@@ -89,6 +129,11 @@ DISABLE_FLOWISE_TELEMETRY=true
 IFRAME_ORIGINS=https://example.com
 MY_APP_VITE_AUTH_DOMAIN=your-auth-domain
 MY_APP_VITE_AUTH_CLIENT_ID=your-auth-client-id
+
+# Flowise Encryption Key Override - AWS Secrets Manager
+SECRETKEY_STORAGE_TYPE="aws"
+SECRETKEY_AWS_REGION="us-east-1"
+SECRETKEY_AWS_NAME="FlowiseEncryptionKey"
 ...
 ```
 
@@ -147,6 +192,36 @@ copilot svc status --env <env-name>
 
 2. Check if the correct ports are exposed in your Dockerfile and Copilot configuration.
 3. Ensure your domain's DNS settings are correctly configured to point to the AWS-provided URL.
+
+### Issue: AWS Secrets Manager Access Problems
+
+If you encounter issues with AWS Secrets Manager:
+
+1. **Verify AWS credentials and permissions:**
+
+    ```bash
+    aws sts get-caller-identity
+    ```
+
+2. **Check if the secret exists:**
+
+    ```bash
+    aws secretsmanager describe-secret --secret-id FlowiseEncryptionKey
+    ```
+
+3. **Verify IAM permissions:** Ensure your AWS user/role has the following permissions:
+
+    - `secretsmanager:GetSecretValue`
+    - `secretsmanager:DescribeSecret`
+    - `secretsmanager:CreateSecret` (for initial setup)
+    - `secretsmanager:PutSecretValue` (for updates)
+
+4. **Check region consistency:** Ensure the `SECRETKEY_AWS_REGION` in your environment variables matches the region where the secret is stored.
+
+5. **Test secret retrieval:**
+    ```bash
+    aws secretsmanager get-secret-value --secret-id FlowiseEncryptionKey
+    ```
 
 Remember to regularly update your AnswerAgentAI application and redeploy using Copilot to ensure you have the latest features and security updates.
 

@@ -81,6 +81,9 @@ There are three different .env files you can set environment variables for Answe
 | S3_ENDPOINT_URL               | Custom S3 endpoint URL (commented out)                   | Server                      |
 | APIKEY_STORAGE_TYPE           | API key storage type (json or db) (commented out)        | Server                      |
 | SHOW_COMMUNITY_NODES          | Show community nodes when set to true (commented out)    | Server                      |
+| SECRETKEY_STORAGE_TYPE        | Secret key storage type (file, aws)                      | Root, Server                |
+| SECRETKEY_AWS_REGION          | AWS region for Secrets Manager (when using aws storage)  | Root, Server                |
+| SECRETKEY_AWS_NAME            | AWS Secrets Manager secret name (when using aws storage) | Root, Server                |
 
 This table provides a comprehensive overview of all the environment variables used across the different files in your project. The "File Location" column indicates which file(s) each variable is found in (Root, Server, UI, or AnswerAgentAI).
 
@@ -162,6 +165,22 @@ AAI-branded nodes use environment variables with the `AAI_DEFAULT_` prefix to pr
 2. **Access Control**: Ensure that only authorized services and users have access to these environment variables.
 
 3. **Default Credentials**: These are intended for development and testing. In production, consider using more secure credential management systems.
+
+4. **AWS Secrets Manager Integration**: For enhanced security in AWS deployments, use AWS Secrets Manager to store the Flowise encryption key:
+
+    ```bash
+    # Configure AWS Secrets Manager for encryption key storage
+    SECRETKEY_STORAGE_TYPE="aws"
+    SECRETKEY_AWS_REGION="us-east-1"
+    SECRETKEY_AWS_NAME="FlowiseEncryptionKey"
+    ```
+
+    **Benefits:**
+
+    - Keys are encrypted at rest and in transit
+    - Automatic key rotation capabilities
+    - Full audit trail and access logging
+    - IAM-based access control
 
 ### Usage Examples
 

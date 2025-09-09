@@ -46,7 +46,7 @@
         "html-react-parser": "^3.0.16",
         "lodash": "^4.17.21",
         "moment": "^2.30.1",
-        "next": "^14.2.31",
+        "next": "^14.2.32",
         "notistack": "^2.0.8",
         "prop-types": "^15.8.1",
         "react": "18.2.0",
@@ -109,7 +109,7 @@
         "rimraf": "^5.0.10",
         "sass": "^1.89.2",
         "typescript": "~5.5.4",
-        "vite": "^6.3.6",
+        "vite": "^7.0.0",
         "vite-plugin-pwa": "^0.17.5",
         "vite-plugin-react-js-support": "^1.0.7"
     }

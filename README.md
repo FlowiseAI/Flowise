@@ -339,29 +339,68 @@ For detailed testing documentation, see:
 
 ## 📖 Documentation
 
-[TheAnswer Docs](https://docs.theanswer.ai/)
+[AnswerAgent Docs](https://answeragent.ai/docs)
 
 ## 🌐 Self Host
 
-Deploy TheAnswer self-hosted in your existing infrastructure. We support various [deployments](https://docs.theanswer.ai/configuration/deployment)
+Deploy AnswerAgent self-hosted in your existing infrastructure. We support various [deployments](https://answeragent.ai/docs/developers/deployment)
 
--   [AWS](https://docs.theanswer.ai/configuration/deployment/aws)
--   [Azure](https://docs.theanswer.ai/configuration/deployment/azure)
--   [Digital Ocean](https://docs.theanswer.ai/configuration/deployment/digital-ocean)
--   [GCP](https://docs.theanswer.ai/configuration/deployment/gcp)
--   [Alibaba Cloud](https://computenest.console.aliyun.com/service/instance/create/default?type=user&ServiceName=Flowise社区版)
+-   [AWS](https://answeragent.ai/docs/developers/deployment/aws)
+-   [Azure](https://answeragent.ai/docs/developers/deployment/azure)
+-   [GCP](https://answeragent.ai/docs/developers/deployment/gcp)
+-   [Render](https://answeragent.ai/docs/developers/deployment/render)
+
+## 🔐 AWS Secrets Manager Integration
+
+For AWS deployments, AnswerAgent supports using AWS Secrets Manager to securely store the Flowise encryption key instead of environment variables.
+
+### Quick Setup
+
+1. **Create the encryption key secret:**
+
+    ```bash
+    aws secretsmanager create-secret \
+      --name FlowiseEncryptionKey \
+      --secret-string 'your-secure-encryption-key-here'
+    ```
+
+2. **Update an existing secret:**
+
+    ```bash
+    aws secretsmanager put-secret-value \
+      --secret-id FlowiseEncryptionKey \
+      --secret-string 'your-new-encryption-key-here'
+    ```
+
+3. **Add to your environment variables:**
+    ```bash
+    # Flowise Encryption Key Override - AWS Secrets Manager
+    SECRETKEY_STORAGE_TYPE="aws"
+    SECRETKEY_AWS_REGION="us-east-1"
+    SECRETKEY_AWS_NAME="FlowiseEncryptionKey"
+    ```
+
+### Benefits
+
+-   **Enhanced Security**: Keys are encrypted at rest and in transit
+-   **Key Rotation**: Easy rotation without application restarts
+-   **Audit Trail**: Full access logging and monitoring
+-   **IAM Integration**: Fine-grained access control
+
+For detailed AWS deployment instructions, see [AWS Deployment Guide](https://answeragent.ai/docs/developers/deployment/aws).
+
 -   <details>
       <summary>Others</summary>
 
-    -   [Railway](https://docs.theanswer.ai/configuration/deployment/railway)
+    -   [Railway](https://answeragent.ai/docs/developers/deployment/railway)
 
         [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/pn4G8S?referralCode=WVNPD9)
 
-    -   [Render](https://docs.theanswer.ai/configuration/deployment/render)
+    -   [Render](https://answeragent.ai/docs/developers/deployment/render)
 
-        [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://docs.theanswer.ai/configuration/deployment/render)
+        [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://answeragent.ai/docs/developers/deployment/render)
 
-    -   [HuggingFace Spaces](https://docs.theanswer.ai/deployment/hugging-face)
+    -   [HuggingFace Spaces](https://answeragent.ai/docs/deployment/hugging-face)
 
         <a href="https://huggingface.co/spaces/TheAnswer/TheAnswer"><img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-sm.svg" alt="HuggingFace Spaces"></a>
 

@@ -352,6 +352,15 @@ const getChatflowByApiKey = async (apiKeyId: string, keyonly?: unknown): Promise
     }
 }
 
+/**
+ * Get chatflow by ID with flexible data source
+ * @param chatflowId - The chatflow ID to retrieve
+ * @param user - User context for permissions and ownership checks
+ * @param useDraft - Data source selection:
+ *   - true: Include S3 draft versions (for editor UI, flowData editing)
+ *   - false: Database only (for updates, reads, fresh metadata)
+ * @returns Promise<ChatFlow> - The chatflow object
+ */
 const getChatflowById = async (chatflowId: string, user?: IUser, useDraft = true): Promise<any> => {
     try {
         const appServer = getRunningExpressApp()

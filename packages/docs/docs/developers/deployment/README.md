@@ -17,6 +17,17 @@ The following cloud providers offer robust platforms for deploying AnswerAgentAI
 
 Each of these platforms provides unique features and capabilities. Choose the one that best aligns with your organization's requirements, existing infrastructure, and technical expertise.
 
+## Security Enhancements
+
+### AWS Secrets Manager Integration
+
+For AWS deployments, we recommend using AWS Secrets Manager to securely store sensitive configuration data like encryption keys:
+
+-   **Enhanced Security**: Keys are encrypted at rest and in transit
+-   **Key Rotation**: Easy rotation without application restarts
+-   **Audit Trail**: Full access logging and monitoring
+-   **IAM Integration**: Fine-grained access control
+
 For detailed deployment instructions for each platform, please refer to the respective links above.
 
 ## Local Machine

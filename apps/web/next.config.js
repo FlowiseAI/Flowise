@@ -87,6 +87,14 @@ let nextConfig = withBundleAnalyzer({
             }
         ]
     },
+    env: {
+        // Use explicit AUTH0_BASE_URL from environment, fallback to VERCEL_BRANCH_URL if on Vercel
+        AUTH0_BASE_URL:
+            process.env.AUTH0_BASE_URL ?? (process.env.VERCEL_BRANCH_URL ? `https://${process.env.VERCEL_BRANCH_URL}` : undefined),
+        FLAGSMITH_ENVIRONMENT_ID: process.env.FLAGSMITH_ENVIRONMENT_ID,
+        AUTH0_SECRET: process.env.AUTH0_SECRET,
+        CHATFLOW_DOMAIN_OVERRIDE: process.env.CHATFLOW_DOMAIN_OVERRIDE
+    },
     webpack: (config, { isServer }) => {
         config.externals = [...config.externals, 'db', 'puppeteer', 'handlebars']
         config.plugins = [
