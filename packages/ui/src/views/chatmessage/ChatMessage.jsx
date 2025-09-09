@@ -38,7 +38,8 @@ import {
     IconSquareFilled,
     IconCheck,
     IconPaperclip,
-    IconSparkles
+    IconSparkles,
+    IconRefresh
 } from '@tabler/icons-react'
 import robotPNG from '@/assets/images/robot.png'
 import userPNG from '@/assets/images/account.png'
@@ -170,6 +171,22 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
 
     const dispatch = useDispatch()
     const { onAgentflowNodeStatusUpdate, clearAgentflowNodeStatus } = useContext(flowContext)
+
+    // Add resetChat function here, after initial declarations
+    const resetChat = useCallback(() => {
+        const newChatId = uuidv4()
+        setChatId(newChatId)
+        setMessages([
+            {
+                message: 'Hi there! How can I help?',
+                type: 'apiMessage'
+            }
+        ])
+        setUserInput('')
+        setUploadedFiles([])
+        setPreviews([])
+        setLocalStorageChatflow(chatflowid, newChatId)
+    }, [chatflowid, setPreviews])
 
     useNotifier()
     const enqueueSnackbar = (...args) => dispatch(enqueueSnackbarAction(...args))
@@ -1134,9 +1151,13 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
     // Get chatmessages successful
     useEffect(() => {
         if (getChatmessageApi.data?.length) {
-            const chatId = getChatmessageApi.data[0]?.chatId
+            const latestMessage = getChatmessageApi.data[getChatmessageApi.data.length - 1]
+            const chatId = latestMessage?.chatId
             setChatId(chatId)
-            const loadedMessages = getChatmessageApi.data.map((message) => {
+            // Filter messages to only include those with matching chatId
+            const messagesForChat = getChatmessageApi.data.filter((message) => message.chatId === chatId)
+
+            const loadedMessages = messagesForChat.map((message) => {
                 const obj = {
                     id: message.id,
                     message: message.content,
@@ -1815,6 +1836,31 @@ const ChatMessage = ({ open, chatflowid, isAgentCanvas, isDialog, previews, setP
                 )}
             <div ref={ps} className={`${isDialog ? 'cloud-dialog' : 'cloud'}`}>
                 <div id='messagelist' className={'messagelist'}>
+                    {/* New Session Button - Fixed position at the top of chat */}
+                    <Box
+                        sx={{
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            p: 1,
+                            position: 'sticky',
+                            top: 0,
+                            backgroundColor: theme.palette.background.paper,
+                            zIndex: 1000,
+                            borderBottom: `1px solid ${theme.palette.divider}`
+                        }}
+                    >
+                        <Button
+                            onClick={resetChat}
+                            startIcon={<IconRefresh size={20} />}
+                            variant='outlined'
+                            color='primary'
+                            size='small'
+                            sx={{ borderRadius: '20px' }}
+                        >
+                            New Session
+                        </Button>
+                    </Box>
                     {messages &&
                         messages.map((message, index) => {
                             return (
