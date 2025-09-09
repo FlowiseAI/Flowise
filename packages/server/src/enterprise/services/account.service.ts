@@ -292,7 +292,7 @@ export class AccountService {
             const role = await this.roleService.readRoleByRoleIdOrganizationId(data.role.id, data.workspace.organizationId, queryRunner)
             if (!role) throw new InternalFlowiseError(StatusCodes.NOT_FOUND, RoleErrorMessage.ROLE_NOT_FOUND)
             data.role = role
-            let randomPassword = await this.generateValidPassword();
+            const randomPassword = await this.generateValidPassword();
             const user = await this.userService.readUserByEmail(data.user.email, queryRunner)
             if (!user) {
                 await checkUsageLimit('users', subscriptionId, getRunningExpressApp().usageCacheManager, totalOrgUsers + 1)
@@ -311,7 +311,7 @@ export class AccountService {
                     this.identityManager.getPlatformType() === Platform.ENTERPRISE
                         ? `${process.env.APP_URL}/register?token=${data.user.tempToken}`
                         : `${process.env.APP_URL}/signin`
-                await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
+                await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink, randomPassword, this.identityManager.getPlatformType())
                 data.user = await this.userService.createNewUser(data.user, queryRunner)
 
                 data.organizationUser.organizationId = data.workspace.organizationId
@@ -344,15 +344,11 @@ export class AccountService {
 
                 return data
             } else {
-                if (!user?.credential || user.credential.trim() === "") { 
-                    await this.userService.updateUser({
-                        id: user.id,
-                        password: randomPassword,
-                        updatedBy: data.user.createdBy
-                    });
-                } else {
-                    randomPassword = user.credential;
-                }
+                await this.userService.updateUser({
+                    id: user.id,
+                    password: randomPassword,
+                    updatedBy: data.user.createdBy
+                });
             }
             const { organizationUser } = await this.organizationUserService.readOrganizationUserByOrganizationIdUserId(
                 data.workspace.organizationId,
@@ -395,12 +391,12 @@ export class AccountService {
                 if (workspaceUser.length === 1) {
                     oldWorkspaceUser = workspaceUser[0]
                     if (oldWorkspaceUser.workspace.name === WorkspaceName.DEFAULT_PERSONAL_WORKSPACE) {
-                        await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
+                        await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink, randomPassword, this.identityManager.getPlatformType())
                     } else {
-                        sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
+                        sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink, randomPassword, this.identityManager.getPlatformType())
                     }
                 } else {
-                    await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink,randomPassword, this.identityManager.getPlatformType())
+                    await sendWorkspaceInviteWithPassword(data.user.email!, data.workspace.name!, registerLink, randomPassword, this.identityManager.getPlatformType())
                 }
             } else {
                 data.organizationUser.updatedBy = data.user.createdBy
