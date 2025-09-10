@@ -10,7 +10,6 @@
  * security@flowiseai.com
  */
 
-import axios from 'axios'
 import express, { Application, NextFunction, Request, Response } from 'express'
 import * as fs from 'fs'
 import { StatusCodes } from 'http-status-codes'

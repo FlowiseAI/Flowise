@@ -130,6 +130,35 @@ export class UserService {
         return newUser
     }
 
+    public async createUserDirectly(data: Partial<User>) {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
+        let newUser = await this.createNewUser({ ...data, status: UserStatus.ACTIVE }, queryRunner)
+        try {
+            await queryRunner.startTransaction()
+            newUser = await this.saveUser(newUser, queryRunner)
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            await queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            await queryRunner.release()
+        }
+
+        this.telemetry.sendTelemetry(
+            TelemetryEventType.USER_CREATED,
+            {
+                userId: newUser.id,
+                createdBy: newUser.createdBy,
+                method: 'direct'
+            },
+            newUser.id
+        )
+
+        return newUser
+    }
+
     public async updateUser(newUserData: Partial<User> & { password?: string }) {
         let queryRunner: QueryRunner | undefined
         let updatedUser: Partial<User>

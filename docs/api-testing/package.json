@@ -1,34 +1,34 @@
 {
-  "name": "flowise-api-testing",
-  "version": "1.0.0",
-  "description": "Test scripts for Flowise API endpoints",
-  "main": "index.js",
-  "scripts": {
-    "test:chat-messages": "npx ts-node chat-message-test.ts",
-    "test:predictions": "npx ts-node prediction-test.ts",
-    "test:session-integration": "npx ts-node session-integration-test.ts",
-    "test:all": "npm run test:predictions && npm run test:chat-messages && npm run test:session-integration",
-    "build": "tsc",
-    "clean": "rm -rf dist"
-  },
-  "dependencies": {
-    "node-fetch": "^3.3.2"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.0",
-    "typescript": "^5.3.3",
-    "ts-node": "^10.9.2"
-  },
-  "engines": {
-    "node": ">=16"
-  },
-  "keywords": [
-    "flowise",
-    "api",
-    "testing",
-    "chatbot",
-    "langchain"
-  ],
-  "author": "Flowise Team",
-  "license": "MIT"
+    "name": "flowise-api-testing",
+    "version": "1.0.0",
+    "description": "Test scripts for Flowise API endpoints",
+    "main": "index.js",
+    "scripts": {
+        "test:chat-messages": "npx ts-node chat-message-test.ts",
+        "test:predictions": "npx ts-node prediction-test.ts",
+        "test:session-integration": "npx ts-node session-integration-test.ts",
+        "test:all": "npm run test:predictions && npm run test:chat-messages && npm run test:session-integration",
+        "build": "tsc",
+        "clean": "rm -rf dist"
+    },
+    "dependencies": {
+        "node-fetch": "^3.3.2"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "typescript": "^5.3.3",
+        "ts-node": "^10.9.2"
+    },
+    "engines": {
+        "node": ">=16"
+    },
+    "keywords": [
+        "flowise",
+        "api",
+        "testing",
+        "chatbot",
+        "langchain"
+    ],
+    "author": "Flowise Team",
+    "license": "MIT"
 }
